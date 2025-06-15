@@ -14,7 +14,8 @@ import json
 
 BRIDGE_URL = os.environ.get("BRIDGE_URL") or "http://127.0.0.1:9000"
 DEV_API_KEY = os.environ.get("DEV_API_KEY") or "SECRET123"
-LOG_FILE = os.environ.get("DEV_LOG_FILE") or "dev_log.txt"
+_default_log = os.path.join(os.path.dirname(__file__), "dev_log.txt")
+LOG_FILE = os.environ.get("DEV_LOG_FILE") or _default_log
 
 app = Flask(__name__)
 
@@ -29,9 +30,11 @@ def _log_action(route, payload, result):
     """Append a single log line with timestamp, route, payload and result."""
     timestamp = datetime.utcnow().isoformat() + "Z"
     try:
-        with open(LOG_FILE, "a") as f:
-            f.write(f"[{timestamp}] {route} \u2192 {result.upper()} "
-                    f"{json.dumps(payload, separators=(',', ':'))}\n")
+        with open(LOG_FILE, "a", encoding="utf-8") as f:
+            f.write(
+                f"[{timestamp}] {route} \u2192 {result.upper()} "
+                f"{json.dumps(payload, separators=(',', ':'))}\n"
+            )
     except Exception:
         # Logging failures should not affect API responses
         pass
@@ -184,7 +187,7 @@ def logs():
         }), 401
 
     try:
-        with open(LOG_FILE, "r") as f:
+        with open(LOG_FILE, "r", encoding="utf-8") as f:
             lines = [line.rstrip() for line in f.readlines()]
         last_lines = lines[-50:]
         return jsonify({

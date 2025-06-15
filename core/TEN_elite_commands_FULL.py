@@ -13,6 +13,7 @@ import requests
 
 BRIDGE_URL = os.environ.get("BRIDGE_URL") or "http://127.0.0.1:9000"
 DEV_API_KEY = os.environ.get("DEV_API_KEY") or "SECRET123"
+LOG_FILE = os.environ.get("DEV_LOG_FILE") or "dev_log.txt"
 
 app = Flask(__name__)
 
@@ -149,6 +150,38 @@ def dev():
         "data": {"message": "Unknown command"},
         "timestamp": datetime.utcnow().isoformat() + "Z"
     }), 400
+
+
+@app.route("/logs", methods=["GET"])
+def logs():
+    if request.headers.get("X-Dev-Key") != DEV_API_KEY:
+        return jsonify({
+            "status": "error",
+            "data": {"message": "Unauthorized"},
+            "timestamp": datetime.utcnow().isoformat() + "Z"
+        }), 401
+
+    try:
+        with open(LOG_FILE, "r") as f:
+            lines = [line.rstrip() for line in f.readlines()]
+        last_lines = lines[-50:]
+        return jsonify({
+            "status": "ok",
+            "data": {"logs": last_lines},
+            "timestamp": datetime.utcnow().isoformat() + "Z"
+        }), 200
+    except FileNotFoundError:
+        return jsonify({
+            "status": "error",
+            "data": {"message": "Log file not found"},
+            "timestamp": datetime.utcnow().isoformat() + "Z"
+        }), 404
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "data": {"message": str(e)},
+            "timestamp": datetime.utcnow().isoformat() + "Z"
+        }), 500
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT") or os.environ.get("FLASK_RUN_PORT") or 5000)

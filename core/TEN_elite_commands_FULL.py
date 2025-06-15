@@ -10,6 +10,7 @@ from flask import Flask, request, jsonify
 from datetime import datetime
 import os
 import requests
+import json
 
 BRIDGE_URL = os.environ.get("BRIDGE_URL") or "http://127.0.0.1:9000"
 DEV_API_KEY = os.environ.get("DEV_API_KEY") or "SECRET123"
@@ -23,6 +24,17 @@ def _validate_payload(payload, fields):
         if value is None or (isinstance(value, str) and value.strip() == ""):
             return False, field
     return True, None
+
+def _log_action(route, payload, result):
+    """Append a single log line with timestamp, route, payload and result."""
+    timestamp = datetime.utcnow().isoformat() + "Z"
+    try:
+        with open(LOG_FILE, "a") as f:
+            f.write(f"[{timestamp}] {route} \u2192 {result.upper()} "
+                    f"{json.dumps(payload, separators=(',', ':'))}\n")
+    except Exception:
+        # Logging failures should not affect API responses
+        pass
 
 @app.route("/", methods=["GET"])
 def home():
@@ -57,6 +69,7 @@ def fire():
     }
     valid, missing = _validate_payload(payload, payload.keys())
     if not valid:
+        _log_action("/fire", payload, "error")
         return jsonify({
             "status": "error",
             "data": {"message": f"Missing {missing}"},
@@ -70,12 +83,14 @@ def fire():
             result = resp.json()
         except ValueError:
             result = resp.text
+        _log_action("/fire", payload, "ok")
         return jsonify({
             "status": "ok",
             "data": result,
             "timestamp": datetime.utcnow().isoformat() + "Z"
         }), 200
     except requests.RequestException as e:
+        _log_action("/fire", payload, "error")
         return jsonify({
             "status": "error",
             "data": {"message": str(e)},
@@ -85,6 +100,7 @@ def fire():
 @app.route("/dev", methods=["POST"])
 def dev():
     if request.headers.get("X-Dev-Key") != DEV_API_KEY:
+        _log_action("/dev", {}, "error")
         return jsonify({
             "status": "error",
             "data": {"message": "Unauthorized"},
@@ -95,6 +111,7 @@ def dev():
     command = data.get("command")
 
     if command == "status":
+        _log_action("/dev", data, "ok")
         return jsonify({
             "status": "ok",
             "data": {"message": "dev status acknowledged"},
@@ -112,6 +129,7 @@ def dev():
         }
         valid, missing = _validate_payload(payload, payload.keys())
         if not valid:
+            _log_action("/dev", payload, "error")
             return jsonify({
                 "status": "error",
                 "data": {"message": f"Missing {missing}"},
@@ -125,12 +143,14 @@ def dev():
                 result = resp.json()
             except ValueError:
                 result = resp.text
+            _log_action("/dev", payload, "ok")
             return jsonify({
                 "status": "ok",
                 "data": result,
                 "timestamp": datetime.utcnow().isoformat() + "Z"
             }), 200
         except requests.RequestException as e:
+            _log_action("/dev", payload, "error")
             return jsonify({
                 "status": "error",
                 "data": {"message": str(e)},
@@ -139,12 +159,14 @@ def dev():
 
     elif command == "reload":
         os.system("systemctl restart hydrax || true")
+        _log_action("/dev", data, "ok")
         return jsonify({
             "status": "ok",
             "data": {"message": "reloaded"},
             "timestamp": datetime.utcnow().isoformat() + "Z"
         }), 200
 
+    _log_action("/dev", data, "error")
     return jsonify({
         "status": "error",
         "data": {"message": "Unknown command"},

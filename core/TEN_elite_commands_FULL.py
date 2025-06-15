@@ -1,4 +1,4 @@
-from flask import Flask, request
+3from flask import Flask, request
 import os
 import json
 from datetime import datetime
@@ -6,17 +6,18 @@ from datetime import datetime
 app = Flask(__name__)
 
 @app.route("/", methods=["GET", "POST"])
-def home():
-    if request.method == "POST":
-        return "⚠️ POST received on root. Try /status instead.", 200
-    return "🐾 BITTEN system is live. Awaiting command."
+def root_fallback():
+    if request.method == "GET":
+        return "🚦 BITTEN system is live. Awaiting command.", 200
+    elif request.method == "POST":
+        return "✅ POST to root received from Telegram.", 200
 
 @app.route("/status", methods=["GET", "POST"])
 def status():
     return {
         "status": "✅ BITTEN online.",
         "tactical_mode": "🎯 SNIPER",
-        "health": "🧠 Stable",
+        "health": "💓 Stable",
         "timestamp": datetime.utcnow().isoformat() + "Z"
     }
 
@@ -30,49 +31,46 @@ def fire():
 
 @app.route("/set_mode", methods=["POST"])
 def set_mode():
-    data = request.json or {}
-    mode = data.get("mode", "unknown")
+    data = request.json
+    mode = data.get("mode", "SNIPER")
     return {
-        "result": f"Tactical mode set to {mode}",
+        "message": f"🎛️ Tactical mode updated to {mode}.",
         "timestamp": datetime.utcnow().isoformat() + "Z"
     }
 
 @app.route("/debug", methods=["POST"])
 def debug():
     return {
-        "debug": "🛠️ System diagnostics passed.",
+        "debug": "🧠 All systems green.",
         "timestamp": datetime.utcnow().isoformat() + "Z"
     }
 
-@app.route("/ping", methods=["POST"])
+@app.route("/ping", methods=["GET", "POST"])
 def ping():
-    return {
-        "pong": True,
-        "timestamp": datetime.utcnow().isoformat() + "Z"
-    }
+    return "🏓 pong", 200
 
 @app.route("/rank", methods=["POST"])
 def rank():
     return {
-        "rank": "🐍 Python Tier 1 Operator",
+        "rank": "🪖 Elite Operative",
+        "xp": 9284,
+        "level": "Apex",
         "timestamp": datetime.utcnow().isoformat() + "Z"
     }
 
 @app.route("/kills", methods=["POST"])
 def kills():
     return {
-        "kills": 14,
-        "accuracy": "88%",
+        "total_kills": 74,
+        "last_hit": "🎯 XAUUSD scalp @ 3:15 PM",
         "timestamp": datetime.utcnow().isoformat() + "Z"
     }
 
 @app.route("/leaderboard", methods=["POST"])
 def leaderboard():
     return {
-        "top": [
-            {"user": "Hydra", "xp": 888},
-            {"user": "Bit", "xp": 777}
-        ],
+        "top_trader": "🧠 Bit the Cat",
+        "score": 9944,
         "timestamp": datetime.utcnow().isoformat() + "Z"
     }
 

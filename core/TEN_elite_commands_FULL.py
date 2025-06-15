@@ -11,6 +11,8 @@ from datetime import datetime
 import os
 import requests
 import json
+import logging
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 BRIDGE_URL = os.environ.get("BRIDGE_URL") or "http://127.0.0.1:9000"
 DEV_API_KEY = os.environ.get("DEV_API_KEY") or "SECRET123"
@@ -18,6 +20,9 @@ _default_log = os.path.join(os.path.dirname(__file__), "dev_log.txt")
 LOG_FILE = os.environ.get("DEV_LOG_FILE") or _default_log
 
 app = Flask(__name__)
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
+
+logging.basicConfig(level=logging.INFO)
 
 def _validate_payload(payload, fields):
     for field in fields:
@@ -39,8 +44,14 @@ def _log_action(route, payload, result):
         # Logging failures should not affect API responses
         pass
 
-@app.route("/", methods=["GET"])
+@app.route("/", methods=["GET", "POST"])
 def home():
+    if request.method == "POST":
+        try:
+            return jsonify({"ok": True}), 200
+        except Exception:
+            logging.exception("Error on POST /")
+            return jsonify({"ok": True}), 200
     return jsonify({
         "status": "ok",
         "data": {"message": "BITTEN system is live. Awaiting command."},
@@ -210,4 +221,4 @@ def logs():
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT") or os.environ.get("FLASK_RUN_PORT") or 5000)
-    app.run(host="0.0.0.0", port=port, debug=True, use_reloader=False)
+    app.run(host="0.0.0.0", port=port, debug=False, use_reloader=False)

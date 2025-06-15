@@ -5,7 +5,7 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-@app.route("/", methods=["GET"])
+@app.route("/status", methods=["GET", "POST"])
 def home():
     return "🧠 BITTEN system is live. Awaiting command."
 

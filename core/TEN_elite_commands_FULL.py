@@ -1,3 +1,9 @@
+"""Locked Operational Flask Core v1
+This module exposes a simple Flask API used by the HydraX bot system.
+It binds to 0.0.0.0 on port 5000 by default so the service can be reliably
+restarted via ``pkill -f TEN_elite_commands_FULL.py && python3 TEN_elite_commands_FULL.py``.
+"""
+
 from flask import Flask, request, jsonify
 from datetime import datetime
 import os
@@ -85,5 +91,28 @@ def dev():
         return jsonify({"status": "error", "message": "Unknown command"}), 400
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    # Bind to 0.0.0.0 on port 5000 unless overridden by the PORT env variable.
+    default_port = 5000
+    port_str = os.environ.get("PORT") or os.environ.get("FLASK_RUN_PORT")
+    try:
+        port = int(port_str) if port_str else default_port
+    except (TypeError, ValueError):
+        port = default_port
+
+    app.run(host="0.0.0.0", port=port, debug=False, use_reloader=False)
+
+"""
+Sample curl tests (replace 127.0.0.1 if accessing remotely):
+
+    curl http://127.0.0.1:5000/status
+
+    curl -X POST http://127.0.0.1:5000/fire \
+         -H "Content-Type: application/json" \
+         -d '{"symbol":"XAUUSD","volume":1,"sl":2330,"tp":2340,"comment":"test","action":"buy"}'
+
+    curl -X POST http://127.0.0.1:5000/dev \
+         -H "X-Dev-Key: SECRET123" \
+         -H "Content-Type: application/json" \
+         -d '{"command":"status"}'
+"""
+

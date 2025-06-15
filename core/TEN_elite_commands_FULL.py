@@ -5,16 +5,16 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-@app.route("/status", methods=["GET", "POST"])
+@app.route("/", methods=["GET"])
 def home():
-    return "🧠 BITTEN system is live. Awaiting command."
+    return "🐾 BITTEN system is live. Awaiting command."
 
-@app.route("/status", methods=["POST"])
+@app.route("/status", methods=["GET", "POST"])
 def status():
     return {
         "status": "✅ BITTEN online.",
-        "tactical_mode": "🐾 SNIPER",
-        "health": "🧠 Stable",
+        "tactical_mode": "🎯 SNIPER",
+        "health": "🐾 Stable",
         "timestamp": datetime.utcnow().isoformat() + "Z"
     }
 

@@ -9,7 +9,7 @@ echo "➡️  Current Directory: $(pwd)"
 echo "➡️  Files:"
 ls -l
 
-echo "🔧 Running Flask app: BITTEN_elite_commands_FULL.py"
-nohup python3 BITTEN_elite_commands_FULL.py &
+echo "🔧 Running Flask app: TEN_elite_commands_FULL.py"
+nohup python3 TEN_elite_commands_FULL.py &
 
 echo "✅ Deployment complete. Flask is now running in the background."

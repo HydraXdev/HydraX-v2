@@ -10,3 +10,15 @@ This version includes:
 - Future: Myfxbook API, MT5 support
 
 More coming soon.
+
+## Configuration
+
+Create a `.env` file (see `core/modules/modules/modules/telegram_bot/.env.example`)
+and set at least the following variables:
+
+```
+TELEGRAM_TOKEN=<your-telegram-bot-token>
+TELEGRAM_CHAT_ID=<optional-chat-id>
+```
+
+`TELEGRAM_TOKEN` is used by `TEN_elite_commands_FULL.py` to send replies.

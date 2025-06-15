@@ -7,7 +7,7 @@ load_dotenv()
 
 app = Flask(__name__)
 
-TOKEN = os.getenv('TELEGRAM_TOKEN')
+TOKEN = os.getenv('TELEGRAM_TOKEN') or os.getenv('BOT_TOKEN')
 CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 
 @app.route('/', methods=['POST'])

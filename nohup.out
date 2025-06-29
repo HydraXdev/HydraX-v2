@@ -1,0 +1,376 @@
+python3: can't open file '/root/HydraX-v2/BITTEN_elite_commands_FULL.py': [Errno 2] No such file or directory
+ * Serving Flask app 'BITTEN_elite_commands_FULL'
+ * Debug mode: off
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://134.199.201.115:5000
+Press CTRL+C to quit
+97.137.245.94 - - [14/Jun/2025 22:10:20] "GET /status HTTP/1.1" 405 -
+97.137.245.94 - - [14/Jun/2025 22:10:20] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [14/Jun/2025 22:11:15] "POST /status HTTP/1.1" 200 -
+97.137.245.94 - - [14/Jun/2025 22:23:42] "GET /status HTTP/1.1" 405 -
+ * Serving Flask app 'BITTEN_elite_commands_FULL'
+ * Debug mode: off
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://134.199.201.115:5000
+Press CTRL+C to quit
+97.137.245.94 - - [14/Jun/2025 22:26:18] "GET /status HTTP/1.1" 405 -
+ * Serving Flask app 'BITTEN_elite_commands_FULL'
+ * Debug mode: off
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://134.199.201.115:5000
+Press CTRL+C to quit
+97.137.245.94 - - [14/Jun/2025 22:35:22] "GET /status HTTP/1.1" 200 -
+198.235.24.92 - - [14/Jun/2025 23:02:47] "GET / HTTP/1.1" 200 -
+167.94.146.50 - - [14/Jun/2025 23:27:50] code 400, message Bad request version ('À\x14À')
+167.94.146.50 - - [14/Jun/2025 23:27:50] "\x16\x03\x01\x00î\x01\x00\x00ê\x03\x03"2Ö3Ê)\x1e\x93\x15pÐf/\x04§5æ\x15ÂFË]ðz»\x8b\x13}Â6\\µ \x19¥#j\x9c\x14áGN¶\x0eLi_$\x90\\¯\x1aXÏd±Mí\x9eZIôE{i\x00&Ì¨Ì©À/À0À+À,À\x13À\x09À\x14À" HTTPStatus.BAD_REQUEST -
+167.94.146.50 - - [14/Jun/2025 23:27:55] "GET / HTTP/1.1" 200 -
+167.94.146.50 - - [14/Jun/2025 23:27:58] "GET / HTTP/1.1" 200 -
+167.94.146.50 - - [14/Jun/2025 23:27:59] "GET /favicon.ico HTTP/1.1" 404 -
+167.94.146.50 - - [14/Jun/2025 23:27:59] code 505, message Invalid HTTP version (2.0)
+167.94.146.50 - - [14/Jun/2025 23:27:59] "PRI * HTTP/2.0" HTTPStatus.HTTP_VERSION_NOT_SUPPORTED -
+167.94.146.50 - - [14/Jun/2025 23:28:02] "GET /favicon.ico HTTP/1.1" 404 -
+167.94.146.50 - - [14/Jun/2025 23:28:03] code 400, message Bad request version ('À\x14À')
+167.94.146.50 - - [14/Jun/2025 23:28:03] "\x16\x03\x01\x00÷\x01\x00\x00ó\x03\x03ë\x10s\x9bÅäT\x18)K\x82,9Dn9\\EÐ\x1eNòFq\x95\x9bÇ­Ç[÷Õ vúÿÑ\x1f®pÔøÎ"³Cá\x92Ò!k\x8f\x0ew\x11ÝI!1x\x9f?\x17ã\x0b\x00&Ì¨Ì©À/À0À+À,À\x13À\x09À\x14À" HTTPStatus.BAD_REQUEST -
+167.94.146.50 - - [14/Jun/2025 23:28:06] code 400, message Bad request version ('À\x14À')
+167.94.146.50 - - [14/Jun/2025 23:28:06] "\x16\x03\x01\x00î\x01\x00\x00ê\x03\x03!á\x10uÁ\x9f\x8f\x8dìW\x84\x1c¾"ÛPOº÷ÕÅ{Ë\x9f¾å(\x86T\x1d\x1c\x08 }D+\x8c|Á¯Åµ\x01¤Æ\x1cêÜ³×BGN\x96yÐpøkÔûY¼Ü@\x00&Ì¨Ì©À/À0À+À,À\x13À\x09À\x14À" HTTPStatus.BAD_REQUEST -
+167.94.146.50 - - [14/Jun/2025 23:28:07] "GET /wiki HTTP/1.1" 404 -
+167.94.146.50 - - [14/Jun/2025 23:28:07] "GET /favicon.ico HTTP/1.1" 404 -
+167.94.146.50 - - [14/Jun/2025 23:28:08] code 400, message Bad request version ('\x02UQg')
+167.94.146.50 - - [14/Jun/2025 23:28:08] "\x16\x03\x01\x00÷\x01\x00\x00ó\x03\x03ú\x1f\x9d\x99\x85N\x85\x87¹\x02Ï3\x1c­ \x9fÐ¡\x18ä2Dök\x93 ïñê+e¬ \x02UQg" HTTPStatus.BAD_REQUEST -
+127.0.0.1 - - [14/Jun/2025 23:49:17] "GET /status HTTP/1.0" 200 -
+127.0.0.1 - - [14/Jun/2025 23:49:17] "GET /favicon.ico HTTP/1.0" 404 -
+127.0.0.1 - - [14/Jun/2025 23:53:42] "HEAD / HTTP/1.0" 200 -
+127.0.0.1 - - [14/Jun/2025 23:53:46] "GET / HTTP/1.0" 200 -
+127.0.0.1 - - [14/Jun/2025 23:53:47] "GET / HTTP/1.0" 200 -
+127.0.0.1 - - [14/Jun/2025 23:53:48] "GET / HTTP/1.0" 200 -
+127.0.0.1 - - [14/Jun/2025 23:53:56] "GET / HTTP/1.0" 200 -
+127.0.0.1 - - [14/Jun/2025 23:54:00] "GET / HTTP/1.0" 200 -
+127.0.0.1 - - [14/Jun/2025 23:54:00] "GET / HTTP/1.0" 200 -
+127.0.0.1 - - [14/Jun/2025 23:54:03] "GET / HTTP/1.0" 200 -
+127.0.0.1 - - [14/Jun/2025 23:54:27] "POST / HTTP/1.0" 405 -
+127.0.0.1 - - [14/Jun/2025 23:54:27] "POST / HTTP/1.0" 405 -
+127.0.0.1 - - [14/Jun/2025 23:54:29] "POST / HTTP/1.0" 405 -
+127.0.0.1 - - [14/Jun/2025 23:54:31] "GET / HTTP/1.0" 200 -
+127.0.0.1 - - [14/Jun/2025 23:54:31] "GET /favicon.ico HTTP/1.0" 404 -
+127.0.0.1 - - [14/Jun/2025 23:54:33] "POST / HTTP/1.0" 405 -
+127.0.0.1 - - [14/Jun/2025 23:54:41] "POST / HTTP/1.0" 405 -
+127.0.0.1 - - [14/Jun/2025 23:54:57] "POST / HTTP/1.0" 405 -
+127.0.0.1 - - [14/Jun/2025 23:55:29] "POST / HTTP/1.0" 405 -
+127.0.0.1 - - [14/Jun/2025 23:56:01] "GET / HTTP/1.0" 200 -
+127.0.0.1 - - [14/Jun/2025 23:56:33] "POST / HTTP/1.0" 405 -
+127.0.0.1 - - [14/Jun/2025 23:58:10] "POST / HTTP/1.0" 405 -
+127.0.0.1 - - [14/Jun/2025 23:58:17] "HEAD / HTTP/1.0" 200 -
+127.0.0.1 - - [14/Jun/2025 23:58:17] "HEAD / HTTP/1.0" 200 -
+ * Serving Flask app 'TEN_elite_commands_FULL'
+ * Debug mode: off
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://134.199.201.115:5000
+Press CTRL+C to quit
+127.0.0.1 - - [15/Jun/2025 13:09:14] "POST /status HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:09:18] "GET / HTTP/1.0" 405 -
+127.0.0.1 - - [15/Jun/2025 13:09:34] "GET / HTTP/1.0" 405 -
+127.0.0.1 - - [15/Jun/2025 13:10:20] "POST /status HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:11:33] "POST /status HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:11:37] "GET / HTTP/1.0" 405 -
+127.0.0.1 - - [15/Jun/2025 13:13:15] "POST /status HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:14:30] "POST /status HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:15:00] "POST / HTTP/1.0" 200 -
+127.0.0.1 - - [15/Jun/2025 13:15:00] "POST / HTTP/1.0" 200 -
+127.0.0.1 - - [15/Jun/2025 13:16:54] "POST / HTTP/1.0" 200 -
+127.0.0.1 - - [15/Jun/2025 13:17:00] "POST / HTTP/1.0" 200 -
+127.0.0.1 - - [15/Jun/2025 13:22:06] "GET / HTTP/1.0" 405 -
+127.0.0.1 - - [15/Jun/2025 13:22:24] "POST /hello.world?%ADd+allow_url_include%3d1+%ADd+auto_prepend_file%3dphp://input HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:22:24] "GET /vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:22:25] "GET /vendor/phpunit/phpunit/Util/PHP/eval-stdin.php HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:22:26] "GET /vendor/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:22:26] "GET /vendor/phpunit/Util/PHP/eval-stdin.php HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:22:27] "GET /vendor/phpunit/phpunit/LICENSE/eval-stdin.php HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:22:28] "GET /vendor/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:22:28] "GET /phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:22:29] "GET /phpunit/phpunit/Util/PHP/eval-stdin.php HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:22:29] "GET /phpunit/src/Util/PHP/eval-stdin.php HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:22:30] "GET /phpunit/Util/PHP/eval-stdin.php HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:22:31] "GET /lib/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:22:31] "GET /lib/phpunit/phpunit/Util/PHP/eval-stdin.php HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:22:31] "GET /lib/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:22:32] "GET /lib/phpunit/Util/PHP/eval-stdin.php HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:22:32] "GET /lib/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:22:33] "GET /laravel/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:22:34] "GET /www/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:22:34] "GET /ws/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:22:35] "GET /yii/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:22:35] "GET /zend/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:22:36] "GET /ws/ec/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:22:36] "GET /V2/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:22:37] "GET /tests/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:22:38] "GET /test/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:22:39] "GET /testing/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:22:40] "GET /api/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:22:40] "GET /demo/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:22:41] "GET /cms/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:22:42] "GET /crm/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:22:42] "GET /admin/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:22:43] "GET /backup/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:22:43] "GET /blog/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:22:44] "GET /workspace/drupal/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:22:44] "GET /panel/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:22:45] "GET /public/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:22:46] "GET /apps/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:22:46] "GET /app/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:22:47] "GET /index.php?s=/index/\\think\\app/invokefunction&function=call_user_func_array&vars[0]=md5&vars[1][]=Hello HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:22:47] "GET /public/index.php?s=/index/\\think\\app/invokefunction&function=call_user_func_array&vars[0]=md5&vars[1][]=Hello HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:22:48] "GET /index.php?lang=../../../../../../../../usr/local/lib/php/pearcmd&+config-create+/&/<?echo(md5("hi"));?>+/tmp/index1.php HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:22:48] "GET /index.php?lang=../../../../../../../../tmp/index1 HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:22:49] "GET /containers/json HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:25:58] "POST / HTTP/1.0" 200 -
+127.0.0.1 - - [15/Jun/2025 13:26:04] "POST / HTTP/1.0" 200 -
+127.0.0.1 - - [15/Jun/2025 13:26:11] "POST / HTTP/1.0" 200 -
+127.0.0.1 - - [15/Jun/2025 13:27:40] "GET /status HTTP/1.1" 404 -
+ * Serving Flask app 'TEN_elite_commands_FULL'
+ * Debug mode: off
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://134.199.201.115:5000
+Press CTRL+C to quit
+ * Serving Flask app 'TEN_elite_commands_FULL'
+ * Debug mode: off
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://134.199.201.115:5000
+Press CTRL+C to quit
+127.0.0.1 - - [15/Jun/2025 13:35:11] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:35:12] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:35:14] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:35:18] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:35:26] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:35:42] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:36:14] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:36:53] "POST /status HTTP/1.1" 200 -
+127.0.0.1 - - [15/Jun/2025 13:37:18] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:37:33] "POST /status HTTP/1.0" 200 -
+127.0.0.1 - - [15/Jun/2025 13:38:52] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:39:53] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:41:30] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:41:42] "GET /developmentserver/metadatauploader HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:43:30] "POST / HTTP/1.0" 404 -
+ * Serving Flask app 'TEN_elite_commands_FULL'
+ * Debug mode: off
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://134.199.201.115:5000
+Press CTRL+C to quit
+127.0.0.1 - - [15/Jun/2025 13:45:06] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:47:06] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:48:30] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:49:54] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:51:06] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:53:07] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:54:09] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:55:20] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:56:38] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:57:19] "GET / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:57:22] "GET / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:57:25] "GET / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:57:28] "GET /favicon.ico HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:57:32] "GET /favicon.ico HTTP/1.0" 404 -
+ * Serving Flask app 'TEN_elite_commands_FULL'
+ * Debug mode: off
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://134.199.201.115:5000
+Press CTRL+C to quit
+127.0.0.1 - - [15/Jun/2025 13:58:12] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 13:58:33] "POST /status HTTP/1.1" 200 -
+127.0.0.1 - - [15/Jun/2025 13:59:45] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:01:05] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:02:54] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:03:13] "GET / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:04:01] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:05:33] "POST / HTTP/1.0" 404 -
+ * Serving Flask app 'TEN_elite_commands_FULL'
+ * Debug mode: off
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://134.199.201.115:5000
+Press CTRL+C to quit
+127.0.0.1 - - [15/Jun/2025 14:07:13] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:08:26] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:10:01] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:11:25] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:13:18] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:13:47] "GET / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:14:19] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:16:16] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:17:28] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:19:17] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:20:46] "GET / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:20:46] "GET /wp-includes/wlwmanifest.xml HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:20:46] "GET /xmlrpc.php?rsd HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:20:47] "GET / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:20:47] "GET /blog/wp-includes/wlwmanifest.xml HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:20:47] "GET /web/wp-includes/wlwmanifest.xml HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:20:47] "GET /wordpress/wp-includes/wlwmanifest.xml HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:20:48] "GET /website/wp-includes/wlwmanifest.xml HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:20:48] "GET /wp/wp-includes/wlwmanifest.xml HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:20:48] "GET /news/wp-includes/wlwmanifest.xml HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:20:48] "GET /2018/wp-includes/wlwmanifest.xml HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:20:49] "GET /2019/wp-includes/wlwmanifest.xml HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:20:49] "GET /shop/wp-includes/wlwmanifest.xml HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:20:49] "GET /wp1/wp-includes/wlwmanifest.xml HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:20:49] "GET /test/wp-includes/wlwmanifest.xml HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:20:50] "GET /media/wp-includes/wlwmanifest.xml HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:20:50] "GET /wp2/wp-includes/wlwmanifest.xml HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:20:50] "GET /site/wp-includes/wlwmanifest.xml HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:20:50] "GET /cms/wp-includes/wlwmanifest.xml HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:20:51] "GET /sito/wp-includes/wlwmanifest.xml HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:21:01] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:21:18] "GET / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:21:18] "GET /wp-includes/wlwmanifest.xml HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:21:18] "GET /xmlrpc.php?rsd HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:21:19] "GET / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:21:19] "GET /blog/wp-includes/wlwmanifest.xml HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:21:19] "GET /web/wp-includes/wlwmanifest.xml HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:21:19] "GET /wordpress/wp-includes/wlwmanifest.xml HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:21:20] "GET /website/wp-includes/wlwmanifest.xml HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:21:20] "GET /wp/wp-includes/wlwmanifest.xml HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:21:20] "GET /news/wp-includes/wlwmanifest.xml HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:21:20] "GET /2018/wp-includes/wlwmanifest.xml HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:21:20] "GET /2019/wp-includes/wlwmanifest.xml HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:21:21] "GET /shop/wp-includes/wlwmanifest.xml HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:21:21] "GET /wp1/wp-includes/wlwmanifest.xml HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:21:21] "GET /test/wp-includes/wlwmanifest.xml HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:21:21] "GET /media/wp-includes/wlwmanifest.xml HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:21:22] "GET /wp2/wp-includes/wlwmanifest.xml HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:21:22] "GET /site/wp-includes/wlwmanifest.xml HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:21:22] "GET /cms/wp-includes/wlwmanifest.xml HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:21:22] "GET /sito/wp-includes/wlwmanifest.xml HTTP/1.0" 404 -
+ * Serving Flask app 'TEN_elite_commands_FULL'
+ * Debug mode: off
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://134.199.201.115:5000
+Press CTRL+C to quit
+127.0.0.1 - - [15/Jun/2025 14:21:46] "PROPFIND / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:22:38] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:24:10] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:26:10] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:27:36] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:28:56] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:30:43] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:31:44] "HEAD / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:31:51] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:33:27] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:35:15] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:36:25] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:38:20] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:40:03] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:41:53] "POST / HTTP/1.0" 404 -
+ * Serving Flask app 'TEN_elite_commands_FULL'
+ * Debug mode: off
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://134.199.201.115:5000
+Press CTRL+C to quit
+127.0.0.1 - - [15/Jun/2025 14:43:34] "POST / HTTP/1.0" 404 -
+ * Serving Flask app 'TEN_elite_commands_FULL'
+ * Debug mode: off
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://134.199.201.115:5000
+Press CTRL+C to quit
+127.0.0.1 - - [15/Jun/2025 14:44:39] "POST / HTTP/1.0" 404 -
+ * Serving Flask app 'TEN_elite_commands_FULL'
+ * Debug mode: off
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://134.199.201.115:5000
+Press CTRL+C to quit
+127.0.0.1 - - [15/Jun/2025 14:45:56] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:46:29] "GET / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:46:31] "POST /status HTTP/1.1" 200 -
+127.0.0.1 - - [15/Jun/2025 14:47:55] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:49:04] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:50:15] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:51:55] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:52:57] "GET / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:53:24] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:54:13] "GET /.git/config HTTP/1.0" 404 -
+ * Serving Flask app 'TEN_elite_commands_FULL'
+ * Debug mode: off
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://134.199.201.115:5000
+Press CTRL+C to quit
+127.0.0.1 - - [15/Jun/2025 14:55:15] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:56:24] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:58:02] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 14:59:57] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 15:00:56] "GET /.git/config HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 15:01:02] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 15:02:19] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 15:03:04] "GET / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 15:03:32] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 15:05:27] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 15:06:51] "POST / HTTP/1.0" 404 -
+ * Serving Flask app 'TEN_elite_commands_FULL'
+ * Debug mode: off
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://134.199.201.115:5000
+Press CTRL+C to quit
+127.0.0.1 - - [15/Jun/2025 15:08:12] "POST /status HTTP/1.1" 200 -
+127.0.0.1 - - [15/Jun/2025 15:08:15] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 15:08:44] "POST /status HTTP/1.1" 200 -
+127.0.0.1 - - [15/Jun/2025 15:09:16] "POST /status HTTP/1.1" 200 -
+127.0.0.1 - - [15/Jun/2025 15:09:47] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 15:11:07] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 15:12:57] "POST / HTTP/1.0" 404 -
+ * Serving Flask app 'TEN_elite_commands_FULL'
+ * Debug mode: off
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://134.199.201.115:5000
+Press CTRL+C to quit
+127.0.0.1 - - [15/Jun/2025 15:13:30] "POST /status HTTP/1.1" 200 -
+127.0.0.1 - - [15/Jun/2025 15:13:36] "GET / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 15:14:15] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 15:15:28] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 15:16:38] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 15:18:27] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 15:20:19] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 15:21:27] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 15:22:53] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 15:24:01] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 15:25:39] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 15:27:07] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 15:28:15] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 15:29:15] "POST / HTTP/1.0" 404 -
+ * Serving Flask app 'BITTEN_elite_commands_FULL'
+ * Debug mode: off
+Address already in use
+Port 5000 is in use by another program. Either identify and stop that program, or start the server with a different port.
+127.0.0.1 - - [15/Jun/2025 15:31:13] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 15:32:31] "POST / HTTP/1.0" 404 -
+127.0.0.1 - - [15/Jun/2025 15:34:24] "POST / HTTP/1.0" 404 -
+python3: can't open file '/root/HydraX-v2/TEN_elite_commands_FULL.py': [Errno 2] No such file or directory
+python3: can't open file '/root/HydraX-v2/TEN_elite_commands_FULL.py': [Errno 2] No such file or directory

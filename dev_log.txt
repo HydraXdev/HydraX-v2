@@ -1,0 +1,11 @@
+[2025-06-15T22:19:24.212841Z] / â†’ OK {"chat_id":-1002679555530,"text":"/status"}
+[2025-06-15T22:19:24.815373Z] / â†’ OK {"chat_id":-1002679555530,"text":"/start"}
+[2025-06-15T22:19:29.533890Z] / â†’ OK {"chat_id":-1002679555530,"text":"/status"}
+[2025-06-15T22:20:18.892515Z] / â†’ OK {"chat_id":-1002679555530,"text":"/start"}
+[2025-06-15T22:20:23.536068Z] / â†’ OK {"chat_id":-1002679555530,"text":"/demo"}
+[2025-06-15T22:20:30.064819Z] / â†’ OK {"chat_id":-1002679555530,"text":"/mode"}
+[2025-06-15T22:31:37.263801Z] / â†’ OK {"chat_id":-1002679555530,"text":"Received Clearly: /Mode"}
+[2025-06-15T22:31:46.926878Z] / â†’ OK {"chat_id":-1002679555530,"text":"HydraX: All systems fully operational."}
+[2025-06-15T22:31:59.189489Z] / â†’ OK {"chat_id":-1002679555530,"text":"HydraX: Commander, your system is live and ready."}
+[2025-06-15T22:38:50.165402Z] / â†’ OK {"chat_id":-1002679555530,"text":"HydraX: Current tactical mode: FULL AUTO."}
+[2025-06-15T23:28:02.705486Z] / â†’ ERROR {}

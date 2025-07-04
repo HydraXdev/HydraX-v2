@@ -33,6 +33,10 @@ class SignalDisplay:
             range(95, 101): '🔥🔥🔥🔥🔥'
         }
     
+    def get_bitten_header(self) -> str:
+        """Get B.I.T.T.E.N. branded header for signals"""
+        return "🤖 **B.I.T.T.E.N.** | Bot-Integrated Tactical Trading Engine"
+    
     def create_arcade_signal_card(self, signal: Dict) -> str:
         """Create arcade signal display card"""
         

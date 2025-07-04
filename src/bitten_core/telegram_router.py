@@ -196,9 +196,13 @@ class TelegramRouter:
         if not self.rank_access.get_user_info(user_id):
             self.rank_access.add_user(user_id, username)
         
-        welcome_msg = f"""🤖 **BITTEN Trading Operations Center**
+        welcome_msg = f"""🤖 **B.I.T.T.E.N. Trading Operations Center**
+
+**Bot-Integrated Tactical Trading Engine / Network**
 
 Welcome {username}! Your access level: **{user_rank.name}**
+
+*"You've been B.I.T.T.E.N. — now prove you belong."*
 
 🎯 **Quick Commands:**
 • `/status` - System status
@@ -230,7 +234,8 @@ Type `/help` for complete command list."""
             return CommandResult(True, msg)
         
         # Show available categories
-        msg = f"🤖 **BITTEN Command Categories** (Rank: {user_rank.name})\n\n"
+        msg = f"🤖 **B.I.T.T.E.N. Command Categories** (Rank: {user_rank.name})\n"
+        msg += "*The Engine is watching. The Network is evolving.*\n\n"
         
         for category, commands in self.command_categories.items():
             available_commands = []

@@ -15,6 +15,7 @@ import sys
 from .rank_access import RankAccess, UserRank
 from .telegram_router import TelegramRouter, TelegramUpdate, CommandResult
 from .fire_router import FireRouter, TradeRequest, TradeDirection, TradeExecutionResult
+from .bot_control_integration import create_bot_control_integration, BotControlIntegration, BotMessageMiddleware
 
 # Import existing HydraX modules for integration
 sys.path.append('/root/HydraX-v2/src')
@@ -78,6 +79,13 @@ class BittenCore:
         self.rank_access = RankAccess()
         self.telegram_router = TelegramRouter(bitten_core=self)
         self.fire_router = FireRouter(bridge_url=self.config.get('bridge_url'))
+        
+        # Initialize bot control integration
+        self.bot_control_integration = create_bot_control_integration(
+            telegram_router=self.telegram_router,
+            bitten_core=self
+        )
+        self.bot_message_middleware = BotMessageMiddleware(self.bot_control_integration)
         
         # User session management
         self.user_sessions: Dict[int, UserSession] = {}
@@ -554,6 +562,8 @@ class BittenCore:
 • Active Positions: {self.fire_router.get_execution_stats()['active_positions']}
 • Success Rate: {self.fire_router.get_execution_stats()['success_rate']}
 
+{self.bot_control_integration.get_bot_status_for_display(str(user_id))}
+
 💡 All systems operational and ready for trading"""
             
             return CommandResult(True, status_msg)
@@ -653,6 +663,23 @@ class BittenCore:
         print(f"[BITTEN_CORE ERROR] {datetime.now().isoformat()}: {message}")
         self.system_health.error_count += 1
         self.system_health.last_error = message
+    
+    def process_outgoing_message(self, user_id: int, message: Dict) -> Optional[Dict]:
+        """Process outgoing message through bot control middleware"""
+        return self.bot_message_middleware.process_outgoing_message(str(user_id), message)
+    
+    def send_bot_message(self, user_id: int, bot_name: str, content: str, message_type: str = 'bot_message') -> Optional[str]:
+        """Send bot message if allowed by user preferences"""
+        message = {
+            'type': message_type,
+            'bot_name': bot_name,
+            'content': content
+        }
+        
+        processed = self.process_outgoing_message(user_id, message)
+        if processed:
+            return processed.get('content')
+        return None
     
     def get_core_stats(self) -> Dict:
         """Get core system statistics"""

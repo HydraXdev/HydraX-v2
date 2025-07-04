@@ -38,12 +38,36 @@ class SignalDisplay:
         return "🤖 **B.I.T.T.E.N.** | Bot-Integrated Tactical Trading Engine"
     
     def create_arcade_signal_card(self, signal: Dict) -> str:
-        """Create arcade signal display card"""
+        """Create tactical arcade signal display card - SITREP style"""
         
-        # Style 1: Compact Card
+        # Calculate expiry countdown
+        time_remaining = signal.get('time_remaining', 600)  # seconds
+        expiry_bar = self._create_expiry_bar(time_remaining)
+        active_traders = signal.get('active_traders', 0)
+        
+        # Style 1: Tactical SITREP
+        sitrep = f"""
+⚡ **TACTICAL SITREP** - ARCADE SCALP ⚡
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎮 **OP: {signal['display_type']}**
+📍 **AO:** {signal['symbol']} | **VECTOR:** {signal['direction'].upper()}
+🎯 **ENTRY:** {signal['entry_price']:.5f}
+💥 **OBJECTIVE:** +{signal['expected_pips']} PIPS
+⚔️ **RISK:** {signal.get('risk_pips', 3)} PIPS
+
+📊 **INTEL CONFIDENCE:** {signal['tcs_score']}%
+{self._get_tcs_visual(signal['tcs_score'])}
+
+⏱️ **OP WINDOW:** {expiry_bar}
+👥 **SQUAD ENGAGED:** {active_traders} OPERATORS
+
+[🔫 **ENGAGE TARGET**] [📋 **VIEW INTEL**]
+"""
+        
+        # Style 2: Compact Tactical Card
         compact = f"""
 ╔═══════════════════════════╗
-║ {signal['visual_emoji']} {signal['display_type']:<20}║
+║ 🎮 ARCADE SCALP DETECTED  ║
 ║ {signal['symbol']} │ {signal['direction'].upper():>4} │ TCS: {signal['tcs_score']}% ║
 ║ Entry: {signal['entry_price']:.5f}          ║
 ║ Target: +{signal['expected_pips']} pips          ║
@@ -88,13 +112,42 @@ class SignalDisplay:
 │     Press [🔫] to FIRE      │
 ╰─────────────────────────────╯"""
         
-        # Return detailed style for now
-        return detailed
+        # Return the new SITREP style
+        return sitrep
     
     def create_sniper_signal_card(self, signal: Dict) -> str:
-        """Create mysterious sniper signal card"""
+        """Create elite sniper signal card - Military briefing style"""
         
-        # Style 1: Classified
+        # Calculate expiry countdown
+        time_remaining = signal.get('time_remaining', 600)  # seconds
+        expiry_bar = self._create_expiry_bar(time_remaining)
+        active_snipers = signal.get('active_traders', 0)
+        avg_tcs = signal.get('squad_avg_tcs', 85)
+        
+        # Style 1: Elite Sniper Briefing
+        sniper_brief = f"""
+🎯 **[CLASSIFIED]** SNIPER ENGAGEMENT 🎯
+══════════════════════════════════════
+
+**MISSION BRIEF:**
+• **TARGET:** {signal['symbol']} - {signal['direction'].upper()}
+• **ENTRY VECTOR:** {signal['entry_price']:.5f}
+• **OBJECTIVE:** +{signal['expected_pips']} PIPS CONFIRMED
+• **COLLATERAL:** {signal.get('risk_pips', 5)} PIPS MAX
+• **R:R RATIO:** 1:{signal['expected_pips'] // signal.get('risk_pips', 5)}
+
+**TACTICAL INTEL:**
+• **CONFIDENCE:** {signal['tcs_score']}% [ELITE]
+• **OP WINDOW:** {expiry_bar}
+• **SNIPERS ENGAGED:** {active_snipers} 🎯
+• **SQUAD AVG TCS:** {avg_tcs}%
+
+⚡ **FANG+ CLEARANCE REQUIRED** ⚡
+
+[🎯 **TAKE THE SHOT**] [🔍 **RECON**]
+"""
+        
+        # Style 2: Classified
         classified = f"""
 ╔═══════════════════════════════╗
 ║  🎯 SNIPER SHOT DETECTED! 🎯  ║
@@ -139,7 +192,7 @@ class SignalDisplay:
 ╚════════════════════════════╝
     [🎯 INITIATE SEQUENCE]"""
         
-        return classified
+        return sniper_brief
     
     def create_midnight_hammer_card(self) -> str:
         """Create epic Midnight Hammer event card"""
@@ -190,54 +243,141 @@ class SignalDisplay:
 ╚═══════════════════════════════╝"""
     
     def create_position_summary_card(self, positions: List[Dict]) -> str:
-        """Create active positions summary"""
+        """Create tactical active positions summary"""
         
         if not positions:
             return """
-╔═══════════════════════════════╗
-║ 📊 NO ACTIVE POSITIONS        ║
-║ ━━━━━━━━━━━━━━━━━━━━━━━━━━━ ║
-║                               ║
-║   Ready to hunt! 🎯           ║
-║   Shots available: 6/6        ║
-║                               ║
-╚═══════════════════════════════╝"""
+⚔️ **BATTLEFIELD STATUS** ⚔️
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📊 **NO ACTIVE POSITIONS**
+
+• All clear on the battlefield
+• Ammunition ready: 6/6 shots
+• Awaiting next engagement
+
+[🎯 **FIND TARGET**]
+"""
         
         position_lines = []
         total_pnl = 0
         
-        for pos in positions[:3]:  # Show max 3
+        for pos in positions[:5]:  # Show max 5
             pnl = pos.get('pnl', 0)
             total_pnl += pnl
             emoji = "🟢" if pnl > 0 else "🔴" if pnl < 0 else "⚪"
+            direction_arrow = "↗️" if pos['direction'] == 'buy' else "↘️"
+            
+            # Calculate time in position
+            time_in = pos.get('time_in_minutes', 0)
+            time_str = f"{time_in}m" if time_in < 60 else f"{time_in//60}h{time_in%60}m"
+            
             position_lines.append(
-                f"║ {emoji} {pos['symbol']} {pos['direction'].upper()} │ {pnl:+.0f}p ║"
+                f"{emoji} **{pos['symbol']}** {direction_arrow} {pnl:+.0f}p • {time_str}"
             )
         
-        return f"""
-╔═══════════════════════════════╗
-║ 📊 ACTIVE POSITIONS ({len(positions)})       ║
-║ ━━━━━━━━━━━━━━━━━━━━━━━━━━━ ║
-{''.join(position_lines)}
-║ ─────────────────────────── ║
-║ Total P/L: {total_pnl:+.0f} pips         ║
-╚═══════════════════════════════╝"""
-    
-    def create_daily_summary_card(self, stats: Dict) -> str:
-        """Create daily performance summary"""
+        # More positions indicator
+        if len(positions) > 5:
+            position_lines.append(f"   ...and {len(positions)-5} more positions")
+        
+        # Status emoji based on total P/L
+        status_emoji = "🟢" if total_pnl > 0 else "🔴" if total_pnl < 0 else "⚪"
         
         return f"""
-╔═══════════════════════════════════╗
-║ 📈 DAILY BATTLE REPORT           ║
-║ ═════════════════════════════════ ║
-║ Shots Fired: {stats.get('trades', 0)}/6              ║
-║ Direct Hits: {stats.get('wins', 0)} ({stats.get('win_rate', 0)}%)          ║
-║ Total Pips: {stats.get('pips', 0):+.0f}                 ║
-║ XP Earned: +{stats.get('xp', 0)}                 ║
-║                                   ║
-║ Rank Progress: ████████░░ 82%     ║
-║ Next Badge: 🥈 WARRIOR            ║
-╚═══════════════════════════════════╝"""
+⚔️ **BATTLEFIELD STATUS** ⚔️
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📊 **ACTIVE POSITIONS: {len(positions)}**
+
+{chr(10).join(position_lines)}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+{status_emoji} **TOTAL P/L: {total_pnl:+.0f} PIPS**
+
+[📊 **DETAILS**] [✂️ **MANAGE**]
+"""
+    
+    def create_daily_summary_card(self, stats: Dict) -> str:
+        """Create tactical daily battle report"""
+        
+        # Calculate performance metrics
+        shots_fired = stats.get('trades', 0)
+        shots_remaining = 6 - shots_fired
+        direct_hits = stats.get('wins', 0)
+        win_rate = stats.get('win_rate', 0)
+        total_pips = stats.get('pips', 0)
+        xp_earned = stats.get('xp', 0)
+        
+        # Rank progress visualization
+        rank_progress = stats.get('rank_progress', 82)
+        progress_bar = self._create_progress_bar(rank_progress)
+        
+        # Performance rating
+        if win_rate >= 80:
+            performance = "🔥 ELITE PERFORMANCE"
+        elif win_rate >= 65:
+            performance = "⚡ SOLID EXECUTION"
+        elif win_rate >= 50:
+            performance = "📊 STANDARD OPS"
+        else:
+            performance = "⚠️ NEEDS IMPROVEMENT"
+        
+        # Badge progress
+        current_badge = stats.get('current_badge', '🥉 RECRUIT')
+        next_badge = stats.get('next_badge', '🥈 WARRIOR')
+        xp_to_next = stats.get('xp_to_next', 150)
+        
+        return f"""
+🎖️ **DAILY BATTLE REPORT** 🎖️
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📊 **COMBAT STATISTICS**
+• **Shots Fired:** {shots_fired}/6 ({shots_remaining} remaining)
+• **Direct Hits:** {direct_hits} ({win_rate}% accuracy)
+• **Total Pips:** {total_pips:+.0f}
+• **XP Earned:** +{xp_earned}
+
+🎯 **PERFORMANCE RATING**
+{performance}
+
+🏅 **RANK PROGRESSION**
+• **Current:** {current_badge}
+• **Progress:** {progress_bar} {rank_progress}%
+• **Next:** {next_badge} (need {xp_to_next} XP)
+
+📈 **DAILY OBJECTIVES**
+{self._get_daily_objectives(stats)}
+
+[📊 **FULL STATS**] [🏆 **LEADERBOARD**]
+"""
+    
+    def _create_progress_bar(self, percentage: int) -> str:
+        """Create visual progress bar"""
+        filled = int(percentage / 10)
+        empty = 10 - filled
+        return "█" * filled + "░" * empty
+    
+    def _get_daily_objectives(self, stats: Dict) -> str:
+        """Get daily mission objectives"""
+        objectives = []
+        
+        # Win rate objective
+        if stats.get('win_rate', 0) >= 70:
+            objectives.append("✅ Maintain 70%+ accuracy")
+        else:
+            objectives.append("⬜ Achieve 70%+ accuracy")
+        
+        # Trading volume objective
+        if stats.get('trades', 0) >= 4:
+            objectives.append("✅ Execute 4+ trades")
+        else:
+            objectives.append("⬜ Execute 4+ trades")
+        
+        # Profit objective
+        if stats.get('pips', 0) >= 50:
+            objectives.append("✅ Capture 50+ pips")
+        else:
+            objectives.append("⬜ Capture 50+ pips")
+        
+        return "\n".join(f"• {obj}" for obj in objectives)
     
     def _get_tcs_visual(self, tcs: int) -> str:
         """Get visual representation of TCS"""
@@ -270,6 +410,88 @@ class SignalDisplay:
             return "⚡⚡···"
         else:
             return "⚡····"
+    
+    def _create_expiry_bar(self, seconds_remaining: int) -> str:
+        """Create visual countdown bar for signal expiry"""
+        if seconds_remaining <= 0:
+            return "⬛⬛⬛⬛⬛ EXPIRED"
+        
+        total_seconds = 600  # 10 minutes max
+        percent = (seconds_remaining / total_seconds) * 100
+        
+        if percent > 80:
+            return "🟩🟩🟩🟩🟩 HOT"
+        elif percent > 60:
+            return "🟩🟩🟩🟩⬜ ACTIVE"
+        elif percent > 40:
+            return "🟨🟨🟨⬜⬜ FADING"
+        elif percent > 20:
+            return "🟧🟧⬜⬜⬜ CLOSING"
+        else:
+            return "🟥⬜⬜⬜⬜ CRITICAL"
+    
+    def create_tactical_signal_variants(self, signal: Dict) -> Dict[str, str]:
+        """Create multiple tactical display variants for A/B testing"""
+        
+        # Variant 1: Combat Operations Brief
+        combat_ops = f"""
+⚔️ **COMBAT OPS BRIEF** ⚔️
+━━━━━━━━━━━━━━━━━━━━━━━
+**CALLSIGN:** {signal.get('callsign', 'ALPHA-1')}
+**TARGET:** {signal['symbol']} | {signal['direction'].upper()}
+**ENTRY POINT:** {signal['entry_price']:.5f}
+**EXTRACTION:** +{signal['expected_pips']} PIPS
+
+**RISK ASSESSMENT:**
+• Exposure: {signal.get('risk_pips', 3)} pips
+• Reward Ratio: 1:{signal['expected_pips'] // signal.get('risk_pips', 3)}
+• Intel Confidence: {signal['tcs_score']}%
+
+**SQUAD STATUS:**
+• {signal.get('active_traders', 0)} operators engaged
+• Average TCS: {signal.get('squad_avg_tcs', 70)}%
+
+{self._create_expiry_bar(signal.get('time_remaining', 600))}
+
+[🎯 **EXECUTE**] [📊 **INTEL**]
+"""
+        
+        # Variant 2: Strike Team Alert
+        strike_team = f"""
+🚨 **STRIKE TEAM ALERT** 🚨
+{'🎯' if signal.get('type') == 'sniper' else '🎮'} {signal['display_type']}
+═══════════════════════════
+📍 **AO:** {signal['symbol']}
+🎯 **Vector:** {signal['direction'].upper()} @ {signal['entry_price']:.5f}
+💥 **Target:** +{signal['expected_pips']} pips ({signal.get('risk_pips', 3)} risk)
+⚡ **TCS:** {self._get_tcs_visual(signal['tcs_score'])} {signal['tcs_score']}%
+
+👥 **{signal.get('active_traders', 0)}** friendlies in position
+⏱️ **Window:** {self._create_expiry_bar(signal.get('time_remaining', 600))}
+
+[🔫 **ENGAGE**]
+"""
+        
+        # Variant 3: Tactical HUD
+        tactical_hud = f"""
+┌─ TACTICAL HUD ─────────────┐
+│ {'🎯 SNIPER' if signal.get('type') == 'sniper' else '🎮 ARCADE'} │ {signal['symbol']} │ {signal['direction'].upper()}
+├────────────────────────────┤
+│ ENTRY: {signal['entry_price']:.5f}
+│ TGT: +{signal['expected_pips']}p │ RISK: {signal.get('risk_pips', 3)}p
+│ R:R: 1:{signal['expected_pips'] // signal.get('risk_pips', 3)} │ TCS: {signal['tcs_score']}%
+├────────────────────────────┤
+│ SQUAD: {signal.get('active_traders', 0)} │ AVG: {signal.get('squad_avg_tcs', 70)}%
+│ {self._create_expiry_bar(signal.get('time_remaining', 600))}
+└────────────────────────────┘
+  [FIRE] [ABORT] [INTEL]
+"""
+        
+        return {
+            'combat_ops': combat_ops,
+            'strike_team': strike_team,
+            'tactical_hud': tactical_hud
+        }
 
 # Test signal displays
 if __name__ == "__main__":

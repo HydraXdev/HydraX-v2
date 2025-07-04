@@ -14,6 +14,9 @@ from datetime import datetime, timedelta
 import sys
 sys.path.append('/root/HydraX-v2/src')
 
+# Import fire mode types
+from .fire_modes import FireModeValidator, TIER_CONFIGS, TierLevel, FireMode
+
 class TradeDirection(Enum):
     BUY = "buy"
     SELL = "sell"
@@ -36,6 +39,7 @@ class TradeRequest:
     comment: str = "BITTEN Auto"
     tcs_score: int = 0
     risk_level: str = "medium"
+    fire_mode: FireMode = FireMode.SINGLE_SHOT
 
 @dataclass
 class TradeExecutionResult:
@@ -114,6 +118,10 @@ class FireRouter:
         self.daily_trade_count = 0
         self.last_reset_date = datetime.now().date()
         
+        # TCS thresholds from THE LAW
+        self.min_tcs_score = 70  # Base minimum (Nibbler)
+        self.high_confidence_threshold = 85  # High confidence trades
+        
         # Import fire modes for tier-based rules
         from .fire_modes import FireModeValidator, TIER_CONFIGS, TierLevel, FireMode
         self.fire_validator = FireModeValidator()
@@ -121,11 +129,77 @@ class FireRouter:
         # User tier mapping (would come from database in production)
         self.user_tiers = {}  # user_id -> TierLevel
         
+        # Bot personalities for UI responses
+        self.bot_responses = {
+            'drillbot': {
+                'pre_trade': "SCANNING TARGET. MAINTAIN DISCIPLINE.",
+                'win': "ACCEPTABLE. FORGET IT. NEXT TARGET.",
+                'loss': "SLOPPY. BUT YOU FOLLOWED PROTOCOL. IMPROVE.",
+                'panic': "WEAKNESS DETECTED. CONTROL YOUR EMOTIONS."
+            },
+            'medicbot': {
+                'pre_trade': "Vitals stable. You're ready for this.",
+                'win': "Dopamine spike controlled. Well managed.",
+                'loss': "You're bleeding, but you're not broken. Breathe. Analyze. Heal.",
+                'panic': "Cortisol spike detected. Let's process this properly."
+            },
+            'bit': {
+                'calm': "*calm purring*",
+                'alert': "*ears perked, watching intensely*",
+                'warning': "*low growl, blocking UI elements*",
+                'comfort': "*comforting nuzzle*"
+            }
+        }
+        
     def execute_trade(self, trade_request: TradeRequest) -> TradeExecutionResult:
         """Execute trade with comprehensive validation and filtering"""
         try:
             # Reset daily counters if new day
             self._reset_daily_counters()
+            
+            # Build user profile for validation
+            user_profile = self._build_user_profile(trade_request.user_id)
+            
+            # Run comprehensive fire mode validation
+            from .fire_mode_validator import validate_fire_request, apply_trade_mutations
+            
+            trade_payload = {
+                'tcs': trade_request.tcs_score,
+                'fire_mode': trade_request.fire_mode.value,
+                'symbol': trade_request.symbol,
+                'risk_percent': 2.0,  # Default 2% risk
+                'volume': trade_request.volume,
+                'signal_type': 'arcade'  # Would come from signal analyzer
+            }
+            
+            fire_validation = validate_fire_request(trade_payload, str(trade_request.user_id), user_profile)
+            
+            if not fire_validation['valid']:
+                # Format bot responses into message
+                bot_msgs = fire_validation.get('bot_responses', {})
+                formatted_msg = f"❌ {fire_validation['reason']}\n\n"
+                if bot_msgs.get('drillbot'):
+                    formatted_msg += f"🤖 **{bot_msgs['drillbot']}**\n"
+                if bot_msgs.get('medicbot'):
+                    formatted_msg += f"💊 {bot_msgs['medicbot']}\n"
+                if bot_msgs.get('bit'):
+                    formatted_msg += f"🐾 {bot_msgs['bit']}"
+                
+                return TradeExecutionResult(
+                    success=False,
+                    message=formatted_msg,
+                    error_code="FIRE_MODE_VALIDATION"
+                )
+            
+            # Apply any mutations from validation
+            if fire_validation.get('mutations'):
+                modified_payload = apply_trade_mutations(trade_payload, fire_validation['mutations'])
+                trade_request.volume = modified_payload.get('volume', trade_request.volume)
+            
+            # Apply execution delay if needed
+            if fire_validation.get('delay'):
+                import time
+                time.sleep(min(fire_validation['delay'], 5))  # Cap at 5 seconds
             
             # Comprehensive trade validation
             validation_result = self._validate_trade(trade_request)
@@ -231,13 +305,18 @@ class FireRouter:
         return {'valid': True, 'reason': 'Validation passed'}
     
     def _apply_probability_filter(self, request: TradeRequest) -> Dict:
-        """Apply high-probability trade filtering"""
+        """Apply high-probability trade filtering with tier-based rules"""
         
-        # TCS score filter
-        if request.tcs_score < self.min_tcs_score:
+        # Get user tier
+        user_tier = self.user_tiers.get(request.user_id, TierLevel.NIBBLER)
+        tier_config = TIER_CONFIGS[user_tier]
+        
+        # Tier-specific TCS requirement
+        min_tcs = tier_config.min_tcs
+        if request.tcs_score < min_tcs:
             return {
                 'passed': False,
-                'reason': f"TCS score too low: {request.tcs_score} < {self.min_tcs_score}"
+                'reason': f"TCS below {tier_config.name} minimum: {request.tcs_score} < {min_tcs}"
             }
         
         # High confidence boost
@@ -246,6 +325,18 @@ class FireRouter:
                 'passed': True,
                 'reason': f"High confidence trade: TCS {request.tcs_score}",
                 'boost': True
+            }
+        
+        # Check fire mode permissions
+        fire_mode = getattr(request, 'fire_mode', FireMode.SINGLE_SHOT)
+        can_fire, reason = self.fire_validator.can_fire(
+            request.user_id, user_tier, fire_mode, request.tcs_score
+        )
+        
+        if not can_fire:
+            return {
+                'passed': False,
+                'reason': reason
             }
         
         # Additional filters can be added here:
@@ -325,8 +416,26 @@ class FireRouter:
         }
     
     def _send_to_bridge(self, request: TradeRequest) -> TradeExecutionResult:
-        """Send trade to MT5 bridge"""
+        """Send trade to MT5 bridge with enhanced tier-based execution"""
         try:
+            # Get user tier for special features
+            user_tier = self.user_tiers.get(request.user_id, TierLevel.NIBBLER)
+            tier_config = TIER_CONFIGS[user_tier]
+            
+            # Apply Stealth Mode for APEX tier
+            if user_tier == TierLevel.APEX and request.fire_mode == FireMode.STEALTH:
+                from .fire_modes import StealthMode
+                stealth = StealthMode()
+                trade_params = {
+                    'volume': request.volume,
+                    'entry_delay': 0
+                }
+                trade_params = stealth.apply_stealth(trade_params)
+                request.volume = trade_params['volume']
+                # Add delay if stealth mode requires it
+                if trade_params.get('entry_delay', 0) > 0:
+                    time.sleep(min(trade_params['entry_delay'], 5))  # Cap at 5 seconds
+            
             # Prepare bridge payload
             payload = {
                 'action': 'trade',
@@ -335,33 +444,72 @@ class FireRouter:
                 'volume': request.volume,
                 'stop_loss': request.stop_loss,
                 'take_profit': request.take_profit,
-                'comment': f"{request.comment} TCS:{request.tcs_score}",
+                'comment': f"{request.comment} TCS:{request.tcs_score} {request.fire_mode.value}",
                 'timestamp': datetime.now().isoformat(),
-                'user_id': request.user_id
+                'user_id': request.user_id,
+                'tier': user_tier.value,
+                'fire_mode': request.fire_mode.value
             }
             
-            # Send to bridge (placeholder for now - will connect to actual MT5 bridge later)
-            # response = requests.post(f"{self.bridge_url}/execute", json=payload, timeout=10)
-            
-            # Simulated response for development
-            simulated_success = request.tcs_score >= 75  # Higher TCS = higher success rate
-            
-            if simulated_success:
-                trade_id = f"T{int(time.time())}{request.user_id}"
-                return TradeExecutionResult(
-                    success=True,
-                    trade_id=trade_id,
-                    execution_price=1.2500,  # Placeholder price
-                    timestamp=datetime.now().isoformat(),
-                    tcs_score=request.tcs_score
-                )
-            else:
-                return TradeExecutionResult(
-                    success=False,
-                    message="❌ Bridge execution failed",
-                    error_code="BRIDGE_ERROR"
+            # Actual bridge connection (when MT5 bridge is ready)
+            if os.getenv('USE_LIVE_BRIDGE', 'false').lower() == 'true':
+                response = requests.post(
+                    f"{self.bridge_url}/execute", 
+                    json=payload, 
+                    timeout=10,
+                    headers={'Authorization': f'Bearer {os.getenv("BRIDGE_API_KEY", "")}'}
                 )
                 
+                if response.status_code == 200:
+                    result = response.json()
+                    return TradeExecutionResult(
+                        success=True,
+                        trade_id=result.get('trade_id'),
+                        execution_price=result.get('price'),
+                        timestamp=result.get('timestamp'),
+                        tcs_score=request.tcs_score
+                    )
+                else:
+                    return TradeExecutionResult(
+                        success=False,
+                        message=f"❌ Bridge error: {response.status_code}",
+                        error_code=f"BRIDGE_{response.status_code}"
+                    )
+            
+            # Development mode - simulated response
+            else:
+                # Simulate execution with tier-based success rates
+                base_success_rate = 0.6
+                tcs_bonus = (request.tcs_score - 70) * 0.01  # 1% per TCS point above 70
+                tier_bonus = {
+                    TierLevel.NIBBLER: 0,
+                    TierLevel.FANG: 0.05,
+                    TierLevel.COMMANDER: 0.1,
+                    TierLevel.APEX: 0.15
+                }.get(user_tier, 0)
+                
+                success_rate = min(base_success_rate + tcs_bonus + tier_bonus, 0.95)
+                simulated_success = request.tcs_score >= 75 or (time.time() % 100) / 100 < success_rate
+                
+                if simulated_success:
+                    trade_id = f"T{int(time.time())}{request.user_id}"
+                    # Record shot for fire mode tracking
+                    self.fire_validator.record_shot(request.user_id, request.fire_mode)
+                    
+                    return TradeExecutionResult(
+                        success=True,
+                        trade_id=trade_id,
+                        execution_price=1.2500,  # Would come from price feed
+                        timestamp=datetime.now().isoformat(),
+                        tcs_score=request.tcs_score
+                    )
+                else:
+                    return TradeExecutionResult(
+                        success=False,
+                        message="❌ Trade rejected by market conditions",
+                        error_code="MARKET_REJECT"
+                    )
+                    
         except requests.exceptions.RequestException as e:
             return TradeExecutionResult(
                 success=False,
@@ -370,14 +518,33 @@ class FireRouter:
             )
     
     def _format_success_message(self, request: TradeRequest, result: TradeExecutionResult) -> str:
-        """Format successful trade message for Telegram"""
+        """Format successful trade message with bot personalities for Telegram"""
         
         sl_tp_info = self._generate_smart_sl_tp(request)
         
+        # Fire mode indicators
+        fire_mode_icon = {
+            FireMode.SINGLE_SHOT: "🔫",
+            FireMode.CHAINGUN: "🔥",
+            FireMode.AUTO_FIRE: "🤖",
+            FireMode.STEALTH: "👻",
+            FireMode.MIDNIGHT_HAMMER: "🔨"
+        }.get(request.fire_mode, "🔫")
+        
         confidence_emoji = "🎯" if request.tcs_score >= 85 else "✅"
+        
+        # Get user tier
+        user_tier = self.user_tiers.get(request.user_id, TierLevel.NIBBLER)
+        tier_badge = {
+            TierLevel.NIBBLER: "🟢",
+            TierLevel.FANG: "🔵",
+            TierLevel.COMMANDER: "🟣",
+            TierLevel.APEX: "🔴"
+        }.get(user_tier, "🟢")
         
         message = f"""{confidence_emoji} **Trade Executed Successfully**
 
+{fire_mode_icon} **Fire Mode:** {request.fire_mode.value.replace('_', ' ').title()}
 📈 **{request.symbol}** {request.direction.value.upper()}
 💰 **Volume:** {request.volume} lots
 🎯 **TCS Score:** {request.tcs_score}/100
@@ -386,8 +553,15 @@ class FireRouter:
 🎯 **Take Profit:** {sl_tp_info['tp_pips']:.0f} pips
 ⚖️ **R:R Ratio:** 1:{sl_tp_info['risk_reward_ratio']:.1f}
 
+{tier_badge} **Tier:** {user_tier.value.upper()}
 🔖 **Trade ID:** {result.trade_id}
-⏰ **Time:** {datetime.now().strftime("%H:%M:%S")}"""
+⏰ **Time:** {datetime.now().strftime("%H:%M:%S")}
+
+━━━━━━━━━━━━━━━━━━━━━━━━
+
+💬 **{self.bot_responses['drillbot']['pre_trade']}**
+
+🐾 {self.bot_responses['bit']['alert']}"""
 
         return message
     
@@ -525,3 +699,37 @@ class FireRouter:
             'daily_trades': self.daily_trade_count,
             'last_execution': self.execution_stats['last_execution']
         }
+    
+    def _build_user_profile(self, user_id: int) -> Dict:
+        """Build user profile for fire mode validation"""
+        # In production, this would fetch from database
+        # For now, build from available data
+        
+        user_tier = self.user_tiers.get(user_id, TierLevel.NIBBLER)
+        
+        # Count user's active trades
+        user_trades = [t for t in self.active_trades.values() if t.get('user_id') == user_id]
+        
+        # Calculate daily stats
+        daily_trades = sum(1 for t in self.trade_history 
+                          if t.get('user_id') == user_id 
+                          and t.get('timestamp', '').startswith(datetime.now().strftime('%Y-%m-%d')))
+        
+        # Build profile
+        profile = {
+            'user_id': user_id,
+            'tier': user_tier.value,
+            'shots_today': daily_trades,
+            'open_positions': len(user_trades),
+            'account_balance': 10000,  # Placeholder - would come from MT5
+            'daily_loss_percent': 0,  # Would calculate from trade history
+            'total_exposure_percent': sum(t.get('volume', 0) * 2 for t in user_trades),  # 2% per lot
+            'last_loss_time': None,  # Would track from trade history
+            'last_shot_time': self.last_shot_time.get(user_id),
+            'xp_penalty_active': False,  # Would come from XP system
+            'recent_win_rate': 0.65,  # Placeholder
+            'active_chaingun_sequence': None,  # Would track chaingun state
+            'active_hammer_event': None  # Would check for network events
+        }
+        
+        return profile

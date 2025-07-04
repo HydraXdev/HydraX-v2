@@ -1,22 +1,3 @@
-# HydraX v2 Dependencies
-# Core Framework
-Flask==2.3.3
-requests==2.31.0
-
-# Telegram Bot
-python-telegram-bot==20.5
-
-# Trading & Analysis
-numpy==1.24.3
-pandas==2.0.3
-
-# Configuration & Environment
-python-dotenv==1.0.0
-
-# Development Dependencies
-pytest==7.4.0
-black==23.7.0
-flake8==6.0.0
-
-# Optional: For future MT5 integration
-# MetaTrader5==5.0.45
+# BITTEN Core System Dependencies
+flask>=2.3.0
+requests>=2.31.0

@@ -1,4 +1,4 @@
-e# bitmode.py
+# bitmode.py
 # Beginner auto-scalp logic module
 
 def run_bitmode():

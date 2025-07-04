@@ -1,4 +1,4 @@
-e# commandermode.py
+# commandermode.py
 # High-risk compounding logic for HydraX Commander Mode
 
 def run_commander():

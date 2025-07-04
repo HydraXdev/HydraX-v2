@@ -1,4 +1,4 @@
-f# bot.py
+# bot.py
 # Telegram interface placeholder for HydraX
 
 def send_telegram_signal(pair, entry, sl, tp, tcs):

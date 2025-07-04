@@ -194,4 +194,67 @@ cython_debug/
 .cursorindexingignore
 # Local environment config
 .env
+.env.*
+!.env.example
+
+# Application logs
+nohup.out
+*.log
+logs/
+*.out
+
+# Development files
+dev_log.txt
+.todo
+TODO.txt
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Trading/Financial data
+trade_logs/
+backtest_results/
+*.csv
+*.dat
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+
+# Security - never commit credentials
+*credentials*
+*secrets*
+*.pem
+*.key
+!*.example
+
+# Archive and legacy code
+archive/
+legacy/
+deprecated/
+
+# Build and dist
+build/
+dist/
+*.egg-info/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+test_results/
+
+# Documentation build
+docs/_build/
+docs/.doctrees/
 

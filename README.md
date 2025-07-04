@@ -1,6 +1,21 @@
-# HydraX v2: Bit by Bit Edition
+# HydraX v2: B.I.T.T.E.N. Edition
 
-HydraX is an AI-powered trading bot system built for beginners, optimized for speed and scale.
+## 🤖 B.I.T.T.E.N. - Bot-Integrated Tactical Trading Engine / Network
+
+> *"You've been B.I.T.T.E.N. — now prove you belong."*
+
+HydraX is an AI-powered trading bot system featuring the B.I.T.T.E.N. framework:
+
+| Letter | Meaning        | Purpose                                                    |
+| ------ | -------------- | ---------------------------------------------------------- |
+| **B**  | **Bot**        | Autonomous execution, always watching                      |
+| **I**  | **Integrated** | Unified system across MT5, Telegram, XP, and fire control  |
+| **T**  | **Tactical**   | High-precision logic, trailing SLs, session filters        |
+| **T**  | **Trading**    | The core function: real trade execution, real results      |
+| **E**  | **Engine**     | The decision core: TOC, Shadow Spotter, XP system          |
+| **N**  | **Network**    | Community layer: XP tiers, observer mode, group engagement |
+
+*The Engine is watching. The Network is evolving.*
 
 ## 🚀 Features
 

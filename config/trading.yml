@@ -1,0 +1,169 @@
+# HydraX v2 Trading Configuration
+
+# Trading Modes
+modes:
+  bit_mode:
+    name: "Bit Mode"
+    description: "Safe auto-scalping with low risk"
+    risk_level: "low"
+    max_risk_percent: 1.0
+    max_concurrent_trades: 2
+    scalping_enabled: true
+    timeframes: ["M1", "M5"]
+    
+  commander_mode:
+    name: "Commander Mode" 
+    description: "High-risk compounding with tactical logic"
+    risk_level: "high"
+    max_risk_percent: 5.0
+    max_concurrent_trades: 5
+    compounding_enabled: true
+    timeframes: ["M5", "M15", "H1"]
+
+# Tactical Logic Modes
+tactical_modes:
+  auto:
+    name: "Auto"
+    description: "Fully automated trading"
+    human_confirmation: false
+    signal_threshold: 80
+    
+  semi:
+    name: "Semi"
+    description: "Semi-automated with confirmations"
+    human_confirmation: true
+    signal_threshold: 70
+    
+  sniper:
+    name: "Sniper" 
+    description: "Precision entry timing"
+    human_confirmation: false
+    signal_threshold: 90
+    entry_delay: 0
+    
+  leroy:
+    name: "Leroy"
+    description: "High-frequency aggressive mode"
+    human_confirmation: false
+    signal_threshold: 60
+    max_trades_per_hour: 20
+
+# Risk Management
+risk_management:
+  global_max_risk: 10.0  # Maximum total portfolio risk %
+  max_daily_loss: 5.0    # Stop trading if daily loss exceeds %
+  max_drawdown: 15.0     # Maximum account drawdown %
+  position_sizing:
+    method: "fixed_percent"  # fixed_percent, fixed_amount, kelly
+    default_percent: 2.0
+  
+  stop_loss:
+    default_pips: 20
+    max_pips: 50
+    trailing_enabled: true
+    
+  take_profit:
+    default_ratio: 2.0  # Risk:Reward ratio
+    partial_close: true
+    partial_levels: [50, 75]  # Close 50% at 1:1, 75% at 1.5:1
+
+# Trade Confidence Score (TCS)
+tcs_config:
+  min_score: 60          # Minimum score to trade
+  high_confidence: 85    # High confidence threshold
+  factors:
+    rsi_weight: 20
+    ma_weight: 15
+    candlestick_weight: 25
+    session_weight: 10
+    volatility_weight: 15
+    confluence_weight: 15
+
+# Instruments
+instruments:
+  forex:
+    - symbol: "EURUSD"
+      spread_limit: 2.0
+      session_hours: ["08:00-17:00", "13:00-22:00"]
+    - symbol: "GBPUSD" 
+      spread_limit: 3.0
+      session_hours: ["08:00-17:00", "13:00-22:00"]
+    - symbol: "USDJPY"
+      spread_limit: 2.5
+      session_hours: ["00:00-09:00", "13:00-22:00"]
+      
+  metals:
+    - symbol: "XAUUSD"
+      spread_limit: 5.0
+      session_hours: ["00:00-23:59"]
+      volatility_filter: true
+    - symbol: "XAGUSD"
+      spread_limit: 8.0
+      session_hours: ["00:00-23:59"]
+      
+  indices:
+    - symbol: "US30"
+      spread_limit: 3.0
+      session_hours: ["14:30-21:00"]
+    - symbol: "SPX500"
+      spread_limit: 2.0
+      session_hours: ["14:30-21:00"]
+
+# Market Sessions
+sessions:
+  asian:
+    start: "00:00"
+    end: "09:00"
+    volatility: "low"
+    
+  london:
+    start: "08:00" 
+    end: "17:00"
+    volatility: "high"
+    
+  new_york:
+    start: "13:00"
+    end: "22:00" 
+    volatility: "high"
+    
+  overlap_london_ny:
+    start: "13:00"
+    end: "17:00"
+    volatility: "highest"
+
+# Signal Generation
+signals:
+  rsi:
+    period: 14
+    oversold: 30
+    overbought: 70
+    
+  moving_averages:
+    fast_ema: 12
+    slow_ema: 26
+    signal_line: 9
+    
+  candlestick_patterns:
+    enabled: true
+    patterns: ["hammer", "doji", "engulfing", "shooting_star"]
+    
+  support_resistance:
+    enabled: true
+    touch_sensitivity: 5  # pips
+    strength_period: 20   # bars to look back
+
+# News Filter
+news_filter:
+  enabled: true
+  impact_levels: ["high", "medium"]
+  time_before: 30  # minutes before news
+  time_after: 30   # minutes after news
+  currencies: ["USD", "EUR", "GBP", "JPY"]
+
+# Default Settings
+defaults:
+  mode: "bit_mode"
+  tactical: "auto"
+  notifications: true
+  max_spread: 3.0
+  min_distance: 10  # minimum distance between trades in pips

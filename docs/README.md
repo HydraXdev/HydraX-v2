@@ -10,7 +10,7 @@
 ### 🤖 BITTEN Telegram Bot
 - [BITTEN Overview](bitten/README.md) - Bot documentation overview
 - [Webhook Setup Victory](bitten/webhook-setup-victory.md) - Complete webhook implementation guide
-- [Command Reference](bitten/commands.md) - Bot commands (coming soon)
+- [Command Reference](bitten/commands.md) - Complete bot commands documentation
 
 ### 🔧 Development
 - [Project Structure](development.md#project-structure) - Directory organization
@@ -22,11 +22,17 @@
 - [Core Trading Logic](../src/core/) - Main trading algorithms
 - [Telegram Integration](../src/telegram_bot/) - Bot implementation
 - [MT5 Bridge](../src/bridge/) - MetaTrader connection
-- [API Reference](api.md) - Flask API documentation (coming soon)
+- [API Reference](api.md) - Complete Flask API documentation
+- [Project Analysis](project-analysis.md) - Comprehensive project overview
+
+### 📋 Planning & Roadmap
+- [Development Roadmap](roadmap.md) - Complete development timeline
+- [Trading Configuration](../config/trading.yml) - Trading parameters and modes
+- [Production Setup](../scripts/setup_production.sh) - Automated deployment script
 
 ### 🔒 Security & Deployment
 - [Environment Variables](../.env.example) - Secure configuration
-- [Deployment Guide](deployment.md) - Production setup (coming soon)
+- [Deployment Guide](deployment.md) - Complete production deployment guide
 - [Security Practices](security.md) - Security guidelines (coming soon)
 
 ### 🗄️ Archive & Recovery

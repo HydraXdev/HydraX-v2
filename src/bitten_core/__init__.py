@@ -14,6 +14,8 @@ from .fire_router import FireRouter, TradeRequest, TradeDirection, TradeExecutio
 from .xp_logger import XPLogger, TradeLog, TradeOutcome, Achievement, UserPerformance
 from .trade_writer import TradeWriter, TradeRecord, TradeStatus, ExportFormat
 from .bitten_core import BittenCore, SystemMode, TacticalMode
+from .telegram_bot_controls import TelegramBotControls
+from .bot_control_integration import BotControlIntegration, create_bot_control_integration
 
 __all__ = [
     # Core classes
@@ -23,6 +25,9 @@ __all__ = [
     'FireRouter',
     'XPLogger',
     'TradeWriter',
+    'TelegramBotControls',
+    'BotControlIntegration',
+    'create_bot_control_integration',
     
     # Enums
     'UserRank',

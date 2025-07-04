@@ -208,6 +208,13 @@ COMMAND_PERMISSIONS = {
     '/help': UserRank.USER,
     '/status': UserRank.USER,
     
+    # Bot Control Commands - All Users
+    '/disclaimer': UserRank.USER,
+    '/bots': UserRank.USER,
+    '/toggle': UserRank.USER,
+    '/immersion': UserRank.USER,
+    '/settings': UserRank.USER,
+    
     # Trading Information - Authorized Users
     '/positions': UserRank.AUTHORIZED,
     '/balance': UserRank.AUTHORIZED,

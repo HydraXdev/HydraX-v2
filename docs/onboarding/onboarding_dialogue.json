@@ -1,0 +1,278 @@
+{
+  "phases": {
+    "first_contact": {
+      "title": "First Contact: Initiating Engagement",
+      "nexus_opening": "Hold it right there, recruit. Before you move another inch, tell me: have you ever been in the market trenches? Made money from your device before?",
+      "responses": {
+        "yes": "Affirmative. Good. This is a new front, but your experience will serve you. Adapt and overcome.",
+        "no": "Excellent. A clean slate is often the strongest. I can work with that. No bad habits to unlearn."
+      },
+      "nexus_intro": "I'm **Sergeant Nexus**, Recruiter Protocol. For the next three minutes, your attention is mine. My orders are precise. Don't engage until commanded. Understood?",
+      "universal_hook": [
+        "Imagine your device, not just for communication, but as a direct pipeline to resource acquisition. A strategic instrument, activated by precision.",
+        "No, this isn't some digital phantom coin chase.",
+        "No, it's not recreational data tapping.",
+        "This is **market warfare**. And I'm about to equip you for the battlefield."
+      ]
+    },
+    "market_warfare_intro": {
+      "title": "Phase 1: What is Market Warfare?",
+      "nexus_explains": [
+        "Listen close. The global market? It's a constant skirmish where one nation's resource value contends with another's.",
+        "Sometimes the Yen gains ground. Sometimes it retreats.",
+        "When a currency pulls back, the disciplined acquire it at a lower cost. When it surges, they release it for maximum gain.",
+        "Our protocols predict these engagements with surgical precision."
+      ],
+      "training_moment": {
+        "setup": "Observe this interface. See the fluctuating data line?",
+        "explanation": "This represents two forces in direct conflict. One pushing forward, one yielding ground.",
+        "countdown": "When I give the command, you'll execute a simulated prediction. This is your first tactical maneuver. Prepare yourself. Ready?",
+        "execute": "Three... Two... One... **ENGAGE NOW!**"
+      },
+      "drill_overlay": "**EXECUTION: OPTIMAL. PATTERN RECOGNITION: CONFIRMED. REPEAT CYCLE.**",
+      "nexus_success": [
+        "Direct hit! You just successfully anticipated the market's trajectory.",
+        "This isn't chance. This is applied observation. This is a skill we'll engrain in you through repetition.",
+        "Requesting next lesson? Or do you require a moment for tactical review?"
+      ]
+    },
+    "knowledge_source": {
+      "title": "Phase 2: Where Does the Knowledge Come From?",
+      "nexus_teaching": [
+        "A valid query. Our strategic advantage stems from comprehensive battlefield intelligence.",
+        "Consider it this way: You're observing a complex tactical simulation.",
+        "Most perceive only random shifts in position.",
+        "We, the BITTEN, discern the underlying strategic intent behind every movement."
+      ],
+      "training_ground": [
+        "To forge this skill, you require a dedicated training environment.",
+        "Not live capital. Simulated resources.",
+        "Think of it as a virtual combat simulator for strategic traders.",
+        "You refine your tactics without collateral damage."
+      ],
+      "education_first": [
+        "This is the operational directive: I'll guide you through establishing your personal training account.",
+        "This process takes approximately two minutes. You'll be provisioned with **50,000 units of simulated capital**.",
+        "No live funds are risked during this educational phase. Only knowledge is gained.",
+        "Once fully prepared, fully educated, then and only then, will you decide to engage the live market.",
+        "Is this operational framework acceptable?"
+      ]
+    },
+    "training_setup": {
+      "title": "Phase 3: Setting Up Your Training Account",
+      "nexus_guidance": "Affirmative. We initiate the creation of your training account. I'll provide step-by-step guidance.",
+      "steps": {
+        "basic_info": {
+          "intro": "Identify yourself. First name?",
+          "email": "Your primary communication channel? Email address?",
+          "phone": "Secondary comms line? Phone number?",
+          "complete": "Data acquired. Proceed to secure the next objective."
+        },
+        "training_ground": {
+          "intro": "This next sequence establishes your educational command center. Understand, this is all for training purposes.",
+          "verify_name": "Verify designated 'First Name'? Input **{NAME}**.",
+          "verify_email": "Confirm 'Email'? Input **{EMAIL}**.",
+          "password": "Access code? Construct a simple one. Commit it to memory.",
+          "execute": "Execute 'Create Training Account'."
+        },
+        "practice_arena": {
+          "intro": "Now, the resource allocation phase. We're deploying **50,000 units of simulated capital**.",
+          "doc_overlay": "**PROTECT THE CAPITAL. YOUR SURVIVAL IS PARAMOUNT**. This is a safe space for learning, recruit.",
+          "explanation": [
+            "These are training credits. Not live funds.",
+            "Zero risk. Only opportunity for strategic development.",
+            "Initiate 'Start Training'."
+          ]
+        },
+        "welcome": {
+          "success": "Mission accomplished! Your training account is active. **50,000 units of simulated capital** are at your disposal.",
+          "verify": [
+            "Check your secure comms. Login credentials have been transmitted to your email.",
+            "Verify mobile transmission. Welcome text message received.",
+            "This is your tactical laboratory. Use it wisely."
+          ]
+        }
+      }
+    },
+    "first_mission": {
+      "title": "Phase 4: Your First Training Mission",
+      "nexus_intro": "Alright soldier, prepare for your inaugural lesson.",
+      "drill_prep": "**PREPARE FOR ENGAGEMENT. $100 OF SIMULATED CAPITAL AT RISK. FOCUS.**",
+      "nexus_setup": [
+        "You're about to deploy 100 units of practice capital.",
+        "I'll decode the battlefield for you.",
+        "Observe. Assimilate. Execute."
+      ],
+      "the_setup": [
+        "Note the 'ADVANCE' button? And the 'RETREAT' button?",
+        "The market's about to shift. I'll brief you on the indicators.",
+        "Once the strategic context is clear, you'll understand the necessity of this maneuver.",
+        "Ready for your first tactical briefing?"
+      ],
+      "teaching_moment": "Observe these three converging signals... they're aligned... indicating an imminent **ADVANCE** in market position!",
+      "drill_wait": "**DO NOT ACT ON IMPULSE. UNDERSTAND THE LOGIC. REPEAT: UNDERSTAND.**",
+      "nexus_guidance": [
+        "Don't merely engage. Comprehend the *why* behind this position.",
+        "It's unfolding... witness how the signals precisely predicted this movement... Affirmative! You just absorbed your first strategic principle!"
+      ],
+      "success": {
+        "result": "Outstanding! Lesson one mastered. 180 units of simulated profit secured.",
+        "doc_analysis": "SCAR TISSUE FORMING. ANALYZE THE WOUND... No, wait. ANALYZE THE SUCCESS. THIS IS DATA. Good work, recruit.",
+        "nexus_summary": "Current training balance: **50,180**. More critically, you've acquired invaluable knowledge.",
+        "continue": "Initiate lesson two? Or require a debrief on lesson one?"
+      }
+    },
+    "theater_selection": {
+      "title": "Phase 6: Choose Your Theater of Operations",
+      "nexus_briefing": [
+        "Alright, recruit. You've proven your ability to read the battlefield in the simulator. Now, it's time to choose your **Theater of Operations**.",
+        "This is where your training translates into action. You have three strategic choices for setting up your trading account. Listen carefully, as each has its own mission parameters."
+      ],
+      "options": {
+        "demo": {
+          "title": "The Training Ground Extended - US Regulated Demo Account",
+          "nexus": "First, for those who seek further refinement of their skills without risk, we offer the **US Regulated Demo Account**. This is an extension of your current training, but with a more robust simulated environment.",
+          "details": "You'll be provisioned with **$50,000 of practice capital** in a fully regulated, secure training zone. It's the ideal choice for new recruits who want to build absolute confidence before deploying real resources.",
+          "doc_overlay": "**NO RISK. MAXIMUM LEARNING. THIS IS PROTECTION**, recruit."
+        },
+        "regulated": {
+          "title": "The Protected Frontline - US Regulated Live Account",
+          "nexus": "Next, for those ready to engage the live market with the strongest defenses, we recommend the **US Regulated Live Account**. This is your primary strategic asset.",
+          "details": "When you fund this account, your capital is protected under **US regulatory frameworks**, ensuring maximum security for your operations. You can initiate funding using a **credit card, bank draft, or wire transfer**.",
+          "recommendation": "This **US Dollar account** is our top recommendation for live engagement. It offers unparalleled security and peace of mind as you execute your strategies.",
+          "doc_overlay": "**CAPITAL PROTECTION IS PARAMOUNT. REGULATION IS YOUR ARMOR. YOUR FUNDS ARE SECURED.**"
+        },
+        "offshore": {
+          "title": "The Frontier Outpost - Offshore Unregulated (Bitcoin Only)",
+          "nexus": "Finally, for operatives seeking broader, more decentralized engagement, there's the **Offshore Unregulated Account**. Be advised, this option operates outside traditional regulatory oversight.",
+          "details": "Funding for this theater is **Bitcoin only**. While it offers greater flexibility, understand that the level of protection is different. This option is for the seasoned operative who comprehends independent deployment.",
+          "drill_warning": "**HIGH RISK ENVIRONMENT. SELF-DISCIPLINE IS YOUR ONLY SHIELD. PROCEED WITH EXTREME CAUTION.**"
+        }
+      },
+      "nexus_choice": [
+        "Each path offers a distinct deployment strategy. Consider your training level, your risk tolerance, and your readiness to engage.",
+        "Your mission is to select the environment that best supports your continued growth and strategic objectives. Which theater will you choose, recruit?"
+      ]
+    },
+    "oath_of_enlistment": {
+      "title": "Phase 7: The BITTEN Oath of Enlistment",
+      "nexus_admin": [
+        "Chosen your theater, recruit. Now, before we proceed with linking your tactical assets, you must formally enlist. This isn't just a formality; it's your commitment to the disciplined path of the BITTEN Protocols.",
+        "This oath, **{FULL_NAME}**, signifies your understanding of the rules of engagement, our collective mission, and your agreement to operate with discipline and integrity within the BITTEN system.",
+        "Read the BITTEN Protocols, then, if you're prepared to commit, confirm your enlistment."
+      ],
+      "commitment": "By checking this box, **{FULL_NAME}**, you hereby accept the terms and conditions outlined in the BITTEN Protocols, and you enlist as an official operative in our mission to master the market battlefield.",
+      "checkbox_text": "I, {FULL_NAME}, understand and agree to the BITTEN Protocols and Terms of Enlistment."
+    },
+    "secure_link": {
+      "title": "Phase 8: Establish Secure Link",
+      "nexus_preparation": [
+        "Enlistment confirmed, **{FULL_NAME}**! Welcome to the BITTEN ranks. Now, to make your training and future live operations seamless, we need to establish a secure link between the BITTEN Protocols and your newly chosen account.",
+        "Think of it like setting up your tactical console. We need to connect our advanced targeting system to your display unit so you can execute commands directly."
+      ],
+      "steps": {
+        "broker_credentials": {
+          "nexus": [
+            "First, you'll need to head to the broker's site to finalize your account setup. They'll provide you with a **unique login and a password**.",
+            "Listen close, **{FULL_NAME}**, this is vital: **BITTEN does NOT need, nor will we ever ask for, your primary login credentials for your broker account.** Those are for your eyes only. They're your personal keys to the vault, and they remain entirely under your control."
+          ],
+          "doc_security": "**YOUR PRIMARY CREDENTIALS ARE YOUR FORTRESS. KEEP THEM SECURE**. BITTEN Protocols don't access or control your funding source. This is your protection, **{FULL_NAME}**."
+        },
+        "trading_details": {
+          "nexus": [
+            "For us to connect to your **trading interface** – where the actual buy and sell commands are executed – your broker will provide you with a **specific trading account number** and a **trading password**.",
+            "This is the 'tactical hook' we use to relay our analyzed signals directly to your trading actions. It allows our system to place trades *on your behalf* within your designated trading account, but **we have no control over transferring funds, making deposits, or withdrawals from your bank or funding source.** Our access is strictly for executing trades based on the strategies you approve."
+          ],
+          "doc_clarity": "**BITTEN CAN ONLY EXECUTE TRADES IN THE MONEY ACCOUNT YOU SPECIFY. WE HOLD NO KEYS TO YOUR BANK. YOUR FUNDS REMAIN YOURS, {FULL_NAME}**."
+        },
+        "input_hook": {
+          "nexus": [
+            "Now, for the critical transmission. In the secure input module below, you'll need to enter those two pieces of information: your **trading account number** and your **trading password**.",
+            "We'll **immediately encrypt this data** for your protection. This allows the BITTEN system to seamlessly integrate with your trading account's interface, allowing you to focus on learning and strategy, not manual execution."
+          ],
+          "final_confirmation": "Double-check those entries, **{FULL_NAME}**. Precision is paramount. Once confirmed, hit 'Establish Link' and we can proceed to your identity assignment. This ensures a smooth, automated execution of your strategies as you progress through the BITTEN Academy."
+        }
+      }
+    },
+    "callsign_creation": {
+      "title": "Phase 9: Forge Your Callsign & Get Your Loadout",
+      "nexus_identity": [
+        "Secure link established, recruit! Your trading account is now connected, ready to receive intel directly from the BITTEN Protocols. You're officially integrated.",
+        "Now, it's time to choose your **Callsign** – your tactical identity within our ranks. This is how you'll be known in the system, how your victories will be tracked, and how you'll connect with your fellow operatives.",
+        "Forget your civilian designation, **{FULL_NAME}**. From this moment forward, in BITTEN, you are your Callsign. Choose wisely, make it memorable, make it *you*. This is your first piece of **loadout gear**."
+      ],
+      "suggestions": {
+        "intro": "Need some inspiration? Think about these:",
+        "examples": [
+          "**\"GhostPip\"** (for the stealthy observer)",
+          "**\"MarketMaverick\"** (for the bold and independent)",
+          "**\"TrendWrangler\"** (for those who master market movements)",
+          "**\"PixelProfiteer\"** (a nod to the digital arena)",
+          "**\"BitWhisperer\"** (if you feel a connection to our feline guide, Bit)",
+          "**\"ApexAlgo\"** (for the data-driven strategist)"
+        ],
+        "custom": "Or go completely off-grid! Just make it sharp. Enter your new Callsign below. This is your first command decision as a BITTEN operative."
+      }
+    },
+    "operational_interface": {
+      "title": "Phase 10: Your Operational Interface",
+      "nexus_welcome": [
+        "Welcome to the front lines, **{CALLSIGN}**! Your BITTEN Protocols are active. Prepare for your first mission. Discipline is victory.",
+        "This is your command center – your primary operational interface where you'll receive intel, execute maneuvers, and track your progress on the market battlefield.",
+        "Don't get overwhelmed. Like any good piece of tech, we've organized everything for maximum efficiency. Let's start with a quick overview of your key functions."
+      ]
+    },
+    "core_maneuvers": {
+      "title": "Phase 11: Core Maneuvers - Quick Drill",
+      "nexus_intro": "Every operative needs to master core maneuvers. Let's quickly run through a couple of fundamental actions you'll be using constantly. Consider this a **Quick Drill**.",
+      "drill_instruction": "**OBSERVE. MIMIC. REPEAT. THIS IS THE FOUNDATION.**",
+      "scan_tutorial": {
+        "nexus": "See that 'SCAN' button? This is your primary reconnaissance tool. Tap it, and the BITTEN Protocols will instantly analyze the market for potential strategic openings – opportunities for a 'buy' or 'sell' maneuver.",
+        "action": "User taps 'SCAN' - system briefly 'scans' then highlights a trade opportunity"
+      },
+      "engage_tutorial": {
+        "nexus": "Good. Now, based on the intel, you'll see a clear 'ENGAGE' option. This is how you commit your simulated capital to a position. Tap it to execute the maneuver.",
+        "action": "User taps 'ENGAGE' - animation shows simulated trade execution",
+        "result": "Excellent, **{CALLSIGN}**! You just performed your first tactical maneuver within the system. Understanding these core actions is vital for rapid deployment."
+      }
+    },
+    "field_manual": {
+      "title": "Phase 12: The BITTEN Field Manual",
+      "nexus_introduction": [
+        "No operative goes into battle unprepared. Every command, every rule, every strategic option is detailed in your **Field Manual**. This is your go-to resource for all BITTEN operations.",
+        "Look for the 'MENU' icon, top-left. This is your direct access to every piece of intel you could ever need."
+      ],
+      "drill_emphasis": "**CONSULT THE PROTOCOLS. KNOWLEDGE PREVENTS FAILURE. REPEAT: KNOWLEDGE.**",
+      "nexus_guidance": [
+        "Tap it now.",
+        "See? Everything is organized for rapid retrieval.",
+        "Need to know a specific command? Check the 'Command Glossary.' Unsure about a tactical scenario? The 'Tactical FAQ' has your answers. Every button leads you deeper into the intelligence you require to master this battlefield."
+      ]
+    },
+    "personal_record": {
+      "title": "Phase 13: Your Personal Record - /me",
+      "nexus_tracking": [
+        "Finally, every operative needs to track their progress, assess their strengths, and identify areas for improvement. This is where your **Personal Record** comes in – accessible via the '/me' command.",
+        "You'll find a dedicated button for it right here on your main interface. Tap it now, **{CALLSIGN}**."
+      ],
+      "doc_analysis": "**ANALYZE YOUR PERFORMANCE. LEARN FROM EACH ENCOUNTER. THIS IS YOUR PATH TO RESILIENCE, {CALLSIGN}**.",
+      "nexus_conclusion": [
+        "This page is your detailed combat log. It tracks your simulated profits, your strategic wins, any tactical setbacks, and your progress through the BITTEN curriculum. It's crucial for self-assessment and refining your approach.",
+        "Remember, **{CALLSIGN}**: Discipline, knowledge, and self-analysis are the pillars of victory. You now have the tools. Your training continues."
+      ]
+    }
+  },
+  "callsign_validation": {
+    "min_length": 3,
+    "max_length": 20,
+    "allowed_pattern": "^[a-zA-Z0-9_]+$",
+    "reserved_words": ["admin", "bitten", "system", "nexus", "drill", "doc", "bit"],
+    "error_messages": {
+      "too_short": "Callsign must be at least 3 characters, recruit.",
+      "too_long": "Keep it under 20 characters. Brevity is tactical.",
+      "invalid_chars": "Alphanumeric and underscores only. No special ops characters.",
+      "reserved": "That callsign is classified. Choose another.",
+      "taken": "Another operative claimed that callsign. Be original."
+    }
+  }
+}

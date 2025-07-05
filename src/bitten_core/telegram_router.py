@@ -9,6 +9,10 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from .rank_access import RankAccess, UserRank, require_user, require_authorized, require_elite, require_admin
+from .user_profile import UserProfileManager
+from .mission_briefing_generator import MissionBriefingGenerator, MissionBriefing
+from .social_sharing import SocialSharingManager
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 
 @dataclass
 class TelegramUpdate:
@@ -31,16 +35,21 @@ class CommandResult:
 class TelegramRouter:
     """Advanced Telegram command processing and routing system"""
     
-    def __init__(self, bitten_core=None):
+    def __init__(self, bitten_core=None, hud_webapp_url="https://your-domain.com/sniper_hud"):
         self.rank_access = RankAccess()
         self.bitten_core = bitten_core
+        self.profile_manager = UserProfileManager()
+        self.hud_webapp_url = hud_webapp_url
         self.command_history: List[Dict] = []
         self.error_count = 0
         self.last_reset = time.time()
+        self.briefing_generator = MissionBriefingGenerator()
+        self.active_briefings: Dict[str, MissionBriefing] = {}
+        self.social_sharing = SocialSharingManager()
         
         # Command categories for help system
         self.command_categories = {
-            'System': ['start', 'help', 'status'],
+            'System': ['start', 'help', 'status', 'me'],
             'Trading Info': ['positions', 'balance', 'history', 'performance'],
             'Trading Commands': ['fire', 'close', 'mode'],
             'Configuration': ['risk', 'maxpos', 'notify'],
@@ -127,11 +136,13 @@ class TelegramRouter:
         
         # System Commands
         if command == '/start':
-            return self._cmd_start(update.user_id, update.username)
+            return self._cmd_start(update.user_id, update.username, args)
         elif command == '/help':
             return self._cmd_help(update.user_id, args)
         elif command == '/status':
             return self._cmd_status(update.user_id)
+        elif command == '/me':
+            return self._cmd_me(update.user_id, update.chat_id)
         
         # Trading Information Commands
         elif command == '/positions':
@@ -188,13 +199,48 @@ class TelegramRouter:
     
     # System Commands
     @require_user()
-    def _cmd_start(self, user_id: int, username: str) -> CommandResult:
-        """Handle /start command"""
+    def _cmd_start(self, user_id: int, username: str, args: List[str]) -> CommandResult:
+        """Handle /start command with referral support"""
         user_rank = self.rank_access.get_user_rank(user_id)
         
         # Add user if not exists
-        if not self.rank_access.get_user_info(user_id):
+        is_new_user = not self.rank_access.get_user_info(user_id)
+        if is_new_user:
             self.rank_access.add_user(user_id, username)
+            
+            # Check for referral code
+            if args and args[0].startswith('ref_'):
+                try:
+                    recruiter_id = int(args[0].replace('ref_', ''))
+                    if recruiter_id != user_id:  # Can't recruit yourself
+                        success = self.profile_manager.register_recruit(
+                            recruiter_id, user_id, username
+                        )
+                        if success:
+                            # Notify user they were recruited
+                            welcome_msg = f"""🤖 **B.I.T.T.E.N. Trading Operations Center**
+
+**Bot-Integrated Tactical Trading Engine / Network**
+
+Welcome {username}! You've been recruited to the elite force.
+Your access level: **{user_rank.name}**
+
+*"You've been B.I.T.T.E.N. — now prove you belong."*
+
+🎯 **Quick Commands:**
+• `/status` - System status
+• `/help` - Command list
+• `/me` - Your profile & stats
+• `/positions` - View positions (Auth+)
+• `/fire` - Execute trade (Auth+)
+
+🔐 **Access Levels:**
+👤 USER → 🔑 AUTHORIZED → ⭐ ELITE → 🛡️ ADMIN
+
+Type `/help` for complete command list."""
+                            return CommandResult(True, welcome_msg)
+                except:
+                    pass  # Invalid referral code
         
         welcome_msg = f"""🤖 **B.I.T.T.E.N. Trading Operations Center**
 
@@ -207,6 +253,7 @@ Welcome {username}! Your access level: **{user_rank.name}**
 🎯 **Quick Commands:**
 • `/status` - System status
 • `/help` - Command list
+• `/me` - Your profile & stats
 • `/positions` - View positions (Auth+)
 • `/fire` - Execute trade (Auth+)
 
@@ -277,6 +324,60 @@ Type `/help` for complete command list."""
 Use `/positions` to check trading status"""
         
         return CommandResult(True, status_msg)
+    
+    @require_user()
+    def _cmd_me(self, user_id: int, chat_id: int) -> CommandResult:
+        """Handle /me command - Personal profile with WebApp"""
+        # Get full profile data
+        profile = self.profile_manager.get_full_profile(user_id)
+        user_rank = self.rank_access.get_user_rank(user_id)
+        
+        # Build profile message
+        profile_msg = f"""👤 **OPERATIVE PROFILE**
+
+**Rank:** {profile['rank']} | **XP:** {profile['total_xp']:,}/{profile['next_rank_xp']:,}
+**Missions:** {profile['missions_completed']} | **Success Rate:** {profile['success_rate']}%
+
+💰 **Combat Stats:**
+• Total Profit: ${profile['total_profit']:,.2f}
+• Largest Victory: ${profile['largest_win']:,.2f}
+• Current Streak: {profile['current_streak']} | Best: {profile['best_streak']}
+
+🎖️ **Medals:** {profile['medals_earned']}/{profile['medals_total']}
+👥 **Recruits:** {profile['recruits_count']} | **Recruit XP:** {profile['recruit_xp']}
+
+🔗 **Your Recruitment Link:**
+`https://t.me/BITTEN_bot?start=ref_{user_id}`
+
+*Operative since {profile['joined_days_ago']} days ago*"""
+        
+        # Create inline keyboard with WebApp button
+        webapp_data = {
+            'user_id': user_id,
+            'view': 'profile',
+            'timestamp': int(time.time())
+        }
+        
+        keyboard = [
+            [InlineKeyboardButton(
+                "📊 VIEW FULL PROFILE", 
+                web_app=WebAppInfo(
+                    url=f"{self.hud_webapp_url}?data={json.dumps(webapp_data)}&view=profile"
+                )
+            )],
+            [
+                InlineKeyboardButton("📤 SHARE LINK", callback_data="share_recruit_link"),
+                InlineKeyboardButton("🎖️ MEDALS", callback_data="view_medals")
+            ]
+        ]
+        
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        return CommandResult(
+            True, 
+            profile_msg,
+            data={'reply_markup': reply_markup}
+        )
     
     # Trading Information Commands
     @require_authorized()
@@ -412,6 +513,7 @@ Use `/positions` to check trading status"""
             'start': 'Initialize bot session',
             'help': 'Show available commands',
             'status': 'System health check',
+            'me': 'Your profile & stats',
             'positions': 'View open positions',
             'balance': 'Account balance',
             'history': 'Trading history',
@@ -463,3 +565,277 @@ Use `/positions` to check trading status"""
             'users_count': len(self.rank_access.users),
             'last_command': self.command_history[-1] if self.command_history else None
         }
+    
+    def send_signal_alert(self, user_id: int, signal_data: Dict, market_data: Optional[Dict] = None) -> CommandResult:
+        """Send signal alert with mission briefing and HUD WebApp button"""
+        # Get user tier
+        user_rank = self.rank_access.get_user_rank(user_id)
+        user_tier = user_rank.name
+        
+        # Generate mission briefing
+        if market_data is None:
+            market_data = self._get_default_market_data()
+        
+        briefing = self.briefing_generator.generate_mission_briefing(
+            signal_data, market_data, user_tier
+        )
+        
+        # Store active briefing
+        self.active_briefings[briefing.mission_id] = briefing
+        
+        # Use shortened alert format
+        from .signal_display import SignalDisplay
+        display = SignalDisplay()
+        alert_message = display.create_shortened_telegram_alert(signal_data, briefing)
+        
+        # Create inline keyboard with WebApp button
+        webapp_data = {
+            'mission_id': briefing.mission_id,
+            'user_tier': user_tier,
+            'timestamp': int(time.time()),
+            'view': 'mission_briefing'
+        }
+        
+        # Encode webapp data
+        import urllib.parse
+        encoded_data = urllib.parse.quote(json.dumps(webapp_data))
+        
+        keyboard = [
+            [InlineKeyboardButton(
+                "🎯 OPEN MISSION HUD", 
+                web_app=WebAppInfo(
+                    url=f"{self.hud_webapp_url}?data={encoded_data}"
+                )
+            )]
+        ]
+        
+        # Add quick action buttons based on mission type and tier
+        if briefing.mission_type.value == 'arcade_scalp':
+            if user_tier in ['AUTHORIZED', 'ELITE', 'ADMIN']:
+                keyboard.append([
+                    InlineKeyboardButton("⚡ QUICK FIRE", callback_data=f"qf_{briefing.mission_id[:8]}"),
+                    InlineKeyboardButton("📊 ANALYZE", callback_data=f"an_{briefing.mission_id[:8]}")
+                ])
+            else:
+                keyboard.append([
+                    InlineKeyboardButton("🔓 UNLOCK TRADING", callback_data="unlock_auth")
+                ])
+        elif briefing.mission_type.value == 'sniper_shot':
+            if user_tier in ['ELITE', 'ADMIN']:
+                keyboard.append([
+                    InlineKeyboardButton("🎯 EXECUTE", callback_data=f"sn_{briefing.mission_id[:8]}"),
+                    InlineKeyboardButton("🔍 INTEL", callback_data=f"in_{briefing.mission_id[:8]}")
+                ])
+            else:
+                keyboard.append([
+                    InlineKeyboardButton(f"🔓 ELITE ONLY", callback_data="unlock_elite")
+                ])
+        
+        # Add share button for achievements
+        keyboard.append([
+            InlineKeyboardButton("📤 SHARE", callback_data=f"sh_{briefing.mission_id[:8]}"),
+            InlineKeyboardButton("📱 MY STATS", web_app=WebAppInfo(
+                url=f"{self.hud_webapp_url}?view=profile"
+            ))
+        ])
+        
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        return CommandResult(
+            True,
+            alert_message,
+            data={'reply_markup': reply_markup, 'mission_briefing': briefing}
+        )
+    
+    def _get_default_market_data(self) -> Dict:
+        """Get default market data when not provided"""
+        return {
+            'volatility': 'NORMAL',
+            'trend': 'NEUTRAL',
+            'momentum': 'STABLE',
+            'volume': 'AVERAGE',
+            'session': self._get_current_session(),
+            'key_levels': []
+        }
+    
+    def _get_current_session(self) -> str:
+        """Determine current trading session"""
+        from datetime import datetime, timezone
+        now = datetime.now(timezone.utc)
+        hour = now.hour
+        
+        if 7 <= hour < 16:  # 7 AM - 4 PM UTC
+            return 'LONDON'
+        elif 12 <= hour < 21:  # 12 PM - 9 PM UTC
+            return 'NEWYORK'
+        else:
+            return 'ASIAN'
+    
+    def get_mission_briefing(self, mission_id: str) -> Optional[MissionBriefing]:
+        """Get active mission briefing by ID"""
+        return self.active_briefings.get(mission_id)
+    
+    def cleanup_expired_briefings(self) -> int:
+        """Remove expired mission briefings"""
+        current_time = time.time()
+        expired = [
+            mission_id for mission_id, briefing in self.active_briefings.items()
+            if briefing.expires_at < current_time
+        ]
+        
+        for mission_id in expired:
+            del self.active_briefings[mission_id]
+        
+        return len(expired)
+    
+    def send_signal_alert_legacy(self, user_id: int, signal_data: Dict) -> CommandResult:
+        """Legacy method for backwards compatibility - converts old format to new"""
+        # Convert old signal_data format to new format if needed
+        if 'signal_id' in signal_data and 'urgency' in signal_data:
+            # Old format detected, convert to new format
+            converted_data = {
+                'type': 'arcade',  # Default to arcade for legacy
+                'symbol': signal_data.get('symbol', 'UNKNOWN'),
+                'direction': signal_data.get('direction', 'BUY'),
+                'entry_price': signal_data.get('entry_price', 0.0),
+                'stop_loss': signal_data.get('stop_loss', signal_data.get('entry_price', 0.0) - 0.0010),
+                'take_profit': signal_data.get('take_profit', signal_data.get('entry_price', 0.0) + 0.0030),
+                'tcs_score': int(signal_data.get('confidence', 0.75) * 100),
+                'confidence': signal_data.get('confidence', 0.75),
+                'expires_at': signal_data.get('expires_at', int(time.time()) + 600),
+                'expected_duration': 45,
+                'active_traders': 0,
+                'total_engaged': 0,
+                'squad_avg_tcs': 70.0,
+                'success_rate': 0.65
+            }
+            return self.send_signal_alert(user_id, converted_data)
+        else:
+            # Already in new format or close enough
+            return self.send_signal_alert(user_id, signal_data)
+    
+    def send_achievement_notification(self, user_id: int, achievement_data: Dict) -> CommandResult:
+        """Send achievement notification with share options"""
+        # Create achievement card
+        card = self.social_sharing.create_achievement_card(
+            achievement_data['type'],
+            achievement_data
+        )
+        
+        # Generate message
+        message = f"🎉 **ACHIEVEMENT UNLOCKED!**\n\n"
+        message += f"🎖️ **{card.title}**\n"
+        message += f"{card.description}\n\n"
+        
+        if card.type == 'medal':
+            message += f"✨ +{card.value.get('xp_reward', 0)} XP earned!\n"
+        elif card.type == 'streak':
+            message += f"🔥 {card.value} wins in a row!\n"
+        elif card.type == 'profit':
+            message += f"💰 Total profit: ${card.value:,.2f}\n"
+        
+        # Create keyboard with sharing options
+        keyboard = [
+            [InlineKeyboardButton(
+                "📱 VIEW IN HUD",
+                web_app=WebAppInfo(
+                    url=f"{self.hud_webapp_url}?view=achievements"
+                )
+            )],
+            [
+                InlineKeyboardButton("📤 Share on Telegram", callback_data=f"share_tg_{card.card_id[:8]}"),
+                InlineKeyboardButton("🐦 Share on Twitter", callback_data=f"share_tw_{card.card_id[:8]}")
+            ],
+            [
+                InlineKeyboardButton("🏆 View All Medals", callback_data="view_all_medals")
+            ]
+        ]
+        
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        return CommandResult(
+            True,
+            message,
+            data={'reply_markup': reply_markup, 'achievement_card': card}
+        )
+    
+    def handle_callback_query(self, callback_query: Dict) -> CommandResult:
+        """Handle inline button callbacks"""
+        data = callback_query.get('data', '')
+        user_id = callback_query.get('from', {}).get('id', 0)
+        
+        # Parse callback data
+        parts = data.split('_')
+        action = parts[0]
+        
+        # Route to appropriate handler
+        if action == 'qf':  # Quick fire
+            return self._handle_quick_fire(user_id, parts[1] if len(parts) > 1 else '')
+        elif action == 'an':  # Analyze
+            return self._handle_analyze_signal(user_id, parts[1] if len(parts) > 1 else '')
+        elif action == 'sh':  # Share
+            return self._handle_share_signal(user_id, parts[1] if len(parts) > 1 else '')
+        elif action == 'share':
+            platform = parts[1] if len(parts) > 1 else 'tg'
+            card_id = parts[2] if len(parts) > 2 else ''
+            return self._handle_share_achievement(user_id, platform, card_id)
+        elif action == 'unlock':
+            tier = parts[1] if len(parts) > 1 else 'auth'
+            return self._handle_unlock_tier(user_id, tier)
+        else:
+            return CommandResult(False, "Unknown action")
+    
+    def _handle_quick_fire(self, user_id: int, mission_id_short: str) -> CommandResult:
+        """Handle quick fire button press"""
+        # Find full mission ID
+        mission = None
+        for mid, briefing in self.active_briefings.items():
+            if mid.startswith(mission_id_short):
+                mission = briefing
+                break
+        
+        if not mission:
+            return CommandResult(False, "⚠️ Mission expired or not found")
+        
+        # Check if user can trade
+        user_rank = self.rank_access.get_user_rank(user_id)
+        if user_rank.value < UserRank.AUTHORIZED.value:
+            return CommandResult(False, "🔒 Trading requires AUTHORIZED tier")
+        
+        # Execute trade (simplified)
+        trade_params = {
+            'symbol': mission.symbol,
+            'direction': mission.direction.lower(),
+            'entry': mission.entry_price,
+            'sl': mission.stop_loss,
+            'tp': mission.take_profit,
+            'risk': 1.0  # 1% default
+        }
+        
+        response = f"🔫 **FIRING POSITION**\n\n"
+        response += f"📍 {mission.symbol} {mission.direction}\n"
+        response += f"🎯 Entry: {mission.entry_price:.5f}\n"
+        response += f"🛡️ SL: {mission.stop_loss:.5f}\n"
+        response += f"💰 TP: {mission.take_profit:.5f}\n\n"
+        response += "⚡ Order sent to market!"
+        
+        return CommandResult(True, response, data={'trade_params': trade_params})
+    
+    def _handle_share_achievement(self, user_id: int, platform: str, card_id: str) -> CommandResult:
+        """Handle achievement sharing"""
+        # Get referral link
+        referral_link = f"https://t.me/BITTEN_bot?start=ref_{user_id}"
+        
+        # Generate share content
+        share_data = self.social_sharing.generate_share_content(
+            card_id, platform, referral_link
+        )
+        
+        # Track share event
+        self.social_sharing.track_share_event(user_id, card_id, platform)
+        
+        return CommandResult(
+            True,
+            f"✅ Shared on {platform}! +10 XP earned",
+            data={'share_data': share_data}
+        )

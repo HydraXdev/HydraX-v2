@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BITTEN: NIBBLER Operations Center</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        /* NIBBLER Tier - Military Green Theme */
+        :root {
+            --primary-green: #4B5320;
+            --secondary-green: #6B7340;
+            --accent-green: #8B9360;
+            --light-green: #ABB380;
+            
+            --bg-dark: #0a0a0a;
+            --bg-darker: #050505;
+            --bg-panel: #0f0f0f;
+            --bg-card: #1a1a1a;
+            
+            --text-primary: #e0e0e0;
+            --text-secondary: #999999;
+            --text-dim: #555555;
+            --text-redacted: #3a3a3a;
+            
+            --border-color: #2a2a2a;
+            --border-active: #4B5320;
+            
+            --gradient-green: linear-gradient(135deg, #4B5320, #3a4119);
+            --gradient-locked: linear-gradient(135deg, #2a2a2a, #1a1a1a);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            position: relative;
+            min-height: 100vh;
+        }
+
+        /* Main Container */
+        .hud-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+        }
+
+        /* Header Section */
+        .hud-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+
+        .bitten-logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary-green);
+            letter-spacing: 2px;
+        }
+
+        .operation-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            background: var(--primary-green);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .user-tier {
+            color: var(--primary-green);
+            font-weight: bold;
+        }
+
+        .system-time {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        /* Personal Stats Header */
+        .personal-stats-header {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-item label {
+            font-size: 12px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+        }
+
+        .stat-item .value {
+            font-size: 18px;
+            color: var(--primary-green);
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        /* Section Styling */
+        .section {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .section-header h2 {
+            font-size: 18px;
+            color: var(--primary-green);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        /* Signal Intelligence */
+        .signal-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .signal-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            position: relative;
+        }
+
+        .signal-card h3 {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .asset-display {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .symbol {
+            font-size: 24px;
+            color: var(--primary-green);
+            font-weight: bold;
+        }
+
+        .direction {
+            font-size: 20px;
+            color: var(--text-secondary);
+        }
+
+        /* Redacted/Locked Content */
+        .redacted {
+            background: var(--text-redacted);
+            color: var(--text-redacted);
+            padding: 2px 8px;
+            border-radius: 3px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .locked-value {
+            color: var(--text-dim);
+            font-style: italic;
+        }
+
+        .upgrade-prompt {
+            background: var(--gradient-green);
+            color: white;
+            font-size: 12px;
+            padding: 5px 10px;
+            border-radius: 3px;
+            text-transform: uppercase;
+            cursor: pointer;
+            display: inline-block;
+            margin-top: 10px;
+            text-decoration: none;
+            transition: transform 0.2s;
+        }
+
+        .upgrade-prompt:hover {
+            transform: scale(1.05);
+        }
+
+        /* Entry Zone */
+        .entry-zone {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            text-align: center;
+        }
+
+        .entry-zone h3 {
+            color: var(--primary-green);
+            margin-bottom: 10px;
+        }
+
+        .zone-range {
+            font-size: 20px;
+            color: var(--text-secondary);
+            margin: 10px 0;
+        }
+
+        /* Bit Sleeping Animation */
+        .bit-sleeping {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            animation: sleeping 3s infinite;
+        }
+
+        @keyframes sleeping {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(0.95) rotate(-5deg); }
+        }
+
+        .zzz {
+            position: absolute;
+            top: -10px;
+            right: -5px;
+            font-size: 14px;
+            color: var(--text-dim);
+            animation: float 2s infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); opacity: 0; }
+            50% { transform: translateY(-10px); opacity: 1; }
+        }
+
+        /* Fire Control */
+        .fire-control {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            padding: 30px;
+            text-align: center;
+        }
+
+        .restricted-notice {
+            background: var(--bg-card);
+            border: 1px solid var(--primary-green);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .restricted-notice h3 {
+            color: var(--primary-green);
+            margin-bottom: 10px;
+        }
+
+        .tier-benefits {
+            text-align: left;
+            margin: 15px 0;
+        }
+
+        .tier-benefits ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .tier-benefits li {
+            padding: 5px 0;
+            color: var(--text-secondary);
+        }
+
+        .tier-benefits li:before {
+            content: "🔒 ";
+            color: var(--text-dim);
+        }
+
+        /* Footer */
+        .hud-footer {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            padding: 20px;
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+        }
+
+        .footer-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 10px 20px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+
+        .footer-btn:hover {
+            background: var(--primary-green);
+            color: white;
+            border-color: var(--primary-green);
+        }
+
+        /* Alert Modal */
+        .alert-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .alert-content {
+            background: var(--bg-panel);
+            border: 2px solid var(--primary-green);
+            padding: 30px;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .alert-content h3 {
+            color: var(--primary-green);
+            margin-bottom: 15px;
+        }
+
+        .alert-close {
+            background: var(--primary-green);
+            color: white;
+            border: none;
+            padding: 10px 30px;
+            margin-top: 20px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <!-- Main HUD Container -->
+    <div class="hud-container">
+        <!-- Header Section -->
+        <header class="hud-header">
+            <div class="header-left">
+                <div class="bitten-logo">B.I.T.T.E.N.</div>
+                <div class="operation-status">
+                    <span class="status-indicator"></span>
+                    <span class="status-text">NIBBLER OPS ACTIVE</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="user-tier">TIER: NIBBLER</div>
+                <div class="system-time" id="systemTime">00:00:00</div>
+            </div>
+        </header>
+
+        <!-- Personal Stats Header -->
+        <div class="personal-stats-header">
+            <div class="stat-item">
+                <label>Rank</label>
+                <div class="value">RECRUIT</div>
+            </div>
+            <div class="stat-item">
+                <label>XP</label>
+                <div class="value" id="userXP">0</div>
+            </div>
+            <div class="stat-item">
+                <label>Missions</label>
+                <div class="value" id="missionCount">0</div>
+            </div>
+            <div class="stat-item">
+                <label>Success</label>
+                <div class="value" id="successRate">0%</div>
+            </div>
+        </div>
+
+        <!-- Signal Intelligence Section -->
+        <section class="section signal-intel">
+            <div class="section-header">
+                <h2>SIGNAL INTELLIGENCE</h2>
+                <div class="signal-id">SIG-<span class="redacted">XXXXX</span></div>
+            </div>
+            
+            <div class="signal-grid">
+                <div class="signal-card">
+                    <h3>TARGET ASSET</h3>
+                    <div class="asset-display">
+                        <span class="symbol" id="symbol">BTC/USD</span>
+                        <span class="direction">⬆</span>
+                    </div>
+                </div>
+                
+                <div class="signal-card">
+                    <h3>CONFIDENCE LEVEL</h3>
+                    <div class="locked-value">CONFIDENCE: [UPGRADE TO VIEW]</div>
+                    <a href="#" class="upgrade-prompt">Unlock with FANG →</a>
+                </div>
+                
+                <div class="signal-card">
+                    <h3>TIME CRITICAL</h3>
+                    <div class="countdown-display">
+                        <div class="countdown">⏱️ <span class="redacted">XX:XX</span></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Entry Zone Section -->
+        <section class="section">
+            <div class="section-header">
+                <h2>ENTRY ZONE</h2>
+            </div>
+            <div class="entry-zone">
+                <h3>Approximate Entry Range</h3>
+                <div class="zone-range">~$<span id="entryRange">45,000 - 46,000</span></div>
+                <p style="color: var(--text-dim); font-size: 12px; margin-top: 10px;">
+                    Exact values available with tier upgrade
+                </p>
+            </div>
+        </section>
+
+        <!-- Restricted Parameters -->
+        <section class="section">
+            <div class="section-header">
+                <h2>ENGAGEMENT PARAMETERS</h2>
+            </div>
+            <div class="restricted-notice">
+                <h3>🔒 RESTRICTED ACCESS</h3>
+                <p style="color: var(--text-secondary);">Advanced parameters require higher tier access</p>
+                <div class="tier-benefits">
+                    <ul>
+                        <li>Exact entry prices</li>
+                        <li>Stop loss levels</li>
+                        <li>Take profit targets</li>
+                        <li>Risk ratios</li>
+                        <li>Position sizing calculator</li>
+                    </ul>
+                </div>
+                <a href="#" class="upgrade-prompt" style="display: block; text-align: center; margin-top: 15px;">
+                    Upgrade to FANG Tier
+                </a>
+            </div>
+        </section>
+
+        <!-- Fire Control Section -->
+        <section class="fire-control">
+            <h2 style="color: var(--primary-green); margin-bottom: 20px;">FIRE CONTROL</h2>
+            <div class="restricted-notice">
+                <h3>NIBBLER TIER LIMITATIONS</h3>
+                <p style="margin: 15px 0;">To execute trades directly from BITTEN, upgrade your tier:</p>
+                <div style="display: flex; gap: 20px; justify-content: center; margin-top: 20px;">
+                    <div style="text-align: center;">
+                        <div style="color: var(--primary-green); font-weight: bold;">FANG</div>
+                        <div style="color: var(--text-secondary); font-size: 12px;">Advanced signals</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="color: var(--primary-green); font-weight: bold;">SNIPER</div>
+                        <div style="color: var(--text-secondary); font-size: 12px;">Elite access</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="color: var(--primary-green); font-weight: bold;">COMMANDER</div>
+                        <div style="color: var(--text-secondary); font-size: 12px;">Full control</div>
+                    </div>
+                </div>
+            </div>
+            <button class="upgrade-prompt" style="margin-top: 20px; padding: 15px 40px; font-size: 16px;">
+                UPGRADE NOW
+            </button>
+        </section>
+
+        <!-- Footer Actions -->
+        <footer class="hud-footer">
+            <button class="footer-btn" id="refreshBtn">
+                <span>🔄</span> REFRESH
+            </button>
+            <button class="footer-btn" id="profileBtn">
+                <span>👤</span> PROFILE
+            </button>
+            <button class="footer-btn" id="closeBtn">
+                <span>✖</span> CLOSE
+            </button>
+        </footer>
+    </div>
+
+    <!-- Bit Sleeping in Corner -->
+    <div class="bit-sleeping">
+        🐕
+        <span class="zzz">z</span>
+    </div>
+
+    <!-- Alert Modal -->
+    <div class="alert-modal" id="alertModal">
+        <div class="alert-content">
+            <h3 id="alertTitle">NIBBLER ALERT</h3>
+            <p id="alertMessage">Message</p>
+            <button class="alert-close" id="alertClose">ACKNOWLEDGE</button>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Telegram WebApp
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        // Update system time
+        function updateTime() {
+            const now = new Date();
+            const time = now.toTimeString().split(' ')[0];
+            document.getElementById('systemTime').textContent = time;
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        // Simulate some basic data updates
+        function updateStats() {
+            // These would normally come from your backend
+            document.getElementById('userXP').textContent = Math.floor(Math.random() * 1000);
+            document.getElementById('missionCount').textContent = Math.floor(Math.random() * 10);
+            document.getElementById('successRate').textContent = Math.floor(Math.random() * 100) + '%';
+        }
+        updateStats();
+
+        // Handle button clicks
+        document.getElementById('refreshBtn').addEventListener('click', () => {
+            updateStats();
+            showAlert('Data Refreshed', 'Signal intelligence updated');
+        });
+
+        document.getElementById('profileBtn').addEventListener('click', () => {
+            showAlert('Profile Access', 'Full profile available with tier upgrade');
+        });
+
+        document.getElementById('closeBtn').addEventListener('click', () => {
+            tg.close();
+        });
+
+        // Handle upgrade prompts
+        document.querySelectorAll('.upgrade-prompt').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                showAlert('Upgrade Required', 'Visit BITTEN HQ to upgrade your tier and unlock full tactical capabilities');
+            });
+        });
+
+        // Alert function
+        function showAlert(title, message) {
+            const modal = document.getElementById('alertModal');
+            document.getElementById('alertTitle').textContent = title;
+            document.getElementById('alertMessage').textContent = message;
+            modal.style.display = 'flex';
+        }
+
+        document.getElementById('alertClose').addEventListener('click', () => {
+            document.getElementById('alertModal').style.display = 'none';
+        });
+
+        // Add multiple sleeping z's
+        const bitSleeping = document.querySelector('.bit-sleeping');
+        for (let i = 1; i < 3; i++) {
+            setTimeout(() => {
+                const zzz = document.createElement('span');
+                zzz.className = 'zzz';
+                zzz.textContent = 'z';
+                zzz.style.animationDelay = `${i * 0.7}s`;
+                zzz.style.right = `${-5 - i * 10}px`;
+                zzz.style.top = `${-10 - i * 5}px`;
+                bitSleeping.appendChild(zzz);
+            }, i * 700);
+        }
+    </script>
+</body>
+</html>

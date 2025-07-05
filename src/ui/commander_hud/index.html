@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BITTEN Commander HUD - Advanced Strategic Operations Center</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Main HUD Container -->
+    <div class="hud-container commander-tier">
+        <!-- Header Section -->
+        <header class="hud-header">
+            <div class="header-left">
+                <div class="bitten-logo commander-gold">B.I.T.T.E.N.</div>
+                <div class="operation-status">
+                    <span class="status-indicator active gold-pulse"></span>
+                    <span class="status-text">COMMANDER OPS ACTIVE</span>
+                </div>
+            </div>
+            <div class="header-center">
+                <div class="network-sentiment">
+                    <span class="sentiment-label">NETWORK SENTIMENT</span>
+                    <div class="sentiment-indicator" id="networkSentiment">
+                        <span class="sentiment-value">ANALYZING...</span>
+                        <div class="sentiment-bar"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="user-tier commander-badge" id="userTier">COMMANDER</div>
+                <div class="system-time" id="systemTime">00:00:00</div>
+            </div>
+        </header>
+
+        <!-- Advanced Signal Intelligence Section -->
+        <section class="signal-intel advanced">
+            <div class="section-header">
+                <h2 class="glitch gold-glitch" data-text="ADVANCED SIGNAL INTELLIGENCE">ADVANCED SIGNAL INTELLIGENCE</h2>
+                <div class="signal-id" id="signalId">CMD-XXXXX</div>
+                <div class="bit-analyzer" id="bitAnalyzer">
+                    <span class="analyzer-icon">🔍</span>
+                    <span class="analyzer-text">BIT ANALYZING</span>
+                    <div class="analyzer-pulse"></div>
+                </div>
+            </div>
+            
+            <!-- Enhanced Signal Details Grid -->
+            <div class="signal-grid commander-grid">
+                <div class="signal-card primary gold-accent">
+                    <h3>TARGET ASSET</h3>
+                    <div class="asset-display">
+                        <span class="symbol" id="symbol">LOADING...</span>
+                        <span class="direction" id="direction">--</span>
+                    </div>
+                    <div class="asset-metrics">
+                        <span class="volatility">VOL: <span id="volatility">--</span></span>
+                        <span class="liquidity">LIQ: <span id="liquidity">--</span></span>
+                    </div>
+                </div>
+                
+                <div class="signal-card">
+                    <h3>CONFIDENCE LEVEL</h3>
+                    <div class="confidence-meter advanced">
+                        <div class="confidence-bar gold-gradient" id="confidenceBar"></div>
+                        <span class="confidence-value" id="confidenceValue">0%</span>
+                    </div>
+                    <div class="confidence-breakdown">
+                        <span class="technical">TECH: <span id="techConfidence">0%</span></span>
+                        <span class="fundamental">FUND: <span id="fundConfidence">0%</span></span>
+                        <span class="sentiment">SENT: <span id="sentConfidence">0%</span></span>
+                    </div>
+                </div>
+                
+                <div class="signal-card">
+                    <h3>TIME CRITICAL</h3>
+                    <div class="countdown-display">
+                        <div class="countdown" id="countdown">00:00</div>
+                        <div class="urgency-level" id="urgencyLevel">MEDIUM</div>
+                    </div>
+                    <div class="optimal-window">
+                        <span class="window-label">OPTIMAL ENTRY</span>
+                        <span class="window-time" id="optimalWindow">--:--</span>
+                    </div>
+                </div>
+                
+                <div class="signal-card">
+                    <h3>HISTORICAL EDGE</h3>
+                    <div class="edge-display">
+                        <canvas id="edgeChart" width="200" height="100"></canvas>
+                        <div class="edge-stats">
+                            <span class="win-rate">WIN: <span id="histWinRate">0%</span></span>
+                            <span class="avg-gain">AVG: <span id="histAvgGain">0%</span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Squad Performance Section -->
+        <section class="squad-performance">
+            <div class="section-header">
+                <h2 class="glitch gold-glitch" data-text="SQUAD PERFORMANCE">SQUAD PERFORMANCE</h2>
+            </div>
+            
+            <div class="squad-grid">
+                <div class="squad-card">
+                    <h3>PAIR PERFORMANCE</h3>
+                    <div class="pair-stats" id="pairStats">
+                        <div class="pair-item">
+                            <span class="pair-name">EUR/USD</span>
+                            <span class="pair-performance">+2.5%</span>
+                            <div class="pair-bar positive"></div>
+                        </div>
+                        <div class="pair-item">
+                            <span class="pair-name">GBP/USD</span>
+                            <span class="pair-performance">+1.8%</span>
+                            <div class="pair-bar positive"></div>
+                        </div>
+                        <div class="pair-item">
+                            <span class="pair-name">USD/JPY</span>
+                            <span class="pair-performance">-0.5%</span>
+                            <div class="pair-bar negative"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="squad-card">
+                    <h3>SQUAD MEMBERS</h3>
+                    <div class="member-list" id="squadMembers">
+                        <div class="member-item">
+                            <span class="member-rank">🎖️</span>
+                            <span class="member-name">Alpha-01</span>
+                            <span class="member-status online">ACTIVE</span>
+                        </div>
+                        <div class="member-item">
+                            <span class="member-rank">🎖️</span>
+                            <span class="member-name">Bravo-02</span>
+                            <span class="member-status online">ACTIVE</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Advanced Trade Parameters Section -->
+        <section class="trade-params advanced">
+            <div class="section-header">
+                <h2 class="glitch gold-glitch" data-text="STRATEGIC ENGAGEMENT PARAMETERS">STRATEGIC ENGAGEMENT PARAMETERS</h2>
+            </div>
+            
+            <div class="params-grid commander-params">
+                <div class="param-card">
+                    <label>ENTRY ZONE</label>
+                    <div class="param-value" id="entryPrice">0.00000</div>
+                    <div class="param-range">
+                        <span class="range-min" id="entryMin">0.00000</span>
+                        <span class="range-max" id="entryMax">0.00000</span>
+                    </div>
+                </div>
+                
+                <div class="param-card">
+                    <label>STOP LOSS</label>
+                    <div class="param-value danger" id="stopLoss">0.00000</div>
+                    <div class="param-atr">ATR-based: <span id="atrStop">0.00000</span></div>
+                </div>
+                
+                <div class="param-card">
+                    <label>TAKE PROFIT</label>
+                    <div class="param-value success" id="takeProfit">0.00000</div>
+                    <div class="tp-levels">
+                        <span class="tp-level">TP1: <span id="tp1">0.00000</span></span>
+                        <span class="tp-level">TP2: <span id="tp2">0.00000</span></span>
+                        <span class="tp-level">TP3: <span id="tp3">0.00000</span></span>
+                    </div>
+                </div>
+                
+                <div class="param-card">
+                    <label>RISK METRICS</label>
+                    <div class="param-value" id="riskRatio">1:0</div>
+                    <div class="risk-details">
+                        <span class="max-drawdown">MAX DD: <span id="maxDrawdown">0%</span></span>
+                        <span class="sharpe-ratio">SHARPE: <span id="sharpeRatio">0.0</span></span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Advanced Position Calculator -->
+            <div class="position-calculator advanced">
+                <h3>STRATEGIC POSITION SIZING</h3>
+                <div class="calc-inputs commander-calc">
+                    <div class="input-group">
+                        <label>Risk Amount</label>
+                        <input type="number" id="riskAmount" value="1000" min="100">
+                        <span class="unit">USD</span>
+                    </div>
+                    <div class="input-group">
+                        <label>Account Balance</label>
+                        <input type="number" id="accountBalance" value="10000" min="1000">
+                        <span class="unit">USD</span>
+                    </div>
+                    <div class="calc-result">
+                        <label>Position Size</label>
+                        <div class="position-size" id="positionSize">0.00 LOT</div>
+                    </div>
+                    <div class="calc-result">
+                        <label>Risk Percentage</label>
+                        <div class="risk-percent" id="riskPercent">0.0%</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Advanced Strategy Intelligence -->
+        <section class="strategy-intel advanced">
+            <div class="section-header">
+                <h2 class="glitch gold-glitch" data-text="ADVANCED TACTICAL ANALYSIS">ADVANCED TACTICAL ANALYSIS</h2>
+            </div>
+            
+            <div class="strategy-content commander-strategy">
+                <div class="strategy-type" id="strategyType">LOADING ADVANCED STRATEGY...</div>
+                <div class="strategy-details advanced" id="strategyDetails">
+                    <div class="strategy-metrics">
+                        <div class="metric-card">
+                            <span class="metric-label">PATTERN RECOGNITION</span>
+                            <span class="metric-value" id="patternScore">0%</span>
+                        </div>
+                        <div class="metric-card">
+                            <span class="metric-label">MOMENTUM STRENGTH</span>
+                            <span class="metric-value" id="momentumScore">0%</span>
+                        </div>
+                        <div class="metric-card">
+                            <span class="metric-label">VOLUME ANALYSIS</span>
+                            <span class="metric-value" id="volumeScore">0%</span>
+                        </div>
+                        <div class="metric-card">
+                            <span class="metric-label">SMART MONEY FLOW</span>
+                            <span class="metric-value" id="smartMoneyScore">0%</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="market-conditions advanced">
+                    <h4>ADVANCED MARKET CONDITIONS</h4>
+                    <div class="condition-grid commander-conditions" id="conditionGrid">
+                        <div class="condition-item">
+                            <span class="condition-label">MARKET STRUCTURE</span>
+                            <span class="condition-value">BULLISH</span>
+                        </div>
+                        <div class="condition-item">
+                            <span class="condition-label">VOLATILITY REGIME</span>
+                            <span class="condition-value">NORMAL</span>
+                        </div>
+                        <div class="condition-item">
+                            <span class="condition-label">CORRELATION MATRIX</span>
+                            <span class="condition-value">FAVORABLE</span>
+                        </div>
+                        <div class="condition-item">
+                            <span class="condition-label">OPTIONS FLOW</span>
+                            <span class="condition-value">BULLISH</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="execution-strategy">
+                    <h4>EXECUTION STRATEGY</h4>
+                    <div class="execution-details">
+                        <p id="executionStrategy">Advanced multi-timeframe confluence strategy with dynamic position scaling...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Commander Fire Control Section -->
+        <section class="fire-control commander-control">
+            <div class="fire-panel advanced">
+                <div class="pre-fire-checks">
+                    <div class="check-item" id="check1">
+                        <span class="check-icon">⚡</span>
+                        <span class="check-text">SIGNAL VERIFICATION</span>
+                        <span class="check-status pending">PENDING</span>
+                    </div>
+                    <div class="check-item" id="check2">
+                        <span class="check-icon">🎯</span>
+                        <span class="check-text">POSITION SIZING</span>
+                        <span class="check-status pending">PENDING</span>
+                    </div>
+                    <div class="check-item" id="check3">
+                        <span class="check-icon">🛡️</span>
+                        <span class="check-text">RISK MANAGEMENT</span>
+                        <span class="check-status pending">PENDING</span>
+                    </div>
+                </div>
+                
+                <button class="fire-button commander-fire" id="fireButton" disabled>
+                    <span class="fire-text">INITIALIZING COMMANDER SYSTEMS...</span>
+                    <div class="fire-loader gold-loader"></div>
+                </button>
+                
+                <div class="fire-status" id="fireStatus">
+                    <span class="status-icon">👑</span>
+                    <span class="status-message">COMMANDER AUTHORIZATION REQUIRED</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Enhanced Personal Stats Section -->
+        <section class="personal-stats commander-stats" id="personalStats">
+            <div class="section-header">
+                <h2 class="glitch gold-glitch" data-text="COMMANDER PROFILE">COMMANDER PROFILE</h2>
+            </div>
+            
+            <div class="stats-grid commander-grid">
+                <div class="stat-card">
+                    <label>RANK</label>
+                    <div class="stat-value gold-text" id="userRank">COMMANDER</div>
+                </div>
+                
+                <div class="stat-card">
+                    <label>TOTAL XP</label>
+                    <div class="stat-value" id="totalXP">85,000</div>
+                </div>
+                
+                <div class="stat-card">
+                    <label>MISSIONS</label>
+                    <div class="stat-value" id="totalMissions">450</div>
+                </div>
+                
+                <div class="stat-card">
+                    <label>SUCCESS RATE</label>
+                    <div class="stat-value gold-text" id="successRate">87%</div>
+                </div>
+                
+                <div class="stat-card">
+                    <label>AVG PROFIT</label>
+                    <div class="stat-value" id="avgProfit">+4.2%</div>
+                </div>
+                
+                <div class="stat-card">
+                    <label>MAX WIN STREAK</label>
+                    <div class="stat-value" id="maxStreak">15</div>
+                </div>
+            </div>
+            
+            <!-- Session Metrics -->
+            <div class="session-metrics">
+                <h3>SESSION PERFORMANCE</h3>
+                <div class="session-grid">
+                    <div class="session-stat">
+                        <label>SESSION P/L</label>
+                        <span class="session-value positive" id="sessionPL">+$2,450</span>
+                    </div>
+                    <div class="session-stat">
+                        <label>SESSION TRADES</label>
+                        <span class="session-value" id="sessionTrades">12</span>
+                    </div>
+                    <div class="session-stat">
+                        <label>SESSION WIN RATE</label>
+                        <span class="session-value" id="sessionWinRate">91.7%</span>
+                    </div>
+                    <div class="session-stat">
+                        <label>SESSION DURATION</label>
+                        <span class="session-value" id="sessionDuration">3h 25m</span>
+                    </div>
+                </div>
+                
+                <div class="performance-chart">
+                    <canvas id="performanceChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+            
+            <!-- Commander Medals Display -->
+            <div class="medals-section commander-medals">
+                <h3>COMMANDER COMMENDATIONS</h3>
+                <div class="medals-grid" id="medalsGrid">
+                    <div class="medal-item legendary">
+                        <span class="medal-icon">🏆</span>
+                        <span class="medal-name">MASTER STRATEGIST</span>
+                    </div>
+                    <div class="medal-item legendary">
+                        <span class="medal-icon">⚔️</span>
+                        <span class="medal-name">COMBAT VETERAN</span>
+                    </div>
+                    <div class="medal-item epic">
+                        <span class="medal-icon">🎯</span>
+                        <span class="medal-name">PRECISION TRADER</span>
+                    </div>
+                    <div class="medal-item epic">
+                        <span class="medal-icon">💎</span>
+                        <span class="medal-name">DIAMOND HANDS</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Commander Division -->
+            <div class="recruiting-section commander-division">
+                <h3>COMMANDER DIVISION</h3>
+                <div class="recruit-stats advanced">
+                    <div class="recruit-count">
+                        <label>SQUAD SIZE</label>
+                        <span id="recruitCount">127</span>
+                    </div>
+                    <div class="recruit-xp">
+                        <label>SQUAD XP</label>
+                        <span id="recruitXP">254,000</span>
+                    </div>
+                    <div class="recruit-tier">
+                        <label>AVG SQUAD TIER</label>
+                        <span id="avgTier">ELITE</span>
+                    </div>
+                </div>
+                
+                <div class="recruit-link commander-link">
+                    <label>COMMANDER RECRUITMENT LINK</label>
+                    <div class="link-display gold-border">
+                        <input type="text" id="recruitLink" readonly class="gold-input">
+                        <button class="copy-button gold-button" id="copyLink">COPY</button>
+                    </div>
+                </div>
+                
+                <button class="share-button commander-share" id="shareButton">
+                    SHARE COMMANDER LINK
+                </button>
+            </div>
+        </section>
+
+        <!-- Footer Actions -->
+        <footer class="hud-footer commander-footer">
+            <button class="footer-btn gold-accent" id="refreshBtn">
+                <span class="btn-icon">🔄</span>
+                REFRESH
+            </button>
+            <button class="footer-btn gold-accent" id="squadBtn">
+                <span class="btn-icon">👥</span>
+                SQUAD
+            </button>
+            <button class="footer-btn gold-accent" id="profileBtn">
+                <span class="btn-icon">👑</span>
+                PROFILE
+            </button>
+            <button class="footer-btn" id="closeBtn">
+                <span class="btn-icon">✖</span>
+                CLOSE
+            </button>
+        </footer>
+    </div>
+
+    <!-- Gold Glitch Overlay Effect -->
+    <div class="glitch-overlay gold-glitch-overlay" id="glitchOverlay"></div>
+    
+    <!-- Commander Alert Modal -->
+    <div class="alert-modal commander-modal" id="alertModal">
+        <div class="alert-content gold-border">
+            <h3 id="alertTitle" class="gold-text">COMMANDER ALERT</h3>
+            <p id="alertMessage">Message</p>
+            <button class="alert-close gold-button" id="alertClose">ACKNOWLEDGE</button>
+        </div>
+    </div>
+
+    <script src="commander_logic.js"></script>
+</body>
+</html>

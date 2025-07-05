@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BITTEN Sniper HUD - Tactical Operations Center</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+    <!-- Main HUD Container -->
+    <div class="hud-container">
+        <!-- Header Section -->
+        <header class="hud-header">
+            <div class="header-left">
+                <div class="bitten-logo">B.I.T.T.E.N.</div>
+                <div class="operation-status">
+                    <span class="status-indicator active"></span>
+                    <span class="status-text">TACTICAL OPS ACTIVE</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="user-tier" id="userTier">TIER: LOADING...</div>
+                <div class="system-time" id="systemTime">00:00:00</div>
+            </div>
+        </header>
+
+        <!-- Signal Intelligence Section -->
+        <section class="signal-intel">
+            <div class="section-header">
+                <h2 class="glitch" data-text="SIGNAL INTELLIGENCE">SIGNAL INTELLIGENCE</h2>
+                <div class="signal-id" id="signalId">SIG-XXXXX</div>
+            </div>
+            
+            <!-- Signal Details Grid -->
+            <div class="signal-grid">
+                <div class="signal-card primary">
+                    <h3>TARGET ASSET</h3>
+                    <div class="asset-display">
+                        <span class="symbol" id="symbol">LOADING...</span>
+                        <span class="direction" id="direction">--</span>
+                    </div>
+                </div>
+                
+                <div class="signal-card">
+                    <h3>CONFIDENCE LEVEL</h3>
+                    <div class="confidence-meter">
+                        <div class="confidence-bar" id="confidenceBar"></div>
+                        <span class="confidence-value" id="confidenceValue">0%</span>
+                    </div>
+                </div>
+                
+                <div class="signal-card">
+                    <h3>TIME CRITICAL</h3>
+                    <div class="countdown-display">
+                        <div class="countdown" id="countdown">00:00</div>
+                        <div class="urgency-level" id="urgencyLevel">MEDIUM</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Trade Parameters Section -->
+        <section class="trade-params">
+            <div class="section-header">
+                <h2 class="glitch" data-text="ENGAGEMENT PARAMETERS">ENGAGEMENT PARAMETERS</h2>
+            </div>
+            
+            <div class="params-grid">
+                <div class="param-card">
+                    <label>ENTRY ZONE</label>
+                    <div class="param-value" id="entryPrice">0.00000</div>
+                </div>
+                
+                <div class="param-card">
+                    <label>STOP LOSS</label>
+                    <div class="param-value danger" id="stopLoss">0.00000</div>
+                </div>
+                
+                <div class="param-card">
+                    <label>TAKE PROFIT</label>
+                    <div class="param-value success" id="takeProfit">0.00000</div>
+                </div>
+                
+                <div class="param-card">
+                    <label>RISK RATIO</label>
+                    <div class="param-value" id="riskRatio">1:0</div>
+                </div>
+            </div>
+            
+            <!-- Position Size Calculator -->
+            <div class="position-calculator">
+                <h3>POSITION SIZING</h3>
+                <div class="calc-inputs">
+                    <div class="input-group">
+                        <label>Risk Amount</label>
+                        <input type="number" id="riskAmount" value="100" min="10">
+                        <span class="unit">USD</span>
+                    </div>
+                    <div class="calc-result">
+                        <label>Position Size</label>
+                        <div class="position-size" id="positionSize">0.00 LOT</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Strategy Intelligence -->
+        <section class="strategy-intel">
+            <div class="section-header">
+                <h2 class="glitch" data-text="TACTICAL ANALYSIS">TACTICAL ANALYSIS</h2>
+            </div>
+            
+            <div class="strategy-content">
+                <div class="strategy-type" id="strategyType">LOADING STRATEGY...</div>
+                <div class="strategy-details" id="strategyDetails">
+                    <!-- Dynamic strategy details loaded here -->
+                </div>
+                
+                <div class="market-conditions">
+                    <h4>MARKET CONDITIONS</h4>
+                    <div class="condition-grid" id="conditionGrid">
+                        <!-- Dynamic market conditions -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Fire Control Section -->
+        <section class="fire-control">
+            <div class="fire-panel">
+                <button class="fire-button" id="fireButton" disabled>
+                    <span class="fire-text">INITIALIZING...</span>
+                    <div class="fire-loader"></div>
+                </button>
+                
+                <div class="fire-status" id="fireStatus">
+                    <span class="status-icon">🔒</span>
+                    <span class="status-message">AWAITING AUTHORIZATION</span>
+                </div>
+            </div>
+            
+            <!-- Tier Lock Message -->
+            <div class="tier-lock" id="tierLock" style="display: none;">
+                <div class="lock-message">
+                    <span class="lock-icon">🔓</span>
+                    <h3>TIER UPGRADE REQUIRED</h3>
+                    <p>This signal requires <span class="required-tier" id="requiredTier">ELITE</span> access</p>
+                    <button class="upgrade-button" id="upgradeButton">UPGRADE NOW</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Personal Stats Section -->
+        <section class="personal-stats" id="personalStats" style="display: none;">
+            <div class="section-header">
+                <h2 class="glitch" data-text="OPERATIVE PROFILE">OPERATIVE PROFILE</h2>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <label>RANK</label>
+                    <div class="stat-value" id="userRank">RECRUIT</div>
+                </div>
+                
+                <div class="stat-card">
+                    <label>TOTAL XP</label>
+                    <div class="stat-value" id="totalXP">0</div>
+                </div>
+                
+                <div class="stat-card">
+                    <label>MISSIONS</label>
+                    <div class="stat-value" id="totalMissions">0</div>
+                </div>
+                
+                <div class="stat-card">
+                    <label>SUCCESS RATE</label>
+                    <div class="stat-value" id="successRate">0%</div>
+                </div>
+            </div>
+            
+            <!-- Medals Display -->
+            <div class="medals-section">
+                <h3>COMMENDATIONS</h3>
+                <div class="medals-grid" id="medalsGrid">
+                    <!-- Dynamic medals display -->
+                </div>
+            </div>
+            
+            <!-- Recruiting Section -->
+            <div class="recruiting-section">
+                <h3>RECRUITMENT DIVISION</h3>
+                <div class="recruit-stats">
+                    <div class="recruit-count">
+                        <label>RECRUITS</label>
+                        <span id="recruitCount">0</span>
+                    </div>
+                    <div class="recruit-xp">
+                        <label>RECRUIT XP</label>
+                        <span id="recruitXP">0</span>
+                    </div>
+                </div>
+                
+                <div class="recruit-link">
+                    <label>YOUR RECRUITMENT LINK</label>
+                    <div class="link-display">
+                        <input type="text" id="recruitLink" readonly>
+                        <button class="copy-button" id="copyLink">COPY</button>
+                    </div>
+                </div>
+                
+                <button class="share-button" id="shareButton">
+                    SHARE RECRUITMENT LINK
+                </button>
+            </div>
+        </section>
+
+        <!-- Footer Actions -->
+        <footer class="hud-footer">
+            <button class="footer-btn" id="refreshBtn">
+                <span class="btn-icon">🔄</span>
+                REFRESH
+            </button>
+            <button class="footer-btn" id="profileBtn">
+                <span class="btn-icon">👤</span>
+                PROFILE
+            </button>
+            <button class="footer-btn" id="closeBtn">
+                <span class="btn-icon">✖</span>
+                CLOSE
+            </button>
+        </footer>
+    </div>
+
+    <!-- Glitch Overlay Effect -->
+    <div class="glitch-overlay" id="glitchOverlay"></div>
+    
+    <!-- Alert Modal -->
+    <div class="alert-modal" id="alertModal">
+        <div class="alert-content">
+            <h3 id="alertTitle">SYSTEM ALERT</h3>
+            <p id="alertMessage">Message</p>
+            <button class="alert-close" id="alertClose">ACKNOWLEDGE</button>
+        </div>
+    </div>
+
+    <script src="hud_logic.js"></script>
+</body>
+</html>

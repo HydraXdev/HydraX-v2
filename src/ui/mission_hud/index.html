@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HydraX Mission HUD - Tier Demo</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="tier_themes.css">
+    
+    <style>
+        /* Demo specific styles */
+        .demo-controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        
+        .demo-controls h3 {
+            margin-bottom: 15px;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        
+        .tier-selector {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .tier-selector button {
+            padding: 8px 16px;
+            border: 1px solid #333;
+            background: #1a1a1a;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: inherit;
+            font-size: 0.875rem;
+        }
+        
+        .tier-selector button:hover {
+            background: #2a2a2a;
+        }
+        
+        .tier-selector button.active {
+            background: #333;
+            border-color: #666;
+        }
+    </style>
+</head>
+<body class="tier-nibbler">
+    <!-- Matrix effect for Commander tier -->
+    <div class="matrix-bg"></div>
+    
+    <!-- Main HUD Container -->
+    <div class="mission-hud">
+        <!-- Header -->
+        <header class="hud-header">
+            <div class="flex-between">
+                <div>
+                    <h1 class="mission-title glitch" data-text="HYDRAX MISSION CONTROL">HYDRAX MISSION CONTROL</h1>
+                    <div class="mt-sm">
+                        <span class="tier-badge">NIBBLER TIER</span>
+                        <span class="upgrade-prompt">
+                            <span>⬆</span>
+                            <span>Upgrade for Enhanced Access</span>
+                        </span>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div class="status-value">SYSTEM ONLINE</div>
+                    <div class="status-label">STATUS</div>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Main Content -->
+        <main class="hud-content">
+            <!-- Left Panel -->
+            <aside class="mission-panel">
+                <h2 class="mission-title">MISSION STATS</h2>
+                <div class="status-grid">
+                    <div class="status-item">
+                        <div class="status-label">Missions Complete</div>
+                        <div class="status-value">142</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 71%"></div>
+                        </div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-label">Success Rate</div>
+                        <div class="status-value">94.5%</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 94.5%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tier-specific content -->
+                <div class="mt-lg fang-only">
+                    <h3 class="text-secondary">FANG ANALYTICS</h3>
+                    <div class="fire-effect status-item mt-sm">
+                        <div class="status-label">Heat Signature</div>
+                        <div class="status-value">OPTIMAL</div>
+                    </div>
+                </div>
+                
+                <div class="mt-lg commander-only">
+                    <h3 class="text-secondary holo-text">TACTICAL OVERVIEW</h3>
+                    <div class="hud-element mt-sm">
+                        <div class="tactical-overlay"></div>
+                        <div class="status-label">Strategic Advantage</div>
+                        <div class="status-value">+45%</div>
+                    </div>
+                </div>
+                
+                <div class="mt-lg apex-only">
+                    <h3 class="quantum-text">QUANTUM METRICS</h3>
+                    <div class="holo-panel premium-feature mt-sm">
+                        <div class="particle-field">
+                            <div class="particle" style="left: 20%; animation-delay: 0s;"></div>
+                            <div class="particle" style="left: 40%; animation-delay: 2s;"></div>
+                            <div class="particle" style="left: 60%; animation-delay: 4s;"></div>
+                            <div class="particle" style="left: 80%; animation-delay: 6s;"></div>
+                        </div>
+                        <div class="status-label">Dimensional Sync</div>
+                        <div class="status-value unlock-all">∞</div>
+                    </div>
+                </div>
+            </aside>
+            
+            <!-- Center Panel -->
+            <section class="mission-panel">
+                <h2 class="mission-title">ACTIVE OPERATIONS</h2>
+                
+                <!-- Basic content for all tiers -->
+                <div class="operation-item">
+                    <h3>Operation Shadow Strike</h3>
+                    <p class="text-secondary">Infiltration mission in progress</p>
+                    <div class="progress-bar mt-sm">
+                        <div class="progress-fill" style="width: 45%"></div>
+                    </div>
+                </div>
+                
+                <!-- Redacted content for Nibbler -->
+                <div class="operation-item mt-lg classified-content">
+                    <h3>Operation <span class="redacted">REDACTED</span></h3>
+                    <p class="text-secondary redacted-heavy">Lorem ipsum dolor sit amet consectetur</p>
+                </div>
+                
+                <!-- Advanced features locked for lower tiers -->
+                <div class="mt-lg advanced-feature">
+                    <h3>Enhanced Mission Parameters</h3>
+                    <div class="access-denied">
+                        <p>Advanced tactical data available at higher tiers</p>
+                    </div>
+                </div>
+                
+                <!-- Action buttons -->
+                <div class="flex gap-md mt-lg">
+                    <button class="btn">VIEW DETAILS</button>
+                    <button class="btn fang-only">ANALYZE</button>
+                    <button class="btn commander-only">DEPLOY ASSETS</button>
+                    <button class="btn apex-only">QUANTUM LEAP</button>
+                </div>
+            </section>
+            
+            <!-- Right Panel -->
+            <aside class="mission-panel">
+                <h2 class="mission-title">RESOURCES</h2>
+                
+                <div class="resource-list">
+                    <div class="status-item">
+                        <div class="status-label">Available Agents</div>
+                        <div class="status-value">12</div>
+                    </div>
+                    
+                    <div class="status-item mt-md">
+                        <div class="status-label">Equipment Status</div>
+                        <div class="status-value text-center">
+                            <span class="status-active">●</span> READY
+                        </div>
+                    </div>
+                    
+                    <div class="status-item mt-md fang-only">
+                        <div class="status-label">Special Weapons</div>
+                        <div class="status-value">ARMED</div>
+                    </div>
+                    
+                    <div class="status-item mt-md commander-only">
+                        <div class="status-label">Satellite Coverage</div>
+                        <div class="status-value">GLOBAL</div>
+                    </div>
+                    
+                    <div class="status-item mt-md apex-only premium-feature">
+                        <div class="status-label">Reality Anchors</div>
+                        <div class="status-value quantum-text">STABLE</div>
+                    </div>
+                </div>
+            </aside>
+        </main>
+    </div>
+    
+    <!-- Demo Controls -->
+    <div class="demo-controls">
+        <h3>Switch Tier Theme</h3>
+        <div class="tier-selector">
+            <button onclick="setTier('nibbler')" class="active">NIBBLER (Basic)</button>
+            <button onclick="setTier('fang')">FANG (Enhanced)</button>
+            <button onclick="setTier('commander')">COMMANDER (Advanced)</button>
+            <button onclick="setTier('apex')">APEX (Premium)</button>
+        </div>
+    </div>
+    
+    <script>
+        function setTier(tier) {
+            const body = document.body;
+            const badge = document.querySelector('.tier-badge');
+            
+            // Remove all tier classes
+            body.classList.remove('tier-nibbler', 'tier-fang', 'tier-commander', 'tier-apex');
+            
+            // Add new tier class with animation
+            body.classList.add('tier-upgrade-animation');
+            body.classList.add(`tier-${tier}`);
+            
+            // Update badge text
+            badge.textContent = `${tier.toUpperCase()} TIER`;
+            
+            // Update active button
+            document.querySelectorAll('.tier-selector button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Remove animation class after completion
+            setTimeout(() => {
+                body.classList.remove('tier-upgrade-animation');
+            }, 1000);
+        }
+    </script>
+</body>
+</html>

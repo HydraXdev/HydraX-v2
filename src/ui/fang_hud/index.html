@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BITTEN FANG HUD - Enhanced Tactical Interface</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+    <!-- Main HUD Container -->
+    <div class="hud-container fang-tier">
+        <!-- Header Section with Personal Stats -->
+        <header class="hud-header">
+            <div class="header-left">
+                <div class="bitten-logo glitch-text">B.I.T.T.E.N.</div>
+                <div class="operation-status">
+                    <span class="status-indicator active"></span>
+                    <span class="status-text">FANG OPS ACTIVE</span>
+                </div>
+            </div>
+            <div class="header-center">
+                <div class="personal-stats-header">
+                    <div class="streak-info">
+                        <span class="streak-label">STREAK:</span>
+                        <span class="streak-value" id="currentStreak">0</span>
+                        <span class="streak-fire" id="streakFire">🔥</span>
+                    </div>
+                    <div class="quick-stats">
+                        <span class="stat-item">
+                            <span class="stat-label">WIN%:</span>
+                            <span class="stat-value" id="winRate">0%</span>
+                        </span>
+                        <span class="stat-item">
+                            <span class="stat-label">TODAY:</span>
+                            <span class="stat-value" id="todayPnL">+0%</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="user-tier fang-tier-badge">TIER: FANG</div>
+                <div class="system-time" id="systemTime">00:00:00</div>
+            </div>
+        </header>
+
+        <!-- Alert Bit Assistant -->
+        <div class="bit-assistant alert-mode">
+            <div class="bit-container">
+                <div class="bit-eye watching"></div>
+                <div class="bit-message" id="bitMessage">Analyzing market conditions...</div>
+            </div>
+        </div>
+
+        <!-- Market Conditions Summary -->
+        <section class="market-conditions-summary">
+            <div class="section-header">
+                <h2 class="glitch" data-text="MARKET CONDITIONS">MARKET CONDITIONS</h2>
+                <div class="conditions-timestamp" id="conditionsTimestamp">LAST UPDATE: NOW</div>
+            </div>
+            
+            <div class="conditions-grid">
+                <div class="condition-card">
+                    <h3>VOLATILITY</h3>
+                    <div class="condition-value" id="volatilityLevel">MODERATE</div>
+                    <div class="condition-bar">
+                        <div class="bar-fill volatility" id="volatilityBar" style="width: 50%"></div>
+                    </div>
+                </div>
+                
+                <div class="condition-card">
+                    <h3>TREND STRENGTH</h3>
+                    <div class="condition-value" id="trendStrength">STRONG</div>
+                    <div class="condition-bar">
+                        <div class="bar-fill trend" id="trendBar" style="width: 75%"></div>
+                    </div>
+                </div>
+                
+                <div class="condition-card">
+                    <h3>MOMENTUM</h3>
+                    <div class="condition-value" id="momentumLevel">BULLISH</div>
+                    <div class="condition-bar">
+                        <div class="bar-fill momentum" id="momentumBar" style="width: 65%"></div>
+                    </div>
+                </div>
+                
+                <div class="condition-card">
+                    <h3>VOLUME</h3>
+                    <div class="condition-value" id="volumeLevel">ABOVE AVG</div>
+                    <div class="condition-bar">
+                        <div class="bar-fill volume" id="volumeBar" style="width: 80%"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Signal Intelligence Section with TCS Scores -->
+        <section class="signal-intel">
+            <div class="section-header">
+                <h2 class="glitch" data-text="SIGNAL INTELLIGENCE">SIGNAL INTELLIGENCE</h2>
+                <div class="signal-id" id="signalId">SIG-FANG-XXXXX</div>
+            </div>
+            
+            <!-- TCS Score Display -->
+            <div class="tcs-score-display">
+                <h3>TCS ANALYSIS</h3>
+                <div class="tcs-metrics">
+                    <div class="tcs-metric">
+                        <label>TREND</label>
+                        <div class="tcs-value" id="trendScore">85</div>
+                    </div>
+                    <div class="tcs-metric">
+                        <label>CONFIDENCE</label>
+                        <div class="tcs-value" id="confidenceScore">92</div>
+                    </div>
+                    <div class="tcs-metric">
+                        <label>SENTIMENT</label>
+                        <div class="tcs-value" id="sentimentScore">78</div>
+                    </div>
+                    <div class="tcs-composite">
+                        <label>COMPOSITE</label>
+                        <div class="tcs-total" id="compositeScore">85.0</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Signal Details Grid -->
+            <div class="signal-grid">
+                <div class="signal-card primary">
+                    <h3>TARGET ASSET</h3>
+                    <div class="asset-display">
+                        <span class="symbol" id="symbol">LOADING...</span>
+                        <span class="direction" id="direction">--</span>
+                    </div>
+                    <div class="asset-details">
+                        <span class="current-price" id="currentPrice">0.00000</span>
+                        <span class="price-change" id="priceChange">+0.00%</span>
+                    </div>
+                </div>
+                
+                <div class="signal-card">
+                    <h3>SIGNAL STRENGTH</h3>
+                    <div class="strength-meter">
+                        <div class="strength-bar" id="strengthBar"></div>
+                        <span class="strength-value" id="strengthValue">0%</span>
+                    </div>
+                    <div class="strength-factors" id="strengthFactors">
+                        <!-- Dynamic strength factors -->
+                    </div>
+                </div>
+                
+                <div class="signal-card">
+                    <h3>TIME CRITICAL</h3>
+                    <div class="countdown-display">
+                        <div class="countdown" id="countdown">00:00</div>
+                        <div class="urgency-level" id="urgencyLevel">MEDIUM</div>
+                    </div>
+                    <div class="time-advice" id="timeAdvice">Optimal entry window</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Enhanced Trade Parameters Section -->
+        <section class="trade-params">
+            <div class="section-header">
+                <h2 class="glitch" data-text="ENGAGEMENT PARAMETERS">ENGAGEMENT PARAMETERS</h2>
+            </div>
+            
+            <div class="params-grid enhanced">
+                <div class="param-card">
+                    <label>ENTRY ZONE</label>
+                    <div class="param-value" id="entryPrice">0.00000</div>
+                    <div class="param-range">
+                        <span class="range-label">Range:</span>
+                        <span class="range-value" id="entryRange">0.00000 - 0.00000</span>
+                    </div>
+                </div>
+                
+                <div class="param-card">
+                    <label>STOP LOSS</label>
+                    <div class="param-value danger" id="stopLoss">0.00000</div>
+                    <div class="param-info">
+                        <span class="info-label">Risk:</span>
+                        <span class="info-value" id="riskPercent">-0.0%</span>
+                    </div>
+                </div>
+                
+                <div class="param-card">
+                    <label>TAKE PROFIT LEVELS</label>
+                    <div class="tp-levels">
+                        <div class="tp-level">
+                            <span class="tp-label">TP1:</span>
+                            <span class="tp-value success" id="tp1">0.00000</span>
+                            <span class="tp-percent">+0.0%</span>
+                        </div>
+                        <div class="tp-level">
+                            <span class="tp-label">TP2:</span>
+                            <span class="tp-value success" id="tp2">0.00000</span>
+                            <span class="tp-percent">+0.0%</span>
+                        </div>
+                        <div class="tp-level">
+                            <span class="tp-label">TP3:</span>
+                            <span class="tp-value success" id="tp3">0.00000</span>
+                            <span class="tp-percent">+0.0%</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="param-card">
+                    <label>RISK METRICS</label>
+                    <div class="risk-metrics">
+                        <div class="metric-item">
+                            <span class="metric-label">R:R</span>
+                            <span class="metric-value" id="riskRatio">1:0</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">Win%</span>
+                            <span class="metric-value" id="winProbability">0%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Advanced Position Calculator -->
+            <div class="position-calculator advanced">
+                <h3>POSITION SIZING & RISK MANAGEMENT</h3>
+                <div class="calc-grid">
+                    <div class="input-group">
+                        <label>Account Balance</label>
+                        <input type="number" id="accountBalance" value="10000" min="100">
+                        <span class="unit">USD</span>
+                    </div>
+                    <div class="input-group">
+                        <label>Risk %</label>
+                        <input type="number" id="riskPercent" value="2" min="0.5" max="5" step="0.5">
+                        <span class="unit">%</span>
+                    </div>
+                    <div class="calc-result">
+                        <label>Position Size</label>
+                        <div class="position-size" id="positionSize">0.00 LOT</div>
+                    </div>
+                    <div class="calc-result">
+                        <label>$ at Risk</label>
+                        <div class="dollar-risk" id="dollarRisk">$0.00</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Enhanced Strategy Intelligence -->
+        <section class="strategy-intel">
+            <div class="section-header">
+                <h2 class="glitch" data-text="TACTICAL ANALYSIS">TACTICAL ANALYSIS</h2>
+            </div>
+            
+            <div class="strategy-content enhanced">
+                <div class="strategy-overview">
+                    <div class="strategy-type" id="strategyType">LOADING STRATEGY...</div>
+                    <div class="strategy-confidence">
+                        <span class="confidence-label">Strategy Confidence:</span>
+                        <span class="confidence-percent" id="strategyConfidence">0%</span>
+                    </div>
+                </div>
+                
+                <div class="strategy-details" id="strategyDetails">
+                    <!-- Dynamic strategy details with 60% visibility -->
+                </div>
+                
+                <div class="technical-indicators">
+                    <h4>TECHNICAL INDICATORS</h4>
+                    <div class="indicators-grid" id="indicatorsGrid">
+                        <!-- Dynamic technical indicators -->
+                    </div>
+                </div>
+                
+                <div class="market-context">
+                    <h4>MARKET CONTEXT</h4>
+                    <div class="context-items" id="contextItems">
+                        <!-- Dynamic market context -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Fire Control Section -->
+        <section class="fire-control">
+            <div class="fire-panel enhanced">
+                <div class="pre-fire-checklist">
+                    <h4>PRE-FIRE CHECKLIST</h4>
+                    <div class="checklist-items">
+                        <div class="checklist-item" id="check1">
+                            <span class="check-icon">⚡</span>
+                            <span class="check-text">TCS Score Above 80</span>
+                        </div>
+                        <div class="checklist-item" id="check2">
+                            <span class="check-icon">⚡</span>
+                            <span class="check-text">Risk Parameters Set</span>
+                        </div>
+                        <div class="checklist-item" id="check3">
+                            <span class="check-icon">⚡</span>
+                            <span class="check-text">Market Conditions Favorable</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="fire-button fang-style" id="fireButton">
+                    <span class="fire-text">ENGAGE TARGET</span>
+                    <div class="fire-loader"></div>
+                </button>
+                
+                <div class="fire-status" id="fireStatus">
+                    <span class="status-icon">⚡</span>
+                    <span class="status-message">READY FOR ENGAGEMENT</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Performance Tracking -->
+        <section class="performance-tracking">
+            <div class="section-header">
+                <h2 class="glitch" data-text="PERFORMANCE METRICS">PERFORMANCE METRICS</h2>
+            </div>
+            
+            <div class="performance-grid">
+                <div class="perf-card">
+                    <label>24H PERFORMANCE</label>
+                    <div class="perf-value positive" id="dayPerformance">+0.00%</div>
+                </div>
+                
+                <div class="perf-card">
+                    <label>7D PERFORMANCE</label>
+                    <div class="perf-value positive" id="weekPerformance">+0.00%</div>
+                </div>
+                
+                <div class="perf-card">
+                    <label>30D PERFORMANCE</label>
+                    <div class="perf-value positive" id="monthPerformance">+0.00%</div>
+                </div>
+                
+                <div class="perf-card">
+                    <label>BEST STREAK</label>
+                    <div class="perf-value" id="bestStreak">0</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer Actions -->
+        <footer class="hud-footer">
+            <button class="footer-btn" id="refreshBtn">
+                <span class="btn-icon">⚡</span>
+                REFRESH
+            </button>
+            <button class="footer-btn" id="analyticsBtn">
+                <span class="btn-icon">📊</span>
+                ANALYTICS
+            </button>
+            <button class="footer-btn" id="profileBtn">
+                <span class="btn-icon">👤</span>
+                PROFILE
+            </button>
+            <button class="footer-btn" id="closeBtn">
+                <span class="btn-icon">✖</span>
+                CLOSE
+            </button>
+        </footer>
+    </div>
+
+    <!-- Glitch Overlay Effects -->
+    <div class="glitch-overlay" id="glitchOverlay"></div>
+    <div class="glitch-lines" id="glitchLines"></div>
+    
+    <!-- Alert Modal -->
+    <div class="alert-modal fang-style" id="alertModal">
+        <div class="alert-content">
+            <h3 id="alertTitle">FANG ALERT</h3>
+            <p id="alertMessage">Message</p>
+            <button class="alert-close" id="alertClose">ACKNOWLEDGE</button>
+        </div>
+    </div>
+
+    <script src="fang_logic.js"></script>
+</body>
+</html>

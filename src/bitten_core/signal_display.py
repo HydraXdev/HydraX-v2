@@ -4,6 +4,7 @@
 from typing import Dict, List, Optional
 from datetime import datetime
 from enum import Enum
+from .mission_briefing_generator import MissionBriefing, MissionType, UrgencyLevel
 
 class SignalDisplay:
     """
@@ -430,6 +431,29 @@ class SignalDisplay:
         else:
             return "🟥⬜⬜⬜⬜ CRITICAL"
     
+    def create_shortened_telegram_alert(self, signal: Dict, briefing: MissionBriefing) -> str:
+        """Create shortened alert for Telegram with essential info only"""
+        
+        # Determine signal emoji and type
+        if briefing.mission_type.value == 'sniper_shot':
+            emoji = "🎯"
+            type_str = "SNIPER"
+        elif briefing.mission_type.value == 'midnight_hammer':
+            emoji = "🔨"
+            type_str = "HAMMER"
+        else:
+            emoji = "⚡"
+            type_str = "SCALP"
+        
+        # Build compact alert
+        alert = f"{emoji} **{briefing.callsign}** | {type_str}\n"
+        alert += f"━━━━━━━━━━━━━━━━━━━━━\n"
+        alert += f"📍 {briefing.symbol} {briefing.direction}\n"
+        alert += f"💯 TCS: {briefing.tcs_score}% | ⏱️ {self._format_time_remaining(briefing.time_remaining)}\n"
+        alert += f"👥 {briefing.active_operators} traders active"
+        
+        return alert
+    
     def create_tactical_signal_variants(self, signal: Dict) -> Dict[str, str]:
         """Create multiple tactical display variants for A/B testing"""
         
@@ -492,6 +516,163 @@ class SignalDisplay:
             'strike_team': strike_team,
             'tactical_hud': tactical_hud
         }
+    
+    def create_mission_briefing_card(self, briefing: MissionBriefing) -> str:
+        """Create formatted display card from mission briefing"""
+        
+        # Choose style based on mission type
+        if briefing.mission_type == MissionType.ARCADE_SCALP:
+            return self._create_arcade_briefing_card(briefing)
+        elif briefing.mission_type == MissionType.SNIPER_SHOT:
+            return self._create_sniper_briefing_card(briefing)
+        elif briefing.mission_type == MissionType.MIDNIGHT_HAMMER:
+            return self._create_hammer_briefing_card(briefing)
+        else:
+            return self._create_default_briefing_card(briefing)
+    
+    def _create_arcade_briefing_card(self, briefing: MissionBriefing) -> str:
+        """Create arcade-style mission briefing card"""
+        urgency_bar = self._create_urgency_bar(briefing.urgency)
+        confidence_visual = self._get_tcs_visual(briefing.tcs_score)
+        
+        return f"""
+⚡ **TACTICAL MISSION BRIEFING** ⚡
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎮 **OPERATION: {briefing.callsign}**
+📍 **TARGET:** {briefing.symbol} | **VECTOR:** {briefing.direction}
+🎯 **ENTRY:** {briefing.entry_price:.5f}
+💥 **OBJECTIVE:** +{briefing.reward_pips} PIPS
+⚔️ **RISK:** {briefing.risk_pips} PIPS | **R:R:** {briefing.risk_reward_ratio}
+
+📊 **INTEL CONFIDENCE:** {briefing.tcs_score}%
+{confidence_visual}
+
+⏱️ **URGENCY:** {urgency_bar}
+👥 **SQUAD SIZE:** {briefing.active_operators} OPERATORS
+📈 **SQUAD SUCCESS RATE:** {briefing.success_rate:.0%}
+
+🔍 **MARKET INTEL:**
+{self._format_market_intel(briefing.market_intel)}
+
+⚠️ **RISK WARNINGS:**
+{self._format_risk_warnings(briefing.risk_warnings)}
+
+[🔫 **EXECUTE MISSION**] [📊 **VIEW FULL BRIEF**]
+"""
+    
+    def _create_sniper_briefing_card(self, briefing: MissionBriefing) -> str:
+        """Create elite sniper mission briefing card"""
+        urgency_bar = self._create_urgency_bar(briefing.urgency)
+        
+        return f"""
+🎯 **[CLASSIFIED] SNIPER MISSION BRIEF** 🎯
+══════════════════════════════════════════
+
+**CODENAME:** {briefing.callsign}
+**CLEARANCE:** {briefing.required_tier} ONLY
+
+**TARGET ACQUISITION:**
+• **ASSET:** {briefing.symbol}
+• **VECTOR:** {briefing.direction}
+• **ENTRY:** {briefing.entry_price:.5f}
+• **OBJECTIVE:** +{briefing.reward_pips} PIPS
+• **COLLATERAL:** {briefing.risk_pips} PIPS MAX
+• **EFFICIENCY:** 1:{briefing.risk_reward_ratio}
+
+**TACTICAL ASSESSMENT:**
+• **CONFIDENCE:** {briefing.tcs_score}% [ELITE GRADE]
+• **MARKET CONDITIONS:** {briefing.market_conditions['volatility']}
+• **TREND ALIGNMENT:** {briefing.market_conditions['trend']}
+• **URGENCY:** {urgency_bar}
+
+**SQUAD METRICS:**
+• **ACTIVE SNIPERS:** {briefing.active_operators} 🎯
+• **AVG CONFIDENCE:** {briefing.squad_avg_tcs:.0f}%
+• **SUCCESS RATE:** {briefing.success_rate:.0%}
+
+⚡ **{briefing.required_tier} CLEARANCE VERIFIED** ⚡
+
+[🎯 **TAKE THE SHOT**] [🔍 **ADVANCED RECON**]
+"""
+    
+    def _create_hammer_briefing_card(self, briefing: MissionBriefing) -> str:
+        """Create midnight hammer event briefing card"""
+        participation_bar = self._create_progress_bar(briefing.active_operators, 100)
+        
+        return f"""
+╔═══════════════════════════════════════════╗
+║ 🔨🔨🔨 MIDNIGHT HAMMER BRIEFING 🔨🔨🔨    ║
+║ ═════════════════════════════════════════ ║
+║      💥 COMMUNITY STRIKE EVENT! 💥         ║
+║                                             ║
+║ **TARGET:** {briefing.symbol} {briefing.direction}                      ║
+║ **ENTRY:** {briefing.entry_price:.5f}                         ║
+║ **OBJECTIVE:** +{briefing.reward_pips} PIPS                  ║
+║                                             ║
+║ **COMMUNITY POWER:**                        ║
+║ {participation_bar} {briefing.active_operators}%              ║
+║                                             ║
+║ **AVG CONFIDENCE:** {briefing.squad_avg_tcs:.0f}%                 ║
+║ **UNITY BONUS:** +15% XP                    ║
+║                                             ║
+║ ⚡ {briefing.active_operators} WARRIORS READY ⚡              ║
+║ ⏰ WINDOW CLOSES IN {self._format_time_remaining(briefing.time_remaining)} ⏰     ║
+╚═══════════════════════════════════════════╝
+      [🔨 JOIN THE HAMMER!]
+"""
+    
+    def _create_default_briefing_card(self, briefing: MissionBriefing) -> str:
+        """Create default mission briefing card"""
+        return f"""
+📋 **MISSION BRIEFING**
+━━━━━━━━━━━━━━━━━━━━━━
+**Operation:** {briefing.callsign}
+**Target:** {briefing.symbol} {briefing.direction}
+**Entry:** {briefing.entry_price:.5f}
+**Profit Target:** +{briefing.reward_pips} pips
+**Risk:** {briefing.risk_pips} pips
+**Confidence:** {briefing.tcs_score}%
+**Time Remaining:** {self._format_time_remaining(briefing.time_remaining)}
+
+[📊 VIEW DETAILS]
+"""
+    
+    def _create_urgency_bar(self, urgency: UrgencyLevel) -> str:
+        """Create urgency indicator bar"""
+        if urgency == UrgencyLevel.CRITICAL:
+            return "🟥🟥🟥🟥🟥 CRITICAL"
+        elif urgency == UrgencyLevel.HIGH:
+            return "🟧🟧🟧🟧⬜ HIGH"
+        elif urgency == UrgencyLevel.MEDIUM:
+            return "🟨🟨🟨⬜⬜ MEDIUM"
+        else:
+            return "🟩🟩⬜⬜⬜ LOW"
+    
+    def _format_market_intel(self, intel_points: List[str]) -> str:
+        """Format market intelligence points"""
+        if not intel_points:
+            return "• No additional intel available"
+        return "\n".join(f"• {point}" for point in intel_points[:3])  # Max 3 points
+    
+    def _format_risk_warnings(self, warnings: List[str]) -> str:
+        """Format risk warnings"""
+        if not warnings:
+            return "• Standard risk parameters apply"
+        return "\n".join(f"• {warning}" for warning in warnings[:3])  # Max 3 warnings
+    
+    def _format_time_remaining(self, seconds: int) -> str:
+        """Format time remaining"""
+        if seconds <= 0:
+            return "EXPIRED"
+        elif seconds < 60:
+            return f"{seconds}s"
+        elif seconds < 3600:
+            minutes = seconds // 60
+            return f"{minutes}m"
+        else:
+            hours = seconds // 3600
+            minutes = (seconds % 3600) // 60
+            return f"{hours}h {minutes}m"
 
 # Test signal displays
 if __name__ == "__main__":

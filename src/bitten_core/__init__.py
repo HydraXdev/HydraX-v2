@@ -16,6 +16,9 @@ from .trade_writer import TradeWriter, TradeRecord, TradeStatus, ExportFormat
 from .bitten_core import BittenCore, SystemMode, TacticalMode
 from .telegram_bot_controls import TelegramBotControls
 from .bot_control_integration import BotControlIntegration, create_bot_control_integration
+from .mission_briefing_generator import MissionBriefingGenerator, MissionBriefing, MissionType, UrgencyLevel
+from .signal_display import SignalDisplay
+from .signal_alerts import SignalAlert, SignalAlertSystem
 
 __all__ = [
     # Core classes
@@ -28,6 +31,9 @@ __all__ = [
     'TelegramBotControls',
     'BotControlIntegration',
     'create_bot_control_integration',
+    'MissionBriefingGenerator',
+    'SignalDisplay',
+    'SignalAlertSystem',
     
     # Enums
     'UserRank',
@@ -37,6 +43,8 @@ __all__ = [
     'SystemMode',
     'TacticalMode',
     'ExportFormat',
+    'MissionType',
+    'UrgencyLevel',
     
     # Data classes
     'TelegramUpdate',
@@ -48,6 +56,8 @@ __all__ = [
     'Achievement',
     'UserPerformance',
     'TradingPairs',
+    'MissionBriefing',
+    'SignalAlert',
     
     # Decorators
     'require_user',

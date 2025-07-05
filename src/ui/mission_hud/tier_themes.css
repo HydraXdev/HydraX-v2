@@ -1,0 +1,638 @@
+/* Tier-Specific CSS Themes for Mission HUD */
+
+/* ===========================
+   NIBBLER TIER - Grey/Blue with Redacted Elements
+   =========================== */
+.tier-nibbler {
+  --accent-color: #4a6fa5;
+  --tier-primary: #5a7aa5;
+  --tier-secondary: #3a5a85;
+  --tier-glow: rgba(74, 111, 165, 0.3);
+  --bg-primary: #0f0f0f;
+  --bg-secondary: #1a1f25;
+  --bg-tertiary: #2a3340;
+  --text-primary: #c0c8d0;
+  --border-color: #3a4555;
+}
+
+.tier-nibbler .tier-badge {
+  background: linear-gradient(135deg, var(--bg-tertiary), var(--tier-secondary));
+  border-color: var(--tier-primary);
+  color: var(--text-primary);
+  box-shadow: 0 0 20px var(--tier-glow);
+}
+
+.tier-nibbler .mission-panel {
+  background: linear-gradient(135deg, rgba(26, 31, 37, 0.8), rgba(42, 51, 64, 0.6));
+  border-color: var(--tier-secondary);
+}
+
+/* Nibbler Redacted Content */
+.tier-nibbler .classified-content {
+  filter: blur(4px);
+  user-select: none;
+  position: relative;
+}
+
+.tier-nibbler .classified-content::after {
+  content: '[CLASSIFIED - TIER UPGRADE REQUIRED]';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 0.875rem;
+  color: var(--tier-primary);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  filter: blur(0);
+  text-shadow: 0 0 10px var(--tier-glow);
+}
+
+.tier-nibbler .redacted-heavy {
+  background: repeating-linear-gradient(
+    45deg,
+    var(--bg-tertiary),
+    var(--bg-tertiary) 10px,
+    var(--tier-secondary) 10px,
+    var(--tier-secondary) 20px
+  );
+  color: transparent;
+  border-radius: 4px;
+  padding: 2px 8px;
+}
+
+/* Nibbler Limited Features */
+.tier-nibbler .advanced-feature {
+  opacity: 0.4;
+  pointer-events: none;
+  position: relative;
+}
+
+.tier-nibbler .advanced-feature::before {
+  content: '🔒';
+  position: absolute;
+  top: var(--spacing-sm);
+  right: var(--spacing-sm);
+  font-size: 1.25rem;
+  filter: grayscale(1);
+}
+
+/* Nibbler Progress Animation */
+.tier-nibbler .progress-fill {
+  background: linear-gradient(90deg, var(--tier-secondary), var(--tier-primary));
+  box-shadow: 0 0 10px var(--tier-glow);
+}
+
+/* ===========================
+   FANG TIER - Orange Accents
+   =========================== */
+.tier-fang {
+  --accent-color: #ff7a00;
+  --tier-primary: #ff8c1a;
+  --tier-secondary: #cc5500;
+  --tier-glow: rgba(255, 122, 0, 0.4);
+  --bg-primary: #0a0a0a;
+  --bg-secondary: #1a1612;
+  --bg-tertiary: #2a2218;
+  --text-primary: #ffd4a3;
+  --border-color: #553311;
+}
+
+.tier-fang .tier-badge {
+  background: linear-gradient(135deg, var(--tier-secondary), var(--tier-primary));
+  border-color: var(--tier-primary);
+  color: #ffffff;
+  box-shadow: 0 0 30px var(--tier-glow);
+  animation: fang-pulse 2s ease-in-out infinite;
+}
+
+@keyframes fang-pulse {
+  0%, 100% { box-shadow: 0 0 30px var(--tier-glow); }
+  50% { box-shadow: 0 0 50px var(--tier-glow), 0 0 100px var(--tier-glow); }
+}
+
+.tier-fang .mission-panel {
+  background: linear-gradient(135deg, rgba(26, 22, 18, 0.9), rgba(42, 34, 24, 0.7));
+  border-color: var(--tier-secondary);
+  box-shadow: inset 0 0 30px rgba(255, 122, 0, 0.1);
+}
+
+.tier-fang .mission-panel::before {
+  background: linear-gradient(90deg, transparent, var(--tier-primary), transparent);
+  height: 3px;
+  box-shadow: 0 0 10px var(--tier-glow);
+}
+
+/* Fang Enhanced UI Elements */
+.tier-fang .status-item {
+  background: linear-gradient(135deg, var(--bg-tertiary), rgba(255, 122, 0, 0.1));
+  border-color: var(--tier-secondary);
+  transition: all var(--transition-normal);
+}
+
+.tier-fang .status-item:hover {
+  border-color: var(--tier-primary);
+  box-shadow: 0 0 20px var(--tier-glow);
+  transform: translateY(-2px);
+}
+
+.tier-fang .btn {
+  background: linear-gradient(135deg, var(--bg-tertiary), var(--tier-secondary));
+  border-color: var(--tier-secondary);
+}
+
+.tier-fang .btn:hover {
+  background: linear-gradient(135deg, var(--tier-secondary), var(--tier-primary));
+  box-shadow: 0 4px 20px var(--tier-glow);
+}
+
+/* Fang Fire Effects */
+.tier-fang .fire-effect {
+  position: relative;
+  overflow: hidden;
+}
+
+.tier-fang .fire-effect::after {
+  content: '';
+  position: absolute;
+  bottom: -50%;
+  left: -50%;
+  right: -50%;
+  height: 200%;
+  background: radial-gradient(ellipse at bottom, var(--tier-glow) 0%, transparent 70%);
+  animation: fire-flicker 3s ease-in-out infinite;
+}
+
+@keyframes fire-flicker {
+  0%, 100% { opacity: 0.3; transform: scale(1) translateY(0); }
+  50% { opacity: 0.6; transform: scale(1.1) translateY(-10px); }
+}
+
+/* ===========================
+   COMMANDER TIER - Green Cyberpunk
+   =========================== */
+.tier-commander {
+  --accent-color: #00ff41;
+  --tier-primary: #00ff41;
+  --tier-secondary: #00cc33;
+  --tier-tertiary: #009926;
+  --tier-glow: rgba(0, 255, 65, 0.4);
+  --bg-primary: #000a06;
+  --bg-secondary: #001a0d;
+  --bg-tertiary: #002614;
+  --text-primary: #a0ffa0;
+  --border-color: #00661a;
+}
+
+.tier-commander .tier-badge {
+  background: linear-gradient(135deg, var(--tier-tertiary), var(--tier-primary));
+  border: 2px solid var(--tier-primary);
+  color: #000000;
+  font-weight: 900;
+  box-shadow: 0 0 40px var(--tier-glow), inset 0 0 20px rgba(0, 255, 65, 0.2);
+  animation: commander-scan 4s linear infinite;
+}
+
+@keyframes commander-scan {
+  0%, 100% { box-shadow: 0 0 40px var(--tier-glow), inset 0 0 20px rgba(0, 255, 65, 0.2); }
+  50% { box-shadow: 0 0 60px var(--tier-glow), inset 0 0 40px rgba(0, 255, 65, 0.4); }
+}
+
+/* Commander Matrix Rain Effect */
+.tier-commander .matrix-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  opacity: 0.1;
+  background-image: 
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      var(--tier-primary) 2px,
+      var(--tier-primary) 4px
+    );
+  animation: matrix-rain 20s linear infinite;
+}
+
+@keyframes matrix-rain {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+
+.tier-commander .mission-panel {
+  background: linear-gradient(135deg, rgba(0, 26, 13, 0.95), rgba(0, 38, 20, 0.8));
+  border: 2px solid var(--tier-secondary);
+  box-shadow: 0 0 30px var(--tier-glow), inset 0 0 50px rgba(0, 255, 65, 0.05);
+  position: relative;
+}
+
+.tier-commander .mission-panel::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, var(--tier-primary), var(--tier-secondary), var(--tier-tertiary));
+  z-index: -1;
+  opacity: 0.5;
+  animation: commander-border 3s linear infinite;
+}
+
+@keyframes commander-border {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Commander HUD Elements */
+.tier-commander .hud-element {
+  position: relative;
+  border: 1px solid var(--tier-primary);
+  background: rgba(0, 255, 65, 0.05);
+  backdrop-filter: blur(10px);
+}
+
+.tier-commander .hud-element::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: var(--tier-primary);
+  box-shadow: 0 0 10px var(--tier-glow);
+  animation: scan-line 2s linear infinite;
+}
+
+@keyframes scan-line {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(100px); }
+}
+
+/* Commander Holographic Text */
+.tier-commander .holo-text {
+  position: relative;
+  text-shadow: 
+    0 0 10px var(--tier-primary),
+    0 0 20px var(--tier-primary),
+    0 0 30px var(--tier-primary);
+  animation: holo-flicker 0.1s infinite;
+}
+
+@keyframes holo-flicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.95; }
+}
+
+/* Commander Advanced Features */
+.tier-commander .tactical-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  background: 
+    repeating-conic-gradient(
+      from 0deg at 50% 50%,
+      transparent 0deg,
+      var(--tier-glow) 1deg,
+      transparent 2deg,
+      transparent 10deg
+    );
+  animation: radar-sweep 4s linear infinite;
+}
+
+@keyframes radar-sweep {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ===========================
+   APEX TIER - Premium Effects
+   =========================== */
+.tier-apex {
+  --accent-color: #ff00ff;
+  --tier-primary: #ff00ff;
+  --tier-secondary: #00ffff;
+  --tier-tertiary: #ffff00;
+  --tier-quaternary: #ff0080;
+  --tier-glow: rgba(255, 0, 255, 0.5);
+  --bg-primary: #000000;
+  --bg-secondary: #0a0015;
+  --bg-tertiary: #15002a;
+  --text-primary: #ffffff;
+  --border-color: #8000ff;
+}
+
+.tier-apex .tier-badge {
+  background: linear-gradient(
+    135deg,
+    var(--tier-primary),
+    var(--tier-secondary),
+    var(--tier-tertiary),
+    var(--tier-quaternary)
+  );
+  background-size: 400% 400%;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+  color: #000000;
+  font-weight: 900;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+  animation: apex-gradient 3s ease infinite, apex-glow 2s ease-in-out infinite;
+  position: relative;
+}
+
+.tier-apex .tier-badge::before {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  right: -3px;
+  bottom: -3px;
+  background: linear-gradient(
+    45deg,
+    var(--tier-primary),
+    var(--tier-secondary),
+    var(--tier-tertiary),
+    var(--tier-quaternary)
+  );
+  border-radius: inherit;
+  z-index: -1;
+  animation: apex-gradient 3s ease infinite;
+  filter: blur(10px);
+}
+
+@keyframes apex-gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes apex-glow {
+  0%, 100% { box-shadow: 0 0 60px var(--tier-glow), 0 0 120px var(--tier-glow); }
+  50% { box-shadow: 0 0 80px var(--tier-glow), 0 0 160px var(--tier-glow); }
+}
+
+/* Apex Dimensional Background */
+.tier-apex::before {
+  content: '';
+  position: fixed;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: conic-gradient(
+    from 0deg at 50% 50%,
+    var(--tier-primary),
+    var(--tier-secondary),
+    var(--tier-tertiary),
+    var(--tier-quaternary),
+    var(--tier-primary)
+  );
+  animation: apex-dimension 20s linear infinite;
+  opacity: 0.05;
+  pointer-events: none;
+}
+
+@keyframes apex-dimension {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.5); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+/* Apex Mission Panel */
+.tier-apex .mission-panel {
+  background: 
+    linear-gradient(135deg, rgba(21, 0, 42, 0.95), rgba(0, 0, 0, 0.8)),
+    radial-gradient(circle at 20% 80%, var(--tier-primary) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, var(--tier-secondary) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, var(--tier-tertiary) 0%, transparent 50%);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  position: relative;
+  overflow: visible;
+}
+
+.tier-apex .mission-panel::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(
+    45deg,
+    var(--tier-primary),
+    var(--tier-secondary),
+    var(--tier-tertiary),
+    var(--tier-quaternary)
+  );
+  border-radius: inherit;
+  z-index: -1;
+  animation: apex-gradient 3s ease infinite;
+}
+
+/* Apex Particle Effects */
+.tier-apex .particle-field {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.tier-apex .particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: var(--tier-primary);
+  border-radius: 50%;
+  box-shadow: 0 0 10px var(--tier-primary);
+  animation: particle-float 10s infinite linear;
+}
+
+.tier-apex .particle:nth-child(2n) {
+  background: var(--tier-secondary);
+  box-shadow: 0 0 10px var(--tier-secondary);
+  animation-duration: 15s;
+}
+
+.tier-apex .particle:nth-child(3n) {
+  background: var(--tier-tertiary);
+  box-shadow: 0 0 10px var(--tier-tertiary);
+  animation-duration: 20s;
+}
+
+@keyframes particle-float {
+  0% {
+    transform: translateY(100vh) translateX(0) scale(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-100vh) translateX(100px) scale(1.5);
+    opacity: 0;
+  }
+}
+
+/* Apex Holographic UI */
+.tier-apex .holo-panel {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  position: relative;
+  overflow: hidden;
+}
+
+.tier-apex .holo-panel::after {
+  content: '';
+  position: absolute;
+  top: -100%;
+  left: -25%;
+  width: 150%;
+  height: 300%;
+  background: linear-gradient(
+    transparent,
+    rgba(255, 255, 255, 0.1) 50%,
+    transparent
+  );
+  transform: rotate(45deg);
+  animation: holo-sweep 3s infinite;
+}
+
+@keyframes holo-sweep {
+  0% { top: -100%; }
+  100% { top: 100%; }
+}
+
+/* Apex Quantum Text Effect */
+.tier-apex .quantum-text {
+  position: relative;
+  display: inline-block;
+  background: linear-gradient(
+    45deg,
+    var(--tier-primary),
+    var(--tier-secondary),
+    var(--tier-tertiary)
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: quantum-shift 3s ease-in-out infinite;
+}
+
+@keyframes quantum-shift {
+  0%, 100% { filter: hue-rotate(0deg); }
+  50% { filter: hue-rotate(180deg); }
+}
+
+/* Apex Premium Features */
+.tier-apex .premium-feature {
+  position: relative;
+  border: 2px solid transparent;
+  background: linear-gradient(var(--bg-tertiary), var(--bg-tertiary)) padding-box,
+    linear-gradient(45deg, var(--tier-primary), var(--tier-secondary)) border-box;
+  animation: premium-pulse 2s ease-in-out infinite;
+}
+
+@keyframes premium-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+
+.tier-apex .unlock-all {
+  position: relative;
+  overflow: visible;
+}
+
+.tier-apex .unlock-all::after {
+  content: '∞ UNLIMITED ACCESS';
+  position: absolute;
+  top: -20px;
+  right: -10px;
+  font-size: 0.625rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  color: var(--tier-primary);
+  text-shadow: 0 0 10px var(--tier-glow);
+  animation: unlimited-float 3s ease-in-out infinite;
+}
+
+@keyframes unlimited-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+/* Tier Transition Effects */
+.tier-upgrade-animation {
+  animation: tier-upgrade 1s ease-out;
+}
+
+@keyframes tier-upgrade {
+  0% {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Access Control Visibility by Tier */
+.tier-nibbler .fang-only,
+.tier-nibbler .commander-only,
+.tier-nibbler .apex-only {
+  display: none;
+}
+
+.tier-fang .commander-only,
+.tier-fang .apex-only {
+  display: none;
+}
+
+.tier-commander .apex-only {
+  display: none;
+}
+
+/* Progressive Enhancement Indicators */
+.upgrade-prompt {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-md);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid currentColor;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+}
+
+.upgrade-prompt:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.tier-nibbler .upgrade-prompt { color: var(--tier-primary); }
+.tier-fang .upgrade-prompt { color: var(--tier-primary); }
+.tier-commander .upgrade-prompt { color: var(--tier-primary); }
+.tier-apex .upgrade-prompt { display: none; }

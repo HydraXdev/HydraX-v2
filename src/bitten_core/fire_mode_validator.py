@@ -40,6 +40,7 @@ class FireModeValidator:
             FireMode.SINGLE_SHOT: self._validate_single_shot,
             FireMode.CHAINGUN: self._validate_chaingun_mode,
             FireMode.AUTO_FIRE: self._validate_auto_fire,
+            FireMode.SEMI_AUTO: self._validate_semi_auto,
             FireMode.STEALTH: self._validate_stealth_mode,
             FireMode.MIDNIGHT_HAMMER: self._validate_midnight_hammer
         }
@@ -282,6 +283,40 @@ class FireModeValidator:
             )
         
         return ValidationResult(valid=True, reason="Auto-fire authorized", bot_responses={})
+    
+    def _validate_semi_auto(self, payload: Dict, profile: Dict) -> ValidationResult:
+        """SEMI-AUTO: Commander+ manual mode with lower TCS threshold"""
+        
+        user_tier = TierLevel(profile.get('tier', 'nibbler'))
+        if user_tier not in [TierLevel.COMMANDER, TierLevel.APEX]:
+            return ValidationResult(
+                valid=False,
+                reason="SEMI-AUTO: COMMANDER+ ONLY",
+                bot_responses={
+                    "drillbot": "MANUAL OVERRIDE REQUIRES ELITE STATUS.",
+                    "recruiterbot": "Commander tier unlocks semi-auto flexibility."
+                }
+            )
+        
+        # SEMI-AUTO requires 75%+ TCS (same as Fang arcade)
+        if payload.get('tcs', 0) < 75:
+            return ValidationResult(
+                valid=False,
+                reason="SEMI-AUTO REQUIRES 75%+ TCS",
+                bot_responses={
+                    "drillbot": "MINIMUM THRESHOLD NOT MET.",
+                    "medicbot": "Even in manual mode, standards apply."
+                }
+            )
+        
+        return ValidationResult(
+            valid=True, 
+            reason="Semi-auto fire authorized", 
+            bot_responses={
+                "drillbot": "MANUAL CONTROL ENGAGED. CHOOSE WISELY.",
+                "bit": "*ready stance*"
+            }
+        )
     
     def _validate_midnight_hammer(self, payload: Dict, profile: Dict) -> ValidationResult:
         """Special validation for network-wide events"""

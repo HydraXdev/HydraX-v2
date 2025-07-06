@@ -5,15 +5,18 @@ Handles persistence, timeout management, and session lifecycle for onboarding se
 Implements 7-day session retention with automatic cleanup.
 """
 
+from __future__ import annotations
+
 import json
 import logging
 import os
 import asyncio
 from datetime import datetime, timedelta
-from typing import Dict, Optional, List
+from typing import Dict, Optional, List, TYPE_CHECKING
 from pathlib import Path
 
-from .orchestrator import OnboardingSession
+if TYPE_CHECKING:
+    from .orchestrator import OnboardingSession
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +45,7 @@ class OnboardingSessionManager:
         
         logger.info(f"Session manager initialized with data dir: {self.data_dir}")
     
-    async def save_session(self, session: OnboardingSession) -> bool:
+    async def save_session(self, session: 'OnboardingSession') -> bool:
         """
         Save onboarding session to disk
         
@@ -80,7 +83,7 @@ class OnboardingSessionManager:
             logger.error(f"Error saving session for user {session.user_id}: {e}")
             return False
     
-    async def load_session(self, user_id: str) -> Optional[OnboardingSession]:
+    async def load_session(self, user_id: str) -> Optional['OnboardingSession']:
         """
         Load onboarding session from disk
         
@@ -104,6 +107,8 @@ class OnboardingSessionManager:
             session_data.pop('_metadata', None)
             
             # Create session object
+            # Import here to avoid circular import
+            from .orchestrator import OnboardingSession
             session = OnboardingSession.from_dict(session_data)
             
             # Check if session is expired

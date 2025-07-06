@@ -111,6 +111,9 @@ class UserProfile(Base):
     profile_id = Column(BigInteger, primary_key=True)
     user_id = Column(BigInteger, ForeignKey('users.user_id', ondelete='CASCADE'), unique=True, nullable=False)
     
+    # Identity
+    callsign = Column(String(50), unique=True, index=True)  # User's unique callsign
+    
     # XP & Progression
     total_xp = Column(Integer, nullable=False, default=0, index=True)
     current_rank = Column(String(50), nullable=False, default='RECRUIT')

@@ -11,6 +11,7 @@ class FireMode(Enum):
     SINGLE_SHOT = "single_shot"
     CHAINGUN = "chaingun"
     AUTO_FIRE = "auto_fire"
+    SEMI_AUTO = "semi_auto"  # Commander tier manual mode with lower TCS
     STEALTH = "stealth"
     MIDNIGHT_HAMMER = "midnight_hammer"
 

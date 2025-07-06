@@ -527,3 +527,178 @@ EDUCATION_CONFIG = {
 3. Add Telegram /learn commands
 4. Run database migrations
 5. Test full education flow end-to-end
+
+## 🔒 SECURITY ARCHITECTURE
+
+### Overview
+BITTEN implements defense-in-depth security architecture with multiple layers of protection, authentication, and monitoring. All security measures are designed to protect user funds, data, and trading integrity.
+
+### Security Principles
+1. **Zero Trust Architecture**: Every request is authenticated and authorized
+2. **Least Privilege Access**: Users only access features within their tier
+3. **Defense in Depth**: Multiple security layers prevent single point of failure
+4. **Fail Secure**: System defaults to safe state on any security failure
+5. **Complete Audit Trail**: All actions are logged for forensics
+
+### Core Security Components
+
+#### 1. **Authentication & Authorization**
+- Telegram OAuth integration for user identity
+- JWT tokens with 24-hour expiration
+- Session management with Redis backend
+- Multi-factor authentication for APEX tier
+- API key rotation every 30 days
+- Role-based access control (RBAC)
+
+#### 2. **Data Protection**
+- AES-256 encryption for sensitive data at rest
+- TLS 1.3 for all data in transit
+- Encrypted database connections
+- Secure key management with environment variables
+- No storage of MT5 passwords (OAuth only)
+- PII data minimization
+
+#### 3. **Anti-Cheat Mechanisms**
+- Trade result verification against MT5 logs
+- XP gain rate limiting (max 1000 XP/day)
+- Pattern detection for exploit attempts
+- Cooldown timer server-side enforcement
+- Risk limit bypass prevention
+- Achievement unlock verification
+
+#### 4. **Input Validation**
+- All inputs sanitized against injection
+- Whitelist validation for commands
+- Parameter type checking
+- Range validation for numeric inputs
+- File upload restrictions
+- Path traversal prevention
+
+#### 5. **Rate Limiting**
+- API endpoint rate limits (100/min)
+- Command cooldowns by tier
+- Trade execution throttling
+- Webhook request limiting
+- DDoS protection via Cloudflare
+
+#### 6. **Monitoring & Alerting**
+- Real-time security event monitoring
+- Anomaly detection for trading patterns
+- Failed authentication tracking
+- Suspicious activity alerts
+- Performance monitoring
+- Error rate tracking
+
+### Security Implementation Details
+
+#### Authentication Flow
+```
+1. User initiates /start command
+2. Bot generates unique session token
+3. User authorizes via Telegram OAuth
+4. Server validates Telegram hash
+5. JWT issued with user claims
+6. All subsequent requests include JWT
+7. Token refresh on expiration
+```
+
+#### Tier Authorization Matrix
+```
+Feature          | Nibbler | Fang | Commander | APEX
+-----------------|---------|------|-----------|-----
+Basic Trading    |    ✓    |  ✓   |     ✓     |  ✓
+Advanced Filters |    ✗    |  ✓   |     ✓     |  ✓  
+Auto Trading     |    ✗    |  ✗   |     ✓     |  ✓
+API Access       |    ✗    |  ✗   |     ✗     |  ✓
+Custom Strategies|    ✗    |  ✗   |     ✗     |  ✓
+```
+
+#### Encryption Standards
+- **Passwords**: bcrypt with cost factor 12
+- **API Keys**: AES-256-GCM
+- **Sessions**: HMAC-SHA256 signed
+- **Webhooks**: Ed25519 signatures
+- **Database**: Transparent encryption
+
+### Security Checklist for New Features
+
+#### Pre-Development
+- [ ] Threat model the feature
+- [ ] Define authorization requirements
+- [ ] Plan input validation strategy
+- [ ] Consider rate limiting needs
+- [ ] Review data classification
+
+#### Development
+- [ ] Implement authentication checks
+- [ ] Add input validation
+- [ ] Use parameterized queries
+- [ ] Implement rate limiting
+- [ ] Add security logging
+- [ ] Handle errors securely
+
+#### Testing
+- [ ] Test authentication bypass
+- [ ] Test authorization escalation
+- [ ] Test input injection
+- [ ] Test rate limit bypass
+- [ ] Test error disclosure
+- [ ] Run security scanner
+
+#### Deployment
+- [ ] Review security configuration
+- [ ] Enable monitoring alerts
+- [ ] Document security controls
+- [ ] Update security matrix
+- [ ] Notify security team
+
+### Incident Response Procedures
+
+#### Severity Levels
+1. **Critical**: User funds at risk, system compromise
+2. **High**: Data breach, authentication bypass
+3. **Medium**: Feature abuse, minor data exposure
+4. **Low**: Best practice violations
+
+#### Response Steps
+1. **Detect**: Monitoring alert or user report
+2. **Assess**: Determine severity and scope
+3. **Contain**: Isolate affected systems
+4. **Eradicate**: Remove threat/vulnerability
+5. **Recover**: Restore normal operations
+6. **Review**: Post-incident analysis
+
+#### Emergency Contacts
+- Security Lead: @CommanderBit (Telegram)
+- DevOps: Monitor #alerts channel
+- Legal: legal@bitten.trading
+
+### OWASP Compliance
+
+#### Top 10 Mitigations
+1. **Injection**: Parameterized queries, input validation
+2. **Broken Authentication**: MFA, session management
+3. **Sensitive Data**: Encryption, minimal storage
+4. **XML External Entities**: JSON-only APIs
+5. **Broken Access Control**: RBAC, tier verification
+6. **Security Misconfiguration**: Hardened configs
+7. **XSS**: Content Security Policy, sanitization
+8. **Insecure Deserialization**: Type validation
+9. **Vulnerable Components**: Dependency scanning
+10. **Insufficient Logging**: Comprehensive audit trail
+
+### Security Tools & Resources
+- **Static Analysis**: Bandit, Semgrep
+- **Dependency Scan**: Safety, Snyk
+- **Dynamic Testing**: OWASP ZAP
+- **Secrets Scan**: TruffleHog
+- **Monitoring**: Sentry, Datadog
+
+### Security Training Resources
+- OWASP Security Guide
+- Secure Coding Practices
+- Threat Modeling Handbook
+- Incident Response Playbook
+- Security Champion Program
+
+For detailed security implementation, see `/root/HydraX-v2/docs/education/SECURITY_GUIDE.md`

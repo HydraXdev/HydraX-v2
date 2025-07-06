@@ -53,26 +53,76 @@ class SessionConfig:
     optimal_pairs: List[str]
     bonus_multiplier: Optional[float] = None
 
+@dataclass
+class TierConfig:
+    """Tier-specific configuration"""
+    name: str
+    monthly_price: int
+    # Fire settings
+    daily_shots: int
+    min_tcs: int
+    risk_per_shot: float
+    # Risk control
+    default_risk: float
+    boost_risk: float
+    boost_min_balance: float
+    max_trades_per_day: int
+    max_open_trades: int
+    drawdown_cap: float
+    cooldown_mode: str
+    cooldown_hours: int
+    cooldown_max_trades: int
+    cooldown_risk: float
+    # Features
+    has_chaingun: bool
+    has_autofire: bool
+    has_stealth: bool
+    has_sniper_access: bool
+    has_midnight_hammer: bool
+    fire_type: str
+    # Position management
+    min_balance: float
+    max_concurrent_positions: int
+
+@dataclass 
+class TradeSizeValidation:
+    """Trade size validation configuration"""
+    enabled: bool
+    max_risk_per_trade: float
+    safety_multiplier: float
+    min_lot_size: float
+    max_lot_size: float
+
 class TradingPairsConfig:
     """
-    Centralized configuration manager for trading pairs
+    Centralized configuration manager for trading pairs and tier settings
     
     This class provides a single source of truth for all trading pair
-    configurations, eliminating scattered definitions across the codebase.
+    configurations and tier settings, eliminating scattered definitions across the codebase.
     """
     
-    def __init__(self, config_path: Optional[str] = None):
+    def __init__(self, config_path: Optional[str] = None, tier_config_path: Optional[str] = None):
         """Initialize configuration manager"""
         if config_path is None:
             # Default path relative to this file
             config_path = Path(__file__).parent.parent.parent / "config" / "trading_pairs.yml"
+            
+        if tier_config_path is None:
+            # Default tier config path
+            tier_config_path = Path(__file__).parent.parent.parent / "config" / "tier_settings.yml"
         
-        # Security: Validate and sanitize config path
+        # Security: Validate and sanitize config paths
         self.config_path = self._validate_config_path(config_path)
+        self.tier_config_path = self._validate_config_path(tier_config_path)
         self._config_data: Dict[str, Any] = {}
+        self._tier_config_data: Dict[str, Any] = {}
         self._trading_pairs: Dict[str, TradingPairSpec] = {}
         self._strategies: Dict[str, StrategyConfig] = {}
         self._sessions: Dict[str, SessionConfig] = {}
+        self._tiers: Dict[str, TierConfig] = {}
+        self._position_limits: Dict[float, int] = {}
+        self._trade_size_validation: Optional[TradeSizeValidation] = None
+        self._global_safety: Dict[str, Any] = {}
         self._loaded = False
         
         # Load configuration on initialization
@@ -112,11 +162,12 @@ class TradingPairsConfig:
             raise ValueError("Invalid configuration path") from None
     
     def load_config(self) -> None:
-        """Load configuration from YAML file with security validation"""
+        """Load configuration from YAML files with security validation"""
         try:
+            # Load trading pairs configuration
             # Security: Additional validation before loading
             if not self.config_path.exists():
-                raise FileNotFoundError("Configuration file not found")
+                raise FileNotFoundError("Trading pairs configuration file not found")
             
             # Security: Load with size limit to prevent DoS
             MAX_CONFIG_SIZE = 1024 * 1024  # 1MB limit
@@ -137,16 +188,37 @@ class TradingPairsConfig:
                 
                 self._validate_config_schema()
             
+            # Load tier settings configuration
+            if self.tier_config_path.exists():
+                if self.tier_config_path.stat().st_size > MAX_CONFIG_SIZE:
+                    raise ValueError("Tier configuration file too large")
+                
+                with open(self.tier_config_path, 'r', encoding='utf-8') as file:
+                    content = file.read()
+                    if len(content.strip()) == 0:
+                        raise ValueError("Tier configuration file is empty")
+                    
+                    self._tier_config_data = yaml.safe_load(content)
+                    
+                    if not isinstance(self._tier_config_data, dict):
+                        raise ValueError("Invalid tier configuration structure")
+                    
+                    self._validate_tier_config_schema()
+                    self._parse_tier_settings()
+            else:
+                logger.warning("Tier configuration file not found, using defaults")
+            
             self._parse_trading_pairs()
             self._parse_strategies()
             self._parse_sessions()
             self._loaded = True
             
-            logger.info("Trading configuration loaded successfully")
+            logger.info("Configuration loaded successfully")
             logger.info(f"Total pairs: {len(self._trading_pairs)}")
+            logger.info(f"Total tiers: {len(self._tiers)}")
             
         except Exception as e:
-            logger.error("Failed to load trading configuration")
+            logger.error("Failed to load configuration")
             raise ValueError("Configuration loading failed") from None
     
     def _validate_config_schema(self) -> None:
@@ -174,6 +246,26 @@ class TradingPairsConfig:
         for category in ['core_pairs', 'extra_pairs']:
             for pair_symbol, pair_config in trading_pairs[category].items():
                 self._validate_pair_config(pair_symbol, pair_config)
+    
+    def _validate_tier_config_schema(self) -> None:
+        """Validate tier configuration schema"""
+        required_sections = ['position_limits', 'tiers', 'global_safety']
+        
+        for section in required_sections:
+            if section not in self._tier_config_data:
+                raise ValueError(f"Missing required tier configuration section: {section}")
+        
+        # Validate tier structure
+        tiers = self._tier_config_data.get('tiers', {})
+        if not isinstance(tiers, dict):
+            raise ValueError("Invalid tiers structure")
+        
+        required_tiers = ['NIBBLER', 'FANG', 'COMMANDER', 'APEX']
+        for tier_name in required_tiers:
+            if tier_name not in tiers:
+                raise ValueError(f"Missing required tier: {tier_name}")
+            
+            self._validate_tier_config(tier_name, tiers[tier_name])
     
     def _validate_pair_config(self, symbol: str, config: dict) -> None:
         """Validate individual pair configuration for security"""
@@ -227,6 +319,38 @@ class TradingPairsConfig:
             tcs = config['tcs_requirement']
             if tcs is not None and (not isinstance(tcs, int) or not (0 <= tcs <= 100)):
                 raise ValueError(f"Invalid TCS requirement for pair {symbol}: {tcs}")
+    
+    def _validate_tier_config(self, tier_name: str, config: dict) -> None:
+        """Validate individual tier configuration"""
+        # Validate required sections
+        required_sections = ['pricing', 'fire_settings', 'risk_control', 'features', 'position_management']
+        for section in required_sections:
+            if section not in config:
+                raise ValueError(f"Missing required section '{section}' for tier {tier_name}")
+        
+        # Validate fire settings
+        fire_settings = config['fire_settings']
+        required_fire = ['daily_shots', 'min_tcs', 'risk_per_shot']
+        for field in required_fire:
+            if field not in fire_settings:
+                raise ValueError(f"Missing required fire setting '{field}' for tier {tier_name}")
+        
+        # Validate risk control
+        risk_control = config['risk_control']
+        required_risk = ['default_risk', 'boost_risk', 'max_trades_per_day', 'drawdown_cap']
+        for field in required_risk:
+            if field not in risk_control:
+                raise ValueError(f"Missing required risk control '{field}' for tier {tier_name}")
+        
+        # Validate numeric ranges
+        if not (0 <= fire_settings['min_tcs'] <= 100):
+            raise ValueError(f"Invalid min_tcs for tier {tier_name}")
+        
+        if not (0 < fire_settings['risk_per_shot'] <= 10):
+            raise ValueError(f"Invalid risk_per_shot for tier {tier_name}")
+        
+        if not (0 < risk_control['drawdown_cap'] <= 20):
+            raise ValueError(f"Invalid drawdown_cap for tier {tier_name}")
     
     def _parse_trading_pairs(self) -> None:
         """Parse trading pairs from configuration"""
@@ -298,6 +422,66 @@ class TradingPairsConfig:
                 bonus_multiplier=config.get('bonus_multiplier')
             )
             self._sessions[session_name] = session_config
+    
+    def _parse_tier_settings(self) -> None:
+        """Parse tier settings from configuration"""
+        # Parse position limits
+        position_limits = self._tier_config_data.get('position_limits', {}).get('balance_thresholds', {})
+        self._position_limits = {float(k): v for k, v in position_limits.items()}
+        
+        # Parse global safety settings
+        self._global_safety = self._tier_config_data.get('global_safety', {})
+        
+        # Parse trade size validation
+        trade_validation = self._global_safety.get('trade_size_validation', {})
+        if trade_validation:
+            self._trade_size_validation = TradeSizeValidation(
+                enabled=trade_validation.get('enabled', True),
+                max_risk_per_trade=trade_validation.get('max_risk_per_trade', 2.0),
+                safety_multiplier=trade_validation.get('safety_multiplier', 0.95),
+                min_lot_size=trade_validation.get('min_lot_size', 0.01),
+                max_lot_size=trade_validation.get('max_lot_size', 100.0)
+            )
+        
+        # Parse tier configurations
+        tiers_data = self._tier_config_data.get('tiers', {})
+        for tier_name, tier_config in tiers_data.items():
+            pricing = tier_config['pricing']
+            fire_settings = tier_config['fire_settings']
+            risk_control = tier_config['risk_control']
+            features = tier_config['features']
+            position_mgmt = tier_config['position_management']
+            
+            tier = TierConfig(
+                name=tier_name,
+                monthly_price=pricing['monthly_price'],
+                # Fire settings
+                daily_shots=fire_settings['daily_shots'],
+                min_tcs=fire_settings['min_tcs'],
+                risk_per_shot=fire_settings['risk_per_shot'],
+                # Risk control
+                default_risk=risk_control['default_risk'],
+                boost_risk=risk_control['boost_risk'],
+                boost_min_balance=risk_control.get('boost_min_balance', 500),
+                max_trades_per_day=risk_control['max_trades_per_day'],
+                max_open_trades=risk_control.get('max_open_trades', 1),
+                drawdown_cap=risk_control['drawdown_cap'],
+                cooldown_mode=risk_control.get('cooldown_mode', 'time_based'),
+                cooldown_hours=risk_control.get('cooldown_hours', 0),
+                cooldown_max_trades=risk_control.get('cooldown_max_trades', 6),
+                cooldown_risk=risk_control.get('cooldown_risk', 1.0),
+                # Features
+                has_chaingun=features.get('has_chaingun', False),
+                has_autofire=features.get('has_autofire', False),
+                has_stealth=features.get('has_stealth', False),
+                has_sniper_access=features.get('has_sniper_access', False),
+                has_midnight_hammer=features.get('has_midnight_hammer', False),
+                fire_type=features.get('fire_type', 'manual'),
+                # Position management
+                min_balance=position_mgmt['min_balance'],
+                max_concurrent_positions=position_mgmt['max_concurrent_positions']
+            )
+            self._tiers[tier_name] = tier
     
     # Trading Pairs Access Methods
     def get_all_pairs(self) -> Dict[str, TradingPairSpec]:
@@ -452,6 +636,105 @@ class TradingPairsConfig:
     def is_loaded(self) -> bool:
         """Check if configuration is loaded"""
         return self._loaded
+    
+    # Tier Configuration Access Methods
+    def get_tier_config(self, tier_name: str) -> Optional[TierConfig]:
+        """Get configuration for a specific tier"""
+        return self._tiers.get(tier_name.upper())
+    
+    def get_all_tiers(self) -> Dict[str, TierConfig]:
+        """Get all tier configurations"""
+        return self._tiers.copy()
+    
+    def get_tier_names(self) -> List[str]:
+        """Get list of tier names"""
+        return list(self._tiers.keys())
+    
+    def get_position_limits(self) -> Dict[float, int]:
+        """Get position limits by balance"""
+        return self._position_limits.copy()
+    
+    def get_position_limit_for_balance(self, balance: float) -> int:
+        """Get position limit for a specific balance"""
+        # Find the highest threshold <= balance
+        applicable_limits = [(threshold, limit) for threshold, limit in self._position_limits.items() if threshold <= balance]
+        if not applicable_limits:
+            return 1  # Default to 1 position if balance is below all thresholds
+        
+        # Return the limit for the highest applicable threshold
+        return max(applicable_limits, key=lambda x: x[0])[1]
+    
+    def get_trade_size_validation(self) -> Optional[TradeSizeValidation]:
+        """Get trade size validation configuration"""
+        return self._trade_size_validation
+    
+    def get_global_safety_setting(self, setting_name: str) -> Any:
+        """Get a specific global safety setting"""
+        return self._global_safety.get(setting_name)
+    
+    def validate_trade_size(self, lot_size: float, stop_loss_pips: float, pip_value: float, 
+                          account_balance: float, tier_name: str) -> Tuple[bool, str]:
+        """Validate if a trade size is within safety limits"""
+        if not self._trade_size_validation or not self._trade_size_validation.enabled:
+            return True, "Trade size validation disabled"
+        
+        # Calculate risk amount
+        risk_amount = lot_size * stop_loss_pips * pip_value
+        risk_percentage = (risk_amount / account_balance) * 100
+        
+        # Check against max risk per trade
+        max_risk = self._trade_size_validation.max_risk_per_trade
+        if risk_percentage > max_risk:
+            return False, f"Trade risk {risk_percentage:.2f}% exceeds maximum {max_risk}%"
+        
+        # Check lot size limits
+        if lot_size < self._trade_size_validation.min_lot_size:
+            return False, f"Lot size {lot_size} below minimum {self._trade_size_validation.min_lot_size}"
+        
+        if lot_size > self._trade_size_validation.max_lot_size:
+            return False, f"Lot size {lot_size} exceeds maximum {self._trade_size_validation.max_lot_size}"
+        
+        # Check against tier drawdown cap
+        tier_config = self.get_tier_config(tier_name)
+        if tier_config and risk_percentage > tier_config.drawdown_cap:
+            return False, f"Trade risk exceeds tier daily drawdown cap of {tier_config.drawdown_cap}%"
+        
+        return True, "Trade size validated"
+    
+    def calculate_safe_lot_size(self, stop_loss_pips: float, pip_value: float, 
+                               account_balance: float, tier_name: str) -> float:
+        """Calculate the maximum safe lot size for a trade"""
+        if not self._trade_size_validation:
+            return 0.01  # Default minimum
+        
+        tier_config = self.get_tier_config(tier_name)
+        if not tier_config:
+            return 0.01
+        
+        # Use the lower of: trade validation max risk or tier default risk
+        max_risk_pct = min(
+            self._trade_size_validation.max_risk_per_trade,
+            tier_config.default_risk
+        )
+        
+        # Calculate maximum risk amount
+        max_risk_amount = account_balance * (max_risk_pct / 100)
+        
+        # Calculate lot size
+        if stop_loss_pips > 0 and pip_value > 0:
+            lot_size = max_risk_amount / (stop_loss_pips * pip_value)
+            
+            # Apply safety multiplier
+            lot_size *= self._trade_size_validation.safety_multiplier
+            
+            # Enforce lot size limits
+            lot_size = max(lot_size, self._trade_size_validation.min_lot_size)
+            lot_size = min(lot_size, self._trade_size_validation.max_lot_size)
+            
+            # Round to 2 decimal places
+            return round(lot_size, 2)
+        
+        return self._trade_size_validation.min_lot_size
 
 # Global configuration instance with thread safety
 import threading

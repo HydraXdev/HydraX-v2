@@ -14,7 +14,11 @@ from .mission_briefing_generator import MissionBriefingGenerator, MissionBriefin
 from .social_sharing import SocialSharingManager
 from .emergency_stop_controller import EmergencyStopController, EmergencyStopTrigger, EmergencyStopLevel
 from .trade_confirmation_system import TradeConfirmationSystem, create_confirmation_system
+from .referral_system import ReferralSystem, ReferralCommandHandler
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
+from .onboarding import OnboardingOrchestrator
+from .trial_manager import get_trial_manager, AccountType, TrialStatus
+import asyncio
 
 @dataclass
 class TelegramUpdate:
@@ -50,18 +54,30 @@ class TelegramRouter:
         self.social_sharing = SocialSharingManager()
         self.emergency_controller = EmergencyStopController()
         
+        # Initialize referral system
+        self.referral_system = ReferralSystem()
+        self.referral_handler = ReferralCommandHandler(self.referral_system)
+        
         # Initialize trade confirmation system
         self.telegram_bot = telegram_bot
         self.confirmation_system = create_confirmation_system(self._send_telegram_message)
         
+        # Initialize onboarding system
+        self.onboarding_orchestrator = OnboardingOrchestrator(
+            persona_orchestrator=None,
+            hud_webapp_url=self.hud_webapp_url
+        )
+        
+        # Initialize trial system
+        self.trial_manager = get_trial_manager(telegram_bot)
+        
         # Start confirmation processing
         if telegram_bot:
-            import asyncio
             asyncio.create_task(self.confirmation_system.start_processing())
         
         # Command categories for help system
         self.command_categories = {
-            'System': ['start', 'help', 'intel', 'status', 'me'],
+            'System': ['start', 'help', 'intel', 'status', 'me', 'callsign', 'upgrade', 'subscribe', 'golive'],
             'Trading Info': ['positions', 'balance', 'history', 'performance', 'news'],
             'Trading Commands': ['fire', 'close', 'mode'],
             'Uncertainty Control': ['uncertainty', 'bitmode', 'yes', 'no', 'control', 'stealth', 'gemini', 'chaos'],
@@ -69,6 +85,7 @@ class TelegramRouter:
             'Elite Features': ['tactical', 'tcs', 'signals', 'closeall', 'backtest'],
             'Emergency Stop': ['emergency_stop', 'panic', 'halt_all', 'recover', 'emergency_status'],
             'Education': ['learn', 'missions', 'journal', 'squad', 'achievements', 'study', 'mentor'],
+            'Social': ['refer'],
             'Admin Only': ['logs', 'restart', 'backup', 'promote', 'ban']
         }
         
@@ -106,6 +123,41 @@ class TelegramRouter:
     def process_command(self, update: TelegramUpdate) -> CommandResult:
         """Process and route Telegram command"""
         try:
+            # Check if user is in onboarding flow first
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            
+            try:
+                session = loop.run_until_complete(
+                    self.onboarding_orchestrator.session_manager.load_session(str(update.user_id))
+                )
+                
+                if session and session.current_state.value not in ["complete", "error", None]:
+                    # User is in onboarding - process as onboarding input
+                    message, keyboard = loop.run_until_complete(
+                        self.onboarding_orchestrator.process_user_input(
+                            user_id=str(update.user_id),
+                            input_type='text',
+                            input_data=update.text
+                        )
+                    )
+                    loop.close()
+                    
+                    if keyboard and 'inline_keyboard' in keyboard:
+                        telegram_keyboard = InlineKeyboardMarkup([
+                            [InlineKeyboardButton(btn['text'], callback_data=btn['callback_data']) 
+                             for btn in row]
+                            for row in keyboard['inline_keyboard']
+                        ])
+                        return CommandResult(True, message, data={'reply_markup': telegram_keyboard})
+                    
+                    return CommandResult(True, message)
+                    
+            except Exception as e:
+                pass  # Continue to normal command processing
+            finally:
+                loop.close()
+            
             # Extract command and arguments
             command, args = self._parse_command(update.text)
             
@@ -168,6 +220,14 @@ class TelegramRouter:
             return self._cmd_status(update.user_id)
         elif command == '/me':
             return self._cmd_me(update.user_id, update.chat_id)
+        elif command == '/callsign':
+            return self._cmd_callsign(update.user_id, args)
+        elif command == '/upgrade':
+            return self._cmd_upgrade(update.user_id)
+        elif command == '/subscribe':
+            return self._cmd_subscribe(update.user_id)
+        elif command == '/golive':
+            return self._cmd_golive(update.user_id, args)
         
         # Trading Information Commands
         elif command == '/positions':
@@ -273,66 +333,166 @@ class TelegramRouter:
         elif command == '/mentor':
             return self._cmd_mentor(update.user_id, args)
         
+        # Social Commands
+        elif command == '/refer':
+            return self._cmd_refer(update.user_id, update.username, args)
+        
         else:
             return CommandResult(False, f"❌ Unknown command: {command}")
     
     # System Commands
-    @require_user()
     def _cmd_start(self, user_id: int, username: str, args: List[str]) -> CommandResult:
-        """Handle /start command with referral support"""
-        user_rank = self.rank_access.get_user_rank(user_id)
+        """Handle /start command with AAA-quality onboarding experience"""
         
-        # Add user if not exists
+        # Check if user exists
         is_new_user = not self.rank_access.get_user_info(user_id)
+        
         if is_new_user:
+            # Add user to system
             self.rank_access.add_user(user_id, username)
             
-            # Check for referral code
-            if args and args[0].startswith('ref_'):
-                try:
-                    recruiter_id = int(args[0].replace('ref_', ''))
-                    if recruiter_id != user_id:  # Can't recruit yourself
-                        success = self.profile_manager.register_recruit(
-                            recruiter_id, user_id, username
+            # Handle referral code if provided
+            referral_code = None
+            if args and args[0]:
+                referral_code = args[0]
+                # Convert old ref_123 format if needed
+                if referral_code.startswith('ref_'):
+                    try:
+                        referrer_id = referral_code.replace('ref_', '')
+                        self.referral_system.generate_referral_code(referrer_id)
+                        stats = self.referral_system.get_referral_stats(referrer_id)
+                        if stats['referral_code']:
+                            referral_code = stats['referral_code']
+                    except:
+                        pass
+            
+            # Start 15-day trial FIRST (no payment mention!)
+            try:
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                
+                # Start trial
+                trial_result = loop.run_until_complete(
+                    self.trial_manager.start_trial(user_id, AccountType.DEMO)
+                )
+                
+                if not trial_result.success:
+                    loop.close()
+                    return trial_result
+                
+                # Now start onboarding
+                message, keyboard = loop.run_until_complete(
+                    self.onboarding_orchestrator.start_onboarding(
+                        user_id=str(user_id),
+                        telegram_id=user_id,
+                        variant="standard"
+                    )
+                )
+                
+                # Store referral code for later processing
+                if referral_code:
+                    session = loop.run_until_complete(
+                        self.onboarding_orchestrator.session_manager.load_session(str(user_id))
+                    )
+                    if session:
+                        session.state_data['pending_referral'] = referral_code
+                        loop.run_until_complete(
+                            self.onboarding_orchestrator.session_manager.save_session(session)
                         )
-                        if success:
-                            # Notify user they were recruited
-                            welcome_msg = f"""🤖 **B.I.T.T.E.N. Trading Operations Center**
-
-**Bot-Integrated Tactical Trading Engine / Network**
-
-Welcome {username}! You've been recruited to the elite force.
-Your access level: **{user_rank.name}**
-
-*"You've been B.I.T.T.E.N. — now prove you belong."*
-
-🎯 **Quick Commands:**
-• `/intel` - Intel Command Center (Everything you need)
-• `/status` - System status
-• `/help` - Command list
-• `/me` - Your profile & stats
-• `/positions` - View positions (Auth+)
-• `/fire` - Execute trade (Auth+)
-
-🔐 **Access Levels:**
-👤 USER → 🔑 AUTHORIZED → ⭐ ELITE → 🛡️ ADMIN
-
-Type `/help` for complete command list."""
-                            return CommandResult(True, welcome_msg)
-                except:
-                    pass  # Invalid referral code
+                
+                loop.close()
+                
+                # Convert keyboard to telegram format
+                if keyboard and 'inline_keyboard' in keyboard:
+                    telegram_keyboard = InlineKeyboardMarkup([
+                        [InlineKeyboardButton(btn['text'], callback_data=btn['callback_data']) 
+                         for btn in row]
+                        for row in keyboard['inline_keyboard']
+                    ])
+                    return CommandResult(True, message, data={'reply_markup': telegram_keyboard})
+                
+                return CommandResult(True, message)
+                
+            except Exception as e:
+                # Fallback to simple welcome if onboarding fails
+                return self._show_simple_welcome(user_id, username)
         
-        welcome_msg = f"""🤖 **B.I.T.T.E.N. Trading Operations Center**
+        else:
+            # Existing user - check for active onboarding
+            try:
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                
+                session = loop.run_until_complete(
+                    self.onboarding_orchestrator.session_manager.load_session(str(user_id))
+                )
+                
+                if session and session.current_state.value not in ["complete", "error"]:
+                    # Resume onboarding
+                    message, keyboard = loop.run_until_complete(
+                        self.onboarding_orchestrator.resume_session(session)
+                    )
+                    loop.close()
+                    
+                    if keyboard and 'inline_keyboard' in keyboard:
+                        telegram_keyboard = InlineKeyboardMarkup([
+                            [InlineKeyboardButton(btn['text'], callback_data=btn['callback_data']) 
+                             for btn in row]
+                            for row in keyboard['inline_keyboard']
+                        ])
+                        return CommandResult(True, message, data={'reply_markup': telegram_keyboard})
+                    
+                    return CommandResult(True, message)
+                
+                loop.close()
+                
+            except Exception as e:
+                pass  # Continue to regular welcome
+            
+            # Check trial/subscription status for existing users
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            
+            try:
+                trial_status = loop.run_until_complete(
+                    self.trial_manager.check_trial_status(user_id)
+                )
+                
+                # Check if features are locked
+                from .database.connection import get_db_session
+                from .database.models import User
+                
+                with get_db_session() as session:
+                    user = session.query(User).filter(User.user_id == user_id).first()
+                    if user and user.features_locked:
+                        # User's trial/subscription expired - show subscription required
+                        return self._show_subscription_required(user_id, trial_status)
+                
+                # Check if we should show payment prompt (day 14-15)
+                if trial_status.get('show_payment_prompt', False):
+                    return self._show_payment_reminder(user_id, trial_status)
+                
+            except Exception as e:
+                logger.error(f"Error checking trial status: {e}")
+            finally:
+                loop.close()
+            
+            # Show regular welcome for active users
+            return self._show_regular_welcome(user_id, username)
+    
+    def _show_simple_welcome(self, user_id: int, username: str) -> CommandResult:
+        """Simple fallback welcome message"""
+        user_rank = self.rank_access.get_user_rank(user_id)
+        welcome_msg = f"""🤖 **Welcome to BITTEN!**
 
 **Bot-Integrated Tactical Trading Engine / Network**
 
-Welcome {username}! Your access level: **{user_rank.name}**
+Hello {username}! Your access level: **{user_rank.name}**
 
 *"You've been B.I.T.T.E.N. — now prove you belong."*
 
 🎯 **Quick Commands:**
-• `/intel` - Intel Command Center (Everything you need)
-• `/status` - System status
+• `/intel` - Intel Command Center
 • `/help` - Command list
 • `/me` - Your profile & stats
 • `/positions` - View positions (Auth+)
@@ -344,6 +504,90 @@ Welcome {username}! Your access level: **{user_rank.name}**
 Type `/help` for complete command list."""
         
         return CommandResult(True, welcome_msg)
+    
+    def _show_regular_welcome(self, user_id: int, username: str) -> CommandResult:
+        """Welcome message for returning users"""
+        user_rank = self.rank_access.get_user_rank(user_id)
+        profile = self.profile_manager.get_user_profile(user_id)
+        
+        # Check if they have a callsign from onboarding
+        callsign = profile.get('callsign', username) if profile else username
+        
+        welcome_msg = f"""🎖️ **Welcome back, {callsign}!**
+
+**B.I.T.T.E.N. Trading Operations Center**
+
+Status: **OPERATIONAL** ✅
+Your Rank: **{user_rank.name}**
+
+📊 **Your Stats:**
+• Total XP: {profile.get('total_xp', 0) if profile else 0}
+• Missions Complete: {profile.get('missions_complete', 0) if profile else 0}
+• Win Rate: {profile.get('win_rate', 0) if profile else 0}%
+
+🎯 **Mission Control:**
+• `/intel` - Access Intel Command Center
+• `/missions` - View active missions
+• `/fire` - Execute trades
+• `/squad` - Squad management
+
+*"Once bitten, forever committed."*
+
+Type `/help` for all commands."""
+        
+        return CommandResult(True, welcome_msg)
+    
+    def _show_subscription_required(self, user_id: int, trial_status: Dict) -> CommandResult:
+        """Show subscription required message for expired users"""
+        
+        days_since_expiry = trial_status.get('days_since_expiry', 0)
+        
+        if days_since_expiry > 45:
+            msg = """🔒 **ACCOUNT RESET REQUIRED**
+
+Your trial expired over 45 days ago. All progress has been reset.
+
+Ready to start fresh?"""
+        else:
+            msg = f"""🔒 **SUBSCRIPTION REQUIRED**
+
+Your trial has expired. All trading features are locked.
+
+⏰ **Good news!** You have {45 - days_since_expiry} days to subscribe and keep your:
+• XP and achievements
+• Trading history  
+• Squad connections
+• All your progress
+
+Ready to continue your journey?"""
+        
+        keyboard = InlineKeyboardMarkup([
+            [InlineKeyboardButton("🚀 Subscribe Now", callback_data="expired_subscribe")],
+            [InlineKeyboardButton("💰 View Pricing", callback_data="expired_pricing")]
+        ])
+        
+        return CommandResult(True, msg, data={'reply_markup': keyboard})
+    
+    def _show_payment_reminder(self, user_id: int, trial_status: Dict) -> CommandResult:
+        """Show payment reminder for day 14-15 users"""
+        
+        days_remaining = trial_status.get('days_remaining', 0)
+        
+        msg = f"""🎖️ **Welcome back, soldier!**
+
+⏰ **Trial Status**: {days_remaining} day{'s' if days_remaining != 1 else ''} remaining
+
+You've been crushing it! Don't lose your momentum.
+
+Ready to lock in your gains with a subscription?"""
+        
+        keyboard = InlineKeyboardMarkup([
+            [InlineKeyboardButton("💳 Subscribe Now", callback_data="trial_subscribe")],
+            [InlineKeyboardButton("📊 Compare Plans", callback_data="trial_compare_plans")],
+            [InlineKeyboardButton("⏰ Remind Me Later", callback_data="trial_remind_later")]
+        ])
+        
+        return CommandResult(True, msg, data={'reply_markup': keyboard})
     
     @require_user()
     def _cmd_help(self, user_id: int, args: List[str]) -> CommandResult:
@@ -530,6 +774,207 @@ Use `/positions` to check trading status"""
             profile_msg,
             data={'reply_markup': reply_markup}
         )
+    
+    def _cmd_callsign(self, user_id: int, args: List[str]) -> CommandResult:
+        """Handle /callsign command - Change user's callsign"""
+        
+        # If no args, show current callsign and instructions
+        if not args:
+            # Get current callsign
+            profile = self.profile_manager.get_user_profile(user_id)
+            current_callsign = profile.get('callsign', 'Not Set') if profile else 'Not Set'
+            
+            help_msg = f"""🎖️ **Callsign Management**
+
+**Current Callsign**: {current_callsign}
+
+To change your callsign:
+`/callsign NewCallsign`
+
+**Rules:**
+• 3-15 characters
+• Letters, numbers, underscores only
+• Must be unique
+• No special characters
+
+**Examples:**
+• `/callsign Eagle007`
+• `/callsign RedFox`
+• `/callsign Shadow_1`
+
+*Your callsign is your identity in the BITTEN network. Choose wisely, soldier!*"""
+            
+            return CommandResult(True, help_msg)
+        
+        # User wants to change callsign
+        new_callsign = args[0].strip()
+        
+        # Validate callsign using the onboarding validators
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        
+        try:
+            # Import validator
+            from .onboarding.validators import OnboardingValidators
+            validators = OnboardingValidators()
+            
+            # Validate the new callsign
+            is_valid, error_msg = loop.run_until_complete(
+                validators.validate_callsign(new_callsign)
+            )
+            
+            if not is_valid:
+                return CommandResult(False, error_msg)
+            
+            # Check if callsign is already taken in the database
+            from .database.connection import get_db_session
+            from .database.models import UserProfile
+            
+            with get_db_session() as session:
+                # Check if callsign exists
+                existing = session.query(UserProfile).filter(
+                    UserProfile.callsign == new_callsign,
+                    UserProfile.user_id != user_id
+                ).first()
+                
+                if existing:
+                    return CommandResult(
+                        False, 
+                        "🚨 **Already Taken**: Another operative has that callsign. Be original!"
+                    )
+                
+                # Update user's callsign
+                user_profile = session.query(UserProfile).filter(
+                    UserProfile.user_id == user_id
+                ).first()
+                
+                if not user_profile:
+                    # Create profile if it doesn't exist
+                    user_profile = UserProfile(
+                        user_id=user_id,
+                        callsign=new_callsign
+                    )
+                    session.add(user_profile)
+                else:
+                    old_callsign = user_profile.callsign or "Recruit"
+                    user_profile.callsign = new_callsign
+                
+                session.commit()
+                
+                # Update in-memory profile cache if exists
+                if hasattr(self.profile_manager, '_update_callsign'):
+                    self.profile_manager._update_callsign(user_id, new_callsign)
+                
+                success_msg = f"""✅ **Callsign Updated!**
+
+**New Callsign**: {new_callsign}
+
+Your identity has been updated across the BITTEN network.
+
+*"A new name, a new legend begins."*
+
+Use `/me` to see your updated profile."""
+                
+                return CommandResult(True, success_msg)
+                
+        except Exception as e:
+            logger.error(f"Error updating callsign: {e}")
+            return CommandResult(
+                False, 
+                "❌ Error updating callsign. Please try again later."
+            )
+        finally:
+            loop.close()
+    
+    def _cmd_upgrade(self, user_id: int) -> CommandResult:
+        """Handle /upgrade command - Tier upgrade/downgrade management"""
+        from .upgrade_router import get_upgrade_router
+        
+        upgrade_router = get_upgrade_router()
+        return upgrade_router.get_upgrade_options(user_id)
+    
+    def _cmd_subscribe(self, user_id: int) -> CommandResult:
+        """Handle /subscribe command - Direct subscription access"""
+        
+        # Check trial status
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        
+        try:
+            trial_status = loop.run_until_complete(
+                self.trial_manager.check_trial_status(user_id)
+            )
+            
+            # Show subscription options
+            result = loop.run_until_complete(
+                self.trial_manager._show_subscription_options(user_id)
+            )
+            
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error showing subscription options: {e}")
+            return CommandResult(False, "❌ Error loading subscription options")
+        finally:
+            loop.close()
+    
+    def _cmd_golive(self, user_id: int, args: List[str]) -> CommandResult:
+        """Handle /golive command - Switch from demo to live account"""
+        
+        if not args:
+            # Show instructions
+            msg = """🔄 **SWITCH TO LIVE TRADING**
+
+Ready to trade with real money? Your progress will be preserved!
+
+**To switch to live:**
+`/golive MT5_ACCOUNT MT5_SERVER`
+
+**Example:**
+`/golive 12345678 ICMarkets-Live03`
+
+**What transfers:**
+• All your XP and levels
+• Your trading history
+• Squad connections
+• All achievements
+
+⚠️ **IMPORTANT**: Live trading involves real money risk!"""
+            
+            return CommandResult(True, msg)
+        
+        if len(args) < 2:
+            return CommandResult(False, "❌ Please provide both MT5 account and server")
+        
+        mt5_account = args[0]
+        mt5_server = args[1]
+        
+        # Validate inputs
+        if not mt5_account.isdigit():
+            return CommandResult(False, "❌ MT5 account must be numeric")
+        
+        # Process migration
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        
+        try:
+            result = loop.run_until_complete(
+                self.trial_manager.migrate_demo_to_live(
+                    user_id,
+                    {
+                        'account': mt5_account,
+                        'server': mt5_server
+                    }
+                )
+            )
+            
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error migrating to live: {e}")
+            return CommandResult(False, "❌ Migration failed. Please try again.")
+        finally:
+            loop.close()
     
     # Trading Information Commands
     @require_authorized()
@@ -902,7 +1347,8 @@ Use `/positions` to check trading status"""
             'squad': 'Squad management',
             'achievements': 'Medals & progress',
             'study': 'Join study groups',
-            'mentor': 'Find or become mentor'
+            'mentor': 'Find or become mentor',
+            'refer': 'Elite recruitment system'
         }
         return descriptions.get(command, 'Command description')
     
@@ -1133,8 +1579,65 @@ Use `/positions` to check trading status"""
         data = callback_query.get('data', '')
         user_id = callback_query.get('from', {}).get('id', 0)
         
+        # Handle onboarding callbacks FIRST (highest priority)
+        if data.startswith('onboarding_'):
+            # Process onboarding callback
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            
+            try:
+                # Extract the actual callback data
+                onboarding_data = data.replace('onboarding_', '')
+                
+                message, keyboard = loop.run_until_complete(
+                    self.onboarding_orchestrator.process_user_input(
+                        user_id=str(user_id),
+                        input_type='callback',
+                        input_data=onboarding_data
+                    )
+                )
+                
+                # Check if onboarding is complete
+                if 'Welcome to BITTEN, soldier' in message or 'SYSTEMS ONLINE' in message:
+                    # Process any pending referral
+                    session = loop.run_until_complete(
+                        self.onboarding_orchestrator.session_manager.load_session(str(user_id))
+                    )
+                    
+                    if session and session.state_data.get('pending_referral'):
+                        referral_code = session.state_data['pending_referral']
+                        ip_address = "unknown"  # In production, get from request
+                        
+                        success, ref_message, result = self.referral_system.use_referral_code(
+                            str(user_id), referral_code, 
+                            callback_query.get('from', {}).get('username', 'Unknown'),
+                            ip_address
+                        )
+                        
+                        if success:
+                            message += f"\n\n🎯 **Squad Bonus**: You've joined {result.get('referrer_name', 'Unknown')}'s squad!"
+                
+                loop.close()
+                
+                if keyboard and 'inline_keyboard' in keyboard:
+                    telegram_keyboard = InlineKeyboardMarkup([
+                        [InlineKeyboardButton(btn['text'], callback_data=btn['callback_data']) 
+                         for btn in row]
+                        for row in keyboard['inline_keyboard']
+                    ])
+                    return CommandResult(True, message, data={
+                        'reply_markup': telegram_keyboard,
+                        'edit_message': True
+                    })
+                
+                return CommandResult(True, message, data={'edit_message': True})
+                
+            except Exception as e:
+                loop.close()
+                return CommandResult(False, "❌ Onboarding error. Please type /start to continue.")
+        
         # Handle Intel Command Center callbacks
-        if data.startswith('menu_'):
+        elif data.startswith('menu_'):
             from .intel_command_center import handle_intel_callback
             user_rank = self.rank_access.get_user_rank(user_id)
             result = handle_intel_callback(data, user_id, user_rank)
@@ -1164,6 +1667,40 @@ Use `/positions` to check trading status"""
                     result.get('text', ''),
                     data=result.get('data', {})
                 )
+        
+        # Handle Trial/Subscription callbacks
+        elif data.startswith('trial_') or data.startswith('expired_') or \
+             data.startswith('subscribe_'):
+            # Handle trial-related callbacks
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            
+            try:
+                result = loop.run_until_complete(
+                    self.trial_manager.handle_subscription_callback(user_id, data)
+                )
+                
+                if result.data and result.data.get('reply_markup'):
+                    return CommandResult(True, result.message, data={
+                        'reply_markup': result.data['reply_markup'],
+                        'edit_message': True
+                    })
+                
+                return CommandResult(True, result.message, data={'edit_message': True})
+                
+            except Exception as e:
+                logger.error(f"Error handling trial callback: {e}")
+                return CommandResult(False, "❌ Error processing request")
+            finally:
+                loop.close()
+        
+        # Handle Upgrade/Subscription callbacks
+        elif data.startswith('upgrade_') or data.startswith('downgrade_') or \
+             data in ['cancel_subscription', 'reactivate_subscription', 'view_tier_benefits', 
+                      'renew_current', 'manage_payment']:
+            from .upgrade_router import get_upgrade_router
+            upgrade_router = get_upgrade_router()
+            return upgrade_router.handle_subscription_callback(user_id, data)
         
         # Handle Education System callbacks
         elif data.startswith('learn_') or data.startswith('missions_') or data.startswith('journal_') or \
@@ -2367,6 +2904,36 @@ Use `/positions` to check trading status"""
                 
         except Exception as e:
             return CommandResult(False, f"❌ Mentor program error: {str(e)}")
+    
+    # Social Commands
+    @require_user()
+    def _cmd_refer(self, user_id: int, username: str, args: List[str]) -> CommandResult:
+        """Handle /refer command - Elite military-style recruitment system"""
+        try:
+            # Integrate with XP economy if available
+            if hasattr(self, 'bitten_core') and hasattr(self.bitten_core, 'xp_economy'):
+                self.referral_system.xp_economy = self.bitten_core.xp_economy
+            
+            # Process referral command
+            response = self.referral_handler.handle_command(str(user_id), username, args)
+            
+            # Check if we need to add inline keyboard for certain responses
+            data = None
+            if not args or (args and args[0].lower() == 'generate'):
+                # Add share button for generated codes
+                keyboard = [
+                    [InlineKeyboardButton("📤 Share Code", callback_data="share_referral_code")],
+                    [InlineKeyboardButton("📊 View Squad Tree", callback_data="referral_tree")],
+                    [InlineKeyboardButton("🏆 Leaderboard", callback_data="referral_leaderboard")]
+                ]
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                data = {'reply_markup': reply_markup}
+            
+            return CommandResult(True, response, data)
+            
+        except Exception as e:
+            logger.error(f"Referral command error: {e}")
+            return CommandResult(False, f"❌ Referral system error: {str(e)}")
     
     # Education System Helper Methods
     def _get_user_education_progress(self, user_id: int) -> Dict:

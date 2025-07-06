@@ -8,7 +8,9 @@ email validation, and other form inputs with military-themed error messages.
 import re
 import logging
 from typing import Dict, Any, Optional, List, Tuple
-from email_validator import validate_email, EmailNotValidError
+# from email_validator import validate_email, EmailNotValidError
+# Using simple regex for now
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +38,7 @@ class OnboardingValidators:
         
         logger.info("Onboarding validators initialized")
     
-    def validate_callsign(self, callsign: str) -> Tuple[bool, str]:
+    async def validate_callsign(self, callsign: str) -> Tuple[bool, str]:
         """
         Validate callsign according to BITTEN rules
         
@@ -95,12 +97,12 @@ class OnboardingValidators:
             # Strip whitespace
             email = email.strip()
             
-            # Use email-validator library
-            try:
-                valid_email = validate_email(email)
+            # Use simple regex validation for now
+            email_pattern = re.compile(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
+            if email_pattern.match(email):
                 return True, ""
-            except EmailNotValidError as e:
-                return False, f"📧 **Invalid Email**: {str(e)}"
+            else:
+                return False, "📧 **Invalid Email**: Please enter a valid email address (e.g., soldier@bitten.com)"
             
         except Exception as e:
             logger.error(f"Error validating email: {e}")

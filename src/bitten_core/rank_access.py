@@ -207,6 +207,8 @@ COMMAND_PERMISSIONS = {
     '/start': UserRank.USER,
     '/help': UserRank.USER,
     '/status': UserRank.USER,
+    '/me': UserRank.USER,
+    '/refer': UserRank.USER,
     
     # Bot Control Commands - All Users
     '/disclaimer': UserRank.USER,

@@ -558,8 +558,24 @@ class UserProfileManager:
         # Add recruitment analytics
         recruitment_analytics = self._get_recruitment_analytics(user_id, recruiting)
         
+        # Get callsign from database if available
+        callsign = None
+        try:
+            from .database.connection import get_db_session
+            from .database.models import UserProfile
+            
+            with get_db_session() as session:
+                profile = session.query(UserProfile).filter(
+                    UserProfile.user_id == user_id
+                ).first()
+                if profile:
+                    callsign = profile.callsign
+        except:
+            pass
+        
         return {
             'user_id': user_id,
+            'callsign': callsign,
             'rank': stats.rank_achieved,
             'total_xp': stats.total_xp,
             'next_rank_xp': self._get_next_rank_threshold(stats.total_xp),
@@ -578,6 +594,10 @@ class UserProfileManager:
             'recruitment_stats': recruitment_analytics,
             'joined_days_ago': (time.time() - stats.joined_at) // 86400
         }
+    
+    def get_user_profile(self, user_id: int) -> Optional[Dict]:
+        """Convenience method to get user profile (alias for get_full_profile)"""
+        return self.get_full_profile(user_id)
     
     def _get_next_rank_threshold(self, current_xp: int) -> int:
         """Get XP needed for next rank"""

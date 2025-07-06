@@ -1,0 +1,16 @@
+[Unit]
+Description=BITTEN Web Application
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/HydraX-v2
+Environment="PATH=/usr/local/bin:/usr/bin:/bin"
+Environment="PYTHONPATH=/root/HydraX-v2"
+ExecStart=/usr/bin/python3 src/bitten_core/web_app.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

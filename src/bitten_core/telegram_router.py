@@ -13,6 +13,7 @@ from .user_profile import UserProfileManager
 from .mission_briefing_generator import MissionBriefingGenerator, MissionBriefing
 from .social_sharing import SocialSharingManager
 from .emergency_stop_controller import EmergencyStopController, EmergencyStopTrigger, EmergencyStopLevel
+from .trade_confirmation_system import TradeConfirmationSystem, create_confirmation_system
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 
 @dataclass
@@ -36,7 +37,7 @@ class CommandResult:
 class TelegramRouter:
     """Advanced Telegram command processing and routing system"""
     
-    def __init__(self, bitten_core=None, hud_webapp_url="https://your-domain.com/sniper_hud"):
+    def __init__(self, bitten_core=None, hud_webapp_url="https://your-domain.com/sniper_hud", telegram_bot=None):
         self.rank_access = RankAccess()
         self.bitten_core = bitten_core
         self.profile_manager = UserProfileManager()
@@ -49,13 +50,22 @@ class TelegramRouter:
         self.social_sharing = SocialSharingManager()
         self.emergency_controller = EmergencyStopController()
         
+        # Initialize trade confirmation system
+        self.telegram_bot = telegram_bot
+        self.confirmation_system = create_confirmation_system(self._send_telegram_message)
+        
+        # Start confirmation processing
+        if telegram_bot:
+            import asyncio
+            asyncio.create_task(self.confirmation_system.start_processing())
+        
         # Command categories for help system
         self.command_categories = {
             'System': ['start', 'help', 'intel', 'status', 'me'],
             'Trading Info': ['positions', 'balance', 'history', 'performance', 'news'],
             'Trading Commands': ['fire', 'close', 'mode'],
             'Uncertainty Control': ['uncertainty', 'bitmode', 'yes', 'no', 'control', 'stealth', 'gemini', 'chaos'],
-            'Configuration': ['risk', 'maxpos', 'notify'],
+            'Configuration': ['risk', 'maxpos', 'notify', 'confirmations'],
             'Elite Features': ['tactical', 'tcs', 'signals', 'closeall', 'backtest'],
             'Emergency Stop': ['emergency_stop', 'panic', 'halt_all', 'recover', 'emergency_status'],
             'Admin Only': ['logs', 'restart', 'backup', 'promote', 'ban']
@@ -175,6 +185,8 @@ class TelegramRouter:
             return self._cmd_maxpos(update.user_id, args)
         elif command == '/notify':
             return self._cmd_notify(update.user_id, args)
+        elif command == '/confirmations':
+            return self._cmd_confirmations(update.user_id, args)
         
         # Elite Commands
         elif command == '/tactical':
@@ -841,6 +853,7 @@ Use `/positions` to check trading status"""
             'risk': 'Set risk parameters',
             'maxpos': 'Max positions limit',
             'notify': 'Notification settings',
+            'confirmations': 'Configure trade confirmations',
             'tactical': 'Tactical mode',
             'tcs': 'Trade confidence score',
             'signals': 'Market signals',
@@ -1781,3 +1794,120 @@ Use `/positions` to check trading status"""
 """
         
         return base_help
+    
+    async def _send_telegram_message(self, user_id: int, message: str) -> bool:
+        """Send message to Telegram user"""
+        try:
+            if self.telegram_bot:
+                await self.telegram_bot.send_message(
+                    chat_id=user_id,
+                    text=message,
+                    parse_mode='Markdown'
+                )
+                return True
+            else:
+                # Log message if no bot configured (for testing)
+                logger.info(f"[TELEGRAM CONFIRMATION] To user {user_id}: {message}")
+                return True
+        except Exception as e:
+            logger.error(f"Failed to send Telegram message to user {user_id}: {e}")
+            return False
+    
+    @require_authorized()
+    def _cmd_confirmations(self, user_id: int, args: List[str]) -> CommandResult:
+        """Handle /confirmations command - Configure trade confirmations"""
+        
+        if not args:
+            # Show current settings
+            prefs = self.confirmation_system.get_user_preferences(user_id)
+            
+            msg = "⚙️ **Trade Confirmation Settings**\n\n"
+            
+            # General settings
+            status = "✅ Enabled" if prefs['confirmations_enabled'] else "❌ Disabled"
+            msg += f"🔔 **Confirmations**: {status}\n"
+            
+            if prefs['min_pnl_threshold'] > 0:
+                msg += f"💰 **Min P&L Threshold**: ${prefs['min_pnl_threshold']:.2f}\n"
+            
+            msg += "\n📊 **Notification Types**:\n"
+            
+            # List each notification type
+            notification_types = [
+                ('trade_opened', 'Trade Opened', '🔫'),
+                ('trade_closed', 'Trade Closed', '🎯'),
+                ('stop_loss_hit', 'Stop Loss Hit', '❌'),
+                ('take_profit_hit', 'Take Profit Hit', '💰'),
+                ('partial_close', 'Partial Close', '⚡'),
+                ('trailing_stop_moved', 'Trailing Stop', '📈'),
+                ('breakeven_moved', 'Breakeven', '🛡️'),
+                ('emergency_close', 'Emergency Close', '🚨'),
+                ('connection_lost', 'Connection Issues', '🔌')
+            ]
+            
+            for type_key, display_name, emoji in notification_types:
+                enabled = prefs.get(f"{type_key}_enabled", True)
+                status_emoji = "✅" if enabled else "❌"
+                msg += f"{emoji} {display_name}: {status_emoji}\n"
+            
+            msg += f"\n**Usage Examples**:\n"
+            msg += f"`/confirmations enable` - Enable all confirmations\n"
+            msg += f"`/confirmations disable` - Disable all confirmations\n"
+            msg += f"`/confirmations trailing off` - Disable trailing stop notifications\n"
+            msg += f"`/confirmations threshold 10` - Only notify for P&L > $10\n"
+            
+            return CommandResult(True, msg)
+        
+        # Handle configuration changes
+        action = args[0].lower()
+        
+        if action == 'enable':
+            self.confirmation_system.set_user_preferences(user_id, {
+                **self.confirmation_system.get_user_preferences(user_id),
+                'confirmations_enabled': True
+            })
+            return CommandResult(True, "✅ Trade confirmations **enabled**")
+        
+        elif action == 'disable':
+            self.confirmation_system.set_user_preferences(user_id, {
+                **self.confirmation_system.get_user_preferences(user_id),
+                'confirmations_enabled': False
+            })
+            return CommandResult(True, "❌ Trade confirmations **disabled**")
+        
+        elif action == 'threshold':
+            if len(args) < 2 or not args[1].replace('.', '').isdigit():
+                return CommandResult(False, "❌ Usage: `/confirmations threshold <amount>`")
+            
+            threshold = float(args[1])
+            self.confirmation_system.set_user_preferences(user_id, {
+                **self.confirmation_system.get_user_preferences(user_id),
+                'min_pnl_threshold': threshold
+            })
+            return CommandResult(True, f"💰 P&L threshold set to **${threshold:.2f}**")
+        
+        elif action in ['trailing', 'breakeven', 'partial', 'emergency']:
+            if len(args) < 2 or args[1].lower() not in ['on', 'off']:
+                return CommandResult(False, f"❌ Usage: `/confirmations {action} on/off`")
+            
+            enabled = args[1].lower() == 'on'
+            key_map = {
+                'trailing': 'trailing_stop_moved_enabled',
+                'breakeven': 'breakeven_moved_enabled', 
+                'partial': 'partial_close_enabled',
+                'emergency': 'emergency_close_enabled'
+            }
+            
+            prefs = self.confirmation_system.get_user_preferences(user_id)
+            prefs[key_map[action]] = enabled
+            self.confirmation_system.set_user_preferences(user_id, prefs)
+            
+            status = "enabled" if enabled else "disabled"
+            return CommandResult(True, f"✅ {action.title()} notifications **{status}**")
+        
+        else:
+            return CommandResult(False, "❌ Invalid option. Use `/confirmations` to see available options.")
+    
+    def get_confirmation_system(self) -> TradeConfirmationSystem:
+        """Get the trade confirmation system instance"""
+        return self.confirmation_system

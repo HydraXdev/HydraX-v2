@@ -1,12 +1,12 @@
 {
-  "current_mode": "bit_mode",
+  "current_mode": "full_control",
   "uncertainty_level": "minimal",
-  "user_control_preference": 0.5,
-  "decision_anxiety_level": 0.48,
+  "user_control_preference": 0.7,
+  "decision_anxiety_level": 0.45999999999999996,
   "gemini_competitive_drive": 0.5,
-  "total_decisions": 1,
-  "correct_decisions": 1,
+  "total_decisions": 2,
+  "correct_decisions": 2,
   "gemini_wins": 0,
   "user_wins": 0,
-  "last_updated": "2025-07-06T02:05:07.474454"
+  "last_updated": "2025-07-06T02:10:58.448268"
 }

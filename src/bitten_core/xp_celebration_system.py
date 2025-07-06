@@ -10,7 +10,24 @@ from enum import Enum
 import random
 import logging
 
-from .psyops.adaptive_bot_system import NPCPersonality, NPCResponse
+# Removed references to manipulation systems
+# from .psyops.adaptive_bot_system import NPCPersonality, NPCResponse
+from enum import Enum
+from dataclasses import dataclass
+
+class NPCPersonality(Enum):
+    """Basic NPC personalities for positive interaction"""
+    DRILL_INSTRUCTOR = "drill_instructor"
+    TACTICAL_ANALYST = "tactical_analyst"
+    PSYCHOLOGIST = "psychologist"
+    MYSTERIOUS_INSIDER = "mysterious_insider"
+
+@dataclass
+class NPCResponse:
+    """Simple NPC response structure"""
+    personality: NPCPersonality
+    message: str
+    emotion: str
 
 logger = logging.getLogger(__name__)
 

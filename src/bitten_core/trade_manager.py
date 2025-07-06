@@ -13,7 +13,8 @@ import json
 from enum import Enum
 
 from .risk_management import TradeManagementPlan, TradeManagementFeature, RiskProfile
-from .mt5_bridge_adapter import get_bridge_adapter
+from ..mt5_bridge.mt5_bridge_adapter import get_bridge_adapter
+from .trade_confirmation_system import TradeConfirmationSystem
 
 logger = logging.getLogger(__name__)
 
@@ -78,12 +79,15 @@ class TradeManager:
     Monitors and modifies trades based on XP-unlocked features
     """
     
-    def __init__(self):
+    def __init__(self, confirmation_system: Optional[TradeConfirmationSystem] = None):
         self.adapter = get_bridge_adapter()
         self.active_trades: Dict[str, ActiveTrade] = {}
         self.monitoring = False
         self.monitor_task = None
         self.check_interval = 1.0  # Check every second
+        
+        # Trade confirmation system
+        self.confirmation_system = confirmation_system
         
         # Price data (would come from broker feed in production)
         self.current_prices = {}
@@ -114,6 +118,31 @@ class TradeManager:
             trade.peak_price = trade.entry_price
         else:
             trade.peak_price = trade.entry_price
+        
+        # Send trade opened confirmation
+        if self.confirmation_system:
+            asyncio.create_task(self._send_trade_opened_confirmation(trade))
+    
+    async def _send_trade_opened_confirmation(self, trade: ActiveTrade):
+        """Send trade opened confirmation to Telegram"""
+        trade_data = {
+            'trade_id': trade.trade_id,
+            'ticket': trade.ticket,
+            'symbol': trade.symbol,
+            'direction': trade.direction,
+            'volume': trade.volume,
+            'entry_price': trade.entry_price,
+            'stop_loss': trade.current_sl,
+            'take_profit': trade.current_tp,
+            'metadata': {
+                'open_time': trade.open_time.isoformat(),
+                'management_features': [plan.feature.value for plan in trade.management_plans]
+            }
+        }
+        
+        await self.confirmation_system.send_trade_opened_confirmation(
+            trade.user_id, trade_data
+        )
     
     def remove_trade(self, trade_id: str):
         """Remove a trade from management"""
@@ -123,11 +152,78 @@ class TradeManager:
             exit_data = self.get_exit_data_for_xp(trade)
             self.exit_history.append(exit_data)
             
+            # Send trade closed confirmation
+            if self.confirmation_system:
+                asyncio.create_task(self._send_trade_closed_confirmation(trade))
+            
             del self.active_trades[trade_id]
             logger.info(f"Removed trade {trade_id} from management")
             
             # Send exit data to XP system (would be async in production)
             self._send_exit_to_xp_system(exit_data)
+    
+    async def _send_trade_closed_confirmation(self, trade: ActiveTrade):
+        """Send trade closed confirmation to Telegram"""
+        trade_data = {
+            'trade_id': trade.trade_id,
+            'ticket': trade.ticket,
+            'symbol': trade.symbol,
+            'direction': trade.direction,
+            'volume': trade.volume,
+            'entry_price': trade.entry_price,
+            'exit_price': trade.exit_price or self.current_prices.get(trade.symbol, trade.entry_price),
+            'pnl_pips': trade.exit_pnl_pips or trade.current_pnl_pips,
+            'pnl_dollars': (trade.exit_pnl_pips or trade.current_pnl_pips) * 10,  # Approximate
+            'reason': self._get_exit_reason(trade),
+            'metadata': {
+                'exit_type': trade.exit_type.value if trade.exit_type else 'manual',
+                'duration_minutes': (trade.exit_time - trade.open_time).total_seconds() / 60 if trade.exit_time else 0,
+                'partial_closed': trade.partial_closed,
+                'was_breakeven': trade.is_breakeven,
+                'was_trailing': trade.is_trailing
+            }
+        }
+        
+        # Choose appropriate confirmation type
+        if trade.exit_type == ExitType.STOP_LOSS:
+            await self.confirmation_system.send_stop_loss_hit_confirmation(
+                trade.user_id, trade_data
+            )
+        elif trade.exit_type == ExitType.TAKE_PROFIT:
+            await self.confirmation_system.send_take_profit_hit_confirmation(
+                trade.user_id, trade_data
+            )
+        elif trade.exit_type == ExitType.EMERGENCY:
+            await self.confirmation_system.send_emergency_close_confirmation(
+                trade.user_id, trade_data
+            )
+        elif trade.exit_type == ExitType.PARACHUTE:
+            await self.confirmation_system.send_parachute_exit_confirmation(
+                trade.user_id, trade_data
+            )
+        else:
+            await self.confirmation_system.send_trade_closed_confirmation(
+                trade.user_id, trade_data
+            )
+    
+    def _get_exit_reason(self, trade: ActiveTrade) -> str:
+        """Get human-readable exit reason"""
+        if trade.exit_type == ExitType.STOP_LOSS:
+            return "Stop loss hit"
+        elif trade.exit_type == ExitType.TAKE_PROFIT:
+            return "Take profit hit"
+        elif trade.exit_type == ExitType.TRAILING_STOP:
+            return "Trailing stop hit"
+        elif trade.exit_type == ExitType.PARACHUTE:
+            return "Parachute exit (no XP penalty)"
+        elif trade.exit_type == ExitType.EMERGENCY:
+            return "Emergency close"
+        elif trade.exit_type == ExitType.CHAINGUN:
+            return "Chaingun mode exit"
+        elif trade.exit_type == ExitType.PROFIT_RUNNER:
+            return "Profit runner partial close"
+        else:
+            return "Manual close"
     
     def _send_exit_to_xp_system(self, exit_data: Dict):
         """Send exit data to XP calculation system"""
@@ -287,6 +383,7 @@ class TradeManager:
     async def _move_to_breakeven(self, trade: ActiveTrade, plus_pips: float):
         """Move stop loss to breakeven (plus optional pips)"""
         pip_value = self.symbol_specs.get(trade.symbol, {}).get('pip_value', 0.0001)
+        old_sl = trade.current_sl
         
         if trade.direction == "BUY":
             new_sl = trade.entry_price + (plus_pips * pip_value)
@@ -295,6 +392,10 @@ class TradeManager:
                 if success:
                     trade.current_sl = new_sl
                     self._notify(f"✅ Moved {trade.symbol} to breakeven{f'+{plus_pips}' if plus_pips > 0 else ''}")
+                    
+                    # Send breakeven confirmation
+                    if self.confirmation_system:
+                        await self._send_breakeven_confirmation(trade, old_sl, plus_pips)
         else:
             new_sl = trade.entry_price - (plus_pips * pip_value)
             if new_sl < trade.current_sl:
@@ -302,10 +403,36 @@ class TradeManager:
                 if success:
                     trade.current_sl = new_sl
                     self._notify(f"✅ Moved {trade.symbol} to breakeven{f'+{plus_pips}' if plus_pips > 0 else ''}")
+                    
+                    # Send breakeven confirmation
+                    if self.confirmation_system:
+                        await self._send_breakeven_confirmation(trade, old_sl, plus_pips)
+    
+    async def _send_breakeven_confirmation(self, trade: ActiveTrade, old_sl: float, plus_pips: float):
+        """Send breakeven move confirmation"""
+        breakeven_data = {
+            'trade_id': trade.trade_id,
+            'ticket': trade.ticket,
+            'symbol': trade.symbol,
+            'new_stop_loss': trade.current_sl,
+            'entry_price': trade.entry_price,
+            'current_pnl_pips': trade.current_pnl_pips,
+            'metadata': {
+                'old_stop_loss': old_sl,
+                'breakeven_plus_pips': plus_pips,
+                'trigger_pips': trade.current_pnl_pips
+            }
+        }
+        
+        await self.confirmation_system.send_breakeven_moved_confirmation(
+            trade.user_id, breakeven_data
+        )
     
     async def _trail_stop(self, trade: ActiveTrade, plan: TradeManagementPlan, 
                          current_price: float, pip_value: float):
         """Trail the stop loss"""
+        old_sl = trade.current_sl
+        
         if trade.direction == "BUY":
             trail_price = current_price - (plan.trailing_distance_pips * pip_value)
             if trail_price > trade.current_sl and (not trade.last_trail_price or 
@@ -315,6 +442,10 @@ class TradeManager:
                     trade.current_sl = trail_price
                     trade.last_trail_price = current_price
                     trade.is_trailing = True
+                    
+                    # Send trailing stop confirmation
+                    if self.confirmation_system:
+                        await self._send_trailing_stop_confirmation(trade, old_sl, plan.trailing_distance_pips, current_price)
         else:
             trail_price = current_price + (plan.trailing_distance_pips * pip_value)
             if trail_price < trade.current_sl and (not trade.last_trail_price or 
@@ -324,6 +455,30 @@ class TradeManager:
                     trade.current_sl = trail_price
                     trade.last_trail_price = current_price
                     trade.is_trailing = True
+                    
+                    # Send trailing stop confirmation
+                    if self.confirmation_system:
+                        await self._send_trailing_stop_confirmation(trade, old_sl, plan.trailing_distance_pips, current_price)
+    
+    async def _send_trailing_stop_confirmation(self, trade: ActiveTrade, old_sl: float, 
+                                             trail_distance: float, current_price: float):
+        """Send trailing stop move confirmation"""
+        trail_data = {
+            'trade_id': trade.trade_id,
+            'ticket': trade.ticket,
+            'symbol': trade.symbol,
+            'new_stop_loss': trade.current_sl,
+            'current_pnl_pips': trade.current_pnl_pips,
+            'metadata': {
+                'old_stop_loss': old_sl,
+                'trail_distance': trail_distance,
+                'current_price': current_price
+            }
+        }
+        
+        await self.confirmation_system.send_trailing_stop_moved_confirmation(
+            trade.user_id, trail_data
+        )
     
     async def _partial_close(self, trade: ActiveTrade, percent: float):
         """Partially close a position"""
@@ -333,9 +488,41 @@ class TradeManager:
         if close_volume >= 0.01:  # Minimum lot size
             result = await self._close_partial_position(trade, close_volume)
             if result:
+                old_volume = trade.volume
                 trade.partial_closed += percent
                 trade.volume -= close_volume
                 self._notify(f"💰 Closed {percent}% of {trade.symbol} at {trade.current_pnl_pips:.1f} pips profit!")
+                
+                # Send partial close confirmation
+                if self.confirmation_system:
+                    await self._send_partial_close_confirmation(trade, close_volume, percent, old_volume)
+    
+    async def _send_partial_close_confirmation(self, trade: ActiveTrade, closed_volume: float, 
+                                             closed_percent: float, original_volume: float):
+        """Send partial close confirmation"""
+        current_price = self.current_prices.get(trade.symbol, trade.entry_price)
+        
+        partial_data = {
+            'trade_id': trade.trade_id,
+            'ticket': trade.ticket,
+            'symbol': trade.symbol,
+            'direction': trade.direction,
+            'closed_volume': closed_volume,
+            'exit_price': current_price,
+            'pnl_pips': trade.current_pnl_pips,
+            'pnl_dollars': trade.current_pnl_pips * 10,  # Approximate
+            'reason': f'Partial close ({closed_percent:.1f}%)',
+            'metadata': {
+                'remaining_volume': trade.volume,
+                'closed_percent': closed_percent,
+                'original_volume': original_volume,
+                'total_closed_percent': trade.partial_closed
+            }
+        }
+        
+        await self.confirmation_system.send_partial_close_confirmation(
+            trade.user_id, partial_data
+        )
     
     async def _modify_stop_loss(self, trade: ActiveTrade, new_sl: float) -> bool:
         """Send stop loss modification to MT5"""

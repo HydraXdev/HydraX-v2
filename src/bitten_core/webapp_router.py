@@ -46,7 +46,8 @@ class WebAppRouter:
             'leaderboard': self._handle_leaderboard_view,
             'achievements': self._handle_achievements_view,
             'recruitment': self._handle_recruitment_view,
-            'settings': self._handle_settings_view
+            'settings': self._handle_settings_view,
+            'update_settings': self._handle_update_settings
         }
         
         # Cache for webapp data
@@ -349,36 +350,15 @@ class WebAppRouter:
     
     def _handle_settings_view(self, request: WebAppRequest) -> Dict[str, Any]:
         """Handle settings view request"""
-        # Get user settings
-        if self.bitten_core and hasattr(self.bitten_core, 'get_user_settings'):
-            settings = self.bitten_core.get_user_settings(request.user_id)
-        else:
-            settings = self._get_default_settings()
+        from .user_settings import settings_manager
+        
+        # Get formatted settings for webapp
+        formatted_settings = settings_manager.format_for_webapp(str(request.user_id))
         
         return {
             'success': True,
             'view': 'settings',
-            'data': {
-                'settings': settings,
-                'notifications': {
-                    'signals': settings.get('notify_signals', True),
-                    'trades': settings.get('notify_trades', True),
-                    'achievements': settings.get('notify_achievements', True),
-                    'recruitment': settings.get('notify_recruitment', True)
-                },
-                'trading': {
-                    'risk_percentage': settings.get('risk_percentage', 2),
-                    'max_positions': settings.get('max_positions', 3),
-                    'default_mode': settings.get('default_mode', 'bit'),
-                    'auto_close': settings.get('auto_close', False)
-                },
-                'display': {
-                    'theme': settings.get('theme', 'dark'),
-                    'language': settings.get('language', 'en'),
-                    'time_format': settings.get('time_format', '24h'),
-                    'currency_display': settings.get('currency_display', 'USD')
-                }
-            }
+            'data': formatted_settings
         }
     
     def _parse_webapp_data(self, request_data: str) -> Optional[Dict]:
@@ -761,3 +741,30 @@ class WebAppRouter:
             'time_format': '24h',
             'currency_display': 'USD'
         }
+    
+    def _handle_update_settings(self, request: WebAppRequest) -> Dict[str, Any]:
+        """Handle settings update request"""
+        from .user_settings import settings_manager
+        
+        # Extract settings updates from request
+        updates = request.data.get('settings', {})
+        
+        if not updates:
+            return self._error_response("No settings to update")
+        
+        try:
+            # Update settings
+            updated_settings = settings_manager.update_user_settings(
+                str(request.user_id),
+                updates
+            )
+            
+            # Return updated settings
+            return {
+                'success': True,
+                'message': 'Settings updated successfully',
+                'data': settings_manager.format_for_webapp(str(request.user_id))
+            }
+            
+        except Exception as e:
+            return self._error_response(f"Failed to update settings: {str(e)}")

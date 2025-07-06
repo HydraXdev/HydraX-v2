@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BITTEN Compound Calculator - War Room</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #0a0a0a;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .calculator-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #00ff00;
+            padding-bottom: 20px;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px #00ff00;
+        }
+        
+        .header p {
+            color: #888;
+            font-style: italic;
+        }
+        
+        .calculator-form {
+            background: rgba(0, 255, 0, 0.05);
+            border: 1px solid #00ff00;
+            border-radius: 5px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 14px;
+            color: #00ff00;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            background: #000;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            border-radius: 3px;
+            transition: all 0.3s;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #00ff00;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .calculate-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(45deg, #00ff00, #00cc00);
+            border: none;
+            color: #000;
+            font-weight: bold;
+            font-size: 18px;
+            text-transform: uppercase;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.3s;
+            margin-top: 20px;
+            letter-spacing: 2px;
+        }
+        
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 255, 0, 0.5);
+        }
+        
+        .results-section {
+            background: rgba(0, 255, 0, 0.05);
+            border: 1px solid #00ff00;
+            border-radius: 5px;
+            padding: 30px;
+            display: none;
+        }
+        
+        .results-section.active {
+            display: block;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .result-title {
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+        
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .result-card {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #00ff00;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px;
+        }
+        
+        .result-card .label {
+            font-size: 12px;
+            color: #888;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+        
+        .result-card .value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #00ff00;
+            text-shadow: 0 0 10px #00ff00;
+        }
+        
+        .growth-chart {
+            margin-top: 30px;
+            height: 400px;
+            position: relative;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #00ff00;
+            border-radius: 5px;
+            padding: 20px;
+        }
+        
+        .chart-canvas {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .breakdown-table {
+            width: 100%;
+            margin-top: 30px;
+            border-collapse: collapse;
+        }
+        
+        .breakdown-table th,
+        .breakdown-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(0, 255, 0, 0.3);
+        }
+        
+        .breakdown-table th {
+            background: rgba(0, 255, 0, 0.1);
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+        
+        .breakdown-table tr:hover {
+            background: rgba(0, 255, 0, 0.05);
+        }
+        
+        .tips-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(255, 215, 0, 0.05);
+            border: 1px solid #ffd700;
+            border-radius: 5px;
+        }
+        
+        .tips-section h3 {
+            color: #ffd700;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+        
+        .tips-section ul {
+            list-style: none;
+            padding-left: 20px;
+        }
+        
+        .tips-section li {
+            margin-bottom: 10px;
+            position: relative;
+        }
+        
+        .tips-section li:before {
+            content: '⚡';
+            position: absolute;
+            left: -20px;
+        }
+        
+        .close-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 0, 0, 0.2);
+            border: 2px solid #ff0000;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+        
+        .close-button:hover {
+            background: rgba(255, 0, 0, 0.4);
+            transform: rotate(90deg);
+        }
+        
+        .preset-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .preset-btn {
+            flex: 1;
+            padding: 10px;
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+        
+        .preset-btn:hover {
+            background: rgba(0, 255, 0, 0.2);
+        }
+        
+        .preset-btn.active {
+            background: rgba(0, 255, 0, 0.3);
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="close-button" onclick="closeCalculator()">✕</div>
+    
+    <div class="calculator-container">
+        <div class="header">
+            <h1>📊 COMPOUND CALCULATOR</h1>
+            <p>"Watch your profits multiply like a tactical nuke"</p>
+        </div>
+        
+        <div class="calculator-form">
+            <div class="preset-buttons">
+                <div class="preset-btn" onclick="setPreset('conservative')">
+                    🛡️ Conservative<br>(5% monthly)
+                </div>
+                <div class="preset-btn" onclick="setPreset('moderate')">
+                    ⚖️ Moderate<br>(10% monthly)
+                </div>
+                <div class="preset-btn" onclick="setPreset('aggressive')">
+                    🔥 Aggressive<br>(20% monthly)
+                </div>
+                <div class="preset-btn" onclick="setPreset('bitten')">
+                    🤖 BITTEN Elite<br>(15% monthly)
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="initialCapital">Initial Capital ($)</label>
+                    <input type="number" id="initialCapital" value="1000" min="100" step="100">
+                </div>
+                <div class="form-group">
+                    <label for="monthlyAddition">Monthly Addition ($)</label>
+                    <input type="number" id="monthlyAddition" value="0" min="0" step="100">
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="monthlyReturn">Monthly Return (%)</label>
+                    <input type="number" id="monthlyReturn" value="10" min="0" max="100" step="0.5">
+                </div>
+                <div class="form-group">
+                    <label for="compoundFrequency">Compound Frequency</label>
+                    <select id="compoundFrequency">
+                        <option value="monthly">Monthly</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="daily">Daily</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="timePeriod">Time Period (Years)</label>
+                    <input type="number" id="timePeriod" value="1" min="0.25" max="10" step="0.25">
+                </div>
+                <div class="form-group">
+                    <label for="withdrawalRate">Monthly Withdrawal (%)</label>
+                    <input type="number" id="withdrawalRate" value="0" min="0" max="50" step="1">
+                </div>
+            </div>
+            
+            <button class="calculate-btn" onclick="calculateCompound()">
+                CALCULATE FUTURE WEALTH
+            </button>
+        </div>
+        
+        <div class="results-section" id="resultsSection">
+            <h2 class="result-title">🎯 PROJECTION RESULTS</h2>
+            
+            <div class="result-grid">
+                <div class="result-card">
+                    <div class="label">Final Balance</div>
+                    <div class="value" id="finalBalance">$0</div>
+                </div>
+                <div class="result-card">
+                    <div class="label">Total Return</div>
+                    <div class="value" id="totalReturn">0%</div>
+                </div>
+                <div class="result-card">
+                    <div class="label">Total Profit</div>
+                    <div class="value" id="totalProfit">$0</div>
+                </div>
+                <div class="result-card">
+                    <div class="label">Monthly Income</div>
+                    <div class="value" id="monthlyIncome">$0</div>
+                </div>
+            </div>
+            
+            <div class="growth-chart">
+                <canvas id="growthChart" class="chart-canvas"></canvas>
+            </div>
+            
+            <table class="breakdown-table" id="breakdownTable">
+                <thead>
+                    <tr>
+                        <th>Month</th>
+                        <th>Balance</th>
+                        <th>Interest</th>
+                        <th>Addition</th>
+                        <th>Withdrawal</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody id="breakdownBody">
+                    <!-- Rows will be added dynamically -->
+                </tbody>
+            </table>
+            
+            <div class="tips-section">
+                <h3>💡 BITTEN Elite Tips</h3>
+                <ul>
+                    <li>Start with what you can afford to lose</li>
+                    <li>Consistency beats home runs every time</li>
+                    <li>Reinvest profits during growth phase</li>
+                    <li>Consider withdrawals only after year 2</li>
+                    <li>15% monthly is achievable with BITTEN signals</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Initialize Telegram WebApp
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+        
+        // Chart.js for visualization
+        let growthChart = null;
+        
+        function setPreset(type) {
+            // Remove active class from all
+            document.querySelectorAll('.preset-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Add active class to clicked
+            event.target.closest('.preset-btn').classList.add('active');
+            
+            // Set values based on preset
+            const presets = {
+                conservative: { return: 5, withdrawal: 0 },
+                moderate: { return: 10, withdrawal: 0 },
+                aggressive: { return: 20, withdrawal: 0 },
+                bitten: { return: 15, withdrawal: 0 }
+            };
+            
+            const preset = presets[type];
+            document.getElementById('monthlyReturn').value = preset.return;
+            document.getElementById('withdrawalRate').value = preset.withdrawal;
+        }
+        
+        function calculateCompound() {
+            // Get input values
+            const initialCapital = parseFloat(document.getElementById('initialCapital').value);
+            const monthlyAddition = parseFloat(document.getElementById('monthlyAddition').value);
+            const monthlyReturn = parseFloat(document.getElementById('monthlyReturn').value) / 100;
+            const compoundFrequency = document.getElementById('compoundFrequency').value;
+            const timePeriod = parseFloat(document.getElementById('timePeriod').value);
+            const withdrawalRate = parseFloat(document.getElementById('withdrawalRate').value) / 100;
+            
+            // Calculate compound frequency multiplier
+            let compoundMultiplier = 1;
+            if (compoundFrequency === 'weekly') compoundMultiplier = 4.33;
+            if (compoundFrequency === 'daily') compoundMultiplier = 30;
+            
+            // Calculate results
+            const totalMonths = timePeriod * 12;
+            let balance = initialCapital;
+            const monthlyData = [];
+            
+            for (let month = 1; month <= totalMonths; month++) {
+                const startBalance = balance;
+                
+                // Calculate interest
+                const effectiveRate = monthlyReturn / compoundMultiplier;
+                let monthlyInterest = 0;
+                
+                for (let i = 0; i < compoundMultiplier; i++) {
+                    monthlyInterest += balance * effectiveRate;
+                    balance += balance * effectiveRate;
+                }
+                
+                // Add monthly addition
+                balance += monthlyAddition;
+                
+                // Calculate withdrawal
+                const withdrawal = balance * withdrawalRate;
+                balance -= withdrawal;
+                
+                // Store data
+                monthlyData.push({
+                    month,
+                    startBalance,
+                    interest: monthlyInterest,
+                    addition: monthlyAddition,
+                    withdrawal,
+                    endBalance: balance
+                });
+            }
+            
+            // Display results
+            displayResults(initialCapital, balance, monthlyData);
+            
+            // Show results section
+            document.getElementById('resultsSection').classList.add('active');
+            
+            // Smooth scroll to results
+            document.getElementById('resultsSection').scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'start' 
+            });
+        }
+        
+        function displayResults(initial, final, data) {
+            // Calculate summary stats
+            const totalProfit = final - initial - (data.length * parseFloat(document.getElementById('monthlyAddition').value));
+            const totalReturn = ((final - initial) / initial) * 100;
+            const lastMonthInterest = data[data.length - 1].interest;
+            
+            // Update result cards
+            document.getElementById('finalBalance').textContent = formatCurrency(final);
+            document.getElementById('totalReturn').textContent = formatPercent(totalReturn);
+            document.getElementById('totalProfit').textContent = formatCurrency(totalProfit);
+            document.getElementById('monthlyIncome').textContent = formatCurrency(lastMonthInterest);
+            
+            // Update breakdown table (show first 12 months and last 3)
+            const tbody = document.getElementById('breakdownBody');
+            tbody.innerHTML = '';
+            
+            const monthsToShow = [...data.slice(0, 12)];
+            if (data.length > 15) {
+                monthsToShow.push({ month: '...', isEllipsis: true });
+                monthsToShow.push(...data.slice(-3));
+            } else if (data.length > 12) {
+                monthsToShow.push(...data.slice(12));
+            }
+            
+            monthsToShow.forEach(row => {
+                if (row.isEllipsis) {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = '<td colspan="6" style="text-align: center;">...</td>';
+                    tbody.appendChild(tr);
+                } else {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>Month ${row.month}</td>
+                        <td>${formatCurrency(row.startBalance)}</td>
+                        <td style="color: #00ff00;">+${formatCurrency(row.interest)}</td>
+                        <td>${row.addition > 0 ? '+' + formatCurrency(row.addition) : '-'}</td>
+                        <td style="color: #ff6666;">${row.withdrawal > 0 ? '-' + formatCurrency(row.withdrawal) : '-'}</td>
+                        <td><strong>${formatCurrency(row.endBalance)}</strong></td>
+                    `;
+                    tbody.appendChild(tr);
+                }
+            });
+            
+            // Draw chart
+            drawGrowthChart(data);
+        }
+        
+        function drawGrowthChart(data) {
+            const canvas = document.getElementById('growthChart');
+            const ctx = canvas.getContext('2d');
+            
+            // Clear previous chart
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Set canvas size
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            
+            // Prepare data
+            const months = data.map(d => d.month);
+            const balances = data.map(d => d.endBalance);
+            
+            // Find min/max for scaling
+            const maxBalance = Math.max(...balances);
+            const minBalance = 0;
+            
+            // Drawing parameters
+            const padding = 40;
+            const chartWidth = canvas.width - 2 * padding;
+            const chartHeight = canvas.height - 2 * padding;
+            
+            // Draw axes
+            ctx.strokeStyle = '#00ff00';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(padding, padding);
+            ctx.lineTo(padding, canvas.height - padding);
+            ctx.lineTo(canvas.width - padding, canvas.height - padding);
+            ctx.stroke();
+            
+            // Draw grid lines
+            ctx.strokeStyle = 'rgba(0, 255, 0, 0.1)';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= 5; i++) {
+                const y = padding + (chartHeight / 5) * i;
+                ctx.beginPath();
+                ctx.moveTo(padding, y);
+                ctx.lineTo(canvas.width - padding, y);
+                ctx.stroke();
+                
+                // Y-axis labels
+                ctx.fillStyle = '#00ff00';
+                ctx.font = '12px Courier New';
+                ctx.textAlign = 'right';
+                const value = maxBalance - (maxBalance / 5) * i;
+                ctx.fillText(formatCurrency(value, true), padding - 10, y + 4);
+            }
+            
+            // Draw growth line
+            ctx.strokeStyle = '#00ff00';
+            ctx.lineWidth = 3;
+            ctx.shadowColor = '#00ff00';
+            ctx.shadowBlur = 10;
+            ctx.beginPath();
+            
+            data.forEach((point, index) => {
+                const x = padding + (chartWidth / (data.length - 1)) * index;
+                const y = canvas.height - padding - (point.endBalance / maxBalance) * chartHeight;
+                
+                if (index === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+                
+                // Draw points
+                ctx.fillStyle = '#00ff00';
+                ctx.beginPath();
+                ctx.arc(x, y, 3, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+            
+            // X-axis labels (show every 3rd month)
+            ctx.fillStyle = '#00ff00';
+            ctx.font = '12px Courier New';
+            ctx.textAlign = 'center';
+            data.forEach((point, index) => {
+                if (index % 3 === 0 || index === data.length - 1) {
+                    const x = padding + (chartWidth / (data.length - 1)) * index;
+                    ctx.fillText(`M${point.month}`, x, canvas.height - padding + 20);
+                }
+            });
+        }
+        
+        function formatCurrency(value, compact = false) {
+            if (compact && value >= 1000000) {
+                return '$' + (value / 1000000).toFixed(1) + 'M';
+            } else if (compact && value >= 1000) {
+                return '$' + (value / 1000).toFixed(1) + 'K';
+            }
+            return '$' + value.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        }
+        
+        function formatPercent(value) {
+            return value.toFixed(1) + '%';
+        }
+        
+        function closeCalculator() {
+            tg.close();
+        }
+        
+        // Auto-calculate on load
+        window.addEventListener('load', () => {
+            // Set BITTEN preset by default
+            document.querySelectorAll('.preset-btn')[3].click();
+        });
+    </script>
+</body>
+</html>

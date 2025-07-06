@@ -1,0 +1,7152 @@
+{
+  "simulation_date": "2025-07-05T22:17:08.258244",
+  "simulation_days": 365,
+  "player_profiles": {
+    "casual": {
+      "name": "Casual Player",
+      "trades_per_day": 0.5,
+      "win_rate": 0.55,
+      "avg_volume": 0.5,
+      "high_tcs_rate": 0.3,
+      "session_days_per_week": 3,
+      "retention_rate": 0.85,
+      "description": "Trades occasionally, moderate win rate"
+    },
+    "active": {
+      "name": "Active Trader",
+      "trades_per_day": 2.0,
+      "win_rate": 0.65,
+      "avg_volume": 0.8,
+      "high_tcs_rate": 0.5,
+      "session_days_per_week": 5,
+      "retention_rate": 0.95,
+      "description": "Regular trader with good discipline"
+    },
+    "hardcore": {
+      "name": "Hardcore Trader",
+      "trades_per_day": 5.0,
+      "win_rate": 0.7,
+      "avg_volume": 1.2,
+      "high_tcs_rate": 0.7,
+      "session_days_per_week": 7,
+      "retention_rate": 0.98,
+      "description": "Professional level engagement"
+    },
+    "newbie": {
+      "name": "New Player",
+      "trades_per_day": 0.3,
+      "win_rate": 0.45,
+      "avg_volume": 0.3,
+      "high_tcs_rate": 0.2,
+      "session_days_per_week": 2,
+      "retention_rate": 0.7,
+      "description": "Learning the system, low activity"
+    },
+    "weekend_warrior": {
+      "name": "Weekend Warrior",
+      "trades_per_day": 3.0,
+      "win_rate": 0.6,
+      "avg_volume": 1.0,
+      "high_tcs_rate": 0.4,
+      "session_days_per_week": 2,
+      "retention_rate": 0.9,
+      "description": "High activity on weekends only"
+    },
+    "skilled_casual": {
+      "name": "Skilled Casual",
+      "trades_per_day": 1.0,
+      "win_rate": 0.75,
+      "avg_volume": 0.7,
+      "high_tcs_rate": 0.6,
+      "session_days_per_week": 3,
+      "retention_rate": 0.92,
+      "description": "High skill, low time commitment"
+    }
+  },
+  "xp_configuration": {
+    "thresholds": {
+      "USER": 0,
+      "AUTHORIZED": 1000,
+      "ELITE": 5000,
+      "ADMIN": 10000
+    },
+    "rewards": {
+      "base_trade": 10,
+      "winning_trade": 25,
+      "high_tcs_bonus": 15,
+      "volume_bonus": 5,
+      "streak_bonus": 10,
+      "daily_bonus": 50,
+      "weekly_bonus": 200,
+      "monthly_bonus": 500,
+      "comeback_bonus": 100,
+      "achievement_multiplier": 2.0
+    },
+    "achievements": {
+      "first_trade": 100,
+      "trades_10": 150,
+      "trades_50": 300,
+      "trades_100": 500,
+      "streak_3": 150,
+      "streak_5": 250,
+      "streak_10": 500,
+      "volume_10": 100,
+      "volume_50": 200,
+      "volume_100": 300,
+      "accuracy_60": 200,
+      "accuracy_70": 300,
+      "accuracy_80": 400,
+      "week_active": 200,
+      "month_active": 500,
+      "rank_up": 500
+    }
+  },
+  "simulation_results": [
+    {
+      "profile": "casual",
+      "final_xp": 13370,
+      "final_rank": "ADMIN",
+      "total_trades": 76,
+      "win_rate": 47.368421052631575,
+      "best_streak": 6,
+      "achievements": [
+        "first_trade",
+        "streak_3",
+        "trades_10",
+        "volume_10",
+        "streak_5",
+        "trades_50"
+      ],
+      "achievement_count": 6,
+      "rank_milestones": {
+        "AUTHORIZED": {
+          "day": 36,
+          "xp": 1080,
+          "trades_at_milestone": 7
+        },
+        "ELITE": {
+          "day": 150,
+          "xp": 5115,
+          "trades_at_milestone": 33
+        },
+        "ADMIN": {
+          "day": 249,
+          "xp": 10005,
+          "trades_at_milestone": 56
+        }
+      },
+      "avg_xp_per_day": 36.63013698630137,
+      "avg_xp_per_active_day": 175.92105263157896,
+      "avg_xp_per_trade": 175.92105263157896,
+      "active_days": 76,
+      "retention": false,
+      "xp_sources": {
+        "base": 760,
+        "daily_bonus": 3800,
+        "win_bonus": 900,
+        "achievements": 2550,
+        "tcs_bonus": 360,
+        "comeback_bonus": 1200,
+        "streak_bonus": 300,
+        "monthly_bonus": 3500
+      },
+      "daily_data": [
+        {
+          "day": 1,
+          "xp": 0,
+          "daily_xp": 0,
+          "trades": 0,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 2,
+          "xp": 185,
+          "daily_xp": 185,
+          "trades": 1,
+          "rank": "USER",
+          "new_achievements": [
+            "first_trade"
+          ]
+        },
+        {
+          "day": 17,
+          "xp": 395,
+          "daily_xp": 210,
+          "trades": 1,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 19,
+          "xp": 665,
+          "daily_xp": 270,
+          "trades": 1,
+          "rank": "USER",
+          "new_achievements": [
+            "streak_3"
+          ]
+        },
+        {
+          "day": 21,
+          "xp": 740,
+          "daily_xp": 75,
+          "trades": 1,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 27,
+          "xp": 840,
+          "daily_xp": 100,
+          "trades": 1,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 31,
+          "xp": 840,
+          "daily_xp": 0,
+          "trades": 0,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 33,
+          "xp": 935,
+          "daily_xp": 95,
+          "trades": 1,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 36,
+          "xp": 995,
+          "daily_xp": 60,
+          "trades": 1,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 37,
+          "xp": 1580,
+          "daily_xp": 585,
+          "trades": 1,
+          "rank": "AUTHORIZED",
+          "new_achievements": [
+            "rank_up_AUTHORIZED"
+          ]
+        },
+        {
+          "day": 38,
+          "xp": 1655,
+          "daily_xp": 75,
+          "trades": 1,
+          "rank": "AUTHORIZED",
+          "new_achievements": []
+        },
+        {
+          "day": 43,
+          "xp": 1865,
+          "daily_xp": 210,
+          "trades": 1,
+          "rank": "AUTHORIZED",
+          "new_achievements": [
+            "trades_10"
+          ]
+        },
+        {
+          "day": 44,
+          "xp": 1965,
+          "daily_xp": 100,
+          "trades": 1,
+          "rank": "AUTHORIZED",
+          "new_achievements": []
+        },
+        {
+          "day": 50,
+          "xp": 2060,
+          "daily_xp": 95,
+          "trades": 1,
+          "rank": "AUTHORIZED",
+          "new_achievements": []
+        },
+        {
+          "day": 60,
+          "xp": 2220,
+          "daily_xp": 160,
+          "trades": 1,
+          "rank": "AUTHORIZED",
+          "new_achievements": []
+        },
+        {
+          "day": 61,
+          "xp": 2220,
+          "daily_xp": 0,
+          "trades": 0,
+          "rank": "AUTHORIZED",
+          "new_achievements": []
+        },
+        {
+          "day": 66,
+          "xp": 2280,
+          "daily_xp": 60,
+          "trades": 1,
+          "rank": "AUTHORIZED",
+          "new_achievements": []
+        },
+        {
+          "day": 89,
+          "xp": 2465,
+          "daily_xp": 185,
+          "trades": 1,
+          "rank": "AUTHORIZED",
+          "new_achievements": []
+        },
+        {
+          "day": 91,
+          "xp": 2465,
+          "daily_xp": 0,
+          "trades": 0,
+          "rank": "AUTHORIZED",
+          "new_achievements": []
+        },
+        {
+          "day": 95,
+          "xp": 2525,
+          "daily_xp": 60,
+          "trades": 1,
+          "rank": "AUTHORIZED",
+          "new_achievements": []
+        },
+        {
+          "day": 97,
+          "xp": 2610,
+          "daily_xp": 85,
+          "trades": 1,
+          "rank": "AUTHORIZED",
+          "new_achievements": []
+        },
+        {
+          "day": 101,
+          "xp": 2720,
+          "daily_xp": 110,
+          "trades": 1,
+          "rank": "AUTHORIZED",
+          "new_achievements": []
+        },
+        {
+          "day": 102,
+          "xp": 2795,
+          "daily_xp": 75,
+          "trades": 1,
+          "rank": "AUTHORIZED",
+          "new_achievements": []
+        },
+        {
+          "day": 105,
+          "xp": 2955,
+          "daily_xp": 160,
+          "trades": 1,
+          "rank": "AUTHORIZED",
+          "new_achievements": [
+            "volume_10"
+          ]
+        },
+        {
+          "day": 106,
+          "xp": 3030,
+          "daily_xp": 75,
+          "trades": 1,
+          "rank": "AUTHORIZED",
+          "new_achievements": []
+        },
+        {
+          "day": 107,
+          "xp": 3090,
+          "daily_xp": 60,
+          "trades": 1,
+          "rank": "AUTHORIZED",
+          "new_achievements": []
+        },
+        {
+          "day": 112,
+          "xp": 3150,
+          "daily_xp": 60,
+          "trades": 1,
+          "rank": "AUTHORIZED",
+          "new_achievements": []
+        },
+        {
+          "day": 117,
+          "xp": 3210,
+          "daily_xp": 60,
+          "trades": 1,
+          "rank": "AUTHORIZED",
+          "new_achievements": []
+        },
+        {
+          "day": 121,
+          "xp": 3710,
+          "daily_xp": 500,
+          "trades": 0,
+          "rank": "AUTHORIZED",
+          "new_achievements": []
+        },
+        {
+          "day": 122,
+          "xp": 3770,
+          "daily_xp": 60,
+          "trades": 1,
+          "rank": "AUTHORIZED",
+          "new_achievements": []
+        },
+        {
+          "day": 124,
+          "xp": 3855,
+          "daily_xp": 85,
+          "trades": 1,
+          "rank": "AUTHORIZED",
+          "new_achievements": []
+        },
+        {
+          "day": 126,
+          "xp": 3965,
+          "daily_xp": 110,
+          "trades": 1,
+          "rank": "AUTHORIZED",
+          "new_achievements": []
+        },
+        {
+          "day": 127,
+          "xp": 4025,
+          "daily_xp": 60,
+          "trades": 1,
+          "rank": "AUTHORIZED",
+          "new_achievements": []
+        },
+        {
+          "day": 128,
+          "xp": 4085,
+          "daily_xp": 60,
+          "trades": 1,
+          "rank": "AUTHORIZED",
+          "new_achievements": []
+        },
+        {
+          "day": 136,
+          "xp": 4260,
+          "daily_xp": 175,
+          "trades": 1,
+          "rank": "AUTHORIZED",
+          "new_achievements": []
+        },
+        {
+          "day": 140,
+          "xp": 4345,
+          "daily_xp": 85,
+          "trades": 1,
+          "rank": "AUTHORIZED",
+          "new_achievements": []
+        },
+        {
+          "day": 149,
+          "xp": 4540,
+          "daily_xp": 195,
+          "trades": 1,
+          "rank": "AUTHORIZED",
+          "new_achievements": []
+        },
+        {
+          "day": 150,
+          "xp": 4615,
+          "daily_xp": 75,
+          "trades": 1,
+          "rank": "AUTHORIZED",
+          "new_achievements": []
+        },
+        {
+          "day": 151,
+          "xp": 5615,
+          "daily_xp": 1000,
+          "trades": 0,
+          "rank": "ELITE",
+          "new_achievements": [
+            "rank_up_ELITE"
+          ]
+        },
+        {
+          "day": 152,
+          "xp": 5715,
+          "daily_xp": 100,
+          "trades": 1,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 156,
+          "xp": 5810,
+          "daily_xp": 95,
+          "trades": 1,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 158,
+          "xp": 5930,
+          "daily_xp": 120,
+          "trades": 1,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 163,
+          "xp": 6005,
+          "daily_xp": 75,
+          "trades": 1,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 164,
+          "xp": 6065,
+          "daily_xp": 60,
+          "trades": 1,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 171,
+          "xp": 6250,
+          "daily_xp": 185,
+          "trades": 1,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 172,
+          "xp": 6310,
+          "daily_xp": 60,
+          "trades": 1,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 178,
+          "xp": 6395,
+          "daily_xp": 85,
+          "trades": 1,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 181,
+          "xp": 6955,
+          "daily_xp": 560,
+          "trades": 1,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 183,
+          "xp": 7055,
+          "daily_xp": 100,
+          "trades": 1,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 184,
+          "xp": 7150,
+          "daily_xp": 95,
+          "trades": 1,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 187,
+          "xp": 7270,
+          "daily_xp": 120,
+          "trades": 1,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 191,
+          "xp": 7385,
+          "daily_xp": 115,
+          "trades": 1,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 193,
+          "xp": 7760,
+          "daily_xp": 375,
+          "trades": 1,
+          "rank": "ELITE",
+          "new_achievements": [
+            "streak_5"
+          ]
+        },
+        {
+          "day": 195,
+          "xp": 7895,
+          "daily_xp": 135,
+          "trades": 1,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 200,
+          "xp": 7970,
+          "daily_xp": 75,
+          "trades": 1,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 202,
+          "xp": 8330,
+          "daily_xp": 360,
+          "trades": 1,
+          "rank": "ELITE",
+          "new_achievements": [
+            "trades_50"
+          ]
+        },
+        {
+          "day": 207,
+          "xp": 8405,
+          "daily_xp": 75,
+          "trades": 1,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 211,
+          "xp": 8905,
+          "daily_xp": 500,
+          "trades": 0,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 224,
+          "xp": 9090,
+          "daily_xp": 185,
+          "trades": 1,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 226,
+          "xp": 9165,
+          "daily_xp": 75,
+          "trades": 1,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 227,
+          "xp": 9225,
+          "daily_xp": 60,
+          "trades": 1,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 228,
+          "xp": 9285,
+          "daily_xp": 60,
+          "trades": 1,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 233,
+          "xp": 9345,
+          "daily_xp": 60,
+          "trades": 1,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 241,
+          "xp": 9845,
+          "daily_xp": 500,
+          "trades": 0,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 250,
+          "xp": 10505,
+          "daily_xp": 660,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": [
+            "rank_up_ADMIN"
+          ]
+        },
+        {
+          "day": 253,
+          "xp": 10565,
+          "daily_xp": 60,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 254,
+          "xp": 10650,
+          "daily_xp": 85,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 258,
+          "xp": 10710,
+          "daily_xp": 60,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 262,
+          "xp": 10795,
+          "daily_xp": 85,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 266,
+          "xp": 10855,
+          "daily_xp": 60,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 269,
+          "xp": 10955,
+          "daily_xp": 100,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 271,
+          "xp": 11455,
+          "daily_xp": 500,
+          "trades": 0,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 273,
+          "xp": 11550,
+          "daily_xp": 95,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 285,
+          "xp": 11725,
+          "daily_xp": 175,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 288,
+          "xp": 11810,
+          "daily_xp": 85,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 290,
+          "xp": 11905,
+          "daily_xp": 95,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 291,
+          "xp": 12010,
+          "daily_xp": 105,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 292,
+          "xp": 12070,
+          "daily_xp": 60,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 297,
+          "xp": 12155,
+          "daily_xp": 85,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 301,
+          "xp": 12655,
+          "daily_xp": 500,
+          "trades": 0,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 305,
+          "xp": 12830,
+          "daily_xp": 175,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 314,
+          "xp": 13005,
+          "daily_xp": 175,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 321,
+          "xp": 13190,
+          "daily_xp": 185,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 324,
+          "xp": 13250,
+          "daily_xp": 60,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 328,
+          "xp": 13310,
+          "daily_xp": 60,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 330,
+          "xp": 13370,
+          "daily_xp": 60,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 331,
+          "xp": 13370,
+          "daily_xp": 0,
+          "trades": 0,
+          "rank": "ADMIN",
+          "new_achievements": []
+        }
+      ]
+    },
+    {
+      "profile": "active",
+      "final_xp": 43905,
+      "final_rank": "ADMIN",
+      "total_trades": 385,
+      "win_rate": 62.5974025974026,
+      "best_streak": 13,
+      "achievements": [
+        "volume_10",
+        "week_active",
+        "accuracy_60",
+        "accuracy_70",
+        "month_active",
+        "volume_50",
+        "streak_3",
+        "streak_5",
+        "volume_100"
+      ],
+      "achievement_count": 9,
+      "rank_milestones": {
+        "ADMIN": {
+          "day": 60,
+          "xp": 10015,
+          "trades_at_milestone": 40
+        }
+      },
+      "avg_xp_per_day": 120.28767123287672,
+      "avg_xp_per_active_day": 224.00510204081633,
+      "avg_xp_per_trade": 114.03896103896103,
+      "active_days": 196,
+      "retention": true,
+      "xp_sources": {
+        "base": 3850,
+        "daily_bonus": 9800,
+        "win_bonus": 6025,
+        "tcs_bonus": 3000,
+        "streak_bonus": 3540,
+        "volume_bonus": 490,
+        "achievements": 2700,
+        "weekly_bonus": 8200,
+        "monthly_bonus": 6000,
+        "comeback_bonus": 300
+      },
+      "daily_data": [
+        {
+          "day": 1,
+          "xp": 145,
+          "daily_xp": 145,
+          "trades": 2,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 2,
+          "xp": 335,
+          "daily_xp": 190,
+          "trades": 2,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 3,
+          "xp": 500,
+          "daily_xp": 165,
+          "trades": 4,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 4,
+          "xp": 790,
+          "daily_xp": 290,
+          "trades": 4,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 6,
+          "xp": 1040,
+          "daily_xp": 250,
+          "trades": 3,
+          "rank": "USER",
+          "new_achievements": [
+            "volume_10"
+          ]
+        },
+        {
+          "day": 8,
+          "xp": 1440,
+          "daily_xp": 400,
+          "trades": 0,
+          "rank": "USER",
+          "new_achievements": [
+            "week_active"
+          ]
+        },
+        {
+          "day": 10,
+          "xp": 1545,
+          "daily_xp": 105,
+          "trades": 1,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 11,
+          "xp": 1645,
+          "daily_xp": 100,
+          "trades": 1,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 14,
+          "xp": 2290,
+          "daily_xp": 645,
+          "trades": 3,
+          "rank": "USER",
+          "new_achievements": [
+            "accuracy_60",
+            "accuracy_70"
+          ]
+        },
+        {
+          "day": 15,
+          "xp": 2625,
+          "daily_xp": 335,
+          "trades": 2,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 16,
+          "xp": 2760,
+          "daily_xp": 135,
+          "trades": 3,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 19,
+          "xp": 2835,
+          "daily_xp": 75,
+          "trades": 1,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 20,
+          "xp": 2895,
+          "daily_xp": 60,
+          "trades": 1,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 21,
+          "xp": 2955,
+          "daily_xp": 60,
+          "trades": 1,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 22,
+          "xp": 3270,
+          "daily_xp": 315,
+          "trades": 2,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 23,
+          "xp": 3370,
+          "daily_xp": 100,
+          "trades": 1,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 24,
+          "xp": 3445,
+          "daily_xp": 75,
+          "trades": 1,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 25,
+          "xp": 3555,
+          "daily_xp": 110,
+          "trades": 2,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 27,
+          "xp": 3650,
+          "daily_xp": 95,
+          "trades": 2,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 29,
+          "xp": 4110,
+          "daily_xp": 460,
+          "trades": 3,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 30,
+          "xp": 4245,
+          "daily_xp": 135,
+          "trades": 2,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 31,
+          "xp": 5320,
+          "daily_xp": 1075,
+          "trades": 1,
+          "rank": "USER",
+          "new_achievements": [
+            "month_active"
+          ]
+        },
+        {
+          "day": 32,
+          "xp": 5540,
+          "daily_xp": 220,
+          "trades": 4,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 33,
+          "xp": 5710,
+          "daily_xp": 170,
+          "trades": 2,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 34,
+          "xp": 5770,
+          "daily_xp": 60,
+          "trades": 1,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 35,
+          "xp": 5940,
+          "daily_xp": 170,
+          "trades": 4,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 36,
+          "xp": 6245,
+          "daily_xp": 305,
+          "trades": 1,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 37,
+          "xp": 6440,
+          "daily_xp": 195,
+          "trades": 3,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 38,
+          "xp": 6540,
+          "daily_xp": 100,
+          "trades": 1,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 39,
+          "xp": 6645,
+          "daily_xp": 105,
+          "trades": 3,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 42,
+          "xp": 6735,
+          "daily_xp": 90,
+          "trades": 1,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 43,
+          "xp": 7230,
+          "daily_xp": 495,
+          "trades": 1,
+          "rank": "USER",
+          "new_achievements": [
+            "volume_50"
+          ]
+        },
+        {
+          "day": 45,
+          "xp": 7485,
+          "daily_xp": 255,
+          "trades": 1,
+          "rank": "USER",
+          "new_achievements": [
+            "streak_3"
+          ]
+        },
+        {
+          "day": 47,
+          "xp": 7940,
+          "daily_xp": 455,
+          "trades": 2,
+          "rank": "USER",
+          "new_achievements": [
+            "streak_5"
+          ]
+        },
+        {
+          "day": 48,
+          "xp": 8180,
+          "daily_xp": 240,
+          "trades": 2,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 49,
+          "xp": 8340,
+          "daily_xp": 160,
+          "trades": 2,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 50,
+          "xp": 8540,
+          "daily_xp": 200,
+          "trades": 0,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 51,
+          "xp": 8730,
+          "daily_xp": 190,
+          "trades": 5,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 54,
+          "xp": 8890,
+          "daily_xp": 160,
+          "trades": 4,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 55,
+          "xp": 8975,
+          "daily_xp": 85,
+          "trades": 2,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 57,
+          "xp": 9235,
+          "daily_xp": 260,
+          "trades": 1,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 59,
+          "xp": 9335,
+          "daily_xp": 100,
+          "trades": 1,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 61,
+          "xp": 10515,
+          "daily_xp": 1180,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": [
+            "rank_up_ADMIN"
+          ]
+        },
+        {
+          "day": 64,
+          "xp": 10790,
+          "daily_xp": 275,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 65,
+          "xp": 10965,
+          "daily_xp": 175,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 67,
+          "xp": 11060,
+          "daily_xp": 95,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 71,
+          "xp": 11385,
+          "daily_xp": 325,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 72,
+          "xp": 11510,
+          "daily_xp": 125,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 73,
+          "xp": 11660,
+          "daily_xp": 150,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 75,
+          "xp": 11775,
+          "daily_xp": 115,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 76,
+          "xp": 11835,
+          "daily_xp": 60,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 77,
+          "xp": 12030,
+          "daily_xp": 195,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 78,
+          "xp": 12230,
+          "daily_xp": 200,
+          "trades": 0,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 79,
+          "xp": 12350,
+          "daily_xp": 120,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 80,
+          "xp": 12565,
+          "daily_xp": 215,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 81,
+          "xp": 12695,
+          "daily_xp": 130,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 83,
+          "xp": 12880,
+          "daily_xp": 185,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 85,
+          "xp": 13195,
+          "daily_xp": 315,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 86,
+          "xp": 13335,
+          "daily_xp": 140,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 91,
+          "xp": 13835,
+          "daily_xp": 500,
+          "trades": 0,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 93,
+          "xp": 14180,
+          "daily_xp": 345,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 96,
+          "xp": 14240,
+          "daily_xp": 60,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 97,
+          "xp": 14340,
+          "daily_xp": 100,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 98,
+          "xp": 14435,
+          "daily_xp": 95,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 99,
+          "xp": 14795,
+          "daily_xp": 360,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 103,
+          "xp": 15255,
+          "daily_xp": 460,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": [
+            "volume_100"
+          ]
+        },
+        {
+          "day": 104,
+          "xp": 15330,
+          "daily_xp": 75,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 105,
+          "xp": 15450,
+          "daily_xp": 120,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 106,
+          "xp": 15650,
+          "daily_xp": 200,
+          "trades": 0,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 108,
+          "xp": 15760,
+          "daily_xp": 110,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 109,
+          "xp": 15985,
+          "daily_xp": 225,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 113,
+          "xp": 16315,
+          "daily_xp": 330,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 114,
+          "xp": 16395,
+          "daily_xp": 80,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 115,
+          "xp": 16495,
+          "daily_xp": 100,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 116,
+          "xp": 16600,
+          "daily_xp": 105,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 117,
+          "xp": 16675,
+          "daily_xp": 75,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 119,
+          "xp": 16735,
+          "daily_xp": 60,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 120,
+          "xp": 16935,
+          "daily_xp": 200,
+          "trades": 0,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 121,
+          "xp": 17435,
+          "daily_xp": 500,
+          "trades": 0,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 122,
+          "xp": 17595,
+          "daily_xp": 160,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 123,
+          "xp": 17760,
+          "daily_xp": 165,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 124,
+          "xp": 17825,
+          "daily_xp": 65,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 125,
+          "xp": 17935,
+          "daily_xp": 110,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 126,
+          "xp": 18030,
+          "daily_xp": 95,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 127,
+          "xp": 18345,
+          "daily_xp": 315,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 128,
+          "xp": 18470,
+          "daily_xp": 125,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 133,
+          "xp": 18570,
+          "daily_xp": 100,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 135,
+          "xp": 18770,
+          "daily_xp": 200,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 136,
+          "xp": 19020,
+          "daily_xp": 250,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 142,
+          "xp": 19175,
+          "daily_xp": 155,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 145,
+          "xp": 19395,
+          "daily_xp": 220,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 149,
+          "xp": 19710,
+          "daily_xp": 315,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 150,
+          "xp": 19895,
+          "daily_xp": 185,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 151,
+          "xp": 20460,
+          "daily_xp": 565,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 152,
+          "xp": 20585,
+          "daily_xp": 125,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 153,
+          "xp": 20730,
+          "daily_xp": 145,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 155,
+          "xp": 20930,
+          "daily_xp": 200,
+          "trades": 0,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 157,
+          "xp": 20995,
+          "daily_xp": 65,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 158,
+          "xp": 21095,
+          "daily_xp": 100,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 159,
+          "xp": 21155,
+          "daily_xp": 60,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 160,
+          "xp": 21250,
+          "daily_xp": 95,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 161,
+          "xp": 21385,
+          "daily_xp": 135,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 162,
+          "xp": 21765,
+          "daily_xp": 380,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 163,
+          "xp": 21905,
+          "daily_xp": 140,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 164,
+          "xp": 21980,
+          "daily_xp": 75,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 166,
+          "xp": 22145,
+          "daily_xp": 165,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 167,
+          "xp": 22290,
+          "daily_xp": 145,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 168,
+          "xp": 22450,
+          "daily_xp": 160,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 169,
+          "xp": 22725,
+          "daily_xp": 275,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 170,
+          "xp": 22940,
+          "daily_xp": 215,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 173,
+          "xp": 23000,
+          "daily_xp": 60,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 174,
+          "xp": 23060,
+          "daily_xp": 60,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 176,
+          "xp": 23260,
+          "daily_xp": 200,
+          "trades": 0,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 177,
+          "xp": 23405,
+          "daily_xp": 145,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 179,
+          "xp": 23505,
+          "daily_xp": 100,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 181,
+          "xp": 24105,
+          "daily_xp": 600,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 182,
+          "xp": 24215,
+          "daily_xp": 110,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 183,
+          "xp": 24535,
+          "daily_xp": 320,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 185,
+          "xp": 24645,
+          "daily_xp": 110,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 189,
+          "xp": 24785,
+          "daily_xp": 140,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 190,
+          "xp": 25070,
+          "daily_xp": 285,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 191,
+          "xp": 25165,
+          "daily_xp": 95,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 193,
+          "xp": 25260,
+          "daily_xp": 95,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 194,
+          "xp": 25370,
+          "daily_xp": 110,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 196,
+          "xp": 25480,
+          "daily_xp": 110,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 197,
+          "xp": 25810,
+          "daily_xp": 330,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 205,
+          "xp": 26050,
+          "daily_xp": 240,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 206,
+          "xp": 26290,
+          "daily_xp": 240,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 207,
+          "xp": 26370,
+          "daily_xp": 80,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 209,
+          "xp": 26525,
+          "daily_xp": 155,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 210,
+          "xp": 26815,
+          "daily_xp": 290,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 211,
+          "xp": 27515,
+          "daily_xp": 700,
+          "trades": 0,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 212,
+          "xp": 27630,
+          "daily_xp": 115,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 214,
+          "xp": 27705,
+          "daily_xp": 75,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 220,
+          "xp": 27875,
+          "daily_xp": 170,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 222,
+          "xp": 27970,
+          "daily_xp": 95,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 223,
+          "xp": 28095,
+          "daily_xp": 125,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 225,
+          "xp": 28295,
+          "daily_xp": 200,
+          "trades": 0,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 226,
+          "xp": 28485,
+          "daily_xp": 190,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 227,
+          "xp": 28595,
+          "daily_xp": 110,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 229,
+          "xp": 28690,
+          "daily_xp": 95,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 230,
+          "xp": 28750,
+          "daily_xp": 60,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 231,
+          "xp": 28825,
+          "daily_xp": 75,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 232,
+          "xp": 29025,
+          "daily_xp": 200,
+          "trades": 0,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 235,
+          "xp": 29100,
+          "daily_xp": 75,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 238,
+          "xp": 29190,
+          "daily_xp": 90,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 241,
+          "xp": 29690,
+          "daily_xp": 500,
+          "trades": 0,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 249,
+          "xp": 29870,
+          "daily_xp": 180,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 254,
+          "xp": 30080,
+          "daily_xp": 210,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 255,
+          "xp": 30195,
+          "daily_xp": 115,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 256,
+          "xp": 30320,
+          "daily_xp": 125,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 260,
+          "xp": 30520,
+          "daily_xp": 200,
+          "trades": 0,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 261,
+          "xp": 30910,
+          "daily_xp": 390,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 266,
+          "xp": 31145,
+          "daily_xp": 235,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 267,
+          "xp": 31455,
+          "daily_xp": 310,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 269,
+          "xp": 31575,
+          "daily_xp": 120,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 271,
+          "xp": 32075,
+          "daily_xp": 500,
+          "trades": 0,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 273,
+          "xp": 32160,
+          "daily_xp": 85,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 275,
+          "xp": 32245,
+          "daily_xp": 85,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 276,
+          "xp": 32355,
+          "daily_xp": 110,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 278,
+          "xp": 32475,
+          "daily_xp": 120,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 281,
+          "xp": 32775,
+          "daily_xp": 300,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 282,
+          "xp": 33020,
+          "daily_xp": 245,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 284,
+          "xp": 33255,
+          "daily_xp": 235,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 287,
+          "xp": 33585,
+          "daily_xp": 330,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 288,
+          "xp": 33785,
+          "daily_xp": 200,
+          "trades": 0,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 289,
+          "xp": 33900,
+          "daily_xp": 115,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 291,
+          "xp": 34030,
+          "daily_xp": 130,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 293,
+          "xp": 34325,
+          "daily_xp": 295,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 295,
+          "xp": 34665,
+          "daily_xp": 340,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 296,
+          "xp": 34975,
+          "daily_xp": 310,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 297,
+          "xp": 35100,
+          "daily_xp": 125,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 299,
+          "xp": 35195,
+          "daily_xp": 95,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 300,
+          "xp": 35335,
+          "daily_xp": 140,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 301,
+          "xp": 35835,
+          "daily_xp": 500,
+          "trades": 0,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 302,
+          "xp": 36035,
+          "daily_xp": 200,
+          "trades": 0,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 305,
+          "xp": 36095,
+          "daily_xp": 60,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 306,
+          "xp": 36225,
+          "daily_xp": 130,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 307,
+          "xp": 36410,
+          "daily_xp": 185,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 308,
+          "xp": 36575,
+          "daily_xp": 165,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 309,
+          "xp": 36890,
+          "daily_xp": 315,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 310,
+          "xp": 37060,
+          "daily_xp": 170,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 311,
+          "xp": 37245,
+          "daily_xp": 185,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 313,
+          "xp": 37430,
+          "daily_xp": 185,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 315,
+          "xp": 37565,
+          "daily_xp": 135,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 316,
+          "xp": 37765,
+          "daily_xp": 200,
+          "trades": 0,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 317,
+          "xp": 37990,
+          "daily_xp": 225,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 318,
+          "xp": 38310,
+          "daily_xp": 320,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 320,
+          "xp": 38435,
+          "daily_xp": 125,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 323,
+          "xp": 38635,
+          "daily_xp": 200,
+          "trades": 0,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 324,
+          "xp": 38695,
+          "daily_xp": 60,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 325,
+          "xp": 38760,
+          "daily_xp": 65,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 328,
+          "xp": 38820,
+          "daily_xp": 60,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 331,
+          "xp": 39480,
+          "daily_xp": 660,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 335,
+          "xp": 39650,
+          "daily_xp": 170,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 336,
+          "xp": 39885,
+          "daily_xp": 235,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 337,
+          "xp": 40085,
+          "daily_xp": 200,
+          "trades": 0,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 338,
+          "xp": 40220,
+          "daily_xp": 135,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 339,
+          "xp": 40320,
+          "daily_xp": 100,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 340,
+          "xp": 40405,
+          "daily_xp": 85,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 341,
+          "xp": 40560,
+          "daily_xp": 155,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 342,
+          "xp": 40665,
+          "daily_xp": 105,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 343,
+          "xp": 40745,
+          "daily_xp": 80,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 344,
+          "xp": 40945,
+          "daily_xp": 200,
+          "trades": 0,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 345,
+          "xp": 41050,
+          "daily_xp": 105,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 348,
+          "xp": 41165,
+          "daily_xp": 115,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 350,
+          "xp": 41395,
+          "daily_xp": 230,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 351,
+          "xp": 41595,
+          "daily_xp": 200,
+          "trades": 0,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 352,
+          "xp": 41825,
+          "daily_xp": 230,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 353,
+          "xp": 41935,
+          "daily_xp": 110,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 355,
+          "xp": 42010,
+          "daily_xp": 75,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 356,
+          "xp": 42110,
+          "daily_xp": 100,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 357,
+          "xp": 42270,
+          "daily_xp": 160,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 358,
+          "xp": 42470,
+          "daily_xp": 200,
+          "trades": 0,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 360,
+          "xp": 42575,
+          "daily_xp": 105,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 361,
+          "xp": 43160,
+          "daily_xp": 585,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 362,
+          "xp": 43260,
+          "daily_xp": 100,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 363,
+          "xp": 43380,
+          "daily_xp": 120,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 364,
+          "xp": 43525,
+          "daily_xp": 145,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 365,
+          "xp": 43905,
+          "daily_xp": 380,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        }
+      ]
+    },
+    {
+      "profile": "hardcore",
+      "final_xp": 130625,
+      "final_rank": "ADMIN",
+      "total_trades": 1616,
+      "win_rate": 72.46287128712872,
+      "best_streak": 23,
+      "achievements": [
+        "streak_10",
+        "volume_10",
+        "accuracy_60",
+        "accuracy_70",
+        "week_active",
+        "streak_3",
+        "volume_50",
+        "trades_50",
+        "streak_5",
+        "volume_100",
+        "month_active"
+      ],
+      "achievement_count": 11,
+      "rank_milestones": {
+        "AUTHORIZED": {
+          "day": 2,
+          "xp": 1110,
+          "trades_at_milestone": 2
+        },
+        "ELITE": {
+          "day": 10,
+          "xp": 5325,
+          "trades_at_milestone": 10
+        },
+        "ADMIN": {
+          "day": 21,
+          "xp": 10310,
+          "trades_at_milestone": 20
+        }
+      },
+      "avg_xp_per_day": 357.8767123287671,
+      "avg_xp_per_active_day": 375.35919540229884,
+      "avg_xp_per_trade": 80.83230198019803,
+      "active_days": 348,
+      "retention": true,
+      "xp_sources": {
+        "base": 16160,
+        "tcs_bonus": 17160,
+        "daily_bonus": 17400,
+        "win_bonus": 29275,
+        "volume_bonus": 5090,
+        "streak_bonus": 24640,
+        "achievements": 4500,
+        "weekly_bonus": 10400,
+        "monthly_bonus": 6000
+      },
+      "daily_data": [
+        {
+          "day": 1,
+          "xp": 200,
+          "daily_xp": 200,
+          "trades": 4,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 2,
+          "xp": 495,
+          "daily_xp": 295,
+          "trades": 4,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 3,
+          "xp": 2210,
+          "daily_xp": 1715,
+          "trades": 6,
+          "rank": "AUTHORIZED",
+          "new_achievements": [
+            "streak_10",
+            "volume_10",
+            "rank_up_AUTHORIZED"
+          ]
+        },
+        {
+          "day": 4,
+          "xp": 2410,
+          "daily_xp": 200,
+          "trades": 4,
+          "rank": "AUTHORIZED",
+          "new_achievements": []
+        },
+        {
+          "day": 5,
+          "xp": 3070,
+          "daily_xp": 660,
+          "trades": 3,
+          "rank": "AUTHORIZED",
+          "new_achievements": [
+            "accuracy_60",
+            "accuracy_70"
+          ]
+        },
+        {
+          "day": 6,
+          "xp": 3280,
+          "daily_xp": 210,
+          "trades": 4,
+          "rank": "AUTHORIZED",
+          "new_achievements": []
+        },
+        {
+          "day": 7,
+          "xp": 3535,
+          "daily_xp": 255,
+          "trades": 3,
+          "rank": "AUTHORIZED",
+          "new_achievements": []
+        },
+        {
+          "day": 8,
+          "xp": 4070,
+          "daily_xp": 535,
+          "trades": 4,
+          "rank": "AUTHORIZED",
+          "new_achievements": [
+            "week_active"
+          ]
+        },
+        {
+          "day": 9,
+          "xp": 4630,
+          "daily_xp": 560,
+          "trades": 8,
+          "rank": "AUTHORIZED",
+          "new_achievements": [
+            "streak_3"
+          ]
+        },
+        {
+          "day": 10,
+          "xp": 4990,
+          "daily_xp": 360,
+          "trades": 2,
+          "rank": "AUTHORIZED",
+          "new_achievements": [
+            "volume_50"
+          ]
+        },
+        {
+          "day": 11,
+          "xp": 5825,
+          "daily_xp": 835,
+          "trades": 6,
+          "rank": "ELITE",
+          "new_achievements": [
+            "rank_up_ELITE"
+          ]
+        },
+        {
+          "day": 12,
+          "xp": 6260,
+          "daily_xp": 435,
+          "trades": 2,
+          "rank": "ELITE",
+          "new_achievements": [
+            "trades_50"
+          ]
+        },
+        {
+          "day": 13,
+          "xp": 6465,
+          "daily_xp": 205,
+          "trades": 4,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 14,
+          "xp": 6630,
+          "daily_xp": 165,
+          "trades": 2,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 15,
+          "xp": 6830,
+          "daily_xp": 200,
+          "trades": 0,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 16,
+          "xp": 7310,
+          "daily_xp": 480,
+          "trades": 5,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 17,
+          "xp": 7790,
+          "daily_xp": 480,
+          "trades": 6,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 18,
+          "xp": 8270,
+          "daily_xp": 480,
+          "trades": 7,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 19,
+          "xp": 8465,
+          "daily_xp": 195,
+          "trades": 3,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 20,
+          "xp": 9570,
+          "daily_xp": 1105,
+          "trades": 9,
+          "rank": "ELITE",
+          "new_achievements": [
+            "streak_5",
+            "volume_100"
+          ]
+        },
+        {
+          "day": 21,
+          "xp": 9960,
+          "daily_xp": 390,
+          "trades": 4,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 22,
+          "xp": 10810,
+          "daily_xp": 850,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": [
+            "rank_up_ADMIN"
+          ]
+        },
+        {
+          "day": 23,
+          "xp": 10910,
+          "daily_xp": 100,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 24,
+          "xp": 11175,
+          "daily_xp": 265,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 25,
+          "xp": 11645,
+          "daily_xp": 470,
+          "trades": 7,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 26,
+          "xp": 11850,
+          "daily_xp": 205,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 27,
+          "xp": 12370,
+          "daily_xp": 520,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 28,
+          "xp": 12670,
+          "daily_xp": 300,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 29,
+          "xp": 12995,
+          "daily_xp": 325,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 30,
+          "xp": 13600,
+          "daily_xp": 605,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 31,
+          "xp": 15030,
+          "daily_xp": 1430,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": [
+            "month_active"
+          ]
+        },
+        {
+          "day": 32,
+          "xp": 15365,
+          "daily_xp": 335,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 33,
+          "xp": 15590,
+          "daily_xp": 225,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 34,
+          "xp": 15815,
+          "daily_xp": 225,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 35,
+          "xp": 16180,
+          "daily_xp": 365,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 36,
+          "xp": 16540,
+          "daily_xp": 360,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 37,
+          "xp": 16870,
+          "daily_xp": 330,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 38,
+          "xp": 17210,
+          "daily_xp": 340,
+          "trades": 7,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 39,
+          "xp": 17705,
+          "daily_xp": 495,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 40,
+          "xp": 17870,
+          "daily_xp": 165,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 41,
+          "xp": 18045,
+          "daily_xp": 175,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 42,
+          "xp": 18730,
+          "daily_xp": 685,
+          "trades": 7,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 43,
+          "xp": 19220,
+          "daily_xp": 490,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 44,
+          "xp": 19630,
+          "daily_xp": 410,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 45,
+          "xp": 19960,
+          "daily_xp": 330,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 46,
+          "xp": 20095,
+          "daily_xp": 135,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 47,
+          "xp": 20380,
+          "daily_xp": 285,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 48,
+          "xp": 20670,
+          "daily_xp": 290,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 49,
+          "xp": 20965,
+          "daily_xp": 295,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 50,
+          "xp": 21455,
+          "daily_xp": 490,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 51,
+          "xp": 22065,
+          "daily_xp": 610,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 52,
+          "xp": 22580,
+          "daily_xp": 515,
+          "trades": 7,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 53,
+          "xp": 22730,
+          "daily_xp": 150,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 54,
+          "xp": 22905,
+          "daily_xp": 175,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 55,
+          "xp": 23010,
+          "daily_xp": 105,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 56,
+          "xp": 23325,
+          "daily_xp": 315,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 57,
+          "xp": 23655,
+          "daily_xp": 330,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 58,
+          "xp": 24050,
+          "daily_xp": 395,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 59,
+          "xp": 24125,
+          "daily_xp": 75,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 60,
+          "xp": 24580,
+          "daily_xp": 455,
+          "trades": 7,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 61,
+          "xp": 25340,
+          "daily_xp": 760,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 62,
+          "xp": 25745,
+          "daily_xp": 405,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 63,
+          "xp": 26090,
+          "daily_xp": 345,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 64,
+          "xp": 26930,
+          "daily_xp": 840,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 65,
+          "xp": 27460,
+          "daily_xp": 530,
+          "trades": 7,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 66,
+          "xp": 27690,
+          "daily_xp": 230,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 67,
+          "xp": 27950,
+          "daily_xp": 260,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 68,
+          "xp": 28410,
+          "daily_xp": 460,
+          "trades": 7,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 70,
+          "xp": 28645,
+          "daily_xp": 235,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 71,
+          "xp": 29020,
+          "daily_xp": 375,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 72,
+          "xp": 29360,
+          "daily_xp": 340,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 73,
+          "xp": 29675,
+          "daily_xp": 315,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 74,
+          "xp": 29935,
+          "daily_xp": 260,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 75,
+          "xp": 30300,
+          "daily_xp": 365,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 76,
+          "xp": 30935,
+          "daily_xp": 635,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 77,
+          "xp": 31050,
+          "daily_xp": 115,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 78,
+          "xp": 31395,
+          "daily_xp": 345,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 79,
+          "xp": 31850,
+          "daily_xp": 455,
+          "trades": 7,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 80,
+          "xp": 32510,
+          "daily_xp": 660,
+          "trades": 8,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 81,
+          "xp": 33085,
+          "daily_xp": 575,
+          "trades": 7,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 82,
+          "xp": 33225,
+          "daily_xp": 140,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 84,
+          "xp": 33560,
+          "daily_xp": 335,
+          "trades": 8,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 85,
+          "xp": 34005,
+          "daily_xp": 445,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 86,
+          "xp": 34275,
+          "daily_xp": 270,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 87,
+          "xp": 34705,
+          "daily_xp": 430,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 88,
+          "xp": 35000,
+          "daily_xp": 295,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 89,
+          "xp": 35360,
+          "daily_xp": 360,
+          "trades": 7,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 90,
+          "xp": 35885,
+          "daily_xp": 525,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 91,
+          "xp": 36800,
+          "daily_xp": 915,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 92,
+          "xp": 37210,
+          "daily_xp": 410,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 94,
+          "xp": 37425,
+          "daily_xp": 215,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 95,
+          "xp": 37900,
+          "daily_xp": 475,
+          "trades": 7,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 96,
+          "xp": 38130,
+          "daily_xp": 230,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 97,
+          "xp": 38485,
+          "daily_xp": 355,
+          "trades": 8,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 98,
+          "xp": 38810,
+          "daily_xp": 325,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 99,
+          "xp": 39295,
+          "daily_xp": 485,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 100,
+          "xp": 39520,
+          "daily_xp": 225,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 101,
+          "xp": 39825,
+          "daily_xp": 305,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 102,
+          "xp": 39990,
+          "daily_xp": 165,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 103,
+          "xp": 40610,
+          "daily_xp": 620,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 104,
+          "xp": 41060,
+          "daily_xp": 450,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 105,
+          "xp": 41215,
+          "daily_xp": 155,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 106,
+          "xp": 41880,
+          "daily_xp": 665,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 107,
+          "xp": 42580,
+          "daily_xp": 700,
+          "trades": 8,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 108,
+          "xp": 42770,
+          "daily_xp": 190,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 109,
+          "xp": 43005,
+          "daily_xp": 235,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 110,
+          "xp": 43255,
+          "daily_xp": 250,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 111,
+          "xp": 43565,
+          "daily_xp": 310,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 112,
+          "xp": 44005,
+          "daily_xp": 440,
+          "trades": 7,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 113,
+          "xp": 44375,
+          "daily_xp": 370,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 114,
+          "xp": 44610,
+          "daily_xp": 235,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 115,
+          "xp": 44880,
+          "daily_xp": 270,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 116,
+          "xp": 45130,
+          "daily_xp": 250,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 117,
+          "xp": 45195,
+          "daily_xp": 65,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 118,
+          "xp": 45390,
+          "daily_xp": 195,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 119,
+          "xp": 45805,
+          "daily_xp": 415,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 120,
+          "xp": 46410,
+          "daily_xp": 605,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 121,
+          "xp": 47225,
+          "daily_xp": 815,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 122,
+          "xp": 47610,
+          "daily_xp": 385,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 124,
+          "xp": 47960,
+          "daily_xp": 350,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 125,
+          "xp": 48540,
+          "daily_xp": 580,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 126,
+          "xp": 48765,
+          "daily_xp": 225,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 127,
+          "xp": 49180,
+          "daily_xp": 415,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 128,
+          "xp": 49695,
+          "daily_xp": 515,
+          "trades": 7,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 129,
+          "xp": 50065,
+          "daily_xp": 370,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 130,
+          "xp": 50125,
+          "daily_xp": 60,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 131,
+          "xp": 50215,
+          "daily_xp": 90,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 132,
+          "xp": 50540,
+          "daily_xp": 325,
+          "trades": 7,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 133,
+          "xp": 50805,
+          "daily_xp": 265,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 134,
+          "xp": 51435,
+          "daily_xp": 630,
+          "trades": 7,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 135,
+          "xp": 51760,
+          "daily_xp": 325,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 136,
+          "xp": 52320,
+          "daily_xp": 560,
+          "trades": 8,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 137,
+          "xp": 52735,
+          "daily_xp": 415,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 138,
+          "xp": 53260,
+          "daily_xp": 525,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 139,
+          "xp": 53560,
+          "daily_xp": 300,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 141,
+          "xp": 53965,
+          "daily_xp": 405,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 142,
+          "xp": 54400,
+          "daily_xp": 435,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 143,
+          "xp": 55045,
+          "daily_xp": 645,
+          "trades": 7,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 144,
+          "xp": 55420,
+          "daily_xp": 375,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 145,
+          "xp": 55560,
+          "daily_xp": 140,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 147,
+          "xp": 55835,
+          "daily_xp": 275,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 148,
+          "xp": 56445,
+          "daily_xp": 610,
+          "trades": 7,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 149,
+          "xp": 56580,
+          "daily_xp": 135,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 150,
+          "xp": 56865,
+          "daily_xp": 285,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 151,
+          "xp": 57555,
+          "daily_xp": 690,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 152,
+          "xp": 57920,
+          "daily_xp": 365,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 153,
+          "xp": 58545,
+          "daily_xp": 625,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 154,
+          "xp": 58840,
+          "daily_xp": 295,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 155,
+          "xp": 59310,
+          "daily_xp": 470,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 156,
+          "xp": 60005,
+          "daily_xp": 695,
+          "trades": 8,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 157,
+          "xp": 60740,
+          "daily_xp": 735,
+          "trades": 10,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 158,
+          "xp": 61275,
+          "daily_xp": 535,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 159,
+          "xp": 61585,
+          "daily_xp": 310,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 160,
+          "xp": 61850,
+          "daily_xp": 265,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 161,
+          "xp": 61955,
+          "daily_xp": 105,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 162,
+          "xp": 62265,
+          "daily_xp": 310,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 163,
+          "xp": 62595,
+          "daily_xp": 330,
+          "trades": 8,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 164,
+          "xp": 62700,
+          "daily_xp": 105,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 165,
+          "xp": 63080,
+          "daily_xp": 380,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 167,
+          "xp": 63290,
+          "daily_xp": 210,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 168,
+          "xp": 63460,
+          "daily_xp": 170,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 169,
+          "xp": 63950,
+          "daily_xp": 490,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 170,
+          "xp": 64515,
+          "daily_xp": 565,
+          "trades": 7,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 171,
+          "xp": 65060,
+          "daily_xp": 545,
+          "trades": 8,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 172,
+          "xp": 65365,
+          "daily_xp": 305,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 173,
+          "xp": 65640,
+          "daily_xp": 275,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 174,
+          "xp": 66240,
+          "daily_xp": 600,
+          "trades": 8,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 175,
+          "xp": 66850,
+          "daily_xp": 610,
+          "trades": 9,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 176,
+          "xp": 67660,
+          "daily_xp": 810,
+          "trades": 7,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 177,
+          "xp": 68015,
+          "daily_xp": 355,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 178,
+          "xp": 68315,
+          "daily_xp": 300,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 179,
+          "xp": 68670,
+          "daily_xp": 355,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 180,
+          "xp": 68855,
+          "daily_xp": 185,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 181,
+          "xp": 69540,
+          "daily_xp": 685,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 182,
+          "xp": 69935,
+          "daily_xp": 395,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 183,
+          "xp": 70380,
+          "daily_xp": 445,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 184,
+          "xp": 70890,
+          "daily_xp": 510,
+          "trades": 7,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 185,
+          "xp": 71265,
+          "daily_xp": 375,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 186,
+          "xp": 71485,
+          "daily_xp": 220,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 187,
+          "xp": 71695,
+          "daily_xp": 210,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 188,
+          "xp": 71850,
+          "daily_xp": 155,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 189,
+          "xp": 72175,
+          "daily_xp": 325,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 190,
+          "xp": 72570,
+          "daily_xp": 395,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 191,
+          "xp": 72755,
+          "daily_xp": 185,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 192,
+          "xp": 73020,
+          "daily_xp": 265,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 193,
+          "xp": 73325,
+          "daily_xp": 305,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 194,
+          "xp": 73585,
+          "daily_xp": 260,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 195,
+          "xp": 73720,
+          "daily_xp": 135,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 196,
+          "xp": 74065,
+          "daily_xp": 345,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 197,
+          "xp": 74820,
+          "daily_xp": 755,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 198,
+          "xp": 75205,
+          "daily_xp": 385,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 199,
+          "xp": 75465,
+          "daily_xp": 260,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 200,
+          "xp": 75845,
+          "daily_xp": 380,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 201,
+          "xp": 75960,
+          "daily_xp": 115,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 202,
+          "xp": 76130,
+          "daily_xp": 170,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 203,
+          "xp": 76350,
+          "daily_xp": 220,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 204,
+          "xp": 76680,
+          "daily_xp": 330,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 205,
+          "xp": 76975,
+          "daily_xp": 295,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 206,
+          "xp": 77280,
+          "daily_xp": 305,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 207,
+          "xp": 77475,
+          "daily_xp": 195,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 208,
+          "xp": 77955,
+          "daily_xp": 480,
+          "trades": 8,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 209,
+          "xp": 78190,
+          "daily_xp": 235,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 210,
+          "xp": 78665,
+          "daily_xp": 475,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 211,
+          "xp": 79520,
+          "daily_xp": 855,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 212,
+          "xp": 79745,
+          "daily_xp": 225,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 213,
+          "xp": 80155,
+          "daily_xp": 410,
+          "trades": 8,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 214,
+          "xp": 80480,
+          "daily_xp": 325,
+          "trades": 7,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 215,
+          "xp": 80775,
+          "daily_xp": 295,
+          "trades": 7,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 216,
+          "xp": 81140,
+          "daily_xp": 365,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 217,
+          "xp": 81685,
+          "daily_xp": 545,
+          "trades": 8,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 218,
+          "xp": 82075,
+          "daily_xp": 390,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 219,
+          "xp": 82440,
+          "daily_xp": 365,
+          "trades": 7,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 220,
+          "xp": 82930,
+          "daily_xp": 490,
+          "trades": 7,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 222,
+          "xp": 83140,
+          "daily_xp": 210,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 223,
+          "xp": 83485,
+          "daily_xp": 345,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 224,
+          "xp": 83900,
+          "daily_xp": 415,
+          "trades": 7,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 225,
+          "xp": 84470,
+          "daily_xp": 570,
+          "trades": 7,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 226,
+          "xp": 84775,
+          "daily_xp": 305,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 227,
+          "xp": 85425,
+          "daily_xp": 650,
+          "trades": 7,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 228,
+          "xp": 85915,
+          "daily_xp": 490,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 229,
+          "xp": 86230,
+          "daily_xp": 315,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 230,
+          "xp": 86435,
+          "daily_xp": 205,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 231,
+          "xp": 86850,
+          "daily_xp": 415,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 232,
+          "xp": 87360,
+          "daily_xp": 510,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 233,
+          "xp": 87635,
+          "daily_xp": 275,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 234,
+          "xp": 88135,
+          "daily_xp": 500,
+          "trades": 7,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 237,
+          "xp": 88295,
+          "daily_xp": 160,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 238,
+          "xp": 88640,
+          "daily_xp": 345,
+          "trades": 7,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 239,
+          "xp": 89075,
+          "daily_xp": 435,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 240,
+          "xp": 89310,
+          "daily_xp": 235,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 241,
+          "xp": 90180,
+          "daily_xp": 870,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 242,
+          "xp": 90510,
+          "daily_xp": 330,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 243,
+          "xp": 90835,
+          "daily_xp": 325,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 244,
+          "xp": 91105,
+          "daily_xp": 270,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 245,
+          "xp": 91255,
+          "daily_xp": 150,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 246,
+          "xp": 91455,
+          "daily_xp": 200,
+          "trades": 0,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 247,
+          "xp": 91620,
+          "daily_xp": 165,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 249,
+          "xp": 92015,
+          "daily_xp": 395,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 250,
+          "xp": 92270,
+          "daily_xp": 255,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 251,
+          "xp": 92395,
+          "daily_xp": 125,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 252,
+          "xp": 92730,
+          "daily_xp": 335,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 253,
+          "xp": 93260,
+          "daily_xp": 530,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 254,
+          "xp": 93430,
+          "daily_xp": 170,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 255,
+          "xp": 93665,
+          "daily_xp": 235,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 256,
+          "xp": 94135,
+          "daily_xp": 470,
+          "trades": 9,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 257,
+          "xp": 94495,
+          "daily_xp": 360,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 258,
+          "xp": 94810,
+          "daily_xp": 315,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 259,
+          "xp": 94900,
+          "daily_xp": 90,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 260,
+          "xp": 95420,
+          "daily_xp": 520,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 261,
+          "xp": 95875,
+          "daily_xp": 455,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 262,
+          "xp": 96180,
+          "daily_xp": 305,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 264,
+          "xp": 96365,
+          "daily_xp": 185,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 265,
+          "xp": 96645,
+          "daily_xp": 280,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 266,
+          "xp": 96880,
+          "daily_xp": 235,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 267,
+          "xp": 97190,
+          "daily_xp": 310,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 268,
+          "xp": 97405,
+          "daily_xp": 215,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 269,
+          "xp": 97630,
+          "daily_xp": 225,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 270,
+          "xp": 97815,
+          "daily_xp": 185,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 271,
+          "xp": 98515,
+          "daily_xp": 700,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 272,
+          "xp": 98965,
+          "daily_xp": 450,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 273,
+          "xp": 99320,
+          "daily_xp": 355,
+          "trades": 8,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 274,
+          "xp": 99895,
+          "daily_xp": 575,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 275,
+          "xp": 100135,
+          "daily_xp": 240,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 276,
+          "xp": 100225,
+          "daily_xp": 90,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 277,
+          "xp": 100505,
+          "daily_xp": 280,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 278,
+          "xp": 100835,
+          "daily_xp": 330,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 279,
+          "xp": 101340,
+          "daily_xp": 505,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 280,
+          "xp": 101420,
+          "daily_xp": 80,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 281,
+          "xp": 102130,
+          "daily_xp": 710,
+          "trades": 8,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 282,
+          "xp": 102525,
+          "daily_xp": 395,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 283,
+          "xp": 102735,
+          "daily_xp": 210,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 285,
+          "xp": 102990,
+          "daily_xp": 255,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 286,
+          "xp": 103170,
+          "daily_xp": 180,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 287,
+          "xp": 103785,
+          "daily_xp": 615,
+          "trades": 9,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 288,
+          "xp": 104420,
+          "daily_xp": 635,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 289,
+          "xp": 104900,
+          "daily_xp": 480,
+          "trades": 7,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 290,
+          "xp": 105195,
+          "daily_xp": 295,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 291,
+          "xp": 105475,
+          "daily_xp": 280,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 292,
+          "xp": 105800,
+          "daily_xp": 325,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 293,
+          "xp": 105995,
+          "daily_xp": 195,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 294,
+          "xp": 106420,
+          "daily_xp": 425,
+          "trades": 11,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 295,
+          "xp": 107025,
+          "daily_xp": 605,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 296,
+          "xp": 107360,
+          "daily_xp": 335,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 297,
+          "xp": 107685,
+          "daily_xp": 325,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 298,
+          "xp": 108140,
+          "daily_xp": 455,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 299,
+          "xp": 108665,
+          "daily_xp": 525,
+          "trades": 9,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 300,
+          "xp": 108965,
+          "daily_xp": 300,
+          "trades": 7,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 301,
+          "xp": 109830,
+          "daily_xp": 865,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 302,
+          "xp": 110260,
+          "daily_xp": 430,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 303,
+          "xp": 110625,
+          "daily_xp": 365,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 304,
+          "xp": 110760,
+          "daily_xp": 135,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 305,
+          "xp": 111035,
+          "daily_xp": 275,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 306,
+          "xp": 111420,
+          "daily_xp": 385,
+          "trades": 8,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 307,
+          "xp": 111960,
+          "daily_xp": 540,
+          "trades": 11,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 308,
+          "xp": 112230,
+          "daily_xp": 270,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 309,
+          "xp": 112685,
+          "daily_xp": 455,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 310,
+          "xp": 112955,
+          "daily_xp": 270,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 311,
+          "xp": 113115,
+          "daily_xp": 160,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 312,
+          "xp": 113305,
+          "daily_xp": 190,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 313,
+          "xp": 113715,
+          "daily_xp": 410,
+          "trades": 7,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 314,
+          "xp": 113950,
+          "daily_xp": 235,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 315,
+          "xp": 114370,
+          "daily_xp": 420,
+          "trades": 8,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 316,
+          "xp": 114690,
+          "daily_xp": 320,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 317,
+          "xp": 115095,
+          "daily_xp": 405,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 318,
+          "xp": 115340,
+          "daily_xp": 245,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 319,
+          "xp": 115640,
+          "daily_xp": 300,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 320,
+          "xp": 115985,
+          "daily_xp": 345,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 321,
+          "xp": 116400,
+          "daily_xp": 415,
+          "trades": 7,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 322,
+          "xp": 116480,
+          "daily_xp": 80,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 323,
+          "xp": 116815,
+          "daily_xp": 335,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 324,
+          "xp": 117075,
+          "daily_xp": 260,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 325,
+          "xp": 117295,
+          "daily_xp": 220,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 326,
+          "xp": 117390,
+          "daily_xp": 95,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 327,
+          "xp": 117555,
+          "daily_xp": 165,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 328,
+          "xp": 117830,
+          "daily_xp": 275,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 329,
+          "xp": 118075,
+          "daily_xp": 245,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 330,
+          "xp": 118470,
+          "daily_xp": 395,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 331,
+          "xp": 119170,
+          "daily_xp": 700,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 332,
+          "xp": 119505,
+          "daily_xp": 335,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 333,
+          "xp": 120140,
+          "daily_xp": 635,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 334,
+          "xp": 120440,
+          "daily_xp": 300,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 336,
+          "xp": 120660,
+          "daily_xp": 220,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 337,
+          "xp": 120970,
+          "daily_xp": 310,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 338,
+          "xp": 121505,
+          "daily_xp": 535,
+          "trades": 9,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 339,
+          "xp": 121815,
+          "daily_xp": 310,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 340,
+          "xp": 122020,
+          "daily_xp": 205,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 341,
+          "xp": 122345,
+          "daily_xp": 325,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 342,
+          "xp": 122535,
+          "daily_xp": 190,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 343,
+          "xp": 122740,
+          "daily_xp": 205,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 344,
+          "xp": 123420,
+          "daily_xp": 680,
+          "trades": 9,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 345,
+          "xp": 123740,
+          "daily_xp": 320,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 346,
+          "xp": 123940,
+          "daily_xp": 200,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 347,
+          "xp": 124415,
+          "daily_xp": 475,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 348,
+          "xp": 124780,
+          "daily_xp": 365,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 349,
+          "xp": 125070,
+          "daily_xp": 290,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 350,
+          "xp": 125325,
+          "daily_xp": 255,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 351,
+          "xp": 125725,
+          "daily_xp": 400,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 352,
+          "xp": 125845,
+          "daily_xp": 120,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 353,
+          "xp": 126335,
+          "daily_xp": 490,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 355,
+          "xp": 126680,
+          "daily_xp": 345,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 356,
+          "xp": 126915,
+          "daily_xp": 235,
+          "trades": 4,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 357,
+          "xp": 127425,
+          "daily_xp": 510,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 358,
+          "xp": 127960,
+          "daily_xp": 535,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 359,
+          "xp": 128060,
+          "daily_xp": 100,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 360,
+          "xp": 128560,
+          "daily_xp": 500,
+          "trades": 9,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 361,
+          "xp": 129345,
+          "daily_xp": 785,
+          "trades": 5,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 362,
+          "xp": 129650,
+          "daily_xp": 305,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 363,
+          "xp": 129950,
+          "daily_xp": 300,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 364,
+          "xp": 130090,
+          "daily_xp": 140,
+          "trades": 3,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 365,
+          "xp": 130625,
+          "daily_xp": 535,
+          "trades": 6,
+          "rank": "ADMIN",
+          "new_achievements": []
+        }
+      ]
+    },
+    {
+      "profile": "newbie",
+      "final_xp": 880,
+      "final_rank": "USER",
+      "total_trades": 8,
+      "win_rate": 37.5,
+      "best_streak": 2,
+      "achievements": [
+        "first_trade"
+      ],
+      "achievement_count": 1,
+      "rank_milestones": {},
+      "avg_xp_per_day": 2.410958904109589,
+      "avg_xp_per_active_day": 110.0,
+      "avg_xp_per_trade": 110.0,
+      "active_days": 8,
+      "retention": false,
+      "xp_sources": {
+        "base": 80,
+        "daily_bonus": 400,
+        "achievements": 100,
+        "comeback_bonus": 200,
+        "tcs_bonus": 15,
+        "win_bonus": 75,
+        "streak_bonus": 10
+      },
+      "daily_data": [
+        {
+          "day": 1,
+          "xp": 160,
+          "daily_xp": 160,
+          "trades": 1,
+          "rank": "USER",
+          "new_achievements": [
+            "first_trade"
+          ]
+        },
+        {
+          "day": 4,
+          "xp": 220,
+          "daily_xp": 60,
+          "trades": 1,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 11,
+          "xp": 380,
+          "daily_xp": 160,
+          "trades": 1,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 13,
+          "xp": 440,
+          "daily_xp": 60,
+          "trades": 1,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 18,
+          "xp": 540,
+          "daily_xp": 100,
+          "trades": 1,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 31,
+          "xp": 540,
+          "daily_xp": 0,
+          "trades": 0,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 49,
+          "xp": 735,
+          "daily_xp": 195,
+          "trades": 1,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 53,
+          "xp": 795,
+          "daily_xp": 60,
+          "trades": 1,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 57,
+          "xp": 880,
+          "daily_xp": 85,
+          "trades": 1,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 61,
+          "xp": 880,
+          "daily_xp": 0,
+          "trades": 0,
+          "rank": "USER",
+          "new_achievements": []
+        }
+      ]
+    },
+    {
+      "profile": "weekend_warrior",
+      "final_xp": 6630,
+      "final_rank": "ELITE",
+      "total_trades": 41,
+      "win_rate": 68.29268292682927,
+      "best_streak": 7,
+      "achievements": [
+        "trades_10",
+        "volume_10",
+        "streak_3",
+        "streak_5",
+        "accuracy_60",
+        "month_active",
+        "accuracy_70"
+      ],
+      "achievement_count": 7,
+      "rank_milestones": {
+        "ELITE": {
+          "day": 41,
+          "xp": 5080,
+          "trades_at_milestone": 9
+        }
+      },
+      "avg_xp_per_day": 18.164383561643834,
+      "avg_xp_per_active_day": 473.57142857142856,
+      "avg_xp_per_trade": 161.70731707317074,
+      "active_days": 14,
+      "retention": false,
+      "xp_sources": {
+        "base": 410,
+        "tcs_bonus": 270,
+        "volume_bonus": 110,
+        "daily_bonus": 700,
+        "win_bonus": 700,
+        "streak_bonus": 390,
+        "comeback_bonus": 200,
+        "weekly_bonus": 1200,
+        "achievements": 2150,
+        "monthly_bonus": 500
+      },
+      "daily_data": [
+        {
+          "day": 1,
+          "xp": 0,
+          "daily_xp": 0,
+          "trades": 0,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 6,
+          "xp": 165,
+          "daily_xp": 165,
+          "trades": 3,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 13,
+          "xp": 445,
+          "daily_xp": 280,
+          "trades": 4,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 14,
+          "xp": 520,
+          "daily_xp": 75,
+          "trades": 1,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 15,
+          "xp": 720,
+          "daily_xp": 200,
+          "trades": 0,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 20,
+          "xp": 1105,
+          "daily_xp": 385,
+          "trades": 2,
+          "rank": "USER",
+          "new_achievements": [
+            "trades_10",
+            "volume_10"
+          ]
+        },
+        {
+          "day": 21,
+          "xp": 1300,
+          "daily_xp": 195,
+          "trades": 3,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 22,
+          "xp": 1500,
+          "daily_xp": 200,
+          "trades": 0,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 27,
+          "xp": 1905,
+          "daily_xp": 405,
+          "trades": 5,
+          "rank": "USER",
+          "new_achievements": [
+            "streak_3"
+          ]
+        },
+        {
+          "day": 28,
+          "xp": 2565,
+          "daily_xp": 660,
+          "trades": 2,
+          "rank": "USER",
+          "new_achievements": [
+            "streak_5",
+            "accuracy_60"
+          ]
+        },
+        {
+          "day": 29,
+          "xp": 2765,
+          "daily_xp": 200,
+          "trades": 0,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 31,
+          "xp": 3765,
+          "daily_xp": 1000,
+          "trades": 0,
+          "rank": "USER",
+          "new_achievements": [
+            "month_active"
+          ]
+        },
+        {
+          "day": 34,
+          "xp": 4035,
+          "daily_xp": 270,
+          "trades": 4,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 35,
+          "xp": 4645,
+          "daily_xp": 610,
+          "trades": 3,
+          "rank": "USER",
+          "new_achievements": [
+            "accuracy_70"
+          ]
+        },
+        {
+          "day": 36,
+          "xp": 4845,
+          "daily_xp": 200,
+          "trades": 0,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 42,
+          "xp": 5580,
+          "daily_xp": 735,
+          "trades": 1,
+          "rank": "ELITE",
+          "new_achievements": [
+            "rank_up_ELITE"
+          ]
+        },
+        {
+          "day": 48,
+          "xp": 5810,
+          "daily_xp": 230,
+          "trades": 6,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 49,
+          "xp": 5930,
+          "daily_xp": 120,
+          "trades": 2,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 50,
+          "xp": 6130,
+          "daily_xp": 200,
+          "trades": 0,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 55,
+          "xp": 6230,
+          "daily_xp": 100,
+          "trades": 1,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 56,
+          "xp": 6430,
+          "daily_xp": 200,
+          "trades": 4,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 57,
+          "xp": 6630,
+          "daily_xp": 200,
+          "trades": 0,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 61,
+          "xp": 6630,
+          "daily_xp": 0,
+          "trades": 0,
+          "rank": "ELITE",
+          "new_achievements": []
+        }
+      ]
+    },
+    {
+      "profile": "skilled_casual",
+      "final_xp": 20225,
+      "final_rank": "ADMIN",
+      "total_trades": 96,
+      "win_rate": 78.125,
+      "best_streak": 10,
+      "achievements": [
+        "first_trade",
+        "streak_3",
+        "streak_5",
+        "week_active",
+        "trades_10",
+        "volume_10",
+        "accuracy_60",
+        "accuracy_70",
+        "accuracy_80",
+        "trades_50",
+        "volume_50",
+        "streak_10"
+      ],
+      "achievement_count": 12,
+      "rank_milestones": {
+        "ELITE": {
+          "day": 88,
+          "xp": 5110,
+          "trades_at_milestone": 18
+        },
+        "ADMIN": {
+          "day": 184,
+          "xp": 10040,
+          "trades_at_milestone": 35
+        }
+      },
+      "avg_xp_per_day": 55.41095890410959,
+      "avg_xp_per_active_day": 273.31081081081084,
+      "avg_xp_per_trade": 210.67708333333334,
+      "active_days": 74,
+      "retention": true,
+      "xp_sources": {
+        "base": 960,
+        "tcs_bonus": 885,
+        "daily_bonus": 3700,
+        "win_bonus": 1875,
+        "achievements": 3850,
+        "streak_bonus": 1820,
+        "volume_bonus": 35,
+        "weekly_bonus": 400,
+        "comeback_bonus": 1700,
+        "monthly_bonus": 5000
+      },
+      "daily_data": [
+        {
+          "day": 1,
+          "xp": 200,
+          "daily_xp": 200,
+          "trades": 1,
+          "rank": "USER",
+          "new_achievements": [
+            "first_trade"
+          ]
+        },
+        {
+          "day": 2,
+          "xp": 310,
+          "daily_xp": 110,
+          "trades": 1,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 5,
+          "xp": 565,
+          "daily_xp": 255,
+          "trades": 1,
+          "rank": "USER",
+          "new_achievements": [
+            "streak_3"
+          ]
+        },
+        {
+          "day": 8,
+          "xp": 1425,
+          "daily_xp": 860,
+          "trades": 2,
+          "rank": "USER",
+          "new_achievements": [
+            "streak_5",
+            "week_active"
+          ]
+        },
+        {
+          "day": 11,
+          "xp": 1575,
+          "daily_xp": 150,
+          "trades": 1,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 12,
+          "xp": 1810,
+          "daily_xp": 235,
+          "trades": 2,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 27,
+          "xp": 2205,
+          "daily_xp": 395,
+          "trades": 2,
+          "rank": "USER",
+          "new_achievements": [
+            "trades_10"
+          ]
+        },
+        {
+          "day": 31,
+          "xp": 2205,
+          "daily_xp": 0,
+          "trades": 0,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 38,
+          "xp": 2390,
+          "daily_xp": 185,
+          "trades": 1,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 45,
+          "xp": 2670,
+          "daily_xp": 280,
+          "trades": 2,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 54,
+          "xp": 2885,
+          "daily_xp": 215,
+          "trades": 1,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 59,
+          "xp": 3110,
+          "daily_xp": 225,
+          "trades": 1,
+          "rank": "USER",
+          "new_achievements": [
+            "volume_10"
+          ]
+        },
+        {
+          "day": 61,
+          "xp": 3260,
+          "daily_xp": 150,
+          "trades": 1,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 65,
+          "xp": 3410,
+          "daily_xp": 150,
+          "trades": 1,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 67,
+          "xp": 3545,
+          "daily_xp": 135,
+          "trades": 1,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 70,
+          "xp": 3620,
+          "daily_xp": 75,
+          "trades": 1,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 78,
+          "xp": 4720,
+          "daily_xp": 1100,
+          "trades": 1,
+          "rank": "USER",
+          "new_achievements": [
+            "accuracy_60",
+            "accuracy_70",
+            "accuracy_80"
+          ]
+        },
+        {
+          "day": 79,
+          "xp": 4815,
+          "daily_xp": 95,
+          "trades": 1,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 80,
+          "xp": 4935,
+          "daily_xp": 120,
+          "trades": 1,
+          "rank": "USER",
+          "new_achievements": []
+        },
+        {
+          "day": 89,
+          "xp": 5610,
+          "daily_xp": 675,
+          "trades": 1,
+          "rank": "ELITE",
+          "new_achievements": [
+            "rank_up_ELITE"
+          ]
+        },
+        {
+          "day": 91,
+          "xp": 6110,
+          "daily_xp": 500,
+          "trades": 0,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 92,
+          "xp": 6210,
+          "daily_xp": 100,
+          "trades": 1,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 96,
+          "xp": 6320,
+          "daily_xp": 110,
+          "trades": 2,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 101,
+          "xp": 6430,
+          "daily_xp": 110,
+          "trades": 2,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 111,
+          "xp": 6655,
+          "daily_xp": 225,
+          "trades": 2,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 118,
+          "xp": 6935,
+          "daily_xp": 280,
+          "trades": 2,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 121,
+          "xp": 7435,
+          "daily_xp": 500,
+          "trades": 0,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 124,
+          "xp": 7565,
+          "daily_xp": 130,
+          "trades": 1,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 136,
+          "xp": 7805,
+          "daily_xp": 240,
+          "trades": 1,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 146,
+          "xp": 8055,
+          "daily_xp": 250,
+          "trades": 1,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 151,
+          "xp": 8555,
+          "daily_xp": 500,
+          "trades": 0,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 161,
+          "xp": 8790,
+          "daily_xp": 235,
+          "trades": 1,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 162,
+          "xp": 8930,
+          "daily_xp": 140,
+          "trades": 1,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 167,
+          "xp": 9015,
+          "daily_xp": 85,
+          "trades": 2,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 172,
+          "xp": 9090,
+          "daily_xp": 75,
+          "trades": 1,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 174,
+          "xp": 9165,
+          "daily_xp": 75,
+          "trades": 1,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 176,
+          "xp": 9245,
+          "daily_xp": 80,
+          "trades": 1,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 181,
+          "xp": 9830,
+          "daily_xp": 585,
+          "trades": 1,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 182,
+          "xp": 9895,
+          "daily_xp": 65,
+          "trades": 1,
+          "rank": "ELITE",
+          "new_achievements": []
+        },
+        {
+          "day": 185,
+          "xp": 10540,
+          "daily_xp": 645,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": [
+            "rank_up_ADMIN"
+          ]
+        },
+        {
+          "day": 186,
+          "xp": 10660,
+          "daily_xp": 120,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 207,
+          "xp": 10870,
+          "daily_xp": 210,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 209,
+          "xp": 11265,
+          "daily_xp": 395,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": [
+            "trades_50"
+          ]
+        },
+        {
+          "day": 211,
+          "xp": 11765,
+          "daily_xp": 500,
+          "trades": 0,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 213,
+          "xp": 11885,
+          "daily_xp": 120,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 217,
+          "xp": 12105,
+          "daily_xp": 220,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 219,
+          "xp": 12340,
+          "daily_xp": 235,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 225,
+          "xp": 12500,
+          "daily_xp": 160,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 229,
+          "xp": 12600,
+          "daily_xp": 100,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 230,
+          "xp": 12680,
+          "daily_xp": 80,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 235,
+          "xp": 12765,
+          "daily_xp": 85,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 241,
+          "xp": 13265,
+          "daily_xp": 500,
+          "trades": 0,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 243,
+          "xp": 13475,
+          "daily_xp": 210,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 244,
+          "xp": 13595,
+          "daily_xp": 120,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 245,
+          "xp": 13690,
+          "daily_xp": 95,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 251,
+          "xp": 13855,
+          "daily_xp": 165,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 254,
+          "xp": 13970,
+          "daily_xp": 115,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 256,
+          "xp": 14080,
+          "daily_xp": 110,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 260,
+          "xp": 14445,
+          "daily_xp": 365,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 270,
+          "xp": 14860,
+          "daily_xp": 415,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": [
+            "volume_50"
+          ]
+        },
+        {
+          "day": 271,
+          "xp": 15360,
+          "daily_xp": 500,
+          "trades": 0,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 273,
+          "xp": 15485,
+          "daily_xp": 125,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 277,
+          "xp": 15620,
+          "daily_xp": 135,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 278,
+          "xp": 15770,
+          "daily_xp": 150,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 282,
+          "xp": 15920,
+          "daily_xp": 150,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 283,
+          "xp": 16070,
+          "daily_xp": 150,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 285,
+          "xp": 16710,
+          "daily_xp": 640,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": [
+            "streak_10"
+          ]
+        },
+        {
+          "day": 291,
+          "xp": 16785,
+          "daily_xp": 75,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 293,
+          "xp": 16945,
+          "daily_xp": 160,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 294,
+          "xp": 17065,
+          "daily_xp": 120,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 301,
+          "xp": 17565,
+          "daily_xp": 500,
+          "trades": 0,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 303,
+          "xp": 17795,
+          "daily_xp": 230,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 315,
+          "xp": 17975,
+          "daily_xp": 180,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 316,
+          "xp": 18075,
+          "daily_xp": 100,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 319,
+          "xp": 18240,
+          "daily_xp": 165,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 325,
+          "xp": 18370,
+          "daily_xp": 130,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 327,
+          "xp": 18510,
+          "daily_xp": 140,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 331,
+          "xp": 19010,
+          "daily_xp": 500,
+          "trades": 0,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 348,
+          "xp": 19360,
+          "daily_xp": 350,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 350,
+          "xp": 19435,
+          "daily_xp": 75,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 352,
+          "xp": 19565,
+          "daily_xp": 130,
+          "trades": 2,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 355,
+          "xp": 19640,
+          "daily_xp": 75,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 357,
+          "xp": 19725,
+          "daily_xp": 85,
+          "trades": 1,
+          "rank": "ADMIN",
+          "new_achievements": []
+        },
+        {
+          "day": 361,
+          "xp": 20225,
+          "daily_xp": 500,
+          "trades": 0,
+          "rank": "ADMIN",
+          "new_achievements": []
+        }
+      ]
+    }
+  ],
+  "analysis": {
+    "player_summaries": {
+      "casual": {
+        "final_rank": "ADMIN",
+        "final_xp": 13370,
+        "days_to_authorized": 36,
+        "days_to_elite": 150,
+        "days_to_admin": 249,
+        "total_trades": 76,
+        "active_days": 76,
+        "avg_xp_per_day": 36.6,
+        "avg_xp_per_active_day": 175.9,
+        "avg_xp_per_trade": 175.9,
+        "achievements_unlocked": 6,
+        "retention": false
+      },
+      "active": {
+        "final_rank": "ADMIN",
+        "final_xp": 43905,
+        "days_to_authorized": "Not reached",
+        "days_to_elite": "Not reached",
+        "days_to_admin": 60,
+        "total_trades": 385,
+        "active_days": 196,
+        "avg_xp_per_day": 120.3,
+        "avg_xp_per_active_day": 224.0,
+        "avg_xp_per_trade": 114.0,
+        "achievements_unlocked": 9,
+        "retention": true
+      },
+      "hardcore": {
+        "final_rank": "ADMIN",
+        "final_xp": 130625,
+        "days_to_authorized": 2,
+        "days_to_elite": 10,
+        "days_to_admin": 21,
+        "total_trades": 1616,
+        "active_days": 348,
+        "avg_xp_per_day": 357.9,
+        "avg_xp_per_active_day": 375.4,
+        "avg_xp_per_trade": 80.8,
+        "achievements_unlocked": 11,
+        "retention": true
+      },
+      "newbie": {
+        "final_rank": "USER",
+        "final_xp": 880,
+        "days_to_authorized": "Not reached",
+        "days_to_elite": "Not reached",
+        "days_to_admin": "Not reached",
+        "total_trades": 8,
+        "active_days": 8,
+        "avg_xp_per_day": 2.4,
+        "avg_xp_per_active_day": 110.0,
+        "avg_xp_per_trade": 110.0,
+        "achievements_unlocked": 1,
+        "retention": false
+      },
+      "weekend_warrior": {
+        "final_rank": "ELITE",
+        "final_xp": 6630,
+        "days_to_authorized": "Not reached",
+        "days_to_elite": 41,
+        "days_to_admin": "Not reached",
+        "total_trades": 41,
+        "active_days": 14,
+        "avg_xp_per_day": 18.2,
+        "avg_xp_per_active_day": 473.6,
+        "avg_xp_per_trade": 161.7,
+        "achievements_unlocked": 7,
+        "retention": false
+      },
+      "skilled_casual": {
+        "final_rank": "ADMIN",
+        "final_xp": 20225,
+        "days_to_authorized": "Not reached",
+        "days_to_elite": 88,
+        "days_to_admin": 184,
+        "total_trades": 96,
+        "active_days": 74,
+        "avg_xp_per_day": 55.4,
+        "avg_xp_per_active_day": 273.3,
+        "avg_xp_per_trade": 210.7,
+        "achievements_unlocked": 12,
+        "retention": true
+      }
+    },
+    "rank_achievement_rates": {
+      "AUTHORIZED": {
+        "achieved": 2,
+        "total": 6,
+        "percentage": 33.3
+      },
+      "ELITE": {
+        "achieved": 4,
+        "total": 6,
+        "percentage": 66.7
+      },
+      "ADMIN": {
+        "achieved": 4,
+        "total": 6,
+        "percentage": 66.7
+      }
+    },
+    "xp_source_analysis": {
+      "streak_bonus": {
+        "avg_percentage": 7.5,
+        "profiles": [
+          {
+            "profile": "casual",
+            "amount": 300,
+            "percentage": 2.243829468960359
+          },
+          {
+            "profile": "active",
+            "amount": 3540,
+            "percentage": 8.062862999658353
+          },
+          {
+            "profile": "hardcore",
+            "amount": 24640,
+            "percentage": 18.863157894736844
+          },
+          {
+            "profile": "newbie",
+            "amount": 10,
+            "percentage": 1.1363636363636365
+          },
+          {
+            "profile": "weekend_warrior",
+            "amount": 390,
+            "percentage": 5.88235294117647
+          },
+          {
+            "profile": "skilled_casual",
+            "amount": 1820,
+            "percentage": 8.99876390605686
+          }
+        ]
+      },
+      "weekly_bonus": {
+        "avg_percentage": 11.7,
+        "profiles": [
+          {
+            "profile": "active",
+            "amount": 8200,
+            "percentage": 18.67668830429336
+          },
+          {
+            "profile": "hardcore",
+            "amount": 10400,
+            "percentage": 7.961722488038278
+          },
+          {
+            "profile": "weekend_warrior",
+            "amount": 1200,
+            "percentage": 18.099547511312217
+          },
+          {
+            "profile": "skilled_casual",
+            "amount": 400,
+            "percentage": 1.9777503090234856
+          }
+        ]
+      },
+      "daily_bonus": {
+        "avg_percentage": 23.1,
+        "profiles": [
+          {
+            "profile": "casual",
+            "amount": 3800,
+            "percentage": 28.421839940164546
+          },
+          {
+            "profile": "active",
+            "amount": 9800,
+            "percentage": 22.320920168545726
+          },
+          {
+            "profile": "hardcore",
+            "amount": 17400,
+            "percentage": 13.320574162679428
+          },
+          {
+            "profile": "newbie",
+            "amount": 400,
+            "percentage": 45.45454545454545
+          },
+          {
+            "profile": "weekend_warrior",
+            "amount": 700,
+            "percentage": 10.558069381598793
+          },
+          {
+            "profile": "skilled_casual",
+            "amount": 3700,
+            "percentage": 18.294190358467244
+          }
+        ]
+      },
+      "win_bonus": {
+        "avg_percentage": 11.9,
+        "profiles": [
+          {
+            "profile": "casual",
+            "amount": 900,
+            "percentage": 6.731488406881077
+          },
+          {
+            "profile": "active",
+            "amount": 6025,
+            "percentage": 13.722810613825304
+          },
+          {
+            "profile": "hardcore",
+            "amount": 29275,
+            "percentage": 22.411483253588514
+          },
+          {
+            "profile": "newbie",
+            "amount": 75,
+            "percentage": 8.522727272727272
+          },
+          {
+            "profile": "weekend_warrior",
+            "amount": 700,
+            "percentage": 10.558069381598793
+          },
+          {
+            "profile": "skilled_casual",
+            "amount": 1875,
+            "percentage": 9.270704573547588
+          }
+        ]
+      },
+      "achievements": {
+        "avg_percentage": 15.2,
+        "profiles": [
+          {
+            "profile": "casual",
+            "amount": 2550,
+            "percentage": 19.07255048616305
+          },
+          {
+            "profile": "active",
+            "amount": 2700,
+            "percentage": 6.149641270925862
+          },
+          {
+            "profile": "hardcore",
+            "amount": 4500,
+            "percentage": 3.4449760765550237
+          },
+          {
+            "profile": "newbie",
+            "amount": 100,
+            "percentage": 11.363636363636363
+          },
+          {
+            "profile": "weekend_warrior",
+            "amount": 2150,
+            "percentage": 32.42835595776772
+          },
+          {
+            "profile": "skilled_casual",
+            "amount": 3850,
+            "percentage": 19.03584672435105
+          }
+        ]
+      },
+      "comeback_bonus": {
+        "avg_percentage": 8.8,
+        "profiles": [
+          {
+            "profile": "casual",
+            "amount": 1200,
+            "percentage": 8.975317875841435
+          },
+          {
+            "profile": "active",
+            "amount": 300,
+            "percentage": 0.6832934745473181
+          },
+          {
+            "profile": "newbie",
+            "amount": 200,
+            "percentage": 22.727272727272727
+          },
+          {
+            "profile": "weekend_warrior",
+            "amount": 200,
+            "percentage": 3.0165912518853695
+          },
+          {
+            "profile": "skilled_casual",
+            "amount": 1700,
+            "percentage": 8.405438813349814
+          }
+        ]
+      },
+      "monthly_bonus": {
+        "avg_percentage": 15.3,
+        "profiles": [
+          {
+            "profile": "casual",
+            "amount": 3500,
+            "percentage": 26.17801047120419
+          },
+          {
+            "profile": "active",
+            "amount": 6000,
+            "percentage": 13.665869490946362
+          },
+          {
+            "profile": "hardcore",
+            "amount": 6000,
+            "percentage": 4.5933014354066986
+          },
+          {
+            "profile": "weekend_warrior",
+            "amount": 500,
+            "percentage": 7.541478129713424
+          },
+          {
+            "profile": "skilled_casual",
+            "amount": 5000,
+            "percentage": 24.721878862793574
+          }
+        ]
+      },
+      "volume_bonus": {
+        "avg_percentage": 1.7,
+        "profiles": [
+          {
+            "profile": "active",
+            "amount": 490,
+            "percentage": 1.116046008427286
+          },
+          {
+            "profile": "hardcore",
+            "amount": 5090,
+            "percentage": 3.896650717703349
+          },
+          {
+            "profile": "weekend_warrior",
+            "amount": 110,
+            "percentage": 1.6591251885369533
+          },
+          {
+            "profile": "skilled_casual",
+            "amount": 35,
+            "percentage": 0.173053152039555
+          }
+        ]
+      },
+      "tcs_bonus": {
+        "avg_percentage": 5.5,
+        "profiles": [
+          {
+            "profile": "casual",
+            "amount": 360,
+            "percentage": 2.692595362752431
+          },
+          {
+            "profile": "active",
+            "amount": 3000,
+            "percentage": 6.832934745473181
+          },
+          {
+            "profile": "hardcore",
+            "amount": 17160,
+            "percentage": 13.136842105263158
+          },
+          {
+            "profile": "newbie",
+            "amount": 15,
+            "percentage": 1.7045454545454544
+          },
+          {
+            "profile": "weekend_warrior",
+            "amount": 270,
+            "percentage": 4.072398190045249
+          },
+          {
+            "profile": "skilled_casual",
+            "amount": 885,
+            "percentage": 4.375772558714462
+          }
+        ]
+      },
+      "base": {
+        "avg_percentage": 7.8,
+        "profiles": [
+          {
+            "profile": "casual",
+            "amount": 760,
+            "percentage": 5.68436798803291
+          },
+          {
+            "profile": "active",
+            "amount": 3850,
+            "percentage": 8.76893292335725
+          },
+          {
+            "profile": "hardcore",
+            "amount": 16160,
+            "percentage": 12.371291866028708
+          },
+          {
+            "profile": "newbie",
+            "amount": 80,
+            "percentage": 9.090909090909092
+          },
+          {
+            "profile": "weekend_warrior",
+            "amount": 410,
+            "percentage": 6.184012066365008
+          },
+          {
+            "profile": "skilled_casual",
+            "amount": 960,
+            "percentage": 4.746600741656366
+          }
+        ]
+      }
+    },
+    "progression_issues": [
+      {
+        "issue": "New players take too long (>90 days) to reach first promotion",
+        "severity": "critical",
+        "affected_profiles": [
+          "newbie"
+        ]
+      },
+      {
+        "issue": "Hardcore players reach max rank too quickly (<60 days)",
+        "severity": "medium",
+        "affected_profiles": [
+          "hardcore"
+        ]
+      }
+    ],
+    "bottlenecks": [],
+    "recommendations": [
+      {
+        "priority": "HIGH",
+        "recommendation": "Lower AUTHORIZED threshold to 750 XP or add \"New Player\" XP multiplier (1.5x for first 30 days)",
+        "rationale": "New player retention is critical for game health"
+      },
+      {
+        "priority": "MEDIUM",
+        "recommendation": "Add prestige system or extend ranks (MASTER at 20k XP, LEGEND at 50k XP)",
+        "rationale": "Extend endgame for dedicated players"
+      },
+      {
+        "priority": "MEDIUM",
+        "recommendation": "Implement \"Rest XP\" system - 2x XP for first 3 trades after 3+ days absence",
+        "rationale": "Encourage returning players and reduce FOMO"
+      },
+      {
+        "priority": "LOW",
+        "recommendation": "Add social features - 10% XP bonus when trading alongside friends",
+        "rationale": "Increase retention through social engagement"
+      },
+      {
+        "priority": "LOW",
+        "recommendation": "Seasonal events with 1.5x XP weekends",
+        "rationale": "Drive engagement spikes and re-engage lapsed players"
+      }
+    ]
+  }
+}

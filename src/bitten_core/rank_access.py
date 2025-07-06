@@ -220,11 +220,29 @@ COMMAND_PERMISSIONS = {
     '/balance': UserRank.AUTHORIZED,
     '/history': UserRank.AUTHORIZED,
     '/performance': UserRank.AUTHORIZED,
+    '/news': UserRank.AUTHORIZED,
     
     # Trading Commands - Authorized Users
     '/fire': UserRank.AUTHORIZED,
     '/close': UserRank.AUTHORIZED,
     '/mode': UserRank.AUTHORIZED,
+    
+    # Uncertainty & Control Commands - Authorized Users
+    '/uncertainty': UserRank.AUTHORIZED,
+    '/bitmode': UserRank.AUTHORIZED,
+    '/yes': UserRank.AUTHORIZED,
+    '/no': UserRank.AUTHORIZED,
+    '/control': UserRank.AUTHORIZED,
+    '/stealth': UserRank.AUTHORIZED,
+    '/gemini': UserRank.AUTHORIZED,
+    '/chaos': UserRank.ELITE,  # Chaos mode requires Elite access
+    
+    # Emergency Stop Commands - Authorized Users
+    '/emergency_stop': UserRank.AUTHORIZED,
+    '/panic': UserRank.AUTHORIZED,
+    '/halt_all': UserRank.ELITE,
+    '/recover': UserRank.AUTHORIZED,
+    '/emergency_status': UserRank.USER,
     
     # Configuration Commands - Elite Users
     '/risk': UserRank.ELITE,

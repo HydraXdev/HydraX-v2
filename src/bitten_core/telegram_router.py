@@ -6,12 +6,13 @@ import time
 import re
 from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 
 from .rank_access import RankAccess, UserRank, require_user, require_authorized, require_elite, require_admin
 from .user_profile import UserProfileManager
 from .mission_briefing_generator import MissionBriefingGenerator, MissionBriefing
 from .social_sharing import SocialSharingManager
+from .emergency_stop_controller import EmergencyStopController, EmergencyStopTrigger, EmergencyStopLevel
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 
 @dataclass
@@ -46,14 +47,17 @@ class TelegramRouter:
         self.briefing_generator = MissionBriefingGenerator()
         self.active_briefings: Dict[str, MissionBriefing] = {}
         self.social_sharing = SocialSharingManager()
+        self.emergency_controller = EmergencyStopController()
         
         # Command categories for help system
         self.command_categories = {
-            'System': ['start', 'help', 'status', 'me'],
-            'Trading Info': ['positions', 'balance', 'history', 'performance'],
+            'System': ['start', 'help', 'intel', 'status', 'me'],
+            'Trading Info': ['positions', 'balance', 'history', 'performance', 'news'],
             'Trading Commands': ['fire', 'close', 'mode'],
+            'Uncertainty Control': ['uncertainty', 'bitmode', 'yes', 'no', 'control', 'stealth', 'gemini', 'chaos'],
             'Configuration': ['risk', 'maxpos', 'notify'],
             'Elite Features': ['tactical', 'tcs', 'signals', 'closeall', 'backtest'],
+            'Emergency Stop': ['emergency_stop', 'panic', 'halt_all', 'recover', 'emergency_status'],
             'Admin Only': ['logs', 'restart', 'backup', 'promote', 'ban']
         }
     
@@ -153,6 +157,8 @@ class TelegramRouter:
             return self._cmd_history(update.user_id, args)
         elif command == '/performance':
             return self._cmd_performance(update.user_id)
+        elif command == '/news':
+            return self._cmd_news(update.user_id, args)
         
         # Trading Commands
         elif command == '/fire':
@@ -182,6 +188,36 @@ class TelegramRouter:
         elif command == '/backtest':
             return self._cmd_backtest(update.user_id, args)
         
+        # Uncertainty & Control Commands
+        elif command == '/bitmode':
+            return self._cmd_bitmode(update.user_id, args)
+        elif command == '/yes':
+            return self._cmd_yes(update.user_id, args)
+        elif command == '/no':
+            return self._cmd_no(update.user_id, args)
+        elif command == '/control':
+            return self._cmd_control(update.user_id, args)
+        elif command == '/stealth':
+            return self._cmd_stealth(update.user_id, args)
+        elif command == '/gemini':
+            return self._cmd_gemini(update.user_id, args)
+        elif command == '/chaos':
+            return self._cmd_chaos(update.user_id, args)
+        elif command == '/uncertainty':
+            return self._cmd_uncertainty_status(update.user_id)
+        
+        # Emergency Stop Commands
+        elif command == '/emergency_stop':
+            return self._cmd_emergency_stop(update.user_id, args)
+        elif command == '/panic':
+            return self._cmd_panic(update.user_id, args)
+        elif command == '/halt_all':
+            return self._cmd_halt_all(update.user_id, args)
+        elif command == '/recover':
+            return self._cmd_recover(update.user_id, args)
+        elif command == '/emergency_status':
+            return self._cmd_emergency_status(update.user_id)
+        
         # Admin Commands
         elif command == '/logs':
             return self._cmd_logs(update.user_id, args)
@@ -193,6 +229,10 @@ class TelegramRouter:
             return self._cmd_promote(update.user_id, args)
         elif command == '/ban':
             return self._cmd_ban(update.user_id, args)
+        
+        # Intel Command Center
+        elif command == '/intel':
+            return self._cmd_intel(update.user_id)
         
         else:
             return CommandResult(False, f"❌ Unknown command: {command}")
@@ -228,6 +268,7 @@ Your access level: **{user_rank.name}**
 *"You've been B.I.T.T.E.N. — now prove you belong."*
 
 🎯 **Quick Commands:**
+• `/intel` - Intel Command Center (Everything you need)
 • `/status` - System status
 • `/help` - Command list
 • `/me` - Your profile & stats
@@ -251,6 +292,7 @@ Welcome {username}! Your access level: **{user_rank.name}**
 *"You've been B.I.T.T.E.N. — now prove you belong."*
 
 🎯 **Quick Commands:**
+• `/intel` - Intel Command Center (Everything you need)
 • `/status` - System status
 • `/help` - Command list
 • `/me` - Your profile & stats
@@ -283,6 +325,7 @@ Type `/help` for complete command list."""
         # Show available categories
         msg = f"🤖 **B.I.T.T.E.N. Command Categories** (Rank: {user_rank.name})\n"
         msg += "*The Engine is watching. The Network is evolving.*\n\n"
+        msg += "💡 **TIP**: Use `/intel` for comprehensive help center\n\n"
         
         for category, commands in self.command_categories.items():
             available_commands = []
@@ -332,11 +375,49 @@ Use `/positions` to check trading status"""
         profile = self.profile_manager.get_full_profile(user_id)
         user_rank = self.rank_access.get_user_rank(user_id)
         
+        # Get risk status
+        from .risk_controller import get_risk_controller, TierLevel
+        risk_controller = get_risk_controller()
+        
+        # Map rank to tier
+        tier_map = {
+            'USER': TierLevel.NIBBLER,
+            'AUTHORIZED': TierLevel.NIBBLER,
+            'ELITE': TierLevel.FANG,
+            'ADMIN': TierLevel.APEX
+        }
+        tier = tier_map.get(user_rank.name, TierLevel.NIBBLER)
+        risk_status = risk_controller.get_user_status(user_id, tier, 10000)  # Dummy balance
+        
+        # Get emergency stop status
+        emergency_status = self.emergency_controller.get_emergency_status()
+        
         # Build profile message
         profile_msg = f"""👤 **OPERATIVE PROFILE**
 
 **Rank:** {profile['rank']} | **XP:** {profile['total_xp']:,}/{profile['next_rank_xp']:,}
 **Missions:** {profile['missions_completed']} | **Success Rate:** {profile['success_rate']}%
+
+⚙️ **Risk Mode:** {risk_status['risk_mode']} ({risk_status['current_risk_percent']}%)
+📊 **Daily:** {risk_status['daily_trades']}/{risk_status['max_daily_trades']} trades | -{risk_status['daily_drawdown_percent']:.1f}% drawdown"""
+
+        # Add emergency status if active
+        if emergency_status['is_active']:
+            current_event = emergency_status.get('current_event', {})
+            trigger = current_event.get('trigger', 'unknown')
+            level = current_event.get('level', 'unknown')
+            profile_msg += f"""
+
+🚨 **EMERGENCY STATUS:** ACTIVE
+🔴 **Level:** {level.upper()}
+🔴 **Trigger:** {trigger.upper()}
+🔴 **Events Today:** {emergency_status.get('events_today', 0)}"""
+        else:
+            profile_msg += f"""
+
+✅ **System Status:** OPERATIONAL"""
+
+        profile_msg += f"""
 
 💰 **Combat Stats:**
 • Total Profit: ${profile['total_profit']:,.2f}
@@ -350,6 +431,10 @@ Use `/positions` to check trading status"""
 `https://t.me/BITTEN_bot?start=ref_{user_id}`
 
 *Operative since {profile['joined_days_ago']} days ago*"""
+        
+        # Add cooldown warning if active
+        if risk_status['cooldown']:
+            profile_msg = "🚫 **COOLDOWN ACTIVE**\n" + profile_msg
         
         # Create inline keyboard with WebApp button
         webapp_data = {
@@ -365,11 +450,39 @@ Use `/positions` to check trading status"""
                     url=f"{self.hud_webapp_url}?data={json.dumps(webapp_data)}&view=profile"
                 )
             )],
+            [InlineKeyboardButton(
+                "🔍 INTEL CENTER", 
+                web_app=WebAppInfo(
+                    url=f"{self.hud_webapp_url}/intel"
+                )
+            )]
+        ]
+        
+        # Add emergency controls if active
+        if emergency_status['is_active']:
+            keyboard.append([
+                InlineKeyboardButton("🚨 EMERGENCY STATUS", callback_data="emergency_status"),
+                InlineKeyboardButton("🔄 RECOVER", callback_data=f"recover_{user_id}")
+            ])
+        else:
+            keyboard.append([
+                InlineKeyboardButton("🛑 EMERGENCY STOP", callback_data=f"emergency_stop_{user_id}")
+            ])
+        
+        keyboard.extend([
             [
                 InlineKeyboardButton("📤 SHARE LINK", callback_data="share_recruit_link"),
                 InlineKeyboardButton("🎖️ MEDALS", callback_data="view_medals")
+            ],
+            [
+                InlineKeyboardButton(
+                    "⚙️ SETTINGS", 
+                    web_app=WebAppInfo(
+                        url=f"{self.hud_webapp_url}/settings.html"
+                    )
+                )
             ]
-        ]
+        ])
         
         reply_markup = InlineKeyboardMarkup(keyboard)
         
@@ -412,6 +525,79 @@ Use `/positions` to check trading status"""
             return self.bitten_core.get_performance(user_id)
         return CommandResult(False, "⚠️ Trading system not available")
     
+    @require_authorized()
+    def _cmd_news(self, user_id: int, args: List[str]) -> CommandResult:
+        """Handle /news command - Show upcoming economic events"""
+        try:
+            # Access news scheduler through bitten_core's webhook server reference
+            if not hasattr(self.bitten_core, 'webhook_server') or not hasattr(self.bitten_core.webhook_server, 'news_scheduler'):
+                return CommandResult(False, "⚠️ News service not available")
+            
+            news_scheduler = self.bitten_core.webhook_server.news_scheduler
+            
+            # Get scheduler status
+            status = news_scheduler.get_status()
+            
+            # Check if in blackout
+            is_blackout, current_event = news_scheduler.news_client.is_news_blackout_period()
+            
+            # Get upcoming events (next 24 hours by default)
+            hours = 24
+            if args and args[0].isdigit():
+                hours = min(int(args[0]), 72)  # Max 72 hours
+            
+            events = news_scheduler.get_upcoming_events(hours=hours)
+            
+            # Build response message
+            msg = "📰 **Economic Calendar**\n"
+            msg += "━━━━━━━━━━━━━━━━━━━━\n\n"
+            
+            # Show blackout status
+            if is_blackout and current_event:
+                msg += "🚫 **TRADING PAUSED**\n"
+                msg += f"High impact news: {current_event.event_name}\n"
+                msg += f"Currency: {current_event.currency}\n"
+                msg += f"Resume after: {current_event.event_time.strftime('%H:%M UTC')}\n\n"
+            
+            # Show upcoming events
+            if events:
+                msg += f"📅 **Upcoming Events ({hours}h)**:\n\n"
+                
+                for event in events[:10]:  # Limit to 10 events
+                    # Format time
+                    time_str = event.event_time.strftime('%d %b %H:%M UTC')
+                    
+                    # Impact emoji
+                    impact_emoji = "🔴" if event.impact.value == "high" else "🟡"
+                    
+                    msg += f"{impact_emoji} **{time_str}**\n"
+                    msg += f"   {event.currency} - {event.event_name}\n"
+                    
+                    if event.forecast:
+                        msg += f"   Forecast: {event.forecast}"
+                        if event.previous:
+                            msg += f" | Prev: {event.previous}"
+                        msg += "\n"
+                    msg += "\n"
+                
+                if len(events) > 10:
+                    msg += f"_... and {len(events) - 10} more events_\n"
+            else:
+                msg += "ℹ️ No high/medium impact events scheduled\n"
+            
+            # Show last update time
+            if status['last_update']:
+                from datetime import datetime
+                last_update = datetime.fromisoformat(status['last_update'])
+                mins_ago = int((datetime.now(timezone.utc) - last_update).total_seconds() / 60)
+                msg += f"\n_Last updated: {mins_ago} min ago_"
+            
+            return CommandResult(True, msg)
+            
+        except Exception as e:
+            self._log_error(f"Error in news command: {e}")
+            return CommandResult(False, "❌ Error fetching news data")
+    
     # Trading Commands
     @require_authorized()
     def _cmd_fire(self, user_id: int, args: List[str]) -> CommandResult:
@@ -448,6 +634,120 @@ Use `/positions` to check trading status"""
         if self.bitten_core and hasattr(self.bitten_core, 'set_mode'):
             return self.bitten_core.set_mode(user_id, mode)
         return CommandResult(False, "⚠️ Trading system not available")
+    
+    # Configuration Commands
+    @require_authorized()
+    def _cmd_risk(self, user_id: int, args: List[str]) -> CommandResult:
+        """Handle /risk command - Toggle risk mode with double confirmation"""
+        from .risk_controller import get_risk_controller, RiskMode as RiskControlMode, TierLevel
+        
+        # Get user's tier (would come from profile in real implementation)
+        # For now, assume from rank
+        user_rank = self.rank_access.get_user_rank(user_id)
+        tier_map = {
+            'USER': TierLevel.NIBBLER,
+            'AUTHORIZED': TierLevel.NIBBLER,
+            'ELITE': TierLevel.FANG,
+            'ADMIN': TierLevel.APEX
+        }
+        tier = tier_map.get(user_rank.name, TierLevel.NIBBLER)
+        
+        risk_controller = get_risk_controller()
+        
+        # Get current status
+        status = risk_controller.get_user_status(user_id, tier, 10000)  # Dummy balance
+        
+        if not args:
+            # Show current risk mode
+            msg = f"⚙️ **Risk Configuration**\n\n"
+            msg += f"**Current Mode**: {status['risk_mode']}\n"
+            msg += f"**Risk Per Trade**: {status['current_risk_percent']}%\n"
+            msg += f"**Daily Trades**: {status['daily_trades']}/{status['max_daily_trades']}\n"
+            msg += f"**Daily Drawdown**: {status['daily_drawdown_percent']:.1f}%/{status['drawdown_limit']}%\n"
+            
+            if status['cooldown']:
+                msg += f"\n🚫 **COOLDOWN ACTIVE**\n"
+                msg += f"Expires: {status['cooldown']['expires_at']}\n"
+                msg += f"Reason: {status['cooldown']['reason']}\n"
+            
+            msg += f"\n**Available Modes**:\n"
+            if tier == TierLevel.NIBBLER:
+                msg += "• `default` - 1.0% risk\n"
+                msg += "• `boost` - 1.5% risk\n"
+            else:
+                msg += "• `default` - 1.25% risk\n"
+                msg += "• `high` - 2.0% risk\n"
+            
+            msg += f"\nUsage: `/risk [mode]`"
+            return CommandResult(True, msg)
+        
+        # Parse desired mode
+        mode_str = args[0].lower()
+        mode_map = {
+            'default': RiskControlMode.DEFAULT,
+            'boost': RiskControlMode.BOOST,
+            'high': RiskControlMode.HIGH_RISK,
+            'high-risk': RiskControlMode.HIGH_RISK,
+            'high_risk': RiskControlMode.HIGH_RISK
+        }
+        
+        if mode_str not in mode_map:
+            return CommandResult(False, "❌ Invalid mode. Use: default, boost, or high")
+        
+        new_mode = mode_map[mode_str]
+        
+        # First confirmation - show warning
+        if len(args) == 1:
+            if new_mode in [RiskControlMode.BOOST, RiskControlMode.HIGH_RISK]:
+                msg = "⚠️ **RISK MODE WARNING**\n\n"
+                msg += "**Higher risk = Higher potential gains AND losses**\n\n"
+                
+                if new_mode == RiskControlMode.BOOST:
+                    msg += "🔸 **BOOST MODE (1.5%)**\n"
+                    msg += "• 50% more risk per trade\n"
+                    msg += "• Recommended: $5,000+ accounts\n"
+                else:
+                    msg += "🔴 **HIGH-RISK MODE (2.0%)**\n"
+                    msg += "• DOUBLE the standard risk\n"
+                    msg += "• Recommended: $10,000+ accounts\n"
+                
+                msg += "\n**Cooldown Warning**:\n"
+                msg += "• 2 consecutive losses = FORCED COOLDOWN\n"
+                msg += f"• Cooldown duration: {4 if tier != TierLevel.NIBBLER else 6} hours\n"
+                msg += "• During cooldown: 1.0% risk only\n"
+                
+                msg += f"\n**Confirm with**: `/risk {mode_str} confirm`"
+                
+                return CommandResult(True, msg)
+        
+        # Second confirmation - execute change
+        if len(args) >= 2 and args[1] == 'confirm':
+            success, message = risk_controller.toggle_risk_mode(user_id, tier, new_mode)
+            
+            if success:
+                # Add visual confirmation
+                emoji = "✅" if new_mode == RiskControlMode.DEFAULT else "⚡"
+                msg = f"{emoji} **Risk Mode Updated**\n\n"
+                msg += message
+                msg += "\n\n_Remember: Discipline beats luck every time._"
+            else:
+                msg = f"❌ {message}"
+            
+            return CommandResult(success, msg)
+        
+        return CommandResult(False, "❌ Invalid command format")
+    
+    @require_elite()
+    def _cmd_maxpos(self, user_id: int, args: List[str]) -> CommandResult:
+        """Handle /maxpos command"""
+        # Placeholder - would set max positions
+        return CommandResult(False, "⚠️ Command not yet implemented")
+    
+    @require_authorized()
+    def _cmd_notify(self, user_id: int, args: List[str]) -> CommandResult:
+        """Handle /notify command"""
+        # Placeholder - would set notification preferences
+        return CommandResult(False, "⚠️ Command not yet implemented")
     
     # Elite Commands  
     @require_elite()
@@ -507,11 +807,20 @@ Use `/positions` to check trading status"""
             return self.bitten_core.restart_system(user_id)
         return CommandResult(True, "🔄 System restart initiated...")
     
+    # Intel Command Center
+    @require_user()
+    def _cmd_intel(self, user_id: int) -> CommandResult:
+        """Handle /intel command - Comprehensive help system"""
+        from .intel_command_center import handle_intel_command
+        user_rank = self.rank_access.get_user_rank(user_id)
+        return handle_intel_command(user_id, user_rank)
+    
     def _get_command_description(self, command: str) -> str:
         """Get command description"""
         descriptions = {
             'start': 'Initialize bot session',
             'help': 'Show available commands',
+            'intel': 'Intel Command Center - Everything you need',
             'status': 'System health check',
             'me': 'Your profile & stats',
             'positions': 'View open positions',
@@ -521,6 +830,14 @@ Use `/positions` to check trading status"""
             'fire': 'Execute trade',
             'close': 'Close position',
             'mode': 'Switch trading mode',
+            'uncertainty': 'View control mode status',
+            'bitmode': 'Binary YES/NO confirmation system',
+            'yes': 'Confirm YES for bit mode decision',
+            'no': 'Confirm NO for bit mode decision',
+            'control': 'Full control mode',
+            'stealth': 'Hidden algorithm variations',
+            'gemini': 'AI competitor tension mode',
+            'chaos': 'Maximum uncertainty injection',
             'risk': 'Set risk parameters',
             'maxpos': 'Max positions limit',
             'notify': 'Notification settings',
@@ -529,6 +846,11 @@ Use `/positions` to check trading status"""
             'signals': 'Market signals',
             'closeall': 'Close all positions',
             'backtest': 'Strategy backtest',
+            'emergency_stop': 'Emergency halt trading',
+            'panic': 'Immediate emergency stop',
+            'halt_all': 'Halt all system operations',
+            'recover': 'Resume from emergency stop',
+            'emergency_status': 'Check emergency status',
             'logs': 'System logs',
             'restart': 'Restart system',
             'backup': 'Create backup',
@@ -764,6 +1086,38 @@ Use `/positions` to check trading status"""
         data = callback_query.get('data', '')
         user_id = callback_query.get('from', {}).get('id', 0)
         
+        # Handle Intel Command Center callbacks
+        if data.startswith('menu_'):
+            from .intel_command_center import handle_intel_callback
+            user_rank = self.rank_access.get_user_rank(user_id)
+            result = handle_intel_callback(data, user_id, user_rank)
+            
+            # Convert result to CommandResult
+            if result.get('action') == 'edit_message':
+                return CommandResult(
+                    True,
+                    result.get('text', ''),
+                    data={'reply_markup': result.get('reply_markup')}
+                )
+            elif result.get('action') == 'answer_callback':
+                return CommandResult(
+                    True,
+                    result.get('text', ''),
+                    data={'callback_answer': True, 'show_alert': result.get('show_alert', False)}
+                )
+            elif result.get('action') == 'delete_message':
+                return CommandResult(
+                    True,
+                    'Menu closed',
+                    data={'delete_message': True}
+                )
+            elif result.get('action') == 'send_message':
+                return CommandResult(
+                    True,
+                    result.get('text', ''),
+                    data=result.get('data', {})
+                )
+        
         # Parse callback data
         parts = data.split('_')
         action = parts[0]
@@ -839,3 +1193,591 @@ Use `/positions` to check trading status"""
             f"✅ Shared on {platform}! +10 XP earned",
             data={'share_data': share_data}
         )
+    
+    # Emergency Stop Commands
+    @require_authorized()
+    def _cmd_emergency_stop(self, user_id: int, args: List[str]) -> CommandResult:
+        """Handle /emergency_stop command - Soft emergency stop"""
+        try:
+            # Validate and sanitize input
+            reason = self._sanitize_emergency_reason(args) if args else "Manual emergency stop"
+            
+            # Check emergency permissions
+            if not self._check_emergency_permissions(user_id, 'emergency_stop'):
+                return CommandResult(False, "❌ Insufficient permissions for emergency stop")
+            
+            # Check if already active
+            if self.emergency_controller.is_active():
+                status = self.emergency_controller.get_emergency_status()
+                current_event = status.get('current_event', {})
+                return CommandResult(
+                    False,
+                    f"🚨 **Emergency stop already active**\n"
+                    f"Trigger: {current_event.get('trigger', 'unknown')}\n"
+                    f"Started: {current_event.get('timestamp', 'unknown')}\n"
+                    f"Use /recover to restore trading"
+                )
+            
+            # Inject components if bitten_core is available
+            if self.bitten_core:
+                components = {}
+                if hasattr(self.bitten_core, 'fire_validator'):
+                    components['fire_validator'] = self.bitten_core.fire_validator
+                if hasattr(self.bitten_core, 'selector_switch'):
+                    components['selector_switch'] = self.bitten_core.selector_switch
+                if hasattr(self.bitten_core, 'position_manager'):
+                    components['position_manager'] = self.bitten_core.position_manager
+                if hasattr(self.bitten_core, 'trade_manager'):
+                    components['trade_manager'] = self.bitten_core.trade_manager
+                if hasattr(self.bitten_core, 'risk_controller'):
+                    components['risk_controller'] = self.bitten_core.risk_controller
+                if hasattr(self.bitten_core, 'mt5_bridge'):
+                    components['mt5_bridge'] = self.bitten_core.mt5_bridge
+                
+                self.emergency_controller.inject_components(**components)
+            
+            # Trigger emergency stop
+            result = self.emergency_controller.trigger_emergency_stop(
+                trigger=EmergencyStopTrigger.MANUAL,
+                level=EmergencyStopLevel.SOFT,
+                user_id=user_id,
+                reason=reason
+            )
+            
+            if result['success']:
+                # Create response with inline keyboard
+                keyboard = [
+                    [InlineKeyboardButton("🔄 RECOVER", callback_data=f"recover_{user_id}")],
+                    [InlineKeyboardButton("📊 STATUS", callback_data="emergency_status")]
+                ]
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                
+                return CommandResult(
+                    True,
+                    f"🛑 **EMERGENCY STOP ACTIVATED**\n"
+                    f"━━━━━━━━━━━━━━━━━━━━\n"
+                    f"🔸 **Level**: SOFT (No new trades)\n"
+                    f"🔸 **Reason**: {reason}\n"
+                    f"🔸 **Time**: {datetime.now().strftime('%H:%M:%S UTC')}\n"
+                    f"🔸 **User**: {user_id}\n\n"
+                    f"⚠️ All new trading stopped\n"
+                    f"📱 Use /recover to restore trading\n"
+                    f"📊 Use /emergency_status for details",
+                    data={'reply_markup': reply_markup}
+                )
+            else:
+                return CommandResult(False, f"❌ Emergency stop failed: {result['message']}")
+                
+        except Exception as e:
+            return CommandResult(False, f"❌ Emergency stop error: {str(e)}")
+    
+    @require_authorized()
+    def _cmd_panic(self, user_id: int, args: List[str]) -> CommandResult:
+        """Handle /panic command - Hard emergency stop with position closure"""
+        try:
+            # Validate and sanitize input
+            reason = self._sanitize_emergency_reason(args) if args else "PANIC - Hard emergency stop"
+            
+            # Check emergency permissions and rate limits
+            if not self._check_emergency_permissions(user_id, 'panic'):
+                return CommandResult(False, "❌ Insufficient permissions for panic mode")
+            
+            if not self._check_emergency_rate_limit(user_id, 'panic'):
+                return CommandResult(False, "❌ Panic command rate limit exceeded")
+            
+            # Check if already active
+            if self.emergency_controller.is_active():
+                # Escalate to PANIC level if not already
+                current_event = self.emergency_controller.get_current_event()
+                if current_event and current_event.get('level') != 'panic':
+                    result = self.emergency_controller.trigger_emergency_stop(
+                        trigger=EmergencyStopTrigger.PANIC,
+                        level=EmergencyStopLevel.PANIC,
+                        user_id=user_id,
+                        reason=f"ESCALATED TO PANIC: {reason}"
+                    )
+                    return CommandResult(
+                        True,
+                        f"🚨 **ESCALATED TO PANIC MODE**\n"
+                        f"━━━━━━━━━━━━━━━━━━━━\n"
+                        f"🔴 **All positions being closed**\n"
+                        f"🔴 **All trading halted**\n"
+                        f"🔴 **Manual recovery required**\n"
+                        f"⚠️ Use /recover when ready to resume"
+                    )
+                else:
+                    return CommandResult(
+                        False,
+                        f"🚨 **PANIC already active**\n"
+                        f"Use /recover to restore trading"
+                    )
+            
+            # Inject components
+            if self.bitten_core:
+                components = {}
+                if hasattr(self.bitten_core, 'fire_validator'):
+                    components['fire_validator'] = self.bitten_core.fire_validator
+                if hasattr(self.bitten_core, 'selector_switch'):
+                    components['selector_switch'] = self.bitten_core.selector_switch
+                if hasattr(self.bitten_core, 'position_manager'):
+                    components['position_manager'] = self.bitten_core.position_manager
+                if hasattr(self.bitten_core, 'trade_manager'):
+                    components['trade_manager'] = self.bitten_core.trade_manager
+                if hasattr(self.bitten_core, 'risk_controller'):
+                    components['risk_controller'] = self.bitten_core.risk_controller
+                if hasattr(self.bitten_core, 'mt5_bridge'):
+                    components['mt5_bridge'] = self.bitten_core.mt5_bridge
+                
+                self.emergency_controller.inject_components(**components)
+            
+            # Trigger PANIC emergency stop
+            result = self.emergency_controller.trigger_emergency_stop(
+                trigger=EmergencyStopTrigger.PANIC,
+                level=EmergencyStopLevel.PANIC,
+                user_id=user_id,
+                reason=reason
+            )
+            
+            if result['success']:
+                return CommandResult(
+                    True,
+                    f"🚨 **PANIC MODE ACTIVATED**\n"
+                    f"━━━━━━━━━━━━━━━━━━━━\n"
+                    f"🔴 **Level**: PANIC (Hard stop)\n"
+                    f"🔴 **Reason**: {reason}\n"
+                    f"🔴 **Time**: {datetime.now().strftime('%H:%M:%S UTC')}\n"
+                    f"🔴 **User**: {user_id}\n\n"
+                    f"⚠️ All trading stopped\n"
+                    f"⚠️ Positions being closed\n"
+                    f"⚠️ Manual recovery required\n"
+                    f"📱 Use /recover when ready"
+                )
+            else:
+                return CommandResult(False, f"❌ PANIC failed: {result['message']}")
+                
+        except Exception as e:
+            return CommandResult(False, f"❌ PANIC error: {str(e)}")
+    
+    @require_elite()
+    def _cmd_halt_all(self, user_id: int, args: List[str]) -> CommandResult:
+        """Handle /halt_all command - System-wide emergency halt (Elite+ only)"""
+        try:
+            reason = " ".join(args) if args else "System-wide emergency halt"
+            
+            # Inject components
+            if self.bitten_core:
+                components = {}
+                if hasattr(self.bitten_core, 'fire_validator'):
+                    components['fire_validator'] = self.bitten_core.fire_validator
+                if hasattr(self.bitten_core, 'selector_switch'):
+                    components['selector_switch'] = self.bitten_core.selector_switch
+                if hasattr(self.bitten_core, 'position_manager'):
+                    components['position_manager'] = self.bitten_core.position_manager
+                if hasattr(self.bitten_core, 'trade_manager'):
+                    components['trade_manager'] = self.bitten_core.trade_manager
+                if hasattr(self.bitten_core, 'risk_controller'):
+                    components['risk_controller'] = self.bitten_core.risk_controller
+                if hasattr(self.bitten_core, 'mt5_bridge'):
+                    components['mt5_bridge'] = self.bitten_core.mt5_bridge
+                
+                self.emergency_controller.inject_components(**components)
+            
+            # Trigger system-wide halt
+            result = self.emergency_controller.trigger_emergency_stop(
+                trigger=EmergencyStopTrigger.ADMIN_OVERRIDE,
+                level=EmergencyStopLevel.HARD,
+                user_id=user_id,
+                reason=reason
+            )
+            
+            if result['success']:
+                return CommandResult(
+                    True,
+                    f"🚨 **SYSTEM-WIDE HALT ACTIVATED**\n"
+                    f"━━━━━━━━━━━━━━━━━━━━\n"
+                    f"🔴 **Level**: SYSTEM HALT\n"
+                    f"🔴 **Authorized by**: Elite User {user_id}\n"
+                    f"🔴 **Reason**: {reason}\n"
+                    f"🔴 **Time**: {datetime.now().strftime('%H:%M:%S UTC')}\n\n"
+                    f"⚠️ All trading suspended\n"
+                    f"⚠️ All users affected\n"
+                    f"⚠️ Manual recovery required\n"
+                    f"📱 Use /recover to restore system"
+                )
+            else:
+                return CommandResult(False, f"❌ System halt failed: {result['message']}")
+                
+        except Exception as e:
+            return CommandResult(False, f"❌ System halt error: {str(e)}")
+    
+    @require_authorized()
+    def _cmd_recover(self, user_id: int, args: List[str]) -> CommandResult:
+        """Handle /recover command - Recover from emergency stop"""
+        try:
+            force_recovery = 'force' in args
+            
+            # Check if emergency stop is active
+            if not self.emergency_controller.is_active():
+                return CommandResult(
+                    False,
+                    f"✅ **No emergency stop active**\n"
+                    f"Trading system is operational"
+                )
+            
+            # Check recovery permissions
+            current_event = self.emergency_controller.get_current_event()
+            if current_event:
+                # Admin override and manual triggers require elevated permissions
+                if current_event.get('trigger') in ['admin_override', 'panic']:
+                    user_rank = self.rank_access.get_user_rank(user_id)
+                    if user_rank.value < UserRank.ELITE.value:
+                        return CommandResult(
+                            False,
+                            f"❌ **Recovery requires ELITE+ rank**\n"
+                            f"Current emergency: {current_event.get('trigger')}\n"
+                            f"Your rank: {user_rank.name}"
+                        )
+            
+            # Attempt recovery
+            result = self.emergency_controller.recover_from_emergency(
+                user_id=user_id,
+                force=force_recovery
+            )
+            
+            if result['success']:
+                recovery_time = result.get('recovery_time', datetime.now())
+                return CommandResult(
+                    True,
+                    f"✅ **EMERGENCY RECOVERY COMPLETED**\n"
+                    f"━━━━━━━━━━━━━━━━━━━━\n"
+                    f"🟢 **Status**: Trading restored\n"
+                    f"🟢 **Recovery time**: {recovery_time.strftime('%H:%M:%S UTC') if hasattr(recovery_time, 'strftime') else recovery_time}\n"
+                    f"🟢 **Recovered by**: User {user_id}\n\n"
+                    f"✅ All systems operational\n"
+                    f"✅ Trading resumed\n"
+                    f"📊 Use /status for system health"
+                )
+            else:
+                # Handle auto-recovery timing
+                if 'recovery_time' in result:
+                    recovery_time = result['recovery_time']
+                    return CommandResult(
+                        False,
+                        f"⏰ **Auto-recovery not ready**\n"
+                        f"━━━━━━━━━━━━━━━━━━━━\n"
+                        f"🔸 **Recovery available at**: {recovery_time.strftime('%H:%M:%S UTC')}\n"
+                        f"🔸 **Current time**: {datetime.now().strftime('%H:%M:%S UTC')}\n\n"
+                        f"⚠️ Use `/recover force` to override\n"
+                        f"⚠️ Or wait for auto-recovery"
+                    )
+                else:
+                    return CommandResult(False, f"❌ Recovery failed: {result['message']}")
+                    
+        except Exception as e:
+            return CommandResult(False, f"❌ Recovery error: {str(e)}")
+    
+    @require_authorized()
+    def _cmd_emergency_status(self, user_id: int) -> CommandResult:
+        """Handle /emergency_status command - Show emergency stop status"""
+        try:
+            status = self.emergency_controller.get_emergency_status()
+            
+            if not status['is_active']:
+                return CommandResult(
+                    True,
+                    f"✅ **Emergency Status: OPERATIONAL**\n"
+                    f"━━━━━━━━━━━━━━━━━━━━\n"
+                    f"🟢 **Status**: No emergency active\n"
+                    f"🟢 **Trading**: Enabled\n"
+                    f"🟢 **Last check**: {datetime.now().strftime('%H:%M:%S UTC')}\n\n"
+                    f"📊 **Today's events**: {status.get('events_today', 0)}\n"
+                    f"📊 **Last recovery**: {status.get('last_recovery', 'Never')}\n"
+                    f"📊 **System health**: {status.get('system_health', {}).get('overall_status', 'Unknown')}"
+                )
+            
+            # Emergency is active - show details
+            current_event = status.get('current_event', {})
+            active_triggers = status.get('active_triggers', [])
+            affected_users = status.get('affected_users', [])
+            
+            msg = f"🚨 **Emergency Status: ACTIVE**\n"
+            msg += f"━━━━━━━━━━━━━━━━━━━━\n"
+            msg += f"🔴 **Level**: {current_event.get('level', 'unknown').upper()}\n"
+            msg += f"🔴 **Trigger**: {current_event.get('trigger', 'unknown')}\n"
+            msg += f"🔴 **Started**: {current_event.get('timestamp', 'unknown')}\n"
+            msg += f"🔴 **Reason**: {current_event.get('reason', 'No reason provided')}\n"
+            
+            if current_event.get('user_id'):
+                msg += f"🔴 **Initiated by**: User {current_event['user_id']}\n"
+            
+            msg += f"\n📊 **Active triggers**: {', '.join(active_triggers)}\n"
+            msg += f"📊 **Affected users**: {len(affected_users)}\n"
+            msg += f"📊 **Events today**: {status.get('events_today', 0)}\n"
+            
+            # Recovery information
+            recovery_time = current_event.get('recovery_time')
+            if recovery_time:
+                msg += f"⏰ **Auto-recovery**: {recovery_time}\n"
+            else:
+                msg += f"⏰ **Auto-recovery**: Manual only\n"
+            
+            # System health
+            health = status.get('system_health', {})
+            msg += f"🔧 **System health**: {health.get('overall_status', 'Unknown')}\n"
+            
+            # Create inline keyboard
+            keyboard = [
+                [InlineKeyboardButton("🔄 RECOVER", callback_data=f"recover_{user_id}")],
+                [InlineKeyboardButton("📊 REFRESH", callback_data="emergency_status")]
+            ]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            
+            return CommandResult(
+                True,
+                msg,
+                data={'reply_markup': reply_markup}
+            )
+            
+        except Exception as e:
+            return CommandResult(False, f"❌ Status error: {str(e)}")
+    
+    # Security helper methods
+    def _sanitize_emergency_reason(self, args: List[str]) -> str:
+        """Sanitize emergency reason input"""
+        if not args or not isinstance(args, list):
+            return "Manual emergency stop"
+        
+        # Join args and sanitize
+        reason = " ".join(str(arg) for arg in args)
+        
+        # Remove potentially dangerous characters
+        import re
+        reason = re.sub(r'[<>"\'{}\[\]\\]', '', reason)
+        
+        # Limit length
+        reason = reason[:500]
+        
+        # Ensure non-empty
+        return reason if reason.strip() else "Manual emergency stop"
+    
+    def _check_emergency_permissions(self, user_id: int, command: str) -> bool:
+        """Check if user has permission for emergency command"""
+        user_rank = self.rank_access.get_user_rank(user_id)
+        
+        # Define required ranks for emergency commands
+        emergency_permissions = {
+            'emergency_stop': ['AUTHORIZED', 'ELITE', 'ADMIN'],
+            'panic': ['AUTHORIZED', 'ELITE', 'ADMIN'],
+            'halt_all': ['ELITE', 'ADMIN'],
+            'recover': ['AUTHORIZED', 'ELITE', 'ADMIN'],
+            'emergency_status': ['USER', 'AUTHORIZED', 'ELITE', 'ADMIN']
+        }
+        
+        allowed_ranks = emergency_permissions.get(command, ['ADMIN'])
+        return user_rank.name in allowed_ranks
+    
+    def _check_emergency_rate_limit(self, user_id: int, command: str) -> bool:
+        """Check rate limit for emergency commands"""
+        # Basic implementation - should be enhanced with proper rate limiting
+        current_time = time.time()
+        
+        # Check if user has made emergency command recently
+        if hasattr(self, '_emergency_calls'):
+            user_calls = self._emergency_calls.get(user_id, [])
+            # Remove calls older than 5 minutes
+            user_calls = [t for t in user_calls if current_time - t < 300]
+            
+            # Check limits based on command
+            limits = {
+                'emergency_stop': 5,
+                'panic': 2,
+                'halt_all': 1,
+                'recover': 10
+            }
+            
+            if len(user_calls) >= limits.get(command, 3):
+                return False
+            
+            # Add current call
+            user_calls.append(current_time)
+            self._emergency_calls[user_id] = user_calls
+        else:
+            self._emergency_calls = {user_id: [current_time]}
+        
+        return True
+    
+    # ========================================
+    # UNCERTAINTY & CONTROL INTERPLAY COMMANDS
+    # ========================================
+    
+    def _cmd_bitmode(self, user_id: int, args: List[str]) -> CommandResult:
+        """Toggle Bit Mode - binary YES/NO confirmation system"""
+        try:
+            if not hasattr(self.bitten_core, 'fire_router'):
+                return CommandResult(False, "❌ Fire router not available")
+            
+            if not args:
+                # Toggle bit mode
+                result = self.bitten_core.fire_router.set_uncertainty_mode(user_id, 'bit_mode')
+                return CommandResult(result['success'], result['message'])
+            elif args[0].lower() == 'off':
+                # Turn off bit mode
+                result = self.bitten_core.fire_router.set_uncertainty_mode(user_id, 'full_control')
+                return CommandResult(result['success'], result['message'])
+            else:
+                return CommandResult(False, "❌ Usage: /bitmode [off]")
+                
+        except Exception as e:
+            return CommandResult(False, f"❌ Bit mode error: {str(e)}")
+    
+    def _cmd_yes(self, user_id: int, args: List[str]) -> CommandResult:
+        """Confirm YES for bit mode decision"""
+        try:
+            if not args:
+                return CommandResult(False, "❌ Usage: /yes <decision_id>")
+            
+            decision_id = args[0]
+            
+            if not hasattr(self.bitten_core, 'fire_router'):
+                return CommandResult(False, "❌ Fire router not available")
+            
+            result = self.bitten_core.fire_router.process_bit_mode_confirmation(decision_id, True, user_id)
+            return CommandResult(result.success, result.message)
+            
+        except Exception as e:
+            return CommandResult(False, f"❌ Confirmation error: {str(e)}")
+    
+    def _cmd_no(self, user_id: int, args: List[str]) -> CommandResult:
+        """Confirm NO for bit mode decision"""
+        try:
+            if not args:
+                return CommandResult(False, "❌ Usage: /no <decision_id>")
+            
+            decision_id = args[0]
+            
+            if not hasattr(self.bitten_core, 'fire_router'):
+                return CommandResult(False, "❌ Fire router not available")
+            
+            result = self.bitten_core.fire_router.process_bit_mode_confirmation(decision_id, False, user_id)
+            return CommandResult(result.success, result.message)
+            
+        except Exception as e:
+            return CommandResult(False, f"❌ Confirmation error: {str(e)}")
+    
+    def _cmd_control(self, user_id: int, args: List[str]) -> CommandResult:
+        """Set full control mode"""
+        try:
+            if not hasattr(self.bitten_core, 'fire_router'):
+                return CommandResult(False, "❌ Fire router not available")
+            
+            result = self.bitten_core.fire_router.set_uncertainty_mode(user_id, 'full_control')
+            return CommandResult(result['success'], result['message'])
+            
+        except Exception as e:
+            return CommandResult(False, f"❌ Control mode error: {str(e)}")
+    
+    def _cmd_stealth(self, user_id: int, args: List[str]) -> CommandResult:
+        """Activate stealth mode - hidden algorithm variations"""
+        try:
+            if not hasattr(self.bitten_core, 'fire_router'):
+                return CommandResult(False, "❌ Fire router not available")
+            
+            result = self.bitten_core.fire_router.set_uncertainty_mode(user_id, 'stealth_mode')
+            return CommandResult(result['success'], result['message'])
+            
+        except Exception as e:
+            return CommandResult(False, f"❌ Stealth mode error: {str(e)}")
+    
+    def _cmd_gemini(self, user_id: int, args: List[str]) -> CommandResult:
+        """Activate Gemini mode - AI competitor tension"""
+        try:
+            if not hasattr(self.bitten_core, 'fire_router'):
+                return CommandResult(False, "❌ Fire router not available")
+            
+            result = self.bitten_core.fire_router.set_uncertainty_mode(user_id, 'gemini_mode')
+            return CommandResult(result['success'], result['message'])
+            
+        except Exception as e:
+            return CommandResult(False, f"❌ Gemini mode error: {str(e)}")
+    
+    def _cmd_chaos(self, user_id: int, args: List[str]) -> CommandResult:
+        """Activate chaos mode - maximum uncertainty injection"""
+        try:
+            if not hasattr(self.bitten_core, 'fire_router'):
+                return CommandResult(False, "❌ Fire router not available")
+            
+            result = self.bitten_core.fire_router.set_uncertainty_mode(user_id, 'chaos_mode')
+            return CommandResult(result['success'], result['message'])
+            
+        except Exception as e:
+            return CommandResult(False, f"❌ Chaos mode error: {str(e)}")
+    
+    def _cmd_uncertainty_status(self, user_id: int) -> CommandResult:
+        """Get current uncertainty system status"""
+        try:
+            if not hasattr(self.bitten_core, 'fire_router'):
+                return CommandResult(False, "❌ Fire router not available")
+            
+            result = self.bitten_core.fire_router.get_uncertainty_status(user_id)
+            
+            # Create inline keyboard with mode options
+            keyboard = [
+                [
+                    InlineKeyboardButton("🎯 FULL CONTROL", callback_data="uncertainty_full_control"),
+                    InlineKeyboardButton("🤖 BIT MODE", callback_data="uncertainty_bit_mode")
+                ],
+                [
+                    InlineKeyboardButton("👻 STEALTH", callback_data="uncertainty_stealth_mode"),
+                    InlineKeyboardButton("⚡ GEMINI", callback_data="uncertainty_gemini_mode")
+                ],
+                [
+                    InlineKeyboardButton("🌪️ CHAOS", callback_data="uncertainty_chaos_mode"),
+                    InlineKeyboardButton("📊 REFRESH", callback_data="uncertainty_status")
+                ]
+            ]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            
+            return CommandResult(
+                result['success'], 
+                result['message'],
+                data={'reply_markup': reply_markup}
+            )
+            
+        except Exception as e:
+            return CommandResult(False, f"❌ Status error: {str(e)}")
+    
+    def _get_help_text(self, user_id: int) -> str:
+        """Generate help text with uncertainty commands"""
+        user_rank = self.rank_access.get_user_rank(user_id)
+        
+        base_help = f"""🤖 **BITTEN Command Center**
+
+**🎮 UNCERTAINTY & CONTROL**
+`/uncertainty` - View control mode status
+`/bitmode` - Binary YES/NO confirmation
+`/control` - Full control mode
+`/stealth` - Hidden algorithm variations
+`/gemini` - AI competitor mode  
+`/chaos` - Maximum uncertainty
+
+**⚡ TRADING**
+`/fire [symbol] [buy/sell] [size]` - Execute trade
+`/positions` - View open positions
+`/close [trade_id]` - Close position
+`/closeall` - Close all positions
+
+**📊 INFORMATION**
+`/me` - Your profile
+`/status` - System status
+`/balance` - Account balance
+`/performance` - Trading stats
+
+**🚨 EMERGENCY**
+`/emergency_stop` - Emergency halt
+`/panic` - Immediate stop
+`/recover` - Resume trading
+
+**Your Rank:** {user_rank.name}
+"""
+        
+        return base_help

@@ -65,6 +65,7 @@ class BittenCore:
     def __init__(self, config: Optional[Dict] = None):
         self.config = config or self._load_default_config()
         self.start_time = time.time()
+        self.webhook_server = None  # Will be set by webhook server
         self.system_health = SystemHealth(
             core_status="initializing",
             telegram_router="offline",

@@ -1,13 +1,15 @@
 # fire_mode_validator.py
 # BITTEN Fire Mode Validation Engine - THE BEATING HEART OF CONTROL
 
-import random
+import secrets
 from datetime import datetime, timedelta
 from typing import Dict, Optional, List, Tuple
 from dataclasses import dataclass
 from enum import Enum
 
 from .fire_modes import FireMode, TierLevel, TIER_CONFIGS, ChaingunState
+from .risk_controller import get_risk_controller, TierLevel as RiskTierLevel
+from .emergency_stop_controller import EmergencyStopController
 
 @dataclass
 class ValidationResult:
@@ -46,6 +48,9 @@ class FireModeValidator:
         self.cooldowns = {}
         self.penalties = {}
         
+        # Emergency stop controller
+        self.emergency_controller = EmergencyStopController()
+        
     def validate_fire(self, trade_payload: Dict, user_profile: Dict) -> ValidationResult:
         """
         Master validation flow - THE GAUNTLET
@@ -58,16 +63,9 @@ class FireModeValidator:
         signal_tcs = trade_payload.get('tcs', 0)
         
         # 1. System-wide kill switch check
-        if self._check_kill_switch():
-            return ValidationResult(
-                valid=False,
-                reason="SYSTEM HALT - GLOBAL EMERGENCY",
-                bot_responses={
-                    "drillbot": "ALL UNITS CEASE FIRE. EMERGENCY PROTOCOL.",
-                    "medicbot": "System-wide halt. Stand by for assessment.",
-                    "bit": "*hiding under furniture*"
-                }
-            )
+        kill_switch_check = self._check_kill_switch()
+        if not kill_switch_check.valid:
+            return kill_switch_check
         
         # 2. Check tier permissions
         tier_validation = self.validation_rules[user_tier](trade_payload, user_profile)
@@ -341,13 +339,13 @@ class FireModeValidator:
         
         if mode == FireMode.STEALTH:
             # Randomize everything slightly
-            mutations['entry_delay'] = random.randint(120, 300)  # 2-5 min
-            mutations['size_variance'] = random.uniform(0.8, 1.2)
-            mutations['tp_variance'] = random.uniform(0.95, 1.05)
-            mutations['sl_variance'] = random.uniform(0.95, 1.05)
+            mutations['entry_delay'] = secrets.randbelow(181) + 120  # 120-300 range  # 2-5 min
+            mutations['size_variance'] = 0.8 + (secrets.randbelow(401) / 1000)  # 0.8-1.2 range
+            mutations['tp_variance'] = 0.95 + (secrets.randbelow(101) / 1000)  # 0.95-1.05 range
+            mutations['sl_variance'] = 0.95 + (secrets.randbelow(101) / 1000)  # 0.95-1.05 range
             
             # Sometimes inject intentional loss
-            if profile.get('recent_win_rate', 0) > 0.85 and random.random() < 0.07:
+            if profile.get('recent_win_rate', 0) > 0.85 and secrets.randbelow(100) < 7:
                 mutations['force_loss'] = True
                 mutations['loss_reason'] = "STEALTH_CAMOUFLAGE"
         
@@ -415,36 +413,89 @@ class FireModeValidator:
     # RISK VALIDATION
     
     def _validate_risk_limits(self, payload: Dict, profile: Dict) -> ValidationResult:
-        """Validate risk management rules"""
+        """Validate risk management rules using new risk controller"""
         
-        # Daily drawdown check (-7% soft limit, -14% hard limit)
-        daily_loss = profile.get('daily_loss_percent', 0)
+        # Get risk controller
+        risk_controller = get_risk_controller()
         
-        if daily_loss >= 14:  # Hard cap
+        # Get user's tier
+        user_tier = TierLevel(profile.get('tier', 'nibbler'))
+        risk_tier = RiskTierLevel[user_tier.value.upper()]
+        
+        # Get account balance (must be provided in profile)
+        account_balance = profile.get('account_balance', 10000)
+        if account_balance <= 0:
             return ValidationResult(
                 valid=False,
-                reason="DAILY LOSS CAP REACHED",
+                reason="INVALID ACCOUNT BALANCE",
                 bot_responses={
-                    "drillbot": "CEASE ALL OPERATIONS. YOU'RE DONE TODAY.",
-                    "medicbot": "14% loss reached. Mandatory recovery period.",
-                    "bit": "*concerned meowing*"
+                    "drillbot": "ACCOUNT DATA CORRUPTED. ABORT.",
+                    "medicbot": "Cannot verify account status."
                 }
             )
-        elif daily_loss >= 7:  # Soft warning
-            # Allow trade but with strong warning
-            if payload.get('acknowledged_warning') != True:
+        
+        # Get risk percentage from controller
+        risk_percent, risk_reason = risk_controller.get_user_risk_percent(
+            profile['user_id'], risk_tier
+        )
+        
+        # Calculate potential loss
+        potential_loss = account_balance * (risk_percent / 100)
+        
+        # Check if trade is allowed
+        trade_allowed, block_reason = risk_controller.check_trade_allowed(
+            profile['user_id'], risk_tier, potential_loss, account_balance
+        )
+        
+        if not trade_allowed:
+            # Map block reasons to bot responses
+            if "drawdown" in block_reason.lower():
                 return ValidationResult(
                     valid=False,
-                    reason="WARNING: -7% DAILY LOSS",
+                    reason=block_reason.upper(),
                     bot_responses={
-                        "drillbot": "YOU'RE BLEEDING. CONFIRM TO OVERRIDE.",
-                        "medicbot": "Significant losses today. Are you sure?",
-                        "bit": "*blocking gesture*"
+                        "drillbot": "DRAWDOWN LIMIT HIT. CEASE FIRE.",
+                        "medicbot": f"Capital preservation protocol active. {block_reason}",
+                        "bit": "*sits on trading terminal*"
+                    }
+                )
+            elif "cooldown" in block_reason.lower():
+                return ValidationResult(
+                    valid=False,
+                    reason="COOLDOWN ACTIVE",
+                    bot_responses={
+                        "drillbot": "TACTICAL OVERRIDE IN EFFECT. STAND DOWN.",
+                        "medicbot": "Recovery period mandatory. Time heals all wounds.",
+                        "bit": "*guarding the trigger protectively*"
+                    }
+                )
+            elif "trade limit" in block_reason.lower():
+                return ValidationResult(
+                    valid=False,
+                    reason=block_reason.upper(),
+                    bot_responses={
+                        "drillbot": "AMMO DEPLETED. RESUPPLY AT 0000 UTC.",
+                        "medicbot": "Rest is part of the strategy. See you tomorrow.",
+                        "bit": "*yawns and curls up*"
+                    }
+                )
+            else:
+                return ValidationResult(
+                    valid=False,
+                    reason=block_reason.upper(),
+                    bot_responses={
+                        "drillbot": "FIRE CONTROL SAYS NO.",
+                        "medicbot": block_reason,
+                        "bit": "*shakes head*"
                     }
                 )
         
+        # Update payload with controller's risk percentage
+        payload['risk_percent'] = risk_percent
+        payload['risk_reason'] = risk_reason
+        
         # Account balance check
-        if profile.get('account_balance', 0) < 100:
+        if account_balance < 100:
             return ValidationResult(
                 valid=False,
                 reason="INSUFFICIENT CAPITAL",
@@ -454,9 +505,9 @@ class FireModeValidator:
                 }
             )
         
-        # Exposure check
+        # Exposure check - now using controller's risk
         total_exposure = profile.get('total_exposure_percent', 0)
-        new_risk = payload.get('risk_percent', 2)
+        new_risk = risk_percent
         
         if total_exposure + new_risk > 10:  # 10% max combined
             return ValidationResult(
@@ -472,12 +523,68 @@ class FireModeValidator:
     
     # UTILITY METHODS
     
-    def _check_kill_switch(self) -> bool:
+    def _check_kill_switch(self) -> ValidationResult:
         """Check if system-wide halt is active"""
-        # In production, would check database/redis for emergency halt flag
-        # For now, can be controlled by environment variable
+        # Check emergency stop controller first
+        if self.emergency_controller.is_active():
+            status = self.emergency_controller.get_emergency_status()
+            current_event = status.get('current_event', {})
+            trigger = current_event.get('trigger', 'unknown')
+            level = current_event.get('level', 'unknown')
+            reason = current_event.get('reason', 'Emergency stop active')
+            
+            # Different responses based on trigger
+            if trigger == 'panic':
+                bot_responses = {
+                    "drillbot": "🚨 PANIC PROTOCOL ACTIVE. ALL UNITS STAND DOWN.",
+                    "medicbot": "Emergency medical protocol. All trading suspended.",
+                    "bit": "*trembling in corner* No fire! No fire!"
+                }
+            elif trigger == 'admin_override':
+                bot_responses = {
+                    "drillbot": "🚨 COMMAND OVERRIDE. ALL UNITS CEASE FIRE.",
+                    "medicbot": "System-wide halt by command authority.",
+                    "bit": "*saluting* Yes sir! Standing down!"
+                }
+            elif trigger == 'drawdown':
+                bot_responses = {
+                    "drillbot": "🚨 CASUALTY PROTOCOL. RETREAT AND REGROUP.",
+                    "medicbot": "Excessive losses detected. Recovery mode active.",
+                    "bit": "*bandaging wounds* Owie... need time to heal"
+                }
+            elif trigger == 'news':
+                bot_responses = {
+                    "drillbot": "🚨 INTEL BLACKOUT. HOLD POSITION UNTIL CLEAR.",
+                    "medicbot": "High-impact news event. Maintaining safe distance.",
+                    "bit": "*peeking through blinds* Too scary outside!"
+                }
+            else:
+                bot_responses = {
+                    "drillbot": "🚨 EMERGENCY PROTOCOL ACTIVE. ALL UNITS STAND DOWN.",
+                    "medicbot": "Emergency halt in effect. Stand by for assessment.",
+                    "bit": "*hiding under desk* Emergency! Emergency!"
+                }
+            
+            return ValidationResult(
+                valid=False,
+                reason=f"EMERGENCY STOP ACTIVE: {trigger.upper()} - {reason}",
+                bot_responses=bot_responses
+            )
+        
+        # Fallback to environment variable check
         import os
-        return os.getenv('BITTEN_KILL_SWITCH', 'false').lower() == 'true'
+        if os.getenv('BITTEN_KILL_SWITCH', 'false').lower() == 'true':
+            return ValidationResult(
+                valid=False,
+                reason="SYSTEM HALT - GLOBAL EMERGENCY",
+                bot_responses={
+                    "drillbot": "ALL UNITS CEASE FIRE. EMERGENCY PROTOCOL.",
+                    "medicbot": "System-wide halt. Stand by for assessment.",
+                    "bit": "*hiding under furniture*"
+                }
+            )
+        
+        return ValidationResult(valid=True, reason="System operational", bot_responses={})
     
     def _validate_tcs(self, tcs: float, tier: TierLevel, mode: FireMode) -> ValidationResult:
         """Validate TCS meets requirements"""

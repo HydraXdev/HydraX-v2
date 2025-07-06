@@ -130,7 +130,7 @@ class MasterFilter:
         # 3. Check fire mode authorization
         fire_mode = FireMode.SINGLE_SHOT  # Default
         fire_ok, fire_msg = self.fire_validator.can_fire(
-            user_id, tier, fire_mode, signal.tcs_score
+            user_id, tier, fire_mode, signal.tcs_score, signal.symbol
         )
         if not fire_ok:
             return False, fire_msg, None

@@ -1,0 +1,315 @@
+# BITTEN Trading Pairs Configuration
+# Single source of truth for all trading pairs and their specifications
+# Last updated: 2025-01-06
+
+# Trading pair categories and specifications
+trading_pairs:
+  
+  # Core pairs - standard tier TCS requirements
+  core_pairs:
+    GBPUSD:
+      pip_value: 0.0001
+      min_volume: 0.01
+      max_volume: 100.0
+      spread_limit: 3.0
+      session_hours: 
+        - "08:00-17:00"
+        - "13:00-22:00"
+      volatility_filter: true
+      contract_size: 100000
+      min_lot: 0.01
+      max_lot: 100
+      tcs_requirement: null  # Use tier defaults
+      category: "major"
+      description: "British Pound vs US Dollar"
+      
+    EURUSD:
+      pip_value: 0.0001
+      min_volume: 0.01
+      max_volume: 100.0
+      spread_limit: 2.0
+      session_hours: 
+        - "08:00-17:00"
+        - "13:00-22:00"
+      volatility_filter: true
+      contract_size: 100000
+      min_lot: 0.01
+      max_lot: 100
+      tcs_requirement: null  # Use tier defaults
+      category: "major"
+      description: "Euro vs US Dollar"
+      
+    USDJPY:
+      pip_value: 0.01
+      min_volume: 0.01
+      max_volume: 100.0
+      spread_limit: 2.5
+      session_hours: 
+        - "00:00-09:00"
+        - "13:00-22:00"
+      volatility_filter: true
+      contract_size: 100000
+      min_lot: 0.01
+      max_lot: 100
+      tcs_requirement: null  # Use tier defaults
+      category: "major"
+      description: "US Dollar vs Japanese Yen"
+      
+    GBPJPY:
+      pip_value: 0.01
+      min_volume: 0.01
+      max_volume: 100.0
+      spread_limit: 4.0
+      session_hours: 
+        - "00:00-09:00"
+        - "08:00-17:00"
+      volatility_filter: true
+      contract_size: 100000
+      min_lot: 0.01
+      max_lot: 100
+      tcs_requirement: null  # Use tier defaults
+      category: "major"
+      description: "British Pound vs Japanese Yen"
+      
+    USDCAD:
+      pip_value: 0.0001
+      min_volume: 0.01
+      max_volume: 100.0
+      spread_limit: 2.5
+      session_hours: 
+        - "13:00-22:00"
+      volatility_filter: true
+      contract_size: 100000
+      min_lot: 0.01
+      max_lot: 100
+      tcs_requirement: null  # Use tier defaults
+      category: "major"
+      description: "US Dollar vs Canadian Dollar"
+
+  # Extra pairs - require 85% minimum TCS for enhanced safety
+  extra_pairs:
+    AUDUSD:
+      pip_value: 0.0001
+      min_volume: 0.01
+      max_volume: 100.0
+      spread_limit: 3.0
+      session_hours: 
+        - "00:00-09:00"
+      volatility_filter: true
+      contract_size: 100000
+      min_lot: 0.01
+      max_lot: 100
+      tcs_requirement: 85  # 85% minimum TCS
+      category: "minor"
+      description: "Australian Dollar vs US Dollar"
+      
+    NZDUSD:
+      pip_value: 0.0001
+      min_volume: 0.01
+      max_volume: 100.0
+      spread_limit: 3.5
+      session_hours: 
+        - "00:00-09:00"
+      volatility_filter: true
+      contract_size: 100000
+      min_lot: 0.01
+      max_lot: 100
+      tcs_requirement: 85  # 85% minimum TCS
+      category: "minor"
+      description: "New Zealand Dollar vs US Dollar"
+      
+    AUDJPY:
+      pip_value: 0.01
+      min_volume: 0.01
+      max_volume: 100.0
+      spread_limit: 4.0
+      session_hours: 
+        - "00:00-09:00"
+      volatility_filter: true
+      contract_size: 100000
+      min_lot: 0.01
+      max_lot: 100
+      tcs_requirement: 85  # 85% minimum TCS
+      category: "cross"
+      description: "Australian Dollar vs Japanese Yen"
+      
+    EURJPY:
+      pip_value: 0.01
+      min_volume: 0.01
+      max_volume: 100.0
+      spread_limit: 3.5
+      session_hours: 
+        - "08:00-17:00"
+      volatility_filter: true
+      contract_size: 100000
+      min_lot: 0.01
+      max_lot: 100
+      tcs_requirement: 85  # 85% minimum TCS
+      category: "cross"
+      description: "Euro vs Japanese Yen"
+      
+    EURGBP:
+      pip_value: 0.0001
+      min_volume: 0.01
+      max_volume: 100.0
+      spread_limit: 3.0
+      session_hours: 
+        - "08:00-17:00"
+      volatility_filter: true
+      contract_size: 100000
+      min_lot: 0.01
+      max_lot: 100
+      tcs_requirement: 85  # 85% minimum TCS
+      category: "cross"
+      description: "Euro vs British Pound"
+      
+    GBPCHF:
+      pip_value: 0.0001
+      min_volume: 0.01
+      max_volume: 100.0
+      spread_limit: 4.0
+      session_hours: 
+        - "08:00-17:00"
+      volatility_filter: true
+      contract_size: 100000
+      min_lot: 0.01
+      max_lot: 100
+      tcs_requirement: 85  # 85% minimum TCS
+      category: "cross"
+      description: "British Pound vs Swiss Franc"
+      
+    USDCHF:
+      pip_value: 0.0001
+      min_volume: 0.01
+      max_volume: 100.0
+      spread_limit: 3.0
+      session_hours: 
+        - "08:00-17:00"
+        - "13:00-22:00"
+      volatility_filter: true
+      contract_size: 100000
+      min_lot: 0.01
+      max_lot: 100
+      tcs_requirement: 85  # 85% minimum TCS
+      category: "major"
+      description: "US Dollar vs Swiss Franc"
+
+# Strategy-specific pair assignments
+strategy_assignments:
+  arcade_strategy:
+    description: "Fast scalping signals for core pairs only"
+    allowed_pairs:
+      - GBPUSD
+      - EURUSD
+      - USDJPY
+      - GBPJPY
+      - USDCAD
+    min_tcs: 65
+    
+  sniper_strategy:
+    description: "High precision signals for core pairs only"
+    allowed_pairs:
+      - GBPUSD
+      - EURUSD
+      - USDJPY
+      - GBPJPY
+      - USDCAD
+    min_tcs: 75
+    
+  all_pairs_strategy:
+    description: "All pairs available with appropriate TCS filtering"
+    allowed_pairs:
+      - GBPUSD
+      - EURUSD
+      - USDJPY
+      - GBPJPY
+      - USDCAD
+      - AUDUSD
+      - NZDUSD
+      - AUDJPY
+      - EURJPY
+      - EURGBP
+      - GBPCHF
+      - USDCHF
+    min_tcs: 70
+
+# MT5 Bridge symbol mappings
+mt5_mappings:
+  GBPUSD: "GBPUSD"
+  EURUSD: "EURUSD"
+  USDJPY: "USDJPY"
+  GBPJPY: "GBPJPY"
+  USDCAD: "USDCAD"
+  AUDUSD: "AUDUSD"
+  NZDUSD: "NZDUSD"
+  AUDJPY: "AUDJPY"
+  EURJPY: "EURJPY"
+  EURGBP: "EURGBP"
+  GBPCHF: "GBPCHF"
+  USDCHF: "USDCHF"
+
+# Heat map tracking configuration
+heat_map_config:
+  tracked_pairs:
+    - GBPUSD
+    - EURUSD
+    - USDJPY
+    - GBPJPY
+    - USDCAD
+    - AUDUSD
+    - NZDUSD
+    - AUDJPY
+    - EURJPY
+    - EURGBP
+  update_interval_seconds: 30
+  history_retention_days: 7
+
+# Session definitions for optimal trading times
+sessions:
+  asian:
+    hours: "19:00-03:00"
+    timezone: "EST"
+    optimal_pairs:
+      - USDJPY
+      - AUDUSD
+      - NZDUSD
+      - AUDJPY
+      
+  london:
+    hours: "03:00-11:00"
+    timezone: "EST"
+    optimal_pairs:
+      - GBPUSD
+      - EURUSD
+      - GBPJPY
+      - EURGBP
+      - GBPCHF
+      
+  new_york:
+    hours: "08:00-17:00"
+    timezone: "EST"
+    optimal_pairs:
+      - EURUSD
+      - GBPUSD
+      - USDCAD
+      - USDCHF
+      - USDJPY
+      
+  overlap_london_ny:
+    hours: "08:00-11:00"
+    timezone: "EST"
+    bonus_multiplier: 1.2
+    optimal_pairs:
+      - GBPUSD
+      - EURUSD
+      - USDCAD
+
+# Configuration metadata
+metadata:
+  version: "2.0.0"
+  last_updated: "2025-01-06"
+  total_pairs: 12
+  core_pairs_count: 5
+  extra_pairs_count: 7
+  created_by: "BITTEN Configuration System"
+  description: "Centralized trading pairs configuration for modular system"

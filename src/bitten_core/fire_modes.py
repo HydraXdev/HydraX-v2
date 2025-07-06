@@ -73,6 +73,17 @@ TIER_CONFIGS = {
     )
 }
 
+# Import centralized configuration
+from .config_manager import get_trading_config
+
+# Pair-specific TCS requirements loaded from centralized config
+def get_pair_specific_tcs() -> Dict[str, Optional[int]]:
+    """Get pair-specific TCS requirements from centralized configuration"""
+    return get_trading_config().get_pair_specific_tcs()
+
+# Legacy support - will be dynamically loaded
+PAIR_SPECIFIC_TCS = get_pair_specific_tcs()
+
 @dataclass
 class ChaingunState:
     """CHAINGUN sequence state"""
@@ -101,12 +112,18 @@ class FireModeValidator:
         self.last_shot_time: Dict[int, datetime] = {}
         
     def can_fire(self, user_id: int, tier: TierLevel, mode: FireMode, 
-                 tcs_score: int) -> Tuple[bool, str]:
+                 tcs_score: int, pair: str = None) -> Tuple[bool, str]:
         """Check if user can fire based on THE LAW"""
         
         config = TIER_CONFIGS[tier]
         
-        # Check TCS requirement
+        # Check pair-specific TCS requirement first
+        if pair:
+            pair_tcs_requirement = get_trading_config().get_pair_tcs_requirement(pair)
+            if pair_tcs_requirement and tcs_score < pair_tcs_requirement:
+                return False, f"TCS too low for {pair}: {tcs_score} < {pair_tcs_requirement}"
+        
+        # Check standard TCS requirement
         if tcs_score < config.min_tcs:
             return False, f"TCS too low: {tcs_score} < {config.min_tcs}"
         
@@ -168,8 +185,12 @@ class FireModeValidator:
     
     def start_chaingun(self, user_id: int) -> ChaingunState:
         """Start a new CHAINGUN sequence"""
+        import secrets
+        
+        # Security: Use cryptographically secure random ID instead of predictable timestamp
+        random_id = secrets.token_hex(8)
         sequence = ChaingunState(
-            sequence_id=f"CG_{user_id}_{datetime.now().timestamp()}",
+            sequence_id=f"CG_{user_id}_{random_id}",
             user_id=user_id,
             shot_number=1,
             total_risk=0.0,
@@ -229,14 +250,17 @@ class StealthMode:
         
     def apply_stealth(self, trade_params: Dict) -> Dict:
         """Apply STEALTH modifications to trade"""
-        import random
+        import secrets
         
+        # Security: Use cryptographically secure random numbers
         # Entry delay
-        delay_minutes = random.uniform(*self.entry_delay_range)
+        delay_range = self.entry_delay_range[1] - self.entry_delay_range[0]
+        delay_minutes = self.entry_delay_range[0] + (secrets.randbelow(1000) / 1000.0) * delay_range
         trade_params['entry_delay'] = delay_minutes * 60  # seconds
         
         # Size variation
-        size_multiplier = random.uniform(*self.size_variation)
+        size_range = self.size_variation[1] - self.size_variation[0]
+        size_multiplier = self.size_variation[0] + (secrets.randbelow(1000) / 1000.0) * size_range
         trade_params['volume'] *= size_multiplier
         
         # Check if we need to inject a loss
@@ -248,15 +272,16 @@ class StealthMode:
     
     def _should_inject_loss(self) -> bool:
         """Determine if we should inject a loss"""
-        import random
+        import secrets
         
         # Check win streak
         if self.current_streak >= self.win_streak_threshold:
             self.current_streak = 0
             return True
         
-        # Random injection
-        return random.random() < self.loss_injection_rate
+        # Security: Use cryptographically secure random injection
+        random_value = secrets.randbelow(10000) / 10000.0
+        return random_value < self.loss_injection_rate
 
 # Midnight Hammer Event Manager
 class MidnightHammerEvent:

@@ -68,7 +68,18 @@ class TelegramRouter:
             'Configuration': ['risk', 'maxpos', 'notify', 'confirmations'],
             'Elite Features': ['tactical', 'tcs', 'signals', 'closeall', 'backtest'],
             'Emergency Stop': ['emergency_stop', 'panic', 'halt_all', 'recover', 'emergency_status'],
+            'Education': ['learn', 'missions', 'journal', 'squad', 'achievements', 'study', 'mentor'],
             'Admin Only': ['logs', 'restart', 'backup', 'promote', 'ban']
+        }
+        
+        # Initialize education system components
+        self.education_data = {
+            'active_missions': {},
+            'user_progress': {},
+            'squads': {},
+            'study_groups': {},
+            'mentor_sessions': {},
+            'pending_notifications': []
         }
     
     def parse_telegram_update(self, update_data: Dict) -> Optional[TelegramUpdate]:
@@ -245,6 +256,22 @@ class TelegramRouter:
         # Intel Command Center
         elif command == '/intel':
             return self._cmd_intel(update.user_id)
+        
+        # Education Commands
+        elif command == '/learn':
+            return self._cmd_learn(update.user_id, update.chat_id)
+        elif command == '/missions':
+            return self._cmd_missions(update.user_id, args)
+        elif command == '/journal':
+            return self._cmd_journal(update.user_id, args)
+        elif command == '/squad':
+            return self._cmd_squad(update.user_id, args)
+        elif command == '/achievements':
+            return self._cmd_achievements(update.user_id, args)
+        elif command == '/study':
+            return self._cmd_study(update.user_id, args)
+        elif command == '/mentor':
+            return self._cmd_mentor(update.user_id, args)
         
         else:
             return CommandResult(False, f"❌ Unknown command: {command}")
@@ -868,7 +895,14 @@ Use `/positions` to check trading status"""
             'restart': 'Restart system',
             'backup': 'Create backup',
             'promote': 'Promote user',
-            'ban': 'Ban user'
+            'ban': 'Ban user',
+            'learn': 'Trading education HQ',
+            'missions': 'Daily/weekly objectives',
+            'journal': 'Combat journal entry',
+            'squad': 'Squad management',
+            'achievements': 'Medals & progress',
+            'study': 'Join study groups',
+            'mentor': 'Find or become mentor'
         }
         return descriptions.get(command, 'Command description')
     
@@ -1130,6 +1164,12 @@ Use `/positions` to check trading status"""
                     result.get('text', ''),
                     data=result.get('data', {})
                 )
+        
+        # Handle Education System callbacks
+        elif data.startswith('learn_') or data.startswith('missions_') or data.startswith('journal_') or \
+             data.startswith('squad_') or data.startswith('achievements_') or data.startswith('study_') or \
+             data.startswith('mentor_') or data.startswith('notification_'):
+            return self._handle_education_callback(user_id, data)
         
         # Parse callback data
         parts = data.split('_')
@@ -1911,3 +1951,1221 @@ Use `/positions` to check trading status"""
     def get_confirmation_system(self) -> TradeConfirmationSystem:
         """Get the trade confirmation system instance"""
         return self.confirmation_system
+    
+    # ========================================
+    # EDUCATION SYSTEM COMMANDS
+    # ========================================
+    
+    @require_user()
+    def _cmd_learn(self, user_id: int, chat_id: int) -> CommandResult:
+        """Handle /learn command - Main education menu"""
+        try:
+            # Get user progress data
+            user_rank = self.rank_access.get_user_rank(user_id)
+            progress = self._get_user_education_progress(user_id)
+            
+            # Military-style header
+            msg = "🎯 **OPERATIVE TRAINING CENTER**\n"
+            msg += "━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            msg += f"**Rank**: {user_rank.name} | **Level**: {progress.get('level', 1)}\n"
+            msg += f"**XP**: {progress.get('xp', 0):,}/{progress.get('next_level_xp', 1000):,}\n"
+            msg += f"**Mission Streak**: {progress.get('mission_streak', 0)} days\n\n"
+            
+            msg += "🎖️ **COMMAND OPTIONS**\n"
+            msg += "*Select your next move, soldier*\n"
+            
+            # Create inline keyboard menu
+            keyboard = [
+                [InlineKeyboardButton("📋 TODAY'S MISSIONS", callback_data="learn_missions")],
+                [InlineKeyboardButton("📹 VIDEO LIBRARY", callback_data="learn_videos")],
+                [InlineKeyboardButton("📊 MY PROGRESS", callback_data="learn_progress")],
+                [InlineKeyboardButton("👥 SQUAD HQ", callback_data="learn_squad")],
+                [InlineKeyboardButton("🎖️ ACHIEVEMENTS", callback_data="learn_achievements")],
+                [InlineKeyboardButton("📝 NORMAN'S JOURNAL", callback_data="learn_journal")],
+                [InlineKeyboardButton("📈 PAPER TRADING", callback_data="learn_paper_trading")],
+                [InlineKeyboardButton("🎯 FIND MENTOR", callback_data="learn_mentor")]
+            ]
+            
+            # Add notification badge if there are pending items
+            pending = self._get_pending_notifications(user_id)
+            if pending > 0:
+                keyboard.insert(0, [InlineKeyboardButton(f"🔔 NOTIFICATIONS ({pending})", callback_data="learn_notifications")])
+            
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            
+            # Add motivational footer
+            msg += "\n💬 *\"Every expert was once a disaster who refused to give up\"*"
+            msg += "\n    - Norman, BITTEN Commander"
+            
+            return CommandResult(
+                True,
+                msg,
+                data={'reply_markup': reply_markup}
+            )
+            
+        except Exception as e:
+            return CommandResult(False, f"❌ Training center error: {str(e)}")
+    
+    @require_user()
+    def _cmd_missions(self, user_id: int, args: List[str]) -> CommandResult:
+        """Handle /missions command - Show daily/weekly objectives"""
+        try:
+            missions = self._get_user_missions(user_id)
+            
+            msg = "📋 **MISSION BRIEFING**\n"
+            msg += "━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            msg += f"*Operative {user_id} - Status Report*\n\n"
+            
+            # Daily Missions
+            msg += "🎯 **DAILY OBJECTIVES** (Reset in 14h 32m)\n"
+            for mission in missions.get('daily', []):
+                status = "✅" if mission['completed'] else "⬜"
+                reward = f"+{mission['xp']} XP" if mission['xp'] > 0 else ""
+                msg += f"{status} {mission['name']} {reward}\n"
+                if mission.get('progress'):
+                    msg += f"   Progress: {mission['progress']}/{mission['target']}\n"
+            
+            msg += "\n📊 **WEEKLY CHALLENGES** (Reset in 3d 14h)\n"
+            for mission in missions.get('weekly', []):
+                status = "✅" if mission['completed'] else "⬜"
+                reward = f"+{mission['xp']} XP"
+                if mission.get('medal'):
+                    reward += f" + 🎖️ {mission['medal']}"
+                msg += f"{status} {mission['name']} {reward}\n"
+                if mission.get('progress'):
+                    msg += f"   Progress: {mission['progress']}/{mission['target']}\n"
+            
+            # Add special event missions if any
+            if missions.get('special'):
+                msg += "\n⚡ **SPECIAL OPS**\n"
+                for mission in missions['special']:
+                    msg += f"🔥 {mission['name']} - Expires in {mission['expires_in']}\n"
+                    msg += f"   Reward: {mission['reward']}\n"
+            
+            # Progress summary
+            daily_complete = sum(1 for m in missions.get('daily', []) if m['completed'])
+            weekly_complete = sum(1 for m in missions.get('weekly', []) if m['completed'])
+            msg += f"\n📈 **Progress**: {daily_complete}/{len(missions.get('daily', []))} daily | "
+            msg += f"{weekly_complete}/{len(missions.get('weekly', []))} weekly\n"
+            
+            # Create inline keyboard
+            keyboard = [
+                [InlineKeyboardButton("🔄 REFRESH", callback_data="missions_refresh")],
+                [InlineKeyboardButton("🏆 LEADERBOARD", callback_data="missions_leaderboard")]
+            ]
+            
+            if daily_complete == len(missions.get('daily', [])):
+                keyboard.insert(0, [InlineKeyboardButton("🎁 CLAIM DAILY BONUS", callback_data="missions_claim_daily")])
+            
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            
+            return CommandResult(
+                True,
+                msg,
+                data={'reply_markup': reply_markup}
+            )
+            
+        except Exception as e:
+            return CommandResult(False, f"❌ Mission briefing error: {str(e)}")
+    
+    @require_user()
+    def _cmd_journal(self, user_id: int, args: List[str]) -> CommandResult:
+        """Handle /journal command - Quick journal entry"""
+        try:
+            if not args:
+                # Show journal prompt
+                msg = "📝 **COMBAT JOURNAL**\n"
+                msg += "━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+                msg += "*Record your trading thoughts, soldier*\n\n"
+                
+                # Show recent entries
+                recent_entries = self._get_recent_journal_entries(user_id, limit=3)
+                if recent_entries:
+                    msg += "📖 **Recent Entries**:\n"
+                    for entry in recent_entries:
+                        msg += f"• {entry['timestamp']} - {entry['preview']}...\n"
+                    msg += "\n"
+                
+                msg += "**Quick Entry Options**:\n"
+                msg += "`/journal win [details]` - Log a victory\n"
+                msg += "`/journal loss [details]` - Analyze a defeat\n"
+                msg += "`/journal idea [details]` - Strategy thoughts\n"
+                msg += "`/journal review` - Daily review\n"
+                
+                # Create inline keyboard
+                keyboard = [
+                    [InlineKeyboardButton("✍️ NEW ENTRY", callback_data="journal_new")],
+                    [InlineKeyboardButton("📚 VIEW ALL", callback_data="journal_view_all")],
+                    [InlineKeyboardButton("📊 STATS", callback_data="journal_stats")]
+                ]
+                
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                
+                return CommandResult(True, msg, data={'reply_markup': reply_markup})
+            
+            # Process journal entry
+            entry_type = args[0].lower()
+            content = " ".join(args[1:]) if len(args) > 1 else ""
+            
+            # Save journal entry
+            entry_id = self._save_journal_entry(user_id, entry_type, content)
+            
+            # Response based on entry type
+            responses = {
+                'win': "🎯 **Victory logged!** Keep that momentum going, soldier!",
+                'loss': "📊 **Defeat analyzed.** Every loss is a lesson in disguise.",
+                'idea': "💡 **Strategy noted!** Innovation wins wars.",
+                'review': "✅ **Daily review complete.** Discipline creates champions."
+            }
+            
+            response = responses.get(entry_type, "📝 **Entry saved!** Stay sharp out there.")
+            response += f"\n\n+10 XP earned | Entry #{entry_id}"
+            
+            return CommandResult(True, response)
+            
+        except Exception as e:
+            return CommandResult(False, f"❌ Journal error: {str(e)}")
+    
+    @require_user()
+    def _cmd_squad(self, user_id: int, args: List[str]) -> CommandResult:
+        """Handle /squad command - Squad management"""
+        try:
+            if not args:
+                # Show squad overview
+                squad_data = self._get_user_squad(user_id)
+                
+                msg = "👥 **SQUAD COMMAND**\n"
+                msg += "━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+                
+                if squad_data:
+                    msg += f"**Squad**: {squad_data['name']}\n"
+                    msg += f"**Rank**: #{squad_data['rank']} | **Members**: {squad_data['member_count']}/10\n"
+                    msg += f"**Total XP**: {squad_data['total_xp']:,}\n"
+                    msg += f"**Win Rate**: {squad_data['win_rate']:.1f}%\n\n"
+                    
+                    msg += "👥 **Active Members**:\n"
+                    for member in squad_data['members'][:5]:
+                        status = "🟢" if member['online'] else "⚫"
+                        msg += f"{status} {member['name']} - {member['rank']} ({member['xp']:,} XP)\n"
+                    
+                    if len(squad_data['members']) > 5:
+                        msg += f"... and {len(squad_data['members']) - 5} more\n"
+                else:
+                    msg += "⚠️ **No squad assigned**\n"
+                    msg += "Join a squad to unlock team missions!\n"
+                
+                # Create inline keyboard
+                keyboard = []
+                if squad_data:
+                    keyboard.extend([
+                        [InlineKeyboardButton("📊 SQUAD STATS", callback_data="squad_stats")],
+                        [InlineKeyboardButton("💬 SQUAD CHAT", callback_data="squad_chat")],
+                        [InlineKeyboardButton("🎯 TEAM MISSIONS", callback_data="squad_missions")]
+                    ])
+                    if squad_data.get('is_leader'):
+                        keyboard.append([InlineKeyboardButton("⚙️ MANAGE", callback_data="squad_manage")])
+                else:
+                    keyboard.extend([
+                        [InlineKeyboardButton("🔍 FIND SQUAD", callback_data="squad_find")],
+                        [InlineKeyboardButton("➕ CREATE SQUAD", callback_data="squad_create")]
+                    ])
+                
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                
+                return CommandResult(True, msg, data={'reply_markup': reply_markup})
+            
+            # Handle squad sub-commands
+            action = args[0].lower()
+            if action == 'invite':
+                if len(args) < 2:
+                    return CommandResult(False, "❌ Usage: `/squad invite @username`")
+                return self._squad_invite_member(user_id, args[1])
+            elif action == 'leave':
+                return self._squad_leave(user_id)
+            else:
+                return CommandResult(False, "❌ Unknown squad command")
+                
+        except Exception as e:
+            return CommandResult(False, f"❌ Squad error: {str(e)}")
+    
+    @require_user()
+    def _cmd_achievements(self, user_id: int, args: List[str]) -> CommandResult:
+        """Handle /achievements command - Show medals and progress"""
+        try:
+            achievements = self._get_user_achievements(user_id)
+            
+            msg = "🎖️ **ACHIEVEMENT SHOWCASE**\n"
+            msg += "━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            msg += f"**Total Medals**: {achievements['earned']}/{achievements['total']}\n"
+            msg += f"**Completion**: {achievements['completion_percent']:.1f}%\n\n"
+            
+            # Show categories
+            categories = ['Combat', 'Strategy', 'Discipline', 'Leadership', 'Special']
+            for category in categories:
+                cat_data = achievements.get(category.lower(), {})
+                if cat_data:
+                    msg += f"**{category}** ({cat_data['earned']}/{cat_data['total']})\n"
+                    
+                    # Show recent or notable achievements
+                    for medal in cat_data.get('medals', [])[:3]:
+                        icon = "🏅" if medal['rarity'] == 'legendary' else "🎖️"
+                        status = "✅" if medal['earned'] else "🔒"
+                        msg += f"{status} {icon} {medal['name']}\n"
+                        if medal['earned']:
+                            msg += f"   Earned: {medal['date']}\n"
+                        else:
+                            msg += f"   Progress: {medal['progress']}%\n"
+                    msg += "\n"
+            
+            # Show next achievable medals
+            if achievements.get('next_achievable'):
+                msg += "🎯 **WITHIN REACH**:\n"
+                for medal in achievements['next_achievable'][:3]:
+                    msg += f"• {medal['name']} - {medal['requirement']}\n"
+                    msg += f"  Progress: {medal['progress_bar']}\n"
+            
+            # Create inline keyboard
+            keyboard = [
+                [InlineKeyboardButton("🏆 ALL MEDALS", callback_data="achievements_all")],
+                [InlineKeyboardButton("📊 STATISTICS", callback_data="achievements_stats")],
+                [InlineKeyboardButton("🌟 SHOWCASE", callback_data="achievements_showcase")]
+            ]
+            
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            
+            return CommandResult(True, msg, data={'reply_markup': reply_markup})
+            
+        except Exception as e:
+            return CommandResult(False, f"❌ Achievements error: {str(e)}")
+    
+    @require_user()
+    def _cmd_study(self, user_id: int, args: List[str]) -> CommandResult:
+        """Handle /study command - Join study groups"""
+        try:
+            if not args:
+                # Show available study groups
+                groups = self._get_study_groups()
+                
+                msg = "📚 **STUDY GROUPS**\n"
+                msg += "━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+                msg += "*Join forces with fellow operatives*\n\n"
+                
+                # Active sessions
+                active_sessions = [g for g in groups if g['status'] == 'active']
+                if active_sessions:
+                    msg += "🟢 **LIVE NOW**:\n"
+                    for session in active_sessions[:3]:
+                        msg += f"• **{session['topic']}**\n"
+                        msg += f"  Host: {session['host']} | {session['participants']} operatives\n"
+                        msg += f"  Level: {session['level']} | Started: {session['started_ago']}\n\n"
+                
+                # Scheduled sessions
+                scheduled = [g for g in groups if g['status'] == 'scheduled']
+                if scheduled:
+                    msg += "📅 **UPCOMING**:\n"
+                    for session in scheduled[:3]:
+                        msg += f"• **{session['topic']}**\n"
+                        msg += f"  Starts in: {session['starts_in']} | Level: {session['level']}\n"
+                        msg += f"  Registered: {session['registered']}/{session['max_participants']}\n\n"
+                
+                # Study stats
+                user_study_stats = self._get_user_study_stats(user_id)
+                msg += f"📊 **Your Stats**: {user_study_stats['sessions_attended']} sessions | "
+                msg += f"{user_study_stats['hours_studied']}h studied\n"
+                
+                # Create inline keyboard
+                keyboard = [
+                    [InlineKeyboardButton("🔍 BROWSE ALL", callback_data="study_browse")],
+                    [InlineKeyboardButton("➕ CREATE SESSION", callback_data="study_create")],
+                    [InlineKeyboardButton("📅 MY SCHEDULE", callback_data="study_schedule")]
+                ]
+                
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                
+                return CommandResult(True, msg, data={'reply_markup': reply_markup})
+            
+            # Handle study sub-commands
+            action = args[0].lower()
+            if action == 'join':
+                if len(args) < 2:
+                    return CommandResult(False, "❌ Usage: `/study join <session_id>`")
+                return self._study_join_session(user_id, args[1])
+            elif action == 'host':
+                return self._study_create_session(user_id, " ".join(args[1:]))
+            else:
+                return CommandResult(False, "❌ Unknown study command")
+                
+        except Exception as e:
+            return CommandResult(False, f"❌ Study group error: {str(e)}")
+    
+    @require_user()
+    def _cmd_mentor(self, user_id: int, args: List[str]) -> CommandResult:
+        """Handle /mentor command - Find or become a mentor"""
+        try:
+            user_rank = self.rank_access.get_user_rank(user_id)
+            
+            if not args:
+                # Show mentor overview
+                msg = "🎯 **MENTOR PROGRAM**\n"
+                msg += "━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+                msg += "*Elite operatives training the next generation*\n\n"
+                
+                # Check if user is a mentor
+                mentor_status = self._get_mentor_status(user_id)
+                if mentor_status['is_mentor']:
+                    msg += "👨‍🏫 **YOUR MENTOR STATUS**\n"
+                    msg += f"Rating: {'⭐' * mentor_status['rating']} ({mentor_status['rating']}/5)\n"
+                    msg += f"Students: {mentor_status['student_count']} active\n"
+                    msg += f"Sessions: {mentor_status['total_sessions']} completed\n\n"
+                
+                # Show available mentors
+                mentors = self._get_available_mentors(user_id)
+                if mentors:
+                    msg += "🌟 **AVAILABLE MENTORS**:\n"
+                    for mentor in mentors[:5]:
+                        msg += f"• **{mentor['name']}** - {mentor['rank']}\n"
+                        msg += f"  Speciality: {mentor['specialty']}\n"
+                        msg += f"  Rating: {'⭐' * mentor['rating']} | Students: {mentor['students']}\n"
+                        msg += f"  Win Rate: {mentor['win_rate']:.1f}%\n\n"
+                
+                # Requirements to become a mentor
+                if not mentor_status['is_mentor'] and user_rank.value >= UserRank.ELITE.value:
+                    msg += "📋 **BECOME A MENTOR**:\n"
+                    msg += "✅ Rank: ELITE or higher\n"
+                    msg += "✅ 100+ successful trades\n"
+                    msg += "✅ 65%+ win rate\n"
+                    msg += "✅ Complete mentor training\n"
+                
+                # Create inline keyboard
+                keyboard = []
+                if mentor_status['is_mentor']:
+                    keyboard.extend([
+                        [InlineKeyboardButton("👥 MY STUDENTS", callback_data="mentor_students")],
+                        [InlineKeyboardButton("📅 SCHEDULE", callback_data="mentor_schedule")]
+                    ])
+                else:
+                    keyboard.append([InlineKeyboardButton("🔍 FIND MENTOR", callback_data="mentor_find")])
+                    if user_rank.value >= UserRank.ELITE.value:
+                        keyboard.append([InlineKeyboardButton("🎓 APPLY TO MENTOR", callback_data="mentor_apply")])
+                
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                
+                return CommandResult(True, msg, data={'reply_markup': reply_markup})
+            
+            # Handle mentor sub-commands
+            action = args[0].lower()
+            if action == 'request':
+                if len(args) < 2:
+                    return CommandResult(False, "❌ Usage: `/mentor request <mentor_id>`")
+                return self._mentor_request_session(user_id, args[1])
+            elif action == 'rate':
+                if len(args) < 3:
+                    return CommandResult(False, "❌ Usage: `/mentor rate <mentor_id> <1-5>`")
+                return self._mentor_rate(user_id, args[1], args[2])
+            else:
+                return CommandResult(False, "❌ Unknown mentor command")
+                
+        except Exception as e:
+            return CommandResult(False, f"❌ Mentor program error: {str(e)}")
+    
+    # Education System Helper Methods
+    def _get_user_education_progress(self, user_id: int) -> Dict:
+        """Get user's education progress"""
+        # This would fetch from database in production
+        return self.education_data['user_progress'].get(user_id, {
+            'level': 1,
+            'xp': 0,
+            'next_level_xp': 1000,
+            'mission_streak': 0,
+            'total_missions': 0,
+            'medals_earned': 0,
+            'study_hours': 0
+        })
+    
+    def _get_pending_notifications(self, user_id: int) -> int:
+        """Get count of pending notifications for user"""
+        return len([n for n in self.education_data['pending_notifications'] if n['user_id'] == user_id])
+    
+    def _get_user_missions(self, user_id: int) -> Dict:
+        """Get user's active missions"""
+        # This would fetch from database in production
+        return {
+            'daily': [
+                {'name': 'Complete 3 paper trades', 'completed': False, 'xp': 50, 'progress': 1, 'target': 3},
+                {'name': 'Watch 1 strategy video', 'completed': True, 'xp': 30, 'progress': 1, 'target': 1},
+                {'name': 'Journal your trades', 'completed': False, 'xp': 20, 'progress': 0, 'target': 1},
+                {'name': 'Review market analysis', 'completed': False, 'xp': 40, 'progress': 0, 'target': 1}
+            ],
+            'weekly': [
+                {'name': 'Achieve 60% win rate', 'completed': False, 'xp': 200, 'medal': 'Sharpshooter', 'progress': 45, 'target': 60},
+                {'name': 'Complete 20 trades', 'completed': False, 'xp': 150, 'progress': 12, 'target': 20},
+                {'name': 'Attend 3 study sessions', 'completed': False, 'xp': 100, 'progress': 1, 'target': 3}
+            ],
+            'special': []
+        }
+    
+    def _get_recent_journal_entries(self, user_id: int, limit: int) -> List[Dict]:
+        """Get recent journal entries"""
+        # This would fetch from database in production
+        return [
+            {'timestamp': '14:32', 'preview': 'EURUSD win - followed the trend perfectly'},
+            {'timestamp': 'Yesterday', 'preview': 'Need to work on stop loss discipline'},
+            {'timestamp': '2 days ago', 'preview': 'Market structure analysis paying off'}
+        ]
+    
+    def _save_journal_entry(self, user_id: int, entry_type: str, content: str) -> int:
+        """Save journal entry and return entry ID"""
+        # This would save to database in production
+        import random
+        return random.randint(1000, 9999)
+    
+    def _get_user_squad(self, user_id: int) -> Optional[Dict]:
+        """Get user's squad information"""
+        # This would fetch from database in production
+        return {
+            'name': 'Alpha Traders',
+            'rank': 42,
+            'member_count': 7,
+            'total_xp': 45320,
+            'win_rate': 68.5,
+            'is_leader': False,
+            'members': [
+                {'name': 'TradeMaster', 'rank': 'ELITE', 'xp': 12500, 'online': True},
+                {'name': 'PipHunter', 'rank': 'AUTHORIZED', 'xp': 8900, 'online': True},
+                {'name': 'ChartNinja', 'rank': 'ELITE', 'xp': 10200, 'online': False}
+            ]
+        }
+    
+    def _get_user_achievements(self, user_id: int) -> Dict:
+        """Get user's achievements"""
+        # This would fetch from database in production
+        return {
+            'earned': 24,
+            'total': 75,
+            'completion_percent': 32.0,
+            'combat': {
+                'earned': 8,
+                'total': 20,
+                'medals': [
+                    {'name': 'First Blood', 'earned': True, 'date': '2 weeks ago', 'rarity': 'common'},
+                    {'name': 'Sharpshooter', 'earned': False, 'progress': 75, 'rarity': 'rare'},
+                    {'name': 'Perfect Week', 'earned': False, 'progress': 40, 'rarity': 'legendary'}
+                ]
+            },
+            'next_achievable': [
+                {'name': 'Consistent Trader', 'requirement': '5 winning days in a row', 'progress_bar': '███░░ 3/5'},
+                {'name': 'Risk Manager', 'requirement': 'Never exceed 2% risk for 50 trades', 'progress_bar': '████░ 42/50'}
+            ]
+        }
+    
+    def _get_study_groups(self) -> List[Dict]:
+        """Get available study groups"""
+        # This would fetch from database in production
+        return [
+            {
+                'topic': 'Market Structure Masterclass',
+                'host': 'EliteTrader99',
+                'participants': 12,
+                'level': 'Intermediate',
+                'status': 'active',
+                'started_ago': '15 min ago'
+            },
+            {
+                'topic': 'Risk Management Basics',
+                'host': 'SafeTrader',
+                'participants': 0,
+                'max_participants': 20,
+                'level': 'Beginner',
+                'status': 'scheduled',
+                'starts_in': '2 hours',
+                'registered': 8
+            }
+        ]
+    
+    def _get_user_study_stats(self, user_id: int) -> Dict:
+        """Get user's study statistics"""
+        return {'sessions_attended': 12, 'hours_studied': 24}
+    
+    def _get_mentor_status(self, user_id: int) -> Dict:
+        """Get user's mentor status"""
+        user_rank = self.rank_access.get_user_rank(user_id)
+        return {
+            'is_mentor': user_rank.value >= UserRank.ELITE.value,
+            'rating': 4,
+            'student_count': 3,
+            'total_sessions': 45
+        }
+    
+    def _get_available_mentors(self, user_id: int) -> List[Dict]:
+        """Get list of available mentors"""
+        return [
+            {
+                'name': 'MasterTrader',
+                'rank': 'ADMIN',
+                'specialty': 'Scalping & Risk Management',
+                'rating': 5,
+                'students': 8,
+                'win_rate': 78.5
+            }
+        ]
+    
+    def send_education_notification(self, user_id: int, notification_type: str, data: Dict) -> CommandResult:
+        """Send education-related notifications"""
+        try:
+            # Mission reminders
+            if notification_type == 'mission_reminder':
+                msg = "📋 **MISSION REMINDER**\n"
+                msg += f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+                msg += f"⏰ Daily reset in {data['time_remaining']}\n"
+                msg += f"📊 Incomplete: {data['incomplete_count']} missions\n"
+                msg += f"💰 Potential XP: {data['potential_xp']}\n\n"
+                msg += "*Don't break your streak, soldier!*"
+                
+                keyboard = [[InlineKeyboardButton("📋 VIEW MISSIONS", callback_data="notification_missions")]]
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                
+            # Achievement unlocked
+            elif notification_type == 'achievement_unlocked':
+                msg = "🎖️ **ACHIEVEMENT UNLOCKED!**\n"
+                msg += f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+                msg += f"🏆 **{data['achievement_name']}**\n"
+                msg += f"{data['description']}\n\n"
+                msg += f"✨ +{data['xp_reward']} XP earned!\n"
+                
+                keyboard = [
+                    [InlineKeyboardButton("🎖️ VIEW MEDAL", callback_data=f"achievement_view_{data['achievement_id']}")],
+                    [InlineKeyboardButton("📤 SHARE", callback_data=f"achievement_share_{data['achievement_id']}")]
+                ]
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                
+            # Squad activity
+            elif notification_type == 'squad_activity':
+                msg = "👥 **SQUAD ALERT**\n"
+                msg += f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+                msg += f"📢 {data['member_name']} {data['action']}\n"
+                msg += f"Squad: {data['squad_name']}\n"
+                
+                keyboard = [[InlineKeyboardButton("👥 VIEW SQUAD", callback_data="notification_squad")]]
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                
+            # Mentor session
+            elif notification_type == 'mentor_session':
+                msg = "🎯 **MENTOR SESSION**\n"
+                msg += f"━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+                msg += f"📅 {data['session_type']} with {data['mentor_name']}\n"
+                msg += f"⏰ Starting in: {data['time_until']}\n"
+                msg += f"📍 Topic: {data['topic']}\n"
+                
+                keyboard = [
+                    [InlineKeyboardButton("✅ JOIN SESSION", callback_data=f"mentor_join_{data['session_id']}")],
+                    [InlineKeyboardButton("❌ CANCEL", callback_data=f"mentor_cancel_{data['session_id']}")]
+                ]
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                
+            else:
+                return CommandResult(False, "Unknown notification type")
+            
+            # Store notification
+            self.education_data['pending_notifications'].append({
+                'user_id': user_id,
+                'type': notification_type,
+                'data': data,
+                'timestamp': time.time()
+            })
+            
+            return CommandResult(True, msg, data={'reply_markup': reply_markup})
+            
+        except Exception as e:
+            return CommandResult(False, f"❌ Notification error: {str(e)}")
+    
+    def _handle_education_callback(self, user_id: int, callback_data: str) -> CommandResult:
+        """Handle education system callbacks"""
+        try:
+            # Parse callback data
+            parts = callback_data.split('_')
+            category = parts[0]
+            action = '_'.join(parts[1:]) if len(parts) > 1 else ''
+            
+            # Route to appropriate handler based on category
+            if category == 'learn':
+                if action == 'missions':
+                    return self._cmd_missions(user_id, [])
+                elif action == 'videos':
+                    return self._show_video_library(user_id)
+                elif action == 'progress':
+                    return self._show_user_progress(user_id)
+                elif action == 'squad':
+                    return self._cmd_squad(user_id, [])
+                elif action == 'achievements':
+                    return self._cmd_achievements(user_id, [])
+                elif action == 'journal':
+                    return self._cmd_journal(user_id, [])
+                elif action == 'paper_trading':
+                    return self._show_paper_trading(user_id)
+                elif action == 'mentor':
+                    return self._cmd_mentor(user_id, [])
+                elif action == 'notifications':
+                    return self._show_notifications(user_id)
+            
+            elif category == 'missions':
+                if action == 'refresh':
+                    return self._cmd_missions(user_id, [])
+                elif action == 'leaderboard':
+                    return self._show_missions_leaderboard(user_id)
+                elif action == 'claim_daily':
+                    return self._claim_daily_bonus(user_id)
+            
+            elif category == 'journal':
+                if action == 'new':
+                    return self._show_journal_entry_form(user_id)
+                elif action == 'view_all':
+                    return self._show_all_journal_entries(user_id)
+                elif action == 'stats':
+                    return self._show_journal_stats(user_id)
+            
+            elif category == 'squad':
+                if action == 'stats':
+                    return self._show_squad_stats(user_id)
+                elif action == 'chat':
+                    return self._show_squad_chat(user_id)
+                elif action == 'missions':
+                    return self._show_squad_missions(user_id)
+                elif action == 'manage':
+                    return self._show_squad_management(user_id)
+                elif action == 'find':
+                    return self._show_squad_finder(user_id)
+                elif action == 'create':
+                    return self._show_squad_creation(user_id)
+            
+            elif category == 'achievements':
+                if action == 'all':
+                    return self._show_all_achievements(user_id)
+                elif action == 'stats':
+                    return self._show_achievement_stats(user_id)
+                elif action == 'showcase':
+                    return self._show_achievement_showcase(user_id)
+            
+            elif category == 'study':
+                if action == 'browse':
+                    return self._show_all_study_groups(user_id)
+                elif action == 'create':
+                    return self._show_study_creation_form(user_id)
+                elif action == 'schedule':
+                    return self._show_study_schedule(user_id)
+            
+            elif category == 'mentor':
+                if action == 'students':
+                    return self._show_mentor_students(user_id)
+                elif action == 'schedule':
+                    return self._show_mentor_schedule(user_id)
+                elif action == 'find':
+                    return self._show_mentor_finder(user_id)
+                elif action == 'apply':
+                    return self._show_mentor_application(user_id)
+            
+            elif category == 'notification':
+                if action == 'missions':
+                    return self._cmd_missions(user_id, [])
+                elif action == 'squad':
+                    return self._cmd_squad(user_id, [])
+            
+            # Default response
+            return CommandResult(True, "✅ Processing your request...")
+            
+        except Exception as e:
+            return CommandResult(False, f"❌ Callback error: {str(e)}")
+    
+    # Additional helper methods for education callbacks
+    def _show_video_library(self, user_id: int) -> CommandResult:
+        """Show video library"""
+        msg = "📹 **VIDEO LIBRARY**\n"
+        msg += "━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+        msg += "📚 **Categories**:\n"
+        msg += "• Beginner Basics (12 videos)\n"
+        msg += "• Market Structure (8 videos)\n"
+        msg += "• Risk Management (6 videos)\n"
+        msg += "• Advanced Strategies (15 videos)\n\n"
+        msg += "🔥 **Featured**: *'The 3-Bar Setup That Changed Everything'*\n"
+        msg += "👁️ 2.3k views | ⭐ 4.8/5 rating\n"
+        
+        keyboard = [
+            [InlineKeyboardButton("🎬 BROWSE VIDEOS", url="https://your-video-platform.com/library")],
+            [InlineKeyboardButton("⬅️ BACK", callback_data="learn_main")]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        return CommandResult(True, msg, data={'reply_markup': reply_markup})
+    
+    def _show_user_progress(self, user_id: int) -> CommandResult:
+        """Show detailed user progress"""
+        progress = self._get_user_education_progress(user_id)
+        
+        msg = "📊 **OPERATIVE PROGRESS REPORT**\n"
+        msg += "━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+        msg += f"**Level {progress['level']}** - {progress['xp']:,}/{progress['next_level_xp']:,} XP\n"
+        msg += f"Progress: {'█' * int(progress['xp']/progress['next_level_xp']*10)}{'░' * (10-int(progress['xp']/progress['next_level_xp']*10))}\n\n"
+        msg += "📈 **Statistics**:\n"
+        msg += f"• Mission Streak: {progress['mission_streak']} days 🔥\n"
+        msg += f"• Total Missions: {progress['total_missions']}\n"
+        msg += f"• Medals Earned: {progress['medals_earned']}\n"
+        msg += f"• Study Hours: {progress['study_hours']}h\n\n"
+        msg += "🎯 **Next Milestone**: Level 10 - Unlock Advanced Strategies\n"
+        
+        keyboard = [[InlineKeyboardButton("⬅️ BACK", callback_data="learn_main")]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        return CommandResult(True, msg, data={'reply_markup': reply_markup})
+    
+    def _show_paper_trading(self, user_id: int) -> CommandResult:
+        """Show paper trading interface"""
+        msg = "📈 **PAPER TRADING SIMULATOR**\n"
+        msg += "━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+        msg += "💰 **Virtual Balance**: $10,000\n"
+        msg += "📊 **Open Positions**: 2\n"
+        msg += "📈 **Today's P&L**: +$127.50 (+1.28%)\n\n"
+        msg += "🎯 **Active Trades**:\n"
+        msg += "• EURUSD Long @ 1.0855 (+12 pips)\n"
+        msg += "• GBPJPY Short @ 185.20 (-5 pips)\n\n"
+        msg += "*Practice without risk, master with confidence*\n"
+        
+        keyboard = [
+            [InlineKeyboardButton("🔫 NEW TRADE", callback_data="paper_new_trade")],
+            [InlineKeyboardButton("📊 PERFORMANCE", callback_data="paper_performance")],
+            [InlineKeyboardButton("⬅️ BACK", callback_data="learn_main")]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        return CommandResult(True, msg, data={'reply_markup': reply_markup})
+    
+    def _show_notifications(self, user_id: int) -> CommandResult:
+        """Show pending notifications for user"""
+        notifications = [n for n in self.education_data['pending_notifications'] if n['user_id'] == user_id]
+        
+        if not notifications:
+            msg = "🔔 **NOTIFICATIONS**\n"
+            msg += "━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+            msg += "📭 No new notifications\n\n"
+            msg += "*Stay tuned for mission updates and achievements!*"
+        else:
+            msg = "🔔 **NOTIFICATIONS**\n"
+            msg += "━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+            
+            for notif in notifications[-10:]:  # Show last 10
+                icon = {
+                    'mission_reminder': '📋',
+                    'achievement_unlocked': '🎖️',
+                    'squad_activity': '👥',
+                    'mentor_session': '🎯'
+                }.get(notif['type'], '📬')
+                
+                msg += f"{icon} {notif['type'].replace('_', ' ').title()}\n"
+                if 'time_remaining' in notif['data']:
+                    msg += f"   ⏰ {notif['data']['time_remaining']}\n"
+                msg += "\n"
+        
+        keyboard = [
+            [InlineKeyboardButton("🗑️ CLEAR ALL", callback_data="notifications_clear")],
+            [InlineKeyboardButton("⬅️ BACK", callback_data="learn_main")]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        return CommandResult(True, msg, data={'reply_markup': reply_markup})
+    
+    # Placeholder methods for squad operations
+    def _squad_invite_member(self, user_id: int, username: str) -> CommandResult:
+        """Invite member to squad"""
+        return CommandResult(True, f"✅ Invitation sent to {username}")
+    
+    def _squad_leave(self, user_id: int) -> CommandResult:
+        """Leave current squad"""
+        return CommandResult(True, "✅ You have left the squad")
+    
+    # Placeholder methods for study operations  
+    def _study_join_session(self, user_id: int, session_id: str) -> CommandResult:
+        """Join study session"""
+        return CommandResult(True, f"✅ Joined study session #{session_id}")
+    
+    def _study_create_session(self, user_id: int, topic: str) -> CommandResult:
+        """Create new study session"""
+        return CommandResult(True, f"✅ Study session created: {topic}")
+    
+    # Placeholder methods for mentor operations
+    def _mentor_request_session(self, user_id: int, mentor_id: str) -> CommandResult:
+        """Request mentor session"""
+        return CommandResult(True, f"✅ Mentor session requested")
+    
+    def _mentor_rate(self, user_id: int, mentor_id: str, rating: str) -> CommandResult:
+        """Rate mentor"""
+        return CommandResult(True, f"✅ Thank you for rating your mentor!")
+    
+    # Additional placeholder methods for callbacks
+    def _show_missions_leaderboard(self, user_id: int) -> CommandResult:
+        """Show missions leaderboard"""
+        msg = "🏆 **MISSIONS LEADERBOARD**\n"
+        msg += "━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+        msg += "🥇 **TradeMaster** - 342 missions\n"
+        msg += "🥈 **PipHunter** - 298 missions\n"
+        msg += "🥉 **ChartNinja** - 276 missions\n\n"
+        msg += "Your rank: #42 (127 missions)\n"
+        
+        keyboard = [[InlineKeyboardButton("⬅️ BACK", callback_data="missions_main")]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        return CommandResult(True, msg, data={'reply_markup': reply_markup})
+    
+    def _claim_daily_bonus(self, user_id: int) -> CommandResult:
+        """Claim daily bonus"""
+        return CommandResult(True, "🎁 **Daily bonus claimed!** +100 XP")
+    
+    def _show_journal_entry_form(self, user_id: int) -> CommandResult:
+        """Show journal entry form"""
+        msg = "✍️ **NEW JOURNAL ENTRY**\n"
+        msg += "━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+        msg += "Select entry type:\n"
+        
+        keyboard = [
+            [InlineKeyboardButton("🎯 Victory", callback_data="journal_type_win")],
+            [InlineKeyboardButton("📊 Defeat", callback_data="journal_type_loss")],
+            [InlineKeyboardButton("💡 Strategy", callback_data="journal_type_idea")],
+            [InlineKeyboardButton("✅ Review", callback_data="journal_type_review")],
+            [InlineKeyboardButton("⬅️ CANCEL", callback_data="journal_main")]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        return CommandResult(True, msg, data={'reply_markup': reply_markup})
+    
+    def _show_all_journal_entries(self, user_id: int) -> CommandResult:
+        """Show all journal entries"""
+        entries = self._get_recent_journal_entries(user_id, limit=10)
+        
+        msg = "📚 **COMBAT JOURNAL**\n"
+        msg += "━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+        
+        for entry in entries:
+            msg += f"📝 {entry['timestamp']} - {entry['preview']}\n\n"
+        
+        keyboard = [[InlineKeyboardButton("⬅️ BACK", callback_data="journal_main")]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        return CommandResult(True, msg, data={'reply_markup': reply_markup})
+    
+    def _show_journal_stats(self, user_id: int) -> CommandResult:
+        """Show journal statistics"""
+        msg = "📊 **JOURNAL STATISTICS**\n"
+        msg += "━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+        msg += "📝 Total Entries: 47\n"
+        msg += "🎯 Victories: 28 (59.6%)\n"
+        msg += "📊 Defeats: 19 (40.4%)\n"
+        msg += "💡 Strategy Ideas: 12\n"
+        msg += "✅ Reviews: 15\n\n"
+        msg += "📈 Most Active Day: Tuesday\n"
+        msg += "⏰ Avg Entry Time: 15:30\n"
+        
+        keyboard = [[InlineKeyboardButton("⬅️ BACK", callback_data="journal_main")]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        return CommandResult(True, msg, data={'reply_markup': reply_markup})
+    
+    # Squad callback handlers
+    def _show_squad_stats(self, user_id: int) -> CommandResult:
+        """Show squad statistics"""
+        msg = "📊 **SQUAD STATISTICS**\n"
+        msg += "━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+        msg += "👥 **Alpha Traders** - Rank #42\n\n"
+        msg += "📈 **Performance**:\n"
+        msg += "• Weekly Missions: 147/200 (73.5%)\n"
+        msg += "• Total Wins: 892\n"
+        msg += "• Win Rate: 68.5%\n"
+        msg += "• Avg Risk/Reward: 1:2.3\n\n"
+        msg += "🏆 **Top Performers**:\n"
+        msg += "1. TradeMaster - 142 wins\n"
+        msg += "2. PipHunter - 98 wins\n"
+        msg += "3. ChartNinja - 87 wins\n"
+        
+        keyboard = [[InlineKeyboardButton("⬅️ BACK", callback_data="squad_main")]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        return CommandResult(True, msg, data={'reply_markup': reply_markup})
+    
+    def _show_squad_chat(self, user_id: int) -> CommandResult:
+        """Show squad chat interface"""
+        msg = "💬 **SQUAD CHAT**\n"
+        msg += "━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+        msg += "📍 Connect with your squad in the dedicated Telegram group\n\n"
+        msg += "Share strategies, celebrate wins, analyze losses together!\n"
+        
+        keyboard = [
+            [InlineKeyboardButton("💬 JOIN SQUAD CHAT", url="https://t.me/+squad_chat_link")],
+            [InlineKeyboardButton("⬅️ BACK", callback_data="squad_main")]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        return CommandResult(True, msg, data={'reply_markup': reply_markup})
+    
+    def _show_squad_missions(self, user_id: int) -> CommandResult:
+        """Show squad missions"""
+        msg = "🎯 **SQUAD MISSIONS**\n"
+        msg += "━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+        msg += "👥 **Team Objectives**:\n\n"
+        msg += "⬜ Combined 500 trades this week (342/500)\n"
+        msg += "⬜ Maintain 65%+ win rate (68.5% ✅)\n"
+        msg += "⬜ Zero blown accounts (✅)\n"
+        msg += "⬜ 10 members online daily (7/10)\n\n"
+        msg += "🎁 **Rewards**: Squad Badge + 500 XP each\n"
+        msg += "⏰ **Resets in**: 4d 12h 23m\n"
+        
+        keyboard = [[InlineKeyboardButton("⬅️ BACK", callback_data="squad_main")]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        return CommandResult(True, msg, data={'reply_markup': reply_markup})
+    
+    def _show_squad_management(self, user_id: int) -> CommandResult:
+        """Show squad management options"""
+        msg = "⚙️ **SQUAD MANAGEMENT**\n"
+        msg += "━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+        msg += "Leader tools coming soon!\n"
+        
+        keyboard = [[InlineKeyboardButton("⬅️ BACK", callback_data="squad_main")]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        return CommandResult(True, msg, data={'reply_markup': reply_markup})
+    
+    def _show_squad_finder(self, user_id: int) -> CommandResult:
+        """Show squad finder"""
+        msg = "🔍 **FIND A SQUAD**\n"
+        msg += "━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+        msg += "🌟 **Recommended Squads**:\n\n"
+        msg += "1. **Risk Managers** (8/10 members)\n"
+        msg += "   Focus: Conservative trading\n"
+        msg += "   Avg Win Rate: 72%\n\n"
+        msg += "2. **Scalp Masters** (9/10 members)\n"
+        msg += "   Focus: Quick trades\n"
+        msg += "   Avg Win Rate: 65%\n\n"
+        msg += "3. **Trend Riders** (6/10 members)\n"
+        msg += "   Focus: Swing trading\n"
+        msg += "   Avg Win Rate: 68%\n"
+        
+        keyboard = [
+            [InlineKeyboardButton("🔍 VIEW ALL", callback_data="squad_browse_all")],
+            [InlineKeyboardButton("⬅️ BACK", callback_data="squad_main")]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        return CommandResult(True, msg, data={'reply_markup': reply_markup})
+    
+    def _show_squad_creation(self, user_id: int) -> CommandResult:
+        """Show squad creation form"""
+        msg = "➕ **CREATE SQUAD**\n"
+        msg += "━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+        msg += "📋 **Requirements**:\n"
+        msg += "• Level 5+ required\n"
+        msg += "• 50+ completed trades\n"
+        msg += "• 60%+ win rate\n\n"
+        msg += "Send squad details:\n"
+        msg += "`/squad create [name] [focus]`\n\n"
+        msg += "Example:\n"
+        msg += "`/squad create \"Pip Warriors\" scalping`\n"
+        
+        keyboard = [[InlineKeyboardButton("⬅️ BACK", callback_data="squad_main")]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        return CommandResult(True, msg, data={'reply_markup': reply_markup})
+    
+    # Achievement callback handlers
+    def _show_all_achievements(self, user_id: int) -> CommandResult:
+        """Show all achievements"""
+        msg = "🏆 **ALL ACHIEVEMENTS**\n"
+        msg += "━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+        msg += "Browse all 75 achievements across 5 categories\n\n"
+        msg += "Select category to view:\n"
+        
+        keyboard = [
+            [InlineKeyboardButton("⚔️ COMBAT", callback_data="achievements_cat_combat")],
+            [InlineKeyboardButton("🧠 STRATEGY", callback_data="achievements_cat_strategy")],
+            [InlineKeyboardButton("📊 DISCIPLINE", callback_data="achievements_cat_discipline")],
+            [InlineKeyboardButton("👥 LEADERSHIP", callback_data="achievements_cat_leadership")],
+            [InlineKeyboardButton("⭐ SPECIAL", callback_data="achievements_cat_special")],
+            [InlineKeyboardButton("⬅️ BACK", callback_data="achievements_main")]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        return CommandResult(True, msg, data={'reply_markup': reply_markup})
+    
+    def _show_achievement_stats(self, user_id: int) -> CommandResult:
+        """Show achievement statistics"""
+        msg = "📊 **ACHIEVEMENT STATISTICS**\n"
+        msg += "━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+        msg += "🎖️ **Progress**: 24/75 (32%)\n\n"
+        msg += "📈 **By Rarity**:\n"
+        msg += "• Common: 15/30 (50%)\n"
+        msg += "• Rare: 7/25 (28%)\n"
+        msg += "• Epic: 2/15 (13%)\n"
+        msg += "• Legendary: 0/5 (0%)\n\n"
+        msg += "🏅 **Recent**: First Blood (2 weeks ago)\n"
+        msg += "⏰ **Next**: Risk Manager (85% complete)\n"
+        
+        keyboard = [[InlineKeyboardButton("⬅️ BACK", callback_data="achievements_main")]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        return CommandResult(True, msg, data={'reply_markup': reply_markup})
+    
+    def _show_achievement_showcase(self, user_id: int) -> CommandResult:
+        """Show achievement showcase configuration"""
+        msg = "🌟 **ACHIEVEMENT SHOWCASE**\n"
+        msg += "━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+        msg += "Select up to 3 achievements to display on your profile:\n\n"
+        msg += "Currently showcasing:\n"
+        msg += "1. 🎖️ First Blood\n"
+        msg += "2. 🎖️ Week Warrior\n"
+        msg += "3. 🎖️ Risk Manager\n\n"
+        msg += "Tap an achievement to change it\n"
+        
+        keyboard = [
+            [InlineKeyboardButton("📝 EDIT SHOWCASE", callback_data="achievements_edit_showcase")],
+            [InlineKeyboardButton("⬅️ BACK", callback_data="achievements_main")]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        return CommandResult(True, msg, data={'reply_markup': reply_markup})
+    
+    # Study group callback handlers
+    def _show_all_study_groups(self, user_id: int) -> CommandResult:
+        """Show all study groups"""
+        msg = "🔍 **ALL STUDY GROUPS**\n"
+        msg += "━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+        msg += "Filter by level:\n"
+        
+        keyboard = [
+            [InlineKeyboardButton("🟢 BEGINNER", callback_data="study_filter_beginner")],
+            [InlineKeyboardButton("🟡 INTERMEDIATE", callback_data="study_filter_intermediate")],
+            [InlineKeyboardButton("🔴 ADVANCED", callback_data="study_filter_advanced")],
+            [InlineKeyboardButton("📅 SCHEDULED", callback_data="study_filter_scheduled")],
+            [InlineKeyboardButton("🔴 LIVE NOW", callback_data="study_filter_live")],
+            [InlineKeyboardButton("⬅️ BACK", callback_data="study_main")]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        return CommandResult(True, msg, data={'reply_markup': reply_markup})
+    
+    def _show_study_creation_form(self, user_id: int) -> CommandResult:
+        """Show study session creation form"""
+        msg = "➕ **CREATE STUDY SESSION**\n"
+        msg += "━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+        msg += "Host a session and share your knowledge!\n\n"
+        msg += "**Format**:\n"
+        msg += "`/study host [topic] [level] [time]`\n\n"
+        msg += "**Example**:\n"
+        msg += "`/study host \"Support & Resistance\" intermediate 2pm`\n\n"
+        msg += "**Guidelines**:\n"
+        msg += "• Keep sessions focused (30-60 min)\n"
+        msg += "• Prepare materials in advance\n"
+        msg += "• Encourage participation\n"
+        
+        keyboard = [[InlineKeyboardButton("⬅️ BACK", callback_data="study_main")]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        return CommandResult(True, msg, data={'reply_markup': reply_markup})
+    
+    def _show_study_schedule(self, user_id: int) -> CommandResult:
+        """Show user's study schedule"""
+        msg = "📅 **MY STUDY SCHEDULE**\n"
+        msg += "━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+        msg += "📍 **Upcoming Sessions**:\n\n"
+        msg += "**Today 3:00 PM**\n"
+        msg += "Risk Management Basics\n"
+        msg += "Host: SafeTrader\n\n"
+        msg += "**Tomorrow 2:00 PM**\n"
+        msg += "Chart Patterns 101\n"
+        msg += "Host: ChartMaster\n\n"
+        msg += "**Friday 4:00 PM**\n"
+        msg += "Weekly Market Review\n"
+        msg += "Host: MarketGuru\n"
+        
+        keyboard = [
+            [InlineKeyboardButton("📅 SYNC CALENDAR", callback_data="study_sync_calendar")],
+            [InlineKeyboardButton("⬅️ BACK", callback_data="study_main")]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        return CommandResult(True, msg, data={'reply_markup': reply_markup})
+    
+    # Mentor callback handlers
+    def _show_mentor_students(self, user_id: int) -> CommandResult:
+        """Show mentor's students"""
+        msg = "👥 **MY STUDENTS**\n"
+        msg += "━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+        msg += "Currently mentoring 3 operatives:\n\n"
+        msg += "1. **NewTrader123**\n"
+        msg += "   Level: 3 | Sessions: 5\n"
+        msg += "   Focus: Risk Management\n\n"
+        msg += "2. **LearningPips**\n"
+        msg += "   Level: 5 | Sessions: 8\n"
+        msg += "   Focus: Technical Analysis\n\n"
+        msg += "3. **FutureElite**\n"
+        msg += "   Level: 7 | Sessions: 12\n"
+        msg += "   Focus: Psychology\n"
+        
+        keyboard = [[InlineKeyboardButton("⬅️ BACK", callback_data="mentor_main")]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        return CommandResult(True, msg, data={'reply_markup': reply_markup})
+    
+    def _show_mentor_schedule(self, user_id: int) -> CommandResult:
+        """Show mentor's schedule"""
+        msg = "📅 **MENTOR SCHEDULE**\n"
+        msg += "━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+        msg += "📍 **This Week**:\n\n"
+        msg += "**Mon 3PM**: NewTrader123 - Risk Review\n"
+        msg += "**Wed 4PM**: LearningPips - Chart Analysis\n"
+        msg += "**Fri 2PM**: FutureElite - Psychology\n\n"
+        msg += "⏰ **Available Slots**:\n"
+        msg += "• Tue 2-5 PM\n"
+        msg += "• Thu 3-6 PM\n"
+        msg += "• Sat 10 AM-12 PM\n"
+        
+        keyboard = [
+            [InlineKeyboardButton("📝 MANAGE SLOTS", callback_data="mentor_manage_slots")],
+            [InlineKeyboardButton("⬅️ BACK", callback_data="mentor_main")]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        return CommandResult(True, msg, data={'reply_markup': reply_markup})
+    
+    def _show_mentor_finder(self, user_id: int) -> CommandResult:
+        """Show mentor finder interface"""
+        msg = "🔍 **FIND A MENTOR**\n"
+        msg += "━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+        msg += "Match with experienced traders:\n\n"
+        msg += "Filter by specialty:\n"
+        
+        keyboard = [
+            [InlineKeyboardButton("📊 Technical Analysis", callback_data="mentor_spec_technical")],
+            [InlineKeyboardButton("💰 Risk Management", callback_data="mentor_spec_risk")],
+            [InlineKeyboardButton("🧠 Psychology", callback_data="mentor_spec_psychology")],
+            [InlineKeyboardButton("⚡ Scalping", callback_data="mentor_spec_scalping")],
+            [InlineKeyboardButton("📈 Swing Trading", callback_data="mentor_spec_swing")],
+            [InlineKeyboardButton("⬅️ BACK", callback_data="mentor_main")]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        return CommandResult(True, msg, data={'reply_markup': reply_markup})
+    
+    def _show_mentor_application(self, user_id: int) -> CommandResult:
+        """Show mentor application form"""
+        msg = "🎓 **MENTOR APPLICATION**\n"
+        msg += "━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+        msg += "📋 **Requirements Check**:\n"
+        msg += "✅ Rank: ELITE or higher\n"
+        msg += "❌ 100+ successful trades (87/100)\n"
+        msg += "✅ 65%+ win rate (68.5%)\n"
+        msg += "❌ Complete mentor training\n\n"
+        msg += "You need 13 more successful trades to apply.\n\n"
+        msg += "Keep pushing, soldier! You're almost there.\n"
+        
+        keyboard = [
+            [InlineKeyboardButton("📚 MENTOR TRAINING", callback_data="mentor_training_info")],
+            [InlineKeyboardButton("⬅️ BACK", callback_data="mentor_main")]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        return CommandResult(True, msg, data={'reply_markup': reply_markup})

@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HYDRA-X TACTICAL EDUCATION SYSTEM</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="hud-container">
+        <!-- Top Bar - Mission Intel -->
+        <div class="top-bar">
+            <div class="system-status">
+                <span class="status-indicator active"></span>
+                <span class="status-text">SYSTEM ONLINE</span>
+            </div>
+            <div class="current-time" id="currentTime">00:00:00</div>
+            <div class="connection-status">
+                <span class="signal-bars">
+                    <span class="bar active"></span>
+                    <span class="bar active"></span>
+                    <span class="bar active"></span>
+                    <span class="bar active"></span>
+                </span>
+                <span class="ping">12ms</span>
+            </div>
+        </div>
+
+        <!-- Main HUD Display -->
+        <div class="main-hud">
+            <!-- Left Panel - Mission Tracker -->
+            <div class="left-panel">
+                <div class="mission-tracker widget">
+                    <div class="widget-header">
+                        <div class="header-icon">▼</div>
+                        <h3>ACTIVE OBJECTIVES</h3>
+                        <div class="minimize-btn">−</div>
+                    </div>
+                    <div class="mission-list">
+                        <div class="mission-item active" data-mission-id="1">
+                            <div class="mission-icon">◆</div>
+                            <div class="mission-details">
+                                <div class="mission-name">OPERATION: PYTHON MASTERY</div>
+                                <div class="mission-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 75%"></div>
+                                    </div>
+                                    <span class="progress-text">75% COMPLETE</span>
+                                </div>
+                            </div>
+                            <div class="mission-xp">+250 XP</div>
+                        </div>
+                        <div class="mission-item" data-mission-id="2">
+                            <div class="mission-icon">◆</div>
+                            <div class="mission-details">
+                                <div class="mission-name">RECON: DATA STRUCTURES</div>
+                                <div class="mission-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 30%"></div>
+                                    </div>
+                                    <span class="progress-text">30% COMPLETE</span>
+                                </div>
+                            </div>
+                            <div class="mission-xp">+500 XP</div>
+                        </div>
+                        <div class="mission-item" data-mission-id="3">
+                            <div class="mission-icon">◆</div>
+                            <div class="mission-details">
+                                <div class="mission-name">TACTICAL: ALGORITHM TRAINING</div>
+                                <div class="mission-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 10%"></div>
+                                    </div>
+                                    <span class="progress-text">10% COMPLETE</span>
+                                </div>
+                            </div>
+                            <div class="mission-xp">+750 XP</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats Display -->
+                <div class="stats-display widget">
+                    <div class="widget-header">
+                        <div class="header-icon">◈</div>
+                        <h3>COMBAT STATISTICS</h3>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-label">MISSIONS COMPLETED</div>
+                            <div class="stat-value" id="missionsCompleted">127</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">ACCURACY RATING</div>
+                            <div class="stat-value" id="accuracyRating">94.2%</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">STREAK MULTIPLIER</div>
+                            <div class="stat-value streak" id="streakMultiplier">x5</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">TIME DEPLOYED</div>
+                            <div class="stat-value" id="timeDeployed">48:32:15</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Center Display -->
+            <div class="center-display">
+                <!-- Radar/Map Display -->
+                <div class="radar-container">
+                    <div class="radar">
+                        <div class="radar-sweep"></div>
+                        <div class="radar-grid">
+                            <div class="grid-line horizontal"></div>
+                            <div class="grid-line vertical"></div>
+                            <div class="grid-circle small"></div>
+                            <div class="grid-circle medium"></div>
+                            <div class="grid-circle large"></div>
+                        </div>
+                        <div class="radar-blips">
+                            <div class="blip objective" style="top: 30%; left: 70%;"></div>
+                            <div class="blip completed" style="top: 60%; left: 40%;"></div>
+                            <div class="blip active" style="top: 50%; left: 50%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tactical Feed -->
+                <div class="tactical-feed">
+                    <div class="feed-header">TACTICAL FEED</div>
+                    <div class="feed-content" id="tacticalFeed">
+                        <div class="feed-item new">
+                            <span class="timestamp">14:32:15</span>
+                            <span class="message">ACHIEVEMENT UNLOCKED: Code Warrior</span>
+                        </div>
+                        <div class="feed-item">
+                            <span class="timestamp">14:30:42</span>
+                            <span class="message">Mission Progress: Python Mastery +15%</span>
+                        </div>
+                        <div class="feed-item">
+                            <span class="timestamp">14:28:33</span>
+                            <span class="message">Norman's Notebook: New Entry Available</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel -->
+            <div class="right-panel">
+                <!-- XP Progress -->
+                <div class="xp-progress widget">
+                    <div class="widget-header">
+                        <div class="header-icon">★</div>
+                        <h3>OPERATIVE LEVEL</h3>
+                    </div>
+                    <div class="level-display">
+                        <div class="current-level">
+                            <span class="level-label">LEVEL</span>
+                            <span class="level-number" id="currentLevel">42</span>
+                        </div>
+                        <div class="rank-emblem">
+                            <div class="emblem-glow"></div>
+                            <div class="emblem-icon">⟐</div>
+                        </div>
+                    </div>
+                    <div class="xp-bar-container">
+                        <div class="xp-info">
+                            <span class="xp-current" id="currentXP">8,750</span>
+                            <span class="xp-separator">/</span>
+                            <span class="xp-needed" id="neededXP">10,000</span>
+                        </div>
+                        <div class="xp-bar">
+                            <div class="xp-fill" id="xpFill" style="width: 87.5%">
+                                <div class="xp-glow"></div>
+                            </div>
+                        </div>
+                        <div class="xp-gain-indicator" id="xpGainIndicator">+250 XP</div>
+                    </div>
+                </div>
+
+                <!-- Norman's Notebook -->
+                <div class="notebook-access widget">
+                    <div class="widget-header">
+                        <div class="header-icon">📓</div>
+                        <h3>NORMAN'S INTEL</h3>
+                    </div>
+                    <div class="notebook-content">
+                        <div class="notebook-entry new">
+                            <div class="entry-icon">▸</div>
+                            <div class="entry-title">Advanced Combat Algorithms</div>
+                            <div class="entry-status">NEW</div>
+                        </div>
+                        <div class="notebook-entry">
+                            <div class="entry-icon">▸</div>
+                            <div class="entry-title">Tactical Python Patterns</div>
+                            <div class="entry-status">UPDATED</div>
+                        </div>
+                        <div class="notebook-entry">
+                            <div class="entry-icon">▸</div>
+                            <div class="entry-title">Field Manual: Data Ops</div>
+                            <div class="entry-status"></div>
+                        </div>
+                    </div>
+                    <button class="access-button">ACCESS FULL INTEL</button>
+                </div>
+
+                <!-- Achievement Tracker -->
+                <div class="achievement-tracker widget">
+                    <div class="widget-header">
+                        <div class="header-icon">🏆</div>
+                        <h3>RECENT COMMENDATIONS</h3>
+                    </div>
+                    <div class="achievement-list">
+                        <div class="achievement-item">
+                            <div class="achievement-icon">🎖️</div>
+                            <div class="achievement-details">
+                                <div class="achievement-name">Speed Demon</div>
+                                <div class="achievement-desc">Complete 5 missions in 1 hour</div>
+                            </div>
+                        </div>
+                        <div class="achievement-item">
+                            <div class="achievement-icon">⚡</div>
+                            <div class="achievement-details">
+                                <div class="achievement-name">Perfect Execution</div>
+                                <div class="achievement-desc">100% accuracy on Algorithm Training</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Bar -->
+        <div class="bottom-bar">
+            <div class="quick-actions">
+                <button class="action-btn" data-action="deploy">DEPLOY</button>
+                <button class="action-btn" data-action="inventory">LOADOUT</button>
+                <button class="action-btn" data-action="intel">INTEL</button>
+                <button class="action-btn" data-action="comms">COMMS</button>
+            </div>
+            <div class="notification-area" id="notificationArea">
+                <div class="notification-icon">⚠</div>
+                <span class="notification-text">System Ready</span>
+            </div>
+        </div>
+
+        <!-- Achievement Notification System -->
+        <div class="achievement-notification" id="achievementNotification">
+            <div class="achievement-flash"></div>
+            <div class="achievement-content">
+                <div class="achievement-icon-large">🏆</div>
+                <div class="achievement-text">
+                    <h2 class="achievement-title">ACHIEVEMENT UNLOCKED</h2>
+                    <p class="achievement-subtitle" id="achievementSubtitle">Code Warrior</p>
+                </div>
+                <div class="achievement-xp">+500 XP</div>
+            </div>
+        </div>
+
+        <!-- Level Up Animation -->
+        <div class="level-up-animation" id="levelUpAnimation">
+            <div class="level-up-burst"></div>
+            <div class="level-up-content">
+                <h1 class="level-up-text">LEVEL UP!</h1>
+                <div class="new-level-display">
+                    <span class="level-transition">LEVEL</span>
+                    <span class="level-number-large" id="newLevelNumber">43</span>
+                </div>
+                <div class="level-rewards">
+                    <div class="reward-item">New Skill Unlocked</div>
+                    <div class="reward-item">+1000 Bonus XP</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Crosshair -->
+        <div class="crosshair">
+            <div class="crosshair-dot"></div>
+            <div class="crosshair-line top"></div>
+            <div class="crosshair-line right"></div>
+            <div class="crosshair-line bottom"></div>
+            <div class="crosshair-line left"></div>
+        </div>
+    </div>
+
+    <script src="education_logic.js"></script>
+</body>
+</html>

@@ -9,6 +9,8 @@ from dataclasses import dataclass
 from enum import Enum
 import os
 from datetime import datetime, timedelta
+import random
+import hashlib
 
 # Import existing HydraX modules for integration
 import sys
@@ -213,6 +215,12 @@ class FireRouter:
             }
         }
         
+        # Initialize tactical education system
+        self.education_system = TacticalEducationSystem()
+        self.user_performance = {}  # user_id -> performance metrics
+        self.active_missions = {}  # user_id -> active mission data
+        self.recovery_games = {}  # user_id -> mini-game state
+        
     def execute_trade(self, trade_request: TradeRequest) -> TradeExecutionResult:
         """Execute trade with comprehensive validation and filtering"""
         try:
@@ -221,6 +229,20 @@ class FireRouter:
             
             # Build user profile for validation
             user_profile = self._build_user_profile(trade_request.user_id)
+            
+            # Check for tactical recovery period (cooldown as game mechanic)
+            recovery_check = self._check_tactical_recovery(trade_request.user_id)
+            if recovery_check['in_recovery']:
+                return self._handle_recovery_period(trade_request.user_id, recovery_check)
+            
+            # Generate mission briefing instead of warnings
+            mission_briefing = self.education_system.generate_mission_briefing(
+                trade_request, user_profile, self._get_user_performance(trade_request.user_id)
+            )
+            
+            # If educational intervention needed, make it feel like squad support
+            if mission_briefing.get('requires_support'):
+                return self._provide_squad_support(trade_request, mission_briefing)
             
             # Integrate Uncertainty & Control Interplay System
             from .uncertainty_control_system import UncertaintyControlSystem, ControlMode, BitModeDecision
@@ -264,11 +286,23 @@ class FireRouter:
                 import time
                 time.sleep(min(modified_decision['artificial_delay'], 30))
                 
+            # Apply dynamic difficulty adjustments based on performance
+            difficulty_adjustment = self.education_system.calculate_difficulty_adjustment(
+                trade_request.user_id,
+                self._get_user_performance(trade_request.user_id)
+            )
+            
+            # Modify TCS requirement based on performance (stealth education)
+            adjusted_tcs = trade_request.tcs_score
+            if difficulty_adjustment['modifier'] != 1.0:
+                adjusted_tcs = int(trade_request.tcs_score * difficulty_adjustment['modifier'])
+                # Don't tell the user - this is stealth education
+            
             # Run comprehensive fire mode validation
             from .fire_mode_validator import validate_fire_request, apply_trade_mutations
             
             trade_payload = {
-                'tcs': trade_request.tcs_score,
+                'tcs': adjusted_tcs,  # Use adjusted TCS for validation
                 'fire_mode': trade_request.fire_mode.value,
                 'symbol': trade_request.symbol,
                 'risk_percent': 2.0,  # Default 2% risk
@@ -362,6 +396,17 @@ class FireRouter:
                 self._log_successful_trade(trade_request, execution_result)
                 self.daily_trade_count += 1
                 
+                # Update performance metrics for stealth education
+                self._update_performance_metrics(trade_request.user_id, True, trade_request)
+                
+                # Generate tactical debrief (educational content disguised as game feedback)
+                debrief = self.education_system.generate_tactical_debrief(
+                    trade_request, execution_result, self._get_user_performance(trade_request.user_id)
+                )
+                
+                # Check for achievement unlocks (gamified learning milestones)
+                achievements = self._check_achievements(trade_request.user_id)
+                
                 # Generate Gemini comparison if in Gemini mode
                 if uncertainty_system.current_mode == ControlMode.GEMINI_MODE:
                     trading_scenario = {
@@ -372,9 +417,19 @@ class FireRouter:
                     gemini_challenge = uncertainty_system.generate_gemini_challenge(trading_scenario)
                     execution_result.message += f"\n\n🤖 **GEMINI CHALLENGE**\nGemini Action: {gemini_challenge.gemini_action}\nGemini Confidence: {gemini_challenge.gemini_confidence:.0%}\n💭 {gemini_challenge.psychological_impact}"
                 
-                # Create success message with details
+                # Create success message with tactical feedback
                 success_msg = self._format_success_message(trade_request, execution_result)
+                
+                # Add debrief and achievements
+                if debrief:
+                    success_msg += f"\n\n{debrief}"
+                if achievements:
+                    success_msg += f"\n\n🏆 **ACHIEVEMENTS UNLOCKED:**\n{achievements}"
+                
                 execution_result.message = success_msg
+            else:
+                # Update performance for failed trades
+                self._update_performance_metrics(trade_request.user_id, False, trade_request)
             
             return execution_result
             
@@ -1008,3 +1063,422 @@ class FireRouter:
                 'success': False,
                 'message': f"❌ Error getting status: {str(e)}"
             }
+    
+    def _check_tactical_recovery(self, user_id: int) -> Dict[str, Any]:
+        """Check if user is in tactical recovery period (cooldown as game mechanic)"""
+        last_shot = self.last_shot_time.get(user_id)
+        if not last_shot:
+            return {'in_recovery': False}
+        
+        # Get user performance to determine recovery period
+        performance = self._get_user_performance(user_id)
+        
+        # Dynamic recovery based on recent performance
+        base_recovery = 60  # seconds
+        if performance.get('recent_losses', 0) >= 3:
+            recovery_time = base_recovery * 2  # Double recovery after streak
+        elif performance.get('win_rate', 0.5) < 0.3:
+            recovery_time = base_recovery * 1.5
+        else:
+            recovery_time = base_recovery
+        
+        time_since_last = (datetime.now() - last_shot).total_seconds()
+        if time_since_last < recovery_time:
+            return {
+                'in_recovery': True,
+                'time_remaining': int(recovery_time - time_since_last),
+                'recovery_type': 'tactical_cooldown',
+                'mini_game_available': True
+            }
+        
+        return {'in_recovery': False}
+    
+    def _handle_recovery_period(self, user_id: int, recovery_info: Dict) -> TradeExecutionResult:
+        """Handle recovery period with mini-games and tactical feedback"""
+        time_remaining = recovery_info['time_remaining']
+        
+        # Check if user has active mini-game
+        if user_id in self.recovery_games:
+            game = self.recovery_games[user_id]
+            return TradeExecutionResult(
+                success=False,
+                message=f"🎮 **TACTICAL RECOVERY MODE**\n\n"
+                       f"⏱️ Recovery Time: {time_remaining}s\n\n"
+                       f"**Active Mini-Game:** {game['name']}\n"
+                       f"Progress: {game['progress']}/100\n\n"
+                       f"Complete the mission to reduce recovery time!\n"
+                       f"Use `/recovery complete` to submit your answer.",
+                error_code="TACTICAL_RECOVERY"
+            )
+        
+        # Generate new mini-game
+        mini_game = self._generate_recovery_mini_game(user_id)
+        self.recovery_games[user_id] = mini_game
+        
+        return TradeExecutionResult(
+            success=False,
+            message=f"🎯 **TACTICAL RECOVERY INITIATED**\n\n"
+                   f"Your squad needs {time_remaining}s to regroup.\n\n"
+                   f"**OPTIONAL MISSION:** {mini_game['name']}\n"
+                   f"{mini_game['description']}\n\n"
+                   f"💡 Complete this mission to reduce recovery by 50%!\n\n"
+                   f"_{mini_game['hint']}_",
+            error_code="TACTICAL_RECOVERY"
+        )
+    
+    def _generate_recovery_mini_game(self, user_id: int) -> Dict:
+        """Generate educational mini-game disguised as tactical mission"""
+        games = [
+            {
+                'name': 'Market Recon',
+                'description': 'Identify the highest volatility pair from: GBPJPY, EURUSD, USDCAD',
+                'answer': 'GBPJPY',
+                'hint': 'Check pip values - JPY pairs move differently',
+                'educational_value': 'volatility_awareness'
+            },
+            {
+                'name': 'Risk Assessment',
+                'description': 'Calculate: 2% risk on $10,000 account = ? dollars',
+                'answer': '200',
+                'hint': 'Basic percentage calculation',
+                'educational_value': 'risk_management'
+            },
+            {
+                'name': 'Session Intel',
+                'description': 'Which trading session overlaps London and New York?',
+                'answer': '13:00-17:00',
+                'hint': 'Think about time zones',
+                'educational_value': 'market_sessions'
+            }
+        ]
+        
+        game = random.choice(games)
+        game['progress'] = 0
+        game['user_id'] = user_id
+        game['start_time'] = datetime.now()
+        
+        return game
+    
+    def _provide_squad_support(self, trade_request: TradeRequest, mission_briefing: Dict) -> TradeExecutionResult:
+        """Provide educational intervention as squad support"""
+        support_type = mission_briefing.get('support_type', 'general')
+        
+        messages = {
+            'risk_management': (
+                "🛡️ **SQUAD SUPPORT ACTIVATED**\n\n"
+                "📡 Intel suggests high risk on this operation.\n"
+                f"Current exposure would exceed tactical limits.\n\n"
+                "**Recommended Actions:**\n"
+                "• Reduce position size by 50%\n"
+                "• Wait for higher TCS confirmation\n"
+                "• Close existing positions first\n\n"
+                "_Your squad has your back, soldier._"
+            ),
+            'low_confidence': (
+                "🎯 **TACTICAL ADVISORY**\n\n"
+                f"TCS Score: {trade_request.tcs_score} - Below optimal range\n\n"
+                "**Squad Analysis:**\n"
+                "• Low probability of mission success\n"
+                "• Consider waiting for better setup\n"
+                "• Review THE PATTERN for guidance\n\n"
+                "💡 *Higher TCS = Higher success rate*"
+            ),
+            'cooldown_needed': (
+                "⚡ **RAPID FIRE DETECTED**\n\n"
+                "Your firing rate exceeds tactical parameters.\n"
+                "Accuracy decreases with fatigue.\n\n"
+                "**Squad Recommendation:**\n"
+                "• Take tactical pause (2-5 min)\n"
+                "• Review recent trades\n"
+                "• Reset mental state\n\n"
+                "_Patience is a tactical advantage._"
+            )
+        }
+        
+        message = messages.get(support_type, mission_briefing.get('message', 'Squad support active'))
+        
+        return TradeExecutionResult(
+            success=False,
+            message=message,
+            error_code="SQUAD_SUPPORT"
+        )
+    
+    def _get_user_performance(self, user_id: int) -> Dict:
+        """Get user performance metrics for adaptive difficulty"""
+        if user_id not in self.user_performance:
+            self.user_performance[user_id] = {
+                'total_trades': 0,
+                'wins': 0,
+                'losses': 0,
+                'win_rate': 0.5,
+                'recent_trades': [],
+                'recent_losses': 0,
+                'avg_tcs': 75,
+                'education_level': 1,  # 1-5 scale
+                'achievements': []
+            }
+        return self.user_performance[user_id]
+    
+    def _update_performance_metrics(self, user_id: int, success: bool, trade_request: TradeRequest):
+        """Update user performance for adaptive difficulty"""
+        perf = self._get_user_performance(user_id)
+        
+        perf['total_trades'] += 1
+        if success:
+            perf['wins'] += 1
+            perf['recent_losses'] = 0
+        else:
+            perf['losses'] += 1
+            perf['recent_losses'] += 1
+        
+        perf['win_rate'] = perf['wins'] / max(perf['total_trades'], 1)
+        
+        # Track recent trades
+        perf['recent_trades'].append({
+            'time': datetime.now(),
+            'success': success,
+            'tcs': trade_request.tcs_score,
+            'symbol': trade_request.symbol
+        })
+        
+        # Keep only last 10 trades
+        if len(perf['recent_trades']) > 10:
+            perf['recent_trades'] = perf['recent_trades'][-10:]
+        
+        # Update average TCS
+        recent_tcs = [t['tcs'] for t in perf['recent_trades']]
+        perf['avg_tcs'] = sum(recent_tcs) / len(recent_tcs) if recent_tcs else 75
+        
+        # Adjust education level based on performance
+        if perf['win_rate'] > 0.7 and perf['avg_tcs'] > 85:
+            perf['education_level'] = min(5, perf['education_level'] + 1)
+        elif perf['win_rate'] < 0.3:
+            perf['education_level'] = max(1, perf['education_level'] - 1)
+    
+    def _check_achievements(self, user_id: int) -> str:
+        """Check for unlocked achievements (gamified education milestones)"""
+        perf = self._get_user_performance(user_id)
+        new_achievements = []
+        
+        achievement_checks = [
+            ('first_blood', 'First Successful Trade', lambda p: p['wins'] == 1),
+            ('sharpshooter', 'Sharpshooter: 5 wins in a row', lambda p: self._check_win_streak(p, 5)),
+            ('high_roller', 'High Roller: Average TCS > 85', lambda p: p['avg_tcs'] > 85),
+            ('discipline', 'Discipline: No losses for 24h', lambda p: self._check_no_recent_losses(p)),
+            ('master_trader', 'Master Trader: 70% win rate', lambda p: p['win_rate'] >= 0.7 and p['total_trades'] >= 20)
+        ]
+        
+        for achievement_id, name, check_func in achievement_checks:
+            if achievement_id not in perf['achievements'] and check_func(perf):
+                perf['achievements'].append(achievement_id)
+                new_achievements.append(f"🎖️ {name}")
+        
+        return "\n".join(new_achievements) if new_achievements else ""
+    
+    def _check_win_streak(self, performance: Dict, streak_length: int) -> bool:
+        """Check if user has win streak"""
+        if len(performance['recent_trades']) < streak_length:
+            return False
+        
+        last_n = performance['recent_trades'][-streak_length:]
+        return all(t['success'] for t in last_n)
+    
+    def _check_no_recent_losses(self, performance: Dict) -> bool:
+        """Check if no losses in last 24 hours"""
+        cutoff = datetime.now() - timedelta(hours=24)
+        recent = [t for t in performance['recent_trades'] if t['time'] > cutoff]
+        return len(recent) > 0 and all(t['success'] for t in recent)
+    
+    def complete_recovery_game(self, user_id: int, answer: str) -> Dict[str, Any]:
+        """Complete recovery mini-game and check answer"""
+        if user_id not in self.recovery_games:
+            return {
+                'success': False,
+                'message': "❌ No active recovery mission found"
+            }
+        
+        game = self.recovery_games[user_id]
+        correct = answer.lower().strip() == game['answer'].lower().strip()
+        
+        if correct:
+            # Reduce recovery time by 50%
+            if user_id in self.last_shot_time:
+                reduction = timedelta(seconds=30)  # 50% of 60s base
+                self.last_shot_time[user_id] = self.last_shot_time[user_id] - reduction
+            
+            # Award XP or other rewards
+            del self.recovery_games[user_id]
+            
+            return {
+                'success': True,
+                'message': f"✅ **MISSION COMPLETE!**\n\n"
+                          f"Excellent work, soldier! Recovery time reduced.\n"
+                          f"Educational value: {game['educational_value'].replace('_', ' ').title()}\n\n"
+                          f"You may now proceed with your next trade."
+            }
+        else:
+            # Give hint and let them try again
+            game['progress'] += 25
+            
+            if game['progress'] >= 100:
+                # Failed too many times, give answer
+                del self.recovery_games[user_id]
+                return {
+                    'success': False,
+                    'message': f"⚠️ **Mission Failed**\n\n"
+                              f"The correct answer was: {game['answer']}\n"
+                              f"Study this concept: {game['educational_value'].replace('_', ' ').title()}\n\n"
+                              f"Recovery continues normally."
+                }
+            
+            return {
+                'success': False,
+                'message': f"❌ Incorrect. Progress: {game['progress']}/100\n\n"
+                          f"💡 Hint: {game['hint']}\n\n"
+                          f"Try again with `/recovery complete YOUR_ANSWER`"
+            }
+
+
+class TacticalEducationSystem:
+    """Educational system disguised as tactical game mechanics"""
+    
+    def __init__(self):
+        self.education_modules = {
+            'risk_management': {
+                'lessons': [
+                    "Position sizing is ammunition management",
+                    "Stop losses are tactical retreats",
+                    "Portfolio heat is squad stamina"
+                ],
+                'mini_games': [
+                    "Calculate optimal position size",
+                    "Identify overexposure scenarios",
+                    "Risk/reward ratio puzzles"
+                ]
+            },
+            'market_dynamics': {
+                'lessons': [
+                    "Volatility is the battlefield terrain",
+                    "Sessions are combat zones",
+                    "Correlations are squad formations"
+                ],
+                'mini_games': [
+                    "Identify active sessions",
+                    "Spot correlated pairs",
+                    "Volatility pattern recognition"
+                ]
+            },
+            'psychology': {
+                'lessons': [
+                    "Fear is the mind-killer",
+                    "Greed clouds judgment",
+                    "Discipline wins wars"
+                ],
+                'mini_games': [
+                    "Emotional state check-ins",
+                    "Bias identification",
+                    "Decision journaling"
+                ]
+            }
+        }
+    
+    def generate_mission_briefing(self, trade_request: TradeRequest, user_profile: Dict, performance: Dict) -> Dict:
+        """Generate pre-trade briefing with embedded education"""
+        briefing = {
+            'requires_support': False,
+            'support_type': None,
+            'intel': []
+        }
+        
+        # Check various educational triggers
+        if performance.get('recent_losses', 0) >= 3:
+            briefing['requires_support'] = True
+            briefing['support_type'] = 'cooldown_needed'
+            return briefing
+        
+        if trade_request.tcs_score < 75 and performance.get('education_level', 1) < 3:
+            briefing['requires_support'] = True
+            briefing['support_type'] = 'low_confidence'
+            return briefing
+        
+        if user_profile.get('total_exposure_percent', 0) > 5:
+            briefing['requires_support'] = True
+            briefing['support_type'] = 'risk_management'
+            return briefing
+        
+        # Generate tactical intel (educational tips)
+        briefing['intel'] = self._generate_tactical_intel(trade_request, performance)
+        return briefing
+    
+    def _generate_tactical_intel(self, trade_request: TradeRequest, performance: Dict) -> List[str]:
+        """Generate tactical tips based on context"""
+        intel = []
+        
+        # Session-based intel
+        current_hour = datetime.now().hour
+        if 8 <= current_hour <= 9:
+            intel.append("🌍 London session opening - expect volatility")
+        elif 13 <= current_hour <= 14:
+            intel.append("🗽 NY session opening - major moves possible")
+        
+        # Pair-specific intel
+        if 'JPY' in trade_request.symbol:
+            intel.append("🇯🇵 JPY pairs: Remember pip value difference")
+        
+        # Performance-based intel
+        if performance.get('avg_tcs', 75) < 80:
+            intel.append("📊 Consider waiting for TCS > 80 setups")
+        
+        return intel
+    
+    def generate_tactical_debrief(self, trade_request: TradeRequest, result: TradeExecutionResult, performance: Dict) -> str:
+        """Generate post-trade debrief with stealth education"""
+        if not result.success:
+            return ""
+        
+        debrief_parts = []
+        
+        # Analyze the trade setup
+        if trade_request.tcs_score >= 85:
+            debrief_parts.append("📍 **Tactical Analysis:** High-confidence entry executed perfectly")
+        elif trade_request.tcs_score >= 75:
+            debrief_parts.append("📍 **Tactical Analysis:** Standard engagement, textbook execution")
+        else:
+            debrief_parts.append("📍 **Tactical Analysis:** Aggressive entry - monitor closely")
+        
+        # Add performance insight
+        if performance['win_rate'] > 0.6:
+            debrief_parts.append("🎯 Current win rate maintaining tactical advantage")
+        
+        # Random educational tip
+        tips = [
+            "💡 **Squad Tip:** Exit winners at 2R to maintain positive expectancy",
+            "💡 **Squad Tip:** Multiple positions in correlated pairs increase risk",
+            "💡 **Squad Tip:** Best setups often come after patience",
+            "💡 **Squad Tip:** Your stop loss is your friend, not your enemy"
+        ]
+        
+        if random.random() < 0.3:  # 30% chance to show tip
+            debrief_parts.append(random.choice(tips))
+        
+        return "\n".join(debrief_parts) if debrief_parts else ""
+    
+    def calculate_difficulty_adjustment(self, user_id: int, performance: Dict) -> Dict:
+        """Dynamically adjust difficulty based on performance"""
+        base_modifier = 1.0
+        
+        # Make it easier if struggling
+        if performance.get('recent_losses', 0) >= 2:
+            base_modifier = 0.9  # Reduce TCS requirements by 10%
+        elif performance.get('win_rate', 0.5) < 0.4:
+            base_modifier = 0.95
+        
+        # Make it harder if doing too well (push to learn)
+        elif performance.get('win_rate', 0.5) > 0.8:
+            base_modifier = 1.1  # Increase requirements by 10%
+        
+        return {
+            'modifier': base_modifier,
+            'reason': 'performance_based',
+            'applied_silently': True
+        }

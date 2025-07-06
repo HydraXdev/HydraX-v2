@@ -92,15 +92,7 @@ instruments:
       spread_limit: 2.5
       session_hours: ["00:00-09:00", "13:00-22:00"]
       
-  metals:
-    - symbol: "XAUUSD"
-      spread_limit: 5.0
-      session_hours: ["00:00-23:59"]
-      volatility_filter: true
-    - symbol: "XAGUSD"
-      spread_limit: 8.0
-      session_hours: ["00:00-23:59"]
-      
+  
   indices:
     - symbol: "US30"
       spread_limit: 3.0

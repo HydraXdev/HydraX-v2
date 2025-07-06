@@ -312,7 +312,7 @@ class SocialSharingManager:
         blended = tuple(int(c1[i] + (c2[i] - c1[i]) * ratio) for i in range(3))
         return blended
     
-    def _add_branding(self, draw: ImageDraw.Draw, width: int, height: int):
+    def _add_branding(self, draw, width: int, height: int):
         """Add BITTEN branding to card"""
         # Add logo/text in corner
         brand_text = "B.I.T.T.E.N."
@@ -323,7 +323,7 @@ class SocialSharingManager:
         tagline = "Bot-Integrated Tactical Trading Engine"
         draw.text((20, 50), tagline, fill='#888888', font=None)
     
-    def _draw_medal_card(self, draw: ImageDraw.Draw, card: AchievementCard, width: int, height: int):
+    def _draw_medal_card(self, draw, card: AchievementCard, width: int, height: int):
         """Draw medal achievement card"""
         # Medal icon/emoji at center
         medal_y = height // 3
@@ -341,7 +341,7 @@ class SocialSharingManager:
         xp_text = f"+{card.value.get('xp_reward', 0)} XP"
         draw.text((width // 2 - 50, desc_y + 40), xp_text, fill='#f39c12', font=None)
     
-    def _draw_milestone_card(self, draw: ImageDraw.Draw, card: AchievementCard, width: int, height: int):
+    def _draw_milestone_card(self, draw, card: AchievementCard, width: int, height: int):
         """Draw milestone achievement card"""
         # Big number at center
         value_text = str(card.value)
@@ -350,7 +350,7 @@ class SocialSharingManager:
         # Milestone description
         draw.text((width // 2 - 100, height // 2), card.description, fill='white', font=None)
     
-    def _draw_streak_card(self, draw: ImageDraw.Draw, card: AchievementCard, width: int, height: int):
+    def _draw_streak_card(self, draw, card: AchievementCard, width: int, height: int):
         """Draw winning streak card"""
         # Flame emoji and streak count
         streak_text = f"🔥 {card.value} WIN STREAK! 🔥"
@@ -359,7 +359,7 @@ class SocialSharingManager:
         # Motivational text
         draw.text((width // 2 - 80, height // 2), "ON FIRE!", fill='#e74c3c', font=None)
     
-    def _draw_profit_card(self, draw: ImageDraw.Draw, card: AchievementCard, width: int, height: int):
+    def _draw_profit_card(self, draw, card: AchievementCard, width: int, height: int):
         """Draw profit milestone card"""
         # Profit amount
         profit_text = f"${card.value:,.2f}"
@@ -368,7 +368,7 @@ class SocialSharingManager:
         # Label
         draw.text((width // 2 - 100, height // 2), "TOTAL PROFIT", fill='white', font=None)
     
-    def _draw_generic_card(self, draw: ImageDraw.Draw, card: AchievementCard, width: int, height: int):
+    def _draw_generic_card(self, draw, card: AchievementCard, width: int, height: int):
         """Draw generic achievement card"""
         # Title
         draw.text((width // 2 - 100, height // 3), card.title, fill='white', font=None)
@@ -376,7 +376,7 @@ class SocialSharingManager:
         # Description
         draw.text((width // 2 - 150, height // 2), card.description, fill='#cccccc', font=None)
     
-    def _add_user_info(self, draw: ImageDraw.Draw, card: AchievementCard, width: int, height: int):
+    def _add_user_info(self, draw, card: AchievementCard, width: int, height: int):
         """Add user information to card"""
         # User info at bottom
         user_text = f"{card.user_data['avatar']} {card.user_data['username']} | {card.user_data['rank']}"

@@ -58,6 +58,7 @@ class TradingSession:
     daily_pnl_percent: float = 0.0
     last_trade_time: Optional[datetime] = None
     tilt_strikes: int = 0
+    tilt_recovery_wins: int = 0  # Wins needed to clear tilt (requires 2)
     state: TradingState = TradingState.NORMAL
     medic_activated_at: Optional[datetime] = None
     
@@ -221,7 +222,9 @@ class RiskManager:
             else:
                 session.state = TradingState.TILT_WARNING
                 restrictions['tilt_warning'] = True
-                session.tilt_strikes += 1
+                restrictions['tilt_recovery_progress'] = f"{session.tilt_recovery_wins}/2 wins"
+                if session.tilt_strikes == 0:  # First time hitting tilt
+                    session.tilt_strikes += 1
         
         # 3. Check medic mode
         if daily_loss_percent >= profile.medic_mode_threshold:
@@ -291,10 +294,20 @@ class RiskManager:
         if won:
             session.consecutive_wins += 1
             session.consecutive_losses = 0
-            session.tilt_strikes = 0  # Reset tilt on win
+            
+            # Tilt recovery requires 2 wins
+            if session.tilt_strikes > 0:
+                session.tilt_recovery_wins += 1
+                if session.tilt_recovery_wins >= 2:
+                    session.tilt_strikes = 0  # Clear tilt after 2 wins
+                    session.tilt_recovery_wins = 0
+                    logger.info(f"Tilt cleared for user {profile.user_id} after 2 wins")
+            else:
+                session.tilt_recovery_wins = 0  # Reset if not in tilt
         else:
             session.consecutive_losses += 1
             session.consecutive_wins = 0
+            session.tilt_recovery_wins = 0  # Reset recovery progress on loss
         
         # Log significant events
         if session.consecutive_losses >= profile.tilt_threshold:
@@ -738,6 +751,8 @@ class SafetySystemIntegration:
             'daily_pnl': session.daily_pnl,
             'daily_pnl_percent': session.daily_pnl_percent,
             'tilt_strikes': session.tilt_strikes,
+            'tilt_recovery_wins': session.tilt_recovery_wins,
+            'tilt_recovery_needed': 2 if session.tilt_strikes > 0 else 0,
             'current_state': session.state.value,
             'medic_mode': session.state == TradingState.MEDIC_MODE,
             'can_trade': session.state not in [TradingState.TILT_LOCKOUT, TradingState.DAILY_LIMIT_HIT, TradingState.NEWS_LOCKOUT]

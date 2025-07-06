@@ -2,7 +2,7 @@
 
 ## Overview
 
-The BITTEN MT5 Bridge provides file-based communication between the Python BITTEN system and MetaTrader 5 through the `BITTENBridge_HYBRID_v1.2_PRODUCTION.mq5` Expert Advisor.
+The BITTEN MT5 Bridge provides file-based communication between the Python BITTEN system and MetaTrader 5 through the `BITTENBridge.mq5` Expert Advisor.
 
 ## Architecture
 
@@ -22,7 +22,7 @@ MetaTrader 5 Trading
 
 ### 1. Install the EA in MT5
 
-1. Copy `BITTENBridge_HYBRID_v1.2_PRODUCTION.mq5` to your MT5 Experts folder
+1. Copy `BITTENBridge.mq5` to your MT5 Experts folder
 2. Open MT5 and compile the EA (F7)
 3. Attach the EA to any chart (preferably a major pair like EURUSD)
 4. Configure EA settings:
@@ -86,7 +86,7 @@ print(f"Trade result: {result}")
 ### Direct Adapter Usage
 
 ```python
-from bitten_core.mt5_bridge_adapter import get_bridge_adapter
+from mt5_bridge.mt5_bridge_adapter import get_bridge_adapter
 
 # Get adapter instance
 adapter = get_bridge_adapter()

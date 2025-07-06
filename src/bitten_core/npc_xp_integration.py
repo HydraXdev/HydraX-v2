@@ -11,7 +11,16 @@ import random
 import logging
 
 from .xp_celebration_system import XPCelebrationSystem, EventType
-from .psyops.adaptive_bot_system import AdaptiveBotSystem, NPCPersonality
+# Removed references to manipulation systems
+# from .psyops.adaptive_bot_system import AdaptiveBotSystem, NPCPersonality
+from enum import Enum
+
+class NPCPersonality(Enum):
+    """Basic NPC personalities for positive interaction"""
+    DRILL_INSTRUCTOR = "drill_instructor"
+    TACTICAL_ANALYST = "tactical_analyst"
+    PSYCHOLOGIST = "psychologist"
+    MYSTERIOUS_INSIDER = "mysterious_insider"
 from .xp_integration import XPIntegrationManager
 
 logger = logging.getLogger(__name__)
@@ -81,8 +90,7 @@ class NPCXPIntegration:
         }
     }
     
-    def __init__(self, bot_system: AdaptiveBotSystem, celebration_system: XPCelebrationSystem):
-        self.bot_system = bot_system
+    def __init__(self, celebration_system: XPCelebrationSystem):
         self.celebration_system = celebration_system
         self.user_moods = {}  # Track mood per user
         self.last_interactions = {}  # Prevent spam
@@ -476,11 +484,8 @@ class NPCXPIntegration:
 
 # Example usage
 if __name__ == "__main__":
-    from psyops.adaptive_bot_system import AdaptiveBotSystem
-    
-    bot_system = AdaptiveBotSystem()
     celebration_system = XPCelebrationSystem()
-    npc_integration = NPCXPIntegration(bot_system, celebration_system)
+    npc_integration = NPCXPIntegration(celebration_system)
     
     # Simulate a trade win
     user_data = {

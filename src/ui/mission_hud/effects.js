@@ -295,6 +295,96 @@ export class MissionHUDEffects {
     }
     
     // Audio effects
+    playCashRegisterSound(intensity = 1.0) {
+        if (!this.audioContext || this.isReducedMotion) return;
+        
+        const now = this.audioContext.currentTime;
+        
+        // Bell sound (ka-ching!)
+        const bellOsc = this.audioContext.createOscillator();
+        const bellGain = this.audioContext.createGain();
+        bellOsc.frequency.setValueAtTime(2800, now);
+        bellOsc.frequency.exponentialRampToValueAtTime(2400, now + 0.1);
+        bellGain.gain.setValueAtTime(0.8 * intensity, now);
+        bellGain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+        
+        bellOsc.connect(bellGain);
+        bellGain.connect(this.audioContext.destination);
+        bellOsc.start(now);
+        bellOsc.stop(now + 0.3);
+        
+        // Coin sounds
+        for (let i = 0; i < 5; i++) {
+            const coinOsc = this.audioContext.createOscillator();
+            const coinGain = this.audioContext.createGain();
+            const coinFreq = 4000 + Math.random() * 500;
+            const startTime = now + (i * 0.05);
+            
+            coinOsc.frequency.setValueAtTime(coinFreq, startTime);
+            coinGain.gain.setValueAtTime(0.6 * intensity, startTime);
+            coinGain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.03);
+            
+            coinOsc.connect(coinGain);
+            coinGain.connect(this.audioContext.destination);
+            coinOsc.start(startTime);
+            coinOsc.stop(startTime + 0.03);
+        }
+        
+        // Cash drawer sound
+        const drawerOsc = this.audioContext.createOscillator();
+        const drawerGain = this.audioContext.createGain();
+        const drawerFilter = this.audioContext.createBiquadFilter();
+        
+        drawerOsc.type = 'sawtooth';
+        drawerOsc.frequency.setValueAtTime(150, now);
+        drawerFilter.type = 'lowpass';
+        drawerFilter.frequency.setValueAtTime(400, now);
+        drawerGain.gain.setValueAtTime(0.4 * intensity, now);
+        drawerGain.gain.linearRampToValueAtTime(0, now + 0.2);
+        
+        drawerOsc.connect(drawerFilter);
+        drawerFilter.connect(drawerGain);
+        drawerGain.connect(this.audioContext.destination);
+        drawerOsc.start(now);
+        drawerOsc.stop(now + 0.2);
+    }
+    
+    playTPHitSound() {
+        if (!this.audioContext || this.isReducedMotion) return;
+        
+        const now = this.audioContext.currentTime;
+        
+        // Rising sweep
+        const sweepOsc = this.audioContext.createOscillator();
+        const sweepGain = this.audioContext.createGain();
+        sweepOsc.frequency.setValueAtTime(400, now);
+        sweepOsc.frequency.exponentialRampToValueAtTime(800, now + 0.2);
+        sweepGain.gain.setValueAtTime(0.5, now);
+        sweepGain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+        
+        sweepOsc.connect(sweepGain);
+        sweepGain.connect(this.audioContext.destination);
+        sweepOsc.start(now);
+        sweepOsc.stop(now + 0.3);
+        
+        // Success chord (C major)
+        const chordFreqs = [523, 659, 784, 1047]; // C5, E5, G5, C6
+        chordFreqs.forEach((freq, i) => {
+            const osc = this.audioContext.createOscillator();
+            const gain = this.audioContext.createGain();
+            const startTime = now + 0.2 + (i * 0.05);
+            
+            osc.frequency.setValueAtTime(freq, startTime);
+            gain.gain.setValueAtTime(0.3, startTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.5);
+            
+            osc.connect(gain);
+            gain.connect(this.audioContext.destination);
+            osc.start(startTime);
+            osc.stop(startTime + 0.5);
+        });
+    }
+    
     playGlitchSound(tier) {
         if (!this.audioContext || this.isReducedMotion) return;
         

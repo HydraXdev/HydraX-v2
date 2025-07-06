@@ -8,7 +8,11 @@ import hashlib
 from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass
 from datetime import datetime
-from PIL import Image, ImageDraw, ImageFont
+try:
+    from PIL import Image, ImageDraw, ImageFont
+    PIL_AVAILABLE = True
+except ImportError:
+    PIL_AVAILABLE = False
 import io
 
 @dataclass
@@ -134,6 +138,10 @@ class SocialSharingManager:
     
     def generate_card_image(self, card: AchievementCard) -> bytes:
         """Generate visual achievement card image"""
+        if not PIL_AVAILABLE:
+            # Return empty bytes if PIL not available
+            return b'CARD_IMAGE_PLACEHOLDER'
+        
         # Get template settings
         width, height = card.visual_style['size']
         
@@ -276,7 +284,7 @@ class SocialSharingManager:
         
         return card_data
     
-    def _apply_gradient(self, img: Image.Image, draw: ImageDraw.Draw, gradient_name: str):
+    def _apply_gradient(self, img, draw, gradient_name: str):
         """Apply gradient background to image"""
         colors = self.visual_elements['gradients'].get(gradient_name, ['#000000', '#333333'])
         width, height = img.size

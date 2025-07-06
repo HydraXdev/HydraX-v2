@@ -10,11 +10,25 @@ from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 import json
+from enum import Enum
 
 from .risk_management import TradeManagementPlan, TradeManagementFeature, RiskProfile
 from .mt5_bridge_adapter import get_bridge_adapter
 
 logger = logging.getLogger(__name__)
+
+class ExitType(Enum):
+    """Types of trade exits for XP tracking"""
+    MANUAL = "manual"  # Regular manual exit
+    STOP_LOSS = "stop_loss"  # Hit stop loss
+    TAKE_PROFIT = "take_profit"  # Hit take profit
+    PARACHUTE = "parachute"  # Emergency exit with no XP penalty
+    CHAINGUN = "chaingun"  # Rapid fire exit mode
+    PROFIT_RUNNER = "profit_runner"  # Partial exit from runner mode
+    TRAILING_STOP = "trailing_stop"  # Exit via trailing stop
+    EMERGENCY = "emergency"  # Approved emergency exit
+    BREAKEVEN = "breakeven"  # Exit at breakeven
+    TIME_BASED = "time_based"  # Exit based on time rules
 
 @dataclass
 class ActiveTrade:
@@ -39,6 +53,15 @@ class ActiveTrade:
     last_trail_price: float = 0
     peak_price: float = 0  # Highest/lowest price reached
     current_pnl_pips: float = 0
+    
+    # Exit tracking
+    exit_type: Optional[ExitType] = None
+    exit_time: Optional[datetime] = None
+    exit_price: Optional[float] = None
+    exit_pnl_pips: Optional[float] = None
+    parachute_activated: bool = False
+    emergency_approved: bool = False
+    chaingun_mode: bool = False
     
     def update_pnl(self, current_price: float, pip_value: float):
         """Update current P&L in pips"""
@@ -78,6 +101,9 @@ class TradeManager:
         # Notifications queue for UI updates
         self.notifications = []
         
+        # Exit history for XP tracking
+        self.exit_history: List[Dict] = []
+        
     def add_trade(self, trade: ActiveTrade):
         """Add a trade to be managed"""
         self.active_trades[trade.trade_id] = trade
@@ -92,8 +118,30 @@ class TradeManager:
     def remove_trade(self, trade_id: str):
         """Remove a trade from management"""
         if trade_id in self.active_trades:
+            trade = self.active_trades[trade_id]
+            # Store exit data for XP tracking
+            exit_data = self.get_exit_data_for_xp(trade)
+            self.exit_history.append(exit_data)
+            
             del self.active_trades[trade_id]
             logger.info(f"Removed trade {trade_id} from management")
+            
+            # Send exit data to XP system (would be async in production)
+            self._send_exit_to_xp_system(exit_data)
+    
+    def _send_exit_to_xp_system(self, exit_data: Dict):
+        """Send exit data to XP calculation system"""
+        # In production, this would send to the XP microservice
+        logger.info(f"Sending exit data to XP system: {exit_data['trade_id']} - "
+                   f"Exit type: {exit_data['exit_type']}, "
+                   f"P&L: {exit_data['pnl_pips']:.1f} pips, "
+                   f"No XP penalty: {exit_data['no_xp_penalty']}")
+    
+    def get_exit_history(self, user_id: Optional[int] = None) -> List[Dict]:
+        """Get exit history, optionally filtered by user"""
+        if user_id:
+            return [exit for exit in self.exit_history if exit['user_id'] == user_id]
+        return self.exit_history.copy()
     
     async def start_monitoring(self):
         """Start the trade monitoring loop"""
@@ -160,9 +208,14 @@ class TradeManager:
         # Update P&L
         trade.update_pnl(current_price, pip_value)
         
-        # Check each management plan
-        for plan in trade.management_plans:
-            await self._execute_plan(trade, plan, current_price, pip_value)
+        # Check exit conditions first
+        await self.check_exit_conditions(trade, current_price)
+        
+        # If trade is still active, apply management plans
+        if trade.trade_id in self.active_trades:
+            # Check each management plan
+            for plan in trade.management_plans:
+                await self._execute_plan(trade, plan, current_price, pip_value)
     
     async def _execute_plan(self, trade: ActiveTrade, plan: TradeManagementPlan, 
                            current_price: float, pip_value: float):
@@ -202,20 +255,23 @@ class TradeManager:
               trade.current_pnl_pips >= plan.partial_close_at_pips):
             
             if trade.partial_closed < plan.partial_close_percent:
-                await self._partial_close(trade, plan.partial_close_percent)
+                # Use profit runner exit for runner mode
+                await self.execute_profit_runner_exit(trade.trade_id, plan.partial_close_percent)
                 # Move to breakeven after partial close
-                await self._move_to_breakeven(trade, 0)
-                trade.is_breakeven = True
+                if trade.trade_id in self.active_trades:  # Check if still active
+                    await self._move_to_breakeven(trade, 0)
+                    trade.is_breakeven = True
             
         # Zero Risk Runner
         elif (plan.feature == TradeManagementFeature.ZERO_RISK_RUNNER and 
               trade.current_pnl_pips >= plan.partial_close_at_pips):
             
             if trade.partial_closed < plan.partial_close_percent:
-                await self._partial_close(trade, plan.partial_close_percent)
-                await self._move_to_breakeven(trade, plan.breakeven_plus_pips)
-                trade.is_breakeven = True
-                self._notify(f"🎯 ZERO RISK ACTIVATED on {trade.symbol}! Running risk-free to the moon! 🚀")
+                await self.execute_profit_runner_exit(trade.trade_id, plan.partial_close_percent)
+                if trade.trade_id in self.active_trades:  # Check if still active
+                    await self._move_to_breakeven(trade, plan.breakeven_plus_pips)
+                    trade.is_breakeven = True
+                    self._notify(f"🎯 ZERO RISK ACTIVATED on {trade.symbol}! Running risk-free to the moon! 🚀")
             
         # Leroy Jenkins Mode
         elif plan.feature == TradeManagementFeature.LEROY_JENKINS:
@@ -311,15 +367,167 @@ class TradeManager:
         # For now, simulate success
         return True
     
-    def _notify(self, message: str):
-        """Add notification for UI"""
+    def _notify(self, message: str, sound_type: Optional[str] = None, event_type: Optional[str] = None):
+        """Add notification for UI with optional sound"""
+        from .user_settings import should_play_sound
+        
         notification = {
             'timestamp': datetime.now().isoformat(),
             'message': message,
-            'type': 'trade_management'
+            'type': 'trade_management',
+            'event_type': event_type or 'general'
         }
+        
+        # Check if sound should be played
+        if sound_type and hasattr(self, 'user_id'):
+            should_play = should_play_sound(str(self.user_id), sound_type)
+            notification['play_sound'] = sound_type if should_play else None
+        
         self.notifications.append(notification)
         logger.info(f"Notification: {message}")
+    
+    async def activate_parachute_exit(self, trade_id: str) -> bool:
+        """
+        Activate parachute exit protocol - immediate exit with no XP penalty
+        Used for emergency situations where trader needs to exit quickly
+        """
+        trade = self.active_trades.get(trade_id)
+        if not trade:
+            return False
+        
+        trade.parachute_activated = True
+        trade.exit_type = ExitType.PARACHUTE
+        
+        # Close the entire position immediately
+        result = await self._close_full_position(trade)
+        if result:
+            trade.exit_time = datetime.now()
+            trade.exit_price = self.current_prices.get(trade.symbol, trade.entry_price)
+            trade.exit_pnl_pips = trade.current_pnl_pips
+            
+            self._notify(f"🪂 PARACHUTE EXIT on {trade.symbol}! Position closed at {trade.current_pnl_pips:.1f} pips (NO XP PENALTY)")
+            self.remove_trade(trade_id)
+            
+        return result
+    
+    async def activate_chaingun_mode(self, trade_id: str, exit_percent: float = 10.0) -> bool:
+        """
+        Activate chaingun fire mode - rapid partial exits
+        Allows multiple quick exits without waiting
+        """
+        trade = self.active_trades.get(trade_id)
+        if not trade:
+            return False
+        
+        trade.chaingun_mode = True
+        trade.exit_type = ExitType.CHAINGUN
+        
+        # Execute rapid partial close
+        if trade.volume * (exit_percent / 100) >= 0.01:  # Check minimum lot
+            result = await self._partial_close(trade, exit_percent)
+            if result:
+                self._notify(f"🔫 CHAINGUN EXIT! Closed {exit_percent}% of {trade.symbol} - RAT-TAT-TAT!")
+                
+                # If fully closed, remove from management
+                if trade.partial_closed >= 100:
+                    trade.exit_time = datetime.now()
+                    trade.exit_price = self.current_prices.get(trade.symbol, trade.entry_price)
+                    trade.exit_pnl_pips = trade.current_pnl_pips
+                    self.remove_trade(trade_id)
+            
+            return result
+        
+        return False
+    
+    async def execute_profit_runner_exit(self, trade_id: str, exit_percent: float) -> bool:
+        """
+        Execute profit runner partial exit
+        Used when runner mode triggers partial close
+        """
+        trade = self.active_trades.get(trade_id)
+        if not trade:
+            return False
+        
+        trade.exit_type = ExitType.PROFIT_RUNNER
+        
+        result = await self._partial_close(trade, exit_percent)
+        if result:
+            self._notify(f"🏃 PROFIT RUNNER EXIT! Secured {exit_percent}% of {trade.symbol} at {trade.current_pnl_pips:.1f} pips!")
+            
+            # Track partial exit
+            if trade.partial_closed >= 100:
+                trade.exit_time = datetime.now()
+                trade.exit_price = self.current_prices.get(trade.symbol, trade.entry_price)
+                trade.exit_pnl_pips = trade.current_pnl_pips
+                self.remove_trade(trade_id)
+        
+        return result
+    
+    async def execute_trailing_stop_exit(self, trade_id: str) -> bool:
+        """
+        Execute exit via trailing stop hit
+        """
+        trade = self.active_trades.get(trade_id)
+        if not trade:
+            return False
+        
+        trade.exit_type = ExitType.TRAILING_STOP
+        trade.exit_time = datetime.now()
+        trade.exit_price = trade.current_sl  # Exit at stop price
+        
+        # Calculate exit P&L
+        pip_value = self.symbol_specs.get(trade.symbol, {}).get('pip_value', 0.0001)
+        if trade.direction == "BUY":
+            trade.exit_pnl_pips = (trade.exit_price - trade.entry_price) / pip_value
+        else:
+            trade.exit_pnl_pips = (trade.entry_price - trade.exit_price) / pip_value
+        
+        result = await self._close_full_position(trade)
+        if result:
+            self._notify(f"📈 TRAILING STOP EXIT on {trade.symbol}! Closed at {trade.exit_pnl_pips:.1f} pips profit!")
+            self.remove_trade(trade_id)
+        
+        return result
+    
+    async def approve_emergency_exit(self, trade_id: str, approval_code: str) -> bool:
+        """
+        Approve emergency exit with special authorization
+        Requires approval code from risk management system
+        """
+        trade = self.active_trades.get(trade_id)
+        if not trade:
+            return False
+        
+        # Verify approval code (would check against risk system in production)
+        if approval_code.startswith("EMRG-"):
+            trade.emergency_approved = True
+            trade.exit_type = ExitType.EMERGENCY
+            
+            result = await self._close_full_position(trade)
+            if result:
+                trade.exit_time = datetime.now()
+                trade.exit_price = self.current_prices.get(trade.symbol, trade.entry_price)
+                trade.exit_pnl_pips = trade.current_pnl_pips
+                
+                self._notify(f"🚨 EMERGENCY EXIT APPROVED on {trade.symbol}! Position closed at {trade.exit_pnl_pips:.1f} pips")
+                self.remove_trade(trade_id)
+            
+            return result
+        
+        return False
+    
+    async def _close_full_position(self, trade: ActiveTrade) -> bool:
+        """Close entire position"""
+        instruction = {
+            'action': 'close',
+            'ticket': trade.ticket,
+            'volume': trade.volume
+        }
+        
+        logger.info(f"Closing full position for {trade.ticket}")
+        
+        # For now, simulate success
+        return True
     
     def get_trade_status(self, trade_id: str) -> Optional[Dict]:
         """Get current status of a managed trade"""
@@ -345,8 +553,91 @@ class TradeManager:
             'is_trailing': trade.is_trailing,
             'partial_closed': trade.partial_closed,
             'peak_pips': abs(trade.peak_price - trade.entry_price) / pip_value if trade.peak_price else 0,
-            'active_features': [plan.feature.value for plan in trade.management_plans]
+            'active_features': [plan.feature.value for plan in trade.management_plans],
+            'exit_type': trade.exit_type.value if trade.exit_type else None,
+            'parachute_activated': trade.parachute_activated,
+            'emergency_approved': trade.emergency_approved,
+            'chaingun_mode': trade.chaingun_mode
         }
+    
+    def get_exit_data_for_xp(self, trade: ActiveTrade) -> Dict:
+        """
+        Get exit data formatted for XP system
+        Returns data needed to calculate XP impact
+        """
+        pip_value = self.symbol_specs.get(trade.symbol, {}).get('pip_value', 0.0001)
+        
+        return {
+            'trade_id': trade.trade_id,
+            'user_id': trade.user_id,
+            'symbol': trade.symbol,
+            'exit_type': trade.exit_type.value if trade.exit_type else ExitType.MANUAL.value,
+            'exit_time': trade.exit_time.isoformat() if trade.exit_time else datetime.now().isoformat(),
+            'entry_price': trade.entry_price,
+            'exit_price': trade.exit_price or self.current_prices.get(trade.symbol, trade.entry_price),
+            'pnl_pips': trade.exit_pnl_pips or trade.current_pnl_pips,
+            'volume': trade.volume,
+            'duration_minutes': (trade.exit_time - trade.open_time).total_seconds() / 60 if trade.exit_time else 0,
+            'peak_pips': abs(trade.peak_price - trade.entry_price) / pip_value if trade.peak_price else 0,
+            'partial_closed_percent': trade.partial_closed,
+            'hit_breakeven': trade.is_breakeven,
+            'used_trailing': trade.is_trailing,
+            'no_xp_penalty': trade.exit_type in [ExitType.PARACHUTE, ExitType.EMERGENCY] if trade.exit_type else False
+        }
+    
+    async def check_exit_conditions(self, trade: ActiveTrade, current_price: float):
+        """
+        Check if any automatic exit conditions are met
+        Called during the monitoring loop
+        """
+        pip_value = self.symbol_specs.get(trade.symbol, {}).get('pip_value', 0.0001)
+        
+        # Check if trailing stop is hit
+        if trade.is_trailing:
+            if trade.direction == "BUY" and current_price <= trade.current_sl:
+                await self.execute_trailing_stop_exit(trade.trade_id)
+            elif trade.direction == "SELL" and current_price >= trade.current_sl:
+                await self.execute_trailing_stop_exit(trade.trade_id)
+        
+        # Check if regular stop loss is hit
+        elif not trade.parachute_activated and not trade.emergency_approved:
+            if trade.direction == "BUY" and current_price <= trade.current_sl:
+                trade.exit_type = ExitType.STOP_LOSS
+                trade.exit_time = datetime.now()
+                trade.exit_price = trade.current_sl
+                trade.exit_pnl_pips = (trade.exit_price - trade.entry_price) / pip_value
+                await self._close_full_position(trade)
+                self._notify(f"❌ STOP LOSS HIT on {trade.symbol} at {trade.exit_pnl_pips:.1f} pips loss")
+                self.remove_trade(trade.trade_id)
+            elif trade.direction == "SELL" and current_price >= trade.current_sl:
+                trade.exit_type = ExitType.STOP_LOSS
+                trade.exit_time = datetime.now()
+                trade.exit_price = trade.current_sl
+                trade.exit_pnl_pips = (trade.entry_price - trade.exit_price) / pip_value
+                await self._close_full_position(trade)
+                self._notify(f"❌ STOP LOSS HIT on {trade.symbol} at {trade.exit_pnl_pips:.1f} pips loss")
+                self.remove_trade(trade.trade_id)
+        
+        # Check if take profit is hit
+        if trade.current_tp > 0:
+            if trade.direction == "BUY" and current_price >= trade.current_tp:
+                trade.exit_type = ExitType.TAKE_PROFIT
+                trade.exit_time = datetime.now()
+                trade.exit_price = trade.current_tp
+                trade.exit_pnl_pips = (trade.exit_price - trade.entry_price) / pip_value
+                await self._close_full_position(trade)
+                self._notify(f"🎯 TAKE PROFIT HIT on {trade.symbol} at {trade.exit_pnl_pips:.1f} pips profit!", 
+                           sound_type="cash_register", event_type="tp_hit")
+                self.remove_trade(trade.trade_id)
+            elif trade.direction == "SELL" and current_price <= trade.current_tp:
+                trade.exit_type = ExitType.TAKE_PROFIT
+                trade.exit_time = datetime.now()
+                trade.exit_price = trade.current_tp
+                trade.exit_pnl_pips = (trade.entry_price - trade.exit_price) / pip_value
+                await self._close_full_position(trade)
+                self._notify(f"🎯 TAKE PROFIT HIT on {trade.symbol} at {trade.exit_pnl_pips:.1f} pips profit!", 
+                           sound_type="cash_register", event_type="tp_hit")
+                self.remove_trade(trade.trade_id)
 
 
 # Example usage

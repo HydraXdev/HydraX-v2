@@ -55,6 +55,7 @@ class TradeExecutionResult:
 class TradingPairs:
     """Supported trading pairs with specifications"""
     PAIRS = {
+        # Core pairs - standard tier requirements
         'GBPUSD': {
             'pip_value': 0.0001,
             'min_volume': 0.01,
@@ -94,6 +95,63 @@ class TradingPairs:
             'spread_limit': 2.5,
             'session_hours': ['00:00-09:00', '13:00-22:00'],
             'volatility_filter': True
+        },
+        # Extra pairs - require 85% minimum TCS
+        'AUDUSD': {
+            'pip_value': 0.0001,
+            'min_volume': 0.01,
+            'max_volume': 100.0,
+            'spread_limit': 3.0,
+            'session_hours': ['00:00-09:00'],
+            'volatility_filter': True
+        },
+        'NZDUSD': {
+            'pip_value': 0.0001,
+            'min_volume': 0.01,
+            'max_volume': 100.0,
+            'spread_limit': 3.5,
+            'session_hours': ['00:00-09:00'],
+            'volatility_filter': True
+        },
+        'AUDJPY': {
+            'pip_value': 0.01,
+            'min_volume': 0.01,
+            'max_volume': 100.0,
+            'spread_limit': 4.0,
+            'session_hours': ['00:00-09:00'],
+            'volatility_filter': True
+        },
+        'EURJPY': {
+            'pip_value': 0.01,
+            'min_volume': 0.01,
+            'max_volume': 100.0,
+            'spread_limit': 3.5,
+            'session_hours': ['08:00-17:00'],
+            'volatility_filter': True
+        },
+        'EURGBP': {
+            'pip_value': 0.0001,
+            'min_volume': 0.01,
+            'max_volume': 100.0,
+            'spread_limit': 3.0,
+            'session_hours': ['08:00-17:00'],
+            'volatility_filter': True
+        },
+        'GBPCHF': {
+            'pip_value': 0.0001,
+            'min_volume': 0.01,
+            'max_volume': 100.0,
+            'spread_limit': 4.0,
+            'session_hours': ['08:00-17:00'],
+            'volatility_filter': True
+        },
+        'USDCHF': {
+            'pip_value': 0.0001,
+            'min_volume': 0.01,
+            'max_volume': 100.0,
+            'spread_limit': 3.0,
+            'session_hours': ['08:00-17:00', '13:00-22:00'],
+            'volatility_filter': True
         }
     }
 
@@ -128,6 +186,10 @@ class FireRouter:
         
         # User tier mapping (would come from database in production)
         self.user_tiers = {}  # user_id -> TierLevel
+        self.last_shot_time = {}  # user_id -> datetime
+        
+        # Bit mode decision tracking
+        self.pending_bit_decisions = {}  # decision_id -> trade_request
         
         # Bot personalities for UI responses
         self.bot_responses = {
@@ -160,6 +222,48 @@ class FireRouter:
             # Build user profile for validation
             user_profile = self._build_user_profile(trade_request.user_id)
             
+            # Integrate Uncertainty & Control Interplay System
+            from .uncertainty_control_system import UncertaintyControlSystem, ControlMode, BitModeDecision
+            uncertainty_system = UncertaintyControlSystem()
+            
+            # Check if user is in Bit Mode (requires YES/NO confirmation)
+            if uncertainty_system.current_mode == ControlMode.BIT_MODE:
+                # Create binary decision point
+                context = f"trade_entry"
+                trade_data = {
+                    'symbol': trade_request.symbol,
+                    'direction': trade_request.direction.value,
+                    'volume': trade_request.volume,
+                    'tcs_score': trade_request.tcs_score
+                }
+                
+                decision = uncertainty_system.activate_bit_mode(context, None)
+                
+                # Store decision and trade request for later processing
+                self.pending_bit_decisions[decision.decision_id] = trade_request
+                
+                # Return decision request instead of executing immediately
+                return TradeExecutionResult(
+                    success=False,
+                    message=f"🤖 **BIT MODE ACTIVE**\n\n{decision.question}\n\n**Trade Details:**\n📊 {trade_request.symbol} {trade_request.direction.value.upper()}\n💰 Volume: {trade_request.volume}\n🎯 TCS: {trade_request.tcs_score}\n\n*Respond with `/yes {decision.decision_id}` or `/no {decision.decision_id}`*",
+                    error_code="BIT_MODE_CONFIRMATION_REQUIRED",
+                    trade_id=decision.decision_id  # Store decision ID for later processing
+                )
+            
+            # Apply uncertainty injection for other modes
+            decision_point = {
+                'symbol': trade_request.symbol,
+                'tcs_score': trade_request.tcs_score,
+                'fire_mode': trade_request.fire_mode.value,
+                'confidence_score': trade_request.tcs_score / 100
+            }
+            modified_decision = uncertainty_system.inject_uncertainty(decision_point)
+            
+            # Apply uncertainty modifications
+            if modified_decision.get('artificial_delay'):
+                import time
+                time.sleep(min(modified_decision['artificial_delay'], 30))
+                
             # Run comprehensive fire mode validation
             from .fire_mode_validator import validate_fire_request, apply_trade_mutations
             
@@ -171,6 +275,22 @@ class FireRouter:
                 'volume': trade_request.volume,
                 'signal_type': 'arcade'  # Would come from signal analyzer
             }
+            
+            # Apply Stealth Mode mutations if active
+            if uncertainty_system.current_mode == ControlMode.STEALTH_MODE:
+                base_algorithm = {
+                    'entry_delay': trade_payload.get('entry_delay', 0),
+                    'size_multiplier': 1.0,
+                    'tp_multiplier': 1.0
+                }
+                modified_algorithm = uncertainty_system.activate_stealth_mode(base_algorithm)
+                
+                if modified_algorithm.get('stealth_applied'):
+                    # Apply stealth variations
+                    if 'entry_delay' in modified_algorithm:
+                        trade_payload['entry_delay'] = modified_algorithm['entry_delay']
+                    if modified_algorithm.get('size_multiplier', 1.0) != 1.0:
+                        trade_request.volume *= modified_algorithm['size_multiplier']
             
             fire_validation = validate_fire_request(trade_payload, str(trade_request.user_id), user_profile)
             
@@ -241,6 +361,16 @@ class FireRouter:
                 # Log successful trade
                 self._log_successful_trade(trade_request, execution_result)
                 self.daily_trade_count += 1
+                
+                # Generate Gemini comparison if in Gemini mode
+                if uncertainty_system.current_mode == ControlMode.GEMINI_MODE:
+                    trading_scenario = {
+                        'description': f"{trade_request.symbol} {trade_request.direction.value.upper()} trade",
+                        'tcs_score': trade_request.tcs_score,
+                        'volume': trade_request.volume
+                    }
+                    gemini_challenge = uncertainty_system.generate_gemini_challenge(trading_scenario)
+                    execution_result.message += f"\n\n🤖 **GEMINI CHALLENGE**\nGemini Action: {gemini_challenge.gemini_action}\nGemini Confidence: {gemini_challenge.gemini_confidence:.0%}\n💭 {gemini_challenge.psychological_impact}"
                 
                 # Create success message with details
                 success_msg = self._format_success_message(trade_request, execution_result)
@@ -733,3 +863,148 @@ class FireRouter:
         }
         
         return profile
+    
+    def process_bit_mode_confirmation(self, decision_id: str, choice: bool, user_id: int) -> TradeExecutionResult:
+        """Process user's YES/NO confirmation for bit mode"""
+        try:
+            # Check if decision exists
+            if decision_id not in self.pending_bit_decisions:
+                return TradeExecutionResult(
+                    success=False,
+                    message="❌ Decision not found or expired",
+                    error_code="DECISION_NOT_FOUND"
+                )
+            
+            # Get the original trade request
+            trade_request = self.pending_bit_decisions[decision_id]
+            
+            # Verify user owns this decision
+            if trade_request.user_id != user_id:
+                return TradeExecutionResult(
+                    success=False,
+                    message="❌ Unauthorized decision access",
+                    error_code="UNAUTHORIZED"
+                )
+            
+            # Initialize uncertainty system
+            from .uncertainty_control_system import UncertaintyControlSystem
+            uncertainty_system = UncertaintyControlSystem()
+            
+            # Process the bit decision
+            decision_result = uncertainty_system.process_bit_decision(decision_id, choice, user_id)
+            
+            if not decision_result['success']:
+                return TradeExecutionResult(
+                    success=False,
+                    message=f"❌ {decision_result.get('error', 'Decision processing failed')}",
+                    error_code="DECISION_FAILED"
+                )
+            
+            # Clean up pending decision
+            del self.pending_bit_decisions[decision_id]
+            
+            if choice:  # YES - execute the trade
+                # Continue with normal trade execution
+                result = self.execute_trade(trade_request)
+                
+                # Add bit response
+                bit_response = decision_result.get('bit_response', '')
+                if bit_response:
+                    result.message += f"\n\n🤖 **BIT:** {bit_response}"
+                
+                return result
+            else:  # NO - cancel the trade
+                bit_response = decision_result.get('bit_response', '')
+                return TradeExecutionResult(
+                    success=False,
+                    message=f"🛑 **Trade Cancelled**\n\nYou chose not to execute the {trade_request.symbol} {trade_request.direction.value.upper()} trade.\n\n🤖 **BIT:** {bit_response}",
+                    error_code="USER_CANCELLED"
+                )
+                
+        except Exception as e:
+            return TradeExecutionResult(
+                success=False,
+                message=f"❌ Error processing confirmation: {str(e)}",
+                error_code="CONFIRMATION_ERROR"
+            )
+    
+    def set_uncertainty_mode(self, user_id: int, mode: str) -> Dict[str, Any]:
+        """Set user's uncertainty control mode"""
+        try:
+            from .uncertainty_control_system import UncertaintyControlSystem, ControlMode
+            uncertainty_system = UncertaintyControlSystem()
+            
+            # Map string to enum
+            mode_mapping = {
+                'full_control': ControlMode.FULL_CONTROL,
+                'bit_mode': ControlMode.BIT_MODE,
+                'stealth_mode': ControlMode.STEALTH_MODE,
+                'gemini_mode': ControlMode.GEMINI_MODE,
+                'chaos_mode': ControlMode.CHAOS_MODE
+            }
+            
+            if mode not in mode_mapping:
+                return {
+                    'success': False,
+                    'message': f"❌ Invalid mode: {mode}. Available: {', '.join(mode_mapping.keys())}"
+                }
+            
+            control_mode = mode_mapping[mode]
+            result = uncertainty_system.set_control_mode(control_mode, user_id)
+            
+            return {
+                'success': True,
+                'message': f"🎮 **Control Mode Changed**\n\n{result['response']}\n\n**New Mode:** {mode.replace('_', ' ').title()}",
+                'mode': mode,
+                'psychological_profile': result.get('psychological_profile', {})
+            }
+            
+        except Exception as e:
+            return {
+                'success': False,
+                'message': f"❌ Error setting mode: {str(e)}"
+            }
+    
+    def get_uncertainty_status(self, user_id: int) -> Dict[str, Any]:
+        """Get current uncertainty system status"""
+        try:
+            from .uncertainty_control_system import UncertaintyControlSystem
+            uncertainty_system = UncertaintyControlSystem()
+            
+            status = uncertainty_system.get_system_status()
+            
+            # Format status message
+            mode_descriptions = {
+                'full_control': '🎯 **Full Control** - You have complete command authority',
+                'bit_mode': '🤖 **Bit Mode** - Binary YES/NO confirmation system',
+                'stealth_mode': '👻 **Stealth Mode** - Hidden algorithm variations',
+                'gemini_mode': '⚡ **Gemini Mode** - AI competitor tension',
+                'chaos_mode': '🌪️ **Chaos Mode** - Maximum uncertainty injection'
+            }
+            
+            current_mode = status['current_mode']
+            description = mode_descriptions.get(current_mode, 'Unknown mode')
+            
+            message = f"🎮 **Uncertainty & Control Status**\n\n{description}\n\n"
+            message += f"**Uncertainty Level:** {status['uncertainty_level'].title()}\n"
+            message += f"**Pending Decisions:** {status['pending_decisions']}\n"
+            message += f"**Gemini Comparisons:** {status['gemini_comparisons']}\n\n"
+            
+            profile = status.get('psychological_profile', {})
+            if profile:
+                message += f"**Psychological Profile:**\n"
+                message += f"• Control Preference: {profile.get('control_preference', 0.5):.1%}\n"
+                message += f"• Decision Anxiety: {profile.get('decision_anxiety', 0.5):.1%}\n"
+                message += f"• Gemini Win Rate: {profile.get('gemini_win_rate', 0.0):.1%}\n"
+            
+            return {
+                'success': True,
+                'message': message,
+                'status': status
+            }
+            
+        except Exception as e:
+            return {
+                'success': False,
+                'message': f"❌ Error getting status: {str(e)}"
+            }

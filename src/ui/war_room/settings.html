@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BITTEN Settings - War Room</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #0a0a0a;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .settings-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #00ff00;
+            padding-bottom: 20px;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px #00ff00;
+        }
+        
+        .section {
+            background: rgba(0, 255, 0, 0.05);
+            border: 1px solid #00ff00;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #00ff00, transparent);
+            animation: scan 3s linear infinite;
+        }
+        
+        @keyframes scan {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section-icon {
+            font-size: 24px;
+        }
+        
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(0, 255, 0, 0.2);
+        }
+        
+        .setting-item:last-child {
+            border-bottom: none;
+        }
+        
+        .setting-label {
+            flex: 1;
+            font-size: 14px;
+        }
+        
+        .setting-description {
+            font-size: 12px;
+            color: rgba(0, 255, 0, 0.7);
+            margin-top: 4px;
+        }
+        
+        /* Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 24px;
+            background: rgba(255, 0, 0, 0.3);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid #ff0000;
+        }
+        
+        .toggle-switch.active {
+            background: rgba(0, 255, 0, 0.3);
+            border-color: #00ff00;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 18px;
+            height: 18px;
+            background: #ff0000;
+            border-radius: 50%;
+            transition: all 0.3s;
+            box-shadow: 0 0 5px rgba(255, 0, 0, 0.5);
+        }
+        
+        .toggle-switch.active .toggle-slider {
+            left: 28px;
+            background: #00ff00;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.8);
+        }
+        
+        /* Special Sound Settings */
+        .sound-settings {
+            background: rgba(255, 215, 0, 0.05);
+            border-color: #ffd700;
+        }
+        
+        .sound-settings .section-title {
+            color: #ffd700;
+        }
+        
+        .cash-register-setting {
+            background: rgba(255, 215, 0, 0.1);
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 10px;
+        }
+        
+        .cash-register-icon {
+            animation: ring 2s ease-in-out infinite;
+        }
+        
+        @keyframes ring {
+            0%, 100% { transform: rotate(0deg); }
+            10% { transform: rotate(-10deg); }
+            20% { transform: rotate(10deg); }
+            30% { transform: rotate(-10deg); }
+            40% { transform: rotate(10deg); }
+            50% { transform: rotate(0deg); }
+        }
+        
+        /* Save Button */
+        .save-button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(45deg, #00ff00, #00cc00);
+            border: none;
+            border-radius: 5px;
+            color: #000;
+            font-weight: bold;
+            font-size: 16px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+        
+        .save-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 255, 0, 0.5);
+        }
+        
+        .save-button:active {
+            transform: translateY(0);
+        }
+        
+        .save-button.saving {
+            background: linear-gradient(45deg, #ffaa00, #ff8800);
+            color: #fff;
+        }
+        
+        .save-button.saved {
+            background: linear-gradient(45deg, #00ff00, #00ff88);
+            animation: pulse 0.5s ease-out;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 18px;
+        }
+        
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+        
+        @keyframes dots {
+            0%, 20% { content: ''; }
+            40% { content: '.'; }
+            60% { content: '..'; }
+            80%, 100% { content: '...'; }
+        }
+        
+        /* Close Button */
+        .close-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 0, 0, 0.2);
+            border: 2px solid #ff0000;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+        
+        .close-button:hover {
+            background: rgba(255, 0, 0, 0.4);
+            transform: rotate(90deg);
+        }
+    </style>
+</head>
+<body>
+    <div class="close-button" onclick="closeSettings()">✕</div>
+    
+    <div class="settings-container" id="settingsContainer">
+        <div class="header">
+            <h1>⚙️ WAR ROOM SETTINGS</h1>
+            <p style="color: #888;">Configure your battle station</p>
+        </div>
+        
+        <div class="loading" id="loadingState">Loading settings</div>
+        
+        <div id="settingsContent" style="display: none;">
+            <!-- Sound Settings -->
+            <div class="section sound-settings">
+                <div class="section-title">
+                    <span class="section-icon">🔊</span>
+                    <span>SOUND SETTINGS</span>
+                </div>
+                
+                <div class="setting-item">
+                    <div>
+                        <div class="setting-label">Master Sound</div>
+                        <div class="setting-description">Enable/disable all sounds</div>
+                    </div>
+                    <div class="toggle-switch" id="sounds_enabled" onclick="toggleSetting('sounds_enabled')">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+                
+                <div class="cash-register-setting">
+                    <div class="setting-item">
+                        <div>
+                            <div class="setting-label">
+                                <span class="cash-register-icon">💰</span> Cash Register (TP Hits)
+                            </div>
+                            <div class="setting-description">KA-CHING! on every take profit hit</div>
+                        </div>
+                        <div class="toggle-switch" id="cash_register_sound" onclick="toggleSetting('cash_register_sound')">
+                            <div class="toggle-slider"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="setting-item">
+                    <div>
+                        <div class="setting-label">Achievement Sounds</div>
+                        <div class="setting-description">Fanfare for medals and milestones</div>
+                    </div>
+                    <div class="toggle-switch" id="achievement_sounds" onclick="toggleSetting('achievement_sounds')">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+                
+                <div class="setting-item">
+                    <div>
+                        <div class="setting-label">Warning Sounds</div>
+                        <div class="setting-description">Low TCS and risk alerts</div>
+                    </div>
+                    <div class="toggle-switch" id="warning_sounds" onclick="toggleSetting('warning_sounds')">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Notification Settings -->
+            <div class="section">
+                <div class="section-title">
+                    <span class="section-icon">📱</span>
+                    <span>NOTIFICATIONS</span>
+                </div>
+                
+                <div class="setting-item">
+                    <div>
+                        <div class="setting-label">Signal Alerts</div>
+                        <div class="setting-description">New trading signals</div>
+                    </div>
+                    <div class="toggle-switch" id="signal_notifications" onclick="toggleSetting('signal_notifications')">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+                
+                <div class="setting-item">
+                    <div>
+                        <div class="setting-label">Trade Updates</div>
+                        <div class="setting-description">TP/SL hits and closures</div>
+                    </div>
+                    <div class="toggle-switch" id="trade_notifications" onclick="toggleSetting('trade_notifications')">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+                
+                <div class="setting-item">
+                    <div>
+                        <div class="setting-label">Achievements</div>
+                        <div class="setting-description">Medals and XP milestones</div>
+                    </div>
+                    <div class="toggle-switch" id="achievement_notifications" onclick="toggleSetting('achievement_notifications')">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Trading Settings -->
+            <div class="section">
+                <div class="section-title">
+                    <span class="section-icon">📈</span>
+                    <span>TRADING</span>
+                </div>
+                
+                <div class="setting-item">
+                    <div>
+                        <div class="setting-label">Show P&L in Pips</div>
+                        <div class="setting-description">Display profit/loss in pips vs currency</div>
+                    </div>
+                    <div class="toggle-switch" id="show_pnl_in_pips" onclick="toggleSetting('show_pnl_in_pips')">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+                
+                <div class="setting-item">
+                    <div>
+                        <div class="setting-label">Auto Close at TP</div>
+                        <div class="setting-description">Automatically close at take profit</div>
+                    </div>
+                    <div class="toggle-switch" id="auto_close" onclick="toggleSetting('auto_close')">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Privacy Settings -->
+            <div class="section">
+                <div class="section-title">
+                    <span class="section-icon">🔒</span>
+                    <span>PRIVACY</span>
+                </div>
+                
+                <div class="setting-item">
+                    <div>
+                        <div class="setting-label">Show in Leaderboard</div>
+                        <div class="setting-description">Appear in public rankings</div>
+                    </div>
+                    <div class="toggle-switch" id="show_in_leaderboard" onclick="toggleSetting('show_in_leaderboard')">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+                
+                <div class="setting-item">
+                    <div>
+                        <div class="setting-label">Squad Visibility</div>
+                        <div class="setting-description">Let squad see your trades</div>
+                    </div>
+                    <div class="toggle-switch" id="allow_squad_visibility" onclick="toggleSetting('allow_squad_visibility')">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="save-button" id="saveButton" onclick="saveSettings()">
+                SAVE SETTINGS
+            </button>
+        </div>
+    </div>
+    
+    <script>
+        // Settings state
+        let currentSettings = {};
+        let pendingChanges = {};
+        let hasChanges = false;
+        
+        // Initialize Telegram WebApp
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+        
+        // Load settings on startup
+        loadSettings();
+        
+        async function loadSettings() {
+            try {
+                // Request settings from bot
+                const response = await fetch('/webapp/settings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        user_id: tg.initDataUnsafe.user?.id || 0,
+                        username: tg.initDataUnsafe.user?.username || 'unknown',
+                        view: 'settings',
+                        auth_hash: tg.initDataUnsafe.hash
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentSettings = data.data;
+                    displaySettings();
+                } else {
+                    showError('Failed to load settings');
+                }
+            } catch (error) {
+                console.error('Error loading settings:', error);
+                showError('Connection error');
+            }
+        }
+        
+        function displaySettings() {
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('settingsContent').style.display = 'block';
+            
+            // Apply sound settings
+            applyToggle('sounds_enabled', currentSettings.sounds?.enabled);
+            applyToggle('cash_register_sound', currentSettings.sounds?.cash_register);
+            applyToggle('achievement_sounds', currentSettings.sounds?.achievements);
+            applyToggle('warning_sounds', currentSettings.sounds?.warnings);
+            
+            // Apply notification settings
+            applyToggle('signal_notifications', currentSettings.notifications?.signals);
+            applyToggle('trade_notifications', currentSettings.notifications?.trades);
+            applyToggle('achievement_notifications', currentSettings.notifications?.achievements);
+            
+            // Apply trading settings
+            applyToggle('show_pnl_in_pips', currentSettings.trading?.show_pnl_in_pips);
+            applyToggle('auto_close', currentSettings.trading?.auto_close);
+            
+            // Apply privacy settings
+            applyToggle('show_in_leaderboard', currentSettings.privacy?.show_in_leaderboard);
+            applyToggle('allow_squad_visibility', currentSettings.privacy?.allow_squad_visibility);
+        }
+        
+        function applyToggle(id, value) {
+            const toggle = document.getElementById(id);
+            if (toggle && value) {
+                toggle.classList.add('active');
+            }
+        }
+        
+        function toggleSetting(settingId) {
+            const toggle = document.getElementById(settingId);
+            toggle.classList.toggle('active');
+            
+            // Track change
+            const isActive = toggle.classList.contains('active');
+            pendingChanges[settingId] = isActive;
+            hasChanges = true;
+            
+            // Update save button
+            const saveButton = document.getElementById('saveButton');
+            saveButton.textContent = 'SAVE CHANGES';
+            saveButton.classList.remove('saved');
+            
+            // Special handling for master sound toggle
+            if (settingId === 'sounds_enabled' && !isActive) {
+                // If disabling all sounds, also disable individual sound settings
+                ['cash_register_sound', 'achievement_sounds', 'warning_sounds'].forEach(id => {
+                    const subToggle = document.getElementById(id);
+                    if (subToggle) {
+                        subToggle.classList.remove('active');
+                        pendingChanges[id] = false;
+                    }
+                });
+            }
+            
+            // Play test sound for cash register toggle
+            if (settingId === 'cash_register_sound' && isActive) {
+                playTestSound();
+            }
+        }
+        
+        function playTestSound() {
+            // Import and use the effects system
+            if (window.MissionHUDEffects) {
+                const effects = new window.MissionHUDEffects();
+                effects.playCashRegisterSound(0.5); // Half volume for test
+            }
+        }
+        
+        async function saveSettings() {
+            if (!hasChanges) return;
+            
+            const saveButton = document.getElementById('saveButton');
+            saveButton.textContent = 'SAVING...';
+            saveButton.classList.add('saving');
+            
+            try {
+                const response = await fetch('/webapp/update_settings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        user_id: tg.initDataUnsafe.user?.id || 0,
+                        username: tg.initDataUnsafe.user?.username || 'unknown',
+                        view: 'update_settings',
+                        data: {
+                            settings: pendingChanges
+                        },
+                        auth_hash: tg.initDataUnsafe.hash
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    saveButton.textContent = '✅ SAVED!';
+                    saveButton.classList.remove('saving');
+                    saveButton.classList.add('saved');
+                    
+                    // Update current settings
+                    currentSettings = data.data;
+                    pendingChanges = {};
+                    hasChanges = false;
+                    
+                    // Reset button after delay
+                    setTimeout(() => {
+                        saveButton.textContent = 'SAVE SETTINGS';
+                        saveButton.classList.remove('saved');
+                    }, 2000);
+                    
+                    // Notify main app
+                    tg.sendData(JSON.stringify({
+                        action: 'settings_updated',
+                        settings: currentSettings
+                    }));
+                } else {
+                    showError('Failed to save settings');
+                    saveButton.textContent = 'SAVE SETTINGS';
+                    saveButton.classList.remove('saving');
+                }
+            } catch (error) {
+                console.error('Error saving settings:', error);
+                showError('Connection error');
+                saveButton.textContent = 'SAVE SETTINGS';
+                saveButton.classList.remove('saving');
+            }
+        }
+        
+        function closeSettings() {
+            if (hasChanges) {
+                if (confirm('You have unsaved changes. Close anyway?')) {
+                    tg.close();
+                }
+            } else {
+                tg.close();
+            }
+        }
+        
+        function showError(message) {
+            const container = document.getElementById('settingsContainer');
+            container.innerHTML = `
+                <div class="header">
+                    <h1>⚠️ ERROR</h1>
+                    <p style="color: #ff0000;">${message}</p>
+                </div>
+                <button class="save-button" onclick="location.reload()">
+                    RETRY
+                </button>
+            `;
+        }
+        
+        // Handle back button
+        tg.BackButton.show();
+        tg.BackButton.onClick(() => {
+            closeSettings();
+        });
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeSettings();
+            } else if (e.ctrlKey && e.key === 's') {
+                e.preventDefault();
+                saveSettings();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BITTEN - Tactical Trading System</title>
+    <meta name="description" content="Military-grade automated trading system. 15-day free trial. Join the elite traders.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #00ff41;
+            --danger: #ff0040;
+            --warning: #ffaa00;
+            --dark: #0a0a0a;
+            --darker: #050505;
+            --light: #ffffff;
+            --gray: #888888;
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: var(--dark);
+            color: var(--light);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 255, 65, 0.03) 2px, rgba(0, 255, 65, 0.03) 4px),
+                repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(0, 255, 65, 0.03) 2px, rgba(0, 255, 65, 0.03) 4px);
+            animation: grid-move 20s linear infinite;
+        }
+
+        @keyframes grid-move {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(40px, 40px); }
+        }
+
+        .hero-content {
+            text-align: center;
+            z-index: 10;
+            position: relative;
+            max-width: 1200px;
+            padding: 2rem;
+        }
+
+        .logo {
+            font-family: 'Orbitron', monospace;
+            font-size: 5rem;
+            font-weight: 900;
+            letter-spacing: 0.2em;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, var(--primary), #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(0, 255, 65, 0.5);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        .tagline {
+            font-size: 1.5rem;
+            color: var(--gray);
+            margin-bottom: 2rem;
+            font-weight: 300;
+            letter-spacing: 0.1em;
+        }
+
+        .acronym {
+            font-size: 1.2rem;
+            color: var(--primary);
+            margin-bottom: 3rem;
+            font-weight: 500;
+        }
+
+        .cta-section {
+            margin-bottom: 3rem;
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 1.5rem 3rem;
+            font-size: 1.3rem;
+            font-weight: 700;
+            text-decoration: none;
+            color: var(--dark);
+            background: var(--primary);
+            border: none;
+            border-radius: 0;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 30px rgba(0, 255, 65, 0.8);
+        }
+
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .cta-button:hover::before {
+            left: 100%;
+        }
+
+        .trial-text {
+            margin-top: 1rem;
+            font-size: 1.1rem;
+            color: var(--warning);
+        }
+
+        /* Stats Section */
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin-top: 4rem;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--primary);
+            font-family: 'Orbitron', monospace;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            color: var(--gray);
+            text-transform: uppercase;
+        }
+
+        /* Features Section */
+        .features {
+            padding: 5rem 2rem;
+            background: var(--darker);
+            position: relative;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 3rem;
+            font-family: 'Orbitron', monospace;
+            color: var(--primary);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(0, 255, 65, 0.2);
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            border-color: var(--primary);
+            background: rgba(0, 255, 65, 0.05);
+            transform: translateY(-5px);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        .feature-desc {
+            color: var(--gray);
+            line-height: 1.6;
+        }
+
+        /* Tiers Section */
+        .tiers {
+            padding: 5rem 2rem;
+            background: var(--dark);
+        }
+
+        .tiers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .tier-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(0, 255, 65, 0.2);
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .tier-card.featured {
+            border-color: var(--primary);
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.3);
+        }
+
+        .tier-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-10px);
+        }
+
+        .tier-name {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            font-family: 'Orbitron', monospace;
+        }
+
+        .tier-price {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .tier-price span {
+            font-size: 1rem;
+            color: var(--gray);
+        }
+
+        .tier-features {
+            list-style: none;
+            margin: 2rem 0;
+            text-align: left;
+        }
+
+        .tier-features li {
+            padding: 0.5rem 0;
+            color: var(--gray);
+            position: relative;
+            padding-left: 1.5rem;
+        }
+
+        .tier-features li::before {
+            content: '✓';
+            color: var(--primary);
+            position: absolute;
+            left: 0;
+        }
+
+        .tier-button {
+            width: 100%;
+            padding: 1rem;
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .tier-button:hover {
+            background: var(--primary);
+            color: var(--dark);
+        }
+
+        /* Footer */
+        .footer {
+            padding: 3rem 2rem;
+            background: var(--darker);
+            text-align: center;
+            border-top: 1px solid rgba(0, 255, 65, 0.2);
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: var(--gray);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--primary);
+        }
+
+        .copyright {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .logo {
+                font-size: 3rem;
+            }
+            
+            .tagline {
+                font-size: 1.2rem;
+            }
+            
+            .stats {
+                gap: 2rem;
+            }
+            
+            .stat-value {
+                font-size: 2rem;
+            }
+        }
+
+        /* Glitch Effect */
+        .glitch {
+            position: relative;
+            display: inline-block;
+        }
+
+        .glitch::before,
+        .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .glitch::before {
+            animation: glitch-1 0.5s infinite;
+            color: var(--danger);
+            z-index: -1;
+        }
+
+        .glitch::after {
+            animation: glitch-2 0.5s infinite;
+            color: var(--primary);
+            z-index: -2;
+        }
+
+        @keyframes glitch-1 {
+            0%, 100% { clip-path: inset(0 0 0 0); transform: translate(0); }
+            20% { clip-path: inset(20% 0 30% 0); transform: translate(-2px, 2px); }
+            40% { clip-path: inset(50% 0 20% 0); transform: translate(2px, -2px); }
+            60% { clip-path: inset(10% 0 60% 0); transform: translate(-2px, 0); }
+            80% { clip-path: inset(80% 0 5% 0); transform: translate(2px, 0); }
+        }
+
+        @keyframes glitch-2 {
+            0%, 100% { clip-path: inset(0 0 0 0); transform: translate(0); }
+            20% { clip-path: inset(60% 0 10% 0); transform: translate(2px, 0); }
+            40% { clip-path: inset(20% 0 50% 0); transform: translate(-2px, 0); }
+            60% { clip-path: inset(30% 0 40% 0); transform: translate(0, 2px); }
+            80% { clip-path: inset(5% 0 80% 0); transform: translate(0, -2px); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1 class="logo glitch" data-text="BITTEN">BITTEN</h1>
+            <p class="tagline">Military-Grade Automated Trading</p>
+            <p class="acronym">Bot-Integrated Tactical Trading Engine / Network</p>
+            
+            <div class="cta-section">
+                <a href="https://t.me/Bitten_Commander_bot" class="cta-button">
+                    START 15-DAY FREE TRIAL
+                </a>
+                <p class="trial-text">No credit card required • Full access • Cancel anytime</p>
+            </div>
+            
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value">15</div>
+                    <div class="stat-label">Day Free Trial</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">91%</div>
+                    <div class="stat-label">Max TCS Filter</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">24/7</div>
+                    <div class="stat-label">Automated</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">4</div>
+                    <div class="stat-label">Tier Levels</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <h2 class="section-title">TACTICAL ADVANTAGES</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🎯</div>
+                <h3 class="feature-title">Precision Targeting</h3>
+                <p class="feature-desc">Military-grade trade selection with TCS (Trading Confidence Score) filtering up to 91% accuracy.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔥</div>
+                <h3 class="feature-title">Fire Modes</h3>
+                <p class="feature-desc">Multiple engagement modes: Single Shot, Chaingun, Auto-Fire, Stealth, and elite Midnight Hammer.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🛡️</div>
+                <h3 class="feature-title">Risk Management</h3>
+                <p class="feature-desc">Built-in safeguards with daily drawdown protection, position limits, and emergency stop systems.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3 class="feature-title">Real-Time Intel</h3>
+                <p class="feature-desc">Live market analysis, news filtering, and automated trade execution via Telegram command center.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎖️</div>
+                <h3 class="feature-title">Rank Progression</h3>
+                <p class="feature-desc">Advance through tiers as you grow: Nibbler → Fang → Commander → Apex. Unlock features with experience.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🤖</div>
+                <h3 class="feature-title">Full Automation</h3>
+                <p class="feature-desc">Set it and forget it. BITTEN executes trades 24/7 based on your configured parameters and tier capabilities.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section class="tiers" id="pricing">
+        <h2 class="section-title">CHOOSE YOUR TIER</h2>
+        <div class="tiers-grid">
+            <div class="tier-card">
+                <h3 class="tier-name">NIBBLER</h3>
+                <div class="tier-price">$39<span>/month</span></div>
+                <ul class="tier-features">
+                    <li>6 trades per day</li>
+                    <li>75% TCS minimum</li>
+                    <li>Manual trading only</li>
+                    <li>Basic risk management</li>
+                    <li>Perfect for beginners</li>
+                </ul>
+                <button class="tier-button" onclick="startTrial()">START TRIAL</button>
+            </div>
+            
+            <div class="tier-card featured">
+                <h3 class="tier-name">FANG</h3>
+                <div class="tier-price">$89<span>/month</span></div>
+                <ul class="tier-features">
+                    <li>10 trades per day</li>
+                    <li>85% TCS for sniper</li>
+                    <li>Chaingun mode unlocked</li>
+                    <li>Advanced filters</li>
+                    <li>Sniper mode access</li>
+                </ul>
+                <button class="tier-button" onclick="startTrial()">START TRIAL</button>
+            </div>
+            
+            <div class="tier-card">
+                <h3 class="tier-name">COMMANDER</h3>
+                <div class="tier-price">$139<span>/month</span></div>
+                <ul class="tier-features">
+                    <li>20 trades per day</li>
+                    <li>90% TCS auto / 75% semi</li>
+                    <li>Full automation suite</li>
+                    <li>Stealth mode</li>
+                    <li>All strategies unlocked</li>
+                </ul>
+                <button class="tier-button" onclick="startTrial()">START TRIAL</button>
+            </div>
+            
+            <div class="tier-card">
+                <h3 class="tier-name">APEX</h3>
+                <div class="tier-price">$188<span>/month</span></div>
+                <ul class="tier-features">
+                    <li>Unlimited trades</li>
+                    <li>91% TCS minimum</li>
+                    <li>Midnight Hammer</li>
+                    <li>Priority support</li>
+                    <li>Elite network access</li>
+                </ul>
+                <button class="tier-button" onclick="startTrial()">START TRIAL</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-links">
+            <a href="/terms">Terms of Service</a>
+            <a href="/privacy">Privacy Policy</a>
+            <a href="/refund">Refund Policy</a>
+            <a href="https://t.me/your_support">Support</a>
+        </div>
+        <p class="copyright">© 2024 BITTEN. All rights reserved. "You've been B.I.T.T.E.N. — now prove you belong."</p>
+    </footer>
+
+    <script>
+        function startTrial() {
+            window.location.href = 'https://t.me/Bitten_Commander_bot?start=trial';
+        }
+
+        // Add some dynamic effects
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animate stats on scroll
+            const observerOptions = {
+                threshold: 0.5,
+                rootMargin: '0px'
+            };
+
+            const observer = new IntersectionObserver(function(entries) {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, observerOptions);
+
+            document.querySelectorAll('.feature-card, .tier-card').forEach(el => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(20px)';
+                el.style.transition = 'all 0.6s ease';
+                observer.observe(el);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -20,6 +20,7 @@ from .handlers import OnboardingHandlers
 
 logger = logging.getLogger(__name__)
 
+# Move these to models.py to avoid circular import
 class OnboardingState(Enum):
     """Enumeration of all onboarding states"""
     FIRST_CONTACT = "first_contact"
@@ -81,12 +82,14 @@ class OnboardingSession:
 class OnboardingOrchestrator:
     """Main orchestrator for the BITTEN onboarding system"""
     
-    def __init__(self, persona_orchestrator=None):
+    def __init__(self, persona_orchestrator=None, hud_webapp_url=None):
         self.session_manager = OnboardingSessionManager()
         self.dialogue_loader = DialogueLoader()
         self.validators = OnboardingValidators()
         self.handlers = OnboardingHandlers()
+        self.handlers.validators = self.validators
         self.persona_orchestrator = persona_orchestrator
+        self.hud_webapp_url = hud_webapp_url or "https://bitten.trading"
         
         # State transition mapping
         self.state_transitions = {
@@ -389,6 +392,35 @@ class OnboardingOrchestrator:
                 ]
             }
             
+            # Save callsign to database before archiving
+            if session.callsign:
+                try:
+                    from ..database.connection import get_db_session
+                    from ..database.models import UserProfile
+                    
+                    with get_db_session() as db_session:
+                        # Check if profile exists
+                        profile = db_session.query(UserProfile).filter(
+                            UserProfile.user_id == session.telegram_id
+                        ).first()
+                        
+                        if not profile:
+                            # Create new profile with callsign
+                            profile = UserProfile(
+                                user_id=session.telegram_id,
+                                callsign=session.callsign
+                            )
+                            db_session.add(profile)
+                        else:
+                            # Update existing profile
+                            profile.callsign = session.callsign
+                        
+                        db_session.commit()
+                        logger.info(f"Saved callsign '{session.callsign}' for user {session.telegram_id}")
+                        
+                except Exception as e:
+                    logger.error(f"Error saving callsign to database: {e}")
+            
             # Archive session
             await self.session_manager.archive_session(session.user_id)
             
@@ -434,15 +466,130 @@ class OnboardingOrchestrator:
     async def _format_dialogue_message(self, state_dialogue: Dict[str, Any], 
                                      session: OnboardingSession) -> str:
         """Format dialogue message with dynamic variables"""
-        # Implementation for formatting dialogue with variables like {NAME}, {CALLSIGN}, etc.
-        # This would replace placeholders with actual user data
-        pass
+        # Get the message text
+        message = state_dialogue.get('message', '')
+        
+        # Variable replacements
+        replacements = {
+            '{NAME}': session.first_name or 'Recruit',
+            '{CALLSIGN}': session.callsign or 'Soldier',
+            '{THEATER}': session.selected_theater or 'Training',
+            '{EXPERIENCE}': 'veteran' if session.has_experience else 'recruit',
+            '{USER_ID}': str(session.telegram_id),
+        }
+        
+        # Replace all variables
+        for var, value in replacements.items():
+            message = message.replace(var, value)
+        
+        return message
     
     async def _create_state_keyboard(self, state: OnboardingState, 
                                    session: OnboardingSession) -> Dict[str, Any]:
-        """Create appropriate keyboard for current state"""
-        # Implementation for creating state-specific keyboards
-        pass
+        """Create AAA-quality keyboards with amazing UX for each state"""
+        
+        # Show progress bar at top of every keyboard
+        progress = self._calculate_progress(session)
+        progress_bar = self.handlers.format_progress_bar(progress['current'], progress['total'])
+        
+        keyboard = {"inline_keyboard": []}
+        
+        if state == OnboardingState.FIRST_CONTACT:
+            keyboard["inline_keyboard"] = [
+                [{"text": "✅ Yes, I've traded before", "callback_data": "onboarding_yes"}],
+                [{"text": "🌟 No, I'm new to this", "callback_data": "onboarding_no"}]
+            ]
+            
+        elif state == OnboardingState.KNOWLEDGE_SOURCE:
+            keyboard["inline_keyboard"] = [
+                [{"text": "👥 Friend told me", "callback_data": "onboarding_friend"}],
+                [{"text": "📺 YouTube/Social Media", "callback_data": "onboarding_youtube"}],
+                [{"text": "📖 Article/Blog", "callback_data": "onboarding_article"}],
+                [{"text": "🌐 Other", "callback_data": "onboarding_other"}]
+            ]
+            
+        elif state == OnboardingState.THEATER_SELECTION:
+            keyboard["inline_keyboard"] = [
+                [{"text": "🎮 DEMO (Practice Mode)", "callback_data": "onboarding_demo"}],
+                [{"text": "💰 LIVE (Real Money)", "callback_data": "onboarding_live"}]
+            ]
+            
+        elif state == OnboardingState.OATH_OF_ENLISTMENT:
+            keyboard["inline_keyboard"] = [
+                [{"text": "🎖️ I ACCEPT THE OATH", "callback_data": "onboarding_accept_oath"}],
+                [{"text": "📖 Read Again", "callback_data": "onboarding_read_oath"}]
+            ]
+            
+        elif state == OnboardingState.SECURE_LINK:
+            keyboard["inline_keyboard"] = [
+                [{"text": "🔗 Connect Broker", "callback_data": "onboarding_connect_broker"}],
+                [{"text": "⏭️ Do This Later", "callback_data": "onboarding_skip_broker"}]
+            ]
+            
+        elif state == OnboardingState.CALLSIGN_CREATION:
+            # For text input states, show helpful buttons
+            keyboard["inline_keyboard"] = [
+                [{"text": "🎲 Generate Random", "callback_data": "onboarding_random_callsign"}],
+                [{"text": "💡 Show Examples", "callback_data": "onboarding_callsign_examples"}]
+            ]
+            
+        elif state == OnboardingState.OPERATIONAL_INTERFACE:
+            keyboard["inline_keyboard"] = [
+                [{"text": "📱 Open Trading HUD", "url": self.hud_webapp_url if self.hud_webapp_url else "https://bitten.trading"}],
+                [{"text": "➡️ Continue Tour", "callback_data": "onboarding_continue"}]
+            ]
+            
+        elif state == OnboardingState.CORE_MANEUVERS:
+            keyboard["inline_keyboard"] = [
+                [{"text": "🎯 Understood!", "callback_data": "onboarding_understood"}],
+                [{"text": "🔄 Explain Again", "callback_data": "onboarding_explain_again"}]
+            ]
+            
+        elif state == OnboardingState.FIELD_MANUAL:
+            keyboard["inline_keyboard"] = [
+                [{"text": "📚 View Field Manual", "callback_data": "onboarding_view_manual"}],
+                [{"text": "✅ Ready to Start", "callback_data": "onboarding_ready"}]
+            ]
+            
+        elif state == OnboardingState.PERSONAL_RECORD:
+            keyboard["inline_keyboard"] = [
+                [{"text": "🔔 All Notifications", "callback_data": "onboarding_all"}],
+                [{"text": "📌 Essential Only", "callback_data": "onboarding_essential"}],
+                [{"text": "⚙️ Custom Setup", "callback_data": "onboarding_custom"}]
+            ]
+            
+        else:
+            # Default continue button
+            keyboard["inline_keyboard"] = [
+                [{"text": "➡️ Continue", "callback_data": "onboarding_continue"}]
+            ]
+        
+        # Add navigation row at bottom (except for critical states)
+        if state not in [OnboardingState.FIRST_CONTACT, OnboardingState.COMPLETE]:
+            nav_row = []
+            
+            # Back button (if allowed)
+            back_button = self.handlers.get_back_button(state.value)
+            if back_button:
+                nav_row.append(back_button)
+            
+            # Help button (always available)
+            nav_row.append({"text": "❓ Help", "callback_data": "onboarding_help"})
+            
+            # Skip button (if allowed)
+            skip_button = self.handlers.get_skip_button(state.value)
+            if skip_button:
+                nav_row.append(skip_button)
+            
+            if nav_row:
+                keyboard["inline_keyboard"].append(nav_row)
+        
+        # Add progress indicator as last row
+        keyboard["inline_keyboard"].append([
+            {"text": progress_bar, "callback_data": "onboarding_progress"}
+        ])
+        
+        return keyboard
     
     async def _handle_back_command(self, session: OnboardingSession) -> Tuple[str, Dict[str, Any]]:
         """Handle back command"""
@@ -486,3 +633,20 @@ class OnboardingOrchestrator:
         }
         
         return error_messages.get(error_type, "🚨 **Unknown Error**: Contact support immediately.")
+    
+    def _calculate_progress(self, session: OnboardingSession) -> Dict[str, int]:
+        """Calculate onboarding progress"""
+        # Get all states except COMPLETE
+        all_states = [s for s in OnboardingState if s != OnboardingState.COMPLETE]
+        
+        # Find current state index
+        try:
+            current_index = all_states.index(OnboardingState(session.current_state))
+            current_step = current_index + 1
+        except (ValueError, KeyError):
+            current_step = 1
+        
+        return {
+            'current': current_step,
+            'total': len(all_states)
+        }

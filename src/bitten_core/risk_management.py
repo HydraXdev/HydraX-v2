@@ -509,6 +509,64 @@ class RiskCalculator:
             # Calculate actual risk with final lot size
             actual_risk = lot_size * pip_risk * pip_value_per_lot
             
+            # HARD LOCK VALIDATION - Prevent account-blowing trades
+            # Use the risk percent already calculated (from bitmode settings)
+            max_safe_risk_percent = risk_percent
+            max_safe_risk_amount = account.balance * (max_safe_risk_percent / 100)
+            
+            if actual_risk > max_safe_risk_amount:
+                # Recalculate lot size to stay within safe limits
+                safe_lot_size = max_safe_risk_amount / (pip_risk * pip_value_per_lot) if pip_risk > 0 else specs['min_lot']
+                safe_lot_size = max(specs['min_lot'], min(safe_lot_size, specs['max_lot']))
+                safe_lot_size = round(safe_lot_size, 2)
+                
+                # Recalculate actual risk with safe lot size
+                actual_risk = safe_lot_size * pip_risk * pip_value_per_lot
+                
+                logger.warning(f"HARD LOCK TRIGGERED: Trade size reduced from {lot_size} to {safe_lot_size} lots. "
+                             f"Original risk: ${actual_risk:.2f} ({(actual_risk/account.balance)*100:.1f}%), "
+                             f"Safe risk: ${actual_risk:.2f} ({(actual_risk/account.balance)*100:.1f}%)")
+                
+                lot_size = safe_lot_size
+            
+            # Additional daily risk cap validation
+            session = self.risk_manager.get_or_create_session(profile.user_id)
+            daily_loss_so_far = abs(session.daily_pnl) if session.daily_pnl < 0 else 0
+            daily_loss_percent_so_far = (daily_loss_so_far / account.balance) * 100
+            
+            # Check if this trade would exceed daily risk cap
+            potential_daily_loss_percent = daily_loss_percent_so_far + (actual_risk / account.balance) * 100
+            daily_cap = risk_params.get('daily_loss_limit', profile.daily_loss_limit)
+            
+            if potential_daily_loss_percent > daily_cap:
+                # Calculate maximum allowed risk for this trade
+                remaining_daily_risk = daily_cap - daily_loss_percent_so_far
+                if remaining_daily_risk <= 0:
+                    return {
+                        'lot_size': 0,
+                        'risk_amount': 0,
+                        'actual_risk': 0,
+                        'pip_risk': pip_risk,
+                        'risk_percent': 0,
+                        'can_trade': False,
+                        'reason': f'Daily risk cap reached ({daily_cap}%). No more trades allowed today.',
+                        'restrictions': {'daily_cap_reached': True}
+                    }
+                
+                # Reduce lot size to fit within remaining daily risk
+                max_allowed_risk = account.balance * (remaining_daily_risk / 100)
+                if actual_risk > max_allowed_risk:
+                    capped_lot_size = max_allowed_risk / (pip_risk * pip_value_per_lot) if pip_risk > 0 else specs['min_lot']
+                    capped_lot_size = max(specs['min_lot'], min(capped_lot_size, specs['max_lot']))
+                    capped_lot_size = round(capped_lot_size, 2)
+                    
+                    actual_risk = capped_lot_size * pip_risk * pip_value_per_lot
+                    
+                    logger.warning(f"DAILY CAP ADJUSTMENT: Trade size reduced from {lot_size} to {capped_lot_size} lots "
+                                 f"to stay within daily risk cap. Remaining daily risk: {remaining_daily_risk:.1f}%")
+                    
+                    lot_size = capped_lot_size
+            
             return {
                 'lot_size': lot_size,
                 'risk_amount': risk_amount,
@@ -652,6 +710,87 @@ class RiskCalculator:
             })
         
         return positions
+    
+    def validate_trade_size_hard_lock(self,
+                                    account: AccountInfo,
+                                    profile: RiskProfile,
+                                    lot_size: float,
+                                    stop_loss_pips: float,
+                                    symbol: str) -> Tuple[bool, str, float]:
+        """
+        HARD LOCK VALIDATION - Final safety check before trade execution
+        
+        This method ensures that no trade can ever blow the account or exceed
+        daily risk limits, regardless of tier or signal quality.
+        
+        Args:
+            account: Current account information
+            profile: User's risk profile
+            lot_size: Proposed lot size
+            stop_loss_pips: Stop loss distance in pips
+            symbol: Trading symbol
+            
+        Returns:
+            Tuple of (is_valid, reason, safe_lot_size)
+        """
+        try:
+            # Get symbol specifications
+            specs = self.symbol_specs.get(symbol, self.symbol_specs['EURUSD'])
+            
+            # Calculate pip value per lot
+            if symbol.endswith('USD'):
+                pip_value_per_lot = 10
+            else:
+                pip_value_per_lot = 10  # Approximation
+            
+            # Calculate potential loss
+            potential_loss = lot_size * stop_loss_pips * pip_value_per_lot
+            potential_loss_percent = (potential_loss / account.balance) * 100
+            
+            # HARD LIMIT 1: Check against allowed risk (from bitmode settings via risk controller)
+            # The risk_percent passed in already reflects bitmode settings
+            tier_risk_percent, _ = risk_controller.get_user_risk_percent(profile.user_id, tier_enum)
+            if potential_loss_percent > tier_risk_percent:
+                return False, f"Trade size exceeds maximum risk of {tier_risk_percent}%. Trade blocked.", 0
+            
+            # HARD LIMIT 2: Check against tier-specific limits
+            risk_controller = get_risk_controller()
+            tier_enum = RiskTierLevel[profile.tier_level.upper()]
+            trade_allowed, block_reason = risk_controller.check_trade_allowed(
+                profile.user_id, tier_enum, potential_loss, account.balance
+            )
+            
+            if not trade_allowed:
+                # Calculate safe lot size based on tier limits
+                tier_risk_percent, _ = risk_controller.get_user_risk_percent(profile.user_id, tier_enum)
+                return False, block_reason, 0
+            
+            # HARD LIMIT 3: Daily risk cap validation
+            session = self.risk_manager.get_or_create_session(profile.user_id)
+            daily_loss_so_far = abs(session.daily_pnl) if session.daily_pnl < 0 else 0
+            daily_loss_percent_so_far = (daily_loss_so_far / account.balance) * 100
+            
+            # Check if this trade would exceed daily cap
+            potential_daily_loss_percent = daily_loss_percent_so_far + potential_loss_percent
+            daily_cap = profile.daily_loss_limit
+            
+            if potential_daily_loss_percent > daily_cap:
+                # Calculate maximum allowed lot size for remaining daily risk
+                remaining_daily_risk_percent = max(0, daily_cap - daily_loss_percent_so_far)
+                if remaining_daily_risk_percent <= 0:
+                    return False, f"Daily risk cap of {daily_cap}% already reached. No more trades allowed today.", 0
+                
+                return False, f"Trade would exceed daily risk cap of {daily_cap}%. Trade blocked.", 0
+            
+            # Removed unauthorized account preservation check
+            
+            # All checks passed
+            return True, "Trade size validated and within all safety limits.", lot_size
+            
+        except Exception as e:
+            logger.error(f"Trade size validation error: {e}")
+            # On any error, reject the trade for safety
+            return False, f"Validation error: {str(e)}. Trade rejected for safety.", 0
 
 
 # XP-based feature descriptions for UI

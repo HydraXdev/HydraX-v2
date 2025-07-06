@@ -374,13 +374,14 @@ class FireRouter:
                         error_code="PROBABILITY_FILTER"
                     )
             
-            # Risk management checks
+            # Risk management checks with HARD LOCK validation
             risk_check = self._check_risk_limits(trade_request)
             if not risk_check['approved']:
+                # HARD LOCK: Block the trade, no auto-adjustment
                 return TradeExecutionResult(
                     success=False,
-                    message=f"⚠️ Risk limit: {risk_check['reason']}",
-                    error_code="RISK_LIMIT"
+                    message=risk_check['reason'],
+                    error_code="RISK_LIMIT_HARD_LOCK"
                 )
             
             # Generate optimized SL/TP
@@ -473,18 +474,26 @@ class FireRouter:
                 'reason': f"Outside trading hours for {request.symbol}"
             }
         
-        # Daily trade limit
-        if self.daily_trade_count >= self.max_daily_trades:
+        # Daily trade limit (with bonuses)
+        # Get user tier for bonus checking
+        user_tier = self.user_tiers.get(request.user_id, TierLevel.NIBBLER)
+        bonuses = self._check_active_bonuses(request.user_id, user_tier.value)
+        
+        max_daily_with_bonus = self.max_daily_trades + bonuses['daily_shots']
+        
+        if self.daily_trade_count >= max_daily_with_bonus:
             return {
                 'valid': False,
-                'reason': f"Daily trade limit reached: {self.max_daily_trades}"
+                'reason': f"Daily trade limit reached: {max_daily_with_bonus} (includes {bonuses['daily_shots']} bonus shots)"
             }
         
-        # Concurrent trades limit
-        if len(self.active_trades) >= self.max_concurrent_trades:
+        # Concurrent trades limit (with position bonuses)
+        max_positions_with_bonus = self.max_concurrent_trades + bonuses['positions']
+        
+        if len(self.active_trades) >= max_positions_with_bonus:
             return {
                 'valid': False,
-                'reason': f"Maximum concurrent trades: {self.max_concurrent_trades}"
+                'reason': f"Maximum concurrent trades: {max_positions_with_bonus} (includes {bonuses['positions']} bonus positions)"
             }
         
         return {'valid': True, 'reason': 'Validation passed'}
@@ -496,13 +505,37 @@ class FireRouter:
         user_tier = self.user_tiers.get(request.user_id, TierLevel.NIBBLER)
         tier_config = TIER_CONFIGS[user_tier]
         
-        # Tier-specific TCS requirement
-        min_tcs = tier_config.min_tcs
-        if request.tcs_score < min_tcs:
-            return {
-                'passed': False,
-                'reason': f"TCS below {tier_config.name} minimum: {request.tcs_score} < {min_tcs}"
-            }
+        # Tier-specific TCS requirement (with arcade/sniper split for FANG)
+        if user_tier == TierLevel.FANG and hasattr(request, 'signal_type'):
+            # Load FANG config for arcade/sniper split
+            import yaml
+            config_path = '/root/HydraX-v2/config/tier_settings.yml'
+            with open(config_path, 'r') as f:
+                config = yaml.safe_load(f)
+            
+            fang_config = config['tiers']['FANG']['fire_settings']
+            
+            # Use different TCS based on signal type
+            if request.signal_type == 'sniper':
+                min_tcs = fang_config.get('min_tcs_sniper', 85)
+                signal_label = "sniper"
+            else:  # arcade
+                min_tcs = fang_config.get('min_tcs_arcade', 75)
+                signal_label = "arcade"
+                
+            if request.tcs_score < min_tcs:
+                return {
+                    'passed': False,
+                    'reason': f"TCS below FANG {signal_label} minimum: {request.tcs_score} < {min_tcs}"
+                }
+        else:
+            # Standard TCS check for other tiers
+            min_tcs = tier_config.min_tcs
+            if request.tcs_score < min_tcs:
+                return {
+                    'passed': False,
+                    'reason': f"TCS below {tier_config.name} minimum: {request.tcs_score} < {min_tcs}"
+                }
         
         # High confidence boost
         if request.tcs_score >= self.high_confidence_threshold:
@@ -536,35 +569,98 @@ class FireRouter:
         }
     
     def _check_risk_limits(self, request: TradeRequest) -> Dict:
-        """Risk management validation"""
+        """Risk management validation with HARD LOCK protection"""
         
-        # Calculate position risk
-        current_exposure = sum(trade.get('volume', 0) for trade in self.active_trades.values())
-        total_exposure = current_exposure + request.volume
-        
-        # Maximum exposure limit (can be made configurable)
-        max_exposure = 5.0  # 5 lots total
-        if total_exposure > max_exposure:
+        try:
+            # Load bitmode configuration
+            import yaml
+            config_path = '/root/HydraX-v2/config/tier_settings.yml'
+            with open(config_path, 'r') as f:
+                config = yaml.safe_load(f)
+            
+            bitmode = config.get('bitmode', {})
+            
+            # Get account info (would come from MT5 in production)
+            account = self._get_account_info(request.user_id)
+            
+            # Calculate stop loss distance in pips
+            sl_tp_data = self._generate_smart_sl_tp(request)
+            stop_loss_pips = sl_tp_data['sl_pips']
+            
+            # HARD LOCK: Calculate actual risk percentage
+            pip_value_per_lot = 10  # Standard for forex
+            risk_amount = request.volume * stop_loss_pips * pip_value_per_lot
+            risk_percent = (risk_amount / account.balance) * 100
+            
+            # Check 1: Single trade risk limit from bitmode
+            max_risk = bitmode.get('risk_boost', 2.5) if account.balance >= bitmode.get('boost_min_balance', 500) else bitmode.get('risk_default', 2.0)
+            
+            if risk_percent > max_risk:
+                return {
+                    'approved': False,
+                    'reason': f"🔒 HARD LOCK: Trade risks {risk_percent:.1f}% of account, exceeds {max_risk}% limit"
+                }
+            
+            # Check 2: Daily drawdown cap from bitmode
+            # Get daily P&L (would come from database in production)
+            daily_loss = self._get_daily_pnl(request.user_id)
+            daily_loss_percent = abs(daily_loss / account.balance * 100) if daily_loss < 0 else 0
+            
+            drawdown_cap = bitmode.get('drawdown_cap', 6.0)
+            if daily_loss_percent + risk_percent > drawdown_cap:
+                remaining = drawdown_cap - daily_loss_percent
+                if remaining <= 0:
+                    return {
+                        'approved': False,
+                        'reason': f"🛑 HARD LOCK: Daily {drawdown_cap}% loss limit reached. No more trades today."
+                    }
+                else:
+                    return {
+                        'approved': False,
+                        'reason': f"🔒 HARD LOCK: Trade would exceed {drawdown_cap}% daily limit. Only {remaining:.1f}% risk remaining today."
+                    }
+            
+            # Additional exposure checks (existing logic)
+            current_exposure = sum(trade.get('volume', 0) for trade in self.active_trades.values())
+            total_exposure = current_exposure + request.volume
+            
+            # Maximum exposure limit
+            max_exposure = 5.0  # 5 lots total
+            if total_exposure > max_exposure:
+                return {
+                    'approved': False,
+                    'reason': f"Total exposure limit: {total_exposure:.2f} > {max_exposure}"
+                }
+            
+            # Symbol-specific exposure
+            symbol_exposure = sum(
+                trade.get('volume', 0) 
+                for trade in self.active_trades.values() 
+                if trade.get('symbol') == request.symbol
+            )
+            max_symbol_exposure = 2.0  # 2 lots per symbol
+            
+            if symbol_exposure + request.volume > max_symbol_exposure:
+                return {
+                    'approved': False,
+                    'reason': f"{request.symbol} exposure limit: {symbol_exposure + request.volume:.2f} > {max_symbol_exposure}"
+                }
+            
+            # All checks passed
+            return {
+                'approved': True, 
+                'reason': 'Risk limits approved',
+                'risk_percent': risk_percent,
+                'daily_loss_percent': daily_loss_percent
+            }
+            
+        except Exception as e:
+            self._log_error(f"Risk validation error: {e}")
+            # On error, reject trade for safety
             return {
                 'approved': False,
-                'reason': f"Total exposure limit: {total_exposure:.2f} > {max_exposure}"
+                'reason': f"Risk validation error: {str(e)}. Trade blocked for safety."
             }
-        
-        # Symbol-specific exposure
-        symbol_exposure = sum(
-            trade.get('volume', 0) 
-            for trade in self.active_trades.values() 
-            if trade.get('symbol') == request.symbol
-        )
-        max_symbol_exposure = 2.0  # 2 lots per symbol
-        
-        if symbol_exposure + request.volume > max_symbol_exposure:
-            return {
-                'approved': False,
-                'reason': f"{request.symbol} exposure limit: {symbol_exposure + request.volume:.2f} > {max_symbol_exposure}"
-            }
-        
-        return {'approved': True, 'reason': 'Risk limits approved'}
     
     def _generate_smart_sl_tp(self, request: TradeRequest) -> Dict:
         """Generate intelligent stop loss and take profit levels"""
@@ -629,7 +725,7 @@ class FireRouter:
                 'volume': request.volume,
                 'stop_loss': request.stop_loss,
                 'take_profit': request.take_profit,
-                'comment': f"{request.comment} TCS:{request.tcs_score} {request.fire_mode.value}",
+                'comment': f"{request.comment} TCS:{request.tcs_score} {request.fire_mode.value} [{getattr(request, 'signal_type', 'arcade').upper()}]",
                 'timestamp': datetime.now().isoformat(),
                 'user_id': request.user_id,
                 'tier': user_tier.value,
@@ -773,13 +869,36 @@ class FireRouter:
             # Simulate close (will connect to actual bridge later)
             # response = requests.post(f"{self.bridge_url}/close", json=payload, timeout=10)
             
+            # Calculate XP for FANG tier trades
+            xp_message = ""
+            user_tier = self.user_tiers.get(user_id, TierLevel.NIBBLER)
+            
+            if user_tier == TierLevel.FANG:
+                from .sniper_xp_handler import calculate_fang_trade_xp
+                
+                # Simulate trade result (would come from MT5 in production)
+                exit_price = 1.2550  # Simulated
+                pnl = 50.0  # Simulated profit
+                exit_reason = 'manual_close'  # or 'tp_hit', 'sl_hit'
+                
+                xp_result = calculate_fang_trade_xp(
+                    trade_id=trade_id,
+                    signal_type=trade.get('signal_type', 'arcade'),
+                    exit_price=exit_price,
+                    exit_reason=exit_reason,
+                    pnl=pnl
+                )
+                
+                if 'final_xp' in xp_result:
+                    xp_message = f"\n\n{xp_result['message']}\n🎖️ XP Earned: +{xp_result['final_xp']}"
+            
             # Remove from active trades
             del self.active_trades[trade_id]
             
             return TradeExecutionResult(
                 success=True,
                 trade_id=trade_id,
-                message=f"✅ Trade {trade_id} closed successfully",
+                message=f"✅ Trade {trade_id} closed successfully{xp_message}",
                 timestamp=datetime.now().isoformat()
             )
             
@@ -848,15 +967,45 @@ class FireRouter:
     
     def _log_successful_trade(self, request: TradeRequest, result: TradeExecutionResult):
         """Log successful trade for statistics"""
-        self.active_trades[result.trade_id] = {
+        # Store trade data including signal type
+        trade_data = {
             'user_id': request.user_id,
             'symbol': request.symbol,
             'direction': request.direction,
             'volume': request.volume,
             'execution_price': result.execution_price,
             'timestamp': result.timestamp,
-            'tcs_score': request.tcs_score
+            'tcs_score': request.tcs_score,
+            'signal_type': getattr(request, 'signal_type', 'arcade')  # Track signal type
         }
+        
+        self.active_trades[result.trade_id] = trade_data
+        
+        # For FANG tier sniper trades, register with XP handler
+        user_tier = self.user_tiers.get(request.user_id, TierLevel.NIBBLER)
+        if user_tier == TierLevel.FANG and trade_data['signal_type'] == 'sniper':
+            # Register sniper trade for XP tracking
+            from .sniper_xp_handler import calculate_fang_trade_xp
+            
+            # Generate SL/TP from smart levels (would come from actual trade in production)
+            sl_tp = self._generate_smart_sl_tp(request)
+            
+            entry_data = {
+                'user_id': request.user_id,
+                'symbol': request.symbol,
+                'entry_price': result.execution_price or 1.0,
+                'tp_price': (result.execution_price or 1.0) + sl_tp['take_profit'],
+                'sl_price': (result.execution_price or 1.0) - sl_tp['stop_loss']
+            }
+            
+            calculate_fang_trade_xp(
+                trade_id=result.trade_id,
+                signal_type='sniper',
+                exit_price=0,
+                exit_reason='',
+                pnl=0,
+                entry_data=entry_data
+            )
         
         self.execution_stats['total_trades'] += 1
         self.execution_stats['successful_trades'] += 1
@@ -867,6 +1016,10 @@ class FireRouter:
         """Log error for monitoring"""
         print(f"[FIRE_ROUTER ERROR] {datetime.now().isoformat()}: {error_msg}")
         self.execution_stats['failed_trades'] += 1
+    
+    def _log_info(self, info_msg: str):
+        """Log info for monitoring"""
+        print(f"[FIRE_ROUTER INFO] {datetime.now().isoformat()}: {info_msg}")
     
     def get_execution_stats(self) -> Dict:
         """Get trading execution statistics"""
@@ -1482,3 +1635,31 @@ class TacticalEducationSystem:
             'reason': 'performance_based',
             'applied_silently': True
         }
+    
+    def _get_user_xp(self, user_id: int) -> int:
+        """Get user's current XP - would come from database"""
+        # In production, this would fetch from database
+        # For now, return a default value
+        return 1000  # Default XP for testing
+    
+    def _get_account_info(self, user_id: int) -> 'AccountInfo':
+        """Get account information - would come from MT5"""
+        from .risk_management import AccountInfo
+        
+        # In production, this would fetch from MT5
+        # For now, return test data
+        return AccountInfo(
+            balance=10000.0,  # $10,000 test balance
+            equity=10000.0,
+            margin=0.0,
+            free_margin=10000.0,
+            currency="USD",
+            leverage=100,
+            starting_balance=10000.0
+        )
+    
+    def _get_daily_pnl(self, user_id: int) -> float:
+        """Get user's daily P&L - would come from database"""
+        # In production, this would calculate from today's closed trades
+        # For now, return 0 (no loss)
+        return 0.0

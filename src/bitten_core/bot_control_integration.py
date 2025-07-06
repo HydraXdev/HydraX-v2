@@ -6,7 +6,7 @@ from typing import Dict, Optional, Any
 from .telegram_router import TelegramRouter, TelegramUpdate, CommandResult
 from .telegram_bot_controls import TelegramBotControls, should_show_bot_message, format_bot_message
 from .psyops.disclaimer_manager import DisclaimerManager
-from .psyops.psyops_orchestrator import MasterPsyOpsOrchestrator
+# from .psyops.psyops_orchestrator import MasterPsyOpsOrchestrator  # TODO: Create this module
 
 class BotControlIntegration:
     """Integrates bot controls with main BITTEN system"""

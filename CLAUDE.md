@@ -138,6 +138,29 @@ Read the full story: `/docs/bitten/BITTEN_WORLD_LORE.md`
 
 # BITTEN Development Context for Claude
 
+## 🚨 CRITICAL: Signal Format & Flow
+
+### ✅ CORRECT Signal Format (Telegram)
+```
+⚡ **SIGNAL DETECTED**
+EUR/USD | BUY | 87% confidence
+⏰ Expires in 10 minutes
+[🎯 VIEW INTEL] <- WebApp button
+```
+
+### ❌ WRONG Format (Too Verbose)
+Do NOT send 20+ line tactical briefings to Telegram! Those belong in the WebApp.
+
+### Signal Flow
+1. **Brief Alert** → Telegram (2-3 lines)
+2. **WebApp Button** → Opens full intelligence
+3. **Full Details** → Shown in WebApp based on tier
+
+**📂 Quick References:**
+- Signal flow details: `/root/HydraX-v2/SIGNAL_FLOW.md`
+- AI quick start: `/root/HydraX-v2/AI_QUICKSTART.md`
+- Proper example: `/root/HydraX-v2/examples/proper_signal_example.py`
+
 ## Project Owner
 **COMMANDER** - The project owner and lead developer
 

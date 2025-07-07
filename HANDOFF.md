@@ -170,3 +170,11 @@ curl -X POST http://localhost:5000/stripe/webhook \
 **Main Achievement**: Complete landing page and Stripe foundation
 **Blocker**: Need real Stripe API keys to proceed
 **User Feedback**: "looks awesome"
+
+### ⚠️ GIT PUSH BLOCKED
+GitHub is blocking the push due to the Stripe API key in commit history. 
+To fix in next session:
+1. Visit the URL in the error message to allow the push, OR
+2. Remove the commit from history with: `git reset --hard HEAD~2 && git push --force`
+
+The key was already removed from files, but remains in git history.

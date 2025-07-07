@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BITTEN Mission Briefing</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: #0a0a0a;
+            color: #ffffff;
+            font-family: 'Courier New', monospace;
+            overflow-x: hidden;
+        }
+        
+        /* User Stats Header */
+        .user-header {
+            background: linear-gradient(135deg, #1a1a1a, #0f0f0f);
+            padding: 15px 20px;
+            border-bottom: 2px solid #333;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .user-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0 15px;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+        }
+        
+        .stat-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        
+        .stat-value.negative {
+            color: #f44336;
+        }
+        
+        .profile-link {
+            background: #4CAF50;
+            color: #000;
+            padding: 8px 20px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .profile-link:hover {
+            background: #45a049;
+            transform: scale(1.05);
+        }
+        
+        /* Mission Briefing */
+        .mission-container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+        
+        .mission-header {
+            text-align: center;
+            margin-bottom: 30px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+        
+        .signal-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid #4CAF50;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .signal-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .detail-box {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        
+        .detail-label {
+            color: #888;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        
+        .detail-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        
+        /* Live Elements */
+        .live-stats {
+            background: rgba(76, 175, 80, 0.1);
+            border: 1px solid #4CAF50;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .countdown {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ff9800;
+            margin: 10px 0;
+        }
+        
+        .countdown.critical {
+            color: #f44336;
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        
+        .fire-count {
+            font-size: 18px;
+            margin: 10px 0;
+        }
+        
+        .fire-count .number {
+            font-size: 30px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        
+        /* Action Buttons */
+        .action-section {
+            margin: 30px 0;
+            text-align: center;
+        }
+        
+        .fire-button {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: #000;
+            border: none;
+            padding: 20px 60px;
+            font-size: 24px;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+        }
+        
+        .fire-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.6);
+        }
+        
+        .fire-button:active {
+            transform: scale(0.95);
+        }
+        
+        .fire-button.disabled {
+            background: #666;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+        
+        .confirmation {
+            background: rgba(76, 175, 80, 0.2);
+            border: 2px solid #4CAF50;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+            display: none;
+        }
+        
+        .confirmation.show {
+            display: block;
+            animation: slideIn 0.5s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Education Tabs */
+        .education-tabs {
+            margin: 30px 0;
+            border-top: 1px solid #333;
+            padding-top: 20px;
+        }
+        
+        .tab-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .tab-button {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #333;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .tab-button.active {
+            background: #4CAF50;
+            color: #000;
+            border-color: #4CAF50;
+        }
+        
+        .tab-content {
+            display: none;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 8px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Responsive */
+        @media (max-width: 600px) {
+            .user-stats {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .stat-item {
+                flex-direction: row;
+                justify-content: space-between;
+                width: 100%;
+                padding: 5px 0;
+            }
+            
+            .fire-button {
+                padding: 15px 40px;
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- User Stats Header -->
+    <div class="user-header">
+        <div class="user-stats">
+            <div class="stat-item">
+                <span class="stat-label">7D P/L</span>
+                <span class="stat-value" id="pnl">+$127.50</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Win Rate</span>
+                <span class="stat-value" id="winrate">73%</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Trades Today</span>
+                <span class="stat-value" id="trades">3/6</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Rank</span>
+                <span class="stat-value" id="rank">WARRIOR</span>
+            </div>
+            <a href="/me" class="profile-link">MY PROFILE →</a>
+        </div>
+    </div>
+
+    <!-- Mission Briefing -->
+    <div class="mission-container">
+        <div class="mission-header">
+            <h1>⚡ TACTICAL MISSION BRIEFING ⚡</h1>
+            <p id="tier-badge" style="color: #4CAF50; margin-top: 10px;">FANG TIER ACCESS</p>
+        </div>
+
+        <div class="signal-card">
+            <div class="signal-details">
+                <div class="detail-box">
+                    <div class="detail-label">Asset</div>
+                    <div class="detail-value" id="symbol">EUR/USD</div>
+                </div>
+                <div class="detail-box">
+                    <div class="detail-label">Direction</div>
+                    <div class="detail-value" id="direction">BUY</div>
+                </div>
+                <div class="detail-box">
+                    <div class="detail-label">Entry Price</div>
+                    <div class="detail-value" id="entry">1.0850</div>
+                </div>
+                <div class="detail-box">
+                    <div class="detail-label">Stop Loss</div>
+                    <div class="detail-value" id="sl">1.0830</div>
+                </div>
+                <div class="detail-box">
+                    <div class="detail-label">Take Profit</div>
+                    <div class="detail-value" id="tp">1.0880</div>
+                </div>
+                <div class="detail-box">
+                    <div class="detail-label">Confidence</div>
+                    <div class="detail-value" id="confidence">87%</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Stats -->
+        <div class="live-stats">
+            <div class="countdown" id="countdown">9:45</div>
+            <div>TIME REMAINING</div>
+            <div class="fire-count">
+                <span class="number" id="fireCount">12</span>
+                <div>TRADERS FIRED</div>
+            </div>
+        </div>
+
+        <!-- Action Section -->
+        <div class="action-section">
+            <button class="fire-button" id="fireButton" onclick="executeTrade()">
+                🔫 FIRE
+            </button>
+        </div>
+
+        <!-- Confirmation (Hidden until trade executed) -->
+        <div class="confirmation" id="confirmation">
+            <h2>✅ TRADE EXECUTED!</h2>
+            <p>Trade ID: <span id="tradeId">#123456</span></p>
+            <p>You can track your position in the <a href="/me">dashboard</a></p>
+        </div>
+
+        <!-- Education Tabs -->
+        <div class="education-tabs">
+            <div class="tab-buttons">
+                <button class="tab-button active" onclick="showTab('analysis')">Analysis</button>
+                <button class="tab-button" onclick="showTab('risk')">Risk Management</button>
+                <button class="tab-button" onclick="showTab('education')">Learn More</button>
+            </div>
+            
+            <div class="tab-content active" id="analysis-tab">
+                <h3>Technical Analysis</h3>
+                <p>This signal is based on a bullish momentum pattern with strong support at 1.0840...</p>
+            </div>
+            
+            <div class="tab-content" id="risk-tab">
+                <h3>Risk Management</h3>
+                <p>Position size calculated at 2% risk. Maximum loss: $20 based on your account...</p>
+            </div>
+            
+            <div class="tab-content" id="education-tab">
+                <h3>Educational Resources</h3>
+                <p>Learn more about this setup pattern and how to identify similar opportunities...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize with data from server
+        const missionData = {{ mission_data | tojson | safe }};
+        
+        // Update UI with user stats
+        function updateUserStats() {
+            document.getElementById('pnl').textContent = formatPnL(missionData.user.stats.last_7d_pnl);
+            document.getElementById('winrate').textContent = missionData.user.stats.win_rate + '%';
+            document.getElementById('trades').textContent = missionData.user.stats.trades_today + '/6';
+            document.getElementById('rank').textContent = missionData.user.stats.rank;
+        }
+        
+        // Update signal details
+        function updateSignalDetails() {
+            document.getElementById('symbol').textContent = missionData.signal.symbol;
+            document.getElementById('direction').textContent = missionData.signal.direction;
+            document.getElementById('entry').textContent = missionData.signal.entry_price;
+            document.getElementById('sl').textContent = missionData.signal.stop_loss;
+            document.getElementById('tp').textContent = missionData.signal.take_profit;
+            document.getElementById('confidence').textContent = missionData.signal.tcs_score + '%';
+        }
+        
+        // Countdown timer
+        function startCountdown() {
+            const updateCountdown = () => {
+                const remaining = missionData.signal_stats.time_remaining;
+                const minutes = Math.floor(remaining / 60);
+                const seconds = remaining % 60;
+                
+                const countdownEl = document.getElementById('countdown');
+                countdownEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                
+                if (remaining < 60) {
+                    countdownEl.classList.add('critical');
+                }
+                
+                if (remaining > 0) {
+                    missionData.signal_stats.time_remaining--;
+                    setTimeout(updateCountdown, 1000);
+                } else {
+                    document.getElementById('fireButton').classList.add('disabled');
+                    document.getElementById('fireButton').textContent = 'EXPIRED';
+                }
+            };
+            
+            updateCountdown();
+        }
+        
+        // Update fire count in real-time
+        function connectWebSocket() {
+            // In production, connect to WebSocket for real-time updates
+            // For now, simulate with random updates
+            setInterval(() => {
+                const currentCount = parseInt(document.getElementById('fireCount').textContent);
+                document.getElementById('fireCount').textContent = currentCount + Math.floor(Math.random() * 3);
+            }, 5000);
+        }
+        
+        // Execute trade
+        async function executeTrade() {
+            const button = document.getElementById('fireButton');
+            if (button.classList.contains('disabled')) return;
+            
+            button.disabled = true;
+            button.textContent = 'EXECUTING...';
+            
+            try {
+                const response = await fetch('/api/fire', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        user_id: missionData.user.id,
+                        signal_id: missionData.signal.id
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Show confirmation
+                    document.getElementById('tradeId').textContent = '#' + result.trade_id;
+                    document.getElementById('confirmation').classList.add('show');
+                    
+                    // Update button
+                    button.textContent = '✅ FIRED';
+                    button.classList.add('disabled');
+                    
+                    // Update fire count
+                    document.getElementById('fireCount').textContent = result.fire_count;
+                } else {
+                    button.textContent = '❌ FAILED';
+                    setTimeout(() => {
+                        button.textContent = '🔫 FIRE';
+                        button.disabled = false;
+                    }, 3000);
+                }
+            } catch (error) {
+                console.error('Trade execution error:', error);
+                button.textContent = '❌ ERROR';
+                setTimeout(() => {
+                    button.textContent = '🔫 FIRE';
+                    button.disabled = false;
+                }, 3000);
+            }
+        }
+        
+        // Tab switching
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName + '-tab').classList.add('active');
+            event.target.classList.add('active');
+        }
+        
+        // Format P/L
+        function formatPnL(value) {
+            const formatted = '$' + Math.abs(value).toFixed(2);
+            return value >= 0 ? '+' + formatted : '-' + formatted;
+        }
+        
+        // Initialize page
+        updateUserStats();
+        updateSignalDetails();
+        startCountdown();
+        connectWebSocket();
+        
+        // Check if user already fired
+        if (missionData.user_fired) {
+            document.getElementById('fireButton').textContent = '✅ ALREADY FIRED';
+            document.getElementById('fireButton').classList.add('disabled');
+        }
+    </script>
+</body>
+</html>

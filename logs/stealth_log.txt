@@ -1,0 +1,2 @@
+2025-07-08 00:19:36,729 - INFO - {"timestamp": "2025-07-08T00:19:36.729668", "action_type": "entry_delay", "original": 0, "modified": 2.8051, "level": "medium", "details": {"pair": "EURUSD", "delay_seconds": 2.8051}}
+2025-07-08 00:19:36,729 - INFO - {"timestamp": "2025-07-08T00:19:36.729852", "action_type": "lot_size_jitter", "original": 0.1, "modified": 0.1, "level": "medium", "details": {"pair": "EURUSD", "jitter_percent": 3.3156, "direction": "increase"}}

@@ -154,6 +154,37 @@
         "Your mission is to select the environment that best supports your continued growth and strategic objectives. Which theater will you choose, recruit?"
       ]
     },
+    "press_pass_intro": {
+      "title": "Phase 7: Press Pass - VIP Access Granted",
+      "nexus_briefing": [
+        "Ah, Press Corps! Welcome to the BITTEN Network's VIP program. The **Press Pass** is our way of giving select operatives full access to everything we offer - no strings attached, no payment required.",
+        "This isn't a limited demo. This is the **complete BITTEN experience** for 7 days. Every tool, every signal, every strategy - all at your disposal."
+      ],
+      "details": {
+        "access_level": [
+          "🎟️ **PRESS PASS PRIVILEGES**:",
+          "• **Full Network Access**: All premium features unlocked immediately",
+          "• **$50,000 Demo Account**: MetaQuotes practice funds provisioned automatically",
+          "• **7-Day Trial Period**: Complete access expires after one week",
+          "• **No Payment Required**: Start immediately without credit card or bank info",
+          "• **All Trading Tools**: Every signal, strategy, and analytical tool available"
+        ],
+        "limitations": [
+          "⚠️ **OPERATIONAL PARAMETERS**:",
+          "• **XP Reset**: Your experience points reset nightly at midnight UTC",
+          "• **Time Limit**: Access expires exactly 7 days from activation",
+          "• **Upgrade Required**: Must transition to paid tier to retain progress after trial",
+          "• **Demo Only**: Press Pass operates with practice funds, not live capital"
+        ],
+        "doc_emphasis": "**PRESS PASS = FULL ACCESS, NO RISK. YOUR 7-DAY WINDOW TO MASTER THE SYSTEM.**"
+      },
+      "nexus_activation": [
+        "Ready to activate your Press Pass, operative? Once activated, your 7-day countdown begins immediately.",
+        "Use this time wisely. Learn our systems, test our strategies, experience the full power of BITTEN.",
+        "After 7 days, you'll need to choose a paid tier to continue. But for now? Welcome to the inner circle."
+      ],
+      "activation_prompt": "Activate your Press Pass now and join the BITTEN Press Corps. Your MetaQuotes demo account will be provisioned immediately."
+    },
     "oath_of_enlistment": {
       "title": "Phase 7: The BITTEN Oath of Enlistment",
       "nexus_admin": [

@@ -1,0 +1,48 @@
+[Unit]
+Description=Press Pass Monitoring System
+After=network.target postgresql.service redis.service
+Requires=postgresql.service redis.service
+
+[Service]
+Type=simple
+User=bitten
+Group=bitten
+WorkingDirectory=/root/HydraX-v2
+Environment="PYTHONPATH=/root/HydraX-v2"
+Environment="DB_HOST=localhost"
+Environment="DB_PORT=5432"
+Environment="DB_USER=bitten_user"
+Environment="DB_PASSWORD=your_password_here"
+Environment="DB_NAME=bitten_db"
+Environment="REDIS_HOST=localhost"
+Environment="REDIS_PORT=6379"
+Environment="REDIS_DB=0"
+Environment="OUTPUT_DIR=/var/www/html/analytics"
+Environment="ANOMALY_SENSITIVITY=2.5"
+
+# Optional alert configurations
+# Environment="ALERT_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/WEBHOOK/URL"
+# Environment="EMAIL_ALERTS_ENABLED=true"
+# Environment="ALERT_EMAIL_RECIPIENTS=team@example.com,alerts@example.com"
+
+ExecStart=/usr/bin/python3 /root/HydraX-v2/src/analytics/run_monitoring.py
+
+# Restart configuration
+Restart=on-failure
+RestartSec=10
+StartLimitBurst=3
+StartLimitInterval=60s
+
+# Logging
+StandardOutput=append:/var/log/press_pass_monitoring.log
+StandardError=append:/var/log/press_pass_monitoring_error.log
+
+# Security
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/www/html/analytics /var/log
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,17 @@
+[Unit]
+Description=BITTEN Email Scheduler Service
+After=network.target
+
+[Service]
+Type=simple
+User=bitten
+WorkingDirectory=/opt/bitten/HydraX-v2
+Environment="PATH=/opt/bitten/venv/bin:/usr/local/bin:/usr/bin:/bin"
+ExecStart=/opt/bitten/venv/bin/python src/bitten_core/email_scheduler.py
+Restart=always
+RestartSec=30
+StandardOutput=append:/var/log/bitten/email_scheduler.log
+StandardError=append:/var/log/bitten/email_scheduler_error.log
+
+[Install]
+WantedBy=multi-user.target

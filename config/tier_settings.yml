@@ -13,13 +13,49 @@ position_limits:
 
 # Tier-specific configurations
 tiers:
+  PRESS_PASS:
+    pricing:
+      monthly_price: 0  # Free tier
+      
+    fire_settings:
+      daily_shots: 1
+      min_tcs: 60
+      risk_per_shot: 2.0         # Risk percentage per trade
+      
+    risk_control:
+      default_risk: 2.0
+      boost_risk: 2.0            # No boost for press pass
+      boost_min_balance: 99999   # Effectively disabled
+      max_trades_per_day: 1
+      max_open_trades: 1         # Only 1 open position at a time
+      drawdown_cap: 6.0          # Daily loss limit percentage
+      cooldown_mode: trade_complete
+      cooldown_hours: 0
+      cooldown_max_trades: 1
+      cooldown_risk: 2.0
+      
+    features:
+      has_chaingun: false
+      has_autofire: false
+      has_stealth: false
+      has_sniper_access: false
+      has_midnight_hammer: false
+      fire_type: manual          # Manual execution only
+      auto_fire: false
+      stealth: false
+      xp_reset_nightly: true     # XP resets nightly as specified
+      
+    position_management:
+      min_balance: 100
+      max_concurrent_positions: 1
+      
   NIBBLER:
     pricing:
       monthly_price: 39
       
     fire_settings:
       daily_shots: 6
-      min_tcs: 75                # Updated from 70 to 75
+      min_tcs: 70                # Minimum TCS threshold for Nibbler
       risk_per_shot: 2.0         # Risk percentage per trade
       
     risk_control:
@@ -162,7 +198,7 @@ special_modes:
     tcs_requirements: [85, 87, 89, 91]    # TCS needed for each shot
     max_sequences_per_day: 2              # Max 2 chaingun sequences daily
     rapid_fire: true
-    available_tiers: ["FANG", "COMMANDER", "APEX"]  # Now available from Fang tier
+    available_tiers: ["FANG", "COMMANDER", "APEX"]  # Not available for PRESS_PASS or NIBBLER
     description: "Progressive risk sequence - 4 shots with increasing risk and TCS requirements"
     
   midnight_hammer:
@@ -199,7 +235,7 @@ global_safety:
 
 # Bitmode configuration (from user's message)
 bitmode:
-  tcs_min: 75
+  tcs_min: 70
   risk_default: 2.0
   risk_boost: 2.5
   boost_min_balance: 500
@@ -314,6 +350,7 @@ bonus_rules:
     
   # Tier multipliers - scale bonuses by tier
   tier_multipliers:
+    PRESS_PASS: 0.5            # 50% of bonus (limited benefits)
     NIBBLER: 1.0               # 100% of bonus
     FANG: 1.2                  # 120% of bonus
     COMMANDER: 1.5             # 150% of bonus

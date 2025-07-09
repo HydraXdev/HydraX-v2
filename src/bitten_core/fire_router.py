@@ -193,6 +193,9 @@ class FireRouter:
         # Bit mode decision tracking
         self.pending_bit_decisions = {}  # decision_id -> trade_request
         
+        # Low TCS warning tracking
+        self.pending_low_tcs_trades = {}  # warning_id -> {trade_request, warning_dialog, timestamp}
+        
         # Bot personalities for UI responses
         self.bot_responses = {
             'drillbot': {
@@ -329,7 +332,34 @@ class FireRouter:
             fire_validation = validate_fire_request(trade_payload, str(trade_request.user_id), user_profile)
             
             if not fire_validation['valid']:
-                # Format bot responses into message
+                # Check if this is a low TCS warning case
+                if fire_validation.get('reason') == 'LOW_TCS_WARNING_REQUIRED':
+                    # Get the warning dialog from mutations
+                    warning_dialog = fire_validation.get('mutations', {}).get('warning_dialog')
+                    if warning_dialog:
+                        # Import the warning formatter
+                        from .bit_warnings import format_warning_for_telegram
+                        
+                        # Format the warning message
+                        warning_message = format_warning_for_telegram(warning_dialog)
+                        
+                        # Store the trade request for later processing after confirmation
+                        warning_id = f"tcs_warning_{trade_request.user_id}_{int(time.time())}"
+                        self.pending_low_tcs_trades[warning_id] = {
+                            'trade_request': trade_request,
+                            'warning_dialog': warning_dialog,
+                            'timestamp': datetime.now()
+                        }
+                        
+                        # Return warning dialog
+                        return TradeExecutionResult(
+                            success=False,
+                            message=warning_message,
+                            error_code="LOW_TCS_WARNING",
+                            trade_id=warning_id  # Use this to track the warning
+                        )
+                
+                # Regular validation failure
                 bot_msgs = fire_validation.get('bot_responses', {})
                 formatted_msg = f"❌ {fire_validation['reason']}\n\n"
                 if bot_msgs.get('drillbot'):
@@ -1490,6 +1520,118 @@ class FireRouter:
                           f"💡 Hint: {game['hint']}\n\n"
                           f"Try again with `/recovery complete YOUR_ANSWER`"
             }
+    
+    def process_low_tcs_warning_response(self, user_id: int, warning_id: str, action: str) -> Dict[str, Any]:
+        """Process user's response to low TCS warning"""
+        # Check if warning exists
+        if warning_id not in self.pending_low_tcs_trades:
+            return {
+                'success': False,
+                'message': "❌ Warning not found or expired. Please submit a new trade."
+            }
+        
+        # Get the pending trade data
+        pending_data = self.pending_low_tcs_trades[warning_id]
+        trade_request = pending_data['trade_request']
+        warning_dialog = pending_data['warning_dialog']
+        
+        # Check if warning has expired (5 minute timeout)
+        if (datetime.now() - pending_data['timestamp']).total_seconds() > 300:
+            del self.pending_low_tcs_trades[warning_id]
+            return {
+                'success': False,
+                'message': "⏰ Warning expired. Please submit a new trade."
+            }
+        
+        # Import bit warnings processor
+        from .bit_warnings import process_warning_response
+        
+        # Process the response
+        response = process_warning_response(
+            str(user_id), 
+            trade_request.tcs_score, 
+            action
+        )
+        
+        # Clean up the pending trade
+        del self.pending_low_tcs_trades[warning_id]
+        
+        # Check if trade should proceed
+        if response['proceed']:
+            # Apply any cooldown if needed
+            if response.get('enforce_cooldown'):
+                self.last_shot_time[user_id] = datetime.now()
+            
+            # Re-execute the trade without the warning check
+            # Temporarily increase TCS to bypass the warning (already confirmed)
+            original_tcs = trade_request.tcs_score
+            trade_request.tcs_score = 76  # Set to minimum to bypass warning
+            
+            # Execute the trade
+            result = self.execute_trade(trade_request)
+            
+            # Restore original TCS in the result message
+            if result.message:
+                result.message = result.message.replace("TCS: 76", f"TCS: {original_tcs}")
+            
+            # Add Bit's reaction to the result
+            if result.success:
+                result.message += f"\n\n{response['bit_reaction']}"
+            
+            # Add wisdom score update
+            wisdom_score = response['wisdom_score']
+            result.message += f"\n\n📊 **Wisdom Score**: {wisdom_score['score']}% ({wisdom_score['rating']})"
+            
+            return {
+                'success': result.success,
+                'message': result.message,
+                'execution_result': result
+            }
+        else:
+            # Trade cancelled
+            message = f"✅ **Trade Cancelled**\n\n{response['bit_reaction']}\n\n"
+            
+            # Add wisdom score
+            wisdom_score = response['wisdom_score']
+            message += f"📊 **Wisdom Score**: {wisdom_score['score']}% ({wisdom_score['rating']})\n"
+            message += f"Warnings Heeded: {wisdom_score['warnings_heeded']}/{wisdom_score['total_warnings']}\n\n"
+            message += "💡 _Patience is the path to consistent profitability._"
+            
+            return {
+                'success': True,
+                'message': message,
+                'trade_cancelled': True
+            }
+    
+    def get_user_wisdom_stats(self, user_id: int) -> Dict[str, Any]:
+        """Get user's wisdom statistics"""
+        from .bit_warnings import BitWarningSystem
+        
+        warning_system = BitWarningSystem()
+        wisdom_data = warning_system.get_user_wisdom_score(str(user_id))
+        
+        # Format statistics message
+        message = f"🧘 **Your Wisdom Statistics**\n\n"
+        message += f"📊 **Wisdom Score**: {wisdom_data['score']}%\n"
+        message += f"🏆 **Rating**: {wisdom_data['rating']}\n"
+        message += f"⚠️ **Total Warnings**: {wisdom_data['total_warnings']}\n"
+        message += f"✅ **Warnings Heeded**: {wisdom_data['warnings_heeded']}\n\n"
+        
+        # Add motivational message based on score
+        if wisdom_data['score'] >= 80:
+            message += "✨ _Bit is proud of your discipline. The Force is strong with you._"
+        elif wisdom_data['score'] >= 60:
+            message += "💪 _Good progress, young padawan. Continue on this path._"
+        elif wisdom_data['score'] >= 40:
+            message += "⚡ _Room for improvement. Listen to Bit's wisdom more often._"
+        else:
+            message += "🚨 _Dangerous path you walk. Heed Bit's warnings, you must!_"
+        
+        return {
+            'success': True,
+            'message': message,
+            'wisdom_data': wisdom_data
+        }
 
 
 class TacticalEducationSystem:

@@ -1,0 +1,396 @@
+# BITTEN Tier Configuration
+# Centralized settings for all subscription tiers
+# All values here flow system-wide to control fire logic, risk management, and features
+
+# Position limits based on account balance (applies to all tiers)
+position_limits:
+  balance_thresholds:
+    500: 1      # <$1000: 1 position max
+    1000: 2     # $1000-2000: 2 positions  
+    2000: 3     # $2000-5000: 3 positions
+    5000: 5     # $5000-10000: 5 positions
+    10000: 10   # $10000+: 10 positions
+
+# Tier-specific configurations
+tiers:
+  PRESS_PASS:
+    pricing:
+      monthly_price: 0  # Free tier
+      
+    fire_settings:
+      daily_shots: 1
+      min_tcs: 60
+      risk_per_shot: 2.0         # Risk percentage per trade
+      
+    risk_control:
+      default_risk: 2.0
+      boost_risk: 2.0            # No boost for press pass
+      boost_min_balance: 99999   # Effectively disabled
+      max_trades_per_day: 1
+      max_open_trades: 1         # Only 1 open position at a time
+      drawdown_cap: 6.0          # Daily loss limit percentage
+      cooldown_mode: trade_complete
+      cooldown_hours: 0
+      cooldown_max_trades: 1
+      cooldown_risk: 2.0
+      
+    features:
+      has_chaingun: false
+      has_autofire: false
+      has_stealth: false
+      has_sniper_access: false
+      has_midnight_hammer: false
+      fire_type: manual          # Manual execution only
+      auto_fire: false
+      stealth: false
+      xp_reset_nightly: true     # XP resets nightly as specified
+      
+    position_management:
+      min_balance: 100
+      max_concurrent_positions: 1
+      
+  NIBBLER:
+    pricing:
+      monthly_price: 39
+      
+    fire_settings:
+      daily_shots: 6
+      min_tcs: 75                # Updated from 70 to 75
+      risk_per_shot: 2.0         # Risk percentage per trade
+      
+    risk_control:
+      default_risk: 2.0          # Updated from 1.0 to 2.0
+      boost_risk: 2.5            # Updated from 1.5 to 2.5
+      boost_min_balance: 500     # Minimum balance for boost mode
+      max_trades_per_day: 6
+      max_open_trades: 1         # Only 1 open position at a time
+      drawdown_cap: 6.0          # Daily loss limit percentage
+      cooldown_mode: trade_complete  # Wait for trade to close, not time-based
+      cooldown_hours: 0          # No time cooldown since using trade_complete
+      cooldown_max_trades: 6
+      cooldown_risk: 2.0         # Same as default risk
+      
+    features:
+      has_chaingun: false
+      has_autofire: false
+      has_stealth: false
+      has_sniper_access: false
+      has_midnight_hammer: false
+      fire_type: manual          # Manual execution only
+      auto_fire: false           # Explicitly set auto_fire to false
+      stealth: false             # Explicitly set stealth to false
+      
+    position_management:
+      min_balance: 500
+      max_concurrent_positions: 1  # Enforce single position
+      
+  FANG:
+    pricing:
+      monthly_price: 89
+      
+    fire_settings:
+      daily_shots: 10
+      min_tcs: 85                # Default minimum (for sniper)
+      min_tcs_arcade: 75         # Lower TCS for arcade signals
+      min_tcs_sniper: 85         # Higher threshold for sniper setups
+      risk_per_shot: 2.0         # Default risk percentage
+      
+    risk_control:
+      default_risk: 2.0          # 2% default risk
+      boost_risk: 2.5            # 2.5% boost risk
+      boost_min_balance: 1000    # Boost unlocked at $1000
+      max_trades_per_day: 10
+      max_open_trades: 2         # Only 2 trades open at once
+      drawdown_cap: 8.5          # 8.5% daily loss limit
+      cooldown_mode: trade_complete  # Wait for trade to close
+      cooldown_hours: 0          # No time cooldown
+      cooldown_max_trades: 10
+      cooldown_risk: 2.0         # Same as default risk
+      
+    features:
+      has_chaingun: true         # Chaingun unlocked at Fang tier
+      has_autofire: false        # No auto-fire at this tier
+      has_stealth: false         # No stealth at this tier
+      has_sniper_access: true    # Sniper mode unlocked
+      has_midnight_hammer: false
+      fire_type: manual          # Manual execution only
+      shot_type_split: true      # Differentiates sniper vs arcade internally
+      sniper_bonus_xp: true      # Enable XP boost for full sniper hold (TP hit)
+      early_exit_penalty: true   # Reduce XP if sniper is closed early
+      
+    position_management:
+      min_balance: 500           # Minimum $500 balance
+      max_concurrent_positions: 2  # Enforce 2 position limit
+      
+  COMMANDER:
+    pricing:
+      monthly_price: 139
+      
+    fire_settings:
+      daily_shots: 20
+      min_tcs: 90                # Default TCS (auto mode)
+      min_tcs_auto: 90           # Full auto mode: 90% TCS required
+      min_tcs_semi: 75           # Semi mode: 75% TCS required (more targets)
+      risk_per_shot: 2.0
+      
+    risk_control:
+      default_risk: 2.0          
+      boost_risk: 3.0            # 3% boost mode
+      boost_min_balance: 2000
+      max_trades_per_day: 20
+      max_open_trades: 5
+      drawdown_cap: 10.0         # 10% daily loss limit
+      cooldown_mode: time_based
+      cooldown_hours: 2
+      cooldown_max_trades: 15
+      cooldown_risk: 1.5
+      
+    features:
+      has_chaingun: true         # Chaingun unlocked
+      has_autofire: true         # Auto-fire unlocked
+      has_stealth: true          # Stealth mode unlocked
+      has_sniper_access: true
+      has_midnight_hammer: false
+      fire_type: auto            # Can toggle between auto/semi modes
+      
+    position_management:
+      min_balance: 2000
+      max_concurrent_positions: 5
+      
+  APEX:
+    pricing:
+      monthly_price: 188
+      
+    fire_settings:
+      daily_shots: 999           # Effectively unlimited
+      min_tcs: 91                # Same as Commander
+      risk_per_shot: 2.0
+      
+    risk_control:
+      default_risk: 2.0          
+      boost_risk: 3.0
+      boost_min_balance: 5000
+      max_trades_per_day: 999    # No limit
+      max_open_trades: 10
+      drawdown_cap: 10.0         # Still protected by 10% cap
+      cooldown_mode: none        # No cooldown at all
+      cooldown_hours: 0          
+      cooldown_max_trades: 999
+      cooldown_risk: 2.0
+      
+    features:
+      has_chaingun: true
+      has_autofire: true
+      has_stealth: true
+      has_sniper_access: true
+      has_midnight_hammer: true   # Exclusive Midnight Hammer
+      fire_type: auto
+      
+    position_management:
+      min_balance: 5000
+      max_concurrent_positions: 10
+
+# Special mode configurations
+special_modes:
+  chaingun:
+    # Progressive risk sequence: 2% -> 4% -> 8% -> 16%
+    risk_sequence: [2.0, 4.0, 8.0, 16.0]  # Percentage risk per shot
+    tcs_requirements: [85, 87, 89, 91]    # TCS needed for each shot
+    max_sequences_per_day: 2              # Max 2 chaingun sequences daily
+    rapid_fire: true
+    available_tiers: ["FANG", "COMMANDER", "APEX"]  # Not available for PRESS_PASS or NIBBLER
+    description: "Progressive risk sequence - 4 shots with increasing risk and TCS requirements"
+    
+  midnight_hammer:
+    unity_multiplier: 10.0       # 10x bonus for unity
+    time_window: "00:00-01:00"   # GMT
+    description: "APEX exclusive unity bonus window"
+    
+  stealth:
+    randomize_sl: true
+    sl_variance: 0.1             # 10% variance
+    randomize_risk: true
+    risk_variance: 0.25          # 25% variance
+    description: "Randomized parameters to avoid detection"
+
+# Global safety settings (apply to all tiers)
+global_safety:
+  absolute_max_drawdown: 10.0    # Hard stop at 10% regardless of tier
+  news_lockout_minutes: 30       # Lock trading 30 min before/after high impact
+  weekend_warning: true          # Warn about weekend positions
+  margin_call_threshold: 50.0    # Warning at 50% margin level
+  emergency_stop_enabled: true   # Global kill switch
+  
+  # HARD LOCK: Trade size validation to prevent account-blowing trades
+  trade_size_validation:
+    enabled: true
+    # Uses bitmode risk settings instead of tier-specific limits
+    # risk_default: 2.0% (from bitmode)
+    # risk_boost: 2.5% (from bitmode when balance >= boost_min_balance)
+    # drawdown_cap: 6% (from bitmode)
+    
+    # Simple validation: 
+    # If (lot_size × stop_loss × pip_value) / balance > allowed_risk% → BLOCK TRADE
+    # If daily_loss% + new_trade_risk% > drawdown_cap% → BLOCK TRADE
+
+# Bitmode configuration (from user's message)
+bitmode:
+  tcs_min: 75
+  risk_default: 2.0
+  risk_boost: 2.5
+  boost_min_balance: 500
+  trades_per_day: 6
+  max_open_trades: 1
+  cooldown_mode: trade_complete  # no time-based cooldown, just wait for trade to close
+  drawdown_cap: 6
+  min_balance: 500
+  fire_type: manual
+  auto_fire: false
+  stealth: false
+
+# Official Sniper (FANG) configuration
+sniper:
+  tcs_min_arcade: 75         # Minimum for fast arcade signals
+  tcs_min_sniper: 85         # Higher threshold for sniper setups
+  risk_default: 2.0
+  risk_boost: 2.5
+  boost_min_balance: 1000    # Optional: unlock boosted risk after equity proves growth
+  trades_per_day: 10
+  max_open_trades: 2
+  cooldown_mode: trade_complete
+  drawdown_cap: 8.5
+  min_balance: 500
+  fire_type: manual
+  auto_fire: false
+  stealth: false
+  has_sniper_access: true
+  sniper_bonus_xp: true      # Enable XP boost for full sniper hold (TP hit)
+  early_exit_penalty: true   # Reduce XP if sniper is closed early
+  shot_type_split: true      # Differentiates sniper vs arcade internally
+
+# Special Events & Bonus System
+# Allows temporary overrides for any tier without code changes
+special_events:
+  # Example event structure (inactive)
+  fourth_of_july_2024:
+    active: false
+    start_datetime: "2024-07-04 00:00:00"
+    end_datetime: "2024-07-04 23:59:59"
+    eligible_tiers: ["NIBBLER", "FANG", "COMMANDER", "APEX"]
+    bonuses:
+      risk_percent: 0.5        # +0.5% extra risk allowed
+      daily_shots: 2           # +2 extra trades
+      positions: 0             # No extra positions
+      tcs_reduction: 0         # No TCS requirement reduction
+    message: "🎆 Independence Day Special: +0.5% risk & 2 bonus shots!"
+    
+  black_friday_2024:
+    active: false
+    start_datetime: "2024-11-29 00:00:00"
+    end_datetime: "2024-11-29 23:59:59"
+    eligible_tiers: ["NIBBLER", "FANG"]  # Lower tiers only
+    bonuses:
+      risk_percent: 0
+      daily_shots: 5           # Shopping spree! 5 extra trades
+      positions: 1             # +1 position allowed
+      tcs_reduction: 5         # -5 TCS requirement (70 becomes 65)
+    message: "🛍️ Black Friday Madness: 5 bonus shots + extra position!"
+    
+  new_year_2025:
+    active: false
+    start_datetime: "2025-01-01 00:00:00"
+    end_datetime: "2025-01-01 23:59:59"
+    eligible_tiers: ["APEX"]  # APEX exclusive
+    bonuses:
+      risk_percent: 1.0        # +1% risk for the elite
+      daily_shots: 10          # +10 shots
+      positions: 2             # +2 positions
+      tcs_reduction: 0
+    message: "🎊 APEX New Year Special: 1% bonus risk + 10 shots!"
+
+# User-specific temporary bonuses
+# Can be granted for achievements, milestones, good behavior, etc.
+user_bonuses:
+  # Structure: user_id -> list of active bonuses
+  # Example (inactive):
+  "7176191872":
+    - id: "streak_bonus_001"
+      type: "win_streak"
+      active: false
+      expires: "2024-07-10 23:59:59"
+      bonuses:
+        risk_percent: 0.25     # +0.25% risk
+        daily_shots: 0
+        positions: 0
+        tcs_reduction: 0
+      reason: "5-day win streak achievement"
+      
+    - id: "first_week_bonus"
+      type: "milestone"
+      active: false
+      expires: "2024-07-15 23:59:59"
+      bonuses:
+        risk_percent: 0
+        daily_shots: 3         # 3 extra shots
+        positions: 0
+        tcs_reduction: 0
+      reason: "First profitable week!"
+
+# Bonus stacking rules
+bonus_rules:
+  max_stacked_risk: 2.0        # Maximum total bonus risk (prevents 5% becoming 10%)
+  max_stacked_shots: 20        # Maximum total bonus shots per day
+  max_stacked_positions: 3     # Maximum total bonus positions
+  max_tcs_reduction: 10        # Maximum TCS reduction (75 can't go below 65)
+  
+  # Priority order when limits exceeded
+  priority_order:
+    - "user_bonuses"           # User bonuses apply first
+    - "special_events"         # Then special events
+    
+  # Tier multipliers - scale bonuses by tier
+  tier_multipliers:
+    PRESS_PASS: 0.5            # 50% of bonus (limited benefits)
+    NIBBLER: 1.0               # 100% of bonus
+    FANG: 1.2                  # 120% of bonus
+    COMMANDER: 1.5             # 150% of bonus
+    APEX: 2.0                  # 200% of bonus (double all bonuses)
+
+# Achievement bonus templates
+# Can be awarded programmatically
+achievement_bonuses:
+  first_green_day:
+    bonuses:
+      risk_percent: 0
+      daily_shots: 2
+      positions: 0
+      tcs_reduction: 0
+    duration_hours: 24
+    message: "🟢 First Green Day! +2 bonus shots for 24 hours!"
+    
+  week_warrior:
+    bonuses:
+      risk_percent: 0.5
+      daily_shots: 5
+      positions: 0
+      tcs_reduction: 0
+    duration_hours: 48
+    message: "💪 Week Warrior! +0.5% risk & 5 shots for 48 hours!"
+    
+  sniper_elite:
+    bonuses:
+      risk_percent: 0
+      daily_shots: 0
+      positions: 1
+      tcs_reduction: 5
+    duration_hours: 72
+    message: "🎯 Sniper Elite! +1 position & -5 TCS for 72 hours!"
+    
+  risk_master:
+    bonuses:
+      risk_percent: 1.0
+      daily_shots: 10
+      positions: 1
+      tcs_reduction: 0
+    duration_hours: 24
+    message: "🎖️ Risk Master! +1% risk, 10 shots, +1 position for 24 hours!"

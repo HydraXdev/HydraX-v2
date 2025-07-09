@@ -1,0 +1,53 @@
+# API Configurations for Intelligence System
+
+# Market Data API
+market_data:
+  api_key: ${API_KEY_MARKET_DATA}
+  api_secret: ${API_SECRET_MARKET_DATA}
+  base_url: https://api.marketdata.com/v1
+  rate_limit: 100  # requests per second
+  timeout: 30
+  retry_count: 3
+  headers:
+    User-Agent: HydraX-Intelligence/2.0
+
+# News Feed API
+news_feed:
+  api_key: ${API_KEY_NEWS_FEED}
+  base_url: https://newsapi.org/v2
+  rate_limit: 50
+  timeout: 20
+  retry_count: 3
+
+# Social Media API
+social_media:
+  api_key: ${API_KEY_SOCIAL_MEDIA}
+  api_secret: ${API_SECRET_SOCIAL_MEDIA}
+  base_url: https://api.twitter.com/2
+  rate_limit: 300
+  timeout: 15
+  retry_count: 2
+
+# Economic Calendar API
+economic_calendar:
+  api_key: ${API_KEY_ECONOMIC_CALENDAR}
+  base_url: https://api.economiccalendar.com/v1
+  rate_limit: 20
+  timeout: 30
+  retry_count: 3
+
+# Sentiment Analysis API
+sentiment_analysis:
+  api_key: ${API_KEY_SENTIMENT}
+  base_url: https://api.sentimentanalysis.com/v1
+  rate_limit: 100
+  timeout: 10
+  retry_count: 2
+
+# Alternative Data API
+alternative_data:
+  api_key: ${API_KEY_ALT_DATA}
+  base_url: https://api.alternativedata.com/v1
+  rate_limit: 10
+  timeout: 60
+  retry_count: 3

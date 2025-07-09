@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TCS Education System - Integration Example</title>
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #0a0a0a;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            background: linear-gradient(90deg, #00ff88, #88ff00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 30px;
+        }
+
+        .demo-section {
+            background: linear-gradient(135deg, #1a1a2e 0%, #0f0f1e 100%);
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .demo-section h2 {
+            color: #00ff88;
+            margin-bottom: 20px;
+        }
+
+        /* Example TCS Display */
+        .tcs-display {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tcs-main-score {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .tcs-score-value {
+            font-size: 48px;
+            font-weight: 700;
+            color: #00ff88;
+            line-height: 1;
+        }
+
+        .tcs-score-label {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 8px;
+        }
+
+        /* Breakdown Display */
+        .tcs-breakdown {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .tcs-breakdown-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            position: relative;
+        }
+
+        .tcs-breakdown-item[data-tcs-factor] {
+            cursor: help;
+        }
+
+        .tcs-factor-name {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+            text-transform: capitalize;
+        }
+
+        .tcs-factor-score {
+            font-size: 16px;
+            font-weight: 600;
+            color: #00ff88;
+        }
+
+        .tcs-factor-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 2px;
+            background: #00ff88;
+            transition: width 0.3s ease;
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+
+        button.primary {
+            background: linear-gradient(90deg, #00ff88, #88ff00);
+            border: none;
+            color: #000;
+            font-weight: 600;
+        }
+
+        /* User Level Display */
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .user-level {
+            font-size: 24px;
+            font-weight: 700;
+            color: #00ff88;
+        }
+
+        .user-tier {
+            padding: 4px 12px;
+            background: rgba(0, 255, 136, 0.2);
+            border: 1px solid rgba(0, 255, 136, 0.5);
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* Example Trades */
+        .example-trades {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .trade-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .trade-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .trade-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .trade-pair {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .trade-tcs {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .trade-tcs.hammer { color: #00ff88; }
+        .trade-tcs.shadow-strike { color: #88ff00; }
+        .trade-tcs.scalp { color: #ffaa00; }
+
+        .trade-setup {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 10px;
+        }
+
+        .trade-outcome {
+            font-size: 16px;
+            font-weight: 600;
+            color: #00ff88;
+        }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .loading::after {
+            content: '...';
+            animation: loading 1.5s infinite;
+        }
+
+        @keyframes loading {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>TCS Education System - Integration Example</h1>
+
+        <!-- User Info -->
+        <div class="user-info">
+            <div>
+                <div>Current Level: <span class="user-level" id="userLevel">15</span></div>
+                <div>Tier: <span class="user-tier" id="userTier">Apprentice</span></div>
+            </div>
+            <div style="flex: 1;">
+                <div style="font-size: 12px; color: rgba(255,255,255,0.5); margin-bottom: 4px;">
+                    Progress to Next Unlock (Level 20)
+                </div>
+                <div style="height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px;">
+                    <div style="width: 75%; height: 100%; background: linear-gradient(90deg, #00ff88, #88ff00); border-radius: 2px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <button onclick="changeUserLevel(5)">Set Level 5 (Novice)</button>
+            <button onclick="changeUserLevel(15)">Set Level 15 (Apprentice)</button>
+            <button onclick="changeUserLevel(30)">Set Level 30 (Trader)</button>
+            <button onclick="changeUserLevel(55)">Set Level 55 (Master)</button>
+            <button onclick="changeUserLevel(80)">Set Level 80 (Legend)</button>
+            <button class="primary" onclick="showTutorial()">Start Tutorial</button>
+        </div>
+
+        <!-- TCS Display Example -->
+        <div class="demo-section">
+            <h2>Live TCS Display with Education</h2>
+            
+            <div class="tcs-display">
+                <!-- Main Score -->
+                <div class="tcs-main-score" data-tcs-factor="tcs_overview">
+                    <div class="tcs-score-value" id="tcsScore">87.5</div>
+                    <div class="tcs-score-label">Token Confidence Score</div>
+                </div>
+
+                <!-- Breakdown -->
+                <div class="tcs-breakdown" id="tcsBreakdown">
+                    <div class="tcs-breakdown-item" data-tcs-factor="market_structure">
+                        <span class="tcs-factor-name">Market Structure</span>
+                        <span class="tcs-factor-score">16/20</span>
+                        <div class="tcs-factor-bar" style="width: 80%"></div>
+                    </div>
+                    <div class="tcs-breakdown-item" data-tcs-factor="timeframe_alignment">
+                        <span class="tcs-factor-name">Timeframe Alignment</span>
+                        <span class="tcs-factor-score">12/15</span>
+                        <div class="tcs-factor-bar" style="width: 80%"></div>
+                    </div>
+                    <div class="tcs-breakdown-item" data-tcs-factor="momentum">
+                        <span class="tcs-factor-name">Momentum</span>
+                        <span class="tcs-factor-score">13/15</span>
+                        <div class="tcs-factor-bar" style="width: 86.7%"></div>
+                    </div>
+                    <div class="tcs-breakdown-item" data-tcs-factor="volatility">
+                        <span class="tcs-factor-name">Volatility</span>
+                        <span class="tcs-factor-score">8/10</span>
+                        <div class="tcs-factor-bar" style="width: 80%"></div>
+                    </div>
+                    <div class="tcs-breakdown-item" data-tcs-factor="session">
+                        <span class="tcs-factor-name">Session</span>
+                        <span class="tcs-factor-score">9/10</span>
+                        <div class="tcs-factor-bar" style="width: 90%"></div>
+                    </div>
+                    <div class="tcs-breakdown-item" data-tcs-factor="liquidity">
+                        <span class="tcs-factor-name">Liquidity</span>
+                        <span class="tcs-factor-score">8/10</span>
+                        <div class="tcs-factor-bar" style="width: 80%"></div>
+                    </div>
+                    <div class="tcs-breakdown-item" data-tcs-factor="risk_reward">
+                        <span class="tcs-factor-name">Risk/Reward</span>
+                        <span class="tcs-factor-score">8/10</span>
+                        <div class="tcs-factor-bar" style="width: 80%"></div>
+                    </div>
+                    <div class="tcs-breakdown-item" data-tcs-factor="ai_sentiment">
+                        <span class="tcs-factor-name">AI Sentiment</span>
+                        <span class="tcs-factor-score">9.5/10</span>
+                        <div class="tcs-factor-bar" style="width: 95%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Example Trades -->
+        <div class="demo-section">
+            <h2>Example Trades with TCS</h2>
+            <div class="example-trades" id="exampleTrades">
+                <div class="loading">Loading examples</div>
+            </div>
+        </div>
+
+        <!-- Achievement Notification Area -->
+        <div id="achievementArea"></div>
+    </div>
+
+    <!-- Include TCS Education UI -->
+    <script src="../components/tcs_education_ui.js"></script>
+    
+    <script>
+        // Initialize with user level
+        let currentUserLevel = 15;
+        let tcsEducation;
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeEducation();
+            loadExampleTrades();
+            
+            // Simulate real-time TCS updates
+            setInterval(updateTCSDisplay, 5000);
+        });
+
+        function initializeEducation() {
+            // Initialize TCS Education UI
+            tcsEducation = new TCSEducationUI({
+                userLevel: currentUserLevel,
+                apiEndpoint: '/api/tcs/education',
+                tooltipDelay: 300
+            });
+
+            // Enhance the TCS display
+            const tcsContainer = document.querySelector('.tcs-display');
+            tcsEducation.enhanceTCSDisplay(tcsContainer);
+
+            // Update user tier display
+            updateUserTierDisplay();
+        }
+
+        function changeUserLevel(level) {
+            const oldLevel = currentUserLevel;
+            currentUserLevel = level;
+            
+            // Update display
+            document.getElementById('userLevel').textContent = level;
+            updateUserTierDisplay();
+            
+            // Reinitialize education with new level
+            if (tcsEducation) {
+                tcsEducation.setUserLevel(level);
+                
+                // Re-enhance display to update tooltips
+                const tcsContainer = document.querySelector('.tcs-display');
+                tcsEducation.enhanceTCSDisplay(tcsContainer);
+            }
+
+            // Check for achievements
+            if (level > oldLevel) {
+                checkAchievements(oldLevel, level);
+            }
+
+            // Reload examples with new level
+            loadExampleTrades();
+        }
+
+        function updateUserTierDisplay() {
+            const tierElement = document.getElementById('userTier');
+            let tier = 'Novice';
+            
+            if (currentUserLevel >= 76) tier = 'Legend';
+            else if (currentUserLevel >= 51) tier = 'Master';
+            else if (currentUserLevel >= 26) tier = 'Trader';
+            else if (currentUserLevel >= 11) tier = 'Apprentice';
+            
+            tierElement.textContent = tier;
+        }
+
+        function showTutorial() {
+            if (tcsEducation) {
+                tcsEducation.showTutorial('tcs_basics');
+            }
+        }
+
+        function updateTCSDisplay() {
+            // Simulate TCS changes
+            const newScore = 75 + Math.random() * 25;
+            document.getElementById('tcsScore').textContent = newScore.toFixed(1);
+            
+            // Update color based on score
+            const scoreElement = document.getElementById('tcsScore');
+            if (newScore >= 94) {
+                scoreElement.style.color = '#00ff88';
+            } else if (newScore >= 84) {
+                scoreElement.style.color = '#88ff00';
+            } else if (newScore >= 75) {
+                scoreElement.style.color = '#ffaa00';
+            } else {
+                scoreElement.style.color = '#ff6600';
+            }
+
+            // Trigger event for education system
+            document.dispatchEvent(new CustomEvent('tcs-updated', {
+                detail: { container: document.querySelector('.tcs-display') }
+            }));
+        }
+
+        function loadExampleTrades() {
+            const container = document.getElementById('exampleTrades');
+            
+            // Simulated example trades
+            const trades = [
+                {
+                    pair: 'EUR/USD',
+                    tcs: 96,
+                    setup: 'Liquidity grab reversal at key resistance',
+                    outcome: '+215 pips',
+                    tier: 'hammer'
+                },
+                {
+                    pair: 'GBP/USD',
+                    tcs: 87,
+                    setup: 'Bull flag breakout during London session',
+                    outcome: '+127 pips',
+                    tier: 'shadow-strike'
+                },
+                {
+                    pair: 'USD/JPY',
+                    tcs: 78,
+                    setup: 'Range breakout with momentum',
+                    outcome: '+65 pips',
+                    tier: 'scalp'
+                }
+            ];
+
+            // Filter based on user level
+            const visibleTrades = currentUserLevel >= 10 ? trades : trades.slice(0, 1);
+            
+            container.innerHTML = visibleTrades.map(trade => `
+                <div class="trade-card">
+                    <div class="trade-header">
+                        <span class="trade-pair">${trade.pair}</span>
+                        <span class="trade-tcs ${trade.tier}" data-tcs-factor="tcs_overview">
+                            ${trade.tcs}
+                        </span>
+                    </div>
+                    <div class="trade-setup">${trade.setup}</div>
+                    <div class="trade-outcome">${trade.outcome}</div>
+                    ${currentUserLevel >= 20 ? '<button onclick="viewTradeDetails()">View Details</button>' : ''}
+                </div>
+            `).join('');
+
+            // Re-enhance for education tooltips
+            if (tcsEducation) {
+                tcsEducation.enhanceTCSDisplay(container);
+            }
+        }
+
+        function viewTradeDetails() {
+            alert('Trade details would open here with full TCS breakdown');
+        }
+
+        function checkAchievements(oldLevel, newLevel) {
+            const achievements = [
+                { level: 10, title: 'Score Explorer', desc: 'Unlocked TCS breakdown view' },
+                { level: 20, title: 'Pattern Hunter', desc: 'Unlocked factor deep dive' },
+                { level: 30, title: 'Professional Trader', desc: 'Unlocked custom alerts' },
+                { level: 50, title: 'Market Master', desc: 'Unlocked advanced metrics' },
+                { level: 75, title: 'Algorithm Whisperer', desc: 'Unlocked full transparency' }
+            ];
+
+            achievements.forEach(achievement => {
+                if (oldLevel < achievement.level && newLevel >= achievement.level) {
+                    if (tcsEducation) {
+                        tcsEducation.showAchievement({
+                            title: achievement.title,
+                            description: achievement.desc
+                        });
+                    }
+                }
+            });
+        }
+
+        // Mock API endpoint for demo
+        window.fetch = window.fetch || function(url, options) {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    resolve({
+                        json: () => Promise.resolve({
+                            explanation: "This factor analyzes market patterns using advanced algorithms.",
+                            mystery_hint: "The patterns speak to those who listen...",
+                            unlock_next_at: currentUserLevel + 10,
+                            detail_level: Math.floor(currentUserLevel / 20) + 1
+                        })
+                    });
+                }, 300);
+            });
+        };
+    </script>
+</body>
+</html>

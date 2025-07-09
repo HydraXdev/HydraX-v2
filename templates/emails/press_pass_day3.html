@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Day 3: Midnight Hammer Unleashed</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #0a0a0a;
+            color: #ffffff;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #1a1a1a;
+        }
+        .header {
+            text-align: center;
+            padding: 30px 0;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            border-bottom: 3px solid #00ff41;
+        }
+        .logo {
+            font-size: 48px;
+            font-weight: bold;
+            letter-spacing: 5px;
+            color: #00ff41;
+            text-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
+        }
+        .content {
+            padding: 40px 20px;
+        }
+        h1 {
+            color: #00ff41;
+            font-size: 32px;
+            margin-bottom: 20px;
+        }
+        p {
+            line-height: 1.6;
+            color: #cccccc;
+            margin-bottom: 20px;
+        }
+        .highlight {
+            color: #ffd700;
+            font-weight: bold;
+        }
+        .danger {
+            color: #ff0040;
+            font-weight: bold;
+        }
+        .cta-button {
+            display: inline-block;
+            padding: 15px 40px;
+            background: linear-gradient(90deg, #00ff41, #00ff88);
+            color: #000000;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 18px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 20px 0;
+            border-radius: 0;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
+        }
+        .midnight-box {
+            background: linear-gradient(135deg, #1a0033, #0a0a0a);
+            border: 2px solid #8b00ff;
+            padding: 30px;
+            margin: 30px 0;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(139, 0, 255, 0.3);
+        }
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .result-item {
+            background-color: #0a0a0a;
+            padding: 15px;
+            text-align: center;
+            border: 1px solid #333;
+        }
+        .result-item.win {
+            border-color: #00ff41;
+            background: rgba(0, 255, 65, 0.1);
+        }
+        .footer {
+            text-align: center;
+            padding: 30px 20px;
+            border-top: 1px solid #333;
+            color: #888888;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">BITTEN</div>
+            <p style="color: #888888; margin: 10px 0;">Day 3 Tactical Briefing</p>
+        </div>
+        
+        <div class="content">
+            <h1>🔨 The Midnight Hammer Awakens</h1>
+            
+            <p>{{username}},</p>
+            
+            <p>While you were sleeping last night, something incredible happened...</p>
+            
+            <p>The <span class="highlight">MIDNIGHT HAMMER</span> - BITTEN's most elite feature - was hunting for you.</p>
+            
+            <div class="midnight-box">
+                <h2 style="color: #8b00ff; margin-top: 0;">🌙 MIDNIGHT HAMMER REPORT</h2>
+                <p style="font-size: 20px; margin: 20px 0;">
+                    Last Night: <span style="color: #00ff41;">2:00 AM - 6:00 AM</span><br>
+                    Total Trades: <strong>8</strong><br>
+                    Winners: <strong style="color: #00ff41;">7</strong><br>
+                    Total Profit: <strong style="color: #ffd700;">+124 pips</strong>
+                </p>
+            </div>
+            
+            <p>Here's what happened while you slept:</p>
+            
+            <div class="results-grid">
+                <div class="result-item win">
+                    <strong>GBP/JPY</strong><br>
+                    +23 pips<br>
+                    ✅ WIN
+                </div>
+                <div class="result-item win">
+                    <strong>EUR/AUD</strong><br>
+                    +18 pips<br>
+                    ✅ WIN
+                </div>
+                <div class="result-item win">
+                    <strong>USD/CAD</strong><br>
+                    +15 pips<br>
+                    ✅ WIN
+                </div>
+                <div class="result-item win">
+                    <strong>AUD/NZD</strong><br>
+                    +21 pips<br>
+                    ✅ WIN
+                </div>
+                <div class="result-item">
+                    <strong>EUR/GBP</strong><br>
+                    -12 pips<br>
+                    ❌ LOSS
+                </div>
+                <div class="result-item win">
+                    <strong>USD/CHF</strong><br>
+                    +19 pips<br>
+                    ✅ WIN
+                </div>
+                <div class="result-item win">
+                    <strong>NZD/USD</strong><br>
+                    +17 pips<br>
+                    ✅ WIN
+                </div>
+                <div class="result-item win">
+                    <strong>GBP/USD</strong><br>
+                    +23 pips<br>
+                    ✅ WIN
+                </div>
+            </div>
+            
+            <p>That's an <span class="highlight">87.5% win rate</span> - and you didn't have to lift a finger!</p>
+            
+            <h2 style="color: #8b00ff;">How the Midnight Hammer Works:</h2>
+            
+            <p><strong>1. Asian Session Advantage</strong><br>
+            Exploits low volatility patterns during Asian trading hours</p>
+            
+            <p><strong>2. Ultra-Tight Filters</strong><br>
+            Only fires on 91%+ TCS scores with perfect market conditions</p>
+            
+            <p><strong>3. Stealth Execution</strong><br>
+            Small, precise positions that fly under the radar</p>
+            
+            <p><strong>4. Automatic Protection</strong><br>
+            Tight stops and smart position sizing keep risk minimal</p>
+            
+            <p style="text-align: center;">
+                <a href="https://t.me/Bitten_Commander_bot" class="cta-button">ACTIVATE MIDNIGHT HAMMER →</a>
+            </p>
+            
+            <div style="background-color: #0a0a0a; padding: 20px; margin: 30px 0; border-left: 4px solid #8b00ff;">
+                <p style="margin: 0;"><strong>🌙 SETUP INSTRUCTIONS:</strong><br>
+                1. Type /midnight in the bot<br>
+                2. Set your overnight risk limit (recommend 2-3%)<br>
+                3. Choose your session times<br>
+                4. Go to bed and let BITTEN work!</p>
+            </div>
+            
+            <p><span class="danger">⚠️ WARNING:</span> The Midnight Hammer is ONLY available to APEX tier members. After your Press Pass expires, you'll need to maintain APEX status to keep using it.</p>
+            
+            <p>But here's the thing...</p>
+            
+            <p>At <span class="highlight">$188/month</span>, APEX pays for itself with just ONE good Midnight Hammer session. Last night's +124 pips? That's potentially $1,240 on a standard lot.</p>
+            
+            <p>You have <strong>27 days left</strong> on your Press Pass. That's 27 more nights for the Midnight Hammer to work its magic...</p>
+            
+            <p>Sweet dreams and profitable nights,</p>
+            
+            <p><strong>- The BITTEN Team</strong></p>
+            
+            <p style="font-size: 14px; color: #888888;">P.S. Tomorrow I'll show you how to combine Chaingun mode with news events for explosive day trading results. The best is yet to come!</p>
+        </div>
+        
+        <div class="footer">
+            <p>Press Pass Status: ACTIVE (27 days remaining)<br>
+            Questions? Contact support@bitten.com</p>
+            <p>© 2024 BITTEN. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

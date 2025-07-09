@@ -14,6 +14,7 @@ from .mission_briefing_generator import MissionBriefingGenerator, MissionBriefin
 from .social_sharing import SocialSharingManager
 from .emergency_stop_controller import EmergencyStopController, EmergencyStopTrigger, EmergencyStopLevel
 from .trade_confirmation_system import TradeConfirmationSystem, create_confirmation_system
+from .press_pass_commands import PressPassCommandHandler
 from .referral_system import ReferralSystem, ReferralCommandHandler
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 from .onboarding import OnboardingOrchestrator
@@ -70,7 +71,11 @@ class TelegramRouter:
         
         # Initialize trial system
         self.trial_manager = get_trial_manager(telegram_bot)
-        
+        # Initialize Press Pass system
+        from .xp_integration import XPIntegrationManager
+        self.xp_manager = XPIntegrationManager()
+        self.press_pass_handler = PressPassCommandHandler(self.xp_manager)
+                
         # Start confirmation processing
         if telegram_bot:
             asyncio.create_task(self.confirmation_system.start_processing())
@@ -85,7 +90,8 @@ class TelegramRouter:
             'Elite Features': ['tactical', 'tcs', 'signals', 'closeall', 'backtest'],
             'Emergency Stop': ['emergency_stop', 'panic', 'halt_all', 'recover', 'emergency_status'],
             'Education': ['learn', 'missions', 'journal', 'squad', 'achievements', 'study', 'mentor'],
-            'Social': ['refer'],
+                        'Press Pass': ['presspass', 'pp_status', 'pp_upgrade'],
+'Social': ['refer'],
             'Admin Only': ['logs', 'restart', 'backup', 'promote', 'ban']
         }
         
@@ -334,6 +340,14 @@ class TelegramRouter:
             return self._cmd_mentor(update.user_id, args)
         
         # Social Commands
+                # Press Pass Commands
+        elif command == '/presspass':
+            return self._handle_press_pass_command(update.user_id, args)
+        elif command == '/pp_status':
+            return self._handle_pp_status(update.user_id)
+        elif command == '/pp_upgrade':
+            return self._handle_pp_upgrade(update.user_id)
+        
         elif command == '/refer':
             return self._cmd_refer(update.user_id, update.username, args)
         

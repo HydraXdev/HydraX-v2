@@ -1,0 +1,20 @@
+WINDOWS VPS TRANSFER INSTRUCTIONS
+=================================
+
+1. Copy the base64 text from the next file (ea_base64.txt)
+2. On Windows VPS, open PowerShell and run:
+
+# Create the base64 file
+$base64 = @"
+[PASTE BASE64 HERE]
+"@
+
+# Decode and save
+$bytes = [Convert]::FromBase64String($base64)
+[IO.File]::WriteAllBytes("C:\BITTENBridge_v3_ENHANCED.mq5", $bytes)
+
+3. Move the file to MT5 Experts folder:
+   C:\Users\[YourUser]\AppData\Roaming\MetaQuotes\Terminal\[TerminalID]\MQL5\Experts\
+
+4. Open MT5, press F4 for MetaEditor
+5. Open the EA and press F7 to compile

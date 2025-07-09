@@ -1,0 +1,58 @@
+[Unit]
+Description=BITTEN WebApp Watchdog
+Documentation=https://github.com/bitten-trading/docs
+After=network.target bitten-webapp.service bitten-monitoring.service
+Wants=bitten-webapp.service bitten-monitoring.service
+BindsTo=bitten-webapp.service
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/root/HydraX-v2
+Environment=PYTHONPATH=/root/HydraX-v2/src
+Environment=LOG_LEVEL=INFO
+Environment=ALERT_EMAIL=admin@bitten.com
+Environment=SMTP_SERVER=smtp.gmail.com
+Environment=SMTP_PORT=587
+Environment=SMTP_USERNAME=
+Environment=SMTP_PASSWORD=
+Environment=WEBHOOK_URL=
+
+# Start the watchdog
+ExecStart=/usr/bin/python3 /root/HydraX-v2/scripts/webapp-watchdog.py
+ExecStartPre=/bin/mkdir -p /var/log/bitten/webapp
+ExecStartPre=/bin/chown root:root /var/log/bitten/webapp
+
+# Restart configuration
+Restart=always
+RestartSec=30
+StartLimitInterval=300
+StartLimitBurst=3
+
+# Process management
+KillMode=mixed
+KillSignal=SIGTERM
+TimeoutStartSec=60
+TimeoutStopSec=30
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=bitten-webapp-watchdog
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/log/bitten /var/lib/bitten /root/HydraX-v2/logs /tmp
+
+# Resource limits
+LimitNOFILE=1024
+LimitNPROC=512
+MemoryLimit=512M
+CPUQuota=50%
+
+[Install]
+WantedBy=multi-user.target

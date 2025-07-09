@@ -1,0 +1,75 @@
+[Unit]
+Description=BITTEN WebApp Server
+Documentation=https://github.com/bitten-trading/docs
+After=network.target postgresql.service redis.service bitten-monitoring.service
+Wants=postgresql.service redis.service bitten-monitoring.service
+BindsTo=network.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/root/HydraX-v2
+Environment=PYTHONPATH=/root/HydraX-v2
+Environment=FLASK_APP=webapp_server.py
+Environment=FLASK_ENV=production
+Environment=LOG_LEVEL=INFO
+Environment=WEBAPP_PORT=8888
+Environment=WEBAPP_HOST=0.0.0.0
+Environment=WEBAPP_DEBUG=false
+Environment=MONITORING_ENABLED=true
+
+# Start the webapp server
+ExecStart=/usr/bin/python3 webapp_server.py
+ExecStartPre=/bin/mkdir -p /var/log/bitten/webapp
+ExecStartPre=/bin/chown root:root /var/log/bitten/webapp
+ExecReload=/bin/kill -HUP $MAINPID
+
+# Restart configuration
+Restart=always
+RestartSec=10
+StartLimitInterval=60
+StartLimitBurst=5
+
+# Process management
+KillMode=mixed
+KillSignal=SIGTERM
+TimeoutStartSec=60
+TimeoutStopSec=30
+TimeoutStopFailureMode=kill
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=bitten-webapp
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/log/bitten /var/lib/bitten /root/HydraX-v2/logs /root/HydraX-v2/data
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+SecureBits=keep-caps-locked
+
+# Resource limits
+LimitNOFILE=65536
+LimitNPROC=4096
+MemoryLimit=2G
+CPUQuota=200%
+
+# Health monitoring
+WatchdogSec=60
+
+# Network security
+IPAddressDeny=any
+IPAddressAllow=localhost
+IPAddressAllow=127.0.0.1/32
+IPAddressAllow=::1/128
+IPAddressAllow=10.0.0.0/8
+IPAddressAllow=172.16.0.0/12
+IPAddressAllow=192.168.0.0/16
+
+[Install]
+WantedBy=multi-user.target
+Also=bitten-monitoring.service

@@ -1,0 +1,1 @@
+"""Trading strategies and signal generation algorithms"""

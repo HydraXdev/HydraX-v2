@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URGENT: Your Press Pass is Half Over</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #0a0a0a;
+            color: #ffffff;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #1a1a1a;
+        }
+        .header {
+            text-align: center;
+            padding: 30px 0;
+            background: linear-gradient(135deg, #ff0040 0%, #ffaa00 100%);
+            border-bottom: 3px solid #ff0040;
+        }
+        .logo {
+            font-size: 48px;
+            font-weight: bold;
+            letter-spacing: 5px;
+            color: #ffffff;
+            text-shadow: 0 0 20px rgba(255, 0, 64, 0.5);
+        }
+        .content {
+            padding: 40px 20px;
+        }
+        h1 {
+            color: #ff0040;
+            font-size: 32px;
+            margin-bottom: 20px;
+        }
+        p {
+            line-height: 1.6;
+            color: #cccccc;
+            margin-bottom: 20px;
+        }
+        .highlight {
+            color: #ffd700;
+            font-weight: bold;
+        }
+        .danger {
+            color: #ff0040;
+            font-weight: bold;
+        }
+        .cta-button {
+            display: inline-block;
+            padding: 15px 40px;
+            background: linear-gradient(90deg, #ffd700, #ffaa00);
+            color: #000000;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 18px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 20px 0;
+            border-radius: 0;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+        .countdown-box {
+            background: #ff0040;
+            color: #ffffff;
+            padding: 30px;
+            text-align: center;
+            font-size: 36px;
+            font-weight: bold;
+            margin: 30px 0;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 30px 0;
+        }
+        .results-table th, .results-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #333;
+        }
+        .results-table th {
+            background-color: #0a0a0a;
+            color: #00ff41;
+        }
+        .special-offer {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 215, 0, 0.05));
+            border: 2px solid #ffd700;
+            padding: 30px;
+            margin: 30px 0;
+            text-align: center;
+        }
+        .footer {
+            text-align: center;
+            padding: 30px 20px;
+            border-top: 1px solid #333;
+            color: #888888;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">⚠️ URGENT ⚠️</div>
+            <p style="color: #ffffff; margin: 10px 0; font-size: 20px;">Your Press Pass Expires in 16 Days!</p>
+        </div>
+        
+        <div class="content">
+            <h1>🚨 {{username}}, This is Important...</h1>
+            
+            <p>I need to share something critical with you.</p>
+            
+            <p>Your <span class="highlight">Press Pass</span> is exactly <span class="danger">HALFWAY OVER</span>.</p>
+            
+            <div class="countdown-box">
+                ⏰ 16 DAYS LEFT ⏰
+            </div>
+            
+            <p>Let's talk about what you'll LOSE in 16 days if you don't take action:</p>
+            
+            <table class="results-table">
+                <tr>
+                    <th>Feature</th>
+                    <th>Current (APEX)</th>
+                    <th>After Expiry</th>
+                </tr>
+                <tr>
+                    <td>Daily Trade Limit</td>
+                    <td style="color: #00ff41;">UNLIMITED</td>
+                    <td style="color: #ff0040;">3 (Demo)</td>
+                </tr>
+                <tr>
+                    <td>TCS Accuracy</td>
+                    <td style="color: #00ff41;">91%</td>
+                    <td style="color: #ff0040;">75%</td>
+                </tr>
+                <tr>
+                    <td>Midnight Hammer</td>
+                    <td style="color: #00ff41;">✅ ACTIVE</td>
+                    <td style="color: #ff0040;">❌ LOCKED</td>
+                </tr>
+                <tr>
+                    <td>Auto-Trading</td>
+                    <td style="color: #00ff41;">✅ FULL</td>
+                    <td style="color: #ff0040;">❌ DISABLED</td>
+                </tr>
+                <tr>
+                    <td>Priority Support</td>
+                    <td style="color: #00ff41;">✅ 24/7</td>
+                    <td style="color: #ff0040;">❌ NONE</td>
+                </tr>
+            </table>
+            
+            <p>But here's what you've GAINED in the last 14 days:</p>
+            
+            <p>• Total Account Growth: <span class="highlight">+17.3%</span><br>
+            • Midnight Hammer Profits: <span class="highlight">+$3,460</span><br>
+            • Win Rate: <span class="highlight">86.2%</span><br>
+            • Total Profitable Trades: <span class="highlight">94</span></p>
+            
+            <p>At this rate, BITTEN will have made you <span class="highlight">+34.6%</span> by the time your Press Pass expires.</p>
+            
+            <div class="special-offer">
+                <h2 style="color: #ffd700; margin-top: 0;">🎯 EXCLUSIVE PRESS PASS OFFER</h2>
+                <p style="font-size: 20px;">Lock in APEX for LIFE at 25% OFF!</p>
+                <p style="font-size: 32px; font-weight: bold; color: #ffd700;">
+                    <span style="text-decoration: line-through; color: #888;">$188/month</span><br>
+                    $141/month FOREVER
+                </p>
+                <p>Save $564 per year - Press Pass members ONLY!</p>
+                <a href="https://t.me/Bitten_Commander_bot?start=lifetime_apex" class="cta-button">CLAIM LIFETIME DISCOUNT →</a>
+                <p style="font-size: 14px; margin-bottom: 0;">This offer expires with your Press Pass!</p>
+            </div>
+            
+            <p>Think about it:</p>
+            
+            <p>• You've already made <span class="highlight">$3,460</span> with Midnight Hammer alone<br>
+            • That's 18 MONTHS of APEX membership paid for<br>
+            • Every month after is pure profit</p>
+            
+            <p><span class="danger">WARNING:</span> When your Press Pass expires, you'll need to pay FULL PRICE ($188/month) to get these features back. This 25% lifetime discount is ONLY available during your Press Pass period.</p>
+            
+            <p>Don't let this opportunity slip away. You've seen what BITTEN can do. Now secure your future.</p>
+            
+            <p style="text-align: center;">
+                <a href="https://t.me/Bitten_Commander_bot?start=lifetime_apex" class="cta-button" style="background: linear-gradient(90deg, #ff0040, #ff0080); font-size: 24px;">SECURE LIFETIME APEX NOW →</a>
+            </p>
+            
+            <p>To your continued profits,</p>
+            
+            <p><strong>- The BITTEN Team</strong></p>
+            
+            <p style="font-size: 14px; color: #888888;">P.S. Still unsure? Reply to this email and I'll personally show you a projection of your next 12 months with BITTEN based on your current performance...</p>
+        </div>
+        
+        <div class="footer">
+            <p>Press Pass Status: <span style="color: #ffaa00;">EXPIRING SOON</span> (16 days remaining)<br>
+            Questions? Contact support@bitten.com immediately</p>
+            <p>© 2024 BITTEN. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

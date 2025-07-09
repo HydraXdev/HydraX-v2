@@ -1,0 +1,16 @@
+[Unit]
+Description=BITTEN Press Pass XP Reset Scheduler
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/HydraX-v2
+ExecStart=/usr/bin/python3 /root/HydraX-v2/src/bitten_core/press_pass_scheduler.py
+Restart=always
+RestartSec=10
+StandardOutput=append:/root/HydraX-v2/logs/press_pass_service.log
+StandardError=append:/root/HydraX-v2/logs/press_pass_service_error.log
+
+[Install]
+WantedBy=multi-user.target

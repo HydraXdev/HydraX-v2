@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Press Pass Analytics Dashboard</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .header {
+            background-color: #2E86AB;
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .metric-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #2E86AB;
+            margin: 0.5rem 0;
+        }
+        
+        .metric-label {
+            font-size: 0.875rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .metric-change {
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+        
+        .metric-change.positive {
+            color: #6A994E;
+        }
+        
+        .metric-change.negative {
+            color: #C73E1D;
+        }
+        
+        .chart-container {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .chart-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+        
+        .alert-banner {
+            background-color: #F18F01;
+            color: white;
+            padding: 1rem 2rem;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .alert-banner.critical {
+            background-color: #C73E1D;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+        
+        .last-updated {
+            text-align: right;
+            color: #666;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+        }
+        
+        .filter-controls {
+            background: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .filter-controls input, .filter-controls select {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.875rem;
+        }
+        
+        .filter-controls button {
+            background-color: #2E86AB;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: background-color 0.2s;
+        }
+        
+        .filter-controls button:hover {
+            background-color: #1e5d7e;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>Press Pass Analytics Dashboard</h1>
+    </header>
+    
+    <div class="container">
+        <div class="last-updated" id="lastUpdated">Last updated: Loading...</div>
+        
+        <div class="alert-banner" id="alertBanner"></div>
+        
+        <div class="filter-controls">
+            <label>
+                Start Date:
+                <input type="date" id="startDate" />
+            </label>
+            <label>
+                End Date:
+                <input type="date" id="endDate" />
+            </label>
+            <button onclick="updateDashboard()">Update</button>
+            <button onclick="setDateRange('today')">Today</button>
+            <button onclick="setDateRange('week')">Last 7 Days</button>
+            <button onclick="setDateRange('month')">Last 30 Days</button>
+        </div>
+        
+        <div class="metrics-grid" id="metricsGrid">
+            <div class="loading">Loading metrics...</div>
+        </div>
+        
+        <div class="chart-container">
+            <h2 class="chart-title">Conversion Funnel</h2>
+            <div id="funnelChart"></div>
+        </div>
+        
+        <div class="chart-container">
+            <h2 class="chart-title">Real-time Metrics</h2>
+            <div id="realtimeChart"></div>
+        </div>
+        
+        <div class="chart-container">
+            <h2 class="chart-title">Cohort Retention</h2>
+            <div id="retentionChart"></div>
+        </div>
+    </div>
+    
+    <script>
+        const API_BASE = '/analytics/api';
+        let currentData = {};
+        
+        // Initialize dashboard
+        async function initDashboard() {
+            // Set default date range
+            const endDate = new Date();
+            const startDate = new Date();
+            startDate.setDate(startDate.getDate() - 7);
+            
+            document.getElementById('startDate').value = formatDate(startDate);
+            document.getElementById('endDate').value = formatDate(endDate);
+            
+            await updateDashboard();
+            
+            // Set up auto-refresh
+            setInterval(updateRealTimeMetrics, 60000); // Update every minute
+        }
+        
+        // Update dashboard with current filters
+        async function updateDashboard() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            
+            try {
+                // Fetch all metrics
+                const [funnel, activation, revenue, realtime] = await Promise.all([
+                    fetchMetrics('funnel', { start_date: startDate, end_date: endDate }),
+                    fetchMetrics('activation', { start_date: startDate, end_date: endDate }),
+                    fetchMetrics('revenue', { start_date: startDate, end_date: endDate }),
+                    fetchMetrics('realtime')
+                ]);
+                
+                currentData = { funnel, activation, revenue, realtime };
+                
+                // Update UI
+                updateMetricsGrid();
+                updateFunnelChart();
+                updateRealTimeChart();
+                
+                // Check for alerts
+                await checkAlerts();
+                
+                // Update last updated time
+                document.getElementById('lastUpdated').textContent = 
+                    `Last updated: ${new Date().toLocaleString()}`;
+                    
+            } catch (error) {
+                console.error('Error updating dashboard:', error);
+                showAlert('Error loading dashboard data', 'critical');
+            }
+        }
+        
+        // Fetch metrics from API
+        async function fetchMetrics(endpoint, params = {}) {
+            const queryString = new URLSearchParams(params).toString();
+            const url = `${API_BASE}/metrics/${endpoint}${queryString ? '?' + queryString : ''}`;
+            
+            const response = await axios.get(url);
+            return response.data;
+        }
+        
+        // Update metrics grid
+        function updateMetricsGrid() {
+            const grid = document.getElementById('metricsGrid');
+            const funnel = currentData.funnel.metrics.funnel;
+            const rates = currentData.funnel.metrics.conversion_rates;
+            const revenue = currentData.revenue.revenue;
+            
+            const metrics = [
+                {
+                    label: 'Conversion Rate',
+                    value: rates.landing_to_claim.toFixed(2) + '%',
+                    change: calculateChange(rates.landing_to_claim, 2.5),
+                    format: 'percentage'
+                },
+                {
+                    label: 'Total Claims',
+                    value: funnel.claims.total,
+                    change: calculateChange(funnel.claims.total, 100),
+                    format: 'number'
+                },
+                {
+                    label: 'Activations',
+                    value: funnel.demo_activated,
+                    change: calculateChange(funnel.demo_activated, 50),
+                    format: 'number'
+                },
+                {
+                    label: 'Total Revenue',
+                    value: '$' + revenue.total.toFixed(2),
+                    change: calculateChange(revenue.total, 5000),
+                    format: 'currency'
+                },
+                {
+                    label: 'Upgrades',
+                    value: funnel.upgrades.total,
+                    change: calculateChange(funnel.upgrades.total, 20),
+                    format: 'number'
+                },
+                {
+                    label: 'Avg Days to Upgrade',
+                    value: currentData.revenue.time_to_upgrade.avg_days.toFixed(1),
+                    change: null,
+                    format: 'days'
+                }
+            ];
+            
+            grid.innerHTML = metrics.map(metric => `
+                <div class="metric-card">
+                    <div class="metric-label">${metric.label}</div>
+                    <div class="metric-value">${metric.value}</div>
+                    ${metric.change ? `
+                        <div class="metric-change ${metric.change.direction}">
+                            ${metric.change.symbol} ${Math.abs(metric.change.value).toFixed(1)}%
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+        
+        // Update funnel chart
+        function updateFunnelChart() {
+            const funnel = currentData.funnel.metrics.funnel;
+            
+            const data = [{
+                type: 'funnel',
+                y: ['Landing Views', 'Claims', 'Demo Active', 'First Trade', 'Upgraded'],
+                x: [
+                    funnel.landing_views,
+                    funnel.claims.total,
+                    funnel.demo_activated,
+                    funnel.first_trade,
+                    funnel.upgrades.total
+                ],
+                textinfo: 'value+percent initial',
+                marker: {
+                    color: ['#2E86AB', '#A23B72', '#6A994E', '#F18F01', '#C73E1D']
+                }
+            }];
+            
+            const layout = {
+                margin: { l: 150, r: 50, t: 50, b: 50 },
+                height: 400
+            };
+            
+            Plotly.newPlot('funnelChart', data, layout);
+        }
+        
+        // Update real-time chart
+        function updateRealTimeChart() {
+            if (!currentData.realtime || !currentData.realtime.metrics.conversions) {
+                return;
+            }
+            
+            const conversions = currentData.realtime.metrics.conversions;
+            
+            // Mock hourly data for demo
+            const hours = Array.from({length: 24}, (_, i) => i);
+            const values = hours.map(() => Math.floor(Math.random() * 20 + 5));
+            
+            const data = [{
+                x: hours,
+                y: values,
+                type: 'scatter',
+                mode: 'lines+markers',
+                fill: 'tozeroy',
+                marker: { color: '#2E86AB' }
+            }];
+            
+            const layout = {
+                xaxis: { title: 'Hour (GMT)' },
+                yaxis: { title: 'Conversions' },
+                margin: { l: 50, r: 50, t: 50, b: 50 },
+                height: 300
+            };
+            
+            Plotly.newPlot('realtimeChart', data, layout);
+        }
+        
+        // Update real-time metrics only
+        async function updateRealTimeMetrics() {
+            try {
+                const realtime = await fetchMetrics('realtime');
+                currentData.realtime = realtime;
+                updateRealTimeChart();
+            } catch (error) {
+                console.error('Error updating real-time metrics:', error);
+            }
+        }
+        
+        // Check for alerts
+        async function checkAlerts() {
+            try {
+                const response = await axios.get(`${API_BASE}/alerts/recent?hours=1`);
+                const alerts = response.data.alerts;
+                
+                if (alerts.length > 0) {
+                    const latestAlert = alerts[0];
+                    showAlert(latestAlert.message, latestAlert.severity);
+                } else {
+                    hideAlert();
+                }
+            } catch (error) {
+                console.error('Error checking alerts:', error);
+            }
+        }
+        
+        // Show alert banner
+        function showAlert(message, severity) {
+            const banner = document.getElementById('alertBanner');
+            banner.textContent = message;
+            banner.className = `alert-banner ${severity}`;
+            banner.style.display = 'block';
+        }
+        
+        // Hide alert banner
+        function hideAlert() {
+            document.getElementById('alertBanner').style.display = 'none';
+        }
+        
+        // Calculate change percentage
+        function calculateChange(current, baseline) {
+            const change = ((current - baseline) / baseline) * 100;
+            return {
+                value: change,
+                direction: change >= 0 ? 'positive' : 'negative',
+                symbol: change >= 0 ? '↑' : '↓'
+            };
+        }
+        
+        // Set date range
+        function setDateRange(range) {
+            const endDate = new Date();
+            const startDate = new Date();
+            
+            switch(range) {
+                case 'today':
+                    startDate.setDate(startDate.getDate());
+                    break;
+                case 'week':
+                    startDate.setDate(startDate.getDate() - 7);
+                    break;
+                case 'month':
+                    startDate.setDate(startDate.getDate() - 30);
+                    break;
+            }
+            
+            document.getElementById('startDate').value = formatDate(startDate);
+            document.getElementById('endDate').value = formatDate(endDate);
+            
+            updateDashboard();
+        }
+        
+        // Format date for input
+        function formatDate(date) {
+            return date.toISOString().split('T')[0];
+        }
+        
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', initDashboard);
+    </script>
+</body>
+</html>

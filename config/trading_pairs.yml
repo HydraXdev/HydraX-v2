@@ -217,21 +217,22 @@ strategy_assignments:
     min_tcs: 75
     
   all_pairs_strategy:
-    description: "All pairs available with appropriate TCS filtering"
+    description: "All pairs available with self-optimizing TCS filtering"
     allowed_pairs:
-      - GBPUSD
       - EURUSD
+      - GBPUSD
       - USDJPY
-      - GBPJPY
       - USDCAD
+      - GBPJPY
       - AUDUSD
       - NZDUSD
-      - AUDJPY
-      - EURJPY
       - EURGBP
-      - GBPCHF
       - USDCHF
+      - EURJPY
     min_tcs: 70
+    dynamic_tcs: true
+    target_signals_per_day: 65
+    max_tcs_adjustment: 78
 
 # MT5 Bridge symbol mappings
 mt5_mappings:
@@ -251,16 +252,19 @@ mt5_mappings:
 # Heat map tracking configuration
 heat_map_config:
   tracked_pairs:
-    - GBPUSD
     - EURUSD
+    - GBPUSD
     - USDJPY
-    - GBPJPY
     - USDCAD
+    - GBPJPY
     - AUDUSD
     - NZDUSD
-    - AUDJPY
-    - EURJPY
     - EURGBP
+    - USDCHF
+    - EURJPY
+  reserve_pairs:
+    - AUDJPY
+    - GBPCHF
   update_interval_seconds: 30
   history_retention_days: 7
 
@@ -306,10 +310,13 @@ sessions:
 
 # Configuration metadata
 metadata:
-  version: "2.0.0"
-  last_updated: "2025-01-06"
-  total_pairs: 12
+  version: "3.0.0"
+  last_updated: "2025-07-09"
+  total_active_pairs: 10
   core_pairs_count: 5
-  extra_pairs_count: 7
+  extra_pairs_count: 5
+  reserve_pairs_count: 2
   created_by: "BITTEN Configuration System"
-  description: "Centralized trading pairs configuration for modular system"
+  description: "Self-optimizing 10-pair system with predictive market movement detection"
+  target_signals_per_day: 65
+  self_optimizing: true

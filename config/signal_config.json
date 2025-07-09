@@ -1,0 +1,21 @@
+{
+  "mode": "live",
+  "source": "mt5_farm",
+  "pairs": [
+    "EURUSD",
+    "GBPUSD",
+    "USDJPY",
+    "USDCAD",
+    "GBPJPY",
+    "AUDUSD",
+    "NZDUSD",
+    "EURGBP",
+    "USDCHF",
+    "EURJPY"
+  ],
+  "filter_enabled": true,
+  "min_confidence": 0.85,
+  "farm_ips": [
+    "3.145.84.187"
+  ]
+}

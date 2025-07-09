@@ -1,0 +1,44 @@
+# Core dependencies
+torch>=2.0.0
+numpy>=1.21.0
+pandas>=1.3.0
+scikit-learn>=1.0.0
+scipy>=1.7.0
+
+# Data processing
+ta>=0.10.1  # Technical Analysis library
+yfinance>=0.2.18  # For downloading market data
+
+# Visualization
+matplotlib>=3.5.0
+seaborn>=0.11.0
+plotly>=5.14.0
+
+# Model tracking and versioning
+mlflow>=2.3.0
+wandb>=0.15.0
+gitpython>=3.1.0
+
+# Database
+sqlalchemy>=1.4.0
+
+# API and serving
+flask>=2.2.0
+fastapi>=0.95.0
+uvicorn>=0.21.0
+
+# Testing
+pytest>=7.2.0
+pytest-cov>=4.0.0
+
+# Development
+jupyter>=1.0.0
+ipython>=8.10.0
+black>=23.1.0
+flake8>=6.0.0
+
+# Additional utilities
+tqdm>=4.64.0
+python-dotenv>=1.0.0
+pyyaml>=6.0
+click>=8.1.0

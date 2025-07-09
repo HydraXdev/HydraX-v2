@@ -1,0 +1,154 @@
+# BITTEN TOC System Configuration
+# This file configures the unified TOC server and bridge connections
+
+# TOC Server Configuration
+toc_server:
+  host: "0.0.0.0"
+  port: 5000
+  debug: false
+  
+  # Database paths
+  databases:
+    terminal_assignments: "data/terminal_assignments.db"
+    bitten_main: "data/bitten.db"
+  
+  # Security
+  api_key: "${TOC_API_KEY}"  # Set in environment
+  allowed_ips: ["*"]  # Restrict in production
+
+# Bridge Terminal Servers
+bridge_terminals:
+  press_pass:
+    name: "Press Pass Terminal Pool"
+    ip: "${BRIDGE_PP_IP:-192.168.1.100}"
+    port: 5001
+    folder: "/mt5/terminals/press_pass"
+    max_users: 10
+    broker: "MetaQuotes-Demo"
+    
+  demo:
+    name: "Demo Terminal Pool"
+    ip: "${BRIDGE_DEMO_IP:-192.168.1.101}"
+    port: 5002
+    folder: "/mt5/terminals/demo"
+    max_users: 5
+    broker: "ICMarkets-Demo"
+    
+  live:
+    name: "Live Terminal Pool"
+    ip: "${BRIDGE_LIVE_IP:-192.168.1.102}"
+    port: 5003
+    folder: "/mt5/terminals/live"
+    max_users: 3
+    broker: "ICMarkets-Live"
+
+# Signal Routing Configuration
+signal_routing:
+  max_retries: 3
+  retry_delay: 1.0  # seconds
+  timeout: 10  # seconds
+  
+  # Delivery methods by priority
+  delivery_methods:
+    - http_post
+    - file_write
+  
+  # File paths for file-based delivery
+  file_base_path: "/mt5/signals"
+
+# Trade Execution Settings
+trade_execution:
+  # Default trade parameters
+  default_volume: 0.01
+  default_slippage: 3
+  max_slippage: 10
+  
+  # Risk management
+  max_daily_trades:
+    PRESS_PASS: 6
+    NIBBLER: 6
+    FANG: 10
+    COMMANDER: 14
+    APEX: 999
+  
+  # Cooldown periods (seconds)
+  cooldown_periods:
+    PRESS_PASS: 1800  # 30 min
+    NIBBLER: 1800     # 30 min
+    FANG: 1200        # 20 min
+    COMMANDER: 900    # 15 min
+    APEX: 600         # 10 min
+
+# XP System Configuration
+xp_system:
+  # XP awards
+  trade_fired: 10
+  profitable_trade: 20  # Base, scales with profit
+  daily_login: 5
+  mission_complete: 50
+  
+  # XP multipliers
+  win_streak_multiplier: 1.5
+  perfect_day_multiplier: 2.0
+
+# Monitoring & Alerts
+monitoring:
+  # Health check intervals (seconds)
+  terminal_health_check: 60
+  bridge_health_check: 30
+  
+  # Alert thresholds
+  max_failed_signals: 5
+  max_terminal_downtime: 300  # 5 minutes
+  
+  # Notification channels
+  alerts:
+    telegram: true
+    email: false
+    webhook: "${ALERT_WEBHOOK_URL}"
+
+# Session Management
+sessions:
+  # Session timeouts (hours)
+  terminal_assignment_timeout: 24
+  inactive_session_timeout: 12
+  
+  # Cleanup intervals
+  cleanup_interval: 3600  # 1 hour
+
+# Logging Configuration
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  
+  # Log files
+  files:
+    main: "logs/toc_server.log"
+    trades: "logs/trades.log"
+    errors: "logs/errors.log"
+  
+  # Log rotation
+  rotation:
+    max_size: "100MB"
+    backup_count: 10
+
+# Performance Tuning
+performance:
+  # Connection pools
+  max_connections: 100
+  connection_timeout: 30
+  
+  # Threading
+  worker_threads: 4
+  queue_size: 1000
+  
+  # Caching
+  cache_ttl: 300  # 5 minutes
+
+# Feature Flags
+features:
+  press_pass_enabled: true
+  auto_terminal_assignment: true
+  trade_result_tracking: true
+  stealth_mode: true
+  advanced_signals: true

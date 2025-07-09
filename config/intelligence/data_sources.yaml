@@ -1,0 +1,108 @@
+# Data Source Configurations
+
+# Real-time market data
+realtime_market:
+  type: websocket
+  enabled: true
+  priority: 1
+  batch_size: 100
+  update_interval: 1
+  connection_params:
+    ws_url: wss://stream.marketdata.com/v1/stream
+    auth_message:
+      type: auth
+      api_key: ${API_KEY_MARKET_DATA}
+    subscribe_message:
+      type: subscribe
+      channels:
+        - trades
+        - quotes
+        - orderbook
+      symbols:
+        - EURUSD
+        - GBPUSD
+        - USDJPY
+        - AUDUSD
+        - XAUUSD
+
+# Historical market data
+historical_market:
+  type: http
+  enabled: true
+  priority: 2
+  batch_size: 500
+  update_interval: 300  # 5 minutes
+  connection_params:
+    endpoint: https://api.marketdata.com/v1/historical
+    poll_interval: 300
+    headers:
+      Authorization: Bearer ${API_KEY_MARKET_DATA}
+
+# News feed
+news_feed:
+  type: http
+  enabled: true
+  priority: 1
+  batch_size: 50
+  update_interval: 60
+  connection_params:
+    endpoint: https://newsapi.org/v2/everything
+    poll_interval: 60
+    headers:
+      X-Api-Key: ${API_KEY_NEWS_FEED}
+    params:
+      language: en
+      sortBy: publishedAt
+      pageSize: 100
+
+# Social media stream
+social_stream:
+  type: websocket
+  enabled: true
+  priority: 2
+  batch_size: 200
+  update_interval: 1
+  connection_params:
+    ws_url: wss://stream.twitter.com/v2/stream
+    auth_message:
+      bearer_token: ${API_KEY_SOCIAL_MEDIA}
+    subscribe_message:
+      add_rules:
+        - value: forex OR currency OR trading
+        - value: $EUR OR $GBP OR $USD
+
+# Economic calendar
+economic_events:
+  type: http
+  enabled: true
+  priority: 3
+  batch_size: 20
+  update_interval: 3600  # 1 hour
+  connection_params:
+    endpoint: https://api.economiccalendar.com/v1/events
+    poll_interval: 3600
+    headers:
+      Authorization: ${API_KEY_ECONOMIC_CALENDAR}
+
+# Technical indicators
+technical_indicators:
+  type: internal
+  enabled: true
+  priority: 1
+  batch_size: 100
+  update_interval: 60
+  connection_params:
+    indicators:
+      - RSI
+      - MACD
+      - SMA
+      - EMA
+      - Bollinger Bands
+      - ATR
+    timeframes:
+      - 1m
+      - 5m
+      - 15m
+      - 1h
+      - 4h
+      - 1d

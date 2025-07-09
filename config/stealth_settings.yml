@@ -1,0 +1,155 @@
+# stealth_settings.yml
+# Configuration for BITTEN Stealth Protocol
+
+# Global stealth settings
+stealth:
+  enabled: true
+  default_level: medium  # low, medium, high, ghost
+  
+  # Entry delay settings (seconds)
+  entry_delay:
+    low:
+      min: 0.5
+      max: 3.0
+    medium:
+      min: 1.0
+      max: 6.0
+    high:
+      min: 2.0
+      max: 9.0
+    ghost:
+      min: 3.0
+      max: 12.0
+  
+  # Lot size jitter settings (percentage)
+  lot_jitter:
+    low:
+      min: 0.01  # 1%
+      max: 0.03  # 3%
+    medium:
+      min: 0.03  # 3%
+      max: 0.07  # 7%
+    high:
+      min: 0.05  # 5%
+      max: 0.10  # 10%
+    ghost:
+      min: 0.07  # 7%
+      max: 0.15  # 15%
+  
+  # TP/SL offset settings (pips)
+  tp_sl_offset:
+    low:
+      tp_min: 1
+      tp_max: 2
+      sl_min: 1
+      sl_max: 2
+    medium:
+      tp_min: 1
+      tp_max: 3
+      sl_min: 1
+      sl_max: 3
+    high:
+      tp_min: 2
+      tp_max: 5
+      sl_min: 2
+      sl_max: 5
+    ghost:
+      tp_min: 3
+      tp_max: 7
+      sl_min: 3
+      sl_max: 7
+  
+  # Ghost skip settings (skip rate)
+  ghost_skip:
+    low: 0.05      # 5%
+    medium: 0.167  # ~16.7% (1 in 6)
+    high: 0.25     # 25%
+    ghost: 0.33    # 33%
+  
+  # Volume cap settings
+  volume_cap:
+    max_per_asset: 3
+    max_total: 10
+    
+  # Execution shuffle settings
+  execution_shuffle:
+    enabled: true
+    delay_min: 0.5  # seconds
+    delay_max: 2.0  # seconds
+
+# Tier-specific stealth permissions
+tier_stealth:
+  nibbler:
+    enabled: false
+    max_level: off
+    
+  fang:
+    enabled: true
+    max_level: low
+    modes:
+      - chaingun  # Only with CHAINGUN mode
+      
+  commander:
+    enabled: true
+    max_level: medium
+    modes:
+      - chaingun
+      - auto_fire
+      - semi_auto
+      
+  apex:
+    enabled: true
+    max_level: ghost
+    modes:
+      - chaingun
+      - auto_fire
+      - stealth  # Exclusive STEALTH mode
+      - all      # Can use with any mode
+
+# Special stealth behaviors
+special_behaviors:
+  # Win streak management
+  win_streak:
+    threshold: 12  # Inject loss after 12 consecutive wins
+    loss_size_multiplier: 0.5  # Reduce size for injected losses
+    
+  # Pattern breaking
+  pattern_break:
+    enabled: true
+    # Randomly change behavior every N trades
+    trade_interval:
+      min: 8
+      max: 15
+    
+  # Time-based variations
+  time_variations:
+    enabled: true
+    # Different behavior during different market sessions
+    asian_session:
+      entry_delay_multiplier: 1.2
+      lot_jitter_multiplier: 0.8
+    london_session:
+      entry_delay_multiplier: 0.8
+      lot_jitter_multiplier: 1.2
+    ny_session:
+      entry_delay_multiplier: 1.0
+      lot_jitter_multiplier: 1.0
+
+# Logging configuration
+logging:
+  enabled: true
+  log_path: "/logs/stealth_log.txt"
+  max_file_size_mb: 50
+  backup_count: 5
+  log_level: INFO  # DEBUG, INFO, WARNING, ERROR
+  
+  # What to log
+  log_actions:
+    - entry_delay
+    - lot_size_jitter
+    - tp_sl_offset
+    - ghost_skip
+    - vol_cap
+    - execution_shuffle
+    - level_change
+    - pattern_break

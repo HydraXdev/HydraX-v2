@@ -52,11 +52,17 @@ class FireModeValidator:
         # Emergency stop controller
         self.emergency_controller = EmergencyStopController()
         
+        # Current validation context for passing user data
+        self.current_validation_context = {}
+        
     def validate_fire(self, trade_payload: Dict, user_profile: Dict) -> ValidationResult:
         """
         Master validation flow - THE GAUNTLET
         Every trade must pass these trials
         """
+        
+        # Store user profile in context for sub-validators
+        self.current_validation_context = {'user_profile': user_profile}
         
         # Extract key parameters
         user_tier = TierLevel(user_profile.get('tier', 'nibbler'))
@@ -288,7 +294,19 @@ class FireModeValidator:
         """SEMI-AUTO: Commander+ manual mode with lower TCS threshold"""
         
         user_tier = TierLevel(profile.get('tier', 'nibbler'))
-        if user_tier not in [TierLevel.COMMANDER, TierLevel.APEX]:
+        
+        # Special handling for Nibbler tier - allow SEMI-AUTO with 70% TCS
+        if user_tier == TierLevel.NIBBLER:
+            if payload.get('tcs', 0) < 70:
+                return ValidationResult(
+                    valid=False,
+                    reason="SEMI-AUTO REQUIRES 70%+ TCS",
+                    bot_responses={
+                        "drillbot": "MINIMUM THRESHOLD NOT MET FOR NIBBLER.",
+                        "medicbot": "70% confidence required for Nibbler tier."
+                    }
+                )
+        elif user_tier not in [TierLevel.COMMANDER, TierLevel.APEX]:
             return ValidationResult(
                 valid=False,
                 reason="SEMI-AUTO: COMMANDER+ ONLY",
@@ -298,8 +316,8 @@ class FireModeValidator:
                 }
             )
         
-        # SEMI-AUTO requires 75%+ TCS (same as Fang arcade)
-        if payload.get('tcs', 0) < 75:
+        # SEMI-AUTO requires 75%+ TCS for Commander+ (same as Fang arcade)
+        if user_tier in [TierLevel.COMMANDER, TierLevel.APEX] and payload.get('tcs', 0) < 75:
             return ValidationResult(
                 valid=False,
                 reason="SEMI-AUTO REQUIRES 75%+ TCS",
@@ -622,7 +640,7 @@ class FireModeValidator:
         return ValidationResult(valid=True, reason="System operational", bot_responses={})
     
     def _validate_tcs(self, tcs: float, tier: TierLevel, mode: FireMode) -> ValidationResult:
-        """Validate TCS meets requirements"""
+        """Validate TCS meets requirements with Bit's warning system"""
         
         # Get tier configuration
         tier_config = TIER_CONFIGS.get(tier)
@@ -653,6 +671,28 @@ class FireModeValidator:
                     "bit": "*disapproving look*"
                 }
             )
+        
+        # NEW: Check for low TCS warning (under 76%)
+        if tcs < 76:
+            # Import Bit's warning system
+            from .bit_warnings import check_low_tcs_warning, BitWarningSystem
+            
+            # Get user profile from validation context (should be passed in)
+            user_profile = self.current_validation_context.get('user_profile', {})
+            needs_warning, warning_dialog = check_low_tcs_warning(tcs, user_profile)
+            
+            if needs_warning:
+                # Store warning dialog in validation result for fire_router to handle
+                return ValidationResult(
+                    valid=False,  # Block trade until warning is acknowledged
+                    reason="LOW_TCS_WARNING_REQUIRED",
+                    bot_responses={
+                        "drillbot": "HOLD FIRE. BIT HAS CONCERNS.",
+                        "medicbot": "Wisdom check required. Listen to Bit.",
+                        "bit": warning_dialog['content']['bit_says']
+                    },
+                    mutations={'warning_dialog': warning_dialog}
+                )
         
         return ValidationResult(valid=True, reason="TCS acceptable", bot_responses={})
     

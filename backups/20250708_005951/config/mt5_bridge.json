@@ -1,0 +1,35 @@
+{
+  "mt5": {
+    "enabled": true,
+    "files_path": null,
+    "check_interval_ms": 100,
+    "trade_timeout": 30,
+    "max_retries": 3,
+    "slippage_points": 20,
+    "magic_number": 20250626,
+    "symbol_mapping": {
+      "EURUSD": "EURUSD",
+      "GBPUSD": "GBPUSD",
+      "USDJPY": "USDJPY",
+      "USDCAD": "USDCAD",
+      "GBPJPY": "GBPJPY",
+      "AUDUSD": "AUDUSD",
+      "NZDUSD": "NZDUSD",
+      "AUDJPY": "AUDJPY",
+      "EURJPY": "EURJPY",
+      "EURGBP": "EURGBP",
+      "GBPCHF": "GBPCHF",
+      "USDCHF": "USDCHF"
+    }
+  },
+  "bridge": {
+    "instruction_file": "bitten_instructions.txt",
+    "result_file": "bitten_results.txt",
+    "status_file": "bitten_status.txt",
+    "heartbeat_interval": 5
+  },
+  "logging": {
+    "level": "INFO",
+    "file": "logs/mt5_bridge.log"
+  }
+}

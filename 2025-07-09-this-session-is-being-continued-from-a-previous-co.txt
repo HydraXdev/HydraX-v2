@@ -1,0 +1,29 @@
+╭───────────────────────────────────────────────────╮
+│ ✻ Welcome to Claude Code!                         │
+│                                                   │
+│   /help for help, /status for your current setup  │
+│                                                   │
+│   cwd: /root/HydraX-v2                            │
+╰───────────────────────────────────────────────────╯
+
+● Compact summary (ctrl+r to expand)
+  ⎿  Read bitten_live_signals.py (224 lines)
+  ⎿  Read src/bitten_core/mt5_enhanced_adapter.py (462 lines)
+  ⎿  Read SIGNALS_REALISTIC.py (645 lines)
+  ⎿  Read logs/signals_clean.log (100+ lines)
+  ⎿  Read config/mt5_bridge.json (35 lines)
+  ⎿  Todo list read (14 items)
+  ⎿  API Error: 500 {"type":"error","error":{"type":"api_error","message":"Internal server error"}}
+
+> done?
+  ⎿  API Error: 500 {"type":"error","error":{"type":"api_error","message":"Internal server error"}}
+
+> report everything we did in claude.md  and record to handover.md
+  ⎿  API Error: 500 {"type":"error","error":{"type":"api_error","message":"Internal server error"}}
+
+> report everything we did in claude.md  and record to handover.md
+  ⎿  API Error: 500 {"type":"error","error":{"type":"api_error","message":"Internal server error"}}
+
+> report everything we did in claude.md  and record to handover.md
+  ⎿  API Error: 500 {"type":"error","error":{"type":"api_error","message":"Internal server error"}}
+

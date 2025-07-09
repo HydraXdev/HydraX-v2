@@ -56,7 +56,7 @@ class SignalDisplay:
 💥 **OBJECTIVE:** +{signal['expected_pips']} PIPS
 ⚔️ **RISK:** {signal.get('risk_pips', 3)} PIPS
 
-📊 **INTEL CONFIDENCE:** {signal['tcs_score']}%
+📊 **INTEL CONFIDENCE:** {signal['tcs_score']}% {self._get_tcs_emoji(signal['tcs_score'])}
 {self._get_tcs_visual(signal['tcs_score'])}
 
 ⏱️ **OP WINDOW:** {expiry_bar}
@@ -65,11 +65,15 @@ class SignalDisplay:
 [🔫 **ENGAGE TARGET**] [📋 **VIEW INTEL**]
 """
         
+        # Add Grok AI sentiment if available
+        if signal.get('grok_sentiment'):
+            sitrep = self.add_grok_ai_sentiment(sitrep, signal['grok_sentiment'])
+        
         # Style 2: Compact Tactical Card
         compact = f"""
 ╔═══════════════════════════╗
 ║ 🎮 ARCADE SCALP DETECTED  ║
-║ {signal['symbol']} │ {signal['direction'].upper():>4} │ TCS: {signal['tcs_score']}% ║
+║ {signal['symbol']} │ {signal['direction'].upper():>4} │ TCS: {signal['tcs_score']}% {self._get_tcs_emoji(signal['tcs_score'])} ║
 ║ Entry: {signal['entry_price']:.5f}          ║
 ║ Target: +{signal['expected_pips']} pips          ║
 ║ {self._get_tcs_visual(signal['tcs_score'])}            ║
@@ -96,7 +100,7 @@ class SignalDisplay:
         minimal = f"""
 {signal['visual_emoji']} **{signal['display_type']}** - {signal['symbol']}
 → {signal['direction'].upper()} @ {signal['entry_price']:.5f}
-→ +{signal['expected_pips']} pips | TCS: {signal['tcs_score']}%
+→ +{signal['expected_pips']} pips | TCS: {signal['tcs_score']}% {self._get_tcs_emoji(signal['tcs_score'])}
 [🔫 FIRE]"""
 
         # Style 4: Gaming Style
@@ -147,6 +151,10 @@ class SignalDisplay:
 
 [🎯 **TAKE THE SHOT**] [🔍 **RECON**]
 """
+        
+        # Add Grok AI sentiment if available
+        if signal.get('grok_sentiment'):
+            sniper_brief = self.add_grok_ai_sentiment(sniper_brief, signal['grok_sentiment'])
         
         # Style 2: Classified
         classified = f"""
@@ -381,17 +389,19 @@ class SignalDisplay:
         return "\n".join(f"• {obj}" for obj in objectives)
     
     def _get_tcs_visual(self, tcs: int) -> str:
-        """Get visual representation of TCS"""
-        if tcs >= 95:
-            return "⚡⚡⚡⚡⚡ PERFECT!"
-        elif tcs >= 90:
-            return "████████░ ELITE"
-        elif tcs >= 80:
-            return "███████░░ HIGH"
+        """Get visual representation of TCS with emoji indicators and color coding"""
+        if tcs >= 85:
+            # Diamond level - SNIPER grade
+            return "💎 ████████░ SNIPER GRADE"
+        elif tcs >= 77:
+            # Star level - PRECISION grade  
+            return "⭐ ███████░░ PRECISION"
         elif tcs >= 70:
-            return "█████░░░░ GOOD"
+            # Crossbones level - RISKY grade
+            return "☠️ █████░░░░ RISKY"
         else:
-            return "███░░░░░░ STANDARD"
+            # Standard level - below threshold
+            return "⚠️ ███░░░░░░ STANDARD"
     
     def _get_tcs_bar(self, tcs: int) -> str:
         """Get TCS as progress bar"""
@@ -449,7 +459,7 @@ class SignalDisplay:
         alert = f"{emoji} **{briefing.callsign}** | {type_str}\n"
         alert += f"━━━━━━━━━━━━━━━━━━━━━\n"
         alert += f"📍 {briefing.symbol} {briefing.direction}\n"
-        alert += f"💯 TCS: {briefing.tcs_score}% | ⏱️ {self._format_time_remaining(briefing.time_remaining)}\n"
+        alert += f"💯 TCS: {briefing.tcs_score}% {self._get_tcs_emoji(briefing.tcs_score)} | ⏱️ {self._format_time_remaining(briefing.time_remaining)}\n"
         alert += f"👥 {briefing.active_operators} traders active"
         
         return alert
@@ -488,7 +498,7 @@ class SignalDisplay:
 📍 **AO:** {signal['symbol']}
 🎯 **Vector:** {signal['direction'].upper()} @ {signal['entry_price']:.5f}
 💥 **Target:** +{signal['expected_pips']} pips ({signal.get('risk_pips', 3)} risk)
-⚡ **TCS:** {self._get_tcs_visual(signal['tcs_score'])} {signal['tcs_score']}%
+⚡ **TCS:** {signal['tcs_score']}% {self._get_tcs_emoji(signal['tcs_score'])} - {self._get_tcs_explanation(signal['tcs_score'])}
 
 👥 **{signal.get('active_traders', 0)}** friendlies in position
 ⏱️ **Window:** {self._create_expiry_bar(signal.get('time_remaining', 600))}
@@ -503,7 +513,7 @@ class SignalDisplay:
 ├────────────────────────────┤
 │ ENTRY: {signal['entry_price']:.5f}
 │ TGT: +{signal['expected_pips']}p │ RISK: {signal.get('risk_pips', 3)}p
-│ R:R: 1:{signal['expected_pips'] // signal.get('risk_pips', 3)} │ TCS: {signal['tcs_score']}%
+│ R:R: 1:{signal['expected_pips'] // signal.get('risk_pips', 3)} │ TCS: {signal['tcs_score']}% {self._get_tcs_emoji(signal['tcs_score'])}
 ├────────────────────────────┤
 │ SQUAD: {signal.get('active_traders', 0)} │ AVG: {signal.get('squad_avg_tcs', 70)}%
 │ {self._create_expiry_bar(signal.get('time_remaining', 600))}
@@ -580,7 +590,7 @@ class SignalDisplay:
 • **EFFICIENCY:** 1:{briefing.risk_reward_ratio}
 
 **TACTICAL ASSESSMENT:**
-• **CONFIDENCE:** {briefing.tcs_score}% [ELITE GRADE]
+• **CONFIDENCE:** {briefing.tcs_score}% {self._get_tcs_emoji(briefing.tcs_score)} [{self._get_tcs_grade(briefing.tcs_score)}]
 • **MARKET CONDITIONS:** {briefing.market_conditions['volatility']}
 • **TREND ALIGNMENT:** {briefing.market_conditions['trend']}
 • **URGENCY:** {urgency_bar}
@@ -673,6 +683,110 @@ class SignalDisplay:
             hours = seconds // 3600
             minutes = (seconds % 3600) // 60
             return f"{hours}h {minutes}m"
+    
+    def _get_tcs_emoji(self, tcs: int) -> str:
+        """Get TCS emoji indicator based on level"""
+        if tcs >= 85:
+            return "💎"  # Diamond for 85+ TCS (SNIPER)
+        elif tcs >= 77:
+            return "⭐"  # Star for 77-84 TCS (PRECISION)
+        elif tcs >= 70:
+            return "☠️"  # Crossbones for 70-76 TCS (RISKY)
+        else:
+            return "⚠️"  # Warning for below 70 TCS
+    
+    def _get_tcs_explanation(self, tcs: int) -> str:
+        """Get brief TCS explanation text"""
+        if tcs >= 85:
+            return "Elite confidence - Maximum precision expected"
+        elif tcs >= 77:
+            return "High confidence - Strong signal quality"
+        elif tcs >= 70:
+            return "Moderate confidence - Proceed with caution"
+        else:
+            return "Low confidence - Higher risk trade"
+    
+    def format_signal(self, signal: Dict) -> str:
+        """Format signal with visual TCS hierarchy"""
+        tcs = signal.get('tcs_score', 0)
+        emoji = self._get_tcs_emoji(tcs)
+        explanation = self._get_tcs_explanation(tcs)
+        
+        # Color-coded TCS display with emoji
+        tcs_display = f"{emoji} **TCS: {tcs}%** - {explanation}"
+        
+        # Visual bar representation
+        visual_bar = self._get_tcs_visual(tcs)
+        
+        return f"""
+**Signal Analysis:**
+{tcs_display}
+{visual_bar}
+"""
+    
+    def _get_tcs_grade(self, tcs: int) -> str:
+        """Get TCS grade label"""
+        if tcs >= 85:
+            return "SNIPER GRADE"
+        elif tcs >= 77:
+            return "PRECISION GRADE"
+        elif tcs >= 70:
+            return "RISKY GRADE"
+        else:
+            return "STANDARD GRADE"
+    
+    def add_grok_ai_sentiment(self, signal_text: str, grok_data: Dict) -> str:
+        """Add Grok AI sentiment analysis to signal display"""
+        if not grok_data:
+            return signal_text
+        
+        # Extract sentiment scores
+        x_momentum = grok_data.get('x_momentum', 0)
+        whale_activity = grok_data.get('whale_activity', 0)
+        retail_fomo = grok_data.get('retail_fomo', 0)
+        smart_money = grok_data.get('smart_money_flow', 0)
+        
+        # Create Grok AI section
+        grok_section = f"""
+🤖 **GROK AI SENTIMENT ANALYSIS** 🤖
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📈 X Momentum: {x_momentum:+.0f} {"🔥" if x_momentum > 50 else "❄️" if x_momentum < -50 else "➡️"}
+🐋 Whale Activity: {whale_activity:+.0f} {"📈" if whale_activity > 30 else "📉" if whale_activity < -30 else "➡️"}
+🚀 Retail FOMO: {retail_fomo:+.0f} {"⚠️" if retail_fomo > 70 else "✅" if retail_fomo < -30 else "➡️"}
+💎 Smart Money Flow: {smart_money:+.0f} {"💰" if smart_money > 40 else "🚫" if smart_money < -40 else "➡️"}
+
+🎯 **Powered by Grok AI** - Real-time X sentiment
+"""
+        
+        # Find insertion point (after TCS section)
+        lines = signal_text.split('\n')
+        insert_index = -1
+        
+        for i, line in enumerate(lines):
+            if 'INTEL CONFIDENCE' in line or 'TCS' in line:
+                # Find the end of TCS visual section
+                for j in range(i+1, min(i+5, len(lines))):
+                    if lines[j].strip() == '' or '⏱️' in lines[j]:
+                        insert_index = j
+                        break
+                break
+        
+        if insert_index > 0:
+            lines.insert(insert_index, grok_section)
+            return '\n'.join(lines)
+        else:
+            # Default: insert before buttons
+            button_index = -1
+            for i, line in enumerate(lines):
+                if '[' in line and ']' in line:
+                    button_index = i
+                    break
+            
+            if button_index > 0:
+                lines.insert(button_index - 1, grok_section)
+                return '\n'.join(lines)
+            else:
+                return signal_text + '\n' + grok_section
 
 # Test signal displays
 if __name__ == "__main__":

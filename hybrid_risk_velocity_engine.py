@@ -12,26 +12,39 @@ import json
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple
 import sys
+import uuid
+import os
+
+# Add performance tracking
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
+try:
+    from bitten_core.live_performance_tracker import live_tracker, LiveSignal, SignalStatus
+    from bitten_core.enhanced_ghost_tracker import enhanced_ghost_tracker, apply_ghost_mode_to_signal
+    PERFORMANCE_TRACKING = True
+    print("✅ Live performance tracking enabled")
+except ImportError as e:
+    print(f"⚠️ Performance tracking not available: {e}")
+    PERFORMANCE_TRACKING = False
 
 class HybridRiskVelocityEngine:
     def __init__(self):
         self.db_path = "/root/HydraX-v2/data/live_market.db"
         
         # Telegram config
-        self.bot_token = "7854827710:AAHnUNfP5GyxoYePoAV5BeOtDbmEJo6i_EQ"
-        self.chat_id = "-1002581996861"
+        self.bot_token = "os.getenv("BOT_TOKEN", "DISABLED_FOR_SECURITY")"
+        self.chat_id = "int(os.getenv("CHAT_ID", "-1002581996861"))"
         
         # Track sent signals
         self.sent_signals = set()
         
-        # OPTION B MATHEMATICAL THRESHOLDS
+        # CALIBRATED MATHEMATICAL THRESHOLDS (based on backtesting results)
         self.arcade_risk_efficiency_min = 4.0  # >4 profit-pips per risk-pip per hour
         self.arcade_max_duration_minutes = 45  # Hard limit for ARCADE
-        self.arcade_min_tcs = 82  # Raised from 70% - too many signals
+        self.arcade_min_tcs = 87  # CALIBRATED from 82% to 87% - improved quality
         self.arcade_velocity_min = 15  # >15 pips/hour price movement
         
         self.sniper_min_profit_pips = 40  # Minimum absolute profit
-        self.sniper_min_tcs = 85  # Precision required
+        self.sniper_min_tcs = 90  # CALIBRATED from 85% to 90% - higher precision
         self.sniper_min_risk_reward = 3.0  # 1:3+ R:R minimum
         self.sniper_max_duration_hours = 4  # Premium patience
         
@@ -165,7 +178,7 @@ class HybridRiskVelocityEngine:
         # SNIPER CLASSIFICATION CRITERIA
         sniper_criteria = [
             profit_pips >= self.sniper_min_profit_pips,  # >=40 pips absolute
-            tcs >= self.sniper_min_tcs,  # >=85% TCS
+            tcs >= self.sniper_min_tcs,  # >=90% TCS (calibrated)
             actual_rr >= self.sniper_min_risk_reward,  # >=1:3 R:R
             risk_efficiency >= 1.5 and risk_efficiency <= 4.0  # Strategic efficiency
         ]
@@ -308,6 +321,44 @@ class HybridRiskVelocityEngine:
                         signal_type = self.classify_signal_type(signal)
                         
                         if signal_type:
+                            # LIVE PERFORMANCE TRACKING: Track signal generation
+                            if PERFORMANCE_TRACKING:
+                                try:
+                                    live_signal = LiveSignal(
+                                        signal_id=signal['id'],
+                                        symbol=signal['symbol'],
+                                        direction=signal['direction'],
+                                        tcs_score=signal['tcs_score'],
+                                        entry_price=signal['entry_price'],
+                                        stop_loss=signal['stop_loss'],
+                                        take_profit=signal['take_profit'],
+                                        tier_generated=signal_type,
+                                        status=SignalStatus.ACTIVE,
+                                        ghost_mode_applied=False,
+                                        users_received=0,
+                                        users_executed=0,
+                                        win_rate_prediction=85.0,
+                                        actual_result=None,
+                                        profit_pips=None
+                                    )
+                                    live_tracker.track_signal_generation(live_signal)
+                                except Exception as e:
+                                    self.logger.warning(f"Performance tracking error: {e}")
+                            
+                            # Apply ghost mode to signal
+                            ghost_applied = False
+                            if PERFORMANCE_TRACKING:
+                                try:
+                                    ghosted_signal, ghost_actions = enhanced_ghost_tracker.apply_enhanced_ghost_mode(
+                                        signal, "commander"  # Default tier for classification
+                                    )
+                                    if ghost_actions:
+                                        signal.update(ghosted_signal)
+                                        ghost_applied = True
+                                        self.logger.debug(f"👻 Ghost mode applied: {len(ghost_actions)} modifications")
+                                except Exception as e:
+                                    self.logger.warning(f"Ghost mode error: {e}")
+                            
                             # Create appropriate alert
                             if signal_type == "ARCADE":
                                 alert_data = self.create_arcade_alert(signal['tcs_score'], signal['id'], signal['symbol'])
@@ -320,11 +371,19 @@ class HybridRiskVelocityEngine:
                             if self.send_telegram_message(alert_data["text"], alert_data["keyboard"]):
                                 self.sent_signals.add(signal['id'])
                                 
+                                # Update performance tracking with send confirmation
+                                if PERFORMANCE_TRACKING:
+                                    try:
+                                        live_tracker.update_signal_transmission(signal['id'], True, ghost_applied)
+                                    except Exception as e:
+                                        self.logger.warning(f"Performance update error: {e}")
+                                
                                 # Log with classification details
                                 risk_eff = self.calculate_risk_efficiency(signal)
                                 velocity = self.calculate_market_velocity(signal['symbol'])
+                                ghost_status = " [👻 GHOST]" if ghost_applied else ""
                                 
-                                self.logger.info(f"✅ Sent {signal_type} signal {signal['id']}: {signal['symbol']} {signal['direction']} (TCS: {signal['tcs_score']}%, RE: {risk_eff:.1f}, MV: {velocity:.1f})")
+                                self.logger.info(f"✅ Sent {signal_type} signal {signal['id']}: {signal['symbol']} {signal['direction']} (TCS: {signal['tcs_score']}%, RE: {risk_eff:.1f}, MV: {velocity:.1f}){ghost_status}")
                             else:
                                 self.logger.error(f"❌ Failed to send {signal_type} signal {signal['id']}")
                         else:

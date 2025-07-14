@@ -441,7 +441,7 @@ class UserRank(Enum):
 ```python
 class PressPassManager:
     - daily_limit: 10 passes/day
-    - duration: 30 days
+    - duration: 7 days
     - tier_granted: "APEX"
     - urgency_mechanism: Real-time scarcity
 ```

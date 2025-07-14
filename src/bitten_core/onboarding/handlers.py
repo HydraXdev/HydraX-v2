@@ -152,6 +152,101 @@ class OnboardingHandlers:
         
         return {'error': True, 'message': self.friendly_errors['need_selection']}
     
+    async def _handle_secure_link(self, session, input_type: str, input_data: Any) -> Dict[str, Any]:
+        """Handle secure link / broker connection and email capture"""
+        
+        # Check if we're waiting for email input
+        if hasattr(session, '_waiting_for_email') and session._waiting_for_email:
+            if input_type == "text":
+                # Validate email
+                if self.validators and self.validators.is_valid_email(input_data):
+                    session.email = input_data.lower().strip()
+                    session._waiting_for_email = False
+                    return {
+                        'error': False,
+                        'message': (
+                            f"✅ **Email Confirmed**: {session.email}\n\n"
+                            "Great! I'll use this for important account notifications.\n"
+                            "Let's continue setting up your account..."
+                        ),
+                        'advance_state': True,
+                        'state_data': {'email': session.email}
+                    }
+                else:
+                    return {
+                        'error': True,
+                        'message': (
+                            "🤔 That doesn't look like a valid email address.\n\n"
+                            "Please enter a valid email like: example@email.com"
+                        ),
+                        'advance_state': False
+                    }
+        
+        if input_type == "callback":
+            if input_data == "connect_broker":
+                # Request email for broker connection
+                session._waiting_for_email = True
+                return {
+                    'error': False,
+                    'message': (
+                        "📧 **Secure Connection Setup**\n\n"
+                        "To connect your broker account and receive important updates, "
+                        "I'll need your email address.\n\n"
+                        "Please type your email address below:"
+                    ),
+                    'advance_state': False,
+                    'keyboard': {}  # Remove buttons to encourage text input
+                }
+            elif input_data == "skip_broker":
+                return {
+                    'error': False,
+                    'message': "⏭️ Skipping broker connection for now. You can connect later from settings.",
+                    'advance_state': True
+                }
+        
+        return {'error': True, 'message': self.friendly_errors['invalid_selection']}
+    
+    async def _handle_oath_of_enlistment(self, session, input_type: str, input_data: Any) -> Dict[str, Any]:
+        """Handle oath acceptance"""
+        
+        if input_type == "callback":
+            if input_data == "accept_oath":
+                session.accepted_terms = True
+                return {
+                    'error': False,
+                    'message': (
+                        "🎖️ **OATH ACCEPTED!**\n\n"
+                        "You are now bound by the code of the BITTEN Network.\n"
+                        "Honor, discipline, and calculated aggression will guide your path.\n\n"
+                        "*Welcome to the brotherhood, soldier.*"
+                    ),
+                    'advance_state': True,
+                    'state_data': {'accepted_terms': True}
+                }
+            elif input_data == "read_oath":
+                # Show the oath again
+                oath_text = (
+                    "📜 **THE BITTEN OATH OF ENLISTMENT**\n\n"
+                    "I solemnly swear to:\n\n"
+                    "⚔️ **HONOR** the markets with disciplined execution\n"
+                    "🛡️ **PROTECT** my capital with strategic risk management\n"
+                    "🎯 **EXECUTE** trades with precision and purpose\n"
+                    "📚 **LEARN** from every victory and defeat\n"
+                    "🤝 **SUPPORT** my fellow traders in the network\n\n"
+                    "I understand that trading involves risk and commit to:\n"
+                    "• Never risk more than I can afford to lose\n"
+                    "• Follow the BITTEN risk management protocols\n"
+                    "• Maintain emotional discipline at all times\n\n"
+                    "Do you accept this oath?"
+                )
+                return {
+                    'error': False,
+                    'message': oath_text,
+                    'advance_state': False
+                }
+        
+        return {'error': True, 'message': self.friendly_errors['need_selection']}
+    
     async def _handle_press_pass_intro(self, session, input_type: str, input_data: Any) -> Dict[str, Any]:
         """Handle Press Pass activation and information"""
         

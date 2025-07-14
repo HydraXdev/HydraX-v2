@@ -1,0 +1,145 @@
+{
+  "metadata": {
+    "generated_at": "2025-07-11T00:00:00Z",
+    "version": "1.0.0",
+    "last_update": "2025-07-11",
+    "system_name": "BITTEN",
+    "environment": "production"
+  },
+  "system_state": {
+    "infrastructure": {
+      "aws_server": "3.145.84.187",
+      "linux_server": "134.199.204.67",
+      "webapp_url": "https://joinbitten.com/hud",
+      "agent_ports": {
+        "primary": 5555,
+        "backup": 5556,
+        "websocket": 5557,
+        "ssh": 22
+      },
+      "status": "OPERATIONAL"
+    },
+    "trading_engine": {
+      "signal_types": ["RAPID_ASSAULT", "SNIPER_OPS"],
+      "tcs_thresholds": {
+        "minimum": 87,
+        "sniper": 90,
+        "commander_auto": 92
+      },
+      "trading_pairs": [
+        "EURUSD", "GBPUSD", "USDJPY", "USDCAD", "GBPJPY",
+        "AUDUSD", "NZDUSD", "EURGBP", "USDCHF", "EURJPY"
+      ],
+      "target_signals_per_day": 65,
+      "self_optimizing_range": [70, 78]
+    },
+    "tier_system": {
+      "active_tiers": {
+        "PRESS_PASS": {
+          "price": 0,
+          "duration": "7_days",
+          "weekly_limit": 200,
+          "features": ["demo_account", "xp_resets_daily", "no_callsign"]
+        },
+        "NIBBLER": {
+          "price": 39,
+          "lot_size": 0.01,
+          "features": ["arcade_signals", "view_all_intel", "callsign"]
+        },
+        "FANG": {
+          "price": 89,
+          "lot_size": 0.05,
+          "features": ["all_signals_manual", "enhanced_tools"]
+        },
+        "COMMANDER": {
+          "price": 139,
+          "lot_size": 0.10,
+          "features": ["auto_execution_92_plus", "advanced_analytics"]
+        },
+        "APEX": {
+          "price": 188,
+          "lot_size": 0.20,
+          "features": ["unlimited_signals", "premium_features"]
+        }
+      }
+    },
+    "safety_systems": {
+      "daily_loss_limits": {
+        "min": -7,
+        "max": -10,
+        "unit": "percent"
+      },
+      "risk_reward_minimum": 1.0,
+      "tilt_detection": true,
+      "news_lockouts": true,
+      "emergency_stop": true,
+      "position_validation": true
+    },
+    "stealth_protection": {
+      "ghost_mode_effectiveness": 73.7,
+      "intensity_by_tier": {
+        "NIBBLER": 60,
+        "FANG": 70,
+        "COMMANDER": 85,
+        "APEX": 100
+      },
+      "randomization_features": [
+        "entry_delays",
+        "lot_variance",
+        "tp_sl_offsets",
+        "signal_skipping"
+      ]
+    },
+    "education_system": {
+      "lore_integration": true,
+      "norman_story": true,
+      "bit_companion": true,
+      "military_framework": true,
+      "covert_education": true,
+      "intel_command_center": {
+        "categories": 12,
+        "easter_eggs": 8,
+        "access_methods": 4
+      }
+    },
+    "critical_rules": [
+      "User maintains full control over all trades",
+      "System cannot execute without explicit permission",
+      "All pricing must reference config/payment.py",
+      "Security audit completed and documented",
+      "Performance tracking mandatory for all signals"
+    ]
+  },
+  "active_features": {
+    "telegram_bot": true,
+    "webapp_hud": true,
+    "mt5_bridge": true,
+    "self_optimizing_tcs": true,
+    "ghost_mode": true,
+    "press_pass_system": true,
+    "intel_command_center": true,
+    "norman_integration": true,
+    "performance_tracking": true,
+    "bulletproof_agents": true
+  },
+  "pending_deployments": [
+    "Enhanced Norman's Notebook (Task 4)",
+    "Atmospheric UI Elements (Task 5)",
+    "Progressive Story Revelation (Task 6)",
+    "Community Squad Operations (Task 7)"
+  ],
+  "known_issues": [
+    "Manual deployment required for bulletproof agents",
+    "Pricing inconsistencies in 6+ files",
+    "MT5 farm needs manual startup",
+    "Some backup files contain old pricing"
+  ],
+  "security_status": {
+    "audit_completed": true,
+    "vulnerabilities_patched": true,
+    "input_validation": true,
+    "rate_limiting": true,
+    "authentication": true,
+    "secure_headers": true
+  }
+}

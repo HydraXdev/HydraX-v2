@@ -1,103 +1,85 @@
 #!/usr/bin/env python3
 """
-Press Pass XP Reset System
+Press Pass XP Reset System with Database Integration
 Nightly XP wipe for Press Pass users with dramatic notifications
 """
 
-import json
-import os
 import asyncio
 import logging
 from datetime import datetime, timezone, time as datetime_time
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, TYPE_CHECKING
+import sys
+import os
+
+# Add parent directory to path for imports
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
+if TYPE_CHECKING:
+    from .xp_integration import XPIntegrationManager
 from dataclasses import dataclass, asdict
 import threading
 import schedule
 import time
 
 from .telegram_messenger import TelegramMessenger
-from .xp_integration import XPIntegrationManager
 from .user_profile import UserProfileManager
+from database.xp_database import XPDatabase, PressPassReset
 
 logger = logging.getLogger(__name__)
 
 
 @dataclass
-class ShadowStats:
-    """Shadow stats that persist through resets"""
+class PressPassStats:
+    """Simple Press Pass stats - no restoration, just current day tracking"""
     user_id: str
-    real_total_xp: int = 0
-    real_lifetime_earned: int = 0
-    real_lifetime_spent: int = 0
-    total_xp_wiped: int = 0
-    reset_count: int = 0
-    largest_wipe: int = 0
+    xp_earned_today: int = 0
+    trades_executed_today: int = 0
+    total_resets: int = 0
     last_reset: Optional[str] = None
 
 
 class PressPassResetManager:
-    """Manages nightly XP resets for Press Pass users"""
+    """Manages nightly XP resets for Press Pass users with database integration"""
     
     def __init__(
         self,
-        xp_manager: XPIntegrationManager,
+        xp_manager: "XPIntegrationManager",
         telegram: TelegramMessenger,
-        shadow_data_path: str = "data/press_pass_shadow.json"
+        xp_database: Optional[XPDatabase] = None
     ):
         self.xp_manager = xp_manager
         self.telegram = telegram
-        self.shadow_data_path = shadow_data_path
-        self.shadow_stats: Dict[str, ShadowStats] = {}
+        self.xp_db = xp_database
         self.press_pass_users: List[str] = []
-        
-        # Load shadow stats
-        self._load_shadow_stats()
         
         # Schedule thread
         self.scheduler_thread = None
         self.running = False
         
-    def _load_shadow_stats(self):
-        """Load shadow stats from file"""
-        if os.path.exists(self.shadow_data_path):
-            try:
-                with open(self.shadow_data_path, 'r') as f:
-                    data = json.load(f)
-                    for user_id, stats in data.items():
-                        self.shadow_stats[user_id] = ShadowStats(**stats)
-            except Exception as e:
-                logger.error(f"Failed to load shadow stats: {e}")
-                
-    def _save_shadow_stats(self):
-        """Save shadow stats to file"""
+        # Initialize database connection if not provided
+        if not self.xp_db:
+            self._init_db_task = asyncio.create_task(self._initialize_database())
+        
+    async def _initialize_database(self):
+        """Initialize database connection"""
         try:
-            os.makedirs(os.path.dirname(self.shadow_data_path), exist_ok=True)
-            with open(self.shadow_data_path, 'w') as f:
-                data = {
-                    user_id: asdict(stats) 
-                    for user_id, stats in self.shadow_stats.items()
-                }
-                json.dump(data, f, indent=2)
+            self.xp_db = XPDatabase()
+            await self.xp_db.initialize()
+            await self.xp_db.initialize_tables()
+            logger.info("Press Pass database connection initialized")
         except Exception as e:
-            logger.error(f"Failed to save shadow stats: {e}")
+            logger.error(f"Failed to initialize database: {e}")
+            self.xp_db = None
+    
+    async def _ensure_db_ready(self):
+        """Ensure database is initialized before use"""
+        if hasattr(self, '_init_db_task'):
+            await self._init_db_task
     
     def add_press_pass_user(self, user_id: str):
         """Add a user to Press Pass program"""
         if user_id not in self.press_pass_users:
             self.press_pass_users.append(user_id)
-            
-            # Initialize shadow stats
-            if user_id not in self.shadow_stats:
-                # Get current stats to initialize shadow
-                xp_status = self.xp_manager.get_user_xp_status(user_id)
-                self.shadow_stats[user_id] = ShadowStats(
-                    user_id=user_id,
-                    real_total_xp=xp_status["profile"]["total_xp"],
-                    real_lifetime_earned=xp_status["xp_economy"]["lifetime_earned"],
-                    real_lifetime_spent=xp_status["xp_economy"]["lifetime_spent"]
-                )
-                self._save_shadow_stats()
-                
             logger.info(f"Added {user_id} to Press Pass program")
             
     def remove_press_pass_user(self, user_id: str):
@@ -110,13 +92,33 @@ class PressPassResetManager:
         """Check if user is in Press Pass program"""
         return user_id in self.press_pass_users
     
+    async def get_user_xp_balance(self, user_id: str) -> int:
+        """Get current XP balance from database"""
+        await self._ensure_db_ready()
+        
+        if self.xp_db:
+            try:
+                # Convert string user_id to int for database
+                user_id_int = int(user_id)
+                balance = await self.xp_db.get_user_balance(user_id_int)
+                if balance:
+                    return balance.current_balance
+            except Exception as e:
+                logger.error(f"Failed to get XP balance from database: {e}")
+        
+        # Fallback to file-based system
+        try:
+            xp_status = self.xp_manager.get_user_xp_status(user_id)
+            return xp_status["xp_economy"]["current_balance"]
+        except:
+            return 0
+    
     async def send_warning_notification(self, hours_until_reset: float):
         """Send warning notification to Press Pass users"""
         for user_id in self.press_pass_users:
             try:
                 # Get current XP that will be wiped
-                xp_status = self.xp_manager.get_user_xp_status(user_id)
-                current_xp = xp_status["xp_economy"]["current_balance"]
+                current_xp = await self.get_user_xp_balance(user_id)
                 
                 if current_xp > 0:
                     if hours_until_reset == 1:
@@ -146,8 +148,66 @@ class PressPassResetManager:
                 logger.error(f"Failed to send warning to {user_id}: {e}")
     
     async def execute_xp_reset(self):
-        """Execute the XP reset for all Press Pass users"""
-        reset_time = datetime.now(timezone.utc).isoformat()
+        """Execute the XP reset for all Press Pass users using database"""
+        await self._ensure_db_ready()
+        
+        reset_time = datetime.now(timezone.utc)
+        total_wiped = 0
+        resets_executed = []
+        
+        # Use database for atomic batch reset
+        if self.xp_db:
+            try:
+                # Convert string user IDs to integers
+                user_ids_int = []
+                for user_id in self.press_pass_users:
+                    try:
+                        user_ids_int.append(int(user_id))
+                    except ValueError:
+                        logger.warning(f"Invalid user ID format: {user_id}")
+                
+                # Execute bulk reset in database
+                resets = await self.xp_db.bulk_reset_press_pass_xp(user_ids_int)
+                
+                # Send notifications for each reset
+                for reset in resets:
+                    total_wiped += reset.xp_wiped
+                    resets_executed.append(reset)
+                    
+                    # Send dramatic notification
+                    message = (
+                        f"💀 **XP RESET EXECUTED** 💀\n\n"
+                        f"🔥 **{reset.xp_wiped:,} XP DESTROYED** 🔥\n\n"
+                        f"Your Press Pass XP has been reset to ZERO.\n"
+                        f"**NO RECOVERY. NO RESTORATION.**\n\n"
+                        f"⏰ Next reset: Tomorrow at 00:00 UTC\n"
+                        f"💪 Start earning again - or enlist to keep your progress!"
+                    )
+                    
+                    await self.telegram.send_message(
+                        chat_id=str(reset.user_id),
+                        text=message,
+                        parse_mode='Markdown'
+                    )
+                    
+                    # Mark notification as sent
+                    await self.xp_db.mark_reset_notification_sent(reset.reset_id)
+                    
+                    logger.info(f"Wiped {reset.xp_wiped} XP from user {reset.user_id} - NO RESTORATION")
+                
+            except Exception as e:
+                logger.error(f"Database reset failed, falling back to file-based: {e}")
+                # Fallback to file-based reset
+                await self._execute_file_based_reset()
+        else:
+            # Use file-based system if database not available
+            await self._execute_file_based_reset()
+        
+        logger.info(f"Press Pass reset complete. Total XP wiped: {total_wiped}")
+        return total_wiped
+    
+    async def _execute_file_based_reset(self):
+        """Fallback file-based reset (legacy support)"""
         total_wiped = 0
         
         for user_id in self.press_pass_users:
@@ -157,17 +217,7 @@ class PressPassResetManager:
                 current_xp = xp_status["xp_economy"]["current_balance"]
                 
                 if current_xp > 0:
-                    # Update shadow stats before wipe
-                    shadow = self.shadow_stats.get(user_id)
-                    if shadow:
-                        shadow.real_total_xp += current_xp
-                        shadow.real_lifetime_earned += current_xp
-                        shadow.total_xp_wiped += current_xp
-                        shadow.reset_count += 1
-                        shadow.largest_wipe = max(shadow.largest_wipe, current_xp)
-                        shadow.last_reset = reset_time
-                    
-                    # Wipe the XP (set to 0)
+                    # Wipe the XP (set to 0) - GONE FOREVER
                     self.xp_manager.xp_economy.users[user_id].current_balance = 0
                     self.xp_manager.xp_economy._save_user_data(user_id)
                     
@@ -176,9 +226,9 @@ class PressPassResetManager:
                         f"💀 **XP RESET EXECUTED** 💀\n\n"
                         f"🔥 **{current_xp:,} XP DESTROYED** 🔥\n\n"
                         f"Your Press Pass XP has been reset to ZERO.\n"
-                        f"The nightly purge is complete.\n\n"
+                        f"**NO RECOVERY. NO RESTORATION.**\n\n"
                         f"⏰ Next reset: Tomorrow at 00:00 UTC\n"
-                        f"💪 Start earning again - but remember, it's temporary!"
+                        f"💪 Start earning again - or enlist to keep your progress!"
                     )
                     
                     await self.telegram.send_message(
@@ -188,31 +238,50 @@ class PressPassResetManager:
                     )
                     
                     total_wiped += current_xp
-                    logger.info(f"Wiped {current_xp} XP from user {user_id}")
+                    logger.info(f"Wiped {current_xp} XP from user {user_id} - NO RESTORATION")
                     
             except Exception as e:
                 logger.error(f"Failed to reset XP for {user_id}: {e}")
         
-        # Save shadow stats
-        self._save_shadow_stats()
-        
-        logger.info(f"Press Pass reset complete. Total XP wiped: {total_wiped}")
-        
         return total_wiped
     
-    def get_shadow_stats(self, user_id: str) -> Optional[ShadowStats]:
-        """Get shadow stats for a user"""
-        return self.shadow_stats.get(user_id)
-    
-    def get_real_xp(self, user_id: str) -> int:
-        """Get real total XP including wiped amount"""
-        shadow = self.shadow_stats.get(user_id)
-        if shadow:
-            return shadow.real_total_xp
+    async def get_press_pass_stats(self, user_id: str) -> Optional[Dict[str, Any]]:
+        """Get Press Pass stats for a user from database"""
+        await self._ensure_db_ready()
         
-        # If no shadow stats, return current XP
-        xp_status = self.xp_manager.get_user_xp_status(user_id)
-        return xp_status["profile"]["total_xp"]
+        if self.xp_db:
+            try:
+                user_id_int = int(user_id)
+                
+                # Get from press_pass_shadow_stats table
+                async with self.xp_db.get_connection() as conn:
+                    row = await conn.fetchrow('''
+                        SELECT xp_earned_today, trades_executed_today, total_resets, last_reset_at
+                        FROM press_pass_shadow_stats
+                        WHERE user_id = $1
+                    ''', user_id_int)
+                    
+                    if row:
+                        return {
+                            'user_id': user_id,
+                            'xp_earned_today': row['xp_earned_today'],
+                            'trades_executed_today': row['trades_executed_today'],
+                            'total_resets': row['total_resets'],
+                            'last_reset': row['last_reset_at'].isoformat() if row['last_reset_at'] else None
+                        }
+            except Exception as e:
+                logger.error(f"Failed to get stats from database: {e}")
+        
+        return None
+    
+    def get_current_xp_for_enlistment(self, user_id: str) -> int:
+        """Get current day's XP that would be preserved on enlistment"""
+        # Only current day's XP, no historical data
+        try:
+            return asyncio.run(self.get_user_xp_balance(user_id))
+        except:
+            xp_status = self.xp_manager.get_user_xp_status(user_id)
+            return xp_status["xp_economy"]["current_balance"]
     
     def start_scheduler(self):
         """Start the scheduler thread"""
@@ -261,15 +330,45 @@ class PressPassResetManager:
         if user_id:
             # Reset specific user
             if user_id in self.press_pass_users:
+                original_users = self.press_pass_users.copy()
                 self.press_pass_users = [user_id]
                 await self.execute_xp_reset()
-                self.press_pass_users = self._load_press_pass_users()  # Reload full list
+                self.press_pass_users = original_users
         else:
             # Reset all Press Pass users
             await self.execute_xp_reset()
     
-    def _load_press_pass_users(self) -> List[str]:
-        """Load Press Pass users from storage"""
-        # This would typically load from a database or file
-        # For now, return the current list
-        return self.press_pass_users
+    async def load_press_pass_users_from_db(self) -> List[str]:
+        """Load Press Pass users from database"""
+        await self._ensure_db_ready()
+        
+        if self.xp_db:
+            try:
+                async with self.xp_db.get_connection() as conn:
+                    rows = await conn.fetch('''
+                        SELECT DISTINCT user_id 
+                        FROM press_pass_shadow_stats
+                    ''')
+                    
+                    return [str(row['user_id']) for row in rows]
+            except Exception as e:
+                logger.error(f"Failed to load Press Pass users from database: {e}")
+        
+        return []
+    
+    async def sync_with_database(self):
+        """Sync local Press Pass user list with database"""
+        db_users = await self.load_press_pass_users_from_db()
+        
+        # Merge with existing users
+        for user_id in db_users:
+            if user_id not in self.press_pass_users:
+                self.press_pass_users.append(user_id)
+        
+        logger.info(f"Synced {len(self.press_pass_users)} Press Pass users with database")
+    
+    async def cleanup(self):
+        """Clean up database connections"""
+        if self.xp_db:
+            await self.xp_db.close()
+            logger.info("Press Pass database connection closed")

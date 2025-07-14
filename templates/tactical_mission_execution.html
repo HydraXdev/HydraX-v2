@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ mission.operation_id }} - LIVE EXECUTION</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+    <style>
+        :root {
+            --tactical-green: #00ff41;
+            --amber-alert: #ffb700;
+            --red-alert: #ff073a;
+            --blue-info: #00d4ff;
+            --dark-bg: #0a0a0a;
+            --panel-bg: rgba(10, 10, 10, 0.95);
+            --military-green: #1a3d1a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier Prime', monospace;
+            background: linear-gradient(135deg, var(--dark-bg) 0%, var(--military-green) 100%);
+            color: var(--tactical-green);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .hud-container {
+            display: grid;
+            grid-template-areas: 
+                "status comms radar"
+                "main main intel"
+                "objectives controls bit";
+            grid-template-columns: 300px 1fr 300px;
+            grid-template-rows: 120px 1fr 200px;
+            height: 100vh;
+            gap: 10px;
+            padding: 10px;
+        }
+
+        .hud-panel {
+            background: var(--panel-bg);
+            border: 2px solid var(--tactical-green);
+            border-radius: 8px;
+            padding: 15px;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
+        }
+
+        .panel-header {
+            font-family: 'Orbitron', monospace;
+            font-weight: bold;
+            font-size: 0.9em;
+            color: var(--amber-alert);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid var(--tactical-green);
+        }
+
+        /* Status Panel */
+        .status-panel {
+            grid-area: status;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .status-item {
+            text-align: center;
+            padding: 8px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 4px;
+            border-left: 3px solid var(--tactical-green);
+        }
+
+        .status-value {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: var(--tactical-green);
+        }
+
+        .status-label {
+            font-size: 0.8em;
+            color: var(--amber-alert);
+        }
+
+        /* Communications Panel */
+        .comms-panel {
+            grid-area: comms;
+        }
+
+        .command-feed {
+            background: rgba(0, 0, 0, 0.7);
+            height: 70px;
+            overflow-y: auto;
+            border-radius: 4px;
+            padding: 8px;
+            font-size: 0.85em;
+            line-height: 1.3;
+        }
+
+        .command-message {
+            margin-bottom: 5px;
+            padding: 3px 6px;
+            border-left: 2px solid var(--blue-info);
+            background: rgba(0, 212, 255, 0.1);
+        }
+
+        .command-timestamp {
+            color: var(--amber-alert);
+            font-size: 0.75em;
+        }
+
+        /* Radar Panel */
+        .radar-panel {
+            grid-area: radar;
+        }
+
+        .market-radar {
+            width: 100%;
+            height: 70px;
+            background: radial-gradient(circle, rgba(0, 255, 65, 0.1), transparent);
+            border-radius: 50%;
+            position: relative;
+            border: 2px solid var(--tactical-green);
+        }
+
+        .radar-blip {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: var(--tactical-green);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        /* Main Execution Panel */
+        .main-panel {
+            grid-area: main;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .mission-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .mission-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.8em;
+            font-weight: 900;
+            color: var(--tactical-green);
+            text-shadow: 0 0 10px var(--tactical-green);
+        }
+
+        .mission-phase {
+            color: var(--amber-alert);
+            font-size: 1.1em;
+            margin-top: 5px;
+        }
+
+        .execution-area {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .trading-interface {
+            background: rgba(0, 0, 0, 0.8);
+            border: 3px solid var(--tactical-green);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            max-width: 500px;
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.4);
+        }
+
+        .target-info {
+            margin-bottom: 25px;
+        }
+
+        .target-symbol {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: var(--tactical-green);
+            margin-bottom: 10px;
+        }
+
+        .target-direction {
+            font-size: 1.5em;
+            color: var(--amber-alert);
+            margin-bottom: 15px;
+        }
+
+        .price-display {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .price-item {
+            background: rgba(0, 0, 0, 0.6);
+            padding: 10px;
+            border-radius: 6px;
+            border-top: 2px solid var(--blue-info);
+        }
+
+        .price-label {
+            font-size: 0.8em;
+            color: var(--blue-info);
+            margin-bottom: 5px;
+        }
+
+        .price-value {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: var(--tactical-green);
+        }
+
+        .execute-button {
+            background: linear-gradient(45deg, var(--red-alert), #ff4d6d);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-family: 'Orbitron', monospace;
+            font-size: 1.5em;
+            font-weight: bold;
+            padding: 20px 40px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(255, 7, 58, 0.4);
+        }
+
+        .execute-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 7, 58, 0.6);
+        }
+
+        .execute-button:active {
+            transform: translateY(0);
+        }
+
+        .execute-button.executing {
+            background: linear-gradient(45deg, var(--amber-alert), #ffd700);
+            color: black;
+            animation: executeFlash 0.5s infinite alternate;
+        }
+
+        @keyframes executeFlash {
+            0% { opacity: 0.8; }
+            100% { opacity: 1; }
+        }
+
+        /* Intelligence Panel */
+        .intel-panel {
+            grid-area: intel;
+        }
+
+        .intel-feed {
+            height: calc(100% - 40px);
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 4px;
+            padding: 10px;
+        }
+
+        .intel-item {
+            margin-bottom: 10px;
+            padding: 8px;
+            border-left: 3px solid var(--blue-info);
+            background: rgba(0, 212, 255, 0.05);
+            border-radius: 4px;
+            font-size: 0.85em;
+            line-height: 1.3;
+        }
+
+        .intel-high {
+            border-left-color: var(--red-alert);
+            background: rgba(255, 7, 58, 0.05);
+        }
+
+        .intel-medium {
+            border-left-color: var(--amber-alert);
+            background: rgba(255, 183, 0, 0.05);
+        }
+
+        /* Objectives Panel */
+        .objectives-panel {
+            grid-area: objectives;
+        }
+
+        .objective-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .objective-item {
+            margin-bottom: 8px;
+            padding: 6px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 4px;
+            font-size: 0.8em;
+            position: relative;
+            padding-left: 25px;
+        }
+
+        .objective-item::before {
+            content: "◯";
+            position: absolute;
+            left: 8px;
+            color: var(--amber-alert);
+        }
+
+        .objective-item.completed::before {
+            content: "◉";
+            color: var(--tactical-green);
+        }
+
+        /* Controls Panel */
+        .controls-panel {
+            grid-area: controls;
+        }
+
+        .control-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            height: calc(100% - 40px);
+        }
+
+        .control-btn {
+            background: linear-gradient(45deg, var(--military-green), rgba(26, 61, 26, 0.8));
+            border: 2px solid var(--tactical-green);
+            border-radius: 6px;
+            color: var(--tactical-green);
+            font-family: 'Orbitron', monospace;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9em;
+        }
+
+        .control-btn:hover {
+            background: linear-gradient(45deg, var(--tactical-green), rgba(0, 255, 65, 0.3));
+            color: black;
+        }
+
+        .control-btn.danger {
+            border-color: var(--red-alert);
+            color: var(--red-alert);
+        }
+
+        .control-btn.danger:hover {
+            background: linear-gradient(45deg, var(--red-alert), rgba(255, 7, 58, 0.3));
+            color: white;
+        }
+
+        /* Bit Panel */
+        .bit-panel {
+            grid-area: bit;
+        }
+
+        .bit-companion {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            height: calc(100% - 40px);
+            background: rgba(139, 69, 19, 0.1);
+            border-radius: 6px;
+            padding: 15px;
+            border: 1px solid #D2691E;
+        }
+
+        .bit-avatar {
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle, #D2691E, #8B4513);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            animation: bitPulse 3s infinite;
+        }
+
+        @keyframes bitPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .bit-status {
+            flex: 1;
+        }
+
+        .bit-mood {
+            color: #D2691E;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .bit-message {
+            color: #DEB887;
+            font-style: italic;
+            font-size: 0.9em;
+            line-height: 1.3;
+        }
+
+        /* Progress Indicators */
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--tactical-green), var(--blue-info));
+            transition: width 0.3s ease;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .hud-container {
+                grid-template-areas: 
+                    "status status status"
+                    "main main main"
+                    "controls intel bit";
+                grid-template-columns: 1fr 1fr 1fr;
+                grid-template-rows: 100px 1fr 180px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hud-container {
+                grid-template-areas: 
+                    "status"
+                    "main"
+                    "controls"
+                    "intel"
+                    "bit";
+                grid-template-columns: 1fr;
+                grid-template-rows: 80px 1fr 120px 120px 120px;
+            }
+            
+            .status-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            
+            .price-display {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+        }
+
+        /* Special Effects */
+        @keyframes pulse {
+            0% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.2); }
+            100% { opacity: 0.5; transform: scale(1); }
+        }
+
+        .scan-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--tactical-green), transparent);
+            animation: scanLine 2s linear infinite;
+        }
+
+        @keyframes scanLine {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(100vh); }
+        }
+
+        /* Alert Animations */
+        .alert-flash {
+            animation: alertFlash 0.5s infinite alternate;
+        }
+
+        @keyframes alertFlash {
+            0% { background-color: rgba(255, 7, 58, 0.1); }
+            100% { background-color: rgba(255, 7, 58, 0.3); }
+        }
+    </style>
+</head>
+<body>
+    <div class="scan-line"></div>
+    
+    <div class="hud-container">
+        <!-- Status Panel -->
+        <div class="hud-panel status-panel">
+            <div class="panel-header">📊 Operational Status</div>
+            <div class="status-grid">
+                <div class="status-item">
+                    <div class="status-value" id="mission-timer">00:00</div>
+                    <div class="status-label">ELAPSED</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-value" id="phase-status">{{ mission.current_phase.value.upper() }}</div>
+                    <div class="status-label">PHASE</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-value" id="connection-status">LIVE</div>
+                    <div class="status-label">COMMS</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-value" id="confidence-level">{{ mission.intel_confidence }}%</div>
+                    <div class="status-label">INTEL</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Communications Panel -->
+        <div class="hud-panel comms-panel">
+            <div class="panel-header">📡 Command Communications</div>
+            <div class="command-feed" id="command-feed">
+                <div class="command-message">
+                    <div class="command-timestamp">[{{ "now"|timestamp }}]</div>
+                    <div>COMMAND: {{ mission.operator_callsign }}, Operation {{ mission.mission_id }} is live. Maintain comm discipline.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Radar Panel -->
+        <div class="hud-panel radar-panel">
+            <div class="panel-header">🎯 Market Radar</div>
+            <div class="market-radar">
+                <div class="radar-blip" style="top: 30%; left: 45%;"></div>
+                <div class="radar-blip" style="top: 60%; left: 70%; animation-delay: 0.5s;"></div>
+                <div class="radar-blip" style="top: 20%; left: 25%; animation-delay: 1s;"></div>
+            </div>
+        </div>
+
+        <!-- Main Execution Panel -->
+        <div class="hud-panel main-panel">
+            <div class="mission-header">
+                <div class="mission-title">{{ mission.mission_id }}</div>
+                <div class="mission-phase">PHASE: {{ mission.current_phase.value.upper() }} | OPERATOR: {{ mission.operator_callsign }}</div>
+            </div>
+            
+            <div class="execution-area">
+                <div class="trading-interface">
+                    <div class="target-info">
+                        <div class="target-symbol">{{ mission.target_symbol }}</div>
+                        <div class="target-direction">{{ signal_data.direction.upper() }} OPERATION</div>
+                    </div>
+                    
+                    <div class="price-display">
+                        <div class="price-item">
+                            <div class="price-label">ENTRY POINT</div>
+                            <div class="price-value">{{ "%.5f"|format(signal_data.entry_price) }}</div>
+                        </div>
+                        <div class="price-item">
+                            <div class="price-label">STOP LOSS</div>
+                            <div class="price-value">{{ "%.5f"|format(signal_data.stop_loss) }}</div>
+                        </div>
+                        <div class="price-item">
+                            <div class="price-label">TAKE PROFIT</div>
+                            <div class="price-value">{{ "%.5f"|format(signal_data.take_profit) }}</div>
+                        </div>
+                    </div>
+                    
+                    <button class="execute-button" id="execute-btn" onclick="executeOperation()">
+                        🎯 EXECUTE OPERATION
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Intelligence Panel -->
+        <div class="hud-panel intel-panel">
+            <div class="panel-header">🔍 Intelligence Feed</div>
+            <div class="intel-feed" id="intel-feed">
+                <div class="intel-item intel-high">
+                    <strong>HIGH PRIORITY:</strong> Target window optimal for engagement. TCS confidence at {{ mission.intel_confidence }}%.
+                </div>
+                <div class="intel-item intel-medium">
+                    <strong>TACTICAL NOTE:</strong> {{ guidance.norman_wisdom if guidance else "Norman's guidance: Trust your training, trust the plan." }}
+                </div>
+                <div class="intel-item">
+                    <strong>MARKET INTEL:</strong> Volatility conditions favorable. Proceed with standard operational parameters.
+                </div>
+            </div>
+        </div>
+
+        <!-- Objectives Panel -->
+        <div class="hud-panel objectives-panel">
+            <div class="panel-header">🎯 Mission Objectives</div>
+            <ul class="objective-list">
+                {% for objective in mission.learning_objectives %}
+                <li class="objective-item" id="obj-{{ loop.index }}">
+                    {{ objective.military_description|truncate(50) }}
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Controls Panel -->
+        <div class="hud-panel controls-panel">
+            <div class="panel-header">⚙️ Tactical Controls</div>
+            <div class="control-buttons">
+                <button class="control-btn" onclick="requestIntel()">
+                    📊 REQUEST INTEL
+                </button>
+                <button class="control-btn" onclick="modifyPosition()">
+                    🔧 MODIFY PARAMS
+                </button>
+                <button class="control-btn danger" onclick="emergencyAbort()">
+                    🚨 EMERGENCY STOP
+                </button>
+                <button class="control-btn" onclick="contactCommand()">
+                    📞 CONTACT COMMAND
+                </button>
+            </div>
+        </div>
+
+        <!-- Bit Companion Panel -->
+        <div class="hud-panel bit-panel">
+            <div class="panel-header">🐱 Tactical Companion</div>
+            <div class="bit-companion">
+                <div class="bit-avatar">🐱</div>
+                <div class="bit-status">
+                    <div class="bit-mood">{{ bit_status.mood|title if bit_status else "Alert" }}</div>
+                    <div class="bit-message">{{ bit_status.message if bit_status else "*Bit watches calmly, ready to provide guidance*" }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Socket.IO Connection
+        const socket = io();
+        let missionStartTime = Date.now();
+        let executionPhase = 'preparation';
+        let timerInterval;
+
+        // Mission Configuration
+        const missionConfig = {
+            id: '{{ mission.mission_id }}',
+            operator: '{{ mission.operator_callsign }}',
+            symbol: '{{ mission.target_symbol }}',
+            direction: '{{ signal_data.direction }}',
+            entry: {{ signal_data.entry_price }},
+            stopLoss: {{ signal_data.stop_loss }},
+            takeProfit: {{ signal_data.take_profit }}
+        };
+
+        // Initialize Mission
+        function initializeMission() {
+            updateTimer();
+            timerInterval = setInterval(updateTimer, 1000);
+            
+            // Join mission room
+            socket.emit('join_mission', {
+                mission_id: missionConfig.id,
+                operator: missionConfig.operator
+            });
+            
+            // Request initial guidance
+            requestMissionGuidance();
+        }
+
+        // Timer Management
+        function updateTimer() {
+            const elapsed = Date.now() - missionStartTime;
+            const minutes = Math.floor(elapsed / 60000);
+            const seconds = Math.floor((elapsed % 60000) / 1000);
+            document.getElementById('mission-timer').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        // Socket Events
+        socket.on('connect', function() {
+            document.getElementById('connection-status').textContent = 'LIVE';
+            document.getElementById('connection-status').style.color = 'var(--tactical-green)';
+            addCommandMessage('COMMS: Connection established with Command Center');
+        });
+
+        socket.on('disconnect', function() {
+            document.getElementById('connection-status').textContent = 'OFFLINE';
+            document.getElementById('connection-status').style.color = 'var(--red-alert)';
+            addCommandMessage('COMMS: Connection lost - attempting reconnection...');
+        });
+
+        socket.on('mission_guidance', function(data) {
+            handleMissionGuidance(data);
+        });
+
+        socket.on('intel_update', function(data) {
+            addIntelUpdate(data);
+        });
+
+        socket.on('bit_update', function(data) {
+            updateBitStatus(data);
+        });
+
+        // Mission Execution
+        function executeOperation() {
+            const executeBtn = document.getElementById('execute-btn');
+            
+            if (confirm('🎯 CONFIRM OPERATION EXECUTION\\n\\nProceed with live trade execution?\\n\\nSymbol: ' + missionConfig.symbol + '\\nDirection: ' + missionConfig.direction.toUpperCase())) {
+                executeBtn.classList.add('executing');
+                executeBtn.textContent = '⚡ EXECUTING...';
+                executeBtn.disabled = true;
+                
+                // Emit execution event
+                socket.emit('execute_trade', {
+                    mission_id: missionConfig.id,
+                    symbol: missionConfig.symbol,
+                    direction: missionConfig.direction,
+                    entry_price: missionConfig.entry,
+                    stop_loss: missionConfig.stopLoss,
+                    take_profit: missionConfig.takeProfit,
+                    timestamp: Date.now()
+                });
+                
+                // Update phase
+                executionPhase = 'execution';
+                document.getElementById('phase-status').textContent = 'EXECUTING';
+                
+                // Add command message
+                addCommandMessage('COMMAND: Trade execution initiated. Monitoring position...');
+                
+                // Complete first objective
+                completeObjective(1);
+                
+                // Schedule follow-up guidance
+                setTimeout(() => {
+                    addCommandMessage('COMMAND: Position confirmed. Monitoring for exit signals...');
+                    executeBtn.textContent = '✅ POSITION ACTIVE';
+                    executeBtn.classList.remove('executing');
+                    executeBtn.style.background = 'linear-gradient(45deg, var(--tactical-green), #4dff4d)';
+                    executeBtn.style.color = 'black';
+                }, 3000);
+            }
+        }
+
+        // Control Functions
+        function requestIntel() {
+            socket.emit('request_intel', {
+                mission_id: missionConfig.id,
+                operator: missionConfig.operator
+            });
+            addCommandMessage('INTEL: Requesting updated market intelligence...');
+        }
+
+        function modifyPosition() {
+            if (confirm('🔧 MODIFY POSITION PARAMETERS\\n\\nThis will open position modification interface.')) {
+                addCommandMessage('COMMAND: Opening position modification interface...');
+                // Open modal or redirect to modification interface
+                window.open('/mission/modify/' + missionConfig.id, '_blank', 'width=600,height=400');
+            }
+        }
+
+        function emergencyAbort() {
+            if (confirm('🚨 EMERGENCY ABORT CONFIRMATION\\n\\nThis will immediately close all positions and abort the mission.\\n\\nConfirm emergency abort?')) {
+                socket.emit('emergency_abort', {
+                    mission_id: missionConfig.id,
+                    operator: missionConfig.operator,
+                    reason: 'Operator initiated emergency abort'
+                });
+                
+                addCommandMessage('🚨 EMERGENCY ABORT INITIATED - Closing all positions...');
+                document.body.classList.add('alert-flash');
+                
+                setTimeout(() => {
+                    window.location.href = '/mission/abort-complete/' + missionConfig.id;
+                }, 2000);
+            }
+        }
+
+        function contactCommand() {
+            addCommandMessage('COMMS: Opening direct communication channel...');
+            // Open chat interface or support system
+            window.open('/support/chat', '_blank', 'width=400,height=500');
+        }
+
+        // UI Update Functions
+        function addCommandMessage(message) {
+            const feed = document.getElementById('command-feed');
+            const timestamp = new Date().toTimeString().substr(0, 8);
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'command-message';
+            messageDiv.innerHTML = `
+                <div class="command-timestamp">[${timestamp}]</div>
+                <div>${message}</div>
+            `;
+            feed.appendChild(messageDiv);
+            feed.scrollTop = feed.scrollHeight;
+        }
+
+        function addIntelUpdate(data) {
+            const feed = document.getElementById('intel-feed');
+            const intelDiv = document.createElement('div');
+            intelDiv.className = `intel-item ${data.priority || ''}`;
+            intelDiv.innerHTML = `<strong>${data.type}:</strong> ${data.message}`;
+            feed.insertBefore(intelDiv, feed.firstChild);
+            
+            // Limit to 10 intel items
+            const items = feed.children;
+            if (items.length > 10) {
+                feed.removeChild(items[items.length - 1]);
+            }
+        }
+
+        function updateBitStatus(data) {
+            const moodEl = document.querySelector('.bit-mood');
+            const messageEl = document.querySelector('.bit-message');
+            
+            if (moodEl) moodEl.textContent = data.mood;
+            if (messageEl) messageEl.textContent = data.message;
+        }
+
+        function completeObjective(objectiveNumber) {
+            const objective = document.getElementById(`obj-${objectiveNumber}`);
+            if (objective) {
+                objective.classList.add('completed');
+                addCommandMessage(`OBJECTIVE: Primary objective ${objectiveNumber} completed.`);
+            }
+        }
+
+        function requestMissionGuidance() {
+            socket.emit('request_guidance', {
+                mission_id: missionConfig.id,
+                phase: executionPhase,
+                operator: missionConfig.operator
+            });
+        }
+
+        function handleMissionGuidance(data) {
+            if (data.tactical_updates) {
+                addCommandMessage('GUIDANCE: ' + data.tactical_updates.mindset);
+            }
+            
+            if (data.real_time_support) {
+                if (data.real_time_support.family_encouragement) {
+                    addIntelUpdate({
+                        type: 'FAMILY WISDOM',
+                        message: data.real_time_support.family_encouragement,
+                        priority: 'intel-medium'
+                    });
+                }
+                
+                if (data.real_time_support.bit_status) {
+                    updateBitStatus({
+                        mood: 'Supportive',
+                        message: data.real_time_support.bit_status
+                    });
+                }
+            }
+        }
+
+        // Keyboard Shortcuts
+        document.addEventListener('keydown', function(event) {
+            if (event.ctrlKey) {
+                switch(event.key) {
+                    case 'e':
+                        event.preventDefault();
+                        executeOperation();
+                        break;
+                    case 'i':
+                        event.preventDefault();
+                        requestIntel();
+                        break;
+                    case 'a':
+                        event.preventDefault();
+                        emergencyAbort();
+                        break;
+                }
+            }
+        });
+
+        // Auto-updates
+        setInterval(() => {
+            requestIntel();
+        }, 30000); // Request intel every 30 seconds
+
+        setInterval(() => {
+            requestMissionGuidance();
+        }, 60000); // Request guidance every minute
+
+        // Initialize when page loads
+        window.addEventListener('load', function() {
+            initializeMission();
+            
+            // Add initial intel
+            addIntelUpdate({
+                type: 'MISSION START',
+                message: 'Operation {{ mission.mission_id }} is now active. All systems operational.',
+                priority: 'intel-high'
+            });
+            
+            addIntelUpdate({
+                type: 'NORMAN WISDOM',
+                message: 'Remember Norman\\'s first trade - courage with caution, confidence with humility.',
+                priority: 'intel-medium'
+            });
+        });
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', function() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+            socket.emit('leave_mission', {
+                mission_id: missionConfig.id,
+                operator: missionConfig.operator
+            });
+        });
+    </script>
+    
+    <!-- Load BITTEN Mission Functions -->
+    <script src="/src/ui/common/mission_functions.js"></script>
+    <script src="/src/ui/common/webapp_functions.js"></script>
+</body>
+</html>

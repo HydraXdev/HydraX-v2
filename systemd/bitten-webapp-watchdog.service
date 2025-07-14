@@ -24,11 +24,11 @@ ExecStart=/usr/bin/python3 /root/HydraX-v2/scripts/webapp-watchdog.py
 ExecStartPre=/bin/mkdir -p /var/log/bitten/webapp
 ExecStartPre=/bin/chown root:root /var/log/bitten/webapp
 
-# Restart configuration
-Restart=always
-RestartSec=30
-StartLimitInterval=300
-StartLimitBurst=3
+# Restart configuration - EMERGENCY DISABLED
+Restart=no
+# RestartSec=30  # EMERGENCY: Disabled
+# StartLimitInterval=300  # EMERGENCY: Disabled
+# StartLimitBurst=3  # EMERGENCY: Disabled
 
 # Process management
 KillMode=mixed

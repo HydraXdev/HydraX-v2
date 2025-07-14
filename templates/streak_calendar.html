@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Streak Calendar - BITTEN</title>
+    <style>
+        :root {
+            --primary-color: #ff6b00;
+            --secondary-color: #1a1a1a;
+            --accent-color: #00ff88;
+            --gold-color: #ffd700;
+            --background-dark: #0a0a0a;
+            --card-background: rgba(26, 26, 26, 0.95);
+            --text-primary: #ffffff;
+            --text-secondary: #cccccc;
+            --border-color: rgba(255, 107, 0, 0.3);
+            --success-color: #00ff88;
+            --warning-color: #ff9500;
+            --danger-color: #ff5555;
+            --legendary-color: #ff4081;
+            --mythic-color: #9c27b0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--background-dark) 0%, #1a1a2e 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: var(--card-background);
+            border-radius: 15px;
+            padding: 30px;
+            border: 2px solid var(--border-color);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+        }
+
+        .calendar-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            background: var(--card-background);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid var(--border-color);
+        }
+
+        .month-navigation {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .nav-button {
+            background: var(--primary-color);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .nav-button:hover {
+            background: #ff8c42;
+            transform: scale(1.1);
+        }
+
+        .current-month {
+            font-size: 1.5rem;
+            font-weight: bold;
+            min-width: 200px;
+            text-align: center;
+        }
+
+        .view-selector {
+            display: flex;
+            gap: 10px;
+        }
+
+        .view-button {
+            padding: 10px 20px;
+            background: transparent;
+            border: 2px solid var(--border-color);
+            color: var(--text-primary);
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .view-button.active {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .view-button:hover {
+            border-color: var(--primary-color);
+        }
+
+        .calendar-container {
+            background: var(--card-background);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 30px;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            margin-top: 15px;
+        }
+
+        .calendar-header {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            margin-bottom: 10px;
+        }
+
+        .day-header {
+            text-align: center;
+            font-weight: bold;
+            color: var(--accent-color);
+            padding: 10px;
+            font-size: 0.9rem;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            font-weight: bold;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            min-height: 60px;
+        }
+
+        .calendar-day:hover {
+            transform: scale(1.05);
+            z-index: 10;
+        }
+
+        .calendar-day.other-month {
+            opacity: 0.3;
+            color: var(--text-secondary);
+        }
+
+        .calendar-day.today {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 20px rgba(255, 107, 0, 0.5);
+            animation: today-pulse 2s infinite ease-in-out;
+        }
+
+        .calendar-day.login {
+            background: linear-gradient(135deg, var(--success-color), #00cc66);
+            color: white;
+            position: relative;
+        }
+
+        .calendar-day.login::after {
+            content: '✓';
+            position: absolute;
+            top: 2px;
+            right: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .calendar-day.missed {
+            background: linear-gradient(135deg, var(--danger-color), #cc4444);
+            color: white;
+            position: relative;
+        }
+
+        .calendar-day.missed::after {
+            content: '✗';
+            position: absolute;
+            top: 2px;
+            right: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .calendar-day.protected {
+            background: linear-gradient(135deg, var(--warning-color), #ffaa33);
+            color: white;
+            position: relative;
+        }
+
+        .calendar-day.protected::after {
+            content: '🛡️';
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            font-size: 0.7rem;
+        }
+
+        .calendar-day.milestone {
+            background: linear-gradient(135deg, var(--gold-color), #ffed4e);
+            color: var(--secondary-color);
+            position: relative;
+            animation: milestone-glow 2s infinite ease-in-out;
+        }
+
+        .calendar-day.milestone::after {
+            content: '👑';
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            font-size: 0.7rem;
+        }
+
+        .calendar-day.future {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-secondary);
+        }
+
+        .day-number {
+            font-size: 1rem;
+            margin-bottom: 2px;
+        }
+
+        .streak-number {
+            font-size: 0.7rem;
+            opacity: 0.8;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            z-index: 1000;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            max-width: 200px;
+            text-align: left;
+        }
+
+        .tooltip.show {
+            opacity: 1;
+        }
+
+        .stats-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--card-background);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-color);
+            box-shadow: 0 10px 25px rgba(255, 107, 0, 0.2);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, var(--accent-color), var(--gold-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .legend {
+            background: var(--card-background);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 30px;
+        }
+
+        .legend h3 {
+            margin-bottom: 15px;
+            color: var(--accent-color);
+        }
+
+        .legend-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+
+        .achievements-section {
+            background: var(--card-background);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid var(--border-color);
+        }
+
+        .achievements-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--gold-color);
+            text-align: center;
+        }
+
+        .achievements-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .achievement-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .achievement-card.unlocked {
+            border-color: var(--gold-color);
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        .achievement-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .achievement-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .achievement-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .achievement-description {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .progress-bar {
+            background: rgba(255, 255, 255, 0.1);
+            height: 6px;
+            border-radius: 3px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: var(--accent-color);
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        /* Animations */
+        @keyframes today-pulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(255, 107, 0, 0.5); }
+            50% { box-shadow: 0 0 30px rgba(255, 107, 0, 0.8); }
+        }
+
+        @keyframes milestone-glow {
+            0%, 100% { box-shadow: 0 0 15px rgba(255, 215, 0, 0.5); }
+            50% { box-shadow: 0 0 25px rgba(255, 215, 0, 0.8); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .calendar-controls {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .calendar-day {
+                min-height: 50px;
+                font-size: 0.8rem;
+            }
+
+            .day-number {
+                font-size: 0.9rem;
+            }
+
+            .current-month {
+                font-size: 1.2rem;
+            }
+
+            .view-selector {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .stats-section {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Dark theme enhancements */
+        .calendar-day.login {
+            box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
+        }
+
+        .calendar-day.milestone {
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+        }
+
+        .calendar-day.protected {
+            box-shadow: 0 4px 15px rgba(255, 149, 0, 0.3);
+        }
+
+        .calendar-day.missed {
+            box-shadow: 0 4px 15px rgba(255, 85, 85, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>📅 Streak Calendar</h1>
+            <p>Track your daily login journey and celebrate your consistency</p>
+        </div>
+
+        <!-- Statistics Section -->
+        <div class="stats-section">
+            <div class="stat-card">
+                <div class="stat-value" id="currentStreak">{{ current_streak or 0 }}</div>
+                <div class="stat-label">Current Streak</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="longestStreak">{{ longest_streak or 0 }}</div>
+                <div class="stat-label">Longest Streak</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalLogins">{{ total_logins or 0 }}</div>
+                <div class="stat-label">Total Login Days</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="monthlyStreak">{{ monthly_streak or 0 }}</div>
+                <div class="stat-label">This Month</div>
+            </div>
+        </div>
+
+        <!-- Calendar Controls -->
+        <div class="calendar-controls">
+            <div class="month-navigation">
+                <button class="nav-button" onclick="changeMonth(-1)">‹</button>
+                <div class="current-month" id="currentMonth">{{ current_month or "January 2024" }}</div>
+                <button class="nav-button" onclick="changeMonth(1)">›</button>
+            </div>
+            <div class="view-selector">
+                <button class="view-button active" onclick="setView('month')">Month</button>
+                <button class="view-button" onclick="setView('year')">Year</button>
+                <button class="view-button" onclick="setView('streak')">Streaks</button>
+            </div>
+        </div>
+
+        <!-- Calendar -->
+        <div class="calendar-container">
+            <div class="calendar-header">
+                <div class="day-header">Sun</div>
+                <div class="day-header">Mon</div>
+                <div class="day-header">Tue</div>
+                <div class="day-header">Wed</div>
+                <div class="day-header">Thu</div>
+                <div class="day-header">Fri</div>
+                <div class="day-header">Sat</div>
+            </div>
+            <div class="calendar-grid" id="calendarGrid">
+                <!-- Calendar days will be generated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Legend -->
+        <div class="legend">
+            <h3>📖 Legend</h3>
+            <div class="legend-items">
+                <div class="legend-item">
+                    <div class="legend-color" style="background: linear-gradient(135deg, var(--success-color), #00cc66);"></div>
+                    <span>Login Day ✓</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: linear-gradient(135deg, var(--danger-color), #cc4444);"></div>
+                    <span>Missed Day ✗</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: linear-gradient(135deg, var(--warning-color), #ffaa33);"></div>
+                    <span>Protected Day 🛡️</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: linear-gradient(135deg, var(--gold-color), #ffed4e);"></div>
+                    <span>Milestone Day 👑</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: rgba(255, 255, 255, 0.05);"></div>
+                    <span>Future Day</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="border: 2px solid var(--primary-color); background: transparent;"></div>
+                    <span>Today</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Achievements Section -->
+        <div class="achievements-section">
+            <div class="achievements-title">🏆 Streak Achievements</div>
+            <div class="achievements-grid">
+                <div class="achievement-card unlocked">
+                    <div class="achievement-icon">🔥</div>
+                    <div class="achievement-name">Week Warrior</div>
+                    <div class="achievement-description">7-day streak achieved</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 100%;"></div>
+                    </div>
+                </div>
+                <div class="achievement-card">
+                    <div class="achievement-icon">💪</div>
+                    <div class="achievement-name">Monthly Master</div>
+                    <div class="achievement-description">30-day streak goal</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 60%;"></div>
+                    </div>
+                </div>
+                <div class="achievement-card">
+                    <div class="achievement-icon">⭐</div>
+                    <div class="achievement-name">Quarterly Champion</div>
+                    <div class="achievement-description">90-day streak goal</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 20%;"></div>
+                    </div>
+                </div>
+                <div class="achievement-card">
+                    <div class="achievement-icon">👑</div>
+                    <div class="achievement-name">Annual Legend</div>
+                    <div class="achievement-description">365-day streak goal</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 5%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tooltip -->
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        // Calendar state
+        let currentDate = new Date();
+        let currentView = 'month';
+        let calendarData = {};
+
+        // Sample streak data (would come from backend)
+        const streakData = {
+            '2024-01-15': { status: 'login', streak: 15, xp: 75, milestone: false },
+            '2024-01-14': { status: 'login', streak: 14, xp: 70, milestone: false },
+            '2024-01-13': { status: 'login', streak: 13, xp: 65, milestone: false },
+            '2024-01-12': { status: 'missed', streak: 0, xp: 0, milestone: false },
+            '2024-01-11': { status: 'protected', streak: 12, xp: 60, milestone: false, protection: 'weekend_pass' },
+            '2024-01-10': { status: 'login', streak: 11, xp: 55, milestone: false },
+            '2024-01-09': { status: 'login', streak: 10, xp: 50, milestone: false },
+            '2024-01-08': { status: 'login', streak: 9, xp: 45, milestone: false },
+            '2024-01-07': { status: 'login', streak: 8, xp: 40, milestone: true },
+            '2024-01-06': { status: 'login', streak: 7, xp: 35, milestone: false },
+            '2024-01-05': { status: 'login', streak: 6, xp: 30, milestone: false },
+            '2024-01-04': { status: 'login', streak: 5, xp: 25, milestone: false },
+            '2024-01-03': { status: 'login', streak: 4, xp: 20, milestone: false },
+            '2024-01-02': { status: 'login', streak: 3, xp: 15, milestone: false },
+            '2024-01-01': { status: 'login', streak: 2, xp: 10, milestone: false }
+        };
+
+        function generateCalendar(year, month) {
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            const startingDayOfWeek = firstDay.getDay();
+            
+            const calendarGrid = document.getElementById('calendarGrid');
+            calendarGrid.innerHTML = '';
+            
+            // Add empty cells for days before the first day of the month
+            for (let i = 0; i < startingDayOfWeek; i++) {
+                const prevMonthDay = new Date(year, month, -startingDayOfWeek + i + 1);
+                const dayElement = createDayElement(prevMonthDay, true);
+                calendarGrid.appendChild(dayElement);
+            }
+            
+            // Add days of the current month
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(year, month, day);
+                const dayElement = createDayElement(date, false);
+                calendarGrid.appendChild(dayElement);
+            }
+            
+            // Add empty cells for days after the last day of the month
+            const remainingCells = 42 - (startingDayOfWeek + daysInMonth);
+            for (let i = 1; i <= remainingCells && remainingCells < 7; i++) {
+                const nextMonthDay = new Date(year, month + 1, i);
+                const dayElement = createDayElement(nextMonthDay, true);
+                calendarGrid.appendChild(dayElement);
+            }
+            
+            // Update month display
+            const monthNames = [
+                'January', 'February', 'March', 'April', 'May', 'June',
+                'July', 'August', 'September', 'October', 'November', 'December'
+            ];
+            document.getElementById('currentMonth').textContent = `${monthNames[month]} ${year}`;
+        }
+
+        function createDayElement(date, isOtherMonth) {
+            const dayElement = document.createElement('div');
+            dayElement.className = 'calendar-day';
+            
+            const dateString = date.toISOString().split('T')[0];
+            const today = new Date().toDateString();
+            const isToday = date.toDateString() === today;
+            const isFuture = date > new Date();
+            
+            // Get streak data for this date
+            const dayData = streakData[dateString];
+            
+            if (isOtherMonth) {
+                dayElement.classList.add('other-month');
+            } else if (isToday) {
+                dayElement.classList.add('today');
+            } else if (isFuture) {
+                dayElement.classList.add('future');
+            }
+            
+            // Apply status-based styling
+            if (dayData) {
+                dayElement.classList.add(dayData.status);
+                if (dayData.milestone) {
+                    dayElement.classList.add('milestone');
+                }
+            }
+            
+            // Create day content
+            const dayNumber = document.createElement('div');
+            dayNumber.className = 'day-number';
+            dayNumber.textContent = date.getDate();
+            dayElement.appendChild(dayNumber);
+            
+            if (dayData && dayData.streak > 0) {
+                const streakNumber = document.createElement('div');
+                streakNumber.className = 'streak-number';
+                streakNumber.textContent = `${dayData.streak}`;
+                dayElement.appendChild(streakNumber);
+            }
+            
+            // Add event listeners
+            dayElement.addEventListener('mouseenter', (e) => showTooltip(e, date, dayData));
+            dayElement.addEventListener('mouseleave', hideTooltip);
+            dayElement.addEventListener('click', () => showDayDetails(date, dayData));
+            
+            return dayElement;
+        }
+
+        function showTooltip(event, date, dayData) {
+            const tooltip = document.getElementById('tooltip');
+            const rect = event.target.getBoundingClientRect();
+            
+            let content = `<strong>${date.toLocaleDateString()}</strong><br>`;
+            
+            if (dayData) {
+                switch (dayData.status) {
+                    case 'login':
+                        content += `✅ Logged in<br>Streak: ${dayData.streak} days<br>XP Earned: ${dayData.xp}`;
+                        if (dayData.milestone) {
+                            content += `<br>🏆 Milestone achieved!`;
+                        }
+                        break;
+                    case 'missed':
+                        content += `❌ Missed login<br>Streak broken`;
+                        break;
+                    case 'protected':
+                        content += `🛡️ Streak protected<br>Protection: ${dayData.protection}<br>Streak: ${dayData.streak} days`;
+                        break;
+                    default:
+                        content += 'No data';
+                }
+            } else if (date > new Date()) {
+                content += '📅 Future date';
+            } else {
+                content += '⚪ No login recorded';
+            }
+            
+            tooltip.innerHTML = content;
+            tooltip.style.left = rect.left + 'px';
+            tooltip.style.top = (rect.top - tooltip.offsetHeight - 10) + 'px';
+            tooltip.classList.add('show');
+        }
+
+        function hideTooltip() {
+            const tooltip = document.getElementById('tooltip');
+            tooltip.classList.remove('show');
+        }
+
+        function showDayDetails(date, dayData) {
+            // This would open a detailed modal for the specific day
+            console.log('Day details:', date, dayData);
+        }
+
+        function changeMonth(direction) {
+            currentDate.setMonth(currentDate.getMonth() + direction);
+            generateCalendar(currentDate.getFullYear(), currentDate.getMonth());
+        }
+
+        function setView(view) {
+            currentView = view;
+            
+            // Update active button
+            document.querySelectorAll('.view-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Handle different views
+            switch (view) {
+                case 'month':
+                    generateCalendar(currentDate.getFullYear(), currentDate.getMonth());
+                    break;
+                case 'year':
+                    generateYearView();
+                    break;
+                case 'streak':
+                    generateStreakView();
+                    break;
+            }
+        }
+
+        function generateYearView() {
+            // This would show a year overview with monthly summaries
+            const calendarGrid = document.getElementById('calendarGrid');
+            calendarGrid.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-secondary);">Year view coming soon!</div>';
+        }
+
+        function generateStreakView() {
+            // This would show streak patterns and analysis
+            const calendarGrid = document.getElementById('calendarGrid');
+            calendarGrid.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-secondary);">Streak analysis view coming soon!</div>';
+        }
+
+        function updateStats() {
+            // Calculate and update statistics
+            const loginDays = Object.values(streakData).filter(day => day.status === 'login').length;
+            const protectedDays = Object.values(streakData).filter(day => day.status === 'protected').length;
+            const missedDays = Object.values(streakData).filter(day => day.status === 'missed').length;
+            
+            // Update achievement progress
+            updateAchievementProgress();
+        }
+
+        function updateAchievementProgress() {
+            const currentStreak = parseInt(document.getElementById('currentStreak').textContent);
+            
+            // Update progress bars based on current streak
+            const achievements = [
+                { element: document.querySelectorAll('.achievement-card')[0], target: 7 },
+                { element: document.querySelectorAll('.achievement-card')[1], target: 30 },
+                { element: document.querySelectorAll('.achievement-card')[2], target: 90 },
+                { element: document.querySelectorAll('.achievement-card')[3], target: 365 }
+            ];
+            
+            achievements.forEach(achievement => {
+                const progress = Math.min(100, (currentStreak / achievement.target) * 100);
+                const progressBar = achievement.element.querySelector('.progress-fill');
+                progressBar.style.width = progress + '%';
+                
+                if (progress >= 100) {
+                    achievement.element.classList.add('unlocked');
+                }
+            });
+        }
+
+        function loadCalendarData(year, month) {
+            // This would fetch real data from the backend
+            // For now, we use the sample data
+            return Promise.resolve(streakData);
+        }
+
+        // Initialize calendar
+        document.addEventListener('DOMContentLoaded', function() {
+            generateCalendar(currentDate.getFullYear(), currentDate.getMonth());
+            updateStats();
+            
+            // Auto-refresh every minute to update "today" highlighting
+            setInterval(() => {
+                if (currentView === 'month') {
+                    generateCalendar(currentDate.getFullYear(), currentDate.getMonth());
+                }
+            }, 60000);
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(event) {
+            switch (event.key) {
+                case 'ArrowLeft':
+                    changeMonth(-1);
+                    break;
+                case 'ArrowRight':
+                    changeMonth(1);
+                    break;
+                case 'Home':
+                    currentDate = new Date();
+                    generateCalendar(currentDate.getFullYear(), currentDate.getMonth());
+                    break;
+            }
+        });
+    </script>
+    
+    <!-- Load BITTEN Mission Functions -->
+    <script src="/src/ui/common/mission_functions.js"></script>
+    <script src="/src/ui/common/webapp_functions.js"></script>
+</body>
+</html>

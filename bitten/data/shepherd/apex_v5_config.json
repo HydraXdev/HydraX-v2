@@ -1,0 +1,19 @@
+{
+  "active_engine": "APEX_v5.0",
+  "engine_path": "apex_v5_integration.py",
+  "tcs_range": {
+    "min": 35,
+    "max": 95
+  },
+  "trading_pairs": 15,
+  "archived_engines": [
+    "AUTHORIZED_SIGNAL_ENGINE.py",
+    "bitten_ultimate_signal_engine_v4.py",
+    "bitten_aaa_signal_engine.py",
+    "signal_engine.py",
+    "bitten_pure_ai_signal_engine.py",
+    "bitten_aaa_v2_signal_engine.py"
+  ],
+  "configuration_date": "2025-07-13",
+  "mode": "ultra_aggressive"
+}

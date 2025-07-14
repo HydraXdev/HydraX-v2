@@ -1,20 +1,29 @@
 """
 BITTEN Trial Management System
-15-day trial with payment prompt at day 14
+7-day trial with payment prompt at day 6
 """
 
 import logging
 from datetime import datetime, timedelta
-from typing import Dict, Optional, List
+from typing import Dict, Optional, List, TYPE_CHECKING
 from enum import Enum
 
 from .database.connection import get_db_session
 from .database.models import User, UserProfile, UserSubscription, SubscriptionStatus
-from .telegram_router import CommandResult
 from .stripe_payment_processor import get_stripe_processor
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
+if TYPE_CHECKING:
+    from .telegram_router import CommandResult
+
 logger = logging.getLogger(__name__)
+
+# Local CommandResult for avoiding circular imports at runtime
+class CommandResult:
+    def __init__(self, success: bool, message: str, requires_payment: bool = False):
+        self.success = success
+        self.message = message
+        self.requires_payment = requires_payment
 
 class TrialStatus(Enum):
     """Trial status states"""
@@ -30,22 +39,22 @@ class AccountType(Enum):
     LIVE = "live"
 
 class TrialManager:
-    """Manages 15-day trial system"""
+    """Manages 7-day trial system"""
     
     def __init__(self, telegram_bot=None):
         self.telegram_bot = telegram_bot
         self.stripe = get_stripe_processor()
         
         # Trial configuration
-        self.trial_duration_days = 15
-        self.payment_prompt_day = 14  # Start prompting on day 14
+        self.trial_duration_days = 7
+        self.payment_prompt_day = 6  # Start prompting on day 6
         self.grace_period_days = 2
         self.data_retention_days = 45
         
         logger.info("Trial Manager initialized")
     
     async def start_trial(self, user_id: int, account_type: AccountType = AccountType.DEMO) -> CommandResult:
-        """Start 15-day trial for new user"""
+        """Start 7-day trial for new user"""
         
         with get_db_session() as session:
             try:
@@ -111,15 +120,15 @@ class TrialManager:
                 # No payment mention during trial start!
                 message = f"""🎯 **WELCOME TO BITTEN, SOLDIER!**
 
-You have **{self.trial_duration_days} days** to explore everything BITTEN has to offer.
+You have **{self.trial_duration_days} days** to experience the full power of BITTEN.
 
-🔓 **Full Access Granted:**
-• All trading features unlocked
-• Complete strategy library
+🔓 **Immediate Value Unlocked:**
+• All trading features available
+• Complete strategy library access
 • Full automation capabilities
 • Squad features enabled
 
-Ready to start your training?
+Get ready for a quick but powerful trial experience!
 Type `/fire` to begin your first mission!"""
                 
                 return CommandResult(True, message)
@@ -150,7 +159,7 @@ Type `/fire` to begin your first mission!"""
             # Determine status
             if days_remaining <= 0:
                 status = TrialStatus.EXPIRED
-            elif days_remaining <= 2:  # Day 14-15
+            elif days_remaining <= 1:  # Day 6-7
                 status = TrialStatus.EXPIRING_SOON
             else:
                 status = TrialStatus.ACTIVE
@@ -165,12 +174,12 @@ Type `/fire` to begin your first mission!"""
             }
     
     async def send_trial_reminders(self) -> int:
-        """Send payment reminders at day 14"""
+        """Send payment reminders at day 6"""
         
         reminder_count = 0
         
         with get_db_session() as session:
-            # Find trials that need day 14 reminder
+            # Find trials that need day 6 reminder
             cutoff_date = datetime.now() - timedelta(days=self.payment_prompt_day)
             
             trials = session.query(UserSubscription).filter(
@@ -182,7 +191,7 @@ Type `/fire` to begin your first mission!"""
             for trial in trials:
                 days_remaining = (trial.trial_end - datetime.now()).days
                 
-                # Only send on day 14 (1 day remaining)
+                # Only send on day 6 (1 day remaining)
                 if days_remaining == 1:
                     await self._send_payment_prompt(trial.user_id, days_remaining)
                     reminder_count += 1
@@ -197,7 +206,7 @@ Type `/fire` to begin your first mission!"""
         
         message = f"""⏰ **YOUR TRIAL ENDS TOMORROW!**
 
-You've been crushing it for 14 days, soldier! 🎯
+You've been crushing it for 6 days, soldier! 🎯
 
 Don't lose your progress:
 • Your XP and achievements
@@ -279,7 +288,7 @@ Ready to lock in your gains?"""
         
         message = """🔒 **TRIAL EXPIRED**
 
-Your 15-day trial has ended. All trading features are now locked.
+Your 7-day trial has ended. All trading features are now locked.
 
 **Your data is safe!** You have 45 days to subscribe and pick up right where you left off.
 

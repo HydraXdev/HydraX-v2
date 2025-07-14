@@ -10,7 +10,7 @@ def format_bitten_alert(tcs_score, filter_type, user_tier):
     
     Filter types:
     1. SHORT (1-35 min) - Any TCS, all tiers get these
-    2. SNIPER (90-100 min) - 85%+ only, FANG+ only
+    2. SNIPER (90-100 min) - 80%+ only, FANG+ only
     """
     
     # Visual based on TCS only
@@ -52,7 +52,7 @@ def explain_system():
     
     print("TWO FILTERS (not quality tiers!):")
     print("1. SHORT SCALPS (1-35 min) - ANY TCS level")
-    print("2. SNIPER SHOTS (90-100 min) - Always 85%+ TCS\n")
+    print("2. SNIPER SHOTS (90-100 min) - Always 80%+ TCS\n")
     
     print("TIER ACCESS:")
     print("• NIBBLER: SHORT scalps only (can be 70% or 98%!)")

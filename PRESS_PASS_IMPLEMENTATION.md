@@ -1,12 +1,17 @@
 # BITTEN Press Pass Implementation Summary
 
 ## Overview
-Implemented a comprehensive Press Pass system with urgency-driven landing page, email automation, and conversion tracking.
+Implemented a comprehensive Press Pass system with email-only signup, instant MT5 cloning, and rapid conversion flow. **Updated to reflect ACTUAL IMPLEMENTATION: single master template, sub-3-second clone deployment, and credential injection for upgrades.**
+
+### Actual Architecture:
+1. **Email Signup** → Instant BITTEN_MASTER clone with demo credentials
+2. **User Upgrades** → Inject live credentials into new clone, destroy old one
+3. **Smart Recycling** → Slots available immediately after upgrade/abandonment
 
 ## 1. Landing Page Updates (`/root/HydraX-v2/landing/index.html`)
 
 ### New Features Added:
-- **3-Option Flow**: Press Pass ($0 for 30 days), Demo (Free), Live Trading (From $39/month)
+- **3-Option Flow**: Press Pass ($0 for 7 days), Demo (Free), Live Trading (From $39/month)
 - **Urgency Banner**: Daily countdown timer with limited spots remaining
 - **Live Counters**: Active traders, trades today, win rate, online now
 - **Social Proof**: Real-time statistics updating every 5 seconds
@@ -33,13 +38,12 @@ Implemented a comprehensive Press Pass system with urgency-driven landing page, 
 
 ## 2. Email Templates Created
 
-### Press Pass Email Sequence (30-day campaign):
-1. **Day 0**: Welcome email with quick start guide
-2. **Day 1**: First trade encouragement
-3. **Day 3**: Midnight Hammer results showcase
-4. **Day 7**: Week 1 performance report
-5. **Day 14**: Halfway urgency with lifetime discount offer
-6. **Day 25**: Final warning (5 days left)
+### Press Pass Email Sequence (7-day quick trial experience):
+1. **Day 0**: Welcome email with quick start guide (immediate value focus)
+2. **Day 1**: First trade encouragement (smooth onboarding)
+3. **Day 3**: Midnight Hammer results showcase (building momentum)
+4. **Day 6**: Final day urgency with conversion focus
+5. **Day 7**: Final warning (last chance for smooth transition)
 
 ### Email Features:
 - HTML responsive design matching BITTEN branding
@@ -59,20 +63,19 @@ Implemented a comprehensive Press Pass system with urgency-driven landing page, 
 
 ### Telegram Updates (`/root/HydraX-v2/config/telegram.py`)
 - Press Pass daily limit: 10
-- Duration: 30 days
+- Duration: 7 days
 - Tier granted: APEX
 - Deep linking parameters for tracking
 
 ## 4. Press Pass Manager (`/root/HydraX-v2/src/bitten_core/press_pass_manager.py`)
 
-### Core Functionality:
-- Daily limit enforcement
-- Duplicate claim prevention
-- Automatic APEX tier granting
-- Email campaign triggering
-- Conversion tracking
-- Expiry monitoring
-- Analytics integration
+### Core Functionality (ACTUAL IMPLEMENTATION):
+- **Email-only signup**: No complex forms, just email capture
+- **Instant MT5 clone**: Copy BITTEN_MASTER in <3 seconds via `bitten_clone_manager.py`
+- **Weekly limit**: 200 press passes (configurable)
+- **Smart recycling**: Upgrade = instant credential injection + old instance destruction
+- **Bridge setup**: File-based communication for signals
+- **Port allocation**: Hash-based instant assignment
 
 ### Key Methods:
 ```python

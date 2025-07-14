@@ -65,7 +65,7 @@ class TierUpgradeRouter:
             
             tier_features = {
                 "NIBBLER": "• 6 trades/day\n• 75% TCS minimum\n• Manual trading only\n• Basic features",
-                "FANG": "• 10 trades/day\n• 85% TCS for sniper\n• Chaingun unlocked\n• Sniper mode access",
+                "FANG": "• 10 trades/day\n• 80% TCS for sniper\n• Chaingun unlocked\n• Sniper mode access",
                 "COMMANDER": "• 20 trades/day\n• 90% TCS auto / 75% semi\n• Auto-fire unlocked\n• Stealth mode\n• All features",
                 "APEX": "• Unlimited trades\n• 91% TCS minimum\n• Midnight Hammer\n• Priority support\n• Elite network access"
             }
@@ -396,7 +396,7 @@ Perfect for: Beginners learning discipline
 **🥈 FANG ($89/mo)**
 ```
 Daily Trades: 10
-TCS Required: 85% (sniper)
+TCS Required: 80% (sniper)
 Risk Control: 2-2.5% boost
 Position Limit: 2
 Cooldown: Trade completion

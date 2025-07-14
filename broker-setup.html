@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BITTEN - Broker Setup Guide | Fast Pass</title>
+    <meta name="description" content="Get your trading account ready for BITTEN deployment. Complete broker setup guide with MT5 configuration.">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #00ff41;
+            --danger: #ff0040;
+            --warning: #ffaa00;
+            --dark: #0a0a0a;
+            --darker: #050505;
+            --light: #ffffff;
+            --gray: #888888;
+            --gold: #ffd700;
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: var(--dark);
+            color: var(--light);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .logo {
+            font-family: 'Orbitron', monospace;
+            font-size: 3rem;
+            font-weight: 900;
+            letter-spacing: 0.2em;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, var(--primary), #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(0, 255, 65, 0.5);
+        }
+
+        .subtitle {
+            font-size: 1.5rem;
+            color: var(--warning);
+            margin-bottom: 1rem;
+        }
+
+        .description {
+            font-size: 1.2rem;
+            color: var(--gray);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 3rem;
+            margin-top: 3rem;
+        }
+
+        .main-content {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(0, 255, 65, 0.3);
+            padding: 2rem;
+        }
+
+        .section {
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            font-family: 'Orbitron', monospace;
+        }
+
+        .broker-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .broker-card {
+            background: rgba(0, 255, 65, 0.05);
+            border: 1px solid rgba(0, 255, 65, 0.3);
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .broker-card:hover {
+            border-color: var(--primary);
+            background: rgba(0, 255, 65, 0.1);
+        }
+
+        .broker-name {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .broker-features {
+            list-style: none;
+            margin-bottom: 1rem;
+        }
+
+        .broker-features li {
+            color: var(--light);
+            margin-bottom: 0.3rem;
+            padding-left: 1rem;
+            position: relative;
+        }
+
+        .broker-features li::before {
+            content: '✓';
+            color: var(--primary);
+            position: absolute;
+            left: 0;
+        }
+
+        .recommended {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: var(--warning);
+            color: var(--dark);
+            padding: 0.3rem 0.8rem;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .setup-steps {
+            background: rgba(255, 255, 255, 0.02);
+            border-left: 3px solid var(--primary);
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .step {
+            margin-bottom: 1rem;
+            padding-left: 2rem;
+            position: relative;
+        }
+
+        .step::before {
+            content: counter(step-counter);
+            counter-increment: step-counter;
+            position: absolute;
+            left: 0;
+            top: 0;
+            background: var(--primary);
+            color: var(--dark);
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .setup-steps {
+            counter-reset: step-counter;
+        }
+
+        .bot-container {
+            background: rgba(255, 255, 255, 0.02);
+            border: 2px solid var(--primary);
+            padding: 1.5rem;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+        }
+
+        .bot-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .bot-avatar {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, var(--primary), var(--warning));
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .bot-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary);
+            font-family: 'Orbitron', monospace;
+        }
+
+        .bot-status {
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+
+        .chat-area {
+            height: 300px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+        }
+
+        .message {
+            margin-bottom: 1rem;
+            padding: 0.8rem;
+            border-radius: 8px;
+            max-width: 90%;
+        }
+
+        .bot-message {
+            background: rgba(0, 255, 65, 0.1);
+            border-left: 3px solid var(--primary);
+            margin-right: auto;
+        }
+
+        .user-message {
+            background: rgba(255, 170, 0, 0.1);
+            border-left: 3px solid var(--warning);
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .message-time {
+            font-size: 0.8rem;
+            color: var(--gray);
+            margin-top: 0.3rem;
+        }
+
+        .chat-input {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 0.8rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--light);
+            font-family: 'Rajdhani', sans-serif;
+        }
+
+        .chat-input input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .send-btn {
+            padding: 0.8rem 1.5rem;
+            background: var(--primary);
+            color: var(--dark);
+            border: none;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.3s ease;
+        }
+
+        .send-btn:hover {
+            background: #00dd35;
+            transform: translateY(-1px);
+        }
+
+        .quick-questions {
+            margin-top: 1rem;
+        }
+
+        .quick-question {
+            display: block;
+            width: 100%;
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--light);
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .quick-question:hover {
+            background: rgba(0, 255, 65, 0.1);
+            border-color: var(--primary);
+        }
+
+        .requirements-box {
+            background: rgba(255, 0, 64, 0.1);
+            border: 1px solid var(--danger);
+            padding: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .requirements-title {
+            color: var(--danger);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .back-btn {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--light);
+            text-decoration: none;
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            body {
+                font-size: 16px; /* Prevent zoom on iOS */
+            }
+            
+            .container {
+                padding: 1rem;
+                max-width: 100%;
+            }
+            
+            .header {
+                margin-bottom: 2rem;
+            }
+            
+            .logo {
+                font-size: 2rem;
+            }
+            
+            .subtitle {
+                font-size: 1.2rem;
+            }
+            
+            .description {
+                font-size: 1rem;
+                padding: 0 1rem;
+            }
+            
+            .content-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+            
+            .main-content {
+                padding: 1.5rem;
+            }
+            
+            .section-title {
+                font-size: 1.4rem;
+            }
+            
+            .broker-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .broker-card {
+                padding: 1rem;
+            }
+            
+            .broker-name {
+                font-size: 1.2rem;
+            }
+            
+            .setup-steps {
+                padding: 1rem;
+            }
+            
+            .step {
+                padding-left: 1.5rem;
+                margin-bottom: 1.5rem;
+                font-size: 0.9rem;
+            }
+            
+            .requirements-box {
+                padding: 1rem;
+                margin: 1rem 0;
+            }
+            
+            .requirements-title {
+                font-size: 1rem;
+            }
+            
+            .bot-container {
+                position: relative;
+                top: 0;
+                padding: 1rem;
+                margin-top: 2rem;
+            }
+            
+            .bot-avatar {
+                width: 50px;
+                height: 50px;
+                font-size: 1.2rem;
+            }
+            
+            .bot-name {
+                font-size: 1rem;
+            }
+            
+            .bot-status {
+                font-size: 0.8rem;
+            }
+            
+            .chat-area {
+                height: 250px;
+                padding: 0.8rem;
+                font-size: 0.9rem;
+            }
+            
+            .message {
+                padding: 0.6rem;
+                margin-bottom: 0.8rem;
+            }
+            
+            .chat-input input {
+                padding: 0.8rem;
+                font-size: 16px; /* Prevent zoom */
+            }
+            
+            .send-btn {
+                padding: 0.8rem 1rem;
+                font-size: 0.9rem;
+            }
+            
+            .quick-question {
+                padding: 0.6rem;
+                font-size: 0.8rem;
+                margin-bottom: 0.3rem;
+            }
+            
+            .back-btn {
+                padding: 0.8rem 1.5rem;
+                margin-bottom: 1rem;
+                font-size: 0.9rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .logo {
+                font-size: 1.8rem;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+            }
+            
+            .description {
+                font-size: 0.9rem;
+            }
+            
+            .section-title {
+                font-size: 1.2rem;
+            }
+            
+            .broker-card {
+                padding: 0.8rem;
+            }
+            
+            .broker-name {
+                font-size: 1.1rem;
+            }
+            
+            .broker-features {
+                font-size: 0.85rem;
+            }
+            
+            .setup-steps {
+                padding: 0.8rem;
+            }
+            
+            .step {
+                font-size: 0.85rem;
+                padding-left: 1.2rem;
+            }
+            
+            .step::before {
+                width: 1.2rem;
+                height: 1.2rem;
+                font-size: 0.8rem;
+            }
+            
+            .chat-area {
+                height: 200px;
+                padding: 0.5rem;
+            }
+            
+            .chat-input {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .send-btn {
+                width: 100%;
+            }
+            
+            .quick-question {
+                font-size: 0.75rem;
+                padding: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-btn">← Back to Landing Page</a>
+        
+        <div class="header">
+            <h1 class="logo">BITTEN</h1>
+            <h2 class="subtitle">⚡ FAST PASS - WORKS WITH ANY MT5 BROKER</h2>
+            <p class="description">BITTEN works with ANY MetaTrader 5 account worldwide. Choose your preferred broker, we'll connect securely.</p>
+        </div>
+
+        <div class="content-grid">
+            <div class="main-content">
+                <div class="section">
+                    <h3 class="section-title">🌍 GLOBAL COMPATIBILITY</h3>
+                    <p style="margin-bottom: 2rem; color: var(--light); font-size: 1.1rem;">
+                        <strong>BITTEN works with ANY MetaTrader 5 broker worldwide.</strong> We remain broker-neutral and let you choose what's best for your location and needs.
+                    </p>
+                    
+                    <div class="broker-grid">
+                        <div class="broker-card">
+                            <div class="recommended">OUR PREFERENCE</div>
+                            <div class="broker-name">Forex.com</div>
+                            <ul class="broker-features">
+                                <li>Well-established & regulated</li>
+                                <li>Good customer support</li>
+                                <li>Reliable execution</li>
+                                <li>Multiple funding options</li>
+                                <li>Strong MT5 integration</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="broker-card">
+                            <div class="broker-name">IC Markets</div>
+                            <ul class="broker-features">
+                                <li>ECN/STP execution</li>
+                                <li>Tight spreads</li>
+                                <li>Multiple regulators</li>
+                                <li>Fast execution speeds</li>
+                                <li>Popular with traders</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="broker-card">
+                            <div class="broker-name">OANDA</div>
+                            <ul class="broker-features">
+                                <li>Regulated in major markets</li>
+                                <li>Fractional units available</li>
+                                <li>Good for beginners</li>
+                                <li>Educational resources</li>
+                                <li>Stable platform</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="broker-card">
+                            <div class="broker-name">Your Choice</div>
+                            <ul class="broker-features">
+                                <li>Any MT5 broker works</li>
+                                <li>Choose what suits you</li>
+                                <li>We adapt to your setup</li>
+                                <li>No restrictions</li>
+                                <li>Global flexibility</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div style="background: rgba(0, 255, 65, 0.1); border: 1px solid var(--primary); padding: 1.5rem; margin-top: 2rem; border-radius: 5px;">
+                        <p style="color: var(--primary); font-weight: 700; margin-bottom: 1rem;">💡 Why We Don't Mandate Specific Brokers:</p>
+                        <ul style="margin-left: 1.5rem; color: var(--light);">
+                            <li>Different regions have different regulations</li>
+                            <li>You should choose what's best for YOUR location</li>
+                            <li>We won't limit your broker choice for our benefit</li>
+                            <li>BITTEN adapts to work with any MT5 setup</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3 class="section-title">📋 SUPER SIMPLE SETUP</h3>
+                    <div class="setup-steps">
+                        <div class="step">
+                            <strong>Choose ANY MT5 Broker:</strong> Pick any broker that offers MetaTrader 5. We work with all of them globally.
+                        </div>
+                        <div class="step">
+                            <strong>Open Your Account:</strong> Demo or live - your choice. Demo is free, live requires funding.
+                        </div>
+                        <div class="step">
+                            <strong>Save Your Login Details:</strong> Just credentials - that's all we need.
+                        </div>
+                        <div class="step">
+                            <strong>We Host Everything:</strong> BITTEN runs MT5 on our servers - you don't download anything.
+                        </div>
+                        <div class="step">
+                            <strong>We Connect Securely:</strong> Using your credentials, we connect to your broker account remotely.
+                        </div>
+                        <div class="step">
+                            <strong>You Stay In Control:</strong> Your money, your account - we just provide the intelligence and execution.
+                        </div>
+                    </div>
+                    
+                    <div style="background: rgba(255, 170, 0, 0.1); border: 1px solid var(--warning); padding: 1.5rem; margin-top: 2rem; border-radius: 5px;">
+                        <p style="color: var(--warning); font-weight: 700; margin-bottom: 1rem;">🚀 What Makes This Global:</p>
+                        <ul style="margin-left: 1.5rem; color: var(--light);">
+                            <li><strong>No Downloads:</strong> We host MT5 - you just provide account details</li>
+                            <li><strong>No Software:</strong> Everything runs on our secure servers</li>
+                            <li><strong>Just Credentials:</strong> That's it</li>
+                            <li><strong>Your Control:</strong> Your money stays with your broker, we just connect</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="requirements-box">
+                    <div class="requirements-title">🌍 SUGGESTED BROKERS (Optional)</div>
+                    <p style="margin-bottom: 1.5rem; color: var(--light);">
+                        These are just suggestions to help you get started. <strong>Any MT5 broker works!</strong>
+                    </p>
+                    <div style="margin-bottom: 1.5rem;">
+                        <strong>Forex.com (Our Preference):</strong><br>
+                        <a href="https://www.forex.com/en-us/open-account/" target="_blank" style="color: var(--primary);">Create Forex.com Account →</a>
+                    </div>
+                    <div style="margin-bottom: 1.5rem;">
+                        <strong>IC Markets:</strong><br>
+                        <a href="https://www.icmarkets.com/global/en/open-trading-account" target="_blank" style="color: var(--primary);">Create IC Markets Account →</a>
+                    </div>
+                    <div style="margin-bottom: 1.5rem;">
+                        <strong>OANDA:</strong><br>
+                        <a href="https://www.oanda.com/register/" target="_blank" style="color: var(--primary);">Create OANDA Account →</a>
+                    </div>
+                    <div>
+                        <strong>Or Use Your Existing Broker:</strong><br>
+                        <span style="color: var(--gray);">Already have an MT5 account? Perfect! BITTEN will work with it.</span>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3 class="section-title">💡 WHY THIS APPROACH WORKS</h3>
+                    <ul style="margin-left: 2rem;">
+                        <li><strong>Zero Downloads:</strong> We host everything - you just open a broker account</li>
+                        <li><strong>Simple Setup:</strong> Just credentials, nothing else</li>
+                        <li><strong>We Do The Work:</strong> BITTEN runs on our servers, connects to your account</li>
+                        <li><strong>Your Money Stays Safe:</strong> Funds never leave your broker</li>
+                        <li><strong>Global Compatibility:</strong> Any MT5 broker, any country, any account type</li>
+                    </ul>
+                </div>
+
+                <div class="section">
+                    <h3 class="section-title">⚠️ IMPORTANT COMMITMENTS</h3>
+                    <ul style="margin-left: 2rem;">
+                        <li><strong>We Host Everything:</strong> MT5 runs on our servers - you download nothing</li>
+                        <li><strong>Minimal Requirements:</strong> Just credentials, that's all</li>
+                        <li><strong>Your Money Stays Put:</strong> Funds remain with your broker always</li>
+                        <li><strong>100% Broker Neutral:</strong> We won't favor any broker for kickbacks</li>
+                        <li><strong>Secure Infrastructure:</strong> Bank-level security for credential storage</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="bot-container">
+                <div class="bot-header">
+                    <div class="bot-avatar">🤖</div>
+                    <div class="bot-name">RECON-7</div>
+                    <div class="bot-status">Global Compatibility Assistant</div>
+                </div>
+                
+                <div class="chat-area" id="chatArea">
+                    <div class="message bot-message">
+                        <div>Welcome to Fast Pass setup! I'm RECON-7, your global compatibility assistant.</div>
+                        <div class="message-time">Just now</div>
+                    </div>
+                    <div class="message bot-message">
+                        <div>BITTEN works with ANY MT5 broker worldwide! Already have one? Perfect. Need suggestions? I can help. What's your situation?</div>
+                        <div class="message-time">Just now</div>
+                    </div>
+                </div>
+                
+                <div class="chat-input">
+                    <input type="text" id="messageInput" placeholder="Type your message..." />
+                    <button class="send-btn" onclick="sendMessage()">Send</button>
+                </div>
+                
+                <div class="quick-questions">
+                    <button class="quick-question" onclick="askQuestion('Which broker should I choose?')">Which broker should I choose?</button>
+                    <button class="quick-question" onclick="askQuestion('Will BITTEN work with my existing broker?')">Will BITTEN work with my existing broker?</button>
+                    <button class="quick-question" onclick="askQuestion('Should I start with demo or live account?')">Should I start with demo or live account?</button>
+                    <button class="quick-question" onclick="askQuestion('Do I need to install anything special?')">Do I need to install anything special?</button>
+                    <button class="quick-question" onclick="askQuestion('How does the connection work?')">How does the connection work?</button>
+                    <button class="quick-question" onclick="askQuestion('Can I change brokers later?')">Can I change brokers later?</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let conversationData = [];
+        
+        function getCurrentTime() {
+            return new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        }
+        
+        function addMessage(content, isBot = true) {
+            const chatArea = document.getElementById('chatArea');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isBot ? 'bot-message' : 'user-message'}`;
+            messageDiv.innerHTML = `
+                <div>${content}</div>
+                <div class="message-time">${getCurrentTime()}</div>
+            `;
+            chatArea.appendChild(messageDiv);
+            chatArea.scrollTop = chatArea.scrollHeight;
+            
+            // Track conversation for analytics
+            conversationData.push({
+                timestamp: new Date().toISOString(),
+                message: content,
+                isBot: isBot,
+                sessionId: getSessionId()
+            });
+            
+            // Send to analytics endpoint
+            trackConversation(content, isBot);
+        }
+        
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            if (!message) return;
+            
+            addMessage(message, false);
+            input.value = '';
+            
+            // Simulate bot response after short delay
+            setTimeout(() => {
+                const response = generateBotResponse(message);
+                addMessage(response, true);
+            }, 1000 + Math.random() * 2000);
+        }
+        
+        function askQuestion(question) {
+            addMessage(question, false);
+            
+            setTimeout(() => {
+                const response = generateBotResponse(question);
+                addMessage(response, true);
+            }, 800 + Math.random() * 1500);
+        }
+        
+        function generateBotResponse(userMessage) {
+            const responses = {
+                'which broker': "Great question! We suggest Forex.com as our preference, but ANY MT5 broker works. Choose based on your location, regulations, and preferences. Already have an MT5 account? Perfect - BITTEN will connect to it!",
+                'existing broker': "Absolutely YES! If your broker offers MetaTrader 5, BITTEN will work with it. We're completely broker-neutral and adapt to whatever setup you have. No need to switch!",
+                'demo live account': "Demo = free and risk-free practice. Live = real money trading. Start with demo if you're new or want to test our signals first. You can always upgrade to live later. Both work with BITTEN!",
+                'install special': "Nothing at all! BITTEN hosts MT5 on our servers - you don't install or download anything. Just provide your broker credentials and we handle everything.",
+                'connection work': "BITTEN hosts MT5 on our servers and connects to your broker account using your credentials. We provide signals and can assist with trade execution, while you maintain full control. Think of us as intelligent assistance for your account.",
+                'change brokers': "Absolutely! Since BITTEN works with ANY MT5 broker, you can switch brokers anytime and we'll simply connect to your new account. Maximum flexibility for you.",
+                'default': [
+                    "That's a great question about our broker-neutral approach. What's your main concern?",
+                    "Smart to ask! Remember, ANY MT5 broker works with BITTEN. What suits your needs?",
+                    "Good thinking. Are you planning to use an existing account or open a new one?",
+                    "Solid question. The beauty is you have complete choice - what works best for you?",
+                    "Worth asking. Since we work globally, what's most important for your situation?",
+                    "Good point. Do you already have experience with MT5, or is this new for you?",
+                    "Practical question. Are you looking at demo first, or ready for live trading?",
+                    "That's important to consider. Any specific requirements for your region?"
+                ]
+            };
+            
+            const msg = userMessage.toLowerCase();
+            
+            if (msg.includes('which broker') || msg.includes('choose broker')) return responses['which broker'];
+            if (msg.includes('existing broker') || msg.includes('current broker')) return responses['existing broker'];
+            if (msg.includes('demo') || msg.includes('live')) return responses['demo live account'];
+            if (msg.includes('install') || msg.includes('special') || msg.includes('software')) return responses['install special'];
+            if (msg.includes('connection') || msg.includes('connect') || msg.includes('how does')) return responses['connection work'];
+            if (msg.includes('change broker') || msg.includes('switch broker')) return responses['change brokers'];
+            
+            // Random default response
+            const defaultResponses = responses['default'];
+            return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
+        }
+        
+        function getSessionId() {
+            let sessionId = localStorage.getItem('bitten_session_id');
+            if (!sessionId) {
+                sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('bitten_session_id', sessionId);
+            }
+            return sessionId;
+        }
+        
+        function trackConversation(message, isBot) {
+            // Send conversation data to analytics endpoint
+            fetch('/api/track-conversation', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    message: message,
+                    isBot: isBot,
+                    timestamp: new Date().toISOString(),
+                    sessionId: getSessionId(),
+                    page: 'broker-setup',
+                    userAgent: navigator.userAgent
+                })
+            }).catch(err => console.log('Analytics tracking failed:', err));
+        }
+        
+        // Handle Enter key in chat input
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        // Track page visit
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('/api/track-page-visit', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    page: 'broker-setup',
+                    timestamp: new Date().toISOString(),
+                    sessionId: getSessionId(),
+                    referrer: document.referrer,
+                    userAgent: navigator.userAgent
+                })
+            }).catch(err => console.log('Page tracking failed:', err));
+        });
+    </script>
+</body>
+</html>

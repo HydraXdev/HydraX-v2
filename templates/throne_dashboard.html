@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏆 BITTEN Commander Throne - Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #00ff41;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .throne-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00ff41;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+        }
+        
+        .throne-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #ff6b00;
+            text-shadow: 0 0 10px #ff6b00;
+        }
+        
+        .commander-info {
+            text-align: right;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .dashboard-panel {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00ff41;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.2);
+        }
+        
+        .panel-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #ff6b00;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+        }
+        
+        .mission-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px;
+            background: rgba(0, 255, 65, 0.1);
+            border-radius: 5px;
+            margin-bottom: 5px;
+        }
+        
+        .stat-value {
+            font-weight: bold;
+            color: #00ff41;
+        }
+        
+        .command-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+        
+        .command-btn {
+            background: linear-gradient(45deg, #ff6b00, #ff8c00);
+            color: white;
+            border: none;
+            padding: 12px 15px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+        
+        .command-btn:hover {
+            background: linear-gradient(45deg, #ff8c00, #ffa500);
+            box-shadow: 0 3px 10px rgba(255, 107, 0, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        .command-btn.danger {
+            background: linear-gradient(45deg, #ff0040, #ff4060);
+        }
+        
+        .command-btn.danger:hover {
+            background: linear-gradient(45deg, #ff4060, #ff6080);
+        }
+        
+        .soldier-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        
+        .soldier-table th,
+        .soldier-table td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #333;
+            font-size: 12px;
+        }
+        
+        .soldier-table th {
+            background: rgba(255, 107, 0, 0.2);
+            color: #ff6b00;
+            font-weight: bold;
+        }
+        
+        .trade-log {
+            max-height: 300px;
+            overflow-y: auto;
+            font-size: 11px;
+        }
+        
+        .trade-row {
+            display: grid;
+            grid-template-columns: 60px 80px 60px 40px 40px 50px 50px;
+            gap: 5px;
+            padding: 5px;
+            border-bottom: 1px solid #333;
+        }
+        
+        .trade-row.win {
+            background: rgba(0, 255, 65, 0.1);
+        }
+        
+        .trade-row.loss {
+            background: rgba(255, 0, 64, 0.1);
+        }
+        
+        .sitrep-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+        }
+        
+        .sitrep-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.95);
+            border: 2px solid #00ff41;
+            border-radius: 10px;
+            padding: 30px;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: #ff0040;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        
+        .status-online { background: #00ff41; }
+        .status-offline { background: #ff0040; }
+        .status-warning { background: #ffaa00; }
+        
+        .live-update {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        
+        .full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .two-thirds {
+            grid-column: span 2;
+        }
+    </style>
+</head>
+<body>
+    <div class="throne-header">
+        <div class="throne-title">🏆 BITTEN COMMANDER THRONE</div>
+        <div class="commander-info">
+            <div><strong>{{ commander_id }}</strong></div>
+            <div>Access Level: <span style="color: #ff6b00;">{{ access_level }}</span></div>
+            <div id="currentTime"></div>
+        </div>
+    </div>
+    
+    <div class="dashboard-grid">
+        <!-- Mission Table -->
+        <div class="dashboard-panel">
+            <div class="panel-title">🛰️ MISSION TABLE</div>
+            <div class="mission-stats live-update" id="missionStats">
+                <div class="stat-item">
+                    <span>Active Users:</span>
+                    <span class="stat-value" id="activeUsers">--</span>
+                </div>
+                <div class="stat-item">
+                    <span>Trades Today:</span>
+                    <span class="stat-value" id="tradesToday">--</span>
+                </div>
+                <div class="stat-item">
+                    <span>Win Rate:</span>
+                    <span class="stat-value" id="winRate">--</span>
+                </div>
+                <div class="stat-item">
+                    <span>Total XP:</span>
+                    <span class="stat-value" id="totalXP">--</span>
+                </div>
+                <div class="stat-item">
+                    <span>Bridge Status:</span>
+                    <span class="stat-value" id="bridgeStatus">
+                        <span class="status-indicator status-offline"></span>--
+                    </span>
+                </div>
+                <div class="stat-item">
+                    <span>Missions:</span>
+                    <span class="stat-value" id="missionCount">--</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Command Panel -->
+        <div class="dashboard-panel">
+            <div class="panel-title">🎮 COMMAND PANEL</div>
+            <div class="command-grid">
+                <button class="command-btn" onclick="executeCommand('toggle_stealth')">Stealth Mode</button>
+                <button class="command-btn" onclick="executeCommand('global_alert')">Global Alert</button>
+                <button class="command-btn" onclick="executeCommand('double_xp_event')">Double XP</button>
+                <button class="command-btn" onclick="executeCommand('reset_cooldowns')">Reset Cooldowns</button>
+                <button class="command-btn danger" onclick="executeCommand('halt_trades')">Halt Trades</button>
+                <button class="command-btn" onclick="showSitrep()">SITREP</button>
+            </div>
+        </div>
+        
+        <!-- XP Console -->
+        <div class="dashboard-panel">
+            <div class="panel-title">🧠 XP CONSOLE</div>
+            <div>
+                <input type="text" id="xpUserId" placeholder="User ID" style="width: 100%; margin-bottom: 10px; padding: 8px; background: rgba(0,0,0,0.7); border: 1px solid #00ff41; color: #00ff41;">
+                <input type="number" id="xpAmount" placeholder="XP Amount" style="width: 100%; margin-bottom: 10px; padding: 8px; background: rgba(0,0,0,0.7); border: 1px solid #00ff41; color: #00ff41;">
+                <button class="command-btn" onclick="awardXP()" style="width: 100%;">Award XP</button>
+            </div>
+        </div>
+        
+        <!-- Soldier Roster -->
+        <div class="dashboard-panel two-thirds">
+            <div class="panel-title">🪖 SOLDIER ROSTER</div>
+            <table class="soldier-table" id="soldierTable">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Tier</th>
+                        <th>XP</th>
+                        <th>Telegram</th>
+                        <th>Last Seen</th>
+                        <th>Trades</th>
+                    </tr>
+                </thead>
+                <tbody id="soldierTableBody">
+                    <tr><td colspan="6">Loading soldiers...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Trade Log -->
+        <div class="dashboard-panel full-width">
+            <div class="panel-title">📜 TRADE LOG EXPLORER</div>
+            <div class="trade-log" id="tradeLog">
+                <div class="trade-row" style="font-weight: bold; background: rgba(255,107,0,0.2);">
+                    <div>Time</div>
+                    <div>User</div>
+                    <div>Pair</div>
+                    <div>Dir</div>
+                    <div>Result</div>
+                    <div>Pips</div>
+                    <div>XP</div>
+                </div>
+                <div id="tradeLogBody">Loading trades...</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- SITREP Modal -->
+    <div class="sitrep-modal" id="sitrepModal">
+        <div class="sitrep-content">
+            <button class="close-btn" onclick="closeSitrep()">×</button>
+            <div class="panel-title">📋 SITUATIONAL REPORT</div>
+            <div id="sitrepContent">Loading SITREP...</div>
+            <button class="command-btn" onclick="exportSitrep()" style="margin-top: 20px;">Export as PDF</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        // Initialize Socket.IO
+        const socket = io();
+        
+        // Update current time
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('currentTime').textContent = now.toLocaleTimeString() + ' UTC';
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+        
+        // Load initial data
+        async function loadMissionStats() {
+            try {
+                const response = await fetch('/throne/api/mission_stats');
+                const data = await response.json();
+                
+                document.getElementById('activeUsers').textContent = data.active_users;
+                document.getElementById('tradesToday').textContent = data.trades_today;
+                document.getElementById('winRate').textContent = data.win_rate + '%';
+                document.getElementById('totalXP').textContent = data.total_xp_awarded.toLocaleString();
+                document.getElementById('missionCount').textContent = data.mission_count;
+                
+                const bridgeStatus = document.getElementById('bridgeStatus');
+                const statusClass = data.bridge_status === 'ONLINE' ? 'status-online' : 'status-offline';
+                bridgeStatus.innerHTML = `<span class="status-indicator ${statusClass}"></span>${data.bridge_status}`;
+            } catch (error) {
+                console.error('Error loading mission stats:', error);
+            }
+        }
+        
+        async function loadSoldierRoster() {
+            try {
+                const response = await fetch('/throne/api/soldier_roster');
+                const data = await response.json();
+                
+                const tbody = document.getElementById('soldierTableBody');
+                tbody.innerHTML = '';
+                
+                data.soldiers.forEach(soldier => {
+                    const row = tbody.insertRow();
+                    row.innerHTML = `
+                        <td>${soldier.username}</td>
+                        <td>${soldier.tier}</td>
+                        <td>${soldier.xp.toLocaleString()}</td>
+                        <td>${soldier.telegram_linked ? '✅' : '❌'}</td>
+                        <td>${soldier.last_seen}</td>
+                        <td>${soldier.trade_count}</td>
+                    `;
+                });
+            } catch (error) {
+                console.error('Error loading soldier roster:', error);
+            }
+        }
+        
+        async function loadTradeLog() {
+            try {
+                const response = await fetch('/throne/api/trade_log');
+                const data = await response.json();
+                
+                const container = document.getElementById('tradeLogBody');
+                container.innerHTML = '';
+                
+                data.trades.forEach(trade => {
+                    const row = document.createElement('div');
+                    row.className = `trade-row ${trade.result.toLowerCase()}`;
+                    row.innerHTML = `
+                        <div>${trade.time}</div>
+                        <div>${trade.user}</div>
+                        <div>${trade.pair}</div>
+                        <div>${trade.direction}</div>
+                        <div>${trade.result}</div>
+                        <div>${trade.pips}</div>
+                        <div>${trade.xp_earned}</div>
+                    `;
+                    container.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Error loading trade log:', error);
+            }
+        }
+        
+        async function executeCommand(command, parameters = {}) {
+            try {
+                const response = await fetch('/throne/api/command', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ command, parameters })
+                });
+                
+                const result = await response.json();
+                alert(result.message);
+                
+                if (result.success) {
+                    loadMissionStats(); // Refresh stats
+                }
+            } catch (error) {
+                alert('Command execution failed: ' + error.message);
+            }
+        }
+        
+        function awardXP() {
+            const userId = document.getElementById('xpUserId').value;
+            const amount = parseInt(document.getElementById('xpAmount').value);
+            
+            if (!userId || !amount) {
+                alert('Please enter both User ID and XP Amount');
+                return;
+            }
+            
+            executeCommand('award_xp', { user_id: userId, amount: amount });
+            
+            // Clear inputs
+            document.getElementById('xpUserId').value = '';
+            document.getElementById('xpAmount').value = '';
+        }
+        
+        async function showSitrep() {
+            document.getElementById('sitrepModal').style.display = 'block';
+            
+            try {
+                const response = await fetch('/throne/api/sitrep');
+                const data = await response.json();
+                
+                const content = document.getElementById('sitrepContent');
+                content.innerHTML = `
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div>
+                            <h3>📊 System Metrics</h3>
+                            <p><strong>XP Flow (24h):</strong> ${data.sitrep.xp_flow_24h.toLocaleString()}</p>
+                            <p><strong>Signal Volume:</strong> ${data.sitrep.signal_fire_volume}</p>
+                            <p><strong>Bridge Response:</strong> ${data.sitrep.bridge_response_time}</p>
+                            <p><strong>Win Rate Trend:</strong> ${data.sitrep.win_rate_trend}</p>
+                        </div>
+                        <div>
+                            <h3>👥 User Activity</h3>
+                            <p><strong>Manual Mode:</strong> ${data.sitrep.active_users_by_mode.MANUAL}</p>
+                            <p><strong>Semi-Auto:</strong> ${data.sitrep.active_users_by_mode.SEMI_AUTO}</p>
+                            <p><strong>Full Auto:</strong> ${data.sitrep.active_users_by_mode.FULL_AUTO}</p>
+                            <p><strong>Press Pass Conv:</strong> ${data.sitrep.press_pass_conversion}</p>
+                        </div>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <h3>🏆 Intelligence</h3>
+                        <p><strong>Top Performer:</strong> ${data.sitrep.most_profitable_user}</p>
+                        <p><strong>Badge Velocity:</strong> ${data.sitrep.badge_unlock_velocity}</p>
+                        <p><strong>Overdue Links:</strong> ${data.sitrep.overdue_telegram_links}</p>
+                        <p><strong>Referral Ratio:</strong> ${data.sitrep.referrals_vs_enlistments}</p>
+                    </div>
+                `;
+            } catch (error) {
+                document.getElementById('sitrepContent').innerHTML = 'Error loading SITREP: ' + error.message;
+            }
+        }
+        
+        function closeSitrep() {
+            document.getElementById('sitrepModal').style.display = 'none';
+        }
+        
+        async function exportSitrep() {
+            try {
+                // Get fresh SITREP data
+                const response = await fetch('/throne/api/sitrep');
+                const data = await response.json();
+                
+                if (!data.sitrep) {
+                    alert('Failed to generate SITREP data');
+                    return;
+                }
+                
+                // Initialize jsPDF
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                // Generate timestamp for filename
+                const now = new Date();
+                const timestamp = now.toISOString().split('T')[0]; // YYYY-MM-DD format
+                const timeUTC = now.toTimeString().split(' ')[0]; // HH:MM:SS format
+                
+                // Page setup
+                const pageWidth = doc.internal.pageSize.getWidth();
+                const pageHeight = doc.internal.pageSize.getHeight();
+                const margin = 20;
+                let yPosition = margin;
+                
+                // Header with BITTEN branding
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(24);
+                doc.setTextColor(40, 40, 40);
+                doc.text('🏆 BITTEN COMMANDER REPORT', pageWidth / 2, yPosition, { align: 'center' });
+                
+                yPosition += 15;
+                doc.setFontSize(14);
+                doc.setFont('helvetica', 'normal');
+                doc.setTextColor(80, 80, 80);
+                doc.text(`SITUATIONAL REPORT - ${timestamp}`, pageWidth / 2, yPosition, { align: 'center' });
+                
+                yPosition += 20;
+                
+                // Horizontal line
+                doc.setDrawColor(200, 200, 200);
+                doc.line(margin, yPosition, pageWidth - margin, yPosition);
+                yPosition += 15;
+                
+                // System Metrics Section
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(16);
+                doc.setTextColor(40, 40, 40);
+                doc.text('📊 SYSTEM METRICS', margin, yPosition);
+                yPosition += 10;
+                
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(11);
+                doc.setTextColor(60, 60, 60);
+                
+                const metrics = [
+                    `XP Flow (24h): ${data.sitrep.xp_flow_24h.toLocaleString()}`,
+                    `Signal Fire Volume: ${data.sitrep.signal_fire_volume}`,
+                    `Bridge Response Time: ${data.sitrep.bridge_response_time}`,
+                    `Win Rate Trend: ${data.sitrep.win_rate_trend}`
+                ];
+                
+                metrics.forEach(metric => {
+                    doc.text(`• ${metric}`, margin + 5, yPosition);
+                    yPosition += 6;
+                });
+                
+                yPosition += 10;
+                
+                // User Activity Section
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(16);
+                doc.setTextColor(40, 40, 40);
+                doc.text('👥 USER ACTIVITY', margin, yPosition);
+                yPosition += 10;
+                
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(11);
+                doc.setTextColor(60, 60, 60);
+                
+                const userActivity = [
+                    `Manual Mode Users: ${data.sitrep.active_users_by_mode.MANUAL}`,
+                    `Semi-Auto Mode Users: ${data.sitrep.active_users_by_mode.SEMI_AUTO}`,
+                    `Full Auto Mode Users: ${data.sitrep.active_users_by_mode.FULL_AUTO}`,
+                    `Press Pass Conversion: ${data.sitrep.press_pass_conversion}`
+                ];
+                
+                userActivity.forEach(activity => {
+                    doc.text(`• ${activity}`, margin + 5, yPosition);
+                    yPosition += 6;
+                });
+                
+                yPosition += 10;
+                
+                // Intelligence Section
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(16);
+                doc.setTextColor(40, 40, 40);
+                doc.text('🏆 INTELLIGENCE', margin, yPosition);
+                yPosition += 10;
+                
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(11);
+                doc.setTextColor(60, 60, 60);
+                
+                const intelligence = [
+                    `Top Performer: ${data.sitrep.most_profitable_user}`,
+                    `Badge Unlock Velocity: ${data.sitrep.badge_unlock_velocity}`,
+                    `Overdue Telegram Links: ${data.sitrep.overdue_telegram_links}`,
+                    `Referral vs Enlistments: ${data.sitrep.referrals_vs_enlistments}`
+                ];
+                
+                intelligence.forEach(intel => {
+                    doc.text(`• ${intel}`, margin + 5, yPosition);
+                    yPosition += 6;
+                });
+                
+                // Footer
+                const footerY = pageHeight - 20;
+                doc.setDrawColor(200, 200, 200);
+                doc.line(margin, footerY - 5, pageWidth - margin, footerY - 5);
+                
+                doc.setFont('helvetica', 'italic');
+                doc.setFontSize(9);
+                doc.setTextColor(120, 120, 120);
+                doc.text(`Generated by BITTEN Commander Throne at ${timeUTC} UTC`, pageWidth / 2, footerY, { align: 'center' });
+                
+                // Classification marking
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(8);
+                doc.setTextColor(200, 0, 0);
+                doc.text('COMMANDER EYES ONLY', pageWidth / 2, footerY + 8, { align: 'center' });
+                
+                // Save the PDF
+                const filename = `SITREP_${timestamp}.pdf`;
+                doc.save(filename);
+                
+                // Success notification
+                setTimeout(() => {
+                    alert(`✅ SITREP exported successfully as ${filename}`);
+                }, 500);
+                
+            } catch (error) {
+                console.error('Error exporting SITREP:', error);
+                alert('❌ Failed to export SITREP: ' + error.message);
+            }
+        }
+        
+        // Socket.IO event handlers
+        socket.on('live_update', function(data) {
+            // Update live data without full page refresh
+            document.getElementById('activeUsers').textContent = data.active_users;
+            document.getElementById('tradesToday').textContent = data.trades_today;
+            document.getElementById('winRate').textContent = data.win_rate + '%';
+        });
+        
+        // Load initial data
+        loadMissionStats();
+        loadSoldierRoster();
+        loadTradeLog();
+        
+        // Refresh data every 30 seconds
+        setInterval(() => {
+            loadMissionStats();
+            loadTradeLog();
+        }, 30000);
+        
+        // Refresh soldier roster every 2 minutes
+        setInterval(loadSoldierRoster, 120000);
+    </script>
+</body>
+</html>

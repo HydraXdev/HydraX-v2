@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BITTEN - Start Earning Now</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            color: #ffffff;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Hero Section - Zero Friction */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            padding: 20px;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 255, 65, 0.03) 2px, rgba(0, 255, 65, 0.03) 4px),
+                repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(0, 255, 65, 0.03) 2px, rgba(0, 255, 65, 0.03) 4px);
+            animation: grid-move 20s linear infinite;
+        }
+
+        /* Social Proof Counter */
+        .live-counter {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 0, 64, 0.9);
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            z-index: 1000;
+            animation: pulse 2s infinite;
+        }
+
+        /* Main Headline */
+        .main-headline {
+            font-size: clamp(3rem, 8vw, 6rem);
+            font-weight: 900;
+            background: linear-gradient(45deg, #00ff41, #00aaff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 30px;
+            z-index: 10;
+            position: relative;
+        }
+
+        .sub-headline {
+            font-size: clamp(1.2rem, 4vw, 2rem);
+            margin-bottom: 40px;
+            color: #cccccc;
+            z-index: 10;
+            position: relative;
+            max-width: 800px;
+        }
+
+        /* The One Button */
+        .mega-cta {
+            background: linear-gradient(45deg, #ff0040, #ffaa00);
+            color: #ffffff;
+            border: none;
+            padding: 25px 60px;
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            font-weight: 900;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            animation: glow 2s infinite;
+            z-index: 10;
+            position: relative;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 30px;
+        }
+
+        .mega-cta:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 50px rgba(255, 170, 0, 0.8);
+        }
+
+        /* Instant Proof */
+        .instant-proof {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00ff41;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 40px;
+            max-width: 400px;
+            z-index: 10;
+            position: relative;
+        }
+
+        .proof-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(0, 255, 65, 0.2);
+        }
+
+        .proof-item:last-child {
+            border-bottom: none;
+        }
+
+        .profit-amount {
+            color: #00ff41;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        /* Exit Intent Modal */
+        .exit-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .exit-content {
+            background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+            border: 3px solid #ff0040;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            max-width: 500px;
+            animation: emergencyPulse 1s infinite;
+        }
+
+        .exit-headline {
+            color: #ff0040;
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .quick-email {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00ff41;
+            color: #00ff41;
+            padding: 15px 20px;
+            font-size: 16px;
+            border-radius: 25px;
+            width: 300px;
+            text-align: center;
+            margin: 20px auto;
+            display: block;
+        }
+
+        .save-btn {
+            background: linear-gradient(45deg, #00ff41, #00aa33);
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            margin: 10px;
+        }
+
+        .close-exit {
+            background: #666;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 15px;
+            cursor: pointer;
+            margin: 10px;
+        }
+
+        /* Loading Animation for Button Click */
+        .loading {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .loading::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: loading 1.5s infinite;
+        }
+
+        /* Animations */
+        @keyframes grid-move {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(40px, 40px); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 30px rgba(255, 170, 0, 0.4); }
+            50% { box-shadow: 0 0 50px rgba(255, 170, 0, 0.8); }
+        }
+
+        @keyframes emergencyPulse {
+            0%, 100% { transform: scale(1); border-color: #ff0040; }
+            50% { transform: scale(1.02); border-color: #ffaa00; }
+        }
+
+        @keyframes loading {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .mega-cta {
+                padding: 20px 40px;
+                font-size: 1.5rem;
+            }
+            
+            .instant-proof {
+                max-width: 90%;
+            }
+            
+            .live-counter {
+                position: relative;
+                margin-bottom: 20px;
+                transform: none;
+            }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Live Social Proof -->
+    <div class="live-counter" id="liveCounter">
+        🔥 247 people earning now
+    </div>
+
+    <!-- Hero Section -->
+    <div class="hero">
+        <h1 class="main-headline">START EARNING NOW</h1>
+        
+        <p class="sub-headline">
+            Watch money move in real-time. No experience needed.
+        </p>
+        
+        <button class="mega-cta" id="startButton" onclick="startJourney()">
+            START EARNING NOW
+        </button>
+        
+        <div class="instant-proof">
+            <div class="proof-item">
+                <span>Jake (2 min ago)</span>
+                <span class="profit-amount">+$156</span>
+            </div>
+            <div class="proof-item">
+                <span>Sarah (1 min ago)</span>
+                <span class="profit-amount">+$89</span>
+            </div>
+            <div class="proof-item">
+                <span>Mike (Just now)</span>
+                <span class="profit-amount">+$234</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Exit Intent Modal -->
+    <div class="exit-modal" id="exitModal">
+        <div class="exit-content">
+            <div class="exit-headline">🚨 WAIT!</div>
+            <p><strong>Your session will expire!</strong></p>
+            <p>The system you were about to see will reset.</p>
+            <p>Save your spot? Takes 10 seconds...</p>
+            
+            <input type="email" class="quick-email" id="quickEmail" placeholder="your.email@example.com">
+            
+            <div>
+                <button class="save-btn" onclick="saveSpot()">SAVE MY SPOT</button>
+                <button class="close-exit" onclick="closeExit()">Maybe Later</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let exitIntentShown = false;
+        let userEngaged = false;
+        
+        // Update live counter every 10 seconds
+        setInterval(updateLiveCounter, 10000);
+        
+        // Track user engagement
+        setTimeout(() => { userEngaged = true; }, 3000);
+        
+        function updateLiveCounter() {
+            const counter = document.getElementById('liveCounter');
+            const count = 240 + Math.floor(Math.random() * 20);
+            counter.textContent = `🔥 ${count} people earning now`;
+        }
+
+        function startJourney() {
+            const button = document.getElementById('startButton');
+            
+            // Add loading animation
+            button.classList.add('loading');
+            button.textContent = 'STARTING...';
+            button.disabled = true;
+            
+            // Track click
+            trackEvent('mega_cta_click', {
+                timestamp: new Date().toISOString(),
+                user_agent: navigator.userAgent
+            });
+            
+            // Redirect to Bit's webapp after 1 second
+            setTimeout(() => {
+                window.location.href = '/onboarding/bit_webapp.html';
+            }, 1000);
+        }
+
+        function trackEvent(event, data) {
+            // Send analytics
+            if (typeof gtag !== 'undefined') {
+                gtag('event', event, data);
+            }
+            
+            // Send to backend
+            fetch('/api/track-event', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ event, data })
+            }).catch(e => console.log('Analytics error:', e));
+        }
+
+        // Exit intent detection
+        document.addEventListener('mouseleave', function(e) {
+            if (e.clientY <= 0 && !exitIntentShown && userEngaged) {
+                exitIntentShown = true;
+                showExitIntent();
+            }
+        });
+
+        function showExitIntent() {
+            document.getElementById('exitModal').style.display = 'flex';
+            trackEvent('exit_intent_shown');
+        }
+
+        function saveSpot() {
+            const email = document.getElementById('quickEmail').value;
+            
+            if (!email || !email.includes('@')) {
+                alert('Please enter a valid email address');
+                return;
+            }
+            
+            // Save email and redirect
+            fetch('/api/provision-press-pass', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: email,
+                    source: 'exit_intent'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                localStorage.setItem('pressPassId', data.press_pass_id);
+                localStorage.setItem('userEmail', email);
+                
+                // Redirect to Bit
+                window.location.href = '/onboarding/bit_webapp.html';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Still redirect even if API fails
+                window.location.href = '/onboarding/bit_webapp.html';
+            });
+            
+            trackEvent('exit_intent_conversion', { email: email });
+        }
+
+        function closeExit() {
+            document.getElementById('exitModal').style.display = 'none';
+            trackEvent('exit_intent_dismissed');
+        }
+
+        // Keyboard shortcut
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !exitIntentShown) {
+                startJourney();
+            } else if (e.key === 'Enter' && document.getElementById('exitModal').style.display === 'flex') {
+                saveSpot();
+            }
+        });
+
+        // Auto-update proof items
+        setInterval(() => {
+            const proofItems = document.querySelectorAll('.proof-item');
+            const names = ['Jake', 'Sarah', 'Mike', 'Alex', 'Emma', 'Ryan', 'Lisa', 'Tom'];
+            const amounts = [89, 156, 234, 67, 123, 178, 95, 145];
+            
+            proofItems.forEach((item, index) => {
+                const name = names[Math.floor(Math.random() * names.length)];
+                const amount = amounts[Math.floor(Math.random() * amounts.length)];
+                const timeAgo = ['Just now', '1 min ago', '2 min ago'][index];
+                
+                item.innerHTML = `
+                    <span>${name} (${timeAgo})</span>
+                    <span class="profit-amount">+$${amount}</span>
+                `;
+            });
+        }, 15000);
+
+        // Page load tracking
+        window.addEventListener('load', function() {
+            trackEvent('landing_page_view', {
+                referrer: document.referrer,
+                timestamp: new Date().toISOString()
+            });
+        });
+
+        // Time on page tracking
+        let timeOnPage = 0;
+        setInterval(() => {
+            timeOnPage++;
+            if (timeOnPage === 30) {
+                trackEvent('engaged_30_seconds');
+            } else if (timeOnPage === 60) {
+                trackEvent('engaged_60_seconds');
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

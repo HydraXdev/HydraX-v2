@@ -1,0 +1,158 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "BITTEN Trade Signal Format",
+  "description": "Military-grade standardized format for bridge ➜ SPE communication",
+  "version": "1.0_FORTRESS",
+  "type": "object",
+  "required": [
+    "event",
+    "timestamp",
+    "symbol",
+    "order_type",
+    "lot_size",
+    "entry_price",
+    "bridge_id",
+    "account_id",
+    "execution_id",
+    "strategy",
+    "tcs_score"
+  ],
+  "properties": {
+    "event": {
+      "type": "string",
+      "enum": ["new_trade", "close_trade", "modify_trade", "price_update", "balance_update", "heartbeat"],
+      "description": "Event type from bridge"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp with Z timezone (UTC)"
+    },
+    "symbol": {
+      "type": "string",
+      "pattern": "^[A-Z]{6}$",
+      "description": "6-character currency pair (e.g., XAUUSD, EURUSD)"
+    },
+    "order_type": {
+      "type": "string",
+      "enum": ["buy", "sell", "buy_limit", "sell_limit", "buy_stop", "sell_stop"],
+      "description": "Normalized order type (lowercase)"
+    },
+    "lot_size": {
+      "type": "number",
+      "minimum": 0.01,
+      "maximum": 100.0,
+      "description": "Position size in lots"
+    },
+    "entry_price": {
+      "type": "number",
+      "minimum": 0.00001,
+      "description": "Entry price for the trade"
+    },
+    "sl": {
+      "type": ["number", "null"],
+      "minimum": 0.00001,
+      "description": "Stop loss price (null if none)"
+    },
+    "tp": {
+      "type": ["number", "null"],
+      "minimum": 0.00001,
+      "description": "Take profit price (null if none)"
+    },
+    "bridge_id": {
+      "type": "string",
+      "pattern": "^bridge_[0-9]{3}$",
+      "description": "Bridge instance identifier (e.g., bridge_019)"
+    },
+    "account_id": {
+      "type": "string",
+      "pattern": "^[0-9]{6,8}$",
+      "description": "MT5 account identifier"
+    },
+    "execution_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 50,
+      "description": "Unique execution identifier"
+    },
+    "strategy": {
+      "type": "string",
+      "enum": ["bitmode_auto", "rapid_assault", "sniper_ops", "manual"],
+      "description": "Trading strategy identifier"
+    },
+    "tcs_score": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Trade Confidence Score (0-100)"
+    },
+    "current_price": {
+      "type": ["number", "null"],
+      "minimum": 0.00001,
+      "description": "Current market price (optional)"
+    },
+    "spread": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "description": "Current spread in pips (optional)"
+    },
+    "balance": {
+      "type": ["number", "null"],
+      "description": "Account balance (optional)"
+    },
+    "equity": {
+      "type": ["number", "null"],
+      "description": "Account equity (optional)"
+    },
+    "margin_level": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "description": "Margin level percentage (optional)"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional bridge-specific data",
+      "properties": {
+        "session": {
+          "type": "string",
+          "enum": ["ASIAN", "LONDON", "NY", "OVERLAP"]
+        },
+        "volatility": {
+          "type": "string",
+          "enum": ["LOW", "MEDIUM", "HIGH", "EXTREME"]
+        },
+        "news_impact": {
+          "type": "string",
+          "enum": ["NONE", "LOW", "MEDIUM", "HIGH"]
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "event": "new_trade",
+      "timestamp": "2025-07-14T18:21:00.123Z",
+      "symbol": "XAUUSD",
+      "order_type": "buy",
+      "lot_size": 0.10,
+      "entry_price": 2374.10,
+      "sl": 2370.00,
+      "tp": 2382.00,
+      "bridge_id": "bridge_019",
+      "account_id": "843859",
+      "execution_id": "CMD123456",
+      "strategy": "bitmode_auto",
+      "tcs_score": 82,
+      "current_price": 2374.15,
+      "spread": 0.3,
+      "balance": 50000.00,
+      "equity": 50125.50,
+      "margin_level": 2850.75,
+      "metadata": {
+        "session": "LONDON",
+        "volatility": "MEDIUM",
+        "news_impact": "LOW"
+      }
+    }
+  ]
+}

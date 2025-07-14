@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏆 BITTEN Commander Throne - Login</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #00ff41;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        
+        .login-container {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00ff41;
+            border-radius: 10px;
+            padding: 40px;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+            text-align: center;
+            min-width: 400px;
+        }
+        
+        .throne-logo {
+            font-size: 48px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px #00ff41;
+        }
+        
+        .throne-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 30px;
+            color: #ff6b00;
+            text-shadow: 0 0 5px #ff6b00;
+        }
+        
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .input-group {
+            text-align: left;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #00ff41;
+            font-weight: bold;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid #00ff41;
+            border-radius: 5px;
+            color: #00ff41;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #ff6b00;
+            box-shadow: 0 0 10px rgba(255, 107, 0, 0.3);
+        }
+        
+        .login-btn {
+            background: linear-gradient(45deg, #ff6b00, #ff8c00);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .login-btn:hover {
+            background: linear-gradient(45deg, #ff8c00, #ffa500);
+            box-shadow: 0 5px 15px rgba(255, 107, 0, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        .login-btn:disabled {
+            background: #555;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .error-message {
+            color: #ff0040;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        
+        .access-levels {
+            margin-top: 30px;
+            font-size: 12px;
+            color: #888;
+            border-top: 1px solid #333;
+            padding-top: 15px;
+        }
+        
+        .terminal-cursor {
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="throne-logo">🏆</div>
+        <div class="throne-title">COMMANDER THRONE</div>
+        
+        <form class="login-form" id="loginForm">
+            <div class="input-group">
+                <label for="username">Commander ID</label>
+                <input type="text" id="username" name="username" placeholder="APEX_COMMANDER" required>
+            </div>
+            
+            <div class="input-group">
+                <label for="password">Access Code</label>
+                <input type="password" id="password" name="password" placeholder="••••••••" required>
+            </div>
+            
+            <button type="submit" class="login-btn" id="loginBtn">
+                ACCESS THRONE <span class="terminal-cursor">█</span>
+            </button>
+            
+            <div id="errorMessage" class="error-message" style="display: none;"></div>
+        </form>
+        
+        <div class="access-levels">
+            <strong>ACCESS LEVELS:</strong><br>
+            COMMANDER: Full Control | LIEUTENANT: Moderate Control<br>
+            RECRUITER: Messaging Only | OBSERVER: View Only
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const loginBtn = document.getElementById('loginBtn');
+            const errorDiv = document.getElementById('errorMessage');
+            
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'AUTHENTICATING...';
+            errorDiv.style.display = 'none';
+            
+            try {
+                const response = await fetch('/throne/auth', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: document.getElementById('username').value,
+                        password: document.getElementById('password').value
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    window.location.href = result.redirect;
+                } else {
+                    errorDiv.textContent = result.message;
+                    errorDiv.style.display = 'block';
+                }
+            } catch (error) {
+                errorDiv.textContent = 'Connection failed. Check system status.';
+                errorDiv.style.display = 'block';
+            }
+            
+            loginBtn.disabled = false;
+            loginBtn.innerHTML = 'ACCESS THRONE <span class="terminal-cursor">█</span>';
+        });
+    </script>
+</body>
+</html>

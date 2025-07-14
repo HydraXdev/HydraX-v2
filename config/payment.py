@@ -24,7 +24,7 @@ class PaymentConfig:
         'NIBBLER': 39,
         'FANG': 89,
         'COMMANDER': 139,
-        'APEX': 188
+        'APEX': 188  # Includes all COMMANDER features + exclusive APEX features
     }
     
     # Trial Configuration

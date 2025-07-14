@@ -8,8 +8,8 @@ import os
 from telegram import Bot
 import time
 
-BOT_TOKEN = '7854827710:AAHnUNfP5GyxoYePoAV5BeOtDbmEJo6i_EQ'
-CHAT_ID = '-1002581996861'
+BOT_TOKEN = 'os.getenv("BOT_TOKEN", "DISABLED_FOR_SECURITY")'
+CHAT_ID = 'int(os.getenv("CHAT_ID", "-1002581996861"))'
 
 
 async def fix_and_start():

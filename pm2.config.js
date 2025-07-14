@@ -6,7 +6,7 @@ module.exports = {
       interpreter: 'python3',
       cwd: '/root/HydraX-v2',
       instances: 1,
-      autorestart: true,
+      autorestart: false,  // EMERGENCY: Disabled to prevent auto-restart
       watch: false,
       max_memory_restart: '2G',
       env: {
@@ -68,7 +68,7 @@ module.exports = {
       interpreter: 'python3',
       cwd: '/root/HydraX-v2',
       instances: 1,
-      autorestart: true,
+      autorestart: false,  // EMERGENCY: Disabled to prevent auto-restart
       watch: false,
       max_memory_restart: '1G',
       env: {

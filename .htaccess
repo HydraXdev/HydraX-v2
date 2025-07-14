@@ -1,0 +1,13 @@
+
+# BITTEN Static File Configuration
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # Serve JavaScript files with correct MIME type
+    <Files "*.js">
+        Header set Content-Type "application/javascript"
+    </Files>
+    
+    # Allow access to common UI files
+    RewriteRule ^src/ui/common/(.*)$ src/ui/common/$1 [L]
+</IfModule>

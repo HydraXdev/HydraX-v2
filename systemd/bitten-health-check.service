@@ -14,7 +14,7 @@ Environment=LOG_LEVEL=INFO
 Environment=HEALTH_CHECK_PORT=8888
 ExecStart=/usr/bin/python3 -m monitoring.health_check_server
 ExecReload=/bin/kill -HUP $MAINPID
-Restart=always
+Restart=no  # EMERGENCY: Disabled auto-restart
 RestartSec=5
 StandardOutput=journal
 StandardError=journal

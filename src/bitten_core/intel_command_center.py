@@ -54,6 +54,36 @@ class IntelCommandCenter:
         self.webapp_url = webapp_url
         self.menu_structure = self._build_menu_structure()
         self.active_sessions = {}  # Track user menu states
+        self.easter_eggs = self._init_easter_eggs()
+        self.secret_sequences = {}  # Track user input sequences
+        
+    def _init_easter_eggs(self):
+        """Initialize easter egg system"""
+        return {
+            'secret_combos': {
+                'show me the money': 'profit_vault',
+                'norman lives': 'cat_companion_mode',
+                'diamond hands': 'hodl_therapy',
+                'wen lambo': 'lambo_calculator',
+                'number go up': 'hopium_injection',
+                'trust the process': 'zen_mode',
+                'the cake is a lie': 'portal_mode',
+                'bitten by the bug': 'dev_secrets'
+            },
+            'konami_code': ['up', 'up', 'down', 'down', 'left', 'right', 'left', 'right', 'b', 'a'],
+            'bit_quotes': [
+                "🐱 *Bit chirps and knocks your phone off the table*",
+                "🐱 Bit: 'Chirp chirp chirp' (Translation: 'Stop revenge trading, human')",
+                "🐱 *Bit stares at you judgmentally* You know what you did wrong.",
+                "🐱 Bit found this shiny thing: 📈 (He recommends you don't touch it)"
+            ],
+            'norman_quotes': [
+                "👦 Norman: 'Hey, maybe we should review that trade plan again...'",
+                "👦 Norman: 'Bit thinks your risk management needs work'",
+                "👦 Norman: 'The Mississippi way is slow and steady, not YOLO'",
+                "👦 Norman: 'Remember, we're learning together here'"
+            ]
+        }
         
     def _build_menu_structure(self) -> Dict[str, MenuItem]:
         """Build the complete menu structure"""
@@ -121,7 +151,7 @@ class IntelCommandCenter:
         # FIELD MANUAL Submenu
         manual_items = [
             ('getting_started', '🚀 BOOT CAMP', 'Complete beginner guide'),
-            ('mt5_setup', '🔌 MT5 SETUP', 'Step-by-step connection'),
+            ('webapp_setup', '🌐 WEBAPP ACCESS', 'Access your trading dashboard'),
             ('first_trade', '🎯 FIRST MISSION', 'Your first trade walkthrough'),
             ('reading_signals', '📖 SIGNAL DECODE', 'Understanding briefings'),
             ('risk_sizing', '📏 POSITION SIZING', 'Calculate lot sizes'),
@@ -225,7 +255,10 @@ class IntelCommandCenter:
             ('margin_calc', '🏦 MARGIN CALC', 'Required margin'),
             ('correlation_tool', '🔗 CORRELATION', 'Pair correlations'),
             ('timezone_convert', '🌍 TIME ZONES', 'Market sessions'),
-            ('trade_journal', '📔 TRADE JOURNAL', 'Track your trades')
+            ('trade_journal', '📔 TRADE JOURNAL', 'Track your trades'),
+            ('wen_lambo_calc', '🏎️ WEN LAMBO', 'Calculate your path to riches'),
+            ('whale_tracker', '🐋 WHALE ACTIVITY', 'Big money movements detected'),
+            ('fomo_meter', '📈 FOMO METER', 'Retail sentiment indicator')
         ]
         
         for item_id, label, desc in tools_items:
@@ -337,6 +370,9 @@ class IntelCommandCenter:
         
         # EMERGENCY Submenu
         emergency_items = [
+            ('stop_pause', '⏸️ PAUSE NEW TRADES', 'Stop new signal executions only'),
+            ('stop_close_all', '🛑 CLOSE ALL POSITIONS', 'Close all trades immediately'),
+            ('account_lock', '🔒 ACCOUNT LOCKOUT', 'Complete trading lockout'),
             ('trade_stuck', '🚨 TRADE STUCK', 'Position won\'t close'),
             ('massive_loss', '💔 BIG LOSS', 'Recovery protocol'),
             ('account_blown', '💥 ACCOUNT BLOWN', 'What to do now'),
@@ -346,6 +382,8 @@ class IntelCommandCenter:
             ('hacked_account', '🔓 HACKED', 'Security breach'),
             ('payment_failed', '❌ PAYMENT FAIL', 'Subscription lapsed'),
             ('mental_crisis', '🧠 NEED HELP', 'Trading psychology'),
+            ('hodl_therapy', '💎 HODL THERAPY', 'Diamond hands support group'),
+            ('paper_hands_rehab', '📄 PAPER HANDS REHAB', 'Weak hands recovery'),
             ('contact_human', '👤 HUMAN HELP', 'Speak to support')
         ]
         
@@ -371,7 +409,8 @@ class IntelCommandCenter:
             ('psych_bot', '🧠 PSYCHOLOGIST', 'Mental game coach'),
             ('risk_bot', '⚖️ RISK OFFICER', 'Risk management'),
             ('news_bot', '📰 NEWS DESK', 'Market updates'),
-            ('bit_companion', '🤖 BIT', 'Your AI companion')
+            ('bit_companion', '🐱 BIT', 'Chat with the legendary black cat'),
+            ('norman_companion', '👦 NORMAN', 'Chat with the 17-year-old founder')
         ]
         
         for item_id, label, desc in bot_items:
@@ -546,10 +585,344 @@ Select your intel category:"""
         
         return message
     
+    def _get_quick_fire_info(self, menu_id: str) -> str:
+        """Get quick fire specific information"""
+        return f"""🎯 **QUICK FIRE: {menu_id.replace('quick_fire_', '').title()}**
+
+⚡ **INSTANT EXECUTION**
+• Pre-validated signal
+• Optimized entry timing
+• Auto risk management
+• Fast deployment ready
+
+Use: `/fire quick` for instant trades"""
+    
+    def _get_analysis_info(self, menu_id: str) -> str:
+        """Get analysis specific information"""
+        return f"""📊 **ANALYSIS: {menu_id.replace('analyze_', '').title()}**
+
+🔍 **DETAILED BREAKDOWN**
+• Market sentiment analysis
+• Technical indicator signals
+• Risk/reward calculations
+• Entry/exit strategies
+
+Use: `/analyze` for full report"""
+    
+    def _get_tier_info(self, menu_id: str) -> str:
+        """Get tier specific information"""
+        tier_name = menu_id.replace('tier_', '').upper()
+        tier_info = {
+            'NIBBLER': '🔰 Entry tier - $39/month\n• Manual fire mode\n• Basic signals\n• 6 trades/day',
+            'FANG': '🦷 Advanced tier - $89/month\n• Manual + Chaingun\n• All signals\n• 10 trades/day',
+            'COMMANDER': '⭐ Elite tier - $139/month\n• Auto + Semi modes\n• Advanced features\n• 20 trades/day',
+            'APEX': '🏔️ Ultimate tier - $188/month\n• All features unlocked\n• Unlimited trades\n• Exclusive signals'
+        }
+        return f"""💰 **{tier_name} TIER**
+
+{tier_info.get(tier_name, 'Premium tier with advanced features')}
+
+Upgrade: `/upgrade {tier_name.lower()}`"""
+    
+    def _get_tool_info(self, menu_id: str) -> str:
+        """Get tool specific information"""
+        tool_name = menu_id.replace('tool_', '').title()
+        return f"""🛠️ **TOOL: {tool_name}**
+
+🎯 **PRECISION UTILITY**
+• Professional trading calculator
+• Real-time market data
+• Risk management helper
+• Strategy optimization
+
+Available in WebApp interface"""
+    
+    def _get_education_info(self, menu_id: str) -> str:
+        """Get education specific information"""
+        topic = menu_id.replace('education_', '').replace('_', ' ').title()
+        return f"""🎓 **TRAINING: {topic}**
+
+📚 **TACTICAL EDUCATION**
+• Step-by-step tutorials
+• Interactive examples
+• Practice scenarios
+• Expert strategies
+
+Access: `/learn {topic.lower()}`"""
+    
+    def _get_field_manual_info(self, menu_id: str) -> str:
+        """Get field manual specific information"""
+        manual_content = {
+            'manual_getting_started': """🚀 **BOOT CAMP - Complete Beginner Guide**
+
+**PHASE 1: ACCOUNT SETUP**
+1. Sign up via Telegram (/start)
+2. Choose your tier (Press Pass = FREE)
+3. Access your trading dashboard
+4. Complete profile setup
+
+**PHASE 2: FIRST DEPLOYMENT**
+1. Get familiar with webapp interface
+2. Configure risk settings (start 1%)
+3. Learn signal interpretation
+4. Wait for first signal alert
+
+**PHASE 3: LIVE COMBAT**
+1. Execute your first trade via webapp
+2. Monitor position in real-time
+3. Upgrade to paid tier for more features
+4. Scale up as you gain confidence
+
+📖 **Next Steps**: Use /manual for full guide""",
+            
+            'manual_webapp_setup': """🌐 **WEBAPP ACCESS - Your Command Center**
+
+**ACCESSING YOUR DASHBOARD**
+• URL: https://joinbitten.com
+• Login: Use your Telegram credentials
+• Mobile: Works on all devices
+• Desktop: Full-featured interface
+
+**DASHBOARD OVERVIEW**
+• Live Signals: Real-time trade alerts
+• Position Manager: Active trades
+• Analytics: Performance tracking
+• Risk Settings: Personal preferences
+
+**FIRST TIME SETUP**
+1. Set risk tolerance (1-3%)
+2. Choose notification preferences
+3. Review tier features
+4. Complete demo walkthrough
+
+**TRADING INTERFACE**
+• One-click trade execution
+• Real-time P&L tracking
+• Risk management tools
+• Historical performance
+
+✅ **Ready to Trade**: All via web browser""",
+            
+            'manual_first_trade': """🎯 **FIRST MISSION - Your Trading Debut**
+
+**PRE-FLIGHT CHECKLIST**
+□ Webapp dashboard accessible
+□ Account verified and active
+□ Demo balance available ($50k)
+□ Risk set to 1% (conservative)
+
+**MISSION EXECUTION**
+1. **Wait for Signal**: Bot sends mission brief
+2. **Review Intel**: Check TCS, R:R ratio
+3. **Fire Command**: Click ⚡ QUICK FIRE or open webapp
+4. **Monitor Position**: Track in real-time dashboard
+5. **Mission Complete**: Auto-close at TP/SL
+
+**FIRST TRADE REWARDS**
+• +100 XP bonus
+• "First Blood" achievement
+• Unlocks advanced tutorials
+
+🎮 **Pro Tip**: Start small, think big!""",
+            
+            'manual_reading_signals': """📖 **SIGNAL DECODE - Understanding Briefings**
+
+**MISSION BRIEF STRUCTURE**
+```
+🎯 EURUSD BUY ASSAULT
+TCS: 87% | R:R 1:2.5
+Entry: 1.0850
+SL: 1.0820 (30 pips)
+TP: 1.0925 (75 pips)
+```
+
+**DECODING THE INTEL**
+• **TCS (87%)**: Confidence level - higher = better
+• **R:R 1:2.5**: Risk 1 to reward 2.5 ratio
+• **Entry**: Exact price to enter trade
+• **SL**: Stop Loss - max loss point
+• **TP**: Take Profit - target exit
+
+**PRIORITY LEVELS**
+🔴 **HIGH**: Execute immediately
+🟡 **MEDIUM**: Good opportunity
+🟢 **LOW**: Optional/educational
+
+**EXECUTION DECISION TREE**
+• TCS 80%+: Strong execute
+• TCS 60-79%: Careful execute
+• TCS <60%: Consider skipping
+
+📊 **Advanced**: Use /analyze for deeper intel"""
+        }
+        
+        return manual_content.get(menu_id, f"""📚 **FIELD MANUAL: {menu_id.replace('manual_', '').replace('_', ' ').title()}**
+
+📖 **TACTICAL GUIDE**
+Comprehensive documentation for this topic.
+Access full manual via webapp.
+
+🔗 **Quick Access**: Use /manual {menu_id.replace('manual_', '')}""")
+    
+    def _get_analytics_info(self, menu_id: str) -> str:
+        """Get analytics/battle stats information"""
+        analytics_content = {
+            'analytics_performance_stats': """📊 **PERFORMANCE DASHBOARD**
+
+**CURRENT STATS** (Last 30 days)
+• Total Trades: 47
+• Win Rate: 74.5%
+• Net Profit: +$1,247.50
+• Max Drawdown: -3.2%
+• Average R:R: 1:2.1
+
+**RANK PROGRESSION**
+Current: 🦷 FANG Operative
+Next: ⭐ COMMANDER (Need 15 more wins)
+XP: 12,450 / 15,000
+
+**RECENT PERFORMANCE**
+This Week: +$284 (6W-2L)
+Last Week: +$419 (8W-1L)
+Best Day: +$156 (3W-0L)
+
+📈 **Trend**: Improving consistency
+🎯 **Focus**: Risk management excellence""",
+            
+            'analytics_win_rate': """🎯 **WIN RATE ANALYSIS**
+
+**OVERALL STATISTICS**
+• All-Time Win Rate: 78.3%
+• Last 100 Trades: 82.0%
+• Current Streak: 7 wins
+• Best Streak: 15 wins
+• Recovery Rate: 91% (wins after loss)
+
+**WIN RATE BY TIMEFRAME**
+• Daily: 76% (short-term consistency)
+• Weekly: 85% (strong weekly performance)
+• Monthly: 78% (stable long-term)
+
+**WIN RATE BY PAIR**
+🥇 GBPUSD: 89% (23/26 trades)
+🥈 EURUSD: 84% (31/37 trades)
+🥉 USDJPY: 71% (22/31 trades)
+
+**IMPROVEMENT AREAS**
+• News trading: 62% win rate
+• Asian session: 68% win rate
+
+🎯 **Target**: Maintain 80%+ consistency""",
+            
+            'analytics_best_pairs': """💱 **BEST PERFORMING PAIRS**
+
+**TOP PERFORMERS** (P&L)
+🥇 **GBPUSD**: +$2,847 (89% WR)
+   • Average: +$124 per win
+   • Best Trade: +$312
+   • Risk Score: A+
+
+🥈 **EURUSD**: +$1,923 (84% WR)  
+   • Average: +$86 per win
+   • Best Trade: +$245
+   • Risk Score: A
+
+🥉 **USDJPY**: +$1,456 (71% WR)
+   • Average: +$98 per win
+   • Best Trade: +$289
+   • Risk Score: B+
+
+**STRATEGY INSIGHTS**
+• Focus more on GBPUSD/EURUSD
+• Strong European session performance
+• Excellent trend-following results
+
+🎯 **Recommendation**: Increase allocation to top 2 pairs""",
+            
+            'analytics_time_analysis': """⏰ **OPTIMAL TRADING TIMES**
+
+**BEST SESSIONS** (Profitability)
+🥇 **London Session** (8-12 GMT)
+   • Win Rate: 89%
+   • Avg Profit: +$127/trade
+   • Best Pairs: GBPUSD, EURGBP
+
+🥈 **NY Session** (13-17 GMT)
+   • Win Rate: 82%
+   • Avg Profit: +$98/trade  
+   • Best Pairs: EURUSD, USDJPY
+
+🥉 **Overlap** (12-15 GMT)
+   • Win Rate: 94%
+   • Avg Profit: +$156/trade
+   • High volatility period
+
+**AVOID THESE TIMES**
+❌ Asian Session (21-05 GMT): 64% WR
+❌ Sunday Open (21-23 GMT): 43% WR
+❌ Friday Close (20-22 GMT): 58% WR
+
+⏰ **Optimal Window**: 08:00-17:00 GMT
+🎯 **Peak Performance**: 12:00-15:00 GMT""",
+            
+            'analytics_monthly_report': """📅 **MONTHLY PERFORMANCE REPORT**
+
+**CURRENT MONTH SUMMARY**
+📊 **Trades**: 28 executed
+🎯 **Win Rate**: 82.1% (23W-5L)
+💰 **Net P&L**: +$1,847.50
+📈 **ROI**: +18.5%
+📉 **Max DD**: -2.1%
+
+**WEEKLY BREAKDOWN**
+Week 1: +$524 (7W-1L)
+Week 2: +$389 (6W-2L)  
+Week 3: +$672 (8W-0L) ⭐
+Week 4: +$262 (2W-2L)
+
+**TOP ACHIEVEMENTS**
+🏆 Best Week: +$672 (Week 3)
+🎯 Perfect Week: 8W-0L streak
+💎 Biggest Win: +$184 (GBPUSD)
+🛡️ Risk Control: Max 2.1% DD
+
+**GOALS vs ACTUAL**
+Target Win Rate: 75% ✅ (82.1%)
+Target ROI: 15% ✅ (18.5%)
+Target Max DD: <5% ✅ (-2.1%)
+
+📈 **Next Month Target**: +20% ROI"""
+        }
+        
+        return analytics_content.get(menu_id, f"""📊 **ANALYTICS: {menu_id.replace('analytics_', '').replace('_', ' ').title()}**
+
+📈 **BATTLE STATISTICS**
+Detailed performance metrics and analysis.
+Full dashboard available in webapp.
+
+📊 **Quick View**: Use /stats {menu_id.replace('analytics_', '')}""")
+    
+    def _get_comprehensive_menu_info(self, menu_id: str) -> str:
+        """Get comprehensive information for any menu item"""
+        if 'manual_' in menu_id:
+            return self._get_field_manual_info(menu_id)
+        elif 'analytics_' in menu_id:
+            return self._get_analytics_info(menu_id)
+        elif 'tool_' in menu_id:
+            return self._get_tool_info(menu_id)
+        elif 'education_' in menu_id or 'edu_' in menu_id:
+            return self._get_education_info(menu_id)
+        elif 'tier_' in menu_id:
+            return self._get_tier_info(menu_id)
+        elif 'quick_fire' in menu_id:
+            return self._get_quick_fire_info(menu_id)
+        elif 'analyze' in menu_id:
+            return self._get_analysis_info(menu_id)
+        else:
+            return f"📋 **{menu_id.replace('_', ' ').title()}**\n\nFunctionality available via webapp and commands."
+    
     def _show_detailed_info(self, menu_id: str) -> Dict[str, Any]:
         """Show detailed information for a menu item"""
-        # This would fetch detailed content based on menu_id
-        # For now, return a placeholder
         info_map = {
             'combat_fire_modes': """🎯 **FIRE MODES EXPLAINED**
 
@@ -605,16 +978,84 @@ $1,000 start
 [OPEN CALCULATOR] - Tap to use webapp tool""",
         }
         
-        content = info_map.get(menu_id, f"Detailed information for {menu_id}")
+        # Add more comprehensive info mappings
+        if menu_id not in info_map:
+            # Use comprehensive function for all menu items
+            content = self._get_comprehensive_menu_info(menu_id)
+        else:
+            content = info_map[menu_id]
         
-        return {
-            'action': 'answer_callback',
-            'text': content[:200],  # Telegram callback answer limit
-            'show_alert': True
-        }
+        # For long content, send as a message instead of callback answer
+        if len(content) > 200:
+            return {
+                'action': 'send_message',
+                'text': content,
+                'parse_mode': 'Markdown'
+            }
+        else:
+            return {
+                'action': 'answer_callback',
+                'text': content,
+                'show_alert': True
+            }
     
-    def _handle_emergency(self, menu_id: str) -> Dict[str, Any]:
+    def _handle_emergency(self, menu_id: str, user_id: int = None) -> Dict[str, Any]:
         """Handle emergency menu items with immediate actions"""
+        from .user_emergency_stop import user_emergency_controller, UserEmergencyLevel
+        
+        # User-specific emergency stops
+        if menu_id == 'emergency_stop_pause':
+            if not user_id:
+                return {'action': 'send_message', 'text': '❌ User ID required for emergency stop'}
+            
+            result = user_emergency_controller.request_emergency_stop(
+                user_id=user_id,
+                level=UserEmergencyLevel.PAUSE_NEW,
+                reason="User requested pause new trades"
+            )
+            
+            return {
+                'action': 'send_confirmation',
+                'text': result['message'],
+                'requires_confirmation': result.get('requires_confirmation', False),
+                'buttons': result.get('buttons', [])
+            }
+        
+        elif menu_id == 'emergency_stop_close_all':
+            if not user_id:
+                return {'action': 'send_message', 'text': '❌ User ID required for emergency stop'}
+            
+            result = user_emergency_controller.request_emergency_stop(
+                user_id=user_id,
+                level=UserEmergencyLevel.CLOSE_ALL,
+                reason="User requested close all positions"
+            )
+            
+            return {
+                'action': 'send_confirmation',
+                'text': result['message'],
+                'requires_confirmation': result.get('requires_confirmation', False),
+                'buttons': result.get('buttons', [])
+            }
+        
+        elif menu_id == 'emergency_account_lock':
+            if not user_id:
+                return {'action': 'send_message', 'text': '❌ User ID required for emergency stop'}
+            
+            result = user_emergency_controller.request_emergency_stop(
+                user_id=user_id,
+                level=UserEmergencyLevel.ACCOUNT_LOCK,
+                reason="User requested complete account lockout"
+            )
+            
+            return {
+                'action': 'send_confirmation',
+                'text': result['message'],
+                'requires_confirmation': result.get('requires_confirmation', False),
+                'buttons': result.get('buttons', [])
+            }
+        
+        # Other emergency responses
         emergency_responses = {
             'emergency_trade_stuck': {
                 'message': """🚨 **TRADE STUCK - EMERGENCY PROTOCOL**
@@ -684,6 +1125,101 @@ $1,000 start
         }
         
         return suggestions.get(context, [])
+    
+    def check_secret_phrase(self, user_input: str) -> Optional[str]:
+        """Check if user entered a secret phrase"""
+        user_input = user_input.lower().strip()
+        return self.easter_eggs['secret_combos'].get(user_input)
+    
+    def handle_easter_egg(self, egg_type: str, user_id: str) -> Dict[str, Any]:
+        """Handle easter egg activation"""
+        import random
+        
+        responses = {
+            'profit_vault': {
+                'message': "💰 **SECRET PROFIT VAULT UNLOCKED**\n\n"
+                          "🎯 Secret #1: The house always wins... we just make you feel like you're the house\n"
+                          "💎 Secret #2: Diamond hands are just paper hands that forgot how to sell\n"
+                          "🚀 Secret #3: Moon is actually just the friends we liquidated along the way\n"
+                          "🤫 Secret #4: The real profit was inside you all along (kidding, it's in our wallet)",
+                'type': 'secret_vault'
+            },
+            'cat_companion_mode': {
+                'message': random.choice(self.easter_eggs['bit_quotes']),
+                'type': 'bit_interaction'
+            },
+            'hodl_therapy': {
+                'message': "💎 **HODL THERAPY SESSION ACTIVATED**\n\n"
+                          "🎭 Welcome to Diamond Hands Anonymous\n"
+                          "📝 Step 1: Admit you have a problem with selling\n"
+                          "💪 Step 2: Believe that diamond hands can restore you to profitability\n"
+                          "🙏 Step 3: Turn your portfolio over to the care of the HODL gods\n\n"
+                          "*Remember: Paper hands were made for toilet, not trading*",
+                'type': 'therapy_session'
+            },
+            'lambo_calculator': {
+                'message': "🏎️ **WEN LAMBO CALCULATOR**\n\n"
+                          "💰 Current Balance: $420.69\n"
+                          "🎯 Lambo Price: $200,000\n"
+                          "📈 Required Gain: 47,519%\n"
+                          "⏰ Time to Lambo: 69,420 years\n\n"
+                          "*Alternative: Buy Honda Civic now, pretend it's Lambo*",
+                'type': 'calculator'
+            },
+            'hopium_injection': {
+                'message': "📈 **HOPIUM INJECTION ADMINISTERED**\n\n"
+                          "🚀 NUMBER WILL GO UP\n"
+                          "💎 DIAMOND HANDS ACTIVATED\n"
+                          "🌙 MOON MISSION ENGAGED\n"
+                          "🦍 APE MODE: ENABLED\n\n"
+                          "*Side effects may include: unrealistic expectations, FOMO, and lambo dreams*",
+                'type': 'hopium_dose'
+            },
+            'dev_secrets': {
+                'message': "👨‍💻 **DEVELOPER SECRETS UNLOCKED**\n\n"
+                          "🐛 Bug Report: User has too much time on their hands\n"
+                          "💡 Feature Idea: Auto-delete account when they find easter eggs\n"
+                          "🤫 Insider Info: The algorithm is just Norman walking across the keyboard\n"
+                          "☕ Truth: 90% of trading success is just good coffee",
+                'type': 'dev_vault'
+            }
+        }
+        
+        return responses.get(egg_type, {
+            'message': "🎮 Easter egg found! You're more curious than profitable!",
+            'type': 'generic'
+        })
+    
+    def add_seasonal_content(self, current_menu: Dict) -> Dict:
+        """Add seasonal easter eggs based on current date"""
+        from datetime import datetime
+        now = datetime.now()
+        
+        # Christmas season (December)
+        if now.month == 12:
+            current_menu['seasonal_christmas'] = MenuItem(
+                id='seasonal_christmas',
+                label='🎄 SANTA RALLY',
+                icon='🎄',
+                category=MenuCategory.EMERGENCY,
+                parent='emergency',
+                description='Ho ho ho-ly gains!',
+                action='seasonal'
+            )
+        
+        # April Fools (April 1st)
+        if now.month == 4 and now.day == 1:
+            current_menu['seasonal_april_fools'] = MenuItem(
+                id='seasonal_april_fools',
+                label='😜 TRUST NO ONE',
+                icon='😜',
+                category=MenuCategory.EMERGENCY,
+                parent='emergency',
+                description='Especially your indicators today',
+                action='chaos'
+            )
+        
+        return current_menu
 
 
 # Global instance

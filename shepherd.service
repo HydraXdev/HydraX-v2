@@ -1,0 +1,72 @@
+[Unit]
+Description=SHEPHERD Intelligent Code Analysis and Protection System
+Documentation=https://github.com/HydraX-v2/shepherd
+After=network.target multi-user.target
+Wants=network-online.target
+# Ensure we start after database services if they exist
+After=postgresql.service mysql.service
+
+[Service]
+Type=forking
+User=root
+Group=root
+WorkingDirectory=/root/HydraX-v2
+
+# Environment variables
+Environment="PYTHONPATH=/root/HydraX-v2"
+Environment="PYTHON_BIN=/usr/bin/python3"
+Environment="NODE_ENV=production"
+
+# Resource limits
+LimitNOFILE=65536
+LimitNPROC=4096
+LimitCORE=0
+# Memory limit (adjust based on server capacity)
+MemoryLimit=2G
+# CPU quota (50% of one core)
+CPUQuota=50%
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/root/HydraX-v2/bitten/data /root/HydraX-v2/logs
+ProtectControlGroups=true
+ProtectKernelModules=true
+ProtectKernelTunables=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+# Allow network access for API calls
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+
+# Process management
+PIDFile=/root/HydraX-v2/bitten/data/shepherd/shepherd_watch.pid
+ExecStartPre=/bin/bash -c 'mkdir -p /root/HydraX-v2/logs/shepherd /root/HydraX-v2/bitten/data/shepherd'
+ExecStartPre=/bin/bash -c 'cd /root/HydraX-v2 && /usr/bin/python3 -m pip install -q watchdog dataclasses typing'
+ExecStart=/root/HydraX-v2/shepherd_init.sh
+ExecReload=/bin/kill -HUP $MAINPID
+ExecStop=/bin/bash -c 'if [ -f /root/HydraX-v2/bitten/data/shepherd/shepherd_watch.pid ]; then kill $(cat /root/HydraX-v2/bitten/data/shepherd/shepherd_watch.pid); fi'
+
+# Restart policy
+Restart=always
+RestartSec=10
+StartLimitInterval=300
+StartLimitBurst=5
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=shepherd
+
+# Health check
+ExecStartPost=/bin/sleep 5
+ExecStartPost=/bin/bash -c '/usr/bin/python3 /root/HydraX-v2/shepherd_healthcheck.py --startup'
+
+# Watchdog (systemd will restart if we don't notify within this time)
+WatchdogSec=120
+NotifyAccess=all
+
+[Install]
+WantedBy=multi-user.target
+Alias=shepherd.service

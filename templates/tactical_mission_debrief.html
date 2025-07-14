@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ debrief.mission_summary.operation_id }} - MISSION DEBRIEF</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --tactical-green: #00ff41;
+            --amber-alert: #ffb700;
+            --red-alert: #ff073a;
+            --blue-info: #00d4ff;
+            --dark-bg: #0a0a0a;
+            --panel-bg: rgba(10, 10, 10, 0.95);
+            --military-green: #1a3d1a;
+            --bronze: #CD7F32;
+            --silver: #C0C0C0;
+            --gold: #FFD700;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier Prime', monospace;
+            background: linear-gradient(135deg, var(--dark-bg) 0%, var(--military-green) 100%);
+            color: var(--tactical-green);
+            line-height: 1.4;
+            overflow-x: hidden;
+        }
+
+        .debrief-header {
+            background: linear-gradient(90deg, var(--military-green) 0%, rgba(26, 61, 26, 0.8) 100%);
+            border-bottom: 3px solid var(--tactical-green);
+            text-align: center;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .mission-complete-banner {
+            font-family: 'Orbitron', monospace;
+            font-size: 2.5em;
+            font-weight: 900;
+            color: var(--tactical-green);
+            text-shadow: 0 0 15px var(--tactical-green);
+            margin-bottom: 10px;
+            animation: victoryPulse 2s infinite alternate;
+        }
+
+        @keyframes victoryPulse {
+            0% { opacity: 0.8; transform: scale(1); }
+            100% { opacity: 1; transform: scale(1.02); }
+        }
+
+        .mission-status {
+            font-size: 1.3em;
+            color: var(--amber-alert);
+            margin-bottom: 15px;
+        }
+
+        .operator-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .info-item {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 6px;
+            border-top: 3px solid var(--tactical-green);
+        }
+
+        .info-label {
+            color: var(--amber-alert);
+            font-size: 0.8em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .info-value {
+            color: var(--tactical-green);
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-top: 3px;
+        }
+
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .debrief-section {
+            background: var(--panel-bg);
+            border: 2px solid var(--tactical-green);
+            border-radius: 10px;
+            margin-bottom: 25px;
+            overflow: hidden;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
+        }
+
+        .section-header {
+            background: linear-gradient(90deg, var(--military-green), rgba(26, 61, 26, 0.8));
+            padding: 15px 25px;
+            border-bottom: 2px solid var(--tactical-green);
+            font-family: 'Orbitron', monospace;
+            font-weight: bold;
+            color: var(--tactical-green);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 1.1em;
+        }
+
+        .section-content {
+            padding: 25px;
+        }
+
+        /* Performance Assessment */
+        .performance-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .performance-card {
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            border-left: 4px solid var(--tactical-green);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .performance-grade {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: var(--tactical-green);
+            margin-bottom: 10px;
+        }
+
+        .performance-label {
+            color: var(--amber-alert);
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .performance-description {
+            color: var(--tactical-green);
+            font-size: 0.85em;
+            line-height: 1.4;
+        }
+
+        .grade-a { border-left-color: var(--gold); }
+        .grade-b { border-left-color: var(--silver); }
+        .grade-c { border-left-color: var(--bronze); }
+        .grade-d { border-left-color: var(--red-alert); }
+
+        /* Objectives Review */
+        .objectives-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .objective-review {
+            background: rgba(26, 61, 26, 0.3);
+            margin-bottom: 15px;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 5px solid var(--tactical-green);
+            position: relative;
+        }
+
+        .objective-review.completed {
+            border-left-color: var(--tactical-green);
+            background: rgba(0, 255, 65, 0.1);
+        }
+
+        .objective-review.partial {
+            border-left-color: var(--amber-alert);
+            background: rgba(255, 183, 0, 0.1);
+        }
+
+        .objective-status {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .status-completed {
+            background: var(--tactical-green);
+            color: black;
+        }
+
+        .status-partial {
+            background: var(--amber-alert);
+            color: black;
+        }
+
+        .objective-title {
+            color: var(--tactical-green);
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+            padding-right: 100px;
+        }
+
+        .objective-learning {
+            color: var(--blue-info);
+            font-style: italic;
+            margin-bottom: 8px;
+            padding: 8px;
+            background: rgba(0, 212, 255, 0.05);
+            border-radius: 4px;
+        }
+
+        .objective-story {
+            color: #DEB887;
+            font-size: 0.9em;
+            border-top: 1px dashed rgba(222, 184, 135, 0.5);
+            padding-top: 8px;
+        }
+
+        /* Tactical Analysis */
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        .analysis-column {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .analysis-title {
+            color: var(--amber-alert);
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .analysis-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .analysis-item {
+            padding: 8px 0;
+            border-bottom: 1px dashed rgba(0, 255, 65, 0.3);
+            position: relative;
+            padding-left: 25px;
+        }
+
+        .analysis-item::before {
+            content: "▶";
+            position: absolute;
+            left: 0;
+            color: var(--tactical-green);
+        }
+
+        .successes .analysis-item::before {
+            content: "✓";
+            color: var(--tactical-green);
+        }
+
+        .improvements .analysis-item::before {
+            content: "⚠";
+            color: var(--amber-alert);
+        }
+
+        .surprises .analysis-item::before {
+            content: "!";
+            color: var(--blue-info);
+        }
+
+        .next-steps .analysis-item::before {
+            content: "→";
+            color: var(--tactical-green);
+        }
+
+        /* Story Revelation */
+        .story-revelation {
+            background: linear-gradient(135deg, rgba(139, 69, 19, 0.2), rgba(160, 82, 45, 0.1));
+            border: 2px solid #D2691E;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .story-revelation::before {
+            content: "📖 NORMAN'S LEGACY REVEALED";
+            position: absolute;
+            top: -12px;
+            left: 25px;
+            background: #D2691E;
+            color: white;
+            padding: 6px 15px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .story-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .story-element {
+            background: rgba(139, 69, 19, 0.1);
+            border-radius: 6px;
+            padding: 15px;
+            border-left: 3px solid #D2691E;
+        }
+
+        .story-element-title {
+            color: #D2691E;
+            font-weight: bold;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            font-size: 0.9em;
+        }
+
+        .story-element-content {
+            color: #DEB887;
+            font-style: italic;
+            line-height: 1.5;
+        }
+
+        /* Progression Update */
+        .progression-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .progression-card {
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            border: 2px solid var(--tactical-green);
+            position: relative;
+        }
+
+        .progression-icon {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+        }
+
+        .progression-title {
+            color: var(--amber-alert);
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            font-size: 0.9em;
+            letter-spacing: 1px;
+        }
+
+        .progression-value {
+            color: var(--tactical-green);
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .progression-description {
+            color: var(--blue-info);
+            font-size: 0.8em;
+            line-height: 1.3;
+        }
+
+        /* Commendations */
+        .commendations {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 215, 0, 0.05));
+            border: 2px solid var(--gold);
+            border-radius: 10px;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .commendation-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: var(--gold);
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        .medals-row {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .medal {
+            text-align: center;
+            padding: 15px;
+            background: rgba(255, 215, 0, 0.1);
+            border-radius: 8px;
+            border: 1px solid var(--gold);
+            min-width: 120px;
+        }
+
+        .medal-icon {
+            font-size: 2em;
+            margin-bottom: 8px;
+        }
+
+        .medal-name {
+            color: var(--gold);
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        /* Personal Reflection */
+        .reflection-area {
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .reflection-prompt {
+            color: var(--amber-alert);
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .reflection-textarea {
+            width: 100%;
+            min-height: 120px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid var(--tactical-green);
+            border-radius: 6px;
+            color: var(--tactical-green);
+            font-family: 'Courier Prime', monospace;
+            padding: 15px;
+            resize: vertical;
+        }
+
+        .reflection-textarea:focus {
+            outline: none;
+            border-color: var(--amber-alert);
+            box-shadow: 0 0 10px rgba(255, 183, 0, 0.3);
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Orbitron', monospace;
+            font-weight: bold;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-continue {
+            background: linear-gradient(45deg, var(--tactical-green), #4dff4d);
+            color: black;
+        }
+
+        .btn-continue:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 255, 65, 0.4);
+        }
+
+        .btn-analyze {
+            background: linear-gradient(45deg, var(--amber-alert), #ffd700);
+            color: black;
+        }
+
+        .btn-analyze:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(255, 183, 0, 0.4);
+        }
+
+        .btn-share {
+            background: linear-gradient(45deg, var(--blue-info), #4dd4ff);
+            color: black;
+        }
+
+        .btn-share:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 212, 255, 0.4);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .analysis-grid,
+            .story-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .progression-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .mission-complete-banner {
+                font-size: 2em;
+            }
+            
+            .medals-row {
+                gap: 15px;
+            }
+            
+            .medal {
+                min-width: 100px;
+            }
+        }
+
+        /* Special Effects */
+        .floating-bits {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .bit {
+            position: absolute;
+            color: #D2691E;
+            font-size: 20px;
+            animation: float 6s infinite linear;
+            opacity: 0.6;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.6;
+            }
+            90% {
+                opacity: 0.6;
+            }
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-bits" id="floating-bits"></div>
+
+    <div class="debrief-header">
+        <div class="mission-complete-banner">🎖️ MISSION COMPLETE 🎖️</div>
+        <div class="mission-status">{{ debrief.mission_summary.mission_status }}</div>
+        <div class="operator-info">
+            <div class="info-item">
+                <div class="info-label">Operation</div>
+                <div class="info-value">{{ debrief.mission_summary.operation_id }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Operator</div>
+                <div class="info-value">{{ debrief.mission_summary.operator }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Duration</div>
+                <div class="info-value">{{ debrief.mission_summary.duration }}m</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Timestamp</div>
+                <div class="info-value">{{ debrief.mission_summary.timestamp|timestamp }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <!-- Performance Assessment -->
+        <div class="debrief-section">
+            <div class="section-header">📊 Performance Assessment</div>
+            <div class="section-content">
+                <div class="performance-grid">
+                    <div class="performance-card grade-{{ debrief.performance_assessment.overall_grade.split('(')[1][0].lower() }}">
+                        <div class="performance-grade">{{ debrief.performance_assessment.overall_grade.split('(')[1][0] }}</div>
+                        <div class="performance-label">Overall Grade</div>
+                        <div class="performance-description">{{ debrief.performance_assessment.overall_grade }}</div>
+                    </div>
+                    <div class="performance-card">
+                        <div class="performance-grade">{{ debrief.performance_assessment.objective_completion }}%</div>
+                        <div class="performance-label">Objectives Complete</div>
+                        <div class="performance-description">Mission objectives successfully executed</div>
+                    </div>
+                    <div class="performance-card">
+                        <div class="performance-grade">{{ debrief.performance_assessment.risk_management_score }}%</div>
+                        <div class="performance-label">Risk Management</div>
+                        <div class="performance-description">Protective protocols adherence</div>
+                    </div>
+                    <div class="performance-card">
+                        <div class="performance-grade">{{ debrief.performance_assessment.execution_quality }}%</div>
+                        <div class="performance-label">Execution Quality</div>
+                        <div class="performance-description">Tactical precision and timing</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Objectives Review -->
+        <div class="debrief-section">
+            <div class="section-header">🎯 Mission Objectives Review</div>
+            <div class="section-content">
+                <ul class="objectives-list">
+                    {% for objective in debrief.objectives_review %}
+                    <li class="objective-review {{ objective.status.lower() }}">
+                        <div class="objective-status status-{{ objective.status.lower() }}">{{ objective.status }}</div>
+                        <div class="objective-title">{{ objective.objective }}</div>
+                        <div class="objective-learning">💡 Learning Outcome: {{ objective.learning_extracted }}</div>
+                        {% if objective.story_connection %}
+                        <div class="objective-story">🏠 {{ objective.story_connection }}</div>
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <!-- Tactical Analysis -->
+        <div class="debrief-section">
+            <div class="section-header">🔍 Tactical Analysis</div>
+            <div class="section-content">
+                <div class="analysis-grid">
+                    <div class="analysis-column successes">
+                        <div class="analysis-title">What Went Well</div>
+                        <ul class="analysis-list">
+                            {% for success in debrief.tactical_analysis.what_went_well %}
+                            <li class="analysis-item">{{ success }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="analysis-column improvements">
+                        <div class="analysis-title">Areas for Improvement</div>
+                        <ul class="analysis-list">
+                            {% for improvement in debrief.tactical_analysis.areas_for_improvement %}
+                            <li class="analysis-item">{{ improvement }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="analysis-column surprises">
+                        <div class="analysis-title">Unexpected Outcomes</div>
+                        <ul class="analysis-list">
+                            {% for surprise in debrief.tactical_analysis.unexpected_outcomes %}
+                            <li class="analysis-item">{{ surprise }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="analysis-column next-steps">
+                        <div class="analysis-title">Next Mission Prep</div>
+                        <ul class="analysis-list">
+                            {% for step in debrief.tactical_analysis.next_mission_preparation %}
+                            <li class="analysis-item">{{ step }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Story Revelation -->
+        {% if debrief.story_revelation %}
+        <div class="debrief-section">
+            <div class="section-header">📖 Legacy Connection</div>
+            <div class="section-content">
+                <div class="story-revelation">
+                    <div class="story-grid">
+                        <div class="story-element">
+                            <div class="story-element-title">Norman's Parallel</div>
+                            <div class="story-element-content">{{ debrief.story_revelation.norman_parallel }}</div>
+                        </div>
+                        <div class="story-element">
+                            <div class="story-element-title">Wisdom Unlocked</div>
+                            <div class="story-element-content">{{ debrief.story_revelation.wisdom_unlocked }}</div>
+                        </div>
+                        <div class="story-element">
+                            <div class="story-element-title">Bit's Observation</div>
+                            <div class="story-element-content">🐱 {{ debrief.story_revelation.bit_observation }}</div>
+                        </div>
+                        <div class="story-element">
+                            <div class="story-element-title">Family Pride</div>
+                            <div class="story-element-content">{{ debrief.story_revelation.family_pride }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Progression Update -->
+        <div class="debrief-section">
+            <div class="section-header">⬆️ Progression Update</div>
+            <div class="section-content">
+                <div class="progression-cards">
+                    <div class="progression-card">
+                        <div class="progression-icon">⭐</div>
+                        <div class="progression-title">Experience Gained</div>
+                        <div class="progression-value">+{{ debrief.progression_update.experience_gained }}</div>
+                        <div class="progression-description">Operational experience points earned</div>
+                    </div>
+                    <div class="progression-card">
+                        <div class="progression-icon">🔓</div>
+                        <div class="progression-title">New Capabilities</div>
+                        <div class="progression-value">{{ debrief.progression_update.new_capabilities_unlocked|length }}</div>
+                        <div class="progression-description">Advanced operational assets unlocked</div>
+                    </div>
+                    <div class="progression-card">
+                        <div class="progression-icon">📈</div>
+                        <div class="progression-title">Story Progress</div>
+                        <div class="progression-value">{{ debrief.progression_update.story_phase_progress }}%</div>
+                        <div class="progression-description">Journey through Norman's legacy</div>
+                    </div>
+                    <div class="progression-card">
+                        <div class="progression-icon">🎯</div>
+                        <div class="progression-title">Next Operations</div>
+                        <div class="progression-value">{{ debrief.progression_update.next_operation_availability|length }}</div>
+                        <div class="progression-description">Available mission types</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Command Recognition -->
+        {% if debrief.command_recognition.commendations %}
+        <div class="debrief-section">
+            <div class="section-header">🎖️ Command Recognition</div>
+            <div class="section-content">
+                <div class="commendations">
+                    <div class="commendation-title">Commendations Awarded</div>
+                    <div class="medals-row">
+                        {% for commendation in debrief.command_recognition.commendations %}
+                        <div class="medal">
+                            <div class="medal-icon">🏅</div>
+                            <div class="medal-name">{{ commendation.name }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    {% if debrief.command_recognition.milestone_achievements %}
+                    <div style="margin-top: 20px;">
+                        <strong style="color: var(--gold);">Milestone Achievements:</strong>
+                        <ul style="list-style: none; padding: 0; margin-top: 10px;">
+                            {% for achievement in debrief.command_recognition.milestone_achievements %}
+                            <li style="color: var(--tactical-green); margin: 5px 0;">🌟 {{ achievement }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Personal Reflection -->
+        <div class="debrief-section">
+            <div class="section-header">💭 Personal Reflection</div>
+            <div class="section-content">
+                <div class="reflection-area">
+                    <div class="reflection-prompt">
+                        📝 Mission Reflection: Document your thoughts, feelings, and key insights from this operation. 
+                        What did Norman's story teach you about your own trading journey?
+                    </div>
+                    <textarea class="reflection-textarea" placeholder="Operator personal notes and reflections...
+
+• How did you feel executing your first live trade?
+• What surprised you most about the process?
+• How did Norman's story influence your decisions?
+• What will you do differently in future operations?
+• How has your confidence changed?
+
+Remember: Every master trader started exactly where you are now. Norman's journey began with a single trade, just like yours." id="reflection-text"></textarea>
+                    
+                    <div style="margin-top: 15px; text-align: right;">
+                        <button onclick="saveReflection()" style="background: var(--tactical-green); color: black; border: none; padding: 8px 16px; border-radius: 4px; font-weight: bold; cursor: pointer;">
+                            💾 Save Reflection
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <a href="/command-center" class="action-btn btn-continue">
+                🎯 Continue Training
+            </a>
+            <a href="/mission/analysis/{{ debrief.mission_summary.operation_id }}" class="action-btn btn-analyze">
+                📊 Detailed Analysis
+            </a>
+            <button onclick="shareMission()" class="action-btn btn-share">
+                📤 Share Achievement
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Create floating Bit cats for celebration
+        function createFloatingBits() {
+            const container = document.getElementById('floating-bits');
+            const bitEmojis = ['🐱', '😸', '😺', '🙀', '😹'];
+            
+            function spawnBit() {
+                const bit = document.createElement('div');
+                bit.className = 'bit';
+                bit.textContent = bitEmojis[Math.floor(Math.random() * bitEmojis.length)];
+                bit.style.left = Math.random() * 100 + '%';
+                bit.style.animationDuration = (Math.random() * 3 + 3) + 's';
+                bit.style.animationDelay = Math.random() * 2 + 's';
+                
+                container.appendChild(bit);
+                
+                // Remove after animation
+                setTimeout(() => {
+                    if (bit.parentNode) {
+                        bit.parentNode.removeChild(bit);
+                    }
+                }, 8000);
+            }
+            
+            // Spawn bits periodically
+            setInterval(spawnBit, 2000);
+            
+            // Initial spawn
+            for (let i = 0; i < 5; i++) {
+                setTimeout(spawnBit, i * 500);
+            }
+        }
+
+        // Save reflection
+        function saveReflection() {
+            const reflectionText = document.getElementById('reflection-text').value;
+            if (reflectionText.trim()) {
+                // Save to local storage or send to server
+                localStorage.setItem('mission_reflection_{{ debrief.mission_summary.operation_id }}', reflectionText);
+                
+                // Visual feedback
+                const button = event.target;
+                const originalText = button.textContent;
+                button.textContent = '✅ Saved';
+                button.style.background = 'var(--tactical-green)';
+                
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.style.background = 'var(--tactical-green)';
+                }, 2000);
+                
+                alert('📝 REFLECTION SAVED\n\nYour personal mission notes have been recorded for future reference.');
+            } else {
+                alert('📝 REFLECTION EMPTY\n\nPlease add your thoughts before saving.');
+            }
+        }
+
+        // Share mission results
+        function shareMission() {
+            const missionData = {
+                operation: '{{ debrief.mission_summary.operation_id }}',
+                operator: '{{ debrief.mission_summary.operator }}',
+                grade: '{{ debrief.performance_assessment.overall_grade }}',
+                duration: '{{ debrief.mission_summary.duration }}m'
+            };
+            
+            const shareText = `🎖️ MISSION COMPLETE 🎖️\n\nOperation: ${missionData.operation}\nOperator: ${missionData.operator}\nGrade: ${missionData.grade}\nDuration: ${missionData.duration}\n\n#BITTENTrading #NormansLegacy #FirstTrade`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Mission Complete - BITTEN Trading',
+                    text: shareText,
+                    url: window.location.href
+                });
+            } else {
+                // Fallback to clipboard
+                navigator.clipboard.writeText(shareText).then(() => {
+                    alert('📤 MISSION RESULTS COPIED\n\nShare text copied to clipboard!');
+                });
+            }
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(event) {
+            if (event.ctrlKey) {
+                switch(event.key) {
+                    case 's':
+                        event.preventDefault();
+                        saveReflection();
+                        break;
+                    case 'Enter':
+                        event.preventDefault();
+                        window.location.href = '/command-center';
+                        break;
+                }
+            }
+        });
+
+        // Auto-save reflection periodically
+        setInterval(() => {
+            const reflectionText = document.getElementById('reflection-text').value;
+            if (reflectionText.trim()) {
+                localStorage.setItem('mission_reflection_{{ debrief.mission_summary.operation_id }}_autosave', reflectionText);
+            }
+        }, 30000); // Auto-save every 30 seconds
+
+        // Load saved reflection on page load
+        window.addEventListener('load', function() {
+            const savedReflection = localStorage.getItem('mission_reflection_{{ debrief.mission_summary.operation_id }}') ||
+                                  localStorage.getItem('mission_reflection_{{ debrief.mission_summary.operation_id }}_autosave');
+            
+            if (savedReflection) {
+                document.getElementById('reflection-text').value = savedReflection;
+            }
+            
+            // Start floating bits animation
+            createFloatingBits();
+            
+            // Add celebration sound effect (if audio is enabled)
+            try {
+                const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAcCTuL0+zWeS4IJAjA7NyQOQcVXLLm46RPEQg8');
+                audio.volume = 0.3;
+                audio.play().catch(() => {});
+            } catch (e) {}
+        });
+    </script>
+    
+    <!-- Load BITTEN Mission Functions -->
+    <script src="/src/ui/common/mission_functions.js"></script>
+    <script src="/src/ui/common/webapp_functions.js"></script>
+</body>
+</html>

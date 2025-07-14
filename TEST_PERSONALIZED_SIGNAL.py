@@ -1,3 +1,4 @@
+import os
 #!/usr/bin/env python3
 """Test personalized webapp mission brief"""
 
@@ -7,8 +8,8 @@ from datetime import datetime
 import json
 import urllib.parse
 
-BOT_TOKEN = "7854827710:AAHnUNfP5GyxoYePoAV5BeOtDbmEJo6i_EQ"
-CHAT_ID = -1002581996861
+BOT_TOKEN = "os.getenv("BOT_TOKEN", "DISABLED_FOR_SECURITY")"
+CHAT_ID = int(os.getenv("CHAT_ID", "-1002581996861"))
 WEBAPP_URL = "http://134.199.204.67:8888"
 
 async def send_test_signal():

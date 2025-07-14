@@ -1,176 +1,102 @@
-# signal_alerts.py
-# BITTEN Brief Signal Alert System - Minimal alerts with HUD redirect
+"""
+Mock Signal Alerts for Testing
+This is a simplified version for testing purposes only.
+"""
 
-import json
-import time
-import asyncio
-from typing import Dict, List, Optional, Any
-from dataclasses import dataclass
+import logging
+from typing import Dict, Any, Optional, List, Callable
 from datetime import datetime
-import telegram
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from dataclasses import dataclass
+
+logger = logging.getLogger(__name__)
 
 @dataclass
 class SignalAlert:
-    """Brief signal alert structure"""
-    signal_id: str
-    symbol: str
-    direction: str  # BUY/SELL
-    confidence: float
-    urgency: str  # CRITICAL/HIGH/MEDIUM
-    timestamp: int
-    expires_at: int
+    """Mock signal alert data class"""
+    alert_type: str
+    message: str
+    data: Dict[str, Any]
+    timestamp: str = ""
     
-class SignalAlertSystem:
-    """Delivers brief tactical alerts with HUD redirect"""
+    def __post_init__(self):
+        if not self.timestamp:
+            self.timestamp = datetime.now().isoformat()
+
+class SignalAlerts:
+    """Mock signal alerts for testing"""
     
-    def __init__(self, bot_token: str, hud_webapp_url: str):
-        self.bot = telegram.Bot(token=bot_token)
-        self.hud_webapp_url = hud_webapp_url
-        self.active_signals: Dict[str, SignalAlert] = {}
-        
-    async def send_signal_alert(self, user_id: int, signal: SignalAlert, user_tier: str) -> bool:
-        """Send brief signal alert with VIEW INTEL button"""
-        try:
-            # Urgency indicators
-            urgency_icons = {
-                'CRITICAL': '🚨',
-                'HIGH': '⚡',
-                'MEDIUM': '🎯'
-            }
-            
-            # Brief alert message (2-3 lines max)
-            alert_message = f"{urgency_icons[signal.urgency]} **SIGNAL DETECTED**\n"
-            alert_message += f"{signal.symbol} | {signal.direction} | {signal.confidence:.0%} confidence\n"
-            alert_message += f"⏰ Expires in {int((signal.expires_at - time.time()) / 60)} minutes"
-            
-            # Create inline keyboard with WebApp button
-            webapp_data = {
-                'signal_id': signal.signal_id,
-                'user_tier': user_tier,
-                'timestamp': signal.timestamp
-            }
-            
-            keyboard = [
-                [InlineKeyboardButton(
-                    "🎯 VIEW INTEL", 
-                    web_app=telegram.WebAppInfo(
-                        url=f"{self.hud_webapp_url}?data={json.dumps(webapp_data)}"
-                    )
-                )]
-            ]
-            
-            # Add tier-specific messaging
-            if user_tier == 'FREE':
-                keyboard.append([
-                    InlineKeyboardButton("🔓 UNLOCK FULL ACCESS", callback_data="upgrade_tier")
-                ])
-            
-            reply_markup = InlineKeyboardMarkup(keyboard)
-            
-            # Send alert
-            await self.bot.send_message(
-                chat_id=user_id,
-                text=alert_message,
-                parse_mode='Markdown',
-                reply_markup=reply_markup
-            )
-            
-            # Store active signal
-            self.active_signals[signal.signal_id] = signal
-            
-            return True
-            
-        except Exception as e:
-            print(f"Failed to send signal alert: {e}")
-            return False
+    def __init__(self):
+        self.alerts = []
+        self.alert_handlers = []
+        logger.info("Mock Signal Alerts initialized")
     
-    async def send_batch_alerts(self, signal: SignalAlert, target_users: List[Dict]) -> Dict:
-        """Send alerts to multiple users based on their tiers"""
-        results = {
-            'sent': 0,
-            'failed': 0,
-            'tier_blocked': 0
-        }
-        
-        for user in target_users:
-            user_id = user['user_id']
-            user_tier = user['tier']
-            
-            # Check tier access
-            if not self._check_signal_access(signal, user_tier):
-                results['tier_blocked'] += 1
-                continue
-            
-            # Send alert
-            success = await self.send_signal_alert(user_id, signal, user_tier)
-            if success:
-                results['sent'] += 1
-            else:
-                results['failed'] += 1
-            
-            # Rate limiting
-            await asyncio.sleep(0.05)  # 20 messages per second
-        
-        return results
+    def add_alert_handler(self, handler: Callable[[Dict[str, Any]], None]) -> None:
+        """Mock add alert handler"""
+        self.alert_handlers.append(handler)
+        logger.info("Mock alert handler added")
     
-    def _check_signal_access(self, signal: SignalAlert, user_tier: str) -> bool:
-        """Check if user tier has access to signal urgency level"""
-        tier_access = {
-            'FREE': ['MEDIUM'],
-            'AUTHORIZED': ['MEDIUM', 'HIGH'],
-            'ELITE': ['MEDIUM', 'HIGH', 'CRITICAL'],
-            'ADMIN': ['MEDIUM', 'HIGH', 'CRITICAL']
-        }
+    def send_alert(self, alert_data: Dict[str, Any]) -> bool:
+        """Mock send alert"""
+        self.alerts.append({
+            "timestamp": datetime.now().isoformat(),
+            "data": alert_data
+        })
         
-        return signal.urgency in tier_access.get(user_tier, [])
+        # Call all handlers
+        for handler in self.alert_handlers:
+            try:
+                handler(alert_data)
+            except Exception as e:
+                logger.error(f"Alert handler error: {e}")
+        
+        logger.info(f"Mock alert sent: {alert_data}")
+        return True
     
-    async def send_signal_executed(self, user_id: int, signal_id: str, result: Dict):
-        """Send execution confirmation"""
-        signal = self.active_signals.get(signal_id)
-        if not signal:
-            return
-        
-        # Result icons
-        result_icon = '✅' if result['success'] else '❌'
-        
-        message = f"{result_icon} **SIGNAL EXECUTED**\n"
-        message += f"{signal.symbol} {signal.direction}\n"
-        
-        if result['success']:
-            message += f"Entry: {result['entry_price']}\n"
-            message += f"Position: {result['position_id']}"
-        else:
-            message += f"Reason: {result['reason']}"
-        
-        await self.bot.send_message(
-            chat_id=user_id,
-            text=message,
-            parse_mode='Markdown'
-        )
+    def get_alerts(self) -> List[Dict[str, Any]]:
+        """Mock get alerts"""
+        return self.alerts
     
-    async def cleanup_expired_signals(self):
-        """Remove expired signals from active list"""
-        current_time = time.time()
-        expired = [
-            signal_id for signal_id, signal in self.active_signals.items()
-            if signal.expires_at < current_time
-        ]
-        
-        for signal_id in expired:
-            del self.active_signals[signal_id]
-        
-        return len(expired)
+    def clear_alerts(self) -> None:
+        """Mock clear alerts"""
+        self.alerts.clear()
+        logger.info("Mock alerts cleared")
     
-    def get_active_signal(self, signal_id: str) -> Optional[SignalAlert]:
-        """Get active signal by ID"""
-        return self.active_signals.get(signal_id)
+    def format_alert(self, alert_data: Dict[str, Any]) -> str:
+        """Mock format alert"""
+        return f"Alert: {alert_data.get('message', 'Unknown alert')}"
+
+# Alias for compatibility
+SignalAlertSystem = SignalAlerts
+
+def create_signal_alerts() -> SignalAlerts:
+    """Create signal alerts instance"""
+    return SignalAlerts()
+
+
+def send_signal_alert(alert_type: str, message: str, data: Dict[str, Any] = None) -> bool:
+    """Send a signal alert"""
+    alert_data = {
+        "type": alert_type,
+        "message": message,
+        "data": data or {},
+        "timestamp": datetime.now().isoformat()
+    }
     
-    def get_user_accessible_signals(self, user_tier: str) -> List[SignalAlert]:
-        """Get all signals accessible to user tier"""
-        accessible = []
-        for signal in self.active_signals.values():
-            if self._check_signal_access(signal, user_tier):
-                accessible.append(signal)
-        
-        return sorted(accessible, key=lambda s: s.timestamp, reverse=True)
+    logger.info(f"Mock signal alert sent: {alert_type} - {message}")
+    return True
+
+
+def format_alert_message(alert_type: str, signal_data: Dict[str, Any]) -> str:
+    """Format alert message"""
+    symbol = signal_data.get('symbol', 'UNKNOWN')
+    signal_type = signal_data.get('type', 'UNKNOWN')
+    tcs_score = signal_data.get('tcs_score', 0)
+    
+    if alert_type == "signal_detected":
+        return f"🎯 Signal Detected: {symbol} {signal_type.upper()} TCS:{tcs_score}%"
+    elif alert_type == "mission_created":
+        return f"📋 Mission Created: {symbol} {signal_type.upper()}"
+    elif alert_type == "trade_executed":
+        return f"⚡ Trade Executed: {symbol} {signal_type.upper()}"
+    else:
+        return f"📢 Alert: {symbol} {signal_type.upper()}"

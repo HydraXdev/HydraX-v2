@@ -1,0 +1,38 @@
+# Dockerfile for AI Market Prediction Ensemble System
+
+FROM python:3.9-slim
+
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements
+COPY requirements_market_prediction.txt .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements_market_prediction.txt
+
+# Download NLTK data for sentiment analysis
+RUN python -c "import nltk; nltk.download('vader_lexicon'); nltk.download('punkt')"
+
+# Copy application files
+COPY ai_market_prediction.py .
+COPY market_prediction_api.py .
+
+# Set environment variables (override with actual keys at runtime)
+ENV ALPHA_VANTAGE_KEY=demo
+ENV NEWSAPI_KEY=demo
+ENV REDDIT_CLIENT_ID=demo
+ENV REDDIT_CLIENT_SECRET=demo
+ENV TWITTER_BEARER_TOKEN=""
+
+# Expose port for API
+EXPOSE 5000
+
+# Run the API server
+CMD ["python", "market_prediction_api.py"]

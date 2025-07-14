@@ -1,0 +1,134 @@
+{
+  "name": "HydraX - Advanced Trading Platform",
+  "short_name": "HydraX",
+  "description": "Professional trading platform with advanced signal analysis and mobile-first navigation",
+  "start_url": "/templates/mobile_navigation.html",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#2481cc",
+  "background_color": "#ffffff",
+  "scope": "/",
+  "lang": "en",
+  "categories": ["finance", "business", "productivity"],
+  "prefer_related_applications": false,
+  "screenshots": [
+    {
+      "src": "/assets/screenshots/mobile-dashboard.png",
+      "sizes": "375x667",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Dashboard view on mobile"
+    },
+    {
+      "src": "/assets/screenshots/mobile-signals.png", 
+      "sizes": "375x667",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Live signals on mobile"
+    }
+  ],
+  "icons": [
+    {
+      "src": "/assets/icons/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/icons/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/icons/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/icons/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/icons/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Live Signals",
+      "short_name": "Signals",
+      "description": "View live trading signals",
+      "url": "/templates/mobile_navigation.html#signals",
+      "icons": [
+        {
+          "src": "/assets/icons/shortcut-signals.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Trading",
+      "short_name": "Trade",
+      "description": "Open trading interface",
+      "url": "/templates/mobile_navigation.html#trading",
+      "icons": [
+        {
+          "src": "/assets/icons/shortcut-trading.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Education",
+      "short_name": "Learn",
+      "description": "Access educational content",
+      "url": "/templates/mobile_navigation.html#education",
+      "icons": [
+        {
+          "src": "/assets/icons/shortcut-education.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "file_handlers": [
+    {
+      "action": "/handle-trade-file",
+      "accept": {
+        "application/json": [".json"],
+        "text/csv": [".csv"]
+      }
+    }
+  ],
+  "protocol_handlers": [
+    {
+      "protocol": "hydrax",
+      "url": "/templates/mobile_navigation.html?action=%s"
+    }
+  ],
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "display_override": [
+    "window-controls-overlay",
+    "standalone",
+    "minimal-ui",
+    "browser"
+  ]
+}

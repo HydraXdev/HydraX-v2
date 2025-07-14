@@ -1,0 +1,26 @@
+# Press Pass XP Reset Cron Jobs - Working Version
+# Install with: crontab press_pass_reset_working.cron
+
+# Environment setup
+SHELL=/bin/bash
+PATH=/usr/local/bin:/usr/bin:/bin
+PYTHON=/usr/bin/python3
+BITTEN_HOME=/root/HydraX-v2
+LOG_DIR=/var/log/bitten
+
+# Press Pass XP Reset Schedule (UTC times)
+
+# 1-hour warning at 23:00 UTC
+0 23 * * * cd $BITTEN_HOME && $PYTHON scripts/simple_press_pass_reset.py warn_60 >> $LOG_DIR/press_pass_warnings.log 2>&1
+
+# 15-minute warning at 23:45 UTC
+45 23 * * * cd $BITTEN_HOME && $PYTHON scripts/simple_press_pass_reset.py warn_15 >> $LOG_DIR/press_pass_warnings.log 2>&1
+
+# Execute reset at 00:00 UTC
+0 0 * * * cd $BITTEN_HOME && $PYTHON scripts/simple_press_pass_reset.py reset >> $LOG_DIR/press_pass_reset.log 2>&1
+
+# Health check - verify job is running (every 6 hours)
+0 */6 * * * cd $BITTEN_HOME && $PYTHON scripts/simple_press_pass_reset.py health >> $LOG_DIR/health_check.log 2>&1
+
+# Cleanup old logs weekly (Sunday at 3:00 UTC)
+0 3 * * 0 find $LOG_DIR -name "press_pass_*.log" -mtime +30 -delete

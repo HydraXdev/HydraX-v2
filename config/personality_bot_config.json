@@ -1,0 +1,63 @@
+{
+  "bot_token": "YOUR_BOT_TOKEN_HERE",
+  "personality_systems": {
+    "enable_full_system": true,
+    "fallback_mode": true,
+    "voice_personalities": [
+      "DRILL_SERGEANT",
+      "DOC_AEGIS",
+      "NEXUS",
+      "OVERWATCH",
+      "BIT"
+    ]
+  },
+  "xp_system": {
+    "base_xp_values": {
+      "onboarding_complete": 50,
+      "trade_request": 10,
+      "trade_execution": 25,
+      "education_engagement": 15,
+      "achievement_unlock": 100,
+      "persona_evolution": 200
+    },
+    "persona_multipliers": {
+      "BRUTE": {
+        "trade_request": 1.3,
+        "quick_action": 1.2
+      },
+      "SCHOLAR": {
+        "education_engagement": 1.5,
+        "patience": 1.4
+      },
+      "PHANTOM": {
+        "stealth_profit": 1.6,
+        "risk_management": 1.3
+      },
+      "WARDEN": {
+        "discipline": 1.3,
+        "rule_following": 1.4
+      },
+      "FERAL": {
+        "chaos_profit": 1.8,
+        "instinct_trade": 1.2
+      },
+      "DEFAULT": {
+        "consistency": 1.2,
+        "balanced": 1.1
+      }
+    }
+  },
+  "persona_evolution": {
+    "check_interval": 10,
+    "evolution_triggers": {
+      "risk_tolerance_shift": 0.3,
+      "education_engagement_shift": 0.4,
+      "trading_frequency_change": 2.0
+    }
+  },
+  "database": {
+    "personality_bot_db": "/root/HydraX-v2/bitten/data/personality_bot.db",
+    "existing_xp_db": "/root/HydraX-v2/bitten/data/xp_system.db",
+    "existing_persona_file": "/root/HydraX-v2/bitten/data/user_persona.json"
+  }
+}

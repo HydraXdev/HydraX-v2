@@ -22,8 +22,8 @@ class SystemDiagnostic:
         self.issues = []
         self.warnings = []
         self.config = {
-            'bot_token': '7854827710:AAHnUNfP5GyxoYePoAV5BeOtDbmEJo6i_EQ',
-            'chat_id': '-1002581996861',
+            'bot_token': 'os.getenv("BOT_TOKEN", "DISABLED_FOR_SECURITY")',
+            'chat_id': 'int(os.getenv("CHAT_ID", "-1002581996861"))',
             'webapp_url': 'http://134.199.204.67:8888',
             'webapp_port': 8888
         }

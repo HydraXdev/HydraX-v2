@@ -1,0 +1,12 @@
+{
+  "user_personas": {
+    "test_user_1": "brute",
+    "test_user_2": "scholar",
+    "test_user_3": "phantom",
+    "test_user_4": "warden",
+    "test_user_5": "feral",
+    "change_test_user": "scholar",
+    "test_malicious": "warden"
+  },
+  "last_updated": "2025-07-11T16:42:29.049192"
+}

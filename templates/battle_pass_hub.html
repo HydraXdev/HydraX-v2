@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BITTEN Battle Pass - Operation: Market Domination</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
+            color: #ffffff;
+            font-family: 'Roboto', Arial, sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .battle-pass-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header Section */
+        .season-header {
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.1) 0%, rgba(0, 255, 136, 0.05) 100%);
+            border: 2px solid rgba(0, 255, 136, 0.3);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .season-title {
+            font-size: 48px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            background: linear-gradient(45deg, #00ff88, #ffffff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            text-shadow: 0 0 30px rgba(0, 255, 136, 0.5);
+        }
+
+        .season-subtitle {
+            font-size: 18px;
+            color: #cccccc;
+            margin-bottom: 20px;
+        }
+
+        .season-timer {
+            display: inline-block;
+            padding: 10px 20px;
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid rgba(255, 0, 0, 0.3);
+            border-radius: 10px;
+            font-weight: bold;
+            color: #ff4444;
+        }
+
+        /* User Progress Section */
+        .user-progress {
+            display: grid;
+            grid-template-columns: 1fr 200px 200px;
+            gap: 20px;
+            margin-bottom: 40px;
+            align-items: center;
+        }
+
+        .level-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .level-badge {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #00ff88, #00cc66);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #000;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+        }
+
+        .level-details h3 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .xp-progress {
+            width: 300px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .xp-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff88, #00cc66);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .pass-upgrade {
+            text-align: center;
+        }
+
+        .upgrade-btn {
+            padding: 15px 30px;
+            background: linear-gradient(45deg, #ff6b35, #f7931e);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .upgrade-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(255, 107, 53, 0.4);
+        }
+
+        .pass-type {
+            padding: 10px 20px;
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 8px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        /* Battle Pass Tiers */
+        .pass-tiers {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .tier-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid transparent;
+            border-radius: 15px;
+            padding: 30px 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tier-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .tier-card:hover::before {
+            opacity: 1;
+        }
+
+        .tier-free {
+            border-color: rgba(128, 128, 128, 0.5);
+        }
+
+        .tier-premium {
+            border-color: rgba(255, 215, 0, 0.5);
+            background: rgba(255, 215, 0, 0.05);
+        }
+
+        .tier-elite {
+            border-color: rgba(255, 0, 255, 0.5);
+            background: rgba(255, 0, 255, 0.05);
+        }
+
+        .tier-name {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .tier-price {
+            font-size: 32px;
+            font-weight: bold;
+            color: #00ff88;
+            margin-bottom: 20px;
+        }
+
+        .tier-features {
+            list-style: none;
+            margin-bottom: 20px;
+        }
+
+        .tier-features li {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .tier-features li:last-child {
+            border-bottom: none;
+        }
+
+        /* Reward Track */
+        .reward-track {
+            margin-bottom: 40px;
+        }
+
+        .track-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .track-title {
+            font-size: 28px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .track-filter {
+            display: flex;
+            gap: 10px;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn.active,
+        .filter-btn:hover {
+            background: rgba(0, 255, 136, 0.2);
+            border-color: rgba(0, 255, 136, 0.5);
+        }
+
+        .reward-levels {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+
+        .reward-level {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            position: relative;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .reward-level:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 255, 136, 0.2);
+        }
+
+        .reward-level.unlocked {
+            border-color: rgba(0, 255, 136, 0.5);
+            background: rgba(0, 255, 136, 0.1);
+        }
+
+        .reward-level.claimed {
+            border-color: rgba(255, 215, 0, 0.5);
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        .level-number {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #00ff88;
+        }
+
+        .reward-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #00ff88, #00cc66);
+            border-radius: 8px;
+            margin: 0 auto 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .reward-name {
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .reward-tier {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        .tier-free-badge {
+            background: rgba(128, 128, 128, 0.3);
+            color: #cccccc;
+        }
+
+        .tier-premium-badge {
+            background: rgba(255, 215, 0, 0.3);
+            color: #ffd700;
+        }
+
+        .tier-elite-badge {
+            background: rgba(255, 0, 255, 0.3);
+            color: #ff00ff;
+        }
+
+        .claim-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 25px;
+            height: 25px;
+            background: #00ff88;
+            border: none;
+            border-radius: 50%;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            display: none;
+        }
+
+        .reward-level.unlocked .claim-btn {
+            display: block;
+        }
+
+        /* Weekly Challenges */
+        .weekly-challenges {
+            margin-bottom: 40px;
+        }
+
+        .challenges-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .challenge-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .challenge-card:hover {
+            border-color: rgba(0, 255, 136, 0.5);
+            transform: translateY(-5px);
+        }
+
+        .challenge-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .challenge-name {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .challenge-xp {
+            padding: 5px 10px;
+            background: rgba(0, 255, 136, 0.2);
+            border-radius: 5px;
+            font-weight: bold;
+            color: #00ff88;
+        }
+
+        .challenge-description {
+            color: #cccccc;
+            margin-bottom: 15px;
+        }
+
+        .challenge-progress {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .challenge-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff88, #00cc66);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .challenge-status {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        /* Leaderboard */
+        .leaderboard {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 30px;
+        }
+
+        .leaderboard-title {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        .leaderboard-list {
+            list-style: none;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .leaderboard-item:last-child {
+            border-bottom: none;
+        }
+
+        .leaderboard-rank {
+            font-size: 18px;
+            font-weight: bold;
+            width: 40px;
+        }
+
+        .leaderboard-user {
+            flex: 1;
+            margin-left: 15px;
+        }
+
+        .leaderboard-level {
+            font-weight: bold;
+            color: #00ff88;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .user-progress {
+                grid-template-columns: 1fr;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .pass-tiers {
+                grid-template-columns: 1fr;
+            }
+
+            .season-title {
+                font-size: 32px;
+            }
+
+            .reward-levels {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+                gap: 10px;
+            }
+
+            .challenges-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Animations */
+        @keyframes levelUp {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+            }
+            50% {
+                transform: scale(1.1);
+                box-shadow: 0 0 40px rgba(0, 255, 136, 0.8);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+            }
+        }
+
+        .level-up-animation {
+            animation: levelUp 1s ease-in-out;
+        }
+
+        @keyframes rewardClaim {
+            0% {
+                transform: scale(1) rotate(0deg);
+            }
+            50% {
+                transform: scale(1.2) rotate(10deg);
+            }
+            100% {
+                transform: scale(1) rotate(0deg);
+            }
+        }
+
+        .reward-claim-animation {
+            animation: rewardClaim 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="battle-pass-container">
+        <!-- Season Header -->
+        <div class="season-header">
+            <h1 class="season-title">Operation: Market Domination</h1>
+            <p class="season-subtitle">Elite tactical trading campaign with exclusive rewards</p>
+            <div class="season-timer" id="seasonTimer">
+                Season ends in: <span id="timeRemaining">--</span>
+            </div>
+        </div>
+
+        <!-- User Progress -->
+        <div class="user-progress">
+            <div class="level-info">
+                <div class="level-badge" id="levelBadge">1</div>
+                <div class="level-details">
+                    <h3>Battle Pass Level <span id="currentLevel">1</span></h3>
+                    <div class="xp-progress">
+                        <div class="xp-fill" id="xpFill" style="width: 0%"></div>
+                    </div>
+                    <p><span id="currentXP">0</span> / <span id="xpToNext">1000</span> XP</p>
+                </div>
+            </div>
+            <div class="pass-upgrade">
+                <div class="pass-type" id="currentPassType">Free Pass</div>
+                <button class="upgrade-btn" id="upgradeBtn" onclick="showUpgradeModal()">
+                    Upgrade Pass
+                </button>
+            </div>
+        </div>
+
+        <!-- Battle Pass Tiers -->
+        <div class="pass-tiers">
+            <div class="tier-card tier-free">
+                <h3 class="tier-name">Free Pass</h3>
+                <div class="tier-price">$0</div>
+                <ul class="tier-features">
+                    <li>✓ Basic rewards every 5 levels</li>
+                    <li>✓ XP boosts and badges</li>
+                    <li>✓ Access to free challenges</li>
+                    <li>✓ Leaderboard participation</li>
+                </ul>
+            </div>
+            <div class="tier-card tier-premium">
+                <h3 class="tier-name">Premium Pass</h3>
+                <div class="tier-price">$19.99</div>
+                <ul class="tier-features">
+                    <li>✓ All free pass rewards</li>
+                    <li>✓ Premium rewards every 2 levels</li>
+                    <li>✓ Exclusive badges and emotes</li>
+                    <li>✓ Premium challenges (+50% XP)</li>
+                    <li>✓ Retroactive rewards</li>
+                </ul>
+            </div>
+            <div class="tier-card tier-elite">
+                <h3 class="tier-name">Elite Pass</h3>
+                <div class="tier-price">$39.99</div>
+                <ul class="tier-features">
+                    <li>✓ All premium pass rewards</li>
+                    <li>✓ Elite rewards every 10 levels</li>
+                    <li>✓ Legendary titles and skins</li>
+                    <li>✓ Elite challenges (+100% XP)</li>
+                    <li>✓ Priority support</li>
+                    <li>✓ Season finale rewards</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Reward Track -->
+        <div class="reward-track">
+            <div class="track-header">
+                <h2 class="track-title">Reward Track</h2>
+                <div class="track-filter">
+                    <button class="filter-btn active" onclick="filterRewards('all')">All</button>
+                    <button class="filter-btn" onclick="filterRewards('free')">Free</button>
+                    <button class="filter-btn" onclick="filterRewards('premium')">Premium</button>
+                    <button class="filter-btn" onclick="filterRewards('elite')">Elite</button>
+                </div>
+            </div>
+            <div class="reward-levels" id="rewardTrack">
+                <!-- Rewards will be dynamically generated -->
+            </div>
+        </div>
+
+        <!-- Weekly Challenges -->
+        <div class="weekly-challenges">
+            <h2 class="track-title">Weekly Challenges</h2>
+            <div class="challenges-grid" id="challengesGrid">
+                <!-- Challenges will be dynamically generated -->
+            </div>
+        </div>
+
+        <!-- Leaderboard -->
+        <div class="leaderboard">
+            <h2 class="leaderboard-title">Season Leaderboard</h2>
+            <ul class="leaderboard-list" id="leaderboardList">
+                <!-- Leaderboard will be dynamically generated -->
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Sample data - in production this would come from the API
+        let userProgress = {
+            level: 15,
+            xp: 750,
+            xpToNext: 1000,
+            passType: 'free',
+            rewardsClaimed: [1, 2, 3, 4, 5, 10]
+        };
+
+        let seasonData = {
+            endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+            maxLevel: 100
+        };
+
+        // Initialize the page
+        function initializeBattlePass() {
+            updateUserProgress();
+            generateRewardTrack();
+            generateChallenges();
+            generateLeaderboard();
+            startSeasonTimer();
+        }
+
+        function updateUserProgress() {
+            document.getElementById('levelBadge').textContent = userProgress.level;
+            document.getElementById('currentLevel').textContent = userProgress.level;
+            document.getElementById('currentXP').textContent = userProgress.xp;
+            document.getElementById('xpToNext').textContent = userProgress.xpToNext;
+            
+            const xpProgress = (userProgress.xp / userProgress.xpToNext) * 100;
+            document.getElementById('xpFill').style.width = xpProgress + '%';
+            
+            const passTypeMap = {
+                'free': 'Free Pass',
+                'premium': 'Premium Pass',
+                'elite': 'Elite Pass'
+            };
+            document.getElementById('currentPassType').textContent = passTypeMap[userProgress.passType];
+            
+            if (userProgress.passType !== 'free') {
+                document.getElementById('upgradeBtn').style.display = 'none';
+            }
+        }
+
+        function generateRewardTrack() {
+            const rewardTrack = document.getElementById('rewardTrack');
+            rewardTrack.innerHTML = '';
+
+            for (let level = 1; level <= seasonData.maxLevel; level++) {
+                const rewards = getRewardsForLevel(level);
+                if (rewards.length === 0) continue;
+
+                rewards.forEach(reward => {
+                    const rewardElement = createRewardElement(level, reward);
+                    rewardTrack.appendChild(rewardElement);
+                });
+            }
+        }
+
+        function getRewardsForLevel(level) {
+            const rewards = [];
+            
+            // Free rewards every 5 levels
+            if (level % 5 === 0) {
+                rewards.push({
+                    name: `XP Boost`,
+                    tier: 'free',
+                    icon: '⚡',
+                    rarity: 'common'
+                });
+            }
+            
+            // Premium rewards every 2 levels
+            if (level % 2 === 0) {
+                rewards.push({
+                    name: `Elite Badge`,
+                    tier: 'premium',
+                    icon: '🏆',
+                    rarity: level < 50 ? 'rare' : 'epic'
+                });
+            }
+            
+            // Elite rewards every 10 levels
+            if (level % 10 === 0) {
+                rewards.push({
+                    name: `Commander Title`,
+                    tier: 'elite',
+                    icon: '👑',
+                    rarity: level >= 50 ? 'legendary' : 'epic'
+                });
+            }
+            
+            return rewards;
+        }
+
+        function createRewardElement(level, reward) {
+            const div = document.createElement('div');
+            div.className = 'reward-level';
+            div.dataset.tier = reward.tier;
+            
+            const isUnlocked = level <= userProgress.level;
+            const isClaimed = userProgress.rewardsClaimed.includes(level);
+            
+            if (isUnlocked && !isClaimed) {
+                div.classList.add('unlocked');
+            } else if (isClaimed) {
+                div.classList.add('claimed');
+            }
+            
+            div.innerHTML = `
+                <div class="level-number">${level}</div>
+                <div class="reward-icon">${reward.icon}</div>
+                <div class="reward-name">${reward.name}</div>
+                <div class="reward-tier tier-${reward.tier}-badge">${reward.tier}</div>
+                ${isUnlocked && !isClaimed ? '<button class="claim-btn" onclick="claimReward(' + level + ')">✓</button>' : ''}
+            `;
+            
+            return div;
+        }
+
+        function generateChallenges() {
+            const challengesGrid = document.getElementById('challengesGrid');
+            const challenges = [
+                {
+                    name: 'Weekly Trader',
+                    description: 'Execute 20 trades this week',
+                    progress: 15,
+                    target: 20,
+                    xp: 2000,
+                    completed: false
+                },
+                {
+                    name: 'Victory Streak',
+                    description: 'Win 15 trades this week',
+                    progress: 12,
+                    target: 15,
+                    xp: 3000,
+                    completed: false
+                },
+                {
+                    name: 'Profit Master',
+                    description: 'Earn $500 in profit',
+                    progress: 350,
+                    target: 500,
+                    xp: 2500,
+                    completed: false
+                }
+            ];
+
+            challengesGrid.innerHTML = '';
+            challenges.forEach(challenge => {
+                const challengeElement = createChallengeElement(challenge);
+                challengesGrid.appendChild(challengeElement);
+            });
+        }
+
+        function createChallengeElement(challenge) {
+            const div = document.createElement('div');
+            div.className = 'challenge-card';
+            
+            const progressPercent = (challenge.progress / challenge.target) * 100;
+            
+            div.innerHTML = `
+                <div class="challenge-header">
+                    <div class="challenge-name">${challenge.name}</div>
+                    <div class="challenge-xp">+${challenge.xp} XP</div>
+                </div>
+                <div class="challenge-description">${challenge.description}</div>
+                <div class="challenge-progress">
+                    <div class="challenge-fill" style="width: ${progressPercent}%"></div>
+                </div>
+                <div class="challenge-status">
+                    ${challenge.progress} / ${challenge.target}
+                    ${challenge.completed ? ' - COMPLETED' : ''}
+                </div>
+            `;
+            
+            return div;
+        }
+
+        function generateLeaderboard() {
+            const leaderboardList = document.getElementById('leaderboardList');
+            const leaderboard = [
+                { rank: 1, user: 'Commander_Alpha', level: 85, xp: 2500 },
+                { rank: 2, user: 'Tactical_Viper', level: 82, xp: 1200 },
+                { rank: 3, user: 'Shadow_Trader', level: 78, xp: 800 },
+                { rank: 4, user: 'Market_Ghost', level: 75, xp: 500 },
+                { rank: 5, user: 'Elite_Sniper', level: 72, xp: 200 }
+            ];
+
+            leaderboardList.innerHTML = '';
+            leaderboard.forEach(entry => {
+                const li = document.createElement('li');
+                li.className = 'leaderboard-item';
+                li.innerHTML = `
+                    <div class="leaderboard-rank">#${entry.rank}</div>
+                    <div class="leaderboard-user">
+                        <div>${entry.user}</div>
+                        <div style="font-size: 14px; color: #888;">Elite Pass</div>
+                    </div>
+                    <div class="leaderboard-level">Level ${entry.level}</div>
+                `;
+                leaderboardList.appendChild(li);
+            });
+        }
+
+        function startSeasonTimer() {
+            function updateTimer() {
+                const now = new Date();
+                const timeLeft = seasonData.endDate - now;
+                
+                if (timeLeft > 0) {
+                    const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                    
+                    document.getElementById('timeRemaining').textContent = 
+                        `${days}d ${hours}h ${minutes}m`;
+                } else {
+                    document.getElementById('timeRemaining').textContent = 'Season Ended';
+                }
+            }
+            
+            updateTimer();
+            setInterval(updateTimer, 60000); // Update every minute
+        }
+
+        function filterRewards(tier) {
+            const rewards = document.querySelectorAll('.reward-level');
+            const filterBtns = document.querySelectorAll('.filter-btn');
+            
+            // Update filter buttons
+            filterBtns.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Filter rewards
+            rewards.forEach(reward => {
+                if (tier === 'all' || reward.dataset.tier === tier) {
+                    reward.style.display = 'block';
+                } else {
+                    reward.style.display = 'none';
+                }
+            });
+        }
+
+        function claimReward(level) {
+            // Add claim animation
+            const rewardElement = event.target.closest('.reward-level');
+            rewardElement.classList.add('reward-claim-animation');
+            
+            // Update user progress
+            userProgress.rewardsClaimed.push(level);
+            
+            // Update UI
+            setTimeout(() => {
+                rewardElement.classList.remove('unlocked');
+                rewardElement.classList.add('claimed');
+                rewardElement.querySelector('.claim-btn').remove();
+                rewardElement.classList.remove('reward-claim-animation');
+            }, 500);
+            
+            // Show reward notification (would be replaced with actual reward modal)
+            alert(`Reward claimed for Level ${level}!`);
+        }
+
+        function showUpgradeModal() {
+            alert('Upgrade modal would open here with payment options');
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', initializeBattlePass);
+    </script>
+    
+    <!-- Load BITTEN Mission Functions -->
+    <script src="/src/ui/common/mission_functions.js"></script>
+    <script src="/src/ui/common/webapp_functions.js"></script>
+</body>
+</html>

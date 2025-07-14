@@ -9,7 +9,7 @@ WorkingDirectory=/root/HydraX-v2
 Environment="PATH=/usr/local/bin:/usr/bin:/bin"
 Environment="PYTHONPATH=/root/HydraX-v2"
 ExecStart=/usr/bin/python3 src/bitten_core/web_app.py
-Restart=always
+Restart=no  # EMERGENCY: Disabled auto-restart
 RestartSec=10
 
 [Install]

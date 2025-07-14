@@ -18,16 +18,16 @@ tiers:
       monthly_price: 0  # Free tier
       
     fire_settings:
-      daily_shots: 1
-      min_tcs: 60
+      daily_shots: 6             # Same as NIBBLER
+      min_tcs: 50                # Lowered from 60 to 50
       risk_per_shot: 2.0         # Risk percentage per trade
       
     risk_control:
       default_risk: 2.0
       boost_risk: 2.0            # No boost for press pass
       boost_min_balance: 99999   # Effectively disabled
-      max_trades_per_day: 1
-      max_open_trades: 1         # Only 1 open position at a time
+      max_trades_per_day: 6      # Same as NIBBLER  
+      max_open_trades: 1         # Keep at 1 open position for safety
       drawdown_cap: 6.0          # Daily loss limit percentage
       cooldown_mode: trade_complete
       cooldown_hours: 0
@@ -55,7 +55,7 @@ tiers:
       
     fire_settings:
       daily_shots: 6
-      min_tcs: 70                # Minimum TCS threshold for Nibbler
+      min_tcs: 50                # Lowered from 70 to 50
       risk_per_shot: 2.0         # Risk percentage per trade
       
     risk_control:
@@ -90,9 +90,9 @@ tiers:
       
     fire_settings:
       daily_shots: 10
-      min_tcs: 85                # Default minimum (for sniper)
-      min_tcs_arcade: 75         # Lower TCS for arcade signals
-      min_tcs_sniper: 85         # Higher threshold for sniper setups
+      min_tcs: 50                # Lowered from 85 to 50
+      min_tcs_arcade: 50         # Lowered from 75 to 50
+      min_tcs_sniper: 50         # Lowered from 85 to 50
       risk_per_shot: 2.0         # Default risk percentage
       
     risk_control:
@@ -128,9 +128,9 @@ tiers:
       
     fire_settings:
       daily_shots: 20
-      min_tcs: 90                # Default TCS (auto mode)
-      min_tcs_auto: 90           # Full auto mode: 90% TCS required
-      min_tcs_semi: 75           # Semi mode: 75% TCS required (more targets)
+      min_tcs: 50                # Minimum TCS to fire (his money his choice)
+      min_tcs_auto: 80           # Full auto mode: 80% TCS required (lowered from 90)
+      min_tcs_semi: 50           # Semi mode: 50% TCS required (lowered from 75)
       risk_per_shot: 2.0
       
     risk_control:
@@ -163,7 +163,7 @@ tiers:
       
     fire_settings:
       daily_shots: 999           # Effectively unlimited
-      min_tcs: 91                # Same as Commander
+      min_tcs: 50                # Lowered from 91 to 50
       risk_per_shot: 2.0
       
     risk_control:
@@ -195,11 +195,11 @@ special_modes:
   chaingun:
     # Progressive risk sequence: 2% -> 4% -> 8% -> 16%
     risk_sequence: [2.0, 4.0, 8.0, 16.0]  # Percentage risk per shot
-    tcs_requirements: [85, 87, 89, 91]    # TCS needed for each shot
+    tcs_requirements: [70, 72, 74, 76]    # TCS needed for each shot (lowered from 85,87,89,91)
     max_sequences_per_day: 2              # Max 2 chaingun sequences daily
     rapid_fire: true
     available_tiers: ["FANG", "COMMANDER", "APEX"]  # Not available for PRESS_PASS or NIBBLER
-    description: "Progressive risk sequence - 4 shots with increasing risk and TCS requirements"
+    description: "Progressive risk sequence - 4 shots with lowered TCS requirements"
     
   midnight_hammer:
     unity_multiplier: 10.0       # 10x bonus for unity

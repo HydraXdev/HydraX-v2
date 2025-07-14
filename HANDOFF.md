@@ -13,7 +13,7 @@
   - Webhook handling
   - Subscription management
 - Removed annual billing complexity per user request
-- Set up 15-day free trial system with day 14 payment prompts
+- Set up 7-day free trial system with day 6 payment prompts
 
 #### 2. **Landing Page Creation**
 - Built military-themed landing page at `/root/HydraX-v2/landing/index.html`
@@ -53,8 +53,8 @@
 #### 6. **Trial Management System**
 - Modified `trial_manager.py` for monthly-only subscriptions
 - Features:
-  - 15-day silent trial
-  - Payment prompt only on day 14
+  - 7-day silent trial (quick experience focused on immediate value)
+  - Payment prompt only on day 6
   - 2-day grace period for failed payments
   - 45-day data retention
   - Automatic XP reset after expiry

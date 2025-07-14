@@ -1,3 +1,4 @@
+import os
 #!/usr/bin/env python3
 """Send test signals with regular URL buttons"""
 
@@ -9,8 +10,8 @@ from telegram import Bot, InlineKeyboardButton, InlineKeyboardMarkup
 import asyncio
 
 # Bot configuration
-BOT_TOKEN = "7854827710:AAHnUNfP5GyxoYePoAV5BeOtDbmEJo6i_EQ"
-CHAT_ID = "-1002581996861"
+BOT_TOKEN = "os.getenv("BOT_TOKEN", "DISABLED_FOR_SECURITY")"
+CHAT_ID = "int(os.getenv("CHAT_ID", "-1002581996861"))"
 
 # WebApp URLs
 CURRENT_WEBAPP = "http://134.199.204.67:8888"
@@ -23,7 +24,7 @@ async def send_test_comparison():
     
     # Create test signal data
     signal_data = {
-        'user_id': '7176191872',
+        'user_id': 'int(os.getenv("ADMIN_USER_ID", "7176191872"))',
         'signal': {
             'id': 'test_' + datetime.now().strftime('%Y%m%d_%H%M%S'),
             'signal_type': 'PRECISION',
@@ -75,7 +76,7 @@ async def send_test_comparison():
     
     # High confidence signal
     signal_data2 = {
-        'user_id': '7176191872',
+        'user_id': 'int(os.getenv("ADMIN_USER_ID", "7176191872"))',
         'signal': {
             'id': 'test_high_' + datetime.now().strftime('%H%M%S'),
             'signal_type': 'SNIPER',
@@ -119,7 +120,7 @@ async def send_test_comparison():
     await asyncio.sleep(3)
     
     signal_data3 = {
-        'user_id': '7176191872',
+        'user_id': 'int(os.getenv("ADMIN_USER_ID", "7176191872"))',
         'signal': {
             'id': 'test_low_' + datetime.now().strftime('%H%M%S'),
             'signal_type': 'RISKY',

@@ -1,0 +1,20 @@
+
+# BITTEN Onboarding Static Files
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # Serve onboarding files
+    RewriteRule ^onboarding/(.*)$ onboarding/$1 [L]
+    
+    # Serve JS files
+    RewriteRule ^src/ui/common/(.*)$ src/ui/common/$1 [L]
+</IfModule>
+
+# Set proper MIME types
+<Files "*.js">
+    Header set Content-Type "application/javascript"
+</Files>
+
+<Files "*.html">
+    Header set Content-Type "text/html"
+</Files>

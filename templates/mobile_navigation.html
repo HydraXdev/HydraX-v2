@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <meta name="theme-color" content="#2481cc" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#007aff" media="(prefers-color-scheme: dark)">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="HydraX">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <title>HydraX Mobile - Advanced Trading Platform</title>
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="/src/ui/mobile/mobile_optimized.css" as="style">
+    <link rel="preload" href="/src/ui/mobile/navigation.js" as="script">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="/src/ui/mobile/mobile_optimized.css">
+    
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    
+    <!-- Favicons and app icons -->
+    <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
+    <link rel="icon" type="image/png" href="/assets/icons/favicon.png">
+    <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
+    
+    <!-- Telegram WebApp script -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <style>
+        /* Critical CSS for immediate rendering */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #ffffff;
+            color: #000000;
+            overflow-x: hidden;
+        }
+        
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #000000;
+                color: #ffffff;
+            }
+        }
+        
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #2481cc, #007aff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease-out;
+        }
+        
+        .loading-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .loading-content {
+            text-align: center;
+            color: white;
+        }
+        
+        .loading-logo {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 16px;
+            background: white;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .loading-text {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .loading-subtitle {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-content">
+            <div class="loading-logo">⚡</div>
+            <div class="loading-text">HydraX</div>
+            <div class="loading-subtitle">Initializing Mobile Interface...</div>
+        </div>
+    </div>
+    
+    <!-- Skip Links for Accessibility -->
+    <div class="skip-links">
+        <a href="#main-content" class="sr-only sr-only-focusable">Skip to main content</a>
+        <a href="#mobile-nav" class="sr-only sr-only-focusable">Skip to navigation</a>
+    </div>
+    
+    <!-- Main Application Container -->
+    <div id="app" class="app-container">
+        <!-- Content Area -->
+        <main id="main-content" class="page-container" role="main" aria-label="Main content">
+            <!-- Dynamic content will be loaded here -->
+            
+            <!-- Dashboard Page -->
+            <div id="dashboard-panel" class="page-content" data-page="dashboard" role="tabpanel" aria-labelledby="dashboard-tab">
+                <div class="page-header">
+                    <h1 class="page-title">Dashboard</h1>
+                    <div class="status-indicator online" aria-label="System status: Online">
+                        <span aria-hidden="true">●</span>
+                        <span>Online</span>
+                    </div>
+                </div>
+                
+                <div class="content-grid">
+                    <!-- Quick Stats Cards -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Portfolio Overview</h2>
+                            <p class="card-subtitle">Real-time performance metrics</p>
+                        </div>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-value">$12,345</div>
+                                <div class="stat-label">Total Balance</div>
+                                <div class="stat-change positive">+5.2%</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">8</div>
+                                <div class="stat-label">Active Positions</div>
+                                <div class="stat-change neutral">±0%</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Actions -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Quick Actions</h2>
+                        </div>
+                        <div class="action-grid">
+                            <button class="btn btn-primary" data-action="view-signals">
+                                <span class="btn-icon">📡</span>
+                                <span>View Signals</span>
+                            </button>
+                            <button class="btn btn-secondary" data-action="open-position">
+                                <span class="btn-icon">📈</span>
+                                <span>New Position</span>
+                            </button>
+                            <button class="btn btn-outline" data-action="analyze-market">
+                                <span class="btn-icon">🔍</span>
+                                <span>Market Analysis</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Recent Activity -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Recent Activity</h2>
+                            <button class="btn-icon-sm" aria-label="Refresh activity" data-action="refresh-activity">
+                                🔄
+                            </button>
+                        </div>
+                        <div class="activity-list">
+                            <div class="activity-item">
+                                <div class="activity-icon success">✓</div>
+                                <div class="activity-content">
+                                    <div class="activity-title">XAU/USD Position Closed</div>
+                                    <div class="activity-subtitle">+$234.50 profit • 2 min ago</div>
+                                </div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-icon warning">⚠</div>
+                                <div class="activity-content">
+                                    <div class="activity-title">EUR/USD Signal Alert</div>
+                                    <div class="activity-subtitle">High probability setup • 5 min ago</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Signals Page -->
+            <div id="signals-panel" class="page-content" data-page="signals" role="tabpanel" aria-labelledby="signals-tab" style="display: none;">
+                <div class="page-header">
+                    <h1 class="page-title">Live Signals</h1>
+                    <div class="signal-status">
+                        <span class="status-indicator online">🔴 LIVE</span>
+                    </div>
+                </div>
+                
+                <div class="signals-container">
+                    <!-- Signal filters -->
+                    <div class="filter-bar">
+                        <button class="filter-btn active" data-filter="all">All</button>
+                        <button class="filter-btn" data-filter="forex">Forex</button>
+                        <button class="filter-btn" data-filter="crypto">Crypto</button>
+                        <button class="filter-btn" data-filter="indices">Indices</button>
+                    </div>
+                    
+                    <!-- Live signals list -->
+                    <div class="signals-list" role="list" aria-label="Live trading signals">
+                        <div class="signal-card priority" role="listitem">
+                            <div class="signal-header">
+                                <div class="signal-pair">XAU/USD</div>
+                                <div class="signal-direction buy">BUY</div>
+                                <div class="signal-confidence">88%</div>
+                            </div>
+                            <div class="signal-details">
+                                <div class="signal-price-info">
+                                    <div class="price-item">
+                                        <span class="price-label">Entry</span>
+                                        <span class="price-value">2,033.50</span>
+                                    </div>
+                                    <div class="price-item">
+                                        <span class="price-label">SL</span>
+                                        <span class="price-value">2,028.00</span>
+                                    </div>
+                                    <div class="price-item">
+                                        <span class="price-label">TP</span>
+                                        <span class="price-value">2,044.00</span>
+                                    </div>
+                                </div>
+                                <div class="signal-actions">
+                                    <button class="btn btn-primary btn-sm" data-action="copy-signal">Copy Signal</button>
+                                    <button class="btn btn-outline btn-sm" data-action="analyze-signal">Analyze</button>
+                                </div>
+                            </div>
+                            <div class="signal-timestamp">2 minutes ago</div>
+                        </div>
+                        
+                        <div class="signal-card" role="listitem">
+                            <div class="signal-header">
+                                <div class="signal-pair">EUR/USD</div>
+                                <div class="signal-direction sell">SELL</div>
+                                <div class="signal-confidence">75%</div>
+                            </div>
+                            <div class="signal-details">
+                                <div class="signal-price-info">
+                                    <div class="price-item">
+                                        <span class="price-label">Entry</span>
+                                        <span class="price-value">1.0875</span>
+                                    </div>
+                                    <div class="price-item">
+                                        <span class="price-label">SL</span>
+                                        <span class="price-value">1.0895</span>
+                                    </div>
+                                    <div class="price-item">
+                                        <span class="price-label">TP</span>
+                                        <span class="price-value">1.0845</span>
+                                    </div>
+                                </div>
+                                <div class="signal-actions">
+                                    <button class="btn btn-primary btn-sm" data-action="copy-signal">Copy Signal</button>
+                                    <button class="btn btn-outline btn-sm" data-action="analyze-signal">Analyze</button>
+                                </div>
+                            </div>
+                            <div class="signal-timestamp">8 minutes ago</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Trading Page -->
+            <div id="trading-panel" class="page-content" data-page="trading" role="tabpanel" aria-labelledby="trading-tab" style="display: none;">
+                <div class="page-header">
+                    <h1 class="page-title">Trading</h1>
+                    <div class="secure-indicator" aria-label="Secure trading environment">
+                        🔒 Secure
+                    </div>
+                </div>
+                
+                <div class="trading-container">
+                    <!-- Position management -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Open Positions</h2>
+                            <button class="btn btn-primary btn-sm" data-action="new-position">New Position</button>
+                        </div>
+                        <div class="positions-list">
+                            <div class="position-item profit">
+                                <div class="position-pair">XAU/USD</div>
+                                <div class="position-type">BUY 0.1</div>
+                                <div class="position-pnl">+$124.50</div>
+                                <button class="btn btn-outline btn-sm" data-action="close-position">Close</button>
+                            </div>
+                            <div class="position-item loss">
+                                <div class="position-pair">EUR/USD</div>
+                                <div class="position-type">SELL 0.05</div>
+                                <div class="position-pnl">-$23.40</div>
+                                <button class="btn btn-outline btn-sm" data-action="close-position">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Risk management -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Risk Management</h2>
+                        </div>
+                        <div class="risk-metrics">
+                            <div class="risk-item">
+                                <div class="risk-label">Daily P&L</div>
+                                <div class="risk-value positive">+$201.10</div>
+                                <div class="progress">
+                                    <div class="progress-bar" style="width: 65%"></div>
+                                </div>
+                            </div>
+                            <div class="risk-item">
+                                <div class="risk-label">Risk Exposure</div>
+                                <div class="risk-value">15%</div>
+                                <div class="progress">
+                                    <div class="progress-bar" style="width: 15%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Education Page -->
+            <div id="education-panel" class="page-content" data-page="education" role="tabpanel" aria-labelledby="education-tab" style="display: none;">
+                <div class="page-header">
+                    <h1 class="page-title">Education</h1>
+                    <div class="progress-indicator">
+                        <span>Level 3</span>
+                        <div class="progress">
+                            <div class="progress-bar" style="width: 60%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="education-container">
+                    <!-- Learning paths -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Learning Paths</h2>
+                        </div>
+                        <div class="learning-paths">
+                            <div class="path-item completed">
+                                <div class="path-icon">✓</div>
+                                <div class="path-content">
+                                    <div class="path-title">Trading Fundamentals</div>
+                                    <div class="path-progress">Completed</div>
+                                </div>
+                            </div>
+                            <div class="path-item active">
+                                <div class="path-icon">📚</div>
+                                <div class="path-content">
+                                    <div class="path-title">Technical Analysis</div>
+                                    <div class="path-progress">60% Complete</div>
+                                </div>
+                            </div>
+                            <div class="path-item locked">
+                                <div class="path-icon">🔒</div>
+                                <div class="path-content">
+                                    <div class="path-title">Advanced Strategies</div>
+                                    <div class="path-progress">Locked</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick lessons -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Quick Lessons</h2>
+                        </div>
+                        <div class="lessons-grid">
+                            <button class="lesson-card" data-action="start-lesson">
+                                <div class="lesson-icon">📈</div>
+                                <div class="lesson-title">Candlestick Patterns</div>
+                                <div class="lesson-duration">5 min</div>
+                            </button>
+                            <button class="lesson-card" data-action="start-lesson">
+                                <div class="lesson-icon">⚖️</div>
+                                <div class="lesson-title">Risk Management</div>
+                                <div class="lesson-duration">8 min</div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Profile Page -->
+            <div id="profile-panel" class="page-content" data-page="profile" role="tabpanel" aria-labelledby="profile-tab" style="display: none;">
+                <div class="page-header">
+                    <h1 class="page-title">Profile</h1>
+                    <button class="btn-icon-sm" aria-label="Edit profile" data-action="edit-profile">
+                        ✏️
+                    </button>
+                </div>
+                
+                <div class="profile-container">
+                    <!-- User info -->
+                    <div class="card">
+                        <div class="profile-header">
+                            <div class="profile-avatar">
+                                <img src="/assets/avatars/default.png" alt="Profile avatar" class="avatar-img">
+                            </div>
+                            <div class="profile-info">
+                                <h2 class="profile-name">Trader Pro</h2>
+                                <p class="profile-tier">FANG Tier</p>
+                                <div class="profile-stats">
+                                    <div class="stat-item">
+                                        <div class="stat-value">142</div>
+                                        <div class="stat-label">Trades</div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <div class="stat-value">94.5%</div>
+                                        <div class="stat-label">Win Rate</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Settings -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Settings</h2>
+                        </div>
+                        <div class="settings-list">
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <div class="setting-label">Dark Mode</div>
+                                    <div class="setting-description">Toggle dark theme</div>
+                                </div>
+                                <label class="switch" aria-label="Toggle dark mode">
+                                    <input type="checkbox" id="darkModeToggle">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <div class="setting-label">Notifications</div>
+                                    <div class="setting-description">Push notifications for signals</div>
+                                </div>
+                                <label class="switch" aria-label="Toggle notifications">
+                                    <input type="checkbox" id="notificationsToggle" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <div class="setting-label">Haptic Feedback</div>
+                                    <div class="setting-description">Vibration for interactions</div>
+                                </div>
+                                <label class="switch" aria-label="Toggle haptic feedback">
+                                    <input type="checkbox" id="hapticToggle" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <!-- Mobile Navigation -->
+        <nav id="mobile-nav" class="mobile-nav-container" role="navigation" aria-label="Main navigation">
+            <div class="mobile-tab-nav" role="tablist">
+                <button class="tab-button vibrant-tab active" 
+                        data-tab="dashboard" 
+                        role="tab" 
+                        aria-controls="dashboard-panel" 
+                        aria-selected="true"
+                        tabindex="0"
+                        id="dashboard-tab">
+                    <span class="tab-icon" aria-hidden="true">🏠</span>
+                    <span class="tab-label">Dashboard</span>
+                </button>
+                
+                <button class="tab-button priority-tab" 
+                        data-tab="signals" 
+                        role="tab" 
+                        aria-controls="signals-panel" 
+                        aria-selected="false"
+                        tabindex="-1"
+                        id="signals-tab">
+                    <span class="tab-icon" aria-hidden="true">📡</span>
+                    <span class="tab-label">Signals</span>
+                </button>
+                
+                <button class="tab-button" 
+                        data-tab="trading" 
+                        role="tab" 
+                        aria-controls="trading-panel" 
+                        aria-selected="false"
+                        tabindex="-1"
+                        id="trading-tab">
+                    <span class="tab-icon" aria-hidden="true">📈</span>
+                    <span class="tab-label">Trading</span>
+                    <span class="secure-indicator" aria-label="Secure section">🔒</span>
+                </button>
+                
+                <button class="tab-button" 
+                        data-tab="education" 
+                        role="tab" 
+                        aria-controls="education-panel" 
+                        aria-selected="false"
+                        tabindex="-1"
+                        id="education-tab">
+                    <span class="tab-icon" aria-hidden="true">🎓</span>
+                    <span class="tab-label">Education</span>
+                </button>
+                
+                <button class="tab-button" 
+                        data-tab="profile" 
+                        role="tab" 
+                        aria-controls="profile-panel" 
+                        aria-selected="false"
+                        tabindex="-1"
+                        id="profile-tab">
+                    <span class="tab-icon" aria-hidden="true">👤</span>
+                    <span class="tab-label">Profile</span>
+                </button>
+            </div>
+        </nav>
+        
+        <!-- One-handed mode toggle -->
+        <button class="one-handed-toggle" 
+                aria-label="Toggle one-handed mode" 
+                aria-pressed="false"
+                title="One-handed mode">
+            👋
+        </button>
+        
+        <!-- Pull-to-refresh indicator -->
+        <div class="pull-to-refresh-indicator" aria-live="polite" aria-label="Pull to refresh status">
+            <div class="refresh-spinner"></div>
+            <span class="refresh-text">Pull to refresh</span>
+        </div>
+        
+        <!-- Gesture overlays -->
+        <div class="gesture-overlay gesture-overlay-left" aria-hidden="true"></div>
+        <div class="gesture-overlay gesture-overlay-right" aria-hidden="true"></div>
+    </div>
+    
+    <!-- ARIA live region for announcements -->
+    <div id="live-announcements" aria-live="polite" aria-atomic="true" class="sr-only"></div>
+    
+    <!-- Toast notifications container -->
+    <div id="toast-container" class="toast-container" aria-live="polite"></div>
+    
+    <!-- Scripts -->
+    <script src="/src/ui/mobile/navigation.js"></script>
+    
+    <script>
+        // Initialize mobile navigation when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Hide loading screen
+            const loadingScreen = document.getElementById('loadingScreen');
+            setTimeout(() => {
+                loadingScreen.classList.add('hidden');
+                setTimeout(() => {
+                    loadingScreen.remove();
+                }, 500);
+            }, 1000);
+            
+            // Initialize navigation
+            const navigation = new HydraXMobileNavigation({
+                // Configuration options
+                swipeThreshold: 60,
+                swipeVelocityThreshold: 0.3,
+                pullToRefreshThreshold: 80,
+                animationDuration: 300,
+                hapticEnabled: true,
+                
+                // Telegram WebApp integration
+                telegramIntegration: true,
+                
+                // Accessibility options
+                reducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+                
+                // Performance options
+                usePassiveListeners: true,
+                debounceDelay: 16
+            });
+            
+            // Set up event listeners for custom actions
+            navigation.addEventListener('pagechange', function(data) {
+                console.log('Page changed to:', data.page);
+                
+                // Update page visibility
+                document.querySelectorAll('[data-page]').forEach(page => {
+                    page.style.display = page.dataset.page === data.page ? 'block' : 'none';
+                });
+                
+                // Update URL for bookmarking
+                if (history.pushState) {
+                    history.pushState(null, null, `#${data.page}`);
+                }
+            });
+            
+            navigation.addEventListener('refresh', function(data) {
+                console.log('Refreshing page:', data.page);
+                // Implement page-specific refresh logic here
+                
+                // Simulate data refresh
+                setTimeout(() => {
+                    navigation.completeRefresh();
+                }, 1500);
+            });
+            
+            navigation.addEventListener('themechange', function(data) {
+                console.log('Theme changed to:', data.isDark ? 'dark' : 'light');
+                
+                // Update meta theme-color
+                const metaTheme = document.querySelector('meta[name="theme-color"]');
+                if (metaTheme) {
+                    metaTheme.setAttribute('content', data.isDark ? '#007aff' : '#2481cc');
+                }
+            });
+            
+            // Set up action handlers
+            document.addEventListener('click', function(event) {
+                const action = event.target.closest('[data-action]')?.dataset.action;
+                if (!action) return;
+                
+                // Handle specific actions
+                switch (action) {
+                    case 'view-signals':
+                        navigation.navigateToPage('signals');
+                        break;
+                    case 'open-position':
+                        navigation.navigateToPage('trading');
+                        break;
+                    case 'start-learning':
+                        navigation.navigateToPage('education');
+                        break;
+                    case 'edit-profile':
+                        // Open profile editing modal
+                        showToast('Profile editing coming soon!');
+                        break;
+                    case 'refresh-activity':
+                        // Refresh activity feed
+                        navigation.triggerRefresh();
+                        break;
+                    default:
+                        console.log('Action triggered:', action);
+                        showToast(`${action} action triggered`);
+                }
+            });
+            
+            // Set up settings toggles
+            document.getElementById('darkModeToggle').addEventListener('change', function(e) {
+                navigation.updateTheme(e.target.checked);
+            });
+            
+            document.getElementById('hapticToggle').addEventListener('change', function(e) {
+                navigation.options.hapticEnabled = e.target.checked;
+                localStorage.setItem('hydraX_hapticEnabled', e.target.checked);
+            });
+            
+            document.getElementById('notificationsToggle').addEventListener('change', function(e) {
+                // Handle notification permission
+                if (e.target.checked && 'Notification' in window) {
+                    Notification.requestPermission();
+                }
+            });
+            
+            // Handle initial page from URL hash
+            const initialPage = window.location.hash.slice(1) || 'dashboard';
+            if (initialPage !== 'dashboard') {
+                navigation.navigateToPage(initialPage);
+            }
+            
+            // Store navigation instance globally for debugging
+            window.hydraXNav = navigation;
+        });
+        
+        // Utility function for toast notifications
+        function showToast(message, type = 'info', duration = 3000) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.textContent = message;
+            toast.setAttribute('role', 'alert');
+            
+            container.appendChild(toast);
+            
+            // Animate in
+            requestAnimationFrame(() => {
+                toast.classList.add('show');
+            });
+            
+            // Remove after duration
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 300);
+            }, duration);
+        }
+        
+        // Service worker registration for PWA capabilities
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(function(registration) {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch(function(registrationError) {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+        
+        // Handle keyboard shortcuts
+        document.addEventListener('keydown', function(event) {
+            // Alt + number keys for quick navigation
+            if (event.altKey && !event.ctrlKey && !event.shiftKey) {
+                const keyNumber = parseInt(event.key);
+                if (keyNumber >= 1 && keyNumber <= 5) {
+                    const pages = ['dashboard', 'signals', 'trading', 'education', 'profile'];
+                    const targetPage = pages[keyNumber - 1];
+                    if (targetPage && window.hydraXNav) {
+                        window.hydraXNav.navigateToPage(targetPage);
+                        event.preventDefault();
+                    }
+                }
+            }
+        });
+        
+        // Performance monitoring
+        if ('PerformanceObserver' in window) {
+            const observer = new PerformanceObserver((list) => {
+                for (const entry of list.getEntries()) {
+                    if (entry.entryType === 'navigation') {
+                        console.log('Navigation timing:', {
+                            domContentLoaded: entry.domContentLoadedEventEnd - entry.domContentLoadedEventStart,
+                            loadComplete: entry.loadEventEnd - entry.loadEventStart
+                        });
+                    }
+                }
+            });
+            
+            observer.observe({ entryTypes: ['navigation'] });
+        }
+    </script>
+    
+    <style>
+        /* Additional inline styles for components not in main CSS */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: var(--space-md);
+            margin-top: var(--space-md);
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: var(--space-md);
+            background: var(--bg-tertiary);
+            border-radius: var(--border-radius);
+        }
+        
+        .stat-value {
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--text-primary);
+            margin-bottom: var(--space-xs);
+        }
+        
+        .stat-label {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            margin-bottom: var(--space-xs);
+        }
+        
+        .stat-change {
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+        }
+        
+        .stat-change.positive { color: var(--color-success); }
+        .stat-change.negative { color: var(--color-danger); }
+        .stat-change.neutral { color: var(--text-secondary); }
+        
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: var(--space-sm);
+            margin-top: var(--space-md);
+        }
+        
+        .btn-icon {
+            margin-right: var(--space-xs);
+        }
+        
+        .activity-list {
+            margin-top: var(--space-md);
+        }
+        
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            padding: var(--space-md);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--font-size-sm);
+            color: white;
+            flex-shrink: 0;
+        }
+        
+        .activity-icon.success { background: var(--color-success); }
+        .activity-icon.warning { background: var(--color-warning); }
+        .activity-icon.error { background: var(--color-danger); }
+        
+        .activity-content {
+            flex: 1;
+        }
+        
+        .activity-title {
+            font-weight: var(--font-weight-medium);
+            color: var(--text-primary);
+            margin-bottom: var(--space-xs);
+        }
+        
+        .activity-subtitle {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+        }
+        
+        .signal-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: var(--space-md);
+            margin-bottom: var(--space-md);
+            transition: all var(--transition-base);
+        }
+        
+        .signal-card.priority {
+            border-color: var(--color-accent);
+            box-shadow: 0 0 0 1px var(--color-accent);
+        }
+        
+        .signal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-md);
+        }
+        
+        .signal-pair {
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-bold);
+            color: var(--text-primary);
+        }
+        
+        .signal-direction {
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: var(--border-radius-sm);
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-bold);
+        }
+        
+        .signal-direction.buy {
+            background: rgba(52, 199, 89, 0.1);
+            color: var(--color-success);
+        }
+        
+        .signal-direction.sell {
+            background: rgba(255, 59, 48, 0.1);
+            color: var(--color-danger);
+        }
+        
+        .signal-confidence {
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+            color: var(--text-secondary);
+        }
+        
+        .toast-container {
+            position: fixed;
+            top: calc(var(--safe-area-inset-top) + var(--space-md));
+            left: var(--space-md);
+            right: var(--space-md);
+            z-index: var(--z-toast);
+            pointer-events: none;
+        }
+        
+        .toast {
+            background: var(--bg-glass);
+            color: var(--text-primary);
+            padding: var(--space-md);
+            border-radius: var(--border-radius);
+            margin-bottom: var(--space-sm);
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-100px);
+            opacity: 0;
+            transition: all var(--transition-base);
+        }
+        
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--bg-tertiary);
+            transition: var(--transition-base);
+            border-radius: 24px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: var(--transition-base);
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: var(--color-primary);
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+    </style>
+</body>
+</html>

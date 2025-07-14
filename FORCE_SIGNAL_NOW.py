@@ -1,3 +1,4 @@
+import os
 #!/usr/bin/env python3
 """
 Force a signal immediately for testing webapp buttons
@@ -11,8 +12,8 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 import telegram
 
 # Configuration
-BOT_TOKEN = '7854827710:AAHnUNfP5GyxoYePoAV5BeOtDbmEJo6i_EQ'
-CHAT_ID = '-1002581996861'
+BOT_TOKEN = 'os.getenv("BOT_TOKEN", "DISABLED_FOR_SECURITY")'
+CHAT_ID = 'int(os.getenv("CHAT_ID", "-1002581996861"))'
 WEBAPP_URL = 'https://joinbitten.com'
 
 async def send_test_signal():

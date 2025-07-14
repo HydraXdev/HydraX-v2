@@ -1,0 +1,186 @@
+{
+  "metadata": {
+    "generated_at": "2025-07-11T13:46:30.092692",
+    "total_files": 62,
+    "files_processed": 20,
+    "errors": 0
+  },
+  "summaries": {
+    "docs/blueprint/BITTEN_SYSTEM_BLUEPRINT.md": {
+      "summary": "# BITTEN SYSTEM BLUEPRINT\n\n(Contents auto-filled by assistant recovery system. ).",
+      "word_count": 10,
+      "key_points": [
+        "Topic: BITTEN SYSTEM BLUEPRINT"
+      ]
+    },
+    "docs/blueprint/BITTEN_FULL_PROJECT_SPEC.md": {
+      "summary": "# BITTEN FULL PROJECT SPEC\n\n(Contents auto-filled by assistant recovery system. ).",
+      "word_count": 11,
+      "key_points": [
+        "Topic: BITTEN FULL PROJECT SPEC"
+      ]
+    },
+    "docs/education/OPERATION_EDUCATION_FULL_BLUEPRINT.md": {
+      "summary": "# OPERATION EDUCATION: Strategic Deployment Blueprint\n\n## \ud83c\udfaf OBJECTIVE:\nDeliver mastery disguised as onboarding, growth, and education \u2014 reframing behavioral conditioning, identity reprogramming, and p...",
+      "word_count": 35,
+      "key_points": [
+        "Topic: OPERATION EDUCATION: Strategic Deployment Blueprint",
+        "Topic: \ud83c\udfaf OBJECTIVE:"
+      ]
+    },
+    "docs/USER_MANAGEMENT_TIER_SYSTEM_SPECIFICATIONS.md": {
+      "summary": "PRESS_PASS (Free Trial)\n- **Price**: $0 (Limited time)\n- **Duration**: 7-30 days\n- **Purpose**: High-value trial to convert users\n- **Features**:\n  - Daily shots: 1\n  - Risk per shot: 2.",
+      "word_count": 3453,
+      "key_points": [
+        "**Telegram Bot**: Primary user interface",
+        "**MT5 Trading Platform**: Live trading integration",
+        "**Payment Processors**: Stripe, PayPal, Crypto"
+      ]
+    },
+    "docs/MT5_BRIDGE_SETUP.md": {
+      "summary": "Configure EA settings:\n   - Allow automated trading\n   - Allow DLL imports (if required by your broker)\n   - Check file permissions\n\n### 2. File permissions should be restricted\n\n## Integration with B...",
+      "word_count": 573,
+      "key_points": [
+        "Allow automated trading",
+        "Allow DLL imports (if required by your broker)",
+        "Check file permissions"
+      ]
+    },
+    "docs/SECURITY_AUDIT_REPORT.md": {
+      "summary": "## Critical Vulnerabilities Summary\n\n### \ud83d\udd34 CRITICAL (Immediate Action Required)\n\n1. **Financial Regulations**\n   - Implement trade reporting\n   - Maintain transaction logs\n   - Ensure calculation accu...",
+      "word_count": 997,
+      "key_points": [
+        "User-controlled file paths without validation",
+        "Could allow reading/writing arbitrary files",
+        "**Affected Files**: `mt5_bridge_adapter.py`, `BITTENBridge_ADVANCED_v2.0.mq5`"
+      ]
+    },
+    "docs/STEALTH_PROTOCOL_IMPLEMENTATION.md": {
+      "summary": "Tier Integration\n\n| Tier | Stealth Access | Max Level | Available Modes |\n|------|----------------|-----------|-----------------|\n| NIBBLER | \u274c No | - | None |\n| FANG | \u2705 Yes | LOW | CHAINGUN only |\n|...",
+      "word_count": 854,
+      "key_points": [
+        "**Purpose**: Adds randomized delay before trade execution",
+        "**Range**: 1-12 seconds (configurable by stealth level)",
+        "**Implementation**: Uses cryptographically secure random numbers"
+      ]
+    },
+    "docs/PRESS_PASS_SYSTEM.md": {
+      "summary": "This dramatic feature encourages daily engagement and strategic XP spending. py`)\n   - Integrates Press Pass manager\n   - Updates XP awarding to maintain shadow stats\n   - Provides Press Pass status i...",
+      "word_count": 628,
+      "key_points": [
+        "**Schedule**: Automatic reset at 00:00 UTC daily",
+        "**Scope**: Only affects users who have activated Press Pass",
+        "**Effect**: Current XP balance is set to 0, but shadow stats track real progress"
+      ]
+    },
+    "docs/SQUAD_CHAT_SYSTEM.md": {
+      "summary": "## Features\n\n### \ud83c\udfaf Core Chat Features\n- **Real-time messaging** with WebSocket technology\n- **Typing indicators** to show active participants\n- **Squad-specific chat rooms** with automatic creation\n- ...",
+      "word_count": 1697,
+      "key_points": [
+        "**Real-time messaging** with WebSocket technology",
+        "**Typing indicators** to show active participants",
+        "**Squad-specific chat rooms** with automatic creation"
+      ]
+    },
+    "docs/CROSS_ASSET_CORRELATION_SYSTEM.md": {
+      "summary": "Bond Yield Differential Calculator\nAnalyzes bond yield spreads and yield curve dynamics to assess:\n- Interest rate differentials between countries\n- Yield curve slope (recession indicator)\n- Bond mark...",
+      "word_count": 1059,
+      "key_points": [
+        "Interest rate differentials between countries",
+        "Yield curve slope (recession indicator)",
+        "Bond market trends and their impact on currencies"
+      ]
+    },
+    "docs/SECURITY_FIXES.md": {
+      "summary": "py:apply_stealth()`, `_should_inject_loss()`\n- **Issue**: Using Python's `random` module for security-sensitive operations\n- **Fix Applied**: \n  - Replaced `random` with `secrets` module\n  - Used cryp...",
+      "word_count": 912,
+      "key_points": [
+        "**Location**: `src/bitten_core/config_manager.py:_validate_config_path()`",
+        "**Issue**: User-controllable config paths could lead to path traversal attacks",
+        "**Fix Applied**:"
+      ]
+    },
+    "docs/TCS_PLUS_ENGINE.md": {
+      "summary": "# TCS++ Engine Documentation\n\n## Overview\n\nThe TCS++ (Trade Confidence Score Plus Plus) engine is a comprehensive multi-factor scoring system that evaluates trading opportunities across 8 key dimensio...",
+      "word_count": 663,
+      "key_points": [
+        "**Trend Clarity** (0-8 points)",
+        "> 0.7: 8 points (strong trend)",
+        "> 0.5: 6 points (moderate trend)"
+      ]
+    },
+    "docs/tcs_education_guide.md": {
+      "summary": "## Key Features\n\n### 1. Mystery Elements\n\nThe system maintains intrigue through mysterious hints that unlock progressively:\n\n- **Level 1**: \"The algorithm analyzes patterns beyond human perception. # ...",
+      "word_count": 881,
+      "key_points": [
+        "**Level 1-10 (Novice)**: Basic understanding of TCS ranges and trade tiers",
+        "**Level 11-25 (Apprentice)**: Introduction to multiple factors and timeframe concepts",
+        "**Level 26-50 (Trader)**: Advanced insights into institutional patterns and AI integration"
+      ]
+    },
+    "docs/STRIPE_QUICK_SETUP.md": {
+      "summary": "**API Keys**\n   - \u2705 You have: `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`\n   - \u2753 Still need: Webhook signing secret (`whsec_. Enter yo...",
+      "word_count": 481,
+      "key_points": [
+        "\u2705 You have: `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`",
+        "\u2753 Still need: Webhook signing secret (`whsec_...`)",
+        "Need to create 4 products (NIBBLER, FANG, COMMANDER, APEX)"
+      ]
+    },
+    "docs/bitten-complete-roadmap.md": {
+      "summary": "5/5\n- \ud83c\udfc6 Feature differentiation clear vs competitors\n\n---\n\n## \ud83d\udee0\ufe0f **Development Guidelines**\n\n### **Code Quality Standards**\n- All features must include comprehensive tests\n- User authorization integra...",
+      "word_count": 1202,
+      "key_points": [
+        "\u2705 User authorization system with 4-tier access control",
+        "\u2705 Complete Telegram command router with 25+ commands",
+        "\u2705 Blueprint analysis and project organization"
+      ]
+    },
+    "docs/WEBAPP_PROCESS_MANAGER.md": {
+      "summary": "## Features\n\n- **Multiple Process Managers**: SystemD and PM2 support\n- **Health Monitoring**: Comprehensive health checks with detailed metrics\n- **Auto-Recovery**: Automatic restart on failures with...",
+      "word_count": 1281,
+      "key_points": [
+        "**Multiple Process Managers**: SystemD and PM2 support",
+        "**Health Monitoring**: Comprehensive health checks with detailed metrics",
+        "**Auto-Recovery**: Automatic restart on failures with intelligent recovery"
+      ]
+    },
+    "docs/README.md": {
+      "summary": "# HydraX v2 Documentation Hub\n\n## \ud83d\udcda Complete Documentation Index\n\n### \ud83d\ude80 Quick Start\n- [Main README](. com/HydraXdev/HydraX-v2/issues) - Bug reports and feature requests\n- [Pull Requests](https://githu...",
+      "word_count": 391,
+      "key_points": [
+        "[Main README](../README.md) - Project overview and quick start",
+        "[Development Guide](development.md) - Complete development setup",
+        "[Environment Setup](.env.example) - Configuration template"
+      ]
+    },
+    "docs/development.md": {
+      "summary": "py`\n- Use pytest fixtures for common setup\n- Test both success and failure cases\n\nExample:\n[CODE BLOCK]\n\n## Adding New Features\n\n### 1. Implement Feature\n- Add code to appropriate module in `src/`\n- A...",
+      "word_count": 701,
+      "key_points": [
+        "Python 3.8+",
+        "Make (optional, for convenience)",
+        "**Black** for code formatting"
+      ]
+    },
+    "docs/security_implementation.md": {
+      "summary": "Logging Security\n\n- Log message sanitization\n- Control character removal\n- Length limits on log entries\n- No sensitive data in logs\n\n## Security Configuration\n\n### Required Environment Variables\n\n[COD...",
+      "word_count": 622,
+      "key_points": [
+        "**Token-based authentication** for all API endpoints except health check",
+        "**Telegram signature verification** for webhook endpoints",
+        "Environment variables for secure token storage:"
+      ]
+    },
+    "docs/api.md": {
+      "summary": "com` (production)\n\n## \ud83d\ude80 **Quick Start**\n\n### Authentication\nMost endpoints require API key authentication via header:\n[CODE BLOCK]\n\n### Environment Setup\n[CODE BLOCK]\n\n## \ud83d\udccb **Core Endpoints**\n\n### **S...",
+      "word_count": 919,
+      "key_points": [
+        "`cmd`: Command to execute",
+        "`args`: Command arguments (optional)",
+        "`status`: System status check"
+      ]
+    }
+  },
+  "errors": []
+}

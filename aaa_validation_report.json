@@ -1,0 +1,46 @@
+{
+  "module": "bitten_alerts_AAA",
+  "functions": [
+    {
+      "name": "analyze_top_games",
+      "purpose": "Analyze top game patterns for engagement",
+      "returns": "Dictionary of game patterns and psychology"
+    },
+    {
+      "name": "create_final_recommendations",
+      "purpose": "Generate AAA-style alert formats",
+      "returns": "List of recommended alert formats"
+    },
+    {
+      "name": "show_game_psychology",
+      "purpose": "Display psychological elements from games",
+      "returns": "None (prints to console)"
+    },
+    {
+      "name": "test_formats",
+      "purpose": "Test and display AAA format options",
+      "returns": "None (prints to console)"
+    }
+  ],
+  "integration": {
+    "compatible_with": [
+      "bitten_live_signals",
+      "telegram_alerts"
+    ],
+    "signal_types": [
+      "ARCADE",
+      "SNIPER"
+    ],
+    "format_styles": [
+      "MILITARY_OPS",
+      "URGENCY_PLAY",
+      "ZONE_CONTROL",
+      "SQUAD_DYNAMICS"
+    ]
+  },
+  "validation": {
+    "timestamp": "2025-07-12T23:01:41.996111",
+    "status": "VALIDATED",
+    "shepherd_compatible": true
+  }
+}

@@ -1,15 +1,20 @@
+import os
 #!/usr/bin/env python3
 """Send signal with proper WebApp Mini App integration"""
 
 import asyncio
+import sys
+sys.path.append('/root/HydraX-v2')
+from signal_storage import save_signal
+
 from telegram import Bot, InlineKeyboardButton, InlineKeyboardMarkup, MenuButtonWebApp, WebAppInfo
 from telegram.constants import ParseMode
 import json
 import urllib.parse
 from datetime import datetime
 
-BOT_TOKEN = "7854827710:AAHnUNfP5GyxoYePoAV5BeOtDbmEJo6i_EQ"
-CHAT_ID = "-1002581996861"
+BOT_TOKEN = "os.getenv("BOT_TOKEN", "DISABLED_FOR_SECURITY")"
+CHAT_ID = "int(os.getenv("CHAT_ID", "-1002581996861"))"
 
 async def send_webapp_signal():
     """Send signal with Mini App button"""
@@ -29,7 +34,7 @@ async def send_webapp_signal():
     
     # Create webapp data
     webapp_data = {
-        'user_id': '7176191872',
+        'user_id': 'int(os.getenv("ADMIN_USER_ID", "7176191872"))',
         'signal': {
             'id': signal_id,
             'pattern': pattern,
@@ -44,6 +49,15 @@ async def send_webapp_signal():
             'rr_ratio': 2.0,
             'expiry': 600
         }
+    
+    # Save signal to storage for webapp access
+    if 'signal' in webapp_data:
+        save_signal(webapp_data['user_id'], webapp_data['signal'])
+    elif 'user_id' in webapp_data:
+        # Extract signal data from webapp_data
+        signal_data = {k: v for k, v in webapp_data.items() if k != 'user_id'}
+        save_signal(webapp_data['user_id'], signal_data)
+
     }
     
     # Encode data for URL with start parameter

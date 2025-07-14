@@ -1,0 +1,28 @@
+{
+    "engine_version": "5.0",
+    "deployment_time": "2025-07-14T00:29:34Z",
+    "status": "DEPLOYED",
+    "live_mode": true,
+    "systems": {
+        "apex_engine": "ready",
+        "risk_management": "ready",
+        "mission_briefings": "ready",
+        "tcs_engine": "ready",
+        "mt5_integration": "pending",
+        "webapp_integration": "ready"
+    },
+    "pairs": [
+        "EURUSD", "GBPUSD", "USDJPY", "USDCAD", "GBPJPY",
+        "EURJPY", "AUDJPY", "GBPCHF", "AUDUSD", "NZDUSD", 
+        "USDCHF", "EURGBP", "GBPNZD", "GBPAUD", "EURAUD"
+    ],
+    "performance_targets": {
+        "signals_per_day": 40,
+        "win_rate_target": 89.0,
+        "min_tcs_m3": 35,
+        "min_tcs_standard": 40,
+        "m1_min_tcs": 38,
+        "m5_min_tcs": 40,
+        "m15_min_tcs": 45
+    }
+}

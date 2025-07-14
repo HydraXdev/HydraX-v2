@@ -15,7 +15,7 @@ Environment=DASHBOARD_HOST=0.0.0.0
 Environment=DASHBOARD_PORT=8080
 ExecStart=/usr/bin/python3 -m monitoring.dashboard_server
 ExecReload=/bin/kill -HUP $MAINPID
-Restart=always
+Restart=no  # EMERGENCY: Disabled auto-restart
 RestartSec=10
 StandardOutput=journal
 StandardError=journal

@@ -439,6 +439,9 @@ class OnboardingOrchestrator:
             Tuple of (message_text, keyboard_markup)
         """
         try:
+            # Import user manager
+            from ..user_management.user_manager import user_manager
+            
             # Mark as complete
             session.current_state = OnboardingState.COMPLETE.value
             session.completion_percentage = 100.0
@@ -452,22 +455,30 @@ class OnboardingOrchestrator:
                 "variant": session.variant
             })
             
-            # Provision demo account for Press Pass users
-            if session.is_press_pass:
-                demo_result = await self.press_pass_manager.provision_demo_account(
-                    session.user_id, 
-                    session.callsign
-                )
-                
-                if demo_result['success']:
-                    demo_account = demo_result['account']
-                    session.broker_account_id = demo_account['account_number']
-                    await self.session_manager.save_session(session)
+            # Create user account from onboarding session
+            user_creation_result = await user_manager.create_user_from_onboarding(session.to_dict())
+            
+            if not user_creation_result['success']:
+                logger.error(f"Failed to create user account: {user_creation_result['error']}")
+                # If user already exists, try to authenticate
+                if user_creation_result['error'] == 'user_exists':
+                    auth_result = await user_manager.authenticate_user(session.telegram_id)
+                    if auth_result['authenticated']:
+                        session_token = auth_result['session_token']
+                        user_id = auth_result['user_id']
+                    else:
+                        return self._get_error_message("completion_error"), {}
+                else:
+                    return self._get_error_message("completion_error"), {}
+            else:
+                session_token = user_creation_result['session_token']
+                user_id = user_creation_result['user_id']
             
             # Create completion message
             if session.is_press_pass:
+                display_name = session.first_name or "Press Corps Operative"
                 completion_message = (
-                    f"🎟️ **PRESS PASS ACTIVATED, {session.callsign}!**\n\n"
+                    f"🎟️ **PRESS PASS ACTIVATED, {display_name}!**\n\n"
                     f"🎯 **Training Complete**: Ground Zero cleared with Press Corps credentials\n"
                     f"⚔️ **Access Level**: PRESS PASS (7-day trial)\n"
                     f"💰 **Demo Account**: $50,000 MetaQuotes practice funds ready\n"
@@ -489,42 +500,14 @@ class OnboardingOrchestrator:
                     f"Welcome to the BITTEN Network, operative. Your real training begins now."
                 )
             
+            # Enhanced keyboard with session token for web app
             keyboard = {
                 "inline_keyboard": [
-                    [{"text": "🎯 Enter War Room", "callback_data": "enter_war_room"}],
+                    [{"text": "🎯 Enter War Room", "web_app": {"url": f"{self.hud_webapp_url}?token={session_token}"}}],
                     [{"text": "📊 View Personal Record", "callback_data": "view_personal_record"}],
                     [{"text": "🎖️ Show Achievements", "callback_data": "show_achievements"}]
                 ]
             }
-            
-            # Save callsign to database before archiving
-            if session.callsign:
-                try:
-                    from ..database.connection import get_db_session
-                    from ..database.models import UserProfile
-                    
-                    with get_db_session() as db_session:
-                        # Check if profile exists
-                        profile = db_session.query(UserProfile).filter(
-                            UserProfile.user_id == session.telegram_id
-                        ).first()
-                        
-                        if not profile:
-                            # Create new profile with callsign
-                            profile = UserProfile(
-                                user_id=session.telegram_id,
-                                callsign=session.callsign
-                            )
-                            db_session.add(profile)
-                        else:
-                            # Update existing profile
-                            profile.callsign = session.callsign
-                        
-                        db_session.commit()
-                        logger.info(f"Saved callsign '{session.callsign}' for user {session.telegram_id}")
-                        
-                except Exception as e:
-                    logger.error(f"Error saving callsign to database: {e}")
             
             # Archive session
             await self.session_manager.archive_session(session.user_id)

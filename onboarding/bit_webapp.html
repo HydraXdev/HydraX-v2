@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐾 Meet Bit - Your AI Trading Guide</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            color: #00ff41;
+            overflow-x: hidden;
+            height: 100vh;
+        }
+
+        /* Sticky Progress Elements */
+        .countdown-timer {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 0, 64, 0.9);
+            padding: 10px 15px;
+            border-radius: 25px;
+            font-weight: bold;
+            z-index: 1000;
+            animation: pulse 2s infinite;
+        }
+
+        .progress-map {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #00ff41;
+            z-index: 1000;
+            font-size: 12px;
+        }
+
+        .social-proof {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 255, 65, 0.1);
+            padding: 10px 15px;
+            border-radius: 20px;
+            border: 1px solid #00ff41;
+            z-index: 1000;
+            animation: glow 3s infinite;
+        }
+
+        /* Main Content */
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .bit-avatar {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(45deg, #00ff41, #00aa33);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            margin-bottom: 30px;
+            animation: bounce 2s infinite;
+            cursor: pointer;
+        }
+
+        .chat-bubble {
+            background: rgba(0, 255, 65, 0.1);
+            border: 2px solid #00ff41;
+            border-radius: 20px;
+            padding: 25px;
+            margin: 20px 0;
+            max-width: 600px;
+            position: relative;
+            animation: slideIn 0.5s ease;
+        }
+
+        .chat-bubble:before {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 10px solid #00ff41;
+        }
+
+        .typing-indicator {
+            display: none;
+            margin: 10px 0;
+        }
+
+        .typing-dots {
+            display: inline-block;
+            animation: typing 1.5s infinite;
+        }
+
+        /* Trading Demo */
+        .trading-demo {
+            display: none;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00ff41;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            max-width: 500px;
+        }
+
+        .trade-display {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 255, 65, 0.05);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid #00ff41;
+        }
+
+        .profit-counter {
+            font-size: 24px;
+            font-weight: bold;
+            color: #00ff41;
+            animation: countUp 2s ease;
+        }
+
+        /* First Trade Section */
+        .first-trade {
+            display: none;
+            margin: 30px 0;
+        }
+
+        .trade-buttons {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .trade-btn {
+            background: linear-gradient(45deg, #00ff41, #00aa33);
+            color: #000;
+            border: none;
+            padding: 20px 40px;
+            font-size: 20px;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            animation: glow 2s infinite;
+        }
+
+        .trade-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.6);
+        }
+
+        /* Success Celebration */
+        .success-celebration {
+            display: none;
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .rank-display {
+            background: linear-gradient(45deg, #ffd700, #ffaa00);
+            color: #000;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            font-weight: bold;
+            animation: celebrate 1s ease;
+        }
+
+        .xp-bar {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            height: 20px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        .xp-fill {
+            background: linear-gradient(90deg, #00ff41, #00aa33);
+            height: 100%;
+            width: 0%;
+            transition: width 2s ease;
+            border-radius: 10px;
+        }
+
+        /* Email Section */
+        .email-section {
+            display: none;
+            margin: 30px 0;
+        }
+
+        .email-input {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00ff41;
+            color: #00ff41;
+            padding: 15px 20px;
+            font-size: 16px;
+            border-radius: 25px;
+            width: 300px;
+            text-align: center;
+            margin: 10px;
+        }
+
+        .email-input::placeholder {
+            color: rgba(0, 255, 65, 0.5);
+        }
+
+        .continue-btn {
+            background: linear-gradient(45deg, #00ff41, #00aa33);
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .continue-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.6);
+        }
+
+        /* Animations */
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(0, 255, 65, 0.3); }
+            50% { box-shadow: 0 0 30px rgba(0, 255, 65, 0.6); }
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% { opacity: 1; }
+            30% { opacity: 0.5; }
+        }
+
+        @keyframes countUp {
+            from { transform: scale(0.8); }
+            to { transform: scale(1); }
+        }
+
+        @keyframes celebrate {
+            0% { transform: scale(0.8) rotate(-5deg); }
+            50% { transform: scale(1.1) rotate(5deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .trade-buttons {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .countdown-timer, .progress-map, .social-proof {
+                position: relative;
+                margin: 10px auto;
+                display: block;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sticky UI Elements -->
+    <div class="countdown-timer" id="countdown">
+        ⏰ 11h 47m left
+    </div>
+    
+    <div class="progress-map">
+        <div>📍 YOUR JOURNEY:</div>
+        <div>[✓] Meet Bit → [🔄] First Trade → [ ] Join Terminal → [ ] Go Live</div>
+    </div>
+    
+    <div class="social-proof" id="socialProof">
+        🔥 247 people earning now
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Bit Avatar -->
+        <div class="bit-avatar" onclick="startDemo()">
+            🐾
+        </div>
+
+        <!-- Chat Messages -->
+        <div class="chat-bubble" id="chatBubble1">
+            <strong>Hi! I'm Bit 🐾</strong><br><br>
+            I found something cool. Watch this...
+        </div>
+
+        <div class="typing-indicator" id="typing1">
+            <div class="typing-dots">Bit is typing...</div>
+        </div>
+
+        <!-- Trading Demo -->
+        <div class="trading-demo" id="tradingDemo">
+            <h3>🎯 LIVE TRADES HAPPENING NOW:</h3>
+            
+            <div class="trade-display">
+                <div>
+                    <strong>EURUSD BUY</strong><br>
+                    <small>12 seconds ago</small>
+                </div>
+                <div class="profit-counter" id="profit1">+$47</div>
+            </div>
+            
+            <div class="trade-display">
+                <div>
+                    <strong>GBPJPY SELL</strong><br>
+                    <small>8 seconds ago</small>
+                </div>
+                <div class="profit-counter" id="profit2">+$23</div>
+            </div>
+            
+            <div class="trade-display">
+                <div>
+                    <strong>AUDUSD BUY</strong><br>
+                    <small>Just now</small>
+                </div>
+                <div class="profit-counter" id="profit3">+$31</div>
+            </div>
+        </div>
+
+        <div class="chat-bubble" id="chatBubble2" style="display: none;">
+            See that? That's happening right now.<br><br>
+            <strong>Want to try? Pick one:</strong>
+        </div>
+
+        <!-- First Trade -->
+        <div class="first-trade" id="firstTrade">
+            <h3>🎯 EURUSD - Pick Direction:</h3>
+            <div class="trade-buttons">
+                <button class="trade-btn" onclick="makeTrade('up')">
+                    ⬆️ UP
+                </button>
+                <button class="trade-btn" onclick="makeTrade('down')">
+                    ⬇️ DOWN
+                </button>
+            </div>
+        </div>
+
+        <!-- Success Celebration -->
+        <div class="success-celebration" id="successSection">
+            <div class="chat-bubble">
+                🎉 <strong>YES! +$23 profit!</strong><br><br>
+                You're a natural trader!
+            </div>
+            
+            <div class="rank-display">
+                🏆 RANK ACHIEVED: NIBBLER 01 🐾<br>
+                Welcome to the squad!
+            </div>
+            
+            <div>
+                <strong>XP Progress:</strong>
+                <div class="xp-bar">
+                    <div class="xp-fill" id="xpFill"></div>
+                </div>
+                <small>15/100 XP - Next rank: 85 XP to go</small>
+            </div>
+        </div>
+
+        <div class="chat-bubble" id="chatBubble3" style="display: none;">
+            That was practice. Ready for the real thing?<br><br>
+            <strong>Let me spin up your live terminal...</strong>
+        </div>
+
+        <!-- Email Section -->
+        <div class="email-section" id="emailSection">
+            <div class="chat-bubble">
+                To save your progress and activate your terminal:<br><br>
+                <strong>📧 What's your email?</strong><br>
+                <small>(I'll send your access codes)</small>
+            </div>
+            
+            <input type="email" class="email-input" id="emailInput" placeholder="your.email@example.com">
+            <br>
+            <button class="continue-btn" onclick="submitEmail()">
+                🚀 ACTIVATE TERMINAL
+            </button>
+        </div>
+
+        <div class="chat-bubble" id="finalMessage" style="display: none;">
+            🎖️ <strong>Terminal activated!</strong><br><br>
+            Next: Meet your squad in The Terminal...<br><br>
+            <button class="continue-btn" onclick="goToTelegram()">
+                📱 JOIN THE SQUAD
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 0;
+        let userEmail = '';
+        
+        // Auto-start demo after 2 seconds
+        setTimeout(startDemo, 2000);
+        
+        // Update countdown every minute
+        setInterval(updateCountdown, 60000);
+        
+        // Update social proof every 10 seconds
+        setInterval(updateSocialProof, 10000);
+
+        function startDemo() {
+            currentStep = 1;
+            document.getElementById('typing1').style.display = 'block';
+            
+            setTimeout(() => {
+                document.getElementById('typing1').style.display = 'none';
+                document.getElementById('tradingDemo').style.display = 'block';
+                
+                // Animate profit counters
+                setTimeout(() => animateProfits(), 1000);
+                setTimeout(() => showFirstTrade(), 4000);
+            }, 2000);
+        }
+
+        function animateProfits() {
+            // Animate the profit numbers counting up
+            const profits = ['profit1', 'profit2', 'profit3'];
+            const values = [47, 23, 31];
+            
+            profits.forEach((id, index) => {
+                let current = 0;
+                const target = values[index];
+                const increment = target / 20;
+                
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= target) {
+                        current = target;
+                        clearInterval(timer);
+                    }
+                    document.getElementById(id).textContent = `+$${Math.floor(current)}`;
+                }, 50);
+            });
+        }
+
+        function showFirstTrade() {
+            currentStep = 2;
+            document.getElementById('chatBubble2').style.display = 'block';
+            document.getElementById('firstTrade').style.display = 'block';
+            
+            // Update progress map
+            updateProgressMap();
+        }
+
+        function makeTrade(direction) {
+            currentStep = 3;
+            document.getElementById('firstTrade').style.display = 'none';
+            document.getElementById('successSection').style.display = 'block';
+            
+            // Animate XP bar
+            setTimeout(() => {
+                document.getElementById('xpFill').style.width = '15%';
+            }, 500);
+            
+            // Show next chat bubble
+            setTimeout(() => {
+                document.getElementById('chatBubble3').style.display = 'block';
+                showEmailSection();
+            }, 3000);
+            
+            updateProgressMap();
+        }
+
+        function showEmailSection() {
+            setTimeout(() => {
+                document.getElementById('emailSection').style.display = 'block';
+            }, 2000);
+        }
+
+        function submitEmail() {
+            const email = document.getElementById('emailInput').value;
+            if (!email || !email.includes('@')) {
+                alert('Please enter a valid email address');
+                return;
+            }
+            
+            userEmail = email;
+            currentStep = 4;
+            
+            // Hide email section, show final message
+            document.getElementById('emailSection').style.display = 'none';
+            document.getElementById('finalMessage').style.display = 'block';
+            
+            // Send email to backend
+            submitToBackend(email);
+            
+            updateProgressMap();
+        }
+
+        function submitToBackend(email) {
+            // Send email to backend for Press Pass provisioning
+            fetch('/api/provision-press-pass', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    email: email,
+                    source: 'bit_webapp',
+                    timestamp: new Date().toISOString()
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Press Pass provisioned:', data);
+                // Store session data
+                localStorage.setItem('pressPassId', data.press_pass_id);
+                localStorage.setItem('userEmail', email);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        function goToTelegram() {
+            // Redirect to Telegram bot with press pass ID
+            const pressPassId = localStorage.getItem('pressPassId') || 'demo';
+            window.open(`https://t.me/Bitten_Commander_bot?start=presspass_${pressPassId}`, '_blank');
+            
+            // Show completion message
+            alert('🎖️ Perfect! Check Telegram - Bit is waiting for you!\n\nAfter chatting with Bit, he\'ll guide you to your Mission Command Center.');
+            
+            // Also show the next page as backup
+            setTimeout(() => {
+                window.location.href = '/onboarding/telegram-preview.html';
+            }, 2000);
+        }
+
+        function updateCountdown() {
+            // Update countdown timer (mock)
+            const timer = document.getElementById('countdown');
+            const current = timer.textContent;
+            // Simple countdown simulation - in real app, use actual server time
+            timer.textContent = '⏰ ' + Math.floor(11 + Math.random() * 2) + 'h ' + Math.floor(Math.random() * 60) + 'm left';
+        }
+
+        function updateSocialProof() {
+            // Update social proof counter
+            const proof = document.getElementById('socialProof');
+            const count = 240 + Math.floor(Math.random() * 20);
+            proof.textContent = `🔥 ${count} people earning now`;
+        }
+
+        function updateProgressMap() {
+            const map = document.querySelector('.progress-map div:last-child');
+            switch(currentStep) {
+                case 1:
+                    map.textContent = '[✓] Meet Bit → [🔄] First Trade → [ ] Join Terminal → [ ] Go Live';
+                    break;
+                case 2:
+                    map.textContent = '[✓] Meet Bit → [🔄] First Trade → [ ] Join Terminal → [ ] Go Live';
+                    break;
+                case 3:
+                    map.textContent = '[✓] Meet Bit → [✓] First Trade → [🔄] Join Terminal → [ ] Go Live';
+                    break;
+                case 4:
+                    map.textContent = '[✓] Meet Bit → [✓] First Trade → [✓] Join Terminal → [🔄] Go Live';
+                    break;
+            }
+        }
+
+        // Exit intent detection
+        let exitIntentShown = false;
+        document.addEventListener('mouseleave', function(e) {
+            if (e.clientY <= 0 && !exitIntentShown && currentStep < 3) {
+                exitIntentShown = true;
+                showExitIntent();
+            }
+        });
+
+        function showExitIntent() {
+            if (confirm('🚨 Wait! Your session will expire!\nBit will lose the terminal you just built.\n\nSave it? Takes 10 seconds...')) {
+                document.getElementById('emailSection').style.display = 'block';
+                document.getElementById('emailInput').focus();
+            }
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowUp' && document.getElementById('firstTrade').style.display === 'block') {
+                makeTrade('up');
+            } else if (e.key === 'ArrowDown' && document.getElementById('firstTrade').style.display === 'block') {
+                makeTrade('down');
+            } else if (e.key === 'Enter' && document.getElementById('emailSection').style.display === 'block') {
+                submitEmail();
+            }
+        });
+    </script>
+</body>
+</html>

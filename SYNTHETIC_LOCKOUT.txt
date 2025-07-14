@@ -1,0 +1,15 @@
+SYNTHETIC SIGNAL GENERATOR LOCKOUT
+==================================
+
+DATE: 2025-07-14 00:20 UTC
+ACTION: EMERGENCY SHUTDOWN
+
+All synthetic/fake signal generators have been:
+- KILLED (processes terminated)
+- DELETED (files removed)
+- LOCKED OUT
+
+DO NOT CREATE SYNTHETIC GENERATORS
+These can get the system flagged and banned!
+
+Use ONLY real trading engines with actual market analysis.

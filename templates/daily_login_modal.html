@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Login Rewards - BITTEN</title>
+    <style>
+        :root {
+            --primary-color: #ff6b00;
+            --secondary-color: #1a1a1a;
+            --accent-color: #00ff88;
+            --gold-color: #ffd700;
+            --silver-color: #c0c0c0;
+            --bronze-color: #cd7f32;
+            --background-dark: #0a0a0a;
+            --card-background: rgba(26, 26, 26, 0.95);
+            --text-primary: #ffffff;
+            --text-secondary: #cccccc;
+            --border-color: rgba(255, 107, 0, 0.3);
+            --success-color: #00ff88;
+            --legendary-color: #ff4081;
+            --mythic-color: #9c27b0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--background-dark) 0%, #1a1a2e 100%);
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .modal-container {
+            background: var(--card-background);
+            border: 2px solid var(--border-color);
+            border-radius: 20px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            animation: slideUp 0.4s ease-out;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 20px 40px rgba(255, 107, 0, 0.2);
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary-color), #ff8c42);
+            padding: 20px;
+            text-align: center;
+            border-radius: 18px 18px 0 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .modal-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        .streak-count {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        .streak-title {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .streak-subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        .celebration-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .celebration-message {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, var(--accent-color), var(--gold-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+        }
+
+        .xp-earned {
+            background: linear-gradient(135deg, var(--accent-color), #00cc66);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            display: inline-block;
+            margin: 10px;
+            box-shadow: 0 5px 15px rgba(0, 255, 136, 0.3);
+            animation: bounce 1s ease-out;
+        }
+
+        .rewards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .reward-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .reward-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(255, 107, 0, 0.2);
+            border-color: var(--primary-color);
+        }
+
+        .reward-card.milestone {
+            border-color: var(--gold-color);
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 107, 0, 0.1));
+        }
+
+        .reward-card.legendary {
+            border-color: var(--legendary-color);
+            background: linear-gradient(135deg, rgba(255, 64, 129, 0.1), rgba(156, 39, 176, 0.1));
+        }
+
+        .reward-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            display: block;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .reward-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: var(--accent-color);
+        }
+
+        .reward-description {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .milestone-section {
+            background: rgba(255, 215, 0, 0.1);
+            border: 2px solid var(--gold-color);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 30px 0;
+            text-align: center;
+            position: relative;
+        }
+
+        .milestone-title {
+            font-size: 1.5rem;
+            color: var(--gold-color);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .progress-bar {
+            background: rgba(255, 255, 255, 0.1);
+            height: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, var(--accent-color), var(--gold-color));
+            height: 100%;
+            border-radius: 10px;
+            transition: width 1s ease-out;
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: progressShimmer 2s infinite;
+        }
+
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-weight: bold;
+            font-size: 0.9rem;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+        }
+
+        .calendar-preview {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .calendar-title {
+            text-align: center;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: var(--accent-color);
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .calendar-day.completed {
+            background: var(--success-color);
+            color: white;
+            animation: checkmark 0.5s ease-out;
+        }
+
+        .calendar-day.current {
+            background: var(--primary-color);
+            color: white;
+            animation: currentDay 2s ease-in-out infinite;
+        }
+
+        .calendar-day.future {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-secondary);
+        }
+
+        .badges-section {
+            margin: 30px 0;
+        }
+
+        .badges-title {
+            text-align: center;
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            color: var(--gold-color);
+        }
+
+        .badges-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .badge {
+            background: linear-gradient(135deg, var(--gold-color), #ffed4e);
+            color: var(--secondary-color);
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
+            animation: badgeGlow 2s ease-in-out infinite alternate;
+        }
+
+        .streak-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--accent-color);
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .modal-footer {
+            padding: 20px 30px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), #ff8c42);
+            color: white;
+            box-shadow: 0 5px 15px rgba(255, 107, 0, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 107, 0, 0.4);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .close-button {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 1;
+            padding: 5px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .close-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: rotate(90deg);
+        }
+
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            animation: particle-float 3s ease-in-out infinite;
+        }
+
+        .social-share {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .social-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .social-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: white;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .social-btn.twitter {
+            background: #1da1f2;
+        }
+
+        .social-btn.discord {
+            background: #7289da;
+        }
+
+        .social-btn.telegram {
+            background: #0088cc;
+        }
+
+        .social-btn:hover {
+            transform: scale(1.1);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @keyframes glow {
+            from { text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); }
+            to { text-shadow: 2px 2px 20px rgba(255, 107, 0, 0.8); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        @keyframes progressShimmer {
+            0%, 100% { transform: translateX(-100%); }
+            50% { transform: translateX(100%); }
+        }
+
+        @keyframes checkmark {
+            0% { transform: scale(0) rotate(180deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+
+        @keyframes currentDay {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255, 107, 0, 0.7); }
+            50% { box-shadow: 0 0 0 10px rgba(255, 107, 0, 0); }
+        }
+
+        @keyframes badgeGlow {
+            from { box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3); }
+            to { box-shadow: 0 5px 25px rgba(255, 215, 0, 0.6); }
+        }
+
+        @keyframes particle-float {
+            0%, 100% { 
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+            50% { 
+                transform: translateY(-20px) rotate(180deg);
+                opacity: 0.5;
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .modal-container {
+                width: 95%;
+                margin: 10px;
+            }
+
+            .modal-body {
+                padding: 20px;
+            }
+
+            .rewards-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .streak-count {
+                font-size: 2.5rem;
+            }
+
+            .streak-title {
+                font-size: 1.2rem;
+            }
+
+            .modal-footer {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .btn {
+                width: 100%;
+                margin: 5px 0;
+            }
+        }
+
+        /* Tier-specific styling */
+        .tier-common { border-color: #808080; }
+        .tier-uncommon { border-color: #00ff00; }
+        .tier-rare { border-color: #0080ff; }
+        .tier-epic { border-color: #8000ff; }
+        .tier-legendary { border-color: #ff8000; }
+        .tier-mythic { border-color: #ff0080; }
+    </style>
+</head>
+<body>
+    <div class="modal-overlay" id="loginModal">
+        <div class="modal-container">
+            <button class="close-button" onclick="closeModal()">&times;</button>
+            
+            <div class="modal-header">
+                <div class="streak-count" id="streakCount">{{ streak_data.current_streak }}</div>
+                <div class="streak-title">Day Streak!</div>
+                <div class="streak-subtitle">{{ streak_data.status.value.title() }} Status</div>
+                <!-- Animated particles -->
+                <div class="particle" style="top: 20%; left: 10%; animation-delay: 0s;">✨</div>
+                <div class="particle" style="top: 60%; left: 90%; animation-delay: 1s;">🔥</div>
+                <div class="particle" style="top: 80%; left: 20%; animation-delay: 2s;">⭐</div>
+            </div>
+
+            <div class="modal-body">
+                <!-- Celebration Section -->
+                <div class="celebration-section">
+                    {% if login_reward.total_xp > 0 %}
+                    <div class="celebration-message" id="celebrationMessage">
+                        {{ celebration_message or "🎉 Welcome back, warrior! Your dedication is rewarded!" }}
+                    </div>
+                    <div class="xp-earned">
+                        <span>+{{ login_reward.total_xp }} XP</span>
+                        {% if login_reward.streak_multiplier > 1.0 %}
+                        <small style="display: block; font-size: 0.8rem; opacity: 0.9;">
+                            {{ login_reward.streak_multiplier }}x Streak Bonus
+                        </small>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Streak Stats -->
+                <div class="streak-stats">
+                    <div class="stat-item">
+                        <span class="stat-value">{{ streak_data.current_streak }}</span>
+                        <span class="stat-label">Current</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value">{{ streak_data.longest_streak }}</span>
+                        <span class="stat-label">Best</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value">{{ streak_data.total_login_days }}</span>
+                        <span class="stat-label">Total Days</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value">{{ "%.1f"|format(login_reward.streak_multiplier) }}x</span>
+                        <span class="stat-label">Multiplier</span>
+                    </div>
+                </div>
+
+                <!-- Rewards Section -->
+                {% if login_reward.badges_unlocked or login_reward.special_rewards %}
+                <div class="rewards-grid">
+                    {% for badge in login_reward.badges_unlocked %}
+                    <div class="reward-card milestone">
+                        <div class="reward-icon">🏆</div>
+                        <div class="reward-title">{{ badge }} Badge</div>
+                        <div class="reward-description">Achievement unlocked!</div>
+                    </div>
+                    {% endfor %}
+                    
+                    {% for reward in login_reward.special_rewards %}
+                    <div class="reward-card legendary">
+                        <div class="reward-icon">🎁</div>
+                        <div class="reward-title">{{ reward.item }}</div>
+                        <div class="reward-description">{{ reward.description }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- Next Milestone Progress -->
+                {% if streak_data.next_milestone %}
+                <div class="milestone-section">
+                    <div class="milestone-title">Next Milestone: {{ streak_data.next_milestone }} Days</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: {{ (streak_data.current_streak / streak_data.next_milestone * 100)|round(1) }}%"></div>
+                        <div class="progress-text">
+                            {{ streak_data.days_until_milestone }} days remaining
+                        </div>
+                    </div>
+                    <div style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 10px;">
+                        Massive rewards await at {{ streak_data.next_milestone }} days!
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Calendar Preview -->
+                <div class="calendar-preview">
+                    <div class="calendar-title">This Week's Progress</div>
+                    <div class="calendar-grid" id="weekCalendar">
+                        <!-- Generated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Badges Section -->
+                {% if user_badges %}
+                <div class="badges-section">
+                    <div class="badges-title">Your Badges</div>
+                    <div class="badges-container">
+                        {% for badge in user_badges[:3] %}
+                        <div class="badge">{{ badge.name }}</div>
+                        {% endfor %}
+                        {% if user_badges|length > 3 %}
+                        <div class="badge">+{{ user_badges|length - 3 }} more</div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Streak Protection Info -->
+                {% if streak_data.streak_freeze_available or streak_data.protection_used %}
+                <div class="reward-card" style="margin: 20px 0; background: rgba(0, 255, 136, 0.1); border-color: var(--accent-color);">
+                    <div class="reward-icon">🛡️</div>
+                    <div class="reward-title">Streak Protection</div>
+                    <div class="reward-description">
+                        {% if streak_data.protection_used %}
+                        Protection used today - streak saved!
+                        {% elif streak_data.streak_freeze_available %}
+                        Streak Freeze available ({{ 1 if not streak_data.monthly_protection_used else 0 }} free this month)
+                        {% else %}
+                        Reach 7+ days for protection options
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Social Share -->
+                <div class="social-share">
+                    <div style="margin-bottom: 10px; color: var(--text-secondary);">Share your achievement!</div>
+                    <div class="social-buttons">
+                        <a href="#" class="social-btn twitter" onclick="shareToTwitter()">🐦</a>
+                        <a href="#" class="social-btn discord" onclick="shareToDiscord()">💬</a>
+                        <a href="#" class="social-btn telegram" onclick="shareToTelegram()">📱</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <div>
+                    <small style="color: var(--text-secondary);">
+                        {% if streak_data.comeback_bonus_eligible %}
+                        🎉 Comeback bonus applied!
+                        {% else %}
+                        Keep your streak alive for bigger rewards!
+                        {% endif %}
+                    </small>
+                </div>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <a href="#" class="btn btn-secondary" onclick="viewFullCalendar()">View Calendar</a>
+                    <a href="#" class="btn btn-secondary" onclick="viewLeaderboard()">Leaderboard</a>
+                    <button class="btn btn-primary" onclick="continueTrading()">Continue Trading</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Animation and interaction handlers
+        function closeModal() {
+            document.getElementById('loginModal').style.animation = 'fadeIn 0.3s ease-out reverse';
+            setTimeout(() => {
+                document.getElementById('loginModal').style.display = 'none';
+            }, 300);
+        }
+
+        function continueTrading() {
+            // Redirect to main trading interface
+            window.location.href = '/trading-dashboard';
+        }
+
+        function viewFullCalendar() {
+            window.location.href = '/streak-calendar';
+        }
+
+        function viewLeaderboard() {
+            window.location.href = '/streak-leaderboard';
+        }
+
+        function shareToTwitter() {
+            const streakCount = document.getElementById('streakCount').textContent;
+            const text = `Just hit a ${streakCount} day streak on BITTEN! 🔥 The grind never stops! #BittenStreak #TradingLife`;
+            window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
+        }
+
+        function shareToDiscord() {
+            // Copy to clipboard for Discord sharing
+            const streakCount = document.getElementById('streakCount').textContent;
+            const text = `🔥 ${streakCount} day streak on BITTEN! Who can beat this? 💪`;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Achievement copied to clipboard! Paste it in your Discord server.');
+            });
+        }
+
+        function shareToTelegram() {
+            const streakCount = document.getElementById('streakCount').textContent;
+            const text = `🎯 Hit a ${streakCount} day streak on BITTEN! Trading discipline pays off! 📈`;
+            window.open(`https://t.me/share/url?url=https://bitten.trading&text=${encodeURIComponent(text)}`, '_blank');
+        }
+
+        function generateWeekCalendar() {
+            const calendar = document.getElementById('weekCalendar');
+            const today = new Date();
+            const startOfWeek = new Date(today);
+            startOfWeek.setDate(today.getDate() - today.getDay());
+
+            // Days of week labels
+            const dayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+            
+            for (let i = 0; i < 7; i++) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day';
+                dayElement.textContent = dayLabels[i];
+                
+                const dayDate = new Date(startOfWeek);
+                dayDate.setDate(startOfWeek.getDate() + i);
+                
+                if (dayDate.toDateString() === today.toDateString()) {
+                    dayElement.classList.add('current');
+                } else if (dayDate < today) {
+                    dayElement.classList.add('completed');
+                } else {
+                    dayElement.classList.add('future');
+                }
+                
+                calendar.appendChild(dayElement);
+            }
+        }
+
+        function addCelebrationEffects() {
+            const streakCount = parseInt(document.getElementById('streakCount').textContent);
+            
+            // Add extra effects for milestone achievements
+            if ([7, 14, 30, 60, 90, 180, 365].includes(streakCount)) {
+                createFireworks();
+                setTimeout(() => {
+                    createConfetti();
+                }, 500);
+            }
+        }
+
+        function createFireworks() {
+            const container = document.querySelector('.modal-header');
+            for (let i = 0; i < 10; i++) {
+                setTimeout(() => {
+                    const firework = document.createElement('div');
+                    firework.style.position = 'absolute';
+                    firework.style.left = Math.random() * 100 + '%';
+                    firework.style.top = Math.random() * 100 + '%';
+                    firework.style.fontSize = '1.5rem';
+                    firework.innerHTML = '✨';
+                    firework.style.animation = 'particle-float 1s ease-out forwards';
+                    container.appendChild(firework);
+                    
+                    setTimeout(() => {
+                        firework.remove();
+                    }, 1000);
+                }, i * 100);
+            }
+        }
+
+        function createConfetti() {
+            const container = document.querySelector('.modal-container');
+            const colors = ['🎉', '🎊', '✨', '🔥', '⭐', '💫'];
+            
+            for (let i = 0; i < 20; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.style.position = 'absolute';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.top = '-10px';
+                    confetti.style.fontSize = '1.2rem';
+                    confetti.innerHTML = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animation = 'particle-float 3s ease-out forwards';
+                    confetti.style.zIndex = '1000';
+                    container.appendChild(confetti);
+                    
+                    setTimeout(() => {
+                        confetti.remove();
+                    }, 3000);
+                }, i * 50);
+            }
+        }
+
+        // Initialize the modal
+        document.addEventListener('DOMContentLoaded', function() {
+            generateWeekCalendar();
+            addCelebrationEffects();
+            
+            // Auto-close modal after 30 seconds if no interaction
+            setTimeout(() => {
+                if (document.getElementById('loginModal').style.display !== 'none') {
+                    closeModal();
+                }
+            }, 30000);
+        });
+
+        // Close modal on escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        // Close modal on outside click
+        document.getElementById('loginModal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeModal();
+            }
+        });
+    </script>
+    
+    <!-- Load BITTEN Mission Functions -->
+    <script src="/src/ui/common/mission_functions.js"></script>
+    <script src="/src/ui/common/webapp_functions.js"></script>
+</body>
+</html>

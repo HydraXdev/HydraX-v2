@@ -1,3 +1,4 @@
+import os
 #!/usr/bin/env python3
 """Properly configured signal bot with WebApp integration"""
 
@@ -10,8 +11,8 @@ from telegram import Bot, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 from telegram.constants import ParseMode
 
 # Configuration
-BOT_TOKEN = "7854827710:AAHnUNfP5GyxoYePoAV5BeOtDbmEJo6i_EQ"
-CHAT_ID = "-1002581996861"
+BOT_TOKEN = os.getenv("BOT_TOKEN", os.getenv("TELEGRAM_BOT_TOKEN", "DISABLED_FOR_SECURITY"))
+CHAT_ID = int(os.getenv("CHAT_ID", "-1002581996861"))
 WEBAPP_BASE_URL = "https://joinbitten.com"  # Now using HTTPS!
 
 # HTTPS is now configured
@@ -93,7 +94,7 @@ class SignalBot:
         
         # Test signal 1 - High confidence
         signal1 = {
-            'user_id': '7176191872',
+            'user_id': 'int(os.getenv("ADMIN_USER_ID", "7176191872"))',
             'signal': {
                 'id': f'sig_{datetime.now().strftime("%H%M%S")}_1',
                 'signal_type': 'PRECISION',
@@ -115,7 +116,7 @@ class SignalBot:
         
         # Test signal 2 - Sniper shot
         signal2 = {
-            'user_id': '7176191872',
+            'user_id': 'int(os.getenv("ADMIN_USER_ID", "7176191872"))',
             'signal': {
                 'id': f'sig_{datetime.now().strftime("%H%M%S")}_2',
                 'signal_type': 'SNIPER',
@@ -137,7 +138,7 @@ class SignalBot:
         
         # Test signal 3 - Lower confidence
         signal3 = {
-            'user_id': '7176191872',
+            'user_id': 'int(os.getenv("ADMIN_USER_ID", "7176191872"))',
             'signal': {
                 'id': f'sig_{datetime.now().strftime("%H%M%S")}_3',
                 'signal_type': 'STANDARD',

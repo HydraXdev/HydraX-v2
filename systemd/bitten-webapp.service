@@ -26,7 +26,7 @@ ExecStartPre=/bin/chown root:root /var/log/bitten/webapp
 ExecReload=/bin/kill -HUP $MAINPID
 
 # Restart configuration
-Restart=always
+Restart=no  # EMERGENCY: Disabled auto-restart
 RestartSec=10
 StartLimitInterval=60
 StartLimitBurst=5

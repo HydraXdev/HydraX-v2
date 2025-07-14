@@ -12,8 +12,8 @@ import time
 from datetime import datetime
 
 # Configuration
-BOT_TOKEN = '7854827710:AAHnUNfP5GyxoYePoAV5BeOtDbmEJo6i_EQ'
-CHAT_ID = '-1002581996861'
+BOT_TOKEN = 'os.getenv("BOT_TOKEN", "DISABLED_FOR_SECURITY")'
+CHAT_ID = 'int(os.getenv("CHAT_ID", "-1002581996861"))'
 WEBAPP_PORT = 8888
 WEBAPP_URL = f'http://134.199.204.67:{WEBAPP_PORT}'
 

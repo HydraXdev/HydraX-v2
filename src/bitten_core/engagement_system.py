@@ -10,11 +10,17 @@ from enum import Enum
 import random
 import json
 import asyncio
+import logging
+import traceback
 from collections import defaultdict
 
 from .database import DatabaseManager
 from .bot_personality import BotPersonality
 from .reward_types import RewardType, Reward
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 class MissionType(Enum):
@@ -150,14 +156,28 @@ class EngagementSystem:
     
     async def initialize(self):
         """Initialize engagement system from database"""
-        await self._load_user_data()
-        await self._load_current_campaign()
-        await self._refresh_daily_missions()
+        try:
+            logger.info("Initializing engagement system...")
+            await self._load_user_data()
+            await self._load_current_campaign()
+            await self._refresh_daily_missions()
+            logger.info("Engagement system initialized successfully")
+        except Exception as e:
+            logger.error(f"Failed to initialize engagement system: {e}")
+            logger.error(traceback.format_exc())
+            # Continue with default initialization
+            await self._initialize_defaults()
     
     async def _load_user_data(self):
         """Load user engagement data from database"""
-        # Implementation would load from database
-        pass
+        try:
+            logger.info("Loading user engagement data...")
+            # Implementation would load from database
+            # For now, just log that we're using in-memory data
+            logger.info("Using in-memory data storage for development")
+        except Exception as e:
+            logger.error(f"Failed to load user data: {e}")
+            raise
     
     async def _load_current_campaign(self):
         """Load current seasonal campaign"""
@@ -179,53 +199,73 @@ class EngagementSystem:
     
     async def record_login(self, user_id: str) -> Dict[str, Any]:
         """Record user login and update streak"""
-        now = datetime.now()
-        
-        if user_id not in self.user_streaks:
-            self.user_streaks[user_id] = LoginStreak(user_id=user_id)
-        
-        streak = self.user_streaks[user_id]
-        streak_broken = False
-        rewards_earned = []
-        
-        if streak.last_login:
-            days_since_last = (now.date() - streak.last_login.date()).days
+        try:
+            logger.info(f"Recording login for user {user_id}")
+            now = datetime.now()
             
-            if days_since_last == 1:
-                # Continue streak
-                streak.current_streak += 1
-            elif days_since_last > 1:
-                # Streak broken
-                streak_broken = True
+            if not user_id:
+                logger.warning("Empty user_id provided to record_login")
+                return self._get_empty_login_result()
+            
+            if user_id not in self.user_streaks:
+                self.user_streaks[user_id] = LoginStreak(user_id=user_id)
+                logger.info(f"Created new login streak for user {user_id}")
+            
+            streak = self.user_streaks[user_id]
+            streak_broken = False
+            rewards_earned = []
+            
+            if streak.last_login:
+                days_since_last = (now.date() - streak.last_login.date()).days
+                
+                if days_since_last == 1:
+                    # Continue streak
+                    streak.current_streak += 1
+                    logger.info(f"User {user_id} continued streak: {streak.current_streak}")
+                elif days_since_last > 1:
+                    # Streak broken
+                    streak_broken = True
+                    logger.info(f"User {user_id} broke streak of {streak.current_streak} days")
+                    streak.current_streak = 1
+                # If same day, don't increment
+            else:
+                # First login
                 streak.current_streak = 1
-            # If same day, don't increment
-        else:
-            # First login
-            streak.current_streak = 1
-        
-        streak.last_login = now
-        streak.total_logins += 1
-        
-        # Update longest streak
-        if streak.current_streak > streak.longest_streak:
-            streak.longest_streak = streak.current_streak
-        
-        # Check for milestone rewards
-        for milestone, rewards in self.streak_milestones.items():
-            if streak.current_streak == milestone and milestone not in streak.streak_rewards_claimed:
-                streak.streak_rewards_claimed.append(milestone)
-                rewards_earned.extend(rewards)
-        
-        # Save to database
-        await self._save_login_streak(streak)
-        
-        return {
-            "current_streak": streak.current_streak,
-            "longest_streak": streak.longest_streak,
-            "streak_broken": streak_broken,
-            "rewards_earned": rewards_earned,
-            "next_milestone": self._get_next_milestone(streak.current_streak)
-        }
+                logger.info(f"User {user_id} first login recorded")
+            
+            streak.last_login = now
+            streak.total_logins += 1
+            
+            # Update longest streak
+            if streak.current_streak > streak.longest_streak:
+                streak.longest_streak = streak.current_streak
+                logger.info(f"User {user_id} set new longest streak: {streak.longest_streak}")
+            
+            # Check for milestone rewards
+            for milestone, rewards in self.streak_milestones.items():
+                if streak.current_streak == milestone and milestone not in streak.streak_rewards_claimed:
+                    streak.streak_rewards_claimed.append(milestone)
+                    rewards_earned.extend(rewards)
+                    logger.info(f"User {user_id} earned milestone rewards for {milestone} day streak")
+            
+            # Save to database
+            await self._save_login_streak(streak)
+            
+            result = {
+                "current_streak": streak.current_streak,
+                "longest_streak": streak.longest_streak,
+                "streak_broken": streak_broken,
+                "rewards_earned": rewards_earned,
+                "next_milestone": self._get_next_milestone(streak.current_streak)
+            }
+            
+            logger.info(f"Login recorded for user {user_id}: {result}")
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error recording login for user {user_id}: {e}")
+            logger.error(traceback.format_exc())
+            return self._get_empty_login_result()
     
     def _get_next_milestone(self, current_streak: int) -> Optional[int]:
         """Get next streak milestone"""
@@ -271,22 +311,45 @@ class EngagementSystem:
     
     async def generate_daily_missions(self, user_id: str, user_bots: List[str]) -> List[DailyMission]:
         """Generate daily missions from user's bots"""
-        missions = []
-        mission_count = min(3, len(user_bots))  # Up to 3 daily missions
-        
-        selected_bots = random.sample(user_bots, mission_count)
-        
-        for bot_id in selected_bots:
-            mission_type = random.choice(list(MissionType))
-            mission = self._create_mission_for_type(bot_id, mission_type)
-            missions.append(mission)
-        
-        self.daily_missions[user_id] = missions
-        
-        # Save to database
-        await self._save_daily_missions(user_id, missions)
-        
-        return missions
+        try:
+            logger.info(f"Generating daily missions for user {user_id} with {len(user_bots)} bots")
+            
+            if not user_id:
+                logger.warning("Empty user_id provided to generate_daily_missions")
+                return []
+            
+            if not user_bots:
+                logger.info(f"No bots available for user {user_id}, skipping mission generation")
+                return []
+            
+            missions = []
+            mission_count = min(3, len(user_bots))  # Up to 3 daily missions
+            
+            selected_bots = random.sample(user_bots, mission_count)
+            logger.info(f"Selected {len(selected_bots)} bots for missions: {selected_bots}")
+            
+            for bot_id in selected_bots:
+                try:
+                    mission_type = random.choice(list(MissionType))
+                    mission = self._create_mission_for_type(bot_id, mission_type)
+                    missions.append(mission)
+                    logger.info(f"Created mission: {mission.description} for bot {bot_id}")
+                except Exception as e:
+                    logger.error(f"Failed to create mission for bot {bot_id}: {e}")
+                    continue
+            
+            self.daily_missions[user_id] = missions
+            
+            # Save to database
+            await self._save_daily_missions(user_id, missions)
+            
+            logger.info(f"Generated {len(missions)} daily missions for user {user_id}")
+            return missions
+            
+        except Exception as e:
+            logger.error(f"Error generating daily missions for user {user_id}: {e}")
+            logger.error(traceback.format_exc())
+            return []
     
     def _create_mission_for_type(self, bot_id: str, mission_type: MissionType) -> DailyMission:
         """Create a mission based on type"""
@@ -374,25 +437,40 @@ class EngagementSystem:
     
     async def generate_mystery_box(self, user_id: str, source: str = "mission") -> MysteryBox:
         """Generate a mystery box with random rarity and contents"""
-        # Determine rarity
-        rarity = self._determine_box_rarity()
-        
-        # Generate contents based on rarity
-        contents = self._generate_box_contents(rarity)
-        
-        box = MysteryBox(
-            box_id=f"box_{user_id}_{datetime.now().timestamp()}",
-            rarity=rarity,
-            contents=contents,
-            source=source
-        )
-        
-        self.mystery_boxes[user_id].append(box)
-        
-        # Save to database
-        await self._save_mystery_box(user_id, box)
-        
-        return box
+        try:
+            logger.info(f"Generating mystery box for user {user_id} from source: {source}")
+            
+            if not user_id:
+                logger.warning("Empty user_id provided to generate_mystery_box")
+                raise ValueError("User ID cannot be empty")
+            
+            # Determine rarity
+            rarity = self._determine_box_rarity()
+            logger.info(f"Determined box rarity: {rarity.value}")
+            
+            # Generate contents based on rarity
+            contents = self._generate_box_contents(rarity)
+            logger.info(f"Generated {len(contents)} items for box")
+            
+            box = MysteryBox(
+                box_id=f"box_{user_id}_{datetime.now().timestamp()}",
+                rarity=rarity,
+                contents=contents,
+                source=source
+            )
+            
+            self.mystery_boxes[user_id].append(box)
+            
+            # Save to database
+            await self._save_mystery_box(user_id, box)
+            
+            logger.info(f"Generated mystery box {box.box_id} for user {user_id}")
+            return box
+            
+        except Exception as e:
+            logger.error(f"Error generating mystery box for user {user_id}: {e}")
+            logger.error(traceback.format_exc())
+            raise
     
     def _determine_box_rarity(self) -> MysteryBoxRarity:
         """Determine mystery box rarity based on drop rates"""
@@ -561,37 +639,100 @@ class EngagementSystem:
     # Database save methods (placeholder implementations)
     async def _save_login_streak(self, streak: LoginStreak):
         """Save login streak to database"""
-        pass
+        try:
+            logger.debug(f"Saving login streak for user {streak.user_id}")
+            # TODO: Implement database save
+            pass
+        except Exception as e:
+            logger.error(f"Failed to save login streak for user {streak.user_id}: {e}")
     
     async def _save_personal_record(self, user_id: str, record: PersonalRecord):
         """Save personal record to database"""
-        pass
+        try:
+            logger.debug(f"Saving personal record for user {user_id}: {record.record_type}")
+            # TODO: Implement database save
+            pass
+        except Exception as e:
+            logger.error(f"Failed to save personal record for user {user_id}: {e}")
     
     async def _save_daily_missions(self, user_id: str, missions: List[DailyMission]):
         """Save daily missions to database"""
-        pass
+        try:
+            logger.debug(f"Saving {len(missions)} daily missions for user {user_id}")
+            # TODO: Implement database save
+            pass
+        except Exception as e:
+            logger.error(f"Failed to save daily missions for user {user_id}: {e}")
     
     async def _save_mission_progress(self, user_id: str):
         """Save mission progress to database"""
-        pass
+        try:
+            logger.debug(f"Saving mission progress for user {user_id}")
+            # TODO: Implement database save
+            pass
+        except Exception as e:
+            logger.error(f"Failed to save mission progress for user {user_id}: {e}")
     
     async def _save_mystery_box(self, user_id: str, box: MysteryBox):
         """Save mystery box to database"""
-        pass
+        try:
+            logger.debug(f"Saving mystery box {box.box_id} for user {user_id}")
+            # TODO: Implement database save
+            pass
+        except Exception as e:
+            logger.error(f"Failed to save mystery box for user {user_id}: {e}")
     
     async def _save_campaign_progress(self, user_id: str, campaign: SeasonalCampaign):
         """Save campaign progress to database"""
-        pass
+        try:
+            logger.debug(f"Saving campaign progress for user {user_id}")
+            # TODO: Implement database save
+            pass
+        except Exception as e:
+            logger.error(f"Failed to save campaign progress for user {user_id}: {e}")
     
     async def _award_record_rewards(self, user_id: str, record_type: str, value: float):
         """Award rewards for breaking personal records"""
-        # Implementation would grant rewards based on record type
-        pass
+        try:
+            logger.info(f"Awarding record rewards to user {user_id} for {record_type}: {value}")
+            # TODO: Implement reward granting based on record type
+            pass
+        except Exception as e:
+            logger.error(f"Failed to award record rewards for user {user_id}: {e}")
     
     async def _refresh_daily_missions(self):
         """Refresh daily missions for all users"""
-        # Implementation would run daily to generate new missions
-        pass
+        try:
+            logger.info("Refreshing daily missions for all users")
+            # TODO: Implementation would run daily to generate new missions
+            pass
+        except Exception as e:
+            logger.error(f"Failed to refresh daily missions: {e}")
+    
+    async def _initialize_defaults(self):
+        """Initialize with default values when database fails"""
+        try:
+            logger.info("Initializing engagement system with default values")
+            self.user_streaks = {}
+            self.user_records = defaultdict(list)
+            self.daily_missions = defaultdict(list)
+            self.mystery_boxes = defaultdict(list)
+            self.seasonal_campaigns = {}
+            self.current_season = None
+            await self._load_current_campaign()
+            logger.info("Default initialization completed")
+        except Exception as e:
+            logger.error(f"Failed to initialize defaults: {e}")
+    
+    def _get_empty_login_result(self) -> Dict[str, Any]:
+        """Get empty login result for error cases"""
+        return {
+            "current_streak": 0,
+            "longest_streak": 0,
+            "streak_broken": False,
+            "rewards_earned": [],
+            "next_milestone": 3
+        }
 
 
 # Reward types that need to be defined

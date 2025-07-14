@@ -59,7 +59,7 @@ self_optimizing: true
 
 ### **Tier Limits (FINAL)**
 ```yaml
-PRESS_PASS: {shots: 1, tcs: 60%, price: $0, duration: 30_days}
+PRESS_PASS: {shots: 1, tcs: 60%, price: $0, duration: 7_days, weekly_limit: 200, xp_resets_nightly: true}
 NIBBLER: {shots: 6, tcs: 70%, price: $39}
 FANG: {shots: 10, tcs: 85%, price: $89}
 COMMANDER: {shots: 20, tcs: 90%, price: $139}

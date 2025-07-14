@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ briefing.operation_header.title }} - CLASSIFIED</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+    <style>
+        :root {
+            --military-green: #1a3d1a;
+            --bright-green: #00ff41;
+            --amber: #ffb700;
+            --red-alert: #ff073a;
+            --dark-bg: #0a0a0a;
+            --gray-text: #b0b0b0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier Prime', monospace;
+            background: linear-gradient(135deg, var(--dark-bg) 0%, var(--military-green) 100%);
+            color: var(--bright-green);
+            line-height: 1.4;
+            overflow-x: hidden;
+        }
+
+        .classified-header {
+            background: linear-gradient(90deg, var(--red-alert) 0%, #cc0000 100%);
+            color: white;
+            text-align: center;
+            padding: 8px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            animation: flash 2s infinite alternate;
+        }
+
+        @keyframes flash {
+            0% { opacity: 0.8; }
+            100% { opacity: 1; }
+        }
+
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .mission-header {
+            background: rgba(26, 61, 26, 0.8);
+            border: 2px solid var(--bright-green);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+        }
+
+        .mission-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 2em;
+            font-weight: 900;
+            text-align: center;
+            color: var(--bright-green);
+            text-shadow: 0 0 10px var(--bright-green);
+            margin-bottom: 10px;
+        }
+
+        .mission-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .meta-item {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-left: 4px solid var(--bright-green);
+            border-radius: 5px;
+        }
+
+        .meta-label {
+            color: var(--amber);
+            font-size: 0.8em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .meta-value {
+            color: var(--bright-green);
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .briefing-section {
+            background: rgba(10, 10, 10, 0.9);
+            border: 1px solid var(--bright-green);
+            border-radius: 8px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .section-header {
+            background: linear-gradient(90deg, var(--military-green), rgba(26, 61, 26, 0.8));
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--bright-green);
+            font-family: 'Orbitron', monospace;
+            font-weight: bold;
+            color: var(--bright-green);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .section-content {
+            padding: 20px;
+        }
+
+        .objectives-list {
+            list-style: none;
+            counter-reset: objective-counter;
+        }
+
+        .objective-item {
+            counter-increment: objective-counter;
+            background: rgba(26, 61, 26, 0.3);
+            margin-bottom: 15px;
+            padding: 15px;
+            border-left: 4px solid var(--amber);
+            border-radius: 5px;
+            position: relative;
+        }
+
+        .objective-item::before {
+            content: "OBJ-" counter(objective-counter, decimal-leading-zero);
+            position: absolute;
+            top: -8px;
+            left: 10px;
+            background: var(--amber);
+            color: black;
+            padding: 2px 8px;
+            font-size: 0.7em;
+            font-weight: bold;
+            border-radius: 3px;
+        }
+
+        .objective-designation {
+            color: var(--amber);
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 8px;
+        }
+
+        .objective-description {
+            color: var(--bright-green);
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+
+        .objective-notes {
+            color: var(--gray-text);
+            font-style: italic;
+            font-size: 0.9em;
+            border-top: 1px dashed var(--gray-text);
+            padding-top: 8px;
+        }
+
+        .story-context {
+            background: linear-gradient(135deg, rgba(0, 20, 40, 0.8), rgba(26, 61, 26, 0.5));
+            border: 2px solid var(--amber);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .story-context::before {
+            content: "📖 NORMAN'S LEGACY";
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: var(--amber);
+            color: black;
+            padding: 4px 12px;
+            font-weight: bold;
+            font-size: 0.8em;
+            border-radius: 3px;
+        }
+
+        .bit-presence {
+            background: rgba(75, 50, 25, 0.3);
+            border: 1px solid #D2691E;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .bit-avatar {
+            width: 50px;
+            height: 50px;
+            background: radial-gradient(circle, #D2691E, #8B4513);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .bit-message {
+            flex: 1;
+            color: #D2691E;
+            font-style: italic;
+        }
+
+        .checklist {
+            list-style: none;
+        }
+
+        .checklist-item {
+            padding: 8px 0;
+            border-bottom: 1px dashed rgba(0, 255, 65, 0.3);
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .checklist-item::before {
+            content: "☐";
+            position: absolute;
+            left: 0;
+            color: var(--amber);
+            font-size: 1.2em;
+        }
+
+        .checklist-item.completed::before {
+            content: "☑";
+            color: var(--bright-green);
+        }
+
+        .risk-assessment {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .risk-low {
+            background: rgba(0, 255, 0, 0.1);
+            border: 2px solid #00ff00;
+            color: #00ff00;
+        }
+
+        .risk-moderate {
+            background: rgba(255, 183, 0, 0.1);
+            border: 2px solid var(--amber);
+            color: var(--amber);
+        }
+
+        .risk-elevated {
+            background: rgba(255, 165, 0, 0.1);
+            border: 2px solid #ffa500;
+            color: #ffa500;
+        }
+
+        .risk-high {
+            background: rgba(255, 7, 58, 0.1);
+            border: 2px solid var(--red-alert);
+            color: var(--red-alert);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Orbitron', monospace;
+            font-weight: bold;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-execute {
+            background: linear-gradient(45deg, var(--red-alert), #ff4d6d);
+            color: white;
+        }
+
+        .btn-execute:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(255, 7, 58, 0.4);
+        }
+
+        .btn-analyze {
+            background: linear-gradient(45deg, var(--amber), #ffd700);
+            color: black;
+        }
+
+        .btn-analyze:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(255, 183, 0, 0.4);
+        }
+
+        .btn-abort {
+            background: linear-gradient(45deg, #666, #999);
+            color: white;
+        }
+
+        .btn-abort:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(153, 153, 153, 0.4);
+        }
+
+        .status-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 2px solid var(--bright-green);
+            color: var(--bright-green);
+            font-family: 'Orbitron', monospace;
+            font-weight: bold;
+            z-index: 1000;
+        }
+
+        .timer {
+            color: var(--amber);
+            font-size: 1.2em;
+        }
+
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .grid-layout {
+                grid-template-columns: 1fr;
+            }
+            
+            .mission-title {
+                font-size: 1.5em;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+
+        .terminal-text {
+            font-family: 'Courier Prime', monospace;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid var(--bright-green);
+            margin: 10px 0;
+            white-space: pre-line;
+            line-height: 1.6;
+        }
+
+        .blinking-cursor::after {
+            content: "█";
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        .support-assets {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+
+        .support-item {
+            background: rgba(26, 61, 26, 0.3);
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 3px solid var(--bright-green);
+        }
+
+        .family-wisdom {
+            background: linear-gradient(135deg, rgba(139, 69, 19, 0.2), rgba(160, 82, 45, 0.1));
+            border: 1px solid #D2691E;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            text-align: center;
+            position: relative;
+        }
+
+        .family-wisdom::before {
+            content: "👴🏾 ANCESTRAL WISDOM";
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #D2691E;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 3px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .wisdom-text {
+            color: #DEB887;
+            font-style: italic;
+            font-size: 1.1em;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="classified-header">
+        🔒 CLASSIFIED - FOR OPERATIONAL EYES ONLY - LEVEL {{ briefing.classification_level or 'AUTHORIZED' }} 🔒
+    </div>
+
+    <div class="status-indicator">
+        <div>STATUS: <span id="connection-status">CONNECTING...</span></div>
+        <div class="timer">TIME: <span id="mission-timer">00:00:00</span></div>
+    </div>
+
+    <div class="main-container">
+        <!-- Mission Header -->
+        <div class="mission-header">
+            <div class="mission-title">{{ briefing.operation_header.title }}</div>
+            <div class="mission-meta">
+                <div class="meta-item">
+                    <div class="meta-label">Operator</div>
+                    <div class="meta-value">{{ briefing.operation_header.operator }}</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Mission Type</div>
+                    <div class="meta-value">{{ briefing.operation_header.mission_type }}</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Urgency</div>
+                    <div class="meta-value">{{ briefing.operation_header.urgency }}</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Mission Code</div>
+                    <div class="meta-value">{{ briefing.authorization.mission_code }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Situation Assessment -->
+        <div class="briefing-section">
+            <div class="section-header">📊 Situation Assessment</div>
+            <div class="section-content">
+                <div class="grid-layout">
+                    <div>
+                        <div class="meta-item">
+                            <div class="meta-label">Target Zone</div>
+                            <div class="meta-value">{{ briefing.situation_assessment.target_zone }}</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Intel Confidence</div>
+                            <div class="meta-value">{{ briefing.situation_assessment.intel_confidence }}</div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="meta-item">
+                            <div class="meta-label">Time Window</div>
+                            <div class="meta-value">{{ briefing.situation_assessment.time_window }}</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Extraction Deadline</div>
+                            <div class="meta-value" id="extraction-deadline">{{ briefing.situation_assessment.extraction_deadline or 'FLEXIBLE' }}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="risk-assessment risk-{{ briefing.situation_assessment.environmental_conditions.split()[0].lower() }}">
+                    {{ briefing.situation_assessment.environmental_conditions }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Mission Objectives -->
+        <div class="briefing-section">
+            <div class="section-header">🎯 Mission Objectives</div>
+            <div class="section-content">
+                <ul class="objectives-list">
+                    {% for objective in briefing.mission_objectives %}
+                    <li class="objective-item">
+                        <div class="objective-designation">{{ objective.designation }}</div>
+                        <div class="objective-description">{{ objective.description }}</div>
+                        {% if objective.special_notes %}
+                        <div class="objective-notes">{{ objective.special_notes }}</div>
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <!-- Story Context -->
+        {% if briefing.story_context %}
+        <div class="story-context">
+            <div class="terminal-text">{{ briefing.story_context.historical_reference }}</div>
+            
+            {% if briefing.story_context.companion_status %}
+            <div class="bit-presence">
+                <div class="bit-avatar">🐱</div>
+                <div class="bit-message">{{ briefing.story_context.companion_status.message }}</div>
+            </div>
+            {% endif %}
+            
+            {% if briefing.story_context.ancestral_wisdom %}
+            <div class="family-wisdom">
+                <div class="wisdom-text">{{ briefing.story_context.ancestral_wisdom }}</div>
+            </div>
+            {% endif %}
+            
+            {% if briefing.story_context.personal_significance %}
+            <div class="terminal-text">
+                <strong>Personal Context:</strong><br>
+                {{ briefing.story_context.personal_significance }}
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Tactical Preparation -->
+        <div class="briefing-section">
+            <div class="section-header">⚙️ Tactical Preparation</div>
+            <div class="section-content">
+                <div class="grid-layout">
+                    <div>
+                        <h4 style="color: var(--amber); margin-bottom: 10px;">Equipment Check</h4>
+                        <ul class="checklist">
+                            {% for item in briefing.tactical_preparation.equipment_check %}
+                            <li class="checklist-item completed">{{ item }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 style="color: var(--amber); margin-bottom: 10px;">Mental Preparation</h4>
+                        <ul class="checklist">
+                            {% for item in briefing.tactical_preparation.mental_preparation %}
+                            <li class="checklist-item">{{ item }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+
+                <h4 style="color: var(--amber); margin: 20px 0 10px 0;">Support Assets Available</h4>
+                <div class="support-assets">
+                    {% for asset in briefing.tactical_preparation.support_assets %}
+                    <div class="support-item">{{ asset }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Intelligence Brief -->
+        <div class="briefing-section">
+            <div class="section-header">🔍 Intelligence Brief</div>
+            <div class="section-content">
+                <div class="grid-layout">
+                    <div>
+                        <h4 style="color: var(--amber);">Market Analysis</h4>
+                        <ul style="list-style: none; padding-left: 0;">
+                            {% for intel in briefing.intelligence_brief.market_analysis %}
+                            <li style="padding: 5px 0; border-bottom: 1px dashed rgba(0,255,65,0.3);">{{ intel }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 style="color: var(--amber);">Risk Factors</h4>
+                        <ul style="list-style: none; padding-left: 0;">
+                            {% for risk in briefing.intelligence_brief.risk_factors %}
+                            <li style="padding: 5px 0; border-bottom: 1px dashed rgba(255,183,0,0.3);">⚠️ {{ risk }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 15px; padding: 10px; background: rgba(0,255,65,0.1); border-radius: 5px; text-align: center;">
+                    <strong>{{ briefing.intelligence_brief.opportunity_window }}</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- Final Verification -->
+        <div class="briefing-section">
+            <div class="section-header">✅ Final Verification</div>
+            <div class="section-content">
+                <div class="grid-layout">
+                    <div>
+                        <h4 style="color: var(--amber);">Pre-Flight Checklist</h4>
+                        <ul class="checklist">
+                            {% for item in briefing.final_verification.pre_flight_checklist %}
+                            <li class="checklist-item" onclick="toggleChecklist(this)">{{ item }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 style="color: var(--amber);">Go/No-Go Criteria</h4>
+                        <ul class="checklist">
+                            {% for criteria in briefing.final_verification.go_no_go_criteria %}
+                            <li class="checklist-item" onclick="toggleChecklist(this)">{{ criteria }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Authorization -->
+        <div class="briefing-section">
+            <div class="section-header">🎖️ Mission Authorization</div>
+            <div class="section-content">
+                <div class="terminal-text">
+                    <strong>COMMAND APPROVAL:</strong> {{ briefing.authorization.command_approval }}
+                    <strong>OPERATOR STATUS:</strong> {{ briefing.authorization.operator_acknowledgment }}
+                    <strong>AUTHORIZATION CODE:</strong> {{ briefing.authorization.mission_code }}
+                    <strong>TIMESTAMP:</strong> {{ briefing.authorization.timestamp }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <button class="action-btn btn-execute" onclick="executeMission()">
+                🔫 EXECUTE MISSION
+            </button>
+            <button class="action-btn btn-analyze" onclick="analyzeTarget()">
+                📊 ANALYZE TARGET
+            </button>
+            <button class="action-btn btn-abort" onclick="abortMission()">
+                🚫 ABORT MISSION
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Socket.IO Connection
+        const socket = io();
+        let missionStartTime = Date.now();
+        let timerInterval;
+
+        // Connection Status
+        socket.on('connect', function() {
+            document.getElementById('connection-status').textContent = 'LIVE';
+            document.getElementById('connection-status').style.color = 'var(--bright-green)';
+        });
+
+        socket.on('disconnect', function() {
+            document.getElementById('connection-status').textContent = 'OFFLINE';
+            document.getElementById('connection-status').style.color = 'var(--red-alert)';
+        });
+
+        // Mission Timer
+        function updateTimer() {
+            const elapsed = Date.now() - missionStartTime;
+            const hours = Math.floor(elapsed / 3600000);
+            const minutes = Math.floor((elapsed % 3600000) / 60000);
+            const seconds = Math.floor((elapsed % 60000) / 1000);
+            
+            const timeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            document.getElementById('mission-timer').textContent = timeString;
+        }
+
+        // Start timer
+        timerInterval = setInterval(updateTimer, 1000);
+
+        // Checklist functionality
+        function toggleChecklist(element) {
+            element.classList.toggle('completed');
+        }
+
+        // Mission Actions
+        function executeMission() {
+            if (confirm('🎯 CONFIRM MISSION EXECUTION\n\nAre you ready to proceed with Operation Normandy Echo?\n\nThis will execute your first live trade.')) {
+                // Emit mission execution event
+                socket.emit('execute_mission', {
+                    mission_id: '{{ briefing.authorization.mission_code }}',
+                    operator: '{{ briefing.operation_header.operator }}',
+                    timestamp: Date.now()
+                });
+                
+                // Update UI for mission execution
+                document.body.style.background = 'linear-gradient(135deg, #1a1a1a 0%, #2a4a2a 100%)';
+                alert('🎯 MISSION EXECUTING...\n\nProceeding to tactical interface...');
+                
+                // Redirect to execution interface
+                window.location.href = '/mission/execute/{{ briefing.authorization.mission_code }}';
+            }
+        }
+
+        function analyzeTarget() {
+            // Show analysis modal or redirect to analysis page
+            alert('📊 LAUNCHING TACTICAL ANALYSIS...\n\nOpening advanced target analysis interface...');
+            window.location.href = '/mission/analyze/{{ briefing.authorization.mission_code }}';
+        }
+
+        function abortMission() {
+            if (confirm('🚫 CONFIRM MISSION ABORT\n\nAre you sure you want to abort Operation Normandy Echo?\n\nThis will return you to the command center.')) {
+                socket.emit('abort_mission', {
+                    mission_id: '{{ briefing.authorization.mission_code }}',
+                    operator: '{{ briefing.operation_header.operator }}',
+                    reason: 'Operator initiated abort',
+                    timestamp: Date.now()
+                });
+                
+                alert('🚫 MISSION ABORTED\n\nReturning to command center...');
+                window.location.href = '/command-center';
+            }
+        }
+
+        // Real-time updates
+        socket.on('mission_update', function(data) {
+            console.log('Mission update received:', data);
+            // Handle real-time mission updates
+        });
+
+        socket.on('intelligence_update', function(data) {
+            console.log('Intelligence update:', data);
+            // Update intelligence display
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(event) {
+            if (event.ctrlKey) {
+                switch(event.key) {
+                    case 'e':
+                        event.preventDefault();
+                        executeMission();
+                        break;
+                    case 'a':
+                        event.preventDefault();
+                        analyzeTarget();
+                        break;
+                    case 'x':
+                        event.preventDefault();
+                        abortMission();
+                        break;
+                }
+            }
+        });
+
+        // Add some atmospheric effects
+        function createMatrixRain() {
+            const canvas = document.createElement('canvas');
+            canvas.style.position = 'fixed';
+            canvas.style.top = '0';
+            canvas.style.left = '0';
+            canvas.style.width = '100%';
+            canvas.style.height = '100%';
+            canvas.style.pointerEvents = 'none';
+            canvas.style.zIndex = '-1';
+            canvas.style.opacity = '0.1';
+            document.body.appendChild(canvas);
+            
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            const chars = "01";
+            const fontSize = 14;
+            const columns = canvas.width / fontSize;
+            const drops = [];
+            
+            for (let i = 0; i < columns; i++) {
+                drops[i] = 1;
+            }
+            
+            function draw() {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                ctx.fillStyle = '#00ff41';
+                ctx.font = fontSize + 'px monospace';
+                
+                for (let i = 0; i < drops.length; i++) {
+                    const text = chars[Math.floor(Math.random() * chars.length)];
+                    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                    
+                    if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                        drops[i] = 0;
+                    }
+                    drops[i]++;
+                }
+            }
+            
+            setInterval(draw, 100);
+        }
+
+        // Initialize atmospheric effects
+        createMatrixRain();
+
+        // Clean up on page unload
+        window.addEventListener('beforeunload', function() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+            socket.disconnect();
+        });
+    </script>
+    <!-- Load BITTEN Mission Functions -->
+    <script src="/src/ui/common/mission_functions.js"></script>
+    <script src="/src/ui/common/webapp_functions.js"></script>
+</body>
+</html>

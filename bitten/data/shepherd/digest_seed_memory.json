@@ -1,0 +1,159 @@
+{
+  "base_truth": {
+    "source": "BULLETPROOF_INFRASTRUCTURE_SUMMARY.md",
+    "stored_as": "bulletproof_base_truth_v1",
+    "summary_tokens": 1004,
+    "ingested_on": "2025-07-11",
+    "key_truths": [
+      "Triple redundancy architecture with 3 agent types",
+      "Automatic failover between agents with sub-second switching",
+      "24/7 monitoring and auto-recovery via Windows Task Scheduler",
+      "Multiple connection protocols (HTTP, WebSocket, SSH)",
+      "Intelligent controller on Linux side for routing",
+      "Auto-restart mechanisms every 5 minutes",
+      "99.9% uptime guarantee for trading signals"
+    ],
+    "critical_constraints": [
+      "Primary Agent on port 5555, Backup on 5556, WebSocket on 5557",
+      "AWS Windows Server at 3.145.84.187",
+      "Linux Server at 134.199.204.67",
+      "Failover priority: Primary → Backup → WebSocket → SSH",
+      "Health checks every 30 seconds",
+      "Manual deployment currently required",
+      "Never miss a trading signal - guaranteed delivery"
+    ]
+  },
+  "digests": [
+    {
+      "source": "xp_logic.md",
+      "stored_as": "xp_core_ruleset_v1",
+      "summary_tokens": 2847,
+      "ingested_on": "2025-07-11",
+      "key_rules": [
+        "XP earned based on trade risk and result",
+        "Daily XP reset at midnight UTC",
+        "Level progression unlocks features",
+        "XP multipliers for tier advancement",
+        "Battle pass integration for rewards"
+      ],
+      "critical_constraints": [
+        "Never award XP for losses",
+        "Maximum daily XP cap enforced",
+        "XP cannot be transferred between users",
+        "Historical XP preserved in database",
+        "XP calculations must be deterministic"
+      ]
+    },
+    {
+      "source": "tier_structure.md",
+      "stored_as": "tier_hierarchy_v1",
+      "summary_tokens": 3124,
+      "ingested_on": "2025-07-11",
+      "key_rules": [
+        "5 tiers: Trial, T1 ($50), T2 ($100), T3 ($250), All Access",
+        "Each tier unlocks specific features and risk limits",
+        "Press Pass is 7-day trial with $50k demo",
+        "Tier upgrades are immediate and irreversible",
+        "Higher tiers include all lower tier benefits"
+      ],
+      "critical_constraints": [
+        "T1 limited to 1% risk, T2 to 2%, T3 to 5%",
+        "Only T3+ can access SNIPER OPS signals",
+        "Press Pass accounts auto-recycle after 7 days",
+        "Tier pricing is fixed and non-negotiable",
+        "All Access tier reserved for special cases"
+      ]
+    },
+    {
+      "source": "risk_rules.md",
+      "stored_as": "risk_management_v1",
+      "summary_tokens": 2956,
+      "ingested_on": "2025-07-11",
+      "key_rules": [
+        "Per-tier risk percentages strictly enforced",
+        "Daily loss limits prevent account blowup",
+        "Tilt detection after 3 consecutive losses",
+        "Emergency stop at 10% daily drawdown",
+        "Position sizing based on account equity"
+      ],
+      "critical_constraints": [
+        "Never exceed tier risk limits",
+        "Force stop trading at daily loss limit",
+        "No manual override of risk settings",
+        "All trades must have stop loss",
+        "Risk calculations use real-time equity"
+      ]
+    },
+    {
+      "source": "stealth_system.md",
+      "stored_as": "stealth_protocol_v1",
+      "summary_tokens": 3234,
+      "ingested_on": "2025-07-11",
+      "key_rules": [
+        "Random delays between trades (30-300 seconds)",
+        "Volume jittering ±20% from signal",
+        "Ghost mode skips 15% of signals randomly",
+        "TP/SL micro-adjustments for uniqueness",
+        "Different stealth levels per tier"
+      ],
+      "critical_constraints": [
+        "Never trade identical patterns",
+        "Maintain plausible human behavior",
+        "Stealth cannot be disabled",
+        "Higher tiers get more sophisticated stealth",
+        "Log all stealth actions for audit"
+      ]
+    },
+    {
+      "source": "fire_engine.md",
+      "stored_as": "signal_fire_system_v1",
+      "summary_tokens": 2987,
+      "ingested_on": "2025-07-11",
+      "key_rules": [
+        "RAPID ASSAULT: 87%+ TCS threshold",
+        "SNIPER OPS: 90%+ TCS threshold (T3+ only)",
+        "Fire modes control signal routing",
+        "Signals expire after 5 minutes",
+        "Multi-account synchronization supported"
+      ],
+      "critical_constraints": [
+        "Never fire below TCS threshold",
+        "Respect tier-based signal access",
+        "All fires must pass risk validation",
+        "Stealth protocol applied to all fires",
+        "Failed fires trigger immediate alert"
+      ]
+    },
+    {
+      "source": "ai_roles.md",
+      "stored_as": "ai_personality_matrix_v1",
+      "summary_tokens": 3456,
+      "ingested_on": "2025-07-11",
+      "key_rules": [
+        "Norman the cat: Playful education mascot",
+        "Bit the ferret: Chaotic good assistant",
+        "RECON-7: Setup intelligence bot",
+        "Each AI has specific response patterns",
+        "Military/gaming theme throughout"
+      ],
+      "critical_constraints": [
+        "Never mention win rates in education",
+        "AI cannot provide financial advice",
+        "Maintain character consistency",
+        "Focus on training, not trading performance",
+        "Collect market research organically"
+      ]
+    }
+  ],
+  "system_truth": {
+    "core_mission": "BITTEN is a tactical training assistant with gamified elements",
+    "primary_constraint": "Never promise profits or specific returns",
+    "deployment_status": {
+      "bulletproof_agents": "Designed and ready for deployment",
+      "mt5_farm": "350 instances planned across 5 broker types",
+      "landing_page": "Complete with education focus",
+      "shepherd": "Fully built and operational",
+      "press_pass": "7-day trial system active"
+    }
+  }
+}

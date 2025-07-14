@@ -27,8 +27,8 @@ class BITTENLiveSystem:
     
     def __init__(self):
         # Configuration
-        self.bot_token = os.getenv('TELEGRAM_BOT_TOKEN', '7854827710:AAHnUNfP5GyxoYePoAV5BeOtDbmEJo6i_EQ')
-        self.chat_id = int(os.getenv('MAIN_CHAT_ID', '-1002581996861'))
+        self.bot_token = os.getenv('TELEGRAM_BOT_TOKEN', 'os.getenv("BOT_TOKEN", "DISABLED_FOR_SECURITY")')
+        self.chat_id = int(os.getenv('MAIN_CHAT_ID', 'int(os.getenv("CHAT_ID", "-1002581996861"))'))
         self.webapp_url = 'https://joinbitten.com'
         
         # Initialize components

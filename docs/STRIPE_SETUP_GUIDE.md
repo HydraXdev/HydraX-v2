@@ -1,7 +1,7 @@
 # BITTEN Stripe Integration Setup Guide
 
 ## Overview
-BITTEN uses a 15-day free trial system with Stripe for subscription management. Users get full access for 15 days, with payment prompts starting on day 14.
+BITTEN uses a 7-day free trial system with Stripe for subscription management. Users get full access for 7 days, with payment prompts starting on day 6.
 
 ## Setup Steps
 
@@ -111,7 +111,7 @@ The 15-day trial is configured in code:
 subscription = stripe.Subscription.create(
     customer=customer_id,
     items=[{'price': price_id}],
-    trial_period_days=15,  # 15-day free trial
+    trial_period_days=7,  # 7-day free trial
     payment_behavior='default_incomplete'
 )
 ```

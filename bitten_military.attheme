@@ -1,0 +1,112 @@
+name: BITTEN Military Theme
+author: BITTEN Command
+version: 1.0
+
+// Main colors
+windowBackgroundWhite: #0a0a0a
+windowBackgroundGray: #1a1a1a
+windowBackgroundGrayShadow: #050505
+
+// Chat colors
+chat_inBubble: #2d3618
+chat_outBubble: #4a5d23
+chat_inBubbleSelected: #3d4628
+chat_outBubbleSelected: #5a6d33
+
+// Text colors
+windowBackgroundWhiteBlackText: #e2e8f0
+windowBackgroundWhiteGrayText: #94a3b8
+windowBackgroundWhiteGrayText2: #64748b
+windowBackgroundWhiteLinkText: #00ff41
+
+// Action colors
+actionBarDefault: #1a1a1a
+actionBarDefaultTitle: #e2e8f0
+actionBarDefaultSubtitle: #94a3b8
+actionBarDefaultIcon: #e2e8f0
+actionBarDefaultSelector: #2d3618
+
+// Input colors
+chat_messagePanelBackground: #1a1a1a
+chat_messagePanelText: #e2e8f0
+chat_messagePanelHint: #64748b
+chat_messagePanelIcons: #94a3b8
+
+// Button colors
+featuredStickers_buttonText: #0a0a0a
+featuredStickers_addButton: #00ff41
+featuredStickers_addButtonPressed: #00dd35
+
+// Navigation
+chats_tabUnreadActiveBackground: #00ff41
+chats_tabUnreadUnactiveBackground: #4a5d23
+
+// Profile colors
+profile_creatorIcon: #00ff41
+profile_actionIcon: #94a3b8
+profile_actionBackground: #2d3618
+profile_actionPressedBackground: #3d4628
+
+// Dialog colors
+dialogBackground: #0a0a0a
+dialogTextBlack: #e2e8f0
+dialogTextGray: #94a3b8
+dialogTextGray2: #64748b
+dialogTextBlue: #00ff41
+dialogTextBlue2: #00dd35
+
+// Checkbox and switch colors
+checkboxCheck: #0a0a0a
+switch2Track: #4a5d23
+switch2TrackChecked: #00ff41
+
+// Menu colors
+listSelectorSDK21: #2d3618
+avatar_backgroundBlue: #4a5d23
+avatar_backgroundGreen: #00ff41
+avatar_backgroundOrange: #ffaa00
+avatar_backgroundRed: #ff0040
+avatar_backgroundPink: #8b00ff
+
+// Special colors for military theme
+chat_serviceBackground: #2d3618
+chat_serviceBackgroundSelected: #3d4628
+chat_serviceText: #e2e8f0
+
+// Notification colors
+sessions_devicesImage: #00ff41
+inappPlayerBackground: #1a1a1a
+inappPlayerPlayPause: #00ff41
+inappPlayerTitle: #e2e8f0
+inappPlayerPerformer: #94a3b8
+
+// Additional military styling
+calls_callReceivedGreenIcon: #00ff41
+calls_callReceivedRedIcon: #ff0040
+location_sendLocationBackground: #2d3618
+location_sendLiveLocationBackground: #00ff41
+
+// Shared media
+sharedMedia_linkPlaceholder: #2d3618
+sharedMedia_linkPlaceholderText: #94a3b8
+
+// Search colors
+chats_searchBackground: #1a1a1a
+chat_searchPanelText: #e2e8f0
+chat_searchPanelIcons: #94a3b8
+
+// Sticker colors
+stickers_menu: #1a1a1a
+stickers_menuSelector: #2d3618
+
+// Additional UI elements
+divider: #2d3618
+contextProgressInner1: #00ff41
+contextProgressOuter1: #4a5d23
+
+// Night mode specific
+key_windowBackgroundWhite: #0a0a0a
+key_windowBackgroundGray: #1a1a1a
+key_chats_unreadCounter: #00ff41
+key_chats_unreadCounterMuted: #4a5d23
+key_chats_unreadCounterText: #0a0a0a

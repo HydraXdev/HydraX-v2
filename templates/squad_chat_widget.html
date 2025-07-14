@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BITTEN Squad Chat - Tactical Communications</title>
+    
+    <!-- SocketIO CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Military-themed CSS -->
+    <style>
+        :root {
+            --bitten-primary: #2a2a2a;
+            --bitten-secondary: #1a1a1a;
+            --bitten-accent: #00ff00;
+            --bitten-warning: #ffaa00;
+            --bitten-danger: #ff0000;
+            --bitten-success: #00ff00;
+            --bitten-text: #ffffff;
+            --bitten-text-muted: #cccccc;
+            --bitten-border: #444444;
+            --bitten-input: #333333;
+            --chat-width: 400px;
+            --chat-height: 600px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: var(--bitten-secondary);
+            color: var(--bitten-text);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Chat Container */
+        .chat-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: var(--chat-width);
+            height: var(--chat-height);
+            background: linear-gradient(145deg, var(--bitten-primary), var(--bitten-secondary));
+            border: 2px solid var(--bitten-accent);
+            border-radius: 10px;
+            box-shadow: 
+                0 0 20px rgba(0, 255, 0, 0.3),
+                inset 0 0 10px rgba(0, 255, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            transform: translateY(calc(100% - 60px));
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .chat-container.expanded {
+            transform: translateY(0);
+        }
+
+        /* Chat Header */
+        .chat-header {
+            background: linear-gradient(90deg, var(--bitten-accent), #007700);
+            color: var(--bitten-secondary);
+            padding: 12px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            border-radius: 8px 8px 0 0;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .chat-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chat-status {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.8em;
+        }
+
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--bitten-success);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .status-indicator.offline {
+            background: var(--bitten-danger);
+            animation: none;
+        }
+
+        /* Room Selector */
+        .room-selector {
+            padding: 10px 15px;
+            background: rgba(0, 255, 0, 0.1);
+            border-bottom: 1px solid var(--bitten-border);
+        }
+
+        .room-select {
+            width: 100%;
+            background: var(--bitten-input);
+            border: 1px solid var(--bitten-border);
+            color: var(--bitten-text);
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-family: inherit;
+        }
+
+        /* Messages Area */
+        .messages-container {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.2);
+            scrollbar-width: thin;
+            scrollbar-color: var(--bitten-accent) var(--bitten-input);
+        }
+
+        .messages-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .messages-container::-webkit-scrollbar-track {
+            background: var(--bitten-input);
+        }
+
+        .messages-container::-webkit-scrollbar-thumb {
+            background: var(--bitten-accent);
+            border-radius: 3px;
+        }
+
+        /* Message Styles */
+        .message {
+            margin-bottom: 15px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border-left: 3px solid var(--bitten-accent);
+            background: rgba(0, 255, 0, 0.05);
+            position: relative;
+            animation: messageSlideIn 0.3s ease;
+        }
+
+        @keyframes messageSlideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .message.own {
+            border-left-color: var(--bitten-warning);
+            background: rgba(255, 170, 0, 0.05);
+            text-align: right;
+        }
+
+        .message.system {
+            border-left-color: var(--bitten-danger);
+            background: rgba(255, 0, 0, 0.05);
+            text-align: center;
+            font-style: italic;
+        }
+
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+            font-size: 0.85em;
+        }
+
+        .message.own .message-header {
+            flex-direction: row-reverse;
+        }
+
+        .message-sender {
+            font-weight: bold;
+            color: var(--bitten-accent);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .rank-indicator {
+            font-size: 0.7em;
+            background: var(--bitten-accent);
+            color: var(--bitten-secondary);
+            padding: 1px 4px;
+            border-radius: 3px;
+        }
+
+        .message-time {
+            color: var(--bitten-text-muted);
+            font-size: 0.75em;
+        }
+
+        .message-content {
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
+
+        .message-reactions {
+            margin-top: 5px;
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .reaction {
+            background: rgba(0, 255, 0, 0.2);
+            border: 1px solid var(--bitten-accent);
+            border-radius: 12px;
+            padding: 2px 6px;
+            font-size: 0.8em;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .reaction:hover {
+            background: rgba(0, 255, 0, 0.3);
+        }
+
+        /* Typing Indicator */
+        .typing-indicator {
+            color: var(--bitten-text-muted);
+            font-style: italic;
+            padding: 5px 12px;
+            font-size: 0.9em;
+        }
+
+        .typing-dots {
+            display: inline-block;
+            animation: typing 1.5s infinite;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% { opacity: 0; }
+            30% { opacity: 1; }
+        }
+
+        /* Input Area */
+        .input-container {
+            border-top: 1px solid var(--bitten-border);
+            padding: 15px;
+            background: rgba(0, 255, 0, 0.05);
+        }
+
+        .input-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .message-input {
+            flex: 1;
+            background: var(--bitten-input);
+            border: 1px solid var(--bitten-border);
+            color: var(--bitten-text);
+            padding: 10px 12px;
+            border-radius: 5px;
+            font-family: inherit;
+            resize: none;
+            min-height: 40px;
+            max-height: 100px;
+        }
+
+        .message-input:focus {
+            outline: none;
+            border-color: var(--bitten-accent);
+            box-shadow: 0 0 5px rgba(0, 255, 0, 0.3);
+        }
+
+        .input-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .action-btn {
+            background: var(--bitten-accent);
+            color: var(--bitten-secondary);
+            border: none;
+            padding: 10px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .action-btn:hover {
+            background: #00cc00;
+            transform: translateY(-1px);
+        }
+
+        .action-btn:disabled {
+            background: var(--bitten-border);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* File Upload Area */
+        .file-upload {
+            display: none;
+            position: absolute;
+            bottom: 100%;
+            left: 15px;
+            right: 15px;
+            background: var(--bitten-primary);
+            border: 2px dashed var(--bitten-accent);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .file-upload.active {
+            display: block;
+        }
+
+        /* Member List */
+        .members-panel {
+            position: absolute;
+            top: 0;
+            right: -200px;
+            width: 200px;
+            height: 100%;
+            background: var(--bitten-primary);
+            border-left: 1px solid var(--bitten-border);
+            transition: right 0.3s ease;
+        }
+
+        .members-panel.open {
+            right: 0;
+        }
+
+        .members-header {
+            padding: 15px;
+            background: rgba(0, 255, 0, 0.1);
+            border-bottom: 1px solid var(--bitten-border);
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .member-list {
+            padding: 10px;
+        }
+
+        .member-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px;
+            border-radius: 5px;
+            margin-bottom: 5px;
+            cursor: pointer;
+        }
+
+        .member-item:hover {
+            background: rgba(0, 255, 0, 0.1);
+        }
+
+        .member-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--bitten-success);
+        }
+
+        .member-status.offline {
+            background: var(--bitten-border);
+        }
+
+        /* Notifications */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--bitten-accent);
+            color: var(--bitten-secondary);
+            padding: 12px 16px;
+            border-radius: 5px;
+            font-weight: bold;
+            animation: slideInRight 0.3s ease;
+            z-index: 1001;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 480px) {
+            .chat-container {
+                width: calc(100vw - 20px);
+                right: 10px;
+                bottom: 10px;
+            }
+        }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: var(--bitten-text-muted);
+        }
+
+        .loading::after {
+            content: '...';
+            animation: loading 1.5s infinite;
+        }
+
+        @keyframes loading {
+            0% { content: '...'; }
+            33% { content: '.'; }
+            66% { content: '..'; }
+            100% { content: '...'; }
+        }
+
+        /* Emoji Picker */
+        .emoji-picker {
+            position: absolute;
+            bottom: 100%;
+            right: 0;
+            background: var(--bitten-primary);
+            border: 1px solid var(--bitten-border);
+            border-radius: 8px;
+            padding: 15px;
+            display: none;
+            flex-wrap: wrap;
+            width: 200px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .emoji-picker.open {
+            display: flex;
+        }
+
+        .emoji {
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 3px;
+            transition: background 0.2s;
+        }
+
+        .emoji:hover {
+            background: rgba(0, 255, 0, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container" id="chatContainer">
+        <!-- Chat Header -->
+        <div class="chat-header" onclick="toggleChat()">
+            <div class="chat-title">
+                <i class="fas fa-comments"></i>
+                <span>SQUAD COMMS</span>
+            </div>
+            <div class="chat-status">
+                <div class="status-indicator" id="statusIndicator"></div>
+                <span id="connectionStatus">CONNECTING...</span>
+            </div>
+        </div>
+
+        <!-- Room Selector -->
+        <div class="room-selector">
+            <select class="room-select" id="roomSelect">
+                <option value="">Select Squad Room...</option>
+            </select>
+        </div>
+
+        <!-- Messages Container -->
+        <div class="messages-container" id="messagesContainer">
+            <div class="loading" id="loadingIndicator">Establishing secure connection</div>
+        </div>
+
+        <!-- File Upload Area -->
+        <div class="file-upload" id="fileUpload">
+            <i class="fas fa-cloud-upload-alt fa-2x"></i>
+            <p>Drop files here to share with squad</p>
+            <input type="file" id="fileInput" style="display: none;" multiple>
+        </div>
+
+        <!-- Input Container -->
+        <div class="input-container">
+            <div class="input-row">
+                <textarea 
+                    class="message-input" 
+                    id="messageInput" 
+                    placeholder="Type tactical message... (Press Enter to send)"
+                    rows="1"
+                ></textarea>
+                <div class="input-actions">
+                    <button class="action-btn" id="emojiBtn" title="Add Emoji">
+                        <i class="fas fa-smile"></i>
+                    </button>
+                    <button class="action-btn" id="fileBtn" title="Share File">
+                        <i class="fas fa-paperclip"></i>
+                    </button>
+                    <button class="action-btn" id="voiceBtn" title="Voice Message">
+                        <i class="fas fa-microphone"></i>
+                    </button>
+                    <button class="action-btn" id="sendBtn" title="Send Message">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Emoji Picker -->
+            <div class="emoji-picker" id="emojiPicker">
+                <span class="emoji" onclick="addEmoji('😀')">😀</span>
+                <span class="emoji" onclick="addEmoji('😃')">😃</span>
+                <span class="emoji" onclick="addEmoji('😄')">😄</span>
+                <span class="emoji" onclick="addEmoji('😁')">😁</span>
+                <span class="emoji" onclick="addEmoji('😅')">😅</span>
+                <span class="emoji" onclick="addEmoji('😂')">😂</span>
+                <span class="emoji" onclick="addEmoji('🤣')">🤣</span>
+                <span class="emoji" onclick="addEmoji('😊')">😊</span>
+                <span class="emoji" onclick="addEmoji('😎')">😎</span>
+                <span class="emoji" onclick="addEmoji('🥳')">🥳</span>
+                <span class="emoji" onclick="addEmoji('🔥')">🔥</span>
+                <span class="emoji" onclick="addEmoji('💪')">💪</span>
+                <span class="emoji" onclick="addEmoji('👍')">👍</span>
+                <span class="emoji" onclick="addEmoji('👎')">👎</span>
+                <span class="emoji" onclick="addEmoji('✅')">✅</span>
+                <span class="emoji" onclick="addEmoji('❌')">❌</span>
+                <span class="emoji" onclick="addEmoji('📈')">📈</span>
+                <span class="emoji" onclick="addEmoji('📉')">📉</span>
+                <span class="emoji" onclick="addEmoji('🎯')">🎯</span>
+                <span class="emoji" onclick="addEmoji('⚡')">⚡</span>
+            </div>
+        </div>
+
+        <!-- Members Panel -->
+        <div class="members-panel" id="membersPanel">
+            <div class="members-header">
+                <i class="fas fa-users"></i> Squad Members
+            </div>
+            <div class="member-list" id="memberList">
+                <!-- Members will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Area -->
+    <div id="notificationArea"></div>
+
+    <!-- Load the chat interface JavaScript -->
+    <script src="/static/js/chat_interface.js"></script>
+    
+    <script>
+        // Initialize chat when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get user data from session or URL params
+            const urlParams = new URLSearchParams(window.location.search);
+            const userData = {
+                user_id: urlParams.get('user_id') || 'demo_user_' + Math.random().toString(36).substr(2, 9),
+                username: urlParams.get('username') || 'TacticalOperator',
+                callsign: urlParams.get('callsign') || 'ALPHA-1',
+                squad_id: urlParams.get('squad_id') || 'demo_squad',
+                role: urlParams.get('role') || 'recruit',
+                rank: urlParams.get('rank') || 'RECRUIT'
+            };
+
+            // Initialize chat system
+            if (typeof SquadChatInterface !== 'undefined') {
+                window.chatInterface = new SquadChatInterface(userData);
+            } else {
+                console.error('SquadChatInterface not loaded');
+                showNotification('Failed to load chat system', 'error');
+            }
+        });
+
+        // Chat utility functions
+        function toggleChat() {
+            const container = document.getElementById('chatContainer');
+            container.classList.toggle('expanded');
+        }
+
+        function addEmoji(emoji) {
+            const input = document.getElementById('messageInput');
+            input.value += emoji;
+            input.focus();
+            document.getElementById('emojiPicker').classList.remove('open');
+        }
+
+        function showNotification(message, type = 'info') {
+            const notificationArea = document.getElementById('notificationArea');
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            
+            if (type === 'error') {
+                notification.style.background = 'var(--bitten-danger)';
+            } else if (type === 'success') {
+                notification.style.background = 'var(--bitten-success)';
+            }
+            
+            notificationArea.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 5000);
+        }
+
+        // Toggle emoji picker
+        document.getElementById('emojiBtn').addEventListener('click', function() {
+            const picker = document.getElementById('emojiPicker');
+            picker.classList.toggle('open');
+        });
+
+        // Toggle file upload
+        document.getElementById('fileBtn').addEventListener('click', function() {
+            document.getElementById('fileInput').click();
+        });
+
+        // Handle file selection
+        document.getElementById('fileInput').addEventListener('change', function(event) {
+            const files = event.target.files;
+            if (files.length > 0 && window.chatInterface) {
+                window.chatInterface.handleFileUpload(files);
+            }
+        });
+
+        // Voice recording placeholder
+        document.getElementById('voiceBtn').addEventListener('click', function() {
+            showNotification('Voice messages coming soon!', 'info');
+        });
+
+        // Auto-resize textarea
+        document.getElementById('messageInput').addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+        });
+
+        // Send message on Enter (but not Shift+Enter)
+        document.getElementById('messageInput').addEventListener('keydown', function(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                if (window.chatInterface) {
+                    window.chatInterface.sendMessage();
+                }
+            }
+        });
+
+        // Send button click
+        document.getElementById('sendBtn').addEventListener('click', function() {
+            if (window.chatInterface) {
+                window.chatInterface.sendMessage();
+            }
+        });
+
+        // Close emoji picker when clicking outside
+        document.addEventListener('click', function(event) {
+            const emojiPicker = document.getElementById('emojiPicker');
+            const emojiBtn = document.getElementById('emojiBtn');
+            
+            if (!emojiPicker.contains(event.target) && !emojiBtn.contains(event.target)) {
+                emojiPicker.classList.remove('open');
+            }
+        });
+    </script>
+    
+    <!-- Load BITTEN Mission Functions -->
+    <script src="/src/ui/common/mission_functions.js"></script>
+    <script src="/src/ui/common/webapp_functions.js"></script>
+</body>
+</html>

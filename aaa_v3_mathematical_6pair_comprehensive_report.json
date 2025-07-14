@@ -1,0 +1,91 @@
+{
+  "test_timestamp": "2025-07-13T04:45:54.814328",
+  "engine_version": "AAA_v3.0_mathematical",
+  "test_duration": "24 hours",
+  "overall_performance": {
+    "total_signals": 1,
+    "daily_projection": 1,
+    "average_tcs": 82.9,
+    "pairs_active": 1,
+    "rapid_signals": 1,
+    "sniper_signals": 0
+  },
+  "pair_breakdown": {
+    "USDJPY": {
+      "signal_count": 1,
+      "rapid_count": 1,
+      "sniper_count": 0,
+      "avg_tcs": 82.9,
+      "tcs_range": "82.9%-82.9%",
+      "model_used": "trend_momentum",
+      "model_expected": "trend_momentum",
+      "model_match": true,
+      "timeframes": {
+        "15min": 1
+      },
+      "performance_grade": "B+",
+      "daily_projection": 1,
+      "sample_signals": [
+        {
+          "pair": "USDJPY",
+          "type": "RAPID_ASSAULT",
+          "direction": "BUY",
+          "tcs": 82.9,
+          "timeframe": "15min",
+          "smart_timer_minutes": 20,
+          "reasoning": "trend_momentum signal with 82.9% confidence",
+          "timestamp": "2025-07-13 04:45:53.571844",
+          "engine": "AAA_v3.0_mathematical",
+          "model": "trend_momentum",
+          "indicators": {
+            "price_zscore": 1.41,
+            "volume_score": 0.713,
+            "trend_score": 2.437,
+            "momentum_score": 3.173
+          }
+        }
+      ]
+    },
+    "EURJPY": {
+      "signal_count": 0,
+      "avg_tcs": 0,
+      "model_used": "none",
+      "performance_grade": "F"
+    },
+    "GBPJPY": {
+      "signal_count": 0,
+      "avg_tcs": 0,
+      "model_used": "none",
+      "performance_grade": "F"
+    },
+    "EURUSD": {
+      "signal_count": 0,
+      "avg_tcs": 0,
+      "model_used": "none",
+      "performance_grade": "F"
+    },
+    "GBPUSD": {
+      "signal_count": 0,
+      "avg_tcs": 0,
+      "model_used": "none",
+      "performance_grade": "F"
+    },
+    "AUDUSD": {
+      "signal_count": 0,
+      "avg_tcs": 0,
+      "model_used": "none",
+      "performance_grade": "F"
+    }
+  },
+  "model_effectiveness": {
+    "trend_momentum": [
+      "USDJPY"
+    ]
+  },
+  "recommendations": {
+    "frequency_target_met": false,
+    "quality_target_met": "True",
+    "coverage_target_met": false,
+    "production_ready": false
+  }
+}

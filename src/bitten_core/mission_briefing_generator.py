@@ -3,10 +3,31 @@
 
 import json
 import time
+import random
+import logging
 from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass, asdict
 from datetime import datetime
 from enum import Enum
+
+# Import Norman's story integration
+try:
+    from .norman_story_integration import norman_story_engine, integrate_norman_story
+except ImportError:
+    # Fallback if import fails
+    norman_story_engine = None
+    def integrate_norman_story(briefing_data, user_id, context): return briefing_data
+
+# Import timer integrations
+try:
+    from ..bitten.core.smart_timer_integration import smart_timer_integration
+    from ..bitten.core.timer_expiry_integration import timer_expiry_integration
+    TIMER_INTEGRATION_AVAILABLE = True
+except ImportError:
+    smart_timer_integration = None
+    timer_expiry_integration = None
+    TIMER_INTEGRATION_AVAILABLE = False
+    logger = logging.getLogger(__name__)
 
 class MissionType(Enum):
     """Mission types based on trading strategy"""
@@ -73,23 +94,116 @@ class MissionBriefing:
     market_intel: List[str]
     risk_warnings: List[str]
 
-class MissionBriefingGenerator:
-    """Generates comprehensive mission briefings for WebApp HUD"""
+class NormansStoryIntegrator:
+    """Integrates Norman's Mississippi story and family wisdom into mission briefings"""
     
     def __init__(self):
+        # Norman's family wisdom phrases
+        self.family_wisdom = {
+            'grandmother': [
+                "Grandmama always said: 'Patience is worth more than gold, child.'",
+                "Remember the old words: 'Good things come to those who wait for the right season.'",
+                "As Grandmama used to say: 'The storm passes, but the oak remembers how to bend.'",
+                "Grandmama's wisdom: 'Never bet the farm on a maybe.'"
+            ],
+            'mother': [
+                "Mama taught us: 'Protect what you have before you reach for more.'",
+                "Mother's sacrifice reminds us: 'Every dollar saved is a dollar earned.'",
+                "As Mama would say: 'Don't put all your eggs in one basket, baby.'",
+                "Mother always said: 'Know when to hold on and when to let go.'"
+            ],
+            'work_ethic': [
+                "Back home we learned: 'Honest work pays honest wages.'",
+                "Mississippi taught us: 'You earn your keep with discipline and grit.'",
+                "From the Delta: 'Slow and steady wins the race, but smart and steady wins the war.'",
+                "Home wisdom: 'Don't work harder, work smarter.'"
+            ]
+        }
+        
+        # Bit the cat references for different situations
+        self.bit_presence = {
+            'confidence': [
+                "Bit's purring - something good is coming",
+                "The cat's tail is twitching - opportunity detected",
+                "Bit just stretched - time to make a move",
+                "Your feline companion senses profit in the air"
+            ],
+            'caution': [
+                "Bit's ears are back - proceed with caution",
+                "The cat's hiding - might be time to wait",
+                "Bit's watching from afar - stay alert",
+                "Your companion's whiskers are twitching - danger ahead"
+            ],
+            'comfort': [
+                "Bit settles beside you - you're not alone in this",
+                "A gentle purr reminds you: every master was once a beginner",
+                "Bit's warm presence: losses teach, wins confirm",
+                "Your loyal companion knows: this too shall pass"
+            ]
+        }
+        
+        # Mississippi-themed callsigns that honor Norman's roots
+        self.norman_callsigns = {
+            'tactical': [
+                "DELTA WISDOM", "MAGNOLIA STRIKE", "COTTON FIELD", 
+                "MUDDY WATERS", "RIVER BEND", "PINE GROVE"
+            ],
+            'family': [
+                "MAMA'S BLESSING", "GRANDMAMA'S WATCH", "FAMILY HONOR",
+                "HOME GUARDIAN", "LEGACY KEEPER", "DELTA PRIDE"
+            ],
+            'journey': [
+                "LONG ROAD HOME", "DREAM KEEPER", "BRIDGE BUILDER",
+                "MOUNTAIN MOVER", "LIGHT BEARER", "PATH FINDER"
+            ]
+        }
+        
+        # Southern/Mississippi cultural elements
+        self.cultural_elements = {
+            'weather_metaphors': [
+                "Like a Delta storm, this opportunity builds slow but hits hard",
+                "Summer heat teaches patience - good trades ripen in their time",
+                "Winter morning clarity - the market shows its true face",
+                "Spring rains bring growth - let your portfolio flourish"
+            ],
+            'farming_wisdom': [
+                "You don't plant corn and expect cotton - know what you're trading",
+                "Good farmers diversify crops - smart traders diversify positions",
+                "Harvest time comes to those who tend their fields",
+                "Even the best soil needs rest - don't overtrade"
+            ],
+            'community_values': [
+                "We rise together or we fall apart - help your fellow traders",
+                "Strong communities share knowledge, not just profits",
+                "Your success lifts the whole neighborhood",
+                "Remember why we do this - to build something bigger than ourselves"
+            ]
+        }
+
+class MissionBriefingGenerator:
+    """Generates comprehensive mission briefings infused with Norman's story for WebApp HUD"""
+    
+    def __init__(self, user_id: str = None):
         self.mission_counter = 0
+        self.user_id = user_id
+        self.norman_story = NormansStoryIntegrator()
+        
+        # Enhanced callsign pool with Norman's story elements
         self.callsign_pool = {
             MissionType.ARCADE_SCALP: [
                 "DAWN RAID", "VORTEX AMBUSH", "LIGHTNING STRIKE", 
-                "SHADOW PIERCE", "RAPID ASSAULT", "GHOST RECON"
+                "SHADOW PIERCE", "RAPID ASSAULT", "GHOST RECON",
+                "DELTA WISDOM", "COTTON FIELD", "RIVER BEND"
             ],
             MissionType.SNIPER_SHOT: [
                 "EAGLE EYE", "PHANTOM SHOT", "SILENT HUNTER",
-                "PRECISION STRIKE", "LONG RANGE", "STEALTH OPS"
+                "PRECISION STRIKE", "LONG RANGE", "STEALTH OPS",
+                "GRANDMAMA'S WATCH", "MAMA'S BLESSING", "PINE GROVE"
             ],
             MissionType.MIDNIGHT_HAMMER: [
                 "MIDNIGHT HAMMER", "UNITED FORCE", "SQUAD ASSAULT",
-                "MASS STRIKE", "COORDINATED HIT", "TEAM TAKEDOWN"
+                "MASS STRIKE", "COORDINATED HIT", "TEAM TAKEDOWN",
+                "FAMILY HONOR", "DELTA PRIDE", "BRIDGE BUILDER"
             ]
         }
         
@@ -123,7 +237,8 @@ class MissionBriefingGenerator:
     def generate_mission_briefing(self, 
                                  signal_data: Dict,
                                  market_data: Dict,
-                                 user_tier: str = "AUTHORIZED") -> MissionBriefing:
+                                 user_tier: str = "AUTHORIZED",
+                                 user_id: str = None) -> MissionBriefing:
         """Generate complete mission briefing from signal and market data"""
         
         # Determine mission type
@@ -131,14 +246,30 @@ class MissionBriefingGenerator:
         
         # Calculate timing
         current_time = int(time.time())
-        expires_at = signal_data.get('expires_at', current_time + 600)
-        time_remaining = max(0, expires_at - current_time)
+        
+        # Check for smart timer data from AI enhancement
+        if signal_data.get('countdown_minutes'):
+            # Use AI-calculated smart timer
+            countdown_seconds = signal_data.get('countdown_seconds', signal_data['countdown_minutes'] * 60)
+            expires_at = current_time + countdown_seconds
+            time_remaining = countdown_seconds
+            
+            # Log smart timer usage
+            logger.info(f"Using smart timer: {signal_data['countdown_minutes']} min for {signal_data.get('symbol', 'unknown')}")
+        else:
+            # Fallback to default timing
+            expires_at = signal_data.get('expires_at', current_time + 600)
+            time_remaining = max(0, expires_at - current_time)
         
         # Calculate urgency
         urgency = self._calculate_urgency(time_remaining)
         
-        # Get callsign
-        callsign = self._get_callsign(mission_type)
+        # Get callsign with Norman's story integration
+        base_callsign = self._get_callsign(mission_type)
+        if user_id and norman_story_engine:
+            callsign = norman_story_engine.get_callsign_with_story(base_callsign, user_id)
+        else:
+            callsign = self._add_norman_context_to_callsign(base_callsign, mission_type)
         
         # Generate mission ID
         mission_id = f"{mission_type.value}_{self.mission_counter}_{current_time}"
@@ -208,6 +339,65 @@ class MissionBriefingGenerator:
             risk_warnings=risk_warnings
         )
         
+        # Add smart timer data if available
+        if signal_data.get('countdown_minutes'):
+            # Store smart timer metadata
+            smart_timer_data = {
+                'enabled': True,
+                'countdown_minutes': signal_data.get('countdown_minutes'),
+                'countdown_seconds': signal_data.get('countdown_seconds', signal_data['countdown_minutes'] * 60),
+                'timer_status': signal_data.get('timer_status', '⏱️ Normal timing'),
+                'timer_factors': signal_data.get('timer_factors', {}),
+                'original_timer': signal_data.get('original_timer', 45)
+            }
+            
+            # Add to market intel
+            timer_status = signal_data.get('timer_status', '')
+            if '⚡' in timer_status:
+                briefing.market_intel.append(f"⏱️ {timer_status} - market conditions require quick action")
+            elif '🐢' in timer_status:
+                briefing.market_intel.append(f"⏱️ {timer_status} - extra time to analyze this setup")
+        
+        # Integrate Norman's story if user_id provided
+        if user_id and norman_story_engine:
+            # Create enhanced briefing data
+            briefing_dict = asdict(briefing)
+            trading_context = {
+                'days_active': signal_data.get('user_days_active', 0),
+                'total_trades': signal_data.get('user_total_trades', 0),
+                'win_rate': signal_data.get('user_win_rate', 0.0)
+            }
+            
+            # Get story enhancements
+            enhanced_data = integrate_norman_story(briefing_dict, user_id, trading_context)
+            
+            # Apply enhancements to briefing
+            if enhanced_data.get('wisdom_note'):
+                briefing.market_intel.append(f"🏠 {enhanced_data['wisdom_note']}")
+            
+            if enhanced_data.get('cultural_element'):
+                briefing.market_intel.append(f"🌾 {enhanced_data['cultural_element']}")
+            
+            if enhanced_data.get('bit_presence'):
+                bit_msg = enhanced_data['bit_presence'].get('message', '')
+                if bit_msg:
+                    briefing.market_intel.append(f"🐱 {bit_msg}")
+        
+        # Start timer expiry monitoring if available
+        if TIMER_INTEGRATION_AVAILABLE and timer_expiry_integration:
+            briefing_dict = asdict(briefing) if not isinstance(briefing, dict) else briefing
+            briefing_dict['mission_id'] = mission_id
+            briefing_dict['symbol'] = signal_data['symbol']
+            briefing_dict['direction'] = signal_data['direction']
+            briefing_dict['entry_price'] = entry
+            briefing_dict['stop_loss'] = sl
+            briefing_dict['take_profit'] = tp
+            briefing_dict['tcs_score'] = signal_data.get('tcs_score', 75)
+            
+            # Start monitoring for expiry
+            timer_expiry_integration.start_monitoring(briefing_dict)
+            logger.info(f"Started timer expiry monitoring for mission {mission_id}")
+        
         return briefing
     
     def format_for_webapp(self, briefing: MissionBriefing) -> Dict:
@@ -230,6 +420,21 @@ class MissionBriefingGenerator:
             'urgency_color': self._get_urgency_color(briefing.urgency)
         }
         
+        # Add smart timer data if available
+        if hasattr(briefing, 'smart_timer') or data.get('smart_timer'):
+            data['has_smart_timer'] = True
+            data['timer_display'] = {
+                'type': 'smart',
+                'countdown_seconds': data.get('time_remaining', briefing.time_remaining),
+                'status': data.get('smart_timer', {}).get('timer_status', '⏱️ Normal timing')
+            }
+        else:
+            data['has_smart_timer'] = False
+            data['timer_display'] = {
+                'type': 'standard',
+                'countdown_seconds': briefing.time_remaining
+            }
+        
         # Add visual elements
         data['visuals'] = {
             'progress_bars': {
@@ -247,15 +452,43 @@ class MissionBriefingGenerator:
         # Add quick actions
         data['quick_actions'] = self._get_quick_actions(briefing)
         
+        # Add user notes for this symbol if available
+        try:
+            from .normans_notebook import NormansNotebook
+            if hasattr(self, 'user_id') and self.user_id:
+                notebook = NormansNotebook(user_id=self.user_id)
+                symbol_notes = notebook.get_notes_by_symbol(briefing.symbol)
+                data['user_notes'] = {
+                    'symbol_notes': symbol_notes[:3],  # Show top 3 recent notes
+                    'has_more': len(symbol_notes) > 3,
+                    'total_count': len(symbol_notes)
+                }
+            else:
+                data['user_notes'] = {'symbol_notes': [], 'has_more': False, 'total_count': 0}
+        except ImportError:
+            data['user_notes'] = {'symbol_notes': [], 'has_more': False, 'total_count': 0}
+        
         return data
     
     def generate_telegram_preview(self, briefing: MissionBriefing) -> str:
-        """Generate short preview for Telegram alert"""
+        """Generate short preview for Telegram alert with Norman's touch"""
         emoji = briefing.emoji_set.split()[0]  # Get first emoji
+        
+        # Add occasional Norman's wisdom to previews
+        norman_touch = ""
+        if random.random() < 0.3:
+            quick_wisdom = [
+                "🏠 For family and future",
+                "🐱 Bit approves", 
+                "💪 Delta strong",
+                "⭐ Mississippi magic",
+                "🌟 Dreams in motion"
+            ]
+            norman_touch = f"\n{random.choice(quick_wisdom)}"
         
         preview = f"{emoji} **{briefing.callsign}**\n"
         preview += f"{briefing.symbol} | {briefing.direction} | {briefing.tcs_score}% confidence\n"
-        preview += f"⏰ {self._format_time_remaining(briefing.time_remaining)}"
+        preview += f"⏰ {self._format_time_remaining(briefing.time_remaining)}{norman_touch}"
         
         return preview
     
@@ -363,62 +596,84 @@ class MissionBriefingGenerator:
         return levels
     
     def _generate_market_intel(self, signal_data: Dict, market_data: Dict, conditions: Dict) -> List[str]:
-        """Generate market intelligence points"""
+        """Generate market intelligence points with Norman's story elements"""
         intel = []
         
-        # Trend intel
+        # Add Bit's presence based on market conditions
+        bit_mood = self._determine_bit_mood(conditions, signal_data)
+        if bit_mood:
+            intel.append(f"🐱 {bit_mood}")
+        
+        # Trend intel with cultural metaphors
         if conditions['trend'] == 'BULLISH':
-            intel.append("📈 Strong uptrend detected - momentum favors longs")
+            intel.append("📈 Strong uptrend - like spring floods in the Delta, rising waters lift all boats")
         elif conditions['trend'] == 'BEARISH':
-            intel.append("📉 Downtrend active - shorts have advantage")
+            intel.append("📉 Downtrend active - winter has come, smart traders find shelter")
         
-        # Volatility intel
+        # Volatility intel with weather wisdom
         if conditions['volatility'] == 'HIGH':
-            intel.append("⚡ High volatility - expect rapid movements")
+            intel.append("⚡ High volatility - storm's brewing, as Grandmama said: 'Bend with the wind'")  
         elif conditions['volatility'] == 'LOW':
-            intel.append("💤 Low volatility - slower price action expected")
+            intel.append("💤 Low volatility - calm before opportunity, patience pays")
         
-        # Session intel
+        # Session intel with personal touches
         session = conditions['session']
         if session == 'LONDON':
-            intel.append("🇬🇧 London session - peak liquidity hours")
+            intel.append("🇬🇧 London session - prime time, like morning on the farm")
         elif session == 'NEWYORK':
-            intel.append("🇺🇸 New York session - major news impact possible")
+            intel.append("🇺🇸 New York session - where dreams are made, stay sharp")
         elif session == 'ASIAN':
-            intel.append("🇯🇵 Asian session - range-bound conditions likely")
+            intel.append("🇯🇵 Asian session - quiet hours, time to plan your next move")
         
-        # Technical intel
+        # Technical intel with family wisdom
         if signal_data.get('near_resistance'):
-            intel.append("⚠️ Approaching key resistance level")
+            intel.append("⚠️ Approaching key resistance - Mama always said 'Know when to stop pushing'")
         if signal_data.get('near_support'):
-            intel.append("🛡️ Near strong support zone")
+            intel.append("🛡️ Near strong support - standing on solid ground, like home")
+        
+        # Add occasional family wisdom
+        if random.random() < 0.3:
+            wisdom_type = random.choice(['grandmother', 'mother', 'work_ethic'])
+            wisdom = random.choice(self.norman_story.family_wisdom[wisdom_type])
+            intel.append(f"💭 {wisdom}")
         
         return intel
     
     def _generate_risk_warnings(self, signal_data: Dict, conditions: Dict) -> List[str]:
-        """Generate risk warnings based on conditions"""
+        """Generate risk warnings with Norman's protective wisdom"""
         warnings = []
         
-        # High volatility warning
+        # High volatility warning with Bit's caution
         if conditions['volatility'] == 'HIGH':
-            warnings.append("⚠️ High volatility - use tight risk management")
+            bit_warning = random.choice(self.norman_story.bit_presence['caution'])
+            warnings.append(f"⚠️ High volatility - {bit_warning}")
         
-        # News warning
+        # News warning with family wisdom
         if signal_data.get('news_pending'):
-            warnings.append("📰 Major news event in < 30 minutes")
+            warnings.append("📰 Major news event < 30 minutes - Mama taught us to prepare for storms")
         
         # Correlation warning
         if signal_data.get('correlated_risk'):
-            warnings.append("🔗 Correlated pairs - avoid overexposure")
+            warnings.append("🔗 Correlated pairs - remember: 'Don't put all eggs in one basket'")
         
-        # Time warning
+        # Time warning with Delta wisdom
         if signal_data.get('end_of_session'):
-            warnings.append("⏰ Session ending soon - limited time window")
+            warnings.append("⏰ Session ending - like sunset on the Delta, time to head home")
         
-        # Risk/reward warning
+        # Risk/reward warning with hard-earned lessons
         rr_ratio = signal_data.get('risk_reward_ratio', 0)
         if rr_ratio < 1.5:
-            warnings.append("📊 Low R:R ratio - consider skipping")
+            warnings.append("📊 Low R:R ratio - Grandmama said 'Don't chase pennies in front of dollars'")
+        
+        # Add protective wisdom occasionally
+        if random.random() < 0.4:
+            protection_wisdom = [
+                "🛡️ Protect your capital like you'd protect your family",
+                "💰 Every dollar risked is a dollar earned through sacrifice",
+                "🏠 Think of home before making big decisions",
+                "❤️ Your family needs you trading another day"
+            ]
+            warnings.append(random.choice(protection_wisdom))
         
         return warnings
     
@@ -582,6 +837,46 @@ class MissionBriefingGenerator:
             })
         
         return actions
+    
+    def _determine_bit_mood(self, conditions: Dict, signal_data: Dict) -> Optional[str]:
+        """Determine Bit's presence and mood based on market conditions"""
+        confidence = signal_data.get('tcs_score', 70)
+        volatility = conditions.get('volatility', 'NORMAL')
+        
+        # High confidence trades - Bit is confident
+        if confidence >= 85:
+            return random.choice(self.norman_story.bit_presence['confidence'])
+        
+        # Risky conditions - Bit is cautious
+        elif volatility == 'HIGH' or confidence < 70:
+            return random.choice(self.norman_story.bit_presence['caution'])
+        
+        # Moderate conditions - occasional comfort
+        elif random.random() < 0.2:
+            return random.choice(self.norman_story.bit_presence['comfort'])
+        
+        return None
+    
+    def _add_norman_context_to_callsign(self, callsign: str, mission_type: MissionType) -> str:
+        """Add Norman's story context to mission callsigns when appropriate"""
+        # Occasionally add context that hints at Norman's journey
+        context_additions = {
+            'tactical': " - Delta Protocol",
+            'family': " - For the Family", 
+            'journey': " - Mississippi Rising",
+            'wisdom': " - Grandmama's Blessing"
+        }
+        
+        if random.random() < 0.15:  # 15% chance for context
+            context_type = random.choice(list(context_additions.keys()))
+            return f"{callsign}{context_additions[context_type]}"
+        
+        return callsign
+    
+    def _get_norman_enhanced_callsign(self, mission_type: MissionType) -> str:
+        """Get callsign with potential Norman story enhancement"""
+        callsign = self._get_callsign(mission_type)
+        return self._add_norman_context_to_callsign(callsign, mission_type)
 
 # Testing
 if __name__ == "__main__":

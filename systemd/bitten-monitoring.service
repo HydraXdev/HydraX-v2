@@ -14,7 +14,7 @@ Environment=LOG_LEVEL=INFO
 Environment=MONITORING_CONFIG=/etc/bitten/monitoring.conf
 ExecStart=/usr/bin/python3 -m monitoring.main_monitor
 ExecReload=/bin/kill -HUP $MAINPID
-Restart=always
+Restart=no  # EMERGENCY: Disabled auto-restart
 RestartSec=10
 StandardOutput=journal
 StandardError=journal

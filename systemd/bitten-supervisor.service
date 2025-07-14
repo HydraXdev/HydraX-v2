@@ -1,0 +1,37 @@
+[Unit]
+Description=BITTEN System Supervisor - 24/7 Monitoring
+After=network.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=bitten
+Group=bitten
+WorkingDirectory=/root/HydraX-v2
+Environment="PATH=/usr/local/bin:/usr/bin:/bin"
+ExecStart=/usr/bin/python3 /root/HydraX-v2/bitten_system_supervisor.py
+Restart=always
+RestartSec=10
+StandardOutput=append:/var/log/bitten/supervisor.log
+StandardError=append:/var/log/bitten/supervisor-error.log
+
+# Restart settings
+StartLimitInterval=300
+StartLimitBurst=5
+
+# Kill only the main process, not children
+KillMode=mixed
+
+# Give it time to cleanup
+TimeoutStopSec=30
+
+# Resource limits
+LimitNOFILE=65536
+LimitNPROC=4096
+
+# Security
+PrivateTmp=yes
+NoNewPrivileges=yes
+
+[Install]
+WantedBy=multi-user.target

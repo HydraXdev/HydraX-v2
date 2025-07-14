@@ -421,7 +421,7 @@ PROGRESSION_ACHIEVEMENTS = {
 SPECIAL_ACHIEVEMENTS = {
     'beta_tester': {'beta_participant': True, 'xp_reward': 2500},
     'perfectionist': {'all_achievements': True, 'xp_reward': 20000},
-    'press_pass_survivor': {'press_pass_days': 30, 'xp_reward': 3000}
+    'press_pass_survivor': {'press_pass_days': 7, 'xp_reward': 50}
 }
 ```
 

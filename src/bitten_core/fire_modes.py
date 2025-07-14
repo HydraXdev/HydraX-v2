@@ -34,6 +34,7 @@ class TierConfig:
     has_autofire: bool
     has_stealth: bool
     risk_per_shot: float = 0.02  # 2%
+    auto_mode_min_tcs: Optional[int] = None  # Separate TCS for auto mode (COMMANDER)
 
 # THE LAW - Tier Configurations
 TIER_CONFIGS = {
@@ -41,7 +42,7 @@ TIER_CONFIGS = {
         name="PRESS_PASS",
         price=0,  # Free tier
         daily_shots=1,
-        min_tcs=60,
+        min_tcs=50,  # Lowered from 70 to 50
         has_chaingun=False,
         has_autofire=False,
         has_stealth=False
@@ -50,7 +51,7 @@ TIER_CONFIGS = {
         name="NIBBLER",
         price=39,
         daily_shots=6,
-        min_tcs=70,
+        min_tcs=50,  # Lowered from 70 to 50
         has_chaingun=False,
         has_autofire=False,
         has_stealth=False
@@ -59,7 +60,7 @@ TIER_CONFIGS = {
         name="FANG",
         price=89,
         daily_shots=10,  # 8-10, using max
-        min_tcs=85,
+        min_tcs=50,  # Lowered from 85 to 50
         has_chaingun=True,
         has_autofire=False,
         has_stealth=False
@@ -68,16 +69,17 @@ TIER_CONFIGS = {
         name="COMMANDER",
         price=139,
         daily_shots=12,  # 12+
-        min_tcs=91,
+        min_tcs=50,  # Minimum TCS to fire (lowered from 85)
         has_chaingun=True,
         has_autofire=True,
-        has_stealth=False
+        has_stealth=False,
+        auto_mode_min_tcs=80  # AUTO mode requires 80% TCS (lowered from 91)
     ),
     TierLevel.APEX: TierConfig(
         name="APEX",
         price=188,
         daily_shots=9999,  # Unlimited
-        min_tcs=91,
+        min_tcs=50,  # Lowered from 91 to 50
         has_chaingun=True,
         has_autofire=True,
         has_stealth=True
@@ -85,7 +87,15 @@ TIER_CONFIGS = {
 }
 
 # Import centralized configuration
-from .config_manager import get_trading_config
+try:
+    from .config_manager import get_trading_config
+except ImportError:
+    # Fallback for backtesting
+    def get_trading_config():
+        class MockConfig:
+            def get_pair_specific_tcs(self):
+                return {}
+        return MockConfig()
 
 # Pair-specific TCS requirements loaded from centralized config
 def get_pair_specific_tcs() -> Dict[str, Optional[int]]:
@@ -94,6 +104,16 @@ def get_pair_specific_tcs() -> Dict[str, Optional[int]]:
 
 # Legacy support - will be dynamically loaded
 PAIR_SPECIFIC_TCS = get_pair_specific_tcs()
+
+def get_tcs_threshold_for_mode(tier: TierLevel, fire_mode: FireMode) -> int:
+    """Get the correct TCS threshold based on tier and fire mode"""
+    config = TIER_CONFIGS[tier]
+    
+    # COMMANDER has dual thresholds
+    if tier == TierLevel.COMMANDER and fire_mode == FireMode.AUTO_FIRE:
+        return config.auto_mode_min_tcs or config.min_tcs
+    
+    return config.min_tcs
 
 @dataclass
 class ChaingunState:

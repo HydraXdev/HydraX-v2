@@ -5,7 +5,7 @@
 1. **Landing Page**: http://134.199.204.67/
    - Military-themed design with all features
    - Links to your Telegram bot: @Bitten_Commander_bot
-   - 15-day free trial call-to-action
+   - 7-day free trial call-to-action
 
 2. **Compliance Pages**:
    - Terms: http://134.199.204.67/terms

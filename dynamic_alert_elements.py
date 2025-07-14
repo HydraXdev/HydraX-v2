@@ -1,3 +1,4 @@
+import os
 #!/usr/bin/env python3
 """
 Dynamic elements that actually change and matter
@@ -8,8 +9,8 @@ import requests
 import time
 import random
 
-BOT_TOKEN = "7854827710:AAHnUNfP5GyxoYePoAV5BeOtDbmEJo6i_EQ"
-CHAT_ID = "-1002581996861"
+BOT_TOKEN = "os.getenv("BOT_TOKEN", "DISABLED_FOR_SECURITY")"
+CHAT_ID = "int(os.getenv("CHAT_ID", "-1002581996861"))"
 
 def send_alert(text):
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"

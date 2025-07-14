@@ -1,3 +1,4 @@
+import os
 #!/usr/bin/env python3
 """
 Unified Signal Flow for BITTEN
@@ -29,8 +30,8 @@ class UnifiedSignalFlow:
     """Manages the complete signal flow from generation to delivery"""
     
     def __init__(self):
-        self.bot_token = '7854827710:AAHnUNfP5GyxoYePoAV5BeOtDbmEJo6i_EQ'
-        self.chat_id = '-1002581996861'
+        self.bot_token = 'os.getenv("BOT_TOKEN", "DISABLED_FOR_SECURITY")'
+        self.chat_id = 'int(os.getenv("CHAT_ID", "-1002581996861"))'
         self.webapp_url = 'http://134.199.204.67:8888'
         self.bot = telegram.Bot(token=self.bot_token)
         

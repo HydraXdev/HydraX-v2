@@ -89,11 +89,11 @@ def validate_signal_integration():
         test_signals = []
         for rec in recommendations:
             arcade_signal = {
-                "type": "ARCADE",
+                "type": "RAPID_ASSAULT",
                 "format": rec["name"],
                 "text": rec["arcade"],
                 "tcs_score": 78,
-                "signal_id": f"TEST_AAA_{rec['name']}_ARCADE"
+                "signal_id": f"TEST_AAA_{rec['name']}_RAPID_ASSAULT"
             }
             
             sniper_signal = {
@@ -208,7 +208,7 @@ def update_shepherd_index():
             ],
             "integration": {
                 "compatible_with": ["bitten_live_signals", "telegram_alerts"],
-                "signal_types": ["ARCADE", "SNIPER"],
+                "signal_types": ["RAPID_ASSAULT", "SNIPER"],
                 "format_styles": ["MILITARY_OPS", "URGENCY_PLAY", "ZONE_CONTROL", "SQUAD_DYNAMICS"]
             },
             "validation": {

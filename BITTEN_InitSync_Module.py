@@ -119,7 +119,7 @@ class BITTENInitSync:
         self.max_concurrent_sessions = 1000
         
         # Bridge integration
-        self.bridge_server = "3.145.84.187"
+        self.bridge_server = "localhost"
         self.bridge_ports = [5555, 5556, 5557]
         
         # Active sessions cache

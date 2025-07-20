@@ -13,7 +13,7 @@ print(f"Request: {json.dumps(apex_request, indent=2)}")
 
 try:
     response = requests.post(
-        "http://3.145.84.187:5555/execute",
+        "http://localhost:5555/execute",
         json=apex_request,
         timeout=10
     )
@@ -35,7 +35,7 @@ print(f"Request: {json.dumps(type_request, indent=2)}")
 
 try:
     response = requests.post(
-        "http://3.145.84.187:5555/execute",
+        "http://localhost:5555/execute",
         json=type_request,
         timeout=10
     )
@@ -60,7 +60,7 @@ print(f"Request: {json.dumps(single_request, indent=2)}")
 
 try:
     response = requests.post(
-        "http://3.145.84.187:5555/execute",
+        "http://localhost:5555/execute",
         json=single_request,
         timeout=10
     )

@@ -31,7 +31,7 @@ except ImportError:
 
 class MissionType(Enum):
     """Mission types based on trading strategy"""
-    ARCADE_SCALP = "arcade_scalp"
+    RAPID_ASSAULT_SCALP = "arcade_scalp"
     SNIPER_SHOT = "sniper_shot"
     MIDNIGHT_HAMMER = "midnight_hammer"
     CHAINGUN_SEQUENCE = "chaingun_sequence"
@@ -190,7 +190,7 @@ class MissionBriefingGenerator:
         
         # Enhanced callsign pool with Norman's story elements
         self.callsign_pool = {
-            MissionType.ARCADE_SCALP: [
+            MissionType.RAPID_ASSAULT_SCALP: [
                 "DAWN RAID", "VORTEX AMBUSH", "LIGHTNING STRIKE", 
                 "SHADOW PIERCE", "RAPID ASSAULT", "GHOST RECON",
                 "DELTA WISDOM", "COTTON FIELD", "RIVER BEND"
@@ -503,7 +503,7 @@ class MissionBriefingGenerator:
         elif signal_type == 'chaingun':
             return MissionType.CHAINGUN_SEQUENCE
         else:
-            return MissionType.ARCADE_SCALP
+            return MissionType.RAPID_ASSAULT_SCALP
     
     def _calculate_urgency(self, time_remaining: int) -> UrgencyLevel:
         """Calculate urgency based on time remaining"""
@@ -680,7 +680,7 @@ class MissionBriefingGenerator:
     def _get_visual_style(self, mission_type: MissionType) -> str:
         """Get visual style for mission type"""
         styles = {
-            MissionType.ARCADE_SCALP: "arcade",
+            MissionType.RAPID_ASSAULT_SCALP: "arcade",
             MissionType.SNIPER_SHOT: "sniper",
             MissionType.MIDNIGHT_HAMMER: "midnight",
             MissionType.CHAINGUN_SEQUENCE: "arcade",
@@ -691,7 +691,7 @@ class MissionBriefingGenerator:
     def _get_emoji_set(self, mission_type: MissionType, urgency: UrgencyLevel) -> str:
         """Get emoji set for mission and urgency"""
         emoji_sets = {
-            MissionType.ARCADE_SCALP: {
+            MissionType.RAPID_ASSAULT_SCALP: {
                 UrgencyLevel.CRITICAL: "🚨 🎮 ⚡",
                 UrgencyLevel.HIGH: "⚡ 🎮 🎯",
                 UrgencyLevel.MEDIUM: "🎯 🎮 📊",

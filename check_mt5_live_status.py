@@ -2,7 +2,7 @@
 import requests
 import json
 
-agent_url = "http://3.145.84.187:5555"
+agent_url = "http://localhost:5555"
 
 print("=== MT5 LIVE STATUS CHECK ===\n")
 

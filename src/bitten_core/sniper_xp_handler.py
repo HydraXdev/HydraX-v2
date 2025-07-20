@@ -15,7 +15,7 @@ class SniperXPHandler:
     # XP modifiers
     SNIPER_TP_BONUS_MULTIPLIER = 1.5    # 50% bonus for holding to TP
     SNIPER_EARLY_EXIT_PENALTY = 0.5     # 50% penalty for early exit
-    ARCADE_BASE_XP = 100                 # Base XP for arcade trades
+    RAPID_ASSAULT_BASE_XP = 100                 # Base XP for arcade trades
     SNIPER_BASE_XP = 150                 # Base XP for sniper trades (higher risk/reward)
     
     def __init__(self):
@@ -109,7 +109,7 @@ class SniperXPHandler:
     
     def _calculate_arcade_xp(self, pnl: float) -> Dict:
         """Calculate XP for arcade trades"""
-        base_xp = self.ARCADE_BASE_XP
+        base_xp = self.RAPID_ASSAULT_BASE_XP
         
         # Simple XP based on win/loss
         if pnl > 0:

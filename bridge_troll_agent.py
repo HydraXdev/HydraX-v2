@@ -57,7 +57,7 @@ class BridgeTrollAgent:
     - Emergency response and recovery procedures
     
     TECHNICAL KNOWLEDGE BASE:
-    - Bridge Architecture: Windows MT5 Server (3.145.84.187) with bulletproof agents
+    - Bridge Architecture: Windows MT5 Server (localhost) with bulletproof agents
     - Communication Protocol: HTTP POST to ports 5555-5557 with JSON payloads
     - File System: C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\173477FF1060D99CE79296FC73108719\\MQL5\\Files\\BITTEN\\
     - Signal Format: JSON files with pattern *{SYMBOL}*.json
@@ -68,7 +68,7 @@ class BridgeTrollAgent:
         self.agent_name = "BRIDGE_TROLL"
         self.version = "1.0_FORTRESS"
         self.deployment_time = datetime.now()
-        self.bridge_server = "3.145.84.187"
+        self.bridge_server = "localhost"
         self.bridge_ports = [5555, 5556, 5557]
         self.primary_port = 5555
         self.bridge_path = r"C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\173477FF1060D99CE79296FC73108719\MQL5\Files\BITTEN\\"
@@ -78,7 +78,7 @@ class BridgeTrollAgent:
         
         # Bridge architecture knowledge base
         self.bridge_architecture = {
-            "primary_server": "3.145.84.187",
+            "primary_server": "localhost",
             "agent_ports": [5555, 5556, 5557],
             "terminal_id": "173477FF1060D99CE79296FC73108719",
             "signal_directory": r"C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\173477FF1060D99CE79296FC73108719\MQL5\Files\BITTEN\\",

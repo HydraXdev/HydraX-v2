@@ -66,7 +66,7 @@ class TradeAttempt:
     tcs_score: int
     fire_mode: FireMode
     timestamp: datetime
-    signal_type: str  # ARCADE, SNIPER
+    signal_type: str  # RAPID_ASSAULT, SNIPER
     entry_price: float
     stop_loss: float
     take_profit: float
@@ -529,7 +529,7 @@ def validate_backtesting_trade(game_engine: BittenGameRulesEngine,
         tcs_score=signal['tcs_score'],
         fire_mode=FireMode.SINGLE_SHOT,  # Default mode
         timestamp=signal['timestamp'],
-        signal_type=signal.get('signal_type', 'ARCADE'),
+        signal_type=signal.get('signal_type', 'RAPID_ASSAULT'),
         entry_price=signal['entry_price'],
         stop_loss=signal['stop_loss'],
         take_profit=signal['take_profit']

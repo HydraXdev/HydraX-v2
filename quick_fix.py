@@ -8,7 +8,7 @@ import json
 import time
 
 def quick_fix():
-    target_ip = "3.145.84.187"
+    target_ip = "localhost"
     primary_port = 5555
     session = requests.Session()
     session.timeout = 15

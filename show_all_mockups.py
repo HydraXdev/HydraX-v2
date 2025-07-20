@@ -5,14 +5,14 @@ print("=" * 50)
 print("BITTEN SIGNAL MOCKUPS FOR TELEGRAM")
 print("=" * 50)
 
-print("\n1️⃣ ARCADE SIGNAL - MINIMAL STYLE")
+print("\n1️⃣ RAPID_ASSAULT SIGNAL - MINIMAL STYLE")
 print("-" * 40)
 print("""🌅 *DAWN RAID* - EURUSD
 → BUY @ 1.0823
 → +25 pips | TCS: 72%
 [🔫 FIRE]""")
 
-print("\n\n2️⃣ ARCADE SIGNAL - DETAILED STYLE")
+print("\n\n2️⃣ RAPID_ASSAULT SIGNAL - DETAILED STYLE")
 print("-" * 40)
 print("""🏰 *WALL DEFENDER*
 ━━━━━━━━━━━━━━━━━
@@ -26,7 +26,7 @@ TCS: ▓▓▓▓▓▓▓░ 78%
 
 [🔫 FIRE NOW]""")
 
-print("\n\n3️⃣ ARCADE SIGNAL - COMPACT STYLE")
+print("\n\n3️⃣ RAPID_ASSAULT SIGNAL - COMPACT STYLE")
 print("-" * 40)
 print("""🚀 *ROCKET RIDE*
 USDJPY │ BUY │ TCS: 89%

@@ -159,7 +159,7 @@ class WinningOddsCalculator:
                 "base_win_rates": self.calibrated_win_rates,
                 "improvement_from_calibration": "+5.1% vs original system",
                 "tcs_threshold": "87% minimum (calibrated)",
-                "signal_classification": "ARCADE vs SNIPER hybrid system"
+                "signal_classification": "RAPID_ASSAULT vs SNIPER hybrid system"
             },
             "tiers": {}
         }
@@ -226,7 +226,7 @@ def main():
         print()
         
         print(f"💰 Monthly Financial Projection:")
-        print(f"   • ARCADE Trades: {gains['arcade_trades']['signals']:.0f} signals, {gains['arcade_trades']['wins']:.0f} wins")
+        print(f"   • RAPID_ASSAULT Trades: {gains['arcade_trades']['signals']:.0f} signals, {gains['arcade_trades']['wins']:.0f} wins")
         print(f"     └ Profit per win: ${gains['arcade_trades']['profit_per_win']:.2f}")
         print(f"   • SNIPER Trades: {gains['sniper_trades']['signals']:.0f} signals, {gains['sniper_trades']['wins']:.0f} wins")
         print(f"     └ Profit per win: ${gains['sniper_trades']['profit_per_win']:.2f}")

@@ -296,7 +296,7 @@ python3 test_real_account_integration.py
 ## 🚨 REMOVED/CLEANED COMPONENTS
 
 ### AWS Dependencies (ALL REMOVED)
-- ❌ AWS bridge connections (3.145.84.187)
+- ❌ AWS bridge connections (removed - now local clone farm)
 - ❌ Emergency bridge servers
 - ❌ Bridge troll systems
 - ❌ File-based bridge transfers

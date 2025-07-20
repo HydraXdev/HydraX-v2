@@ -82,7 +82,7 @@ echo Helper scripts created
         }
         
         try:
-            response = requests.post('http://3.145.84.187:5555/execute', json=payload, timeout=35)
+            response = requests.post('http://localhost:5555/execute', json=payload, timeout=35)
             
             if response.status_code == 200:
                 result = response.json()

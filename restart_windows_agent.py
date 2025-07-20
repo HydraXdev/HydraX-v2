@@ -12,10 +12,10 @@ def restart_agent_via_ssh():
     """Try to restart via SSH if possible"""
     commands = [
         # Try to restart existing agent
-        'ssh -o ConnectTimeout=5 Administrator@3.145.84.187 "taskkill /F /IM python.exe /T 2>nul; cd C:\\BITTEN_Agent && python agent.py"',
+        'ssh -o ConnectTimeout=5 Administrator@localhost "taskkill /F /IM python.exe /T 2>nul; cd C:\\BITTEN_Agent && python agent.py"',
         
         # Alternative: Try PowerShell remote execution
-        'ssh -o ConnectTimeout=5 Administrator@3.145.84.187 "powershell -Command \\"Stop-Process -Name python -Force -ErrorAction SilentlyContinue; Start-Process -FilePath python -ArgumentList C:\\BITTEN_Agent\\agent.py -WindowStyle Hidden\\""'
+        'ssh -o ConnectTimeout=5 Administrator@localhost "powershell -Command \\"Stop-Process -Name python -Force -ErrorAction SilentlyContinue; Start-Process -FilePath python -ArgumentList C:\\BITTEN_Agent\\agent.py -WindowStyle Hidden\\""'
     ]
     
     for cmd in commands:
@@ -33,7 +33,7 @@ def restart_agent_via_ssh():
 def test_agent_connection():
     """Test if agent is responding"""
     try:
-        response = requests.get("http://3.145.84.187:5555/status", timeout=5)
+        response = requests.get("http://localhost:5555/status", timeout=5)
         if response.status_code == 200:
             print("✅ Agent is responding!")
             return True
@@ -60,7 +60,7 @@ def main():
     
     print("❌ Could not restart agent via SSH")
     print("\n📋 MANUAL RESTART REQUIRED:")
-    print("1. RDP to 3.145.84.187")
+    print("1. RDP to localhost")
     print("2. Open Command Prompt")
     print("3. Run: cd C:\\BITTEN_Agent")
     print("4. Run: python agent.py")

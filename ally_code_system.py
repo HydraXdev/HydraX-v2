@@ -347,7 +347,7 @@ class AllyCodeManager:
             commission_rate = metadata.get('commission_rate', 0.5)
             
             # Calculate commission based on tier price
-            tier_prices = {'FANG': 89, 'NIBBLER': 39, 'COMMANDER': 139, 'APEX': 188}
+            tier_prices = {'FANG': 89, 'NIBBLER': 39, 'COMMANDER': 189}
             payment_amount = tier_prices.get('FANG', 89)  # Default to FANG
             commission_amount = payment_amount * commission_rate
             

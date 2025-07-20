@@ -22,7 +22,7 @@ class LiveTradeAPI:
     """API for live trade data integration"""
     
     def __init__(self):
-        self.farm_url = "http://3.145.84.187:5555"
+        self.farm_url = "http://localhost:5555"
         self.active_trades = {}
         self.account_data = {
             'balance': 2450.00,

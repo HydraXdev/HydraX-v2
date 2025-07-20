@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 WINDOWS AGENT DIAGNOSTIC & REPAIR TOOL
-Comprehensive testing and repair for Windows agent at 3.145.84.187:5555
+Comprehensive testing and repair for Windows agent at localhost:5555
 """
 
 import requests
@@ -17,7 +17,7 @@ class WindowsAgentDiagnostic:
     """Complete diagnostic and repair tool for Windows agent"""
     
     def __init__(self):
-        self.target_ip = "3.145.84.187"
+        self.target_ip = "localhost"
         self.agent_ports = [5555, 5556, 5557]  # Primary, Backup, WebSocket
         self.session = requests.Session()
         self.session.timeout = 10
@@ -264,13 +264,13 @@ class WindowsAgentDiagnostic:
             instructions.append("3. Check if server has been stopped or terminated")
             
         elif not any(self.diagnostic_results['connectivity']['ports'].values()):
-            instructions.append("1. RDP to Windows server (3.145.84.187)")
+            instructions.append("1. RDP to Windows server (localhost)")
             instructions.append("2. Check Windows Firewall settings")
             instructions.append("3. Verify agents are running: tasklist | findstr python")
             instructions.append("4. Restart all agents: cd C:\\BITTEN_Agent && START_AGENTS.bat")
             
         elif not any(h.get('status') == 'healthy' for h in self.diagnostic_results['agent_health'].values()):
-            instructions.append("1. RDP to Windows server (3.145.84.187)")
+            instructions.append("1. RDP to Windows server (localhost)")
             instructions.append("2. Kill all Python processes: taskkill /F /IM python.exe /T")
             instructions.append("3. Restart agents: cd C:\\BITTEN_Agent && START_AGENTS.bat")
             instructions.append("4. Verify startup: curl http://localhost:5555/health")

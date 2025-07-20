@@ -8,7 +8,7 @@ import json
 import time
 import os
 
-agent_url = "http://3.145.84.187:5555"
+agent_url = "http://localhost:5555"
 
 # BITTEN's 10 trading pairs
 TRADING_PAIRS = [
@@ -159,7 +159,7 @@ config_updates = {
     "pairs": TRADING_PAIRS,
     "filter_enabled": True,
     "min_confidence": 0.85,
-    "farm_ips": ["3.145.84.187"]
+    "farm_ips": ["localhost"]
 }
 
 config_path = "/root/HydraX-v2/config/signal_config.json"

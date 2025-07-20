@@ -145,8 +145,7 @@ class BittenMenuIntegration:
                     InlineKeyboardButton("🦷 FANG ($89)", callback_data="tier_fang")
                 ],
                 [
-                    InlineKeyboardButton("⭐ COMMANDER ($139)", callback_data="tier_commander"),
-                    InlineKeyboardButton("👑 APEX ($188)", callback_data="tier_apex")
+                    InlineKeyboardButton("⭐ COMMANDER ($189)", callback_data="tier_commander")
                 ],
                 [
                     InlineKeyboardButton("📊 COMPARE TIERS", url=self.webapp_url + "/tiers"),
@@ -373,7 +372,7 @@ class BittenMenuIntegration:
             
             "signal_types": """📡 **SIGNAL CLASSIFICATIONS**
 
-**🔫 ARCADE (Fast Action):**
+**🔫 RAPID_ASSAULT (Fast Action):**
 • 2-45 minute duration
 • High velocity setups
 • Quick scalping opportunities

@@ -11,7 +11,7 @@ import os
 
 def deploy_bulletproof_agents():
     """Deploy bulletproof agents to Windows server"""
-    target_ip = "3.145.84.187"
+    target_ip = "localhost"
     base_url = f"http://{target_ip}:5555"
     
     print("🚀 DEPLOYING BULLETPROOF AGENT SYSTEM...")
@@ -50,7 +50,7 @@ def deploy_bulletproof_agents():
         except:
             print("❌ Cannot connect to existing agent")
             print("MANUAL DEPLOYMENT REQUIRED:")
-            print("1. RDP to 3.145.84.187")
+            print("1. RDP to localhost")
             print("2. Create C:\\BITTEN_Agent directory")
             print("3. Copy files from /root/HydraX-v2/bulletproof_agents/")
             print("4. Run START_AGENTS.bat")
@@ -113,7 +113,7 @@ def deploy_bulletproof_agents():
 
 def test_all_connections():
     """Test all connection methods"""
-    target_ip = "3.145.84.187"
+    target_ip = "localhost"
     
     print("\n🔍 TESTING ALL CONNECTION METHODS...")
     print("=" * 40)
@@ -183,7 +183,7 @@ def create_intelligent_test():
                 # This would use the intelligent controller
                 # For now, just test basic HTTP
                 response = requests.post(
-                    "http://3.145.84.187:5555/execute",
+                    "http://localhost:5555/execute",
                     json={"command": cmd, "type": "powershell"},
                     timeout=10
                 )

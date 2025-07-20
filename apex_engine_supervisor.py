@@ -77,7 +77,7 @@ class APEXEngineSupervisor:
         """Test bridge connection and file availability"""
         try:
             response = requests.post(
-                "http://3.145.84.187:5555/execute",
+                "http://localhost:5555/execute",
                 json={
                     "command": "Get-ChildItem -Path C:\\\\MT5_Farm\\\\Bridge\\\\Incoming\\\\ | Measure-Object | Select-Object Count",
                     "type": "powershell"
@@ -188,7 +188,7 @@ class APEXEngineSupervisor:
         bridge_status = self.check_bridge_connection()
         if bridge_status['status'] != 'CONNECTED':
             diagnosis['issues'].append("Bridge connection issues")
-            diagnosis['recommendations'].append("Check bridge server at 3.145.84.187:5555")
+            diagnosis['recommendations'].append("Check bridge server at localhost:5555")
             diagnosis['severity'] = 'HIGH'
         
         # Check engine health

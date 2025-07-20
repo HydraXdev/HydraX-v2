@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# STYLE 1: DETAILED ARCADE
+# STYLE 1: DETAILED RAPID_ASSAULT
 print("""
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃ 🚀 ROCKET RIDE

@@ -13,7 +13,7 @@ from pathlib import Path
 class EATransferManager:
     def __init__(self):
         self.ea_file = "/root/HydraX-v2/BITTEN_Windows_Package/EA/BITTENBridge_v3_ENHANCED.mq5"
-        self.target_server = "3.145.84.187"
+        self.target_server = "localhost"
         self.agent_port = 5555
         
     def method_1_direct_agent_upload(self):

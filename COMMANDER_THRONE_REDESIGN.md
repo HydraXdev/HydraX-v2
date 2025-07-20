@@ -16,7 +16,7 @@ A full-width panel at the top provides instant visibility of the most critical m
 - **Tier Breakdown**: Visual grid showing subscriber count and revenue by tier
   - NIBBLER ($39): Green
   - FANG ($89): Orange  
-  - COMMANDER ($139): Deep Orange
+  - COMMANDER ($189): Deep Orange
   - APEX ($188): Red
 
 #### System Status (Center-Left)

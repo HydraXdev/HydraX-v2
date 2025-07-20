@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 MT5 Live Integration with BITTEN Signal System
-Uses actual ARCADE/SNIPER signal types from tier_settings.yml
+Uses actual RAPID_ASSAULT/SNIPER signal types from tier_settings.yml
 """
 
 import json
@@ -35,7 +35,7 @@ class MT5BITTENProcessor:
         self.db_path = "/root/HydraX-v2/data/bitten_signals.db"
         self.init_database()
         self.price_history = {pair: [] for pair in TRADING_PAIRS}
-        self.signal_counts = {"ARCADE": 0, "SNIPER": 0}
+        self.signal_counts = {"RAPID_ASSAULT": 0, "SNIPER": 0}
         
     def init_database(self):
         """Initialize database for BITTEN signals"""
@@ -313,5 +313,5 @@ def process_live_mt5_data(data: Dict) -> Optional[Dict]:
 if __name__ == "__main__":
     logger.info("BITTEN MT5 Live Processor initialized")
     logger.info(f"Monitoring: {', '.join(TRADING_PAIRS)}")
-    logger.info("Signal types: ARCADE (70%+), SNIPER (85%+)")
+    logger.info("Signal types: RAPID_ASSAULT (70%+), SNIPER (85%+)")
     logger.info("Waiting for live market data...")

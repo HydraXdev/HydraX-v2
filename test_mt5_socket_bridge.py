@@ -10,7 +10,7 @@ import time
 from datetime import datetime
 
 class MT5SocketTester:
-    def __init__(self, host="3.145.84.187", port=9000):
+    def __init__(self, host="localhost", port=9000):
         self.host = host
         self.port = port
         

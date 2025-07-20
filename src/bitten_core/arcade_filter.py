@@ -29,7 +29,7 @@ class ArcadeSignal:
 
 class ArcadeFilter:
     """
-    ARCADE SCALPING ENGINE
+    RAPID_ASSAULT SCALPING ENGINE
     
     65%+ TCS threshold for quality control
     10-20 pip targets, 5-45 minute holds

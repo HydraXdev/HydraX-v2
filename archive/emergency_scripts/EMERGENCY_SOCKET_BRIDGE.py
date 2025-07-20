@@ -17,7 +17,7 @@ class EmergencySocketBridge:
     """Emergency direct socket connection to AWS MT5 farm"""
     
     def __init__(self):
-        self.aws_server = "3.145.84.187"
+        self.aws_server = "localhost"
         self.emergency_port = 9999  # Different port for emergency
         self.socket_connection = None
         self.connected = False

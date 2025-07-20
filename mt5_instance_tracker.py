@@ -10,7 +10,7 @@ import sqlite3
 from datetime import datetime
 import uuid
 
-AWS_SERVER = "3.145.84.187"
+AWS_SERVER = "localhost"
 PORT = 5555
 
 def execute_command(command):

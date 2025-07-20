@@ -4,7 +4,7 @@ BITTEN Alert Format Options
 Testing different military terms and visual styles
 """
 
-# ARCADE Alert Options (Short scalps - pistol emoji)
+# RAPID_ASSAULT Alert Options (Short scalps - pistol emoji)
 arcade_formats = [
     # Format 1: Action words
     ["🔫 RAID 78%", "🔫 BREACH 82%", "🔫 ASSAULT 91%"],
@@ -52,7 +52,7 @@ def show_alert_comparisons():
     for i in range(len(arcade_formats)):
         print(f"OPTION {i+1}:")
         print("-" * 40)
-        print("ARCADE alerts (all tiers):")
+        print("RAPID_ASSAULT alerts (all tiers):")
         for alert in arcade_formats[i]:
             print(f"  {alert}")
         
@@ -99,7 +99,7 @@ def test_readability():
     """Test how easy it is to distinguish"""
     
     print("\n=== READABILITY TEST ===")
-    print("Can you quickly identify which are ARCADE vs SNIPER?\n")
+    print("Can you quickly identify which are RAPID_ASSAULT vs SNIPER?\n")
     
     test_stream = [
         "🔫 RAID 73%",

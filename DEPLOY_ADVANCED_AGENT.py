@@ -9,7 +9,7 @@ import base64
 import time
 
 def deploy_advanced_agent():
-    server = "3.145.84.187:5555"
+    server = "localhost:5555"
     
     print("🚀 DEPLOYING ADVANCED MT5 FARM MANAGEMENT AGENT")
     print("="*55)
@@ -348,7 +348,7 @@ if __name__ == "__main__":
     print("\n🎉 ADVANCED AGENT DEPLOYMENT COMPLETE!")
     print("\n📋 NEXT STEPS:")
     print("1. Start advanced agent: C:\\BITTEN_Agent\\start_advanced_agent.bat")
-    print("2. Test farm management: http://3.145.84.187:5558/farm/status")
+    print("2. Test farm management: http://localhost:5558/farm/status")
     print("3. Use advanced features via API endpoints")
     print("4. Schedule automated maintenance tasks")
     print("\n🎯 You now have enterprise-grade MT5 farm management!")

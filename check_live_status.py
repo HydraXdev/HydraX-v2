@@ -6,7 +6,7 @@ import requests
 import json
 import time
 
-agent_url = "http://3.145.84.187:5555"
+agent_url = "http://localhost:5555"
 
 def execute_ps(command):
     resp = requests.post(f"{agent_url}/execute", 

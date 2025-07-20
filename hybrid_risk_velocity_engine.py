@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 HYBRID RISK-VELOCITY SIGNAL ENGINE - OPTION B IMPLEMENTATION
-Mathematical classification: ARCADE vs SNIPER based on risk-efficiency
+Mathematical classification: RAPID_ASSAULT vs SNIPER based on risk-efficiency
 """
 
 import sqlite3
@@ -39,7 +39,7 @@ class HybridRiskVelocityEngine:
         
         # CALIBRATED MATHEMATICAL THRESHOLDS (based on backtesting results)
         self.arcade_risk_efficiency_min = 4.0  # >4 profit-pips per risk-pip per hour
-        self.arcade_max_duration_minutes = 45  # Hard limit for ARCADE
+        self.arcade_max_duration_minutes = 45  # Hard limit for RAPID_ASSAULT
         self.arcade_min_tcs = 87  # CALIBRATED from 82% to 87% - improved quality
         self.arcade_velocity_min = 15  # >15 pips/hour price movement
         
@@ -143,7 +143,7 @@ class HybridRiskVelocityEngine:
             return 0.0
     
     def classify_signal_type(self, signal: Dict) -> Optional[str]:
-        """Classify signal as ARCADE or SNIPER based on Option B criteria"""
+        """Classify signal as RAPID_ASSAULT or SNIPER based on Option B criteria"""
         
         tcs = signal['tcs_score']
         risk_efficiency = self.calculate_risk_efficiency(signal)
@@ -167,7 +167,7 @@ class HybridRiskVelocityEngine:
             
         actual_rr = profit_pips / sl_pips if sl_pips > 0 else 0
         
-        # ARCADE CLASSIFICATION CRITERIA
+        # RAPID_ASSAULT CLASSIFICATION CRITERIA
         arcade_criteria = [
             risk_efficiency > self.arcade_risk_efficiency_min,  # >4.0 efficiency
             market_velocity > self.arcade_velocity_min,  # >15 pips/hour movement
@@ -187,17 +187,17 @@ class HybridRiskVelocityEngine:
         arcade_score = sum(arcade_criteria)
         sniper_score = sum(sniper_criteria)
         
-        self.logger.debug(f"Signal {signal['id']}: ARCADE={arcade_score}/4, SNIPER={sniper_score}/4, RE={risk_efficiency:.1f}, MV={market_velocity:.1f}")
+        self.logger.debug(f"Signal {signal['id']}: RAPID_ASSAULT={arcade_score}/4, SNIPER={sniper_score}/4, RE={risk_efficiency:.1f}, MV={market_velocity:.1f}")
         
-        if arcade_score >= 3:  # Need 3/4 criteria for ARCADE
-            return "ARCADE"
+        if arcade_score >= 3:  # Need 3/4 criteria for RAPID_ASSAULT
+            return "RAPID_ASSAULT"
         elif sniper_score >= 3:  # Need 3/4 criteria for SNIPER
             return "SNIPER"
         else:
             return None  # Doesn't meet either criteria
     
     def create_arcade_alert(self, tcs_score, signal_id, symbol):
-        """ARCADE format for fast-action signals"""
+        """RAPID_ASSAULT format for fast-action signals"""
         text = f"🔫 RAPID ASSAULT [{tcs_score}%]\n🔥 {symbol} STRIKE 💥"
         
         keyboard = {
@@ -302,7 +302,7 @@ class HybridRiskVelocityEngine:
     def run_hybrid_engine(self):
         """Run the hybrid risk-velocity classification engine"""
         self.logger.info("🚀 HYBRID RISK-VELOCITY ENGINE STARTED")
-        self.logger.info(f"🔫 ARCADE: RE>{self.arcade_risk_efficiency_min}, MV>{self.arcade_velocity_min} pips/h, TCS>={self.arcade_min_tcs}%")
+        self.logger.info(f"🔫 RAPID_ASSAULT: RE>{self.arcade_risk_efficiency_min}, MV>{self.arcade_velocity_min} pips/h, TCS>={self.arcade_min_tcs}%")
         self.logger.info(f"⚡ SNIPER: >{self.sniper_min_profit_pips} pips, TCS>{self.sniper_min_tcs}%, RR>{self.sniper_min_risk_reward}")
         
         arcade_count = 0
@@ -360,7 +360,7 @@ class HybridRiskVelocityEngine:
                                     self.logger.warning(f"Ghost mode error: {e}")
                             
                             # Create appropriate alert
-                            if signal_type == "ARCADE":
+                            if signal_type == "RAPID_ASSAULT":
                                 alert_data = self.create_arcade_alert(signal['tcs_score'], signal['id'], signal['symbol'])
                                 arcade_count += 1
                             else:  # SNIPER
@@ -387,7 +387,7 @@ class HybridRiskVelocityEngine:
                             else:
                                 self.logger.error(f"❌ Failed to send {signal_type} signal {signal['id']}")
                         else:
-                            self.logger.debug(f"🚫 Signal {signal['id']} doesn't meet ARCADE or SNIPER criteria")
+                            self.logger.debug(f"🚫 Signal {signal['id']} doesn't meet RAPID_ASSAULT or SNIPER criteria")
                         
                         # Small delay between sends
                         time.sleep(1)
@@ -398,7 +398,7 @@ class HybridRiskVelocityEngine:
                         
                     # Log session stats every 10 cycles
                     if (arcade_count + sniper_count) % 10 == 0:
-                        self.logger.info(f"📊 SESSION STATS: 🔫 ARCADE: {arcade_count}, ⚡ SNIPER: {sniper_count}")
+                        self.logger.info(f"📊 SESSION STATS: 🔫 RAPID_ASSAULT: {arcade_count}, ⚡ SNIPER: {sniper_count}")
                         
                 else:
                     self.logger.debug("No candidate signals found")
@@ -416,7 +416,7 @@ class HybridRiskVelocityEngine:
         """Test the classification system"""
         print("🚀 TESTING HYBRID RISK-VELOCITY ENGINE")
         print("=" * 60)
-        print(f"🔫 ARCADE Criteria:")
+        print(f"🔫 RAPID_ASSAULT Criteria:")
         print(f"  - Risk Efficiency > {self.arcade_risk_efficiency_min}")
         print(f"  - Market Velocity > {self.arcade_velocity_min} pips/hour")
         print(f"  - TCS ≥ {self.arcade_min_tcs}% (RAISED FROM 70%)")
@@ -443,8 +443,8 @@ class HybridRiskVelocityEngine:
                 risk_eff = self.calculate_risk_efficiency(signal)
                 velocity = self.calculate_market_velocity(signal['symbol'])
                 
-                if signal_type == "ARCADE":
-                    print(f"  🔫 ARCADE: {signal['symbol']} {signal['direction']} (TCS: {signal['tcs_score']}%, RE: {risk_eff:.1f}, MV: {velocity:.1f})")
+                if signal_type == "RAPID_ASSAULT":
+                    print(f"  🔫 RAPID_ASSAULT: {signal['symbol']} {signal['direction']} (TCS: {signal['tcs_score']}%, RE: {risk_eff:.1f}, MV: {velocity:.1f})")
                     arcade_count += 1
                 elif signal_type == "SNIPER":
                     print(f"  ⚡ SNIPER: {signal['symbol']} {signal['direction']} (TCS: {signal['tcs_score']}%, RE: {risk_eff:.1f}, MV: {velocity:.1f})")
@@ -455,7 +455,7 @@ class HybridRiskVelocityEngine:
             
             print()
             print(f"📊 TEST RESULTS:")
-            print(f"🔫 ARCADE signals: {arcade_count}")
+            print(f"🔫 RAPID_ASSAULT signals: {arcade_count}")
             print(f"⚡ SNIPER signals: {sniper_count}")
             print(f"🚫 Filtered out: {filtered_count}")
             print(f"📤 Total qualified: {arcade_count + sniper_count}")

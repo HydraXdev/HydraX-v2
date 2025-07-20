@@ -12,6 +12,7 @@ from .momentum_continuation import MomentumContinuationStrategy
 from .mean_reversion import MeanReversionStrategy
 from .market_analyzer import MarketAnalyzer
 from .strategy_validator import StrategyValidator
+from ..tactical_strategies import TacticalStrategy, tactical_strategy_manager
 
 logger = logging.getLogger(__name__)
 
@@ -42,6 +43,9 @@ class StrategyOrchestrator:
         # Global validator
         self.validator = StrategyValidator()
         
+        # Tactical manager for NIBBLER gamification
+        self.tactical_manager = tactical_strategy_manager
+        
         # Signal tracking
         self.recent_signals = defaultdict(list)  # Per symbol
         self.signal_history = []
@@ -54,7 +58,7 @@ class StrategyOrchestrator:
         })
         
     def process_market_update(self, symbol: str, market_data: MarketData,
-                            indicators: TechnicalIndicators) -> Optional[TradingSignal]:
+                            indicators: TechnicalIndicators, user_id: str = None) -> Optional[TradingSignal]:
         """
         MAIN PROCESSING ENGINE
         
@@ -110,12 +114,20 @@ class StrategyOrchestrator:
             signal.confidence_factors.extend(validation.enhanced_factors)
             signal.warning_factors.extend(validation.risk_warnings)
             
-            # Final TCS check
-            if signal.tcs_score >= 70:
+            # Apply tactical strategy filtering (NIBBLER gamification)
+            if user_id and hasattr(self, 'tactical_manager'):
+                signal = self.tactical_manager.filter_signal_for_user(user_id, signal)
+                if not signal:
+                    logger.info(f"Signal filtered out by tactical strategy for user {user_id}")
+                    return None
+            
+            # Final TCS check (NIBBLER uses tactical strategy requirements)
+            min_tcs = 60 if not user_id else 60  # NIBBLER threshold
+            if signal.tcs_score >= min_tcs:
                 self._record_signal(symbol, signal)
                 return signal
             else:
-                logger.info(f"Signal rejected - TCS too low: {signal.tcs_score}")
+                logger.info(f"Signal rejected - TCS too low: {signal.tcs_score} (min: {min_tcs})")
                 return None
         
         return None

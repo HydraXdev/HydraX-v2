@@ -21,7 +21,7 @@ class AWSFreshCloneSetup:
         
         # Get production tunnel
         self.tunnel = get_production_tunnel()
-        self.bridge_server = "3.145.84.187"
+        self.bridge_server = "localhost"
         self.primary_port = 5555
         
     def log_step(self, step, status, details=""):

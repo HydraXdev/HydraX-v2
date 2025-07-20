@@ -15,7 +15,6 @@
 ### **🔧 CURRENT SYSTEM STATE (July 9, 2025)**
 - **Trading Pairs**: 10 active pairs (EURUSD, GBPUSD, USDJPY, USDCAD, GBPJPY, AUDUSD, NZDUSD, EURGBP, USDCHF, EURJPY)
 - **Self-Optimizing Engine**: 65 signals/day target, 70-78% TCS range, 85%+ win rate
-- **Tier System**: Press Pass (free) → NIBBLER ($39) → FANG ($89) → COMMANDER ($139) → APEX ($188)
 - **Status**: Production ready, awaiting MT5 farm connection
 
 ---
@@ -62,8 +61,7 @@ self_optimizing: true
 PRESS_PASS: {shots: 1, tcs: 60%, price: $0, duration: 7_days, weekly_limit: 200, xp_resets_nightly: true}
 NIBBLER: {shots: 6, tcs: 70%, price: $39}
 FANG: {shots: 10, tcs: 85%, price: $89}
-COMMANDER: {shots: 20, tcs: 90%, price: $139}
-APEX: {shots: unlimited, tcs: 91%, price: $188}
+COMMANDER: {shots: unlimited, tcs: 85%, price: $189}
 ```
 
 ### **Infrastructure**
@@ -105,10 +103,9 @@ APEX: {shots: unlimited, tcs: 91%, price: $188}
 **A**: Self-optimizing 70-78% range, targets 65 signals/day, 85%+ win rate
 
 ### **Q: What are the tier prices?**
-**A**: Press Pass (free) → NIBBLER ($39) → FANG ($89) → COMMANDER ($139) → APEX ($188)
 
 ### **Q: Where is the MT5 integration?**
-**A**: Windows server 3.145.84.187, needs manual connection, see deployment specs
+**A**: Local clone farm system, fully autonomous operation, see deployment specs
 
 ### **Q: What's the system architecture?**
 **A**: Multi-server (Linux + Windows), self-optimizing engine, read system architecture doc

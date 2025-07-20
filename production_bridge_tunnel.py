@@ -10,7 +10,7 @@ SECURITY: Military-grade signal validation and execution protocols
 
 ARCHITECTURE:
 - Linux Signal Input → Format Conversion → Windows MT5 Bridge → Live Execution
-- Bridge Server: 3.145.84.187 (ports 5555-5557)
+- Bridge Server: localhost (ports 5555-5557)
 - Signal Directory: C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\173477FF1060D99CE79296FC73108719\\MQL5\\Files\\BITTEN\\
 - Communication: HTTP POST JSON to bridge agents
 """
@@ -44,7 +44,7 @@ class ProductionBridgeTunnel:
         self.deployment_time = datetime.now()
         
         # Bridge configuration
-        self.bridge_server = "3.145.84.187"
+        self.bridge_server = "localhost"
         self.bridge_ports = [5555, 5556, 5557]
         self.primary_port = 5555
         self.windows_signal_path = r"C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\173477FF1060D99CE79296FC73108719\MQL5\Files\BITTEN"

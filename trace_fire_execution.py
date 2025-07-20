@@ -36,7 +36,7 @@ class FireExecutionTracer:
         self.trace_log = []
         self.emergency_bridge_host = "127.0.0.1"
         self.emergency_bridge_port = 9000
-        self.production_bridge_host = "3.145.84.187"
+        self.production_bridge_host = "localhost"
         self.production_bridge_port = 5555
         
     def log_trace(self, step: str, status: str, details: Dict[str, Any]):

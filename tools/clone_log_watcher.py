@@ -15,7 +15,7 @@ class CloneLogWatcher:
     
     def __init__(self, user_id: str = "843859"):
         self.user_id = user_id
-        self.bridge_server = "3.145.84.187"
+        self.bridge_server = "localhost"
         self.bridge_port = 5555
         self.clone_path = f"C:\\MT5_Farm\\Users\\user_{user_id}"
         

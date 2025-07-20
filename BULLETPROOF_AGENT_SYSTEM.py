@@ -2,7 +2,7 @@
 """
 BULLETPROOF 24/7 AGENT SYSTEM FOR TRADING INFRASTRUCTURE
 Mission-Critical: Unbreakable connectivity for live trading signals
-Target: 3.145.84.187 (AWS Windows)
+Target: localhost (AWS Windows)
 """
 
 import asyncio
@@ -25,7 +25,7 @@ class BulletproofAgentSystem:
     Multi-layer agent system with redundancy and failover
     """
     
-    def __init__(self, target_ip="3.145.84.187"):
+    def __init__(self, target_ip="localhost"):
         self.target_ip = target_ip
         self.connection_methods = []
         self.active_connections = {}
@@ -365,7 +365,7 @@ from typing import Optional, Dict, Any
 import paramiko
 
 class IntelligentController:
-    def __init__(self, target_ip="3.145.84.187"):
+    def __init__(self, target_ip="localhost"):
         self.target_ip = target_ip
         self.connection_methods = [
             {'type': 'http', 'port': 5555, 'priority': 1},
@@ -576,7 +576,7 @@ import time
 import os
 
 class BulletproofDeployment:
-    def __init__(self, target_ip="3.145.84.187"):
+    def __init__(self, target_ip="localhost"):
         self.target_ip = target_ip
         self.base_url = f"http://{target_ip}:5555"
         self.agents = {}
@@ -613,7 +613,7 @@ class BulletproofDeployment:
         except Exception as e:
             print(f"❌ Deployment failed: {e}")
             print("MANUAL DEPLOYMENT REQUIRED:")
-            print("1. RDP to 3.145.84.187")
+            print("1. RDP to localhost")
             print("2. Create files manually from output above")
             print("3. Run START_AGENTS.bat")
             return False

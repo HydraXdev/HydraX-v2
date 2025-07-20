@@ -24,7 +24,7 @@
 - **Fire Modes**: MANUAL only
 - **Note**: Gets access to special occasion shots like Midnight Hammer
 
-### ⭐ COMMANDER ($139/month)
+### ⭐ COMMANDER ($189/month)
 - **View**: ALL signals (same as FANG)
 - **Execute**: ALL signals (same as FANG)
 - **Fire Modes**: MANUAL + SEMI-AUTO + FULL AUTO

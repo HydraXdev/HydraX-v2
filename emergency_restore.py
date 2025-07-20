@@ -22,7 +22,7 @@ def test_port_connection(host, port, timeout=3):
 def check_agent_status():
     """Check if agent is responding"""
     try:
-        response = requests.get("http://3.145.84.187:5555/health", timeout=5)
+        response = requests.get("http://localhost:5555/health", timeout=5)
         if response.status_code == 200:
             return True, "Agent responding"
         else:
@@ -69,13 +69,13 @@ def main():
     
     # Step 2: Check port connectivity
     print("2. Testing port connectivity...")
-    if test_port_connection("3.145.84.187", 5555):
+    if test_port_connection("localhost", 5555):
         print("✅ Port 5555 is reachable")
     else:
         print("❌ Port 5555 unreachable - Windows server may be down")
         print("\n🔧 MANUAL FIX REQUIRED:")
         print("1. Check AWS console - is EC2 instance running?")
-        print("2. If running, RDP to 3.145.84.187")
+        print("2. If running, RDP to localhost")
         print("3. Run: cd C:\\BITTEN_Agent && START_AGENTS.bat")
         return False
     

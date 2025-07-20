@@ -9,7 +9,7 @@ from typing import Optional, Dict, Any
 import paramiko
 
 class IntelligentController:
-    def __init__(self, target_ip="3.145.84.187"):
+    def __init__(self, target_ip="localhost"):
         self.target_ip = target_ip
         self.connection_methods = [
             {'type': 'http', 'port': 5555, 'priority': 1},

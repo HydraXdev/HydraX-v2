@@ -267,7 +267,7 @@ class SignalAccuracyTracker:
         self.monitoring_task = None
         
         # Bridge configuration for price checking
-        self.bridge_ip = "3.145.84.187"
+        self.bridge_ip = "localhost"
         self.bridge_port = 5555
     
     def track_signal(self, signal_data: Dict):

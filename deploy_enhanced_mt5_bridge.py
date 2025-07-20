@@ -11,7 +11,7 @@ from datetime import datetime
 
 class MT5BridgeDeployer:
     def __init__(self):
-        self.aws_server = "3.145.84.187"
+        self.aws_server = "localhost"
         self.port = 5555
         self.base_url = f"http://{self.aws_server}:{self.port}"
         

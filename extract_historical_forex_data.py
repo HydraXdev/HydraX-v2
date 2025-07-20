@@ -62,7 +62,7 @@ class HistoricalForexExtractor:
         self.max_gap_minutes = 5  # Maximum acceptable gap in data
         
         # MT5 bridge connections
-        self.mt5_bridge_url = "http://3.145.84.187:5555"
+        self.mt5_bridge_url = "http://localhost:5555"
         self.emergency_bridge = None
         
         self.setup_logging()

@@ -12,7 +12,7 @@ from datetime import datetime
 
 class RepairAgent:
     def __init__(self):
-        self.target_ip = "3.145.84.187"
+        self.target_ip = "localhost"
         self.primary_port = 5555
         self.backup_port = 5556
         self.websocket_port = 5557

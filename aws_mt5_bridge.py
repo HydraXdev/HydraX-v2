@@ -27,7 +27,7 @@ class AWSMT5Bridge:
     def __init__(self):
         # Only initialize once
         if not self._initialized:
-            self.aws_server = "3.145.84.187"
+            self.aws_server = "localhost"
             self.primary_port = 5555
             self.logger = self._setup_logging()
             self.last_data_time = None
@@ -228,7 +228,7 @@ def main():
             
     else:
         print("❌ AWS server connection failed!")
-        print("Make sure the bulletproof agents are running on 3.145.84.187")
+        print("Make sure the bulletproof agents are running on localhost")
 
 if __name__ == "__main__":
     main()

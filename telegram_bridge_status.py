@@ -83,7 +83,7 @@ class TelegramBridgeStatus:
         except Exception as e:
             return {
                 "error": str(e),
-                "aws_server": "3.145.84.187",
+                "aws_server": "localhost",
                 "primary_port": 5555,
                 "bridge_status": "ERROR"
             }

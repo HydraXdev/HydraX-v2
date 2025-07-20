@@ -8,12 +8,12 @@ Complete with different button texts
 
 def create_arcade_alert(tcs_score):
     """
-    ARCADE alert format with MISSION BRIEF button
+    RAPID_ASSAULT alert format with MISSION BRIEF button
     """
     return {
         "text": f"🔫 RAPID ASSAULT [{tcs_score}%]\n🔥 STRIKE 💥",
         "button_text": "MISSION BRIEF",
-        "signal_type": "ARCADE",
+        "signal_type": "RAPID_ASSAULT",
         "min_tier": "NIBBLER"
     }
 
@@ -61,7 +61,7 @@ def format_telegram_alert(signal_data):
 # Summary
 print("=== BITTEN FINAL ALERT SYSTEM ===\n")
 
-print("ARCADE ALERTS:")
+print("RAPID_ASSAULT ALERTS:")
 print("Text:   🔫 RAPID ASSAULT [XX%]")
 print("        🔥 STRIKE 💥")
 print("Button: [MISSION BRIEF]")
@@ -74,7 +74,7 @@ print("Button: [VIEW INTEL]")
 print("Access: FANG+ only\n")
 
 print("KEY DIFFERENCES:")
-print("• ARCADE uses 'MISSION BRIEF' (sounds tactical)")
+print("• RAPID_ASSAULT uses 'MISSION BRIEF' (sounds tactical)")
 print("• SNIPER uses 'VIEW INTEL' (sounds elite/exclusive)")
 print("• Visual differentiation clear")
 print("• Access control at execution level")

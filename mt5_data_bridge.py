@@ -15,7 +15,7 @@ import asyncio
 
 class MT5DataBridge:
     def __init__(self):
-        self.agent_url = "http://3.145.84.187:5555"
+        self.agent_url = "http://localhost:5555"
         self.db_path = "/root/HydraX-v2/data/live_market.db"
         self.session = requests.Session()
         self.session.timeout = 15

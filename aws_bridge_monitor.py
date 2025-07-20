@@ -15,12 +15,12 @@ def test_aws_bridge():
         # Test socket connection
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.settimeout(5)
-        result = sock.connect_ex(('3.145.84.187', 5555))
+        result = sock.connect_ex(('localhost', 5555))
         sock.close()
         
         if result == 0:
             # Test HTTP health
-            response = requests.get('http://3.145.84.187:5555/health', timeout=5)
+            response = requests.get('http://localhost:5555/health', timeout=5)
             if response.status_code == 200:
                 data = response.json()
                 return True, data
@@ -33,7 +33,7 @@ def test_aws_bridge():
 def monitor_bridge():
     """Monitor AWS bridge status"""
     print("🔍 AWS Bridge Monitor Started")
-    print("Checking 3.145.84.187:5555 every 30 seconds...")
+    print("Checking localhost:5555 every 30 seconds...")
     print("Press Ctrl+C to stop")
     
     last_status = False

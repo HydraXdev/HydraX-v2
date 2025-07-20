@@ -16,7 +16,7 @@ def test_signal_detection():
     print(f"Executing CMD: {cmd}")
     
     response = requests.post(
-        "http://3.145.84.187:5555/execute",
+        "http://localhost:5555/execute",
         json={
             "command": cmd,
             "type": "cmd"
@@ -39,7 +39,7 @@ def test_signal_detection():
                 
                 # Step 2: Read the content of the latest file
                 file_response = requests.post(
-                    "http://3.145.84.187:5555/execute",
+                    "http://localhost:5555/execute",
                     json={
                         "command": f"type \"C:\\\\Users\\\\Administrator\\\\AppData\\\\Roaming\\\\MetaQuotes\\\\Terminal\\\\173477FF1060D99CE79296FC73108719\\\\MQL5\\\\Files\\\\BITTEN\\\\{latest_file}\"",
                         "type": "cmd"

@@ -131,7 +131,7 @@ class EnhancedBridgeTroll:
         self.db_path = db_path
         
         # Bridge infrastructure knowledge
-        self.bridge_server = "3.145.84.187"
+        self.bridge_server = "localhost"
         self.bridge_ports = list(range(9000, 9026))  # 25 bridge ports
         self.monitor_ports = [5555, 5556, 5557]
         self.terminal_path = r"C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\173477FF1060D99CE79296FC73108719\MQL5\Files\BITTEN\\"

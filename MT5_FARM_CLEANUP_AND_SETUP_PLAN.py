@@ -9,7 +9,7 @@ import time
 
 class MT5FarmManager:
     def __init__(self):
-        self.server = "3.145.84.187:5555"
+        self.server = "localhost:5555"
         self.ea_source = "/root/HydraX-v2/BITTEN_Windows_Package/EA/BITTENBridge_v3_ENHANCED.mq5"
         
     def send_command(self, command, timeout=15):
@@ -278,7 +278,7 @@ goto LOOP
 🎯 COMPLETE MT5 FARM INSTALLATION GUIDE
 
 CURRENT STATUS:
-✅ AWS Server: 3.145.84.187 (Clean and ready)
+✅ AWS Server: localhost (Clean and ready)
 ✅ Farm Structure: Created and organized  
 ✅ Installation Scripts: Ready for use
 ⚠️ EA Transfer: Required (manual step)

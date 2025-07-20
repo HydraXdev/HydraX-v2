@@ -76,8 +76,7 @@ TCS Filtering → Tier Validation → Risk Checks → MT5 Execution
 |------|-------------|--------------|---------|----------|
 | **NIBBLER** | $39 | 6 | 70% | Basic single-shot trading |
 | **FANG** | $89 | 8-10 | 85% | + Chaingun progressive risk |
-| **COMMANDER** | $139 | 12+ | 91% | + 24/7 auto-fire mode |
-| **APEX** | $188 | Unlimited | 91% | + Stealth anti-detection |
+| **COMMANDER** | $189 | ∞ | 85%+ | + 24/7 auto-fire mode + STEALTH |
 
 **Revenue Projections** (Conservative):
 - 1,000 users average: $93,000/month

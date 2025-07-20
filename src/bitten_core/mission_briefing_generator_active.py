@@ -26,7 +26,7 @@ except ImportError:
 class APEXv5MissionType(Enum):
     """APEX v5.0 Mission types optimized for ultra-aggressive trading"""
     # Original mission types
-    ARCADE_SCALP = "arcade_scalp"
+    RAPID_ASSAULT_SCALP = "arcade_scalp"
     SNIPER_SHOT = "sniper_shot"
     MIDNIGHT_HAMMER = "midnight_hammer"
     CHAINGUN_SEQUENCE = "chaingun_sequence"
@@ -333,7 +333,7 @@ class APEXv5MissionBriefingGenerator:
         elif signal_class == APEXv5SignalClass.M1_INSTANT:
             return APEXv5MissionType.ULTRA_VOLUME_ASSAULT
         else:
-            return APEXv5MissionType.ARCADE_SCALP
+            return APEXv5MissionType.RAPID_ASSAULT_SCALP
     
     def _determine_v5_urgency(self, timeframe: str, tcs_score: float, session: str) -> APEXv5UrgencyLevel:
         """Determine v5.0 urgency level"""

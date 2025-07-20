@@ -28,7 +28,7 @@ def transfer_ea_as_text():
         'command': 'mkdir C:\\MT5_Farm 2>nul || echo Directory exists'
     }
     
-    response = requests.post('http://3.145.84.187:5555/execute', json=mkdir_payload, timeout=10)
+    response = requests.post('http://localhost:5555/execute', json=mkdir_payload, timeout=10)
     if response.status_code == 200:
         print("✅ Directory created")
     else:
@@ -43,7 +43,7 @@ def transfer_ea_as_text():
         'command': 'del C:\\MT5_Farm\\EA.mq5 2>nul || echo No file to delete'
     }
     
-    response = requests.post('http://3.145.84.187:5555/execute', json=del_payload, timeout=10)
+    response = requests.post('http://localhost:5555/execute', json=del_payload, timeout=10)
     print("✅ Cleanup completed")
     
     # Transfer file line by line using simple echo commands
@@ -68,7 +68,7 @@ def transfer_ea_as_text():
             'command': cmd
         }
         
-        response = requests.post('http://3.145.84.187:5555/execute', json=payload, timeout=5)
+        response = requests.post('http://localhost:5555/execute', json=payload, timeout=5)
         
         if response.status_code != 200:
             print(f"❌ Failed at line {i+1}")
@@ -88,7 +88,7 @@ def transfer_ea_as_text():
         'command': 'dir C:\\MT5_Farm\\EA.mq5'
     }
     
-    response = requests.post('http://3.145.84.187:5555/execute', json=verify_payload, timeout=10)
+    response = requests.post('http://localhost:5555/execute', json=verify_payload, timeout=10)
     
     if response.status_code == 200:
         result = response.json()
@@ -147,7 +147,7 @@ def create_simple_http_server():
     }
     
     try:
-        response = requests.post('http://3.145.84.187:5555/execute', json=download_payload, timeout=35)
+        response = requests.post('http://localhost:5555/execute', json=download_payload, timeout=35)
         
         # Kill server
         server_process.terminate()
@@ -162,7 +162,7 @@ def create_simple_http_server():
                 'command': 'dir C:\\MT5_Farm\\EA.mq5'
             }
             
-            verify_response = requests.post('http://3.145.84.187:5555/execute', json=verify_payload, timeout=10)
+            verify_response = requests.post('http://localhost:5555/execute', json=verify_payload, timeout=10)
             
             if verify_response.status_code == 200:
                 verify_result = verify_response.json()

@@ -141,7 +141,7 @@ def test_formats():
     for i, rec in enumerate(recs, 1):
         print(f"OPTION {i}: {rec['name']}")
         print("-" * 40)
-        print("ARCADE:")
+        print("RAPID_ASSAULT:")
         print(rec['arcade'])
         print("\nSNIPER:")
         print(rec['sniper'])

@@ -6,7 +6,7 @@ Deploy BITTEN EA to all MT5 instances on Windows server
 import requests
 import base64
 
-AWS_SERVER = "3.145.84.187"
+AWS_SERVER = "localhost"
 PORT = 5555
 
 def execute_command(command):

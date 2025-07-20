@@ -31,7 +31,7 @@ Create an addictive trading game that satisfies FOUR player types:
   - Strategy videos after trades
   - Midnight Hammer participation
 
-### COMMANDER ($139/month)
+### COMMANDER ($189/month)
 - **Signals**: ARCADE + SNIPER  
 - **Risk**: 2% + 30% XP bonus
 - **Theme**: Gold accents, battlefield general

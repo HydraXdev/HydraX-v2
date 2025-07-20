@@ -7,7 +7,7 @@ from enum import Enum
 from datetime import datetime
 
 class ModuleType(Enum):
-    ARCADE = "arcade"
+    RAPID_ASSAULT = "arcade"
     SNIPER = "sniper"
     ENHANCEMENT = "enhancement"
     MANUAL = "manual"
@@ -36,28 +36,28 @@ class ModuleTriggerSystem:
             # Arcade modules
             "DAWN_RAID_SCANNER": DetectionModule(
                 name="DAWN_RAID_SCANNER",
-                type=ModuleType.ARCADE,
+                type=ModuleType.RAPID_ASSAULT,
                 strategy="London Breakout",
                 icon="🌅",
                 description="Detects range breakouts during London open"
             ),
             "WALL_DEFENDER_SCANNER": DetectionModule(
                 name="WALL_DEFENDER_SCANNER",
-                type=ModuleType.ARCADE,
+                type=ModuleType.RAPID_ASSAULT,
                 strategy="S/R Bounce",
                 icon="🏰",
                 description="Identifies key level rejections"
             ),
             "ROCKET_RIDE_SCANNER": DetectionModule(
                 name="ROCKET_RIDE_SCANNER",
-                type=ModuleType.ARCADE,
+                type=ModuleType.RAPID_ASSAULT,
                 strategy="Momentum Continuation",
                 icon="🚀",
                 description="Catches pullbacks in strong trends"
             ),
             "RUBBER_BAND_SCANNER": DetectionModule(
                 name="RUBBER_BAND_SCANNER",
-                type=ModuleType.ARCADE,
+                type=ModuleType.RAPID_ASSAULT,
                 strategy="Mean Reversion",
                 icon="🎯",
                 description="Fades extreme deviations"

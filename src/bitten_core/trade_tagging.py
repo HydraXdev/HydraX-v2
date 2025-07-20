@@ -20,7 +20,7 @@ class EntryMethod(Enum):
     CHAINGUN = "chaingun"  # Part of CHAINGUN sequence
 
 class SignalSource(Enum):
-    ARCADE_SCAN = "arcade_scan"        # From arcade filter system
+    RAPID_ASSAULT_SCAN = "arcade_scan"        # From arcade filter system
     SNIPER_SCAN = "sniper_scan"        # From sniper filter system
     MIDNIGHT_HAMMER = "midnight_hammer" # Special event signal
     ALPHA_OVERRIDE = "alpha_override"   # Manually forced by user
@@ -145,7 +145,7 @@ class TradeTaggingSystem:
     
     def _determine_signal_source(self, signal: Dict) -> SignalSource:
         """Determine signal source"""
-        source = signal.get('triggered_by', 'ARCADE_SCAN')
+        source = signal.get('triggered_by', 'RAPID_ASSAULT_SCAN')
         
         if 'MIDNIGHT' in source:
             return SignalSource.MIDNIGHT_HAMMER
@@ -156,7 +156,7 @@ class TradeTaggingSystem:
         elif 'TEST' in source:
             return SignalSource.TEST_MODULE
         else:
-            return SignalSource.ARCADE_SCAN
+            return SignalSource.RAPID_ASSAULT_SCAN
     
     def _calculate_quality_tier(self, tcs: int) -> QualityMarker:
         """Calculate quality marker from TCS"""

@@ -46,9 +46,9 @@ def get_alert_variants():
     """Show different alert examples"""
     
     examples = {
-        "NIBBLER seeing ARCADE": {
+        "NIBBLER seeing RAPID_ASSAULT": {
             "tcs": 75,
-            "type": "ARCADE",
+            "type": "RAPID_ASSAULT",
             "tier": "NIBBLER",
             "alert": "🎯 75%",
             "can_shoot": True,
@@ -84,7 +84,7 @@ def get_alert_variants():
         
         "COMMANDER SEMI mode": {
             "tcs": 78,
-            "type": "ARCADE",
+            "type": "RAPID_ASSAULT",
             "tier": "COMMANDER", 
             "alert": "🎯 78%",
             "can_shoot": True,
@@ -143,7 +143,7 @@ if __name__ == "__main__":
     print("• Creates curiosity without spam")
     
     print("\nACCESS RULES:")
-    print("• NIBBLER: 70%+ ARCADE only")
+    print("• NIBBLER: 70%+ RAPID_ASSAULT only")
     print("• FANG/COMMANDER/APEX: All signals")
     print("• AUTO mode: 90%+ filter (safety)")
     print("• SEMI mode: 75%+ filter (more shots)")

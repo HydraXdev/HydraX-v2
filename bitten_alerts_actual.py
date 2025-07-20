@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 BITTEN Alert System - Based on ACTUAL implementation
-Using existing ARCADE/SNIPER signal types and tier access
+Using existing RAPID_ASSAULT/SNIPER signal types and tier access
 """
 
 # From actual BITTEN system
@@ -50,14 +50,14 @@ def get_tcs_grade(tcs_score):
 def format_bitten_alert(signal_data):
     """
     Format alert based on actual BITTEN system
-    2 lines MAX, shows signal type (ARCADE/SNIPER)
+    2 lines MAX, shows signal type (RAPID_ASSAULT/SNIPER)
     """
     
     tcs = int(signal_data['confidence'] * 100)
     grade_emoji = get_tcs_grade(tcs)
     
-    # Determine if ARCADE or SNIPER based on TCS
-    signal_type = "SNIPER" if tcs >= 85 else "ARCADE"
+    # Determine if RAPID_ASSAULT or SNIPER based on TCS
+    signal_type = "SNIPER" if tcs >= 85 else "RAPID_ASSAULT"
     
     # Line 1: Grade emoji + Pair + Direction + TCS
     # Line 2: Entry price + Signal type
@@ -81,8 +81,8 @@ def check_tier_access(user_tier, signal_type, tcs_score):
     if user_tier == "FANG":
         if signal_type == "SNIPER" and tcs_score < 85:
             return False, "SNIPER requires 85% TCS"
-        elif signal_type == "ARCADE" and tcs_score < 75:
-            return False, "ARCADE requires 75% TCS for FANG"
+        elif signal_type == "RAPID_ASSAULT" and tcs_score < 75:
+            return False, "RAPID_ASSAULT requires 75% TCS for FANG"
     else:
         if tcs_score < tier_config['min_tcs']:
             return False, f"TCS below {user_tier} minimum ({tier_config['min_tcs']}%)"
@@ -91,7 +91,7 @@ def check_tier_access(user_tier, signal_type, tcs_score):
 
 # Example alerts matching actual system
 EXAMPLE_ALERTS = [
-    # NIBBLER can see/trade these ARCADE signals
+    # NIBBLER can see/trade these RAPID_ASSAULT signals
     {"symbol": "EURUSD", "direction": "BUY", "entry_price": 1.08453, "confidence": 0.72, "tier_access": "ALL"},
     {"symbol": "GBPUSD", "direction": "SELL", "entry_price": 1.26789, "confidence": 0.78, "tier_access": "ALL"},
     
@@ -111,8 +111,8 @@ if __name__ == "__main__":
         print()
     
     print("\nACTUAL TIER RULES:")
-    print("• NIBBLER: ARCADE only (no SNIPER access)")
-    print("• FANG: Both ARCADE (75%+) and SNIPER (85%+)")
+    print("• NIBBLER: RAPID_ASSAULT only (no SNIPER access)")
+    print("• FANG: Both RAPID_ASSAULT (75%+) and SNIPER (85%+)")
     print("• COMMANDER/APEX: All signals with higher TCS minimums")
     
     print("\nVISUAL TCS GRADES:")

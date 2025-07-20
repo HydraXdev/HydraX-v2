@@ -10,7 +10,7 @@ from datetime import datetime
 
 class SmartRepair:
     def __init__(self):
-        self.target_ip = "3.145.84.187"
+        self.target_ip = "localhost"
         self.primary_port = 5555
         self.session = requests.Session()
         self.session.timeout = 30

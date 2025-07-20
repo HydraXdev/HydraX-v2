@@ -199,7 +199,7 @@ class MasterFilter:
         
         filtered = FilteredSignal(
             signal_type='arcade',
-            display_type=display_names.get(signal.strategy.value, 'ARCADE'),
+            display_type=display_names.get(signal.strategy.value, 'RAPID_ASSAULT'),
             symbol=signal.symbol,
             direction=signal.direction,
             entry_price=signal.entry_price,

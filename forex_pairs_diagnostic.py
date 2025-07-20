@@ -36,7 +36,7 @@ class ForexPairsDiagnostic:
         self.SAFE_PAIRS = ["EURUSD", "USDJPY", "GBPJPY", "USDCAD", "GBPUSD", "AUDUSD"]
         self.BLOCKED_PAIRS = ["XAUUSD", "XAGUSD", "BTCUSD", "ETHUSD"]  # Known problematic
         
-        self.production_bridge_host = "3.145.84.187"
+        self.production_bridge_host = "localhost"
         self.production_bridge_port = 5555
         self.emergency_bridge_host = "127.0.0.1"
         self.emergency_bridge_port = 9000

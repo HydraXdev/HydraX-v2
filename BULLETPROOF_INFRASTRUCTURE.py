@@ -20,7 +20,7 @@ class BulletproofMT5Infrastructure:
     
     def __init__(self):
         # Primary AWS server
-        self.primary_server = "3.145.84.187"
+        self.primary_server = "localhost"
         self.agent_ports = [5555, 5556, 5557]  # All possible agent ports
         self.working_agents = []
         

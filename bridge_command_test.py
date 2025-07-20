@@ -18,7 +18,7 @@ class BridgeCommandTester:
     """Test different command formats with production bridge"""
     
     def __init__(self):
-        self.bridge_host = "3.145.84.187"
+        self.bridge_host = "localhost"
         self.bridge_port = 5555
         
     def send_command(self, command: Dict[str, Any], timeout: int = 10) -> Dict[str, Any]:
@@ -181,7 +181,7 @@ class BridgeCommandTester:
     def run_comprehensive_test(self):
         """Run all bridge command tests"""
         logger.info("🔍 PRODUCTION BRIDGE COMMAND TESTING")
-        logger.info("Host: 3.145.84.187:5555")
+        logger.info("Host: localhost:5555")
         logger.info("=" * 50)
         
         results = []

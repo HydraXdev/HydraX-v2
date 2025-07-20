@@ -24,7 +24,7 @@ def test_aws_agent_ports():
             # Test socket first
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.settimeout(3)
-            result = sock.connect_ex(('3.145.84.187', port))
+            result = sock.connect_ex(('localhost', port))
             sock.close()
             
             if result == 0:
@@ -32,7 +32,7 @@ def test_aws_agent_ports():
                 
                 # Test HTTP health
                 try:
-                    response = requests.get(f'http://3.145.84.187:{port}/health', timeout=5)
+                    response = requests.get(f'http://localhost:{port}/health', timeout=5)
                     if response.status_code == 200:
                         data = response.json()
                         active_agents.append({
@@ -58,7 +58,7 @@ def create_production_fire_router(bridge_port=5555):
     
     # CRITICAL: Disable emergency fallback completely for live trades
     class ProductionFireRouter(FireRouter):
-        def __init__(self, bridge_host: str = "3.145.84.187", bridge_port: int = 5555):
+        def __init__(self, bridge_host: str = "localhost", bridge_port: int = 5555):
             super().__init__(
                 bridge_host=bridge_host,
                 bridge_port=bridge_port,
@@ -163,14 +163,14 @@ def main():
         print(f"\n🎉 PRODUCTION ROUTER READY!")
         print(f"✅ Working ports: {successful_ports}")
         print(f"🔒 Emergency fallback: DISABLED")
-        print(f"🎯 Live trades will use: 3.145.84.187:{successful_ports[0]}")
+        print(f"🎯 Live trades will use: localhost:{successful_ports[0]}")
         
         # Save configuration
         config_info = f"""
 # PRODUCTION FIRE ROUTER CONFIGURATION
 # Generated: {__import__('datetime').datetime.now()}
 
-LIVE_BRIDGE_HOST = "3.145.84.187"
+LIVE_BRIDGE_HOST = "localhost"
 LIVE_BRIDGE_PORT = {successful_ports[0]}
 EMERGENCY_FALLBACK_DISABLED = True
 

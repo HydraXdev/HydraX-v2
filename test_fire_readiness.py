@@ -18,7 +18,7 @@ def test_socket_connection():
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.settimeout(5)
-        sock.connect(('3.145.84.187', 9000))
+        sock.connect(('localhost', 9000))
         
         # Send ping command
         ping_command = json.dumps({'command': 'ping'})
@@ -49,7 +49,7 @@ def test_fire_execution():
     try:
         # Create FireRouter pointing to AWS bridge
         router = FireRouter(
-            bridge_host='3.145.84.187',
+            bridge_host='localhost',
             bridge_port=5555  # HTTP port, will route to socket
         )
         

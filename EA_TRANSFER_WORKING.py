@@ -62,7 +62,7 @@ try {{
     
     try:
         response = requests.post(
-            'http://3.145.84.187:5555/execute',
+            'http://localhost:5555/execute',
             json=payload,
             timeout=65
         )
@@ -123,7 +123,7 @@ Write-Output "Ready for transfer"
         'command': f'powershell -Command "{clear_script}"'
     }
     
-    response = requests.post('http://3.145.84.187:5555/execute', json=payload, timeout=10)
+    response = requests.post('http://localhost:5555/execute', json=payload, timeout=10)
     if response.status_code != 200:
         print("❌ Failed to clear existing files")
         return False
@@ -147,7 +147,7 @@ Write-Output "Ready for transfer"
             'timeout': 15
         }
         
-        response = requests.post('http://3.145.84.187:5555/execute', json=payload, timeout=20)
+        response = requests.post('http://localhost:5555/execute', json=payload, timeout=20)
         
         if response.status_code == 200:
             print(f"✅ Chunk {i+1} sent")
@@ -184,7 +184,7 @@ try {
         'timeout': 30
     }
     
-    response = requests.post('http://3.145.84.187:5555/execute', json=payload, timeout=35)
+    response = requests.post('http://localhost:5555/execute', json=payload, timeout=35)
     
     if response.status_code == 200:
         result = response.json()
@@ -220,7 +220,7 @@ if (Test-Path "C:\\MT5_Farm\\EA.mq5") {
     }
     
     try:
-        response = requests.post('http://3.145.84.187:5555/execute', json=payload, timeout=10)
+        response = requests.post('http://localhost:5555/execute', json=payload, timeout=10)
         
         if response.status_code == 200:
             result = response.json()

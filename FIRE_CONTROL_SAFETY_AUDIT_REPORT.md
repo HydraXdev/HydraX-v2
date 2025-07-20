@@ -67,7 +67,7 @@ BITTEN implements a comprehensive multi-layered fire control framework with tier
 - **Risk Limit**: 4% per trade, 8% daily
 - **Features**: SNIPER OPS signals, chaingun sequences
 
-#### **⭐ COMMANDER ($139/month)**
+#### **⭐ COMMANDER ($189/month)**
 - **Daily Limits**: 20 shots/day
 - **TCS Requirement**: 75% (semi) / 90% (auto)
 - **Fire Modes**: ALL modes except STEALTH

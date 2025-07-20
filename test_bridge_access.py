@@ -8,7 +8,7 @@ def test_bridge_directory_access():
     
     print("=== BRIDGE DIRECTORY ACCESS TEST ===")
     
-    bridge_server = "3.145.84.187"
+    bridge_server = "localhost"
     bridge_port = 5555
     signal_directory = r"C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\173477FF1060D99CE79296FC73108719\MQL5\Files\BITTEN"
     

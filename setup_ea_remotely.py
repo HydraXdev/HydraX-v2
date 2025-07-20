@@ -8,7 +8,7 @@ import json
 import time
 import base64
 
-AWS_SERVER = "3.145.84.187"
+AWS_SERVER = "localhost"
 PORT = 5555
 
 def execute_command(command):

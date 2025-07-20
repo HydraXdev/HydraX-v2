@@ -14,7 +14,7 @@ def test_aws_connection():
         # Try to connect to any port to see if server is up
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.settimeout(5)
-        result = sock.connect_ex(('3.145.84.187', 22))  # Try SSH port
+        result = sock.connect_ex(('localhost', 22))  # Try SSH port
         sock.close()
         if result == 0:
             print("✅ AWS server is reachable")
@@ -30,7 +30,7 @@ def restart_original_agent():
     """Try to restart the original agent"""
     try:
         # First try to see if any agent is running
-        response = requests.get('http://3.145.84.187:5555/health', timeout=5)
+        response = requests.get('http://localhost:5555/health', timeout=5)
         if response.status_code == 200:
             print("✅ Original agent is already running")
             return True
@@ -45,7 +45,7 @@ def test_socket_directly():
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.settimeout(10)
-        sock.connect(('3.145.84.187', 9000))
+        sock.connect(('localhost', 9000))
         
         ping_command = json.dumps({'command': 'ping'})
         sock.send(ping_command.encode('utf-8'))

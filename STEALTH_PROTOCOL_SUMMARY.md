@@ -26,15 +26,14 @@ The BITTEN Stealth Protocol has been successfully implemented with all requested
   - SINGLE_SHOT: LOW stealth
   - CHAINGUN: MEDIUM stealth  
   - AUTO_FIRE: HIGH stealth
-  - STEALTH mode: GHOST level (APEX exclusive)
+  - STEALTH mode: GHOST level (COMMANDER exclusive)
   - MIDNIGHT_HAMMER: Stealth OFF (community event)
 
 ### 4. Tier-Based Access
 
 - **NIBBLER**: No stealth access
 - **FANG**: Basic stealth (LOW level) with CHAINGUN only
-- **COMMANDER**: Medium stealth with multiple modes
-- **APEX**: Full stealth including exclusive GHOST level
+- **COMMANDER**: Full stealth including exclusive GHOST level
 
 ### 5. Configuration System
 
@@ -89,7 +88,7 @@ stealth_params = stealth.apply_full_stealth(trade_params)
 integration = StealthFireModeIntegration()
 result = await integration.execute_stealth_trade(
     user_id=12345,
-    tier=TierLevel.APEX,
+    tier=TierLevel.COMMANDER,
     fire_mode=FireMode.STEALTH,
     trade_params=trade_params
 )

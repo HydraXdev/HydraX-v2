@@ -54,7 +54,7 @@ class MT5InstanceAllocator:
         Allocation Logic:
         - PRESS_PASS: Always gets Generic_Demo (instant, no login)
         - NIBBLER/FANG: Prefers Forex_Demo (regulated) unless user wants offshore
-        - COMMANDER/APEX: Based on leverage preference (regulated vs offshore)
+        - COMMANDER: Based on leverage preference (regulated vs offshore)
         """
         
         conn = sqlite3.connect(self.db_path)
@@ -82,7 +82,7 @@ class MT5InstanceAllocator:
                     instance_type = "Forex_Demo"  # Default to regulated
                 expires_days = None  # No expiry for paid tiers
                 
-            else:  # COMMANDER, APEX
+            else:  # COMMANDER
                 # Live accounts for higher tiers
                 if pref and pref[1] == "high_leverage":
                     instance_type = "Coinexx_Live"
@@ -285,7 +285,7 @@ def demonstrate_allocation():
         ("user_nibbler_1", "NIBBLER", "Paid user preferring regulated"),
         ("user_fang_1", "FANG", "Paid user wanting offshore"),
         ("user_commander_1", "COMMANDER", "High tier regulated"),
-        ("user_apex_1", "APEX", "High tier offshore")
+        ("user_commander_1", "COMMANDER", "High tier offshore")
     ]
     
     for user_id, tier, description in test_users:

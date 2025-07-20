@@ -347,9 +347,9 @@ class OnboardingOrchestrator:
                     "⏰ **PRESS PASS EXPIRED**\n\n"
                     "Your 7-day trial has ended. To continue using BITTEN:\n\n"
                     "💳 **Upgrade Options**:\n"
-                    "• Starter ($29/mo) - Basic features\n"
-                    "• Professional ($99/mo) - Advanced tools\n"
-                    "• Elite ($299/mo) - Everything included\n\n"
+                    "• NIBBLER ($39/mo) - Basic features\n"
+                    "• FANG ($89/mo) - Advanced tools\n"
+                    "• COMMANDER ($189/mo) - Everything included\n\n"
                     "Upgrade now to keep your progress and continue trading!"
                 ),
                 'keyboard': {

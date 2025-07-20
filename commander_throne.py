@@ -845,8 +845,7 @@ def api_subscription_analytics():
                 "by_tier": {
                     "NIBBLER": {"count": 23, "mrr": 897},    # $39 x 23
                     "FANG": {"count": 12, "mrr": 1068},      # $89 x 12
-                    "COMMANDER": {"count": 4, "mrr": 556},   # $139 x 4
-                    "APEX": {"count": 3, "mrr": 564}         # $188 x 3
+                    "COMMANDER": {"count": 7, "mrr": 1323}   # $189 x 7
                 }
             },
             "users": {

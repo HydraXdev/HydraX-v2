@@ -304,8 +304,7 @@ Ready to dominate the markets? 🎖️"""
         tier_prices = {
             'NIBBLER': 39,
             'FANG': 89,
-            'COMMANDER': 139,
-            'APEX': 188
+            'COMMANDER': 189
         }
         
         tier_emojis = {
@@ -368,14 +367,11 @@ Ready to proceed with payment? Type **CONFIRM** to continue!"""
 • SNIPER OPS signals
 • Advanced filters
 
-⭐ **COMMANDER** - $139/month
-• 20 trades per day
+⭐ **COMMANDER** - $189/month
+• Unlimited trades
 • AUTO-FIRE mode
 • All signal types
-
-🏔️ **APEX** - $188/month
-• Unlimited trades
-• MIDNIGHT HAMMER
+• STEALTH mode
 • Priority support
 
 **Choose your tier by clicking below or visit:**

@@ -74,11 +74,8 @@ tiers:
     price: 8900  # $89.00
     features: ["view_all", "execute_all", "manual_only"]
   commander:
-    price: 13900  # $139.00
-    features: ["view_all", "execute_all", "semi_auto", "full_auto"]
-  apex:
-    price: 18800  # $188.00
-    features: ["view_all", "execute_all", "semi_auto", "full_auto", "exclusive"]
+    price: 18900  # $189.00
+    features: ["view_all", "execute_all", "semi_auto", "full_auto", "stealth_mode", "unlimited_trades"]
     
 # WebApp Configuration
 webapp:

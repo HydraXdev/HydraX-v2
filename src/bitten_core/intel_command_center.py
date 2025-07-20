@@ -176,7 +176,7 @@ class IntelCommandCenter:
         tier_items = [
             ('nibbler_tier', '🐭 NIBBLER ($39)', 'Entry tier features'),
             ('fang_tier', '🦷 FANG ($89)', 'Advanced features'),
-            ('commander_tier', '⭐ COMMANDER ($139)', 'Elite access'),
+            ('commander_tier', '⭐ COMMANDER ($189)', 'Elite access'),
             ('apex_tier', '👑 APEX ($188)', 'Maximum power'),
             ('compare_tiers', '📊 COMPARE TIERS', 'Side-by-side comparison'),
             ('upgrade_now', '⬆️ UPGRADE NOW', 'Instant tier upgrade'),
@@ -615,7 +615,7 @@ Use: `/analyze` for full report"""
         tier_info = {
             'NIBBLER': '🔰 Entry tier - $39/month\n• Manual fire mode\n• Basic signals\n• 6 trades/day',
             'FANG': '🦷 Advanced tier - $89/month\n• Manual + Chaingun\n• All signals\n• 10 trades/day',
-            'COMMANDER': '⭐ Elite tier - $139/month\n• Auto + Semi modes\n• Advanced features\n• 20 trades/day',
+            'COMMANDER': '⭐ Elite tier - $189/month\n• Auto + Semi modes\n• Advanced features\n• Unlimited trades\n• STEALTH mode',
             'APEX': '🏔️ Ultimate tier - $188/month\n• All features unlocked\n• Unlimited trades\n• Exclusive signals'
         }
         return f"""💰 **{tier_name} TIER**

@@ -505,10 +505,7 @@ INSERT INTO subscription_plans (tier, name, price_usd, features, limits) VALUES
 ('FANG', 'Fang', 89.00,
  '{"single_shot": true, "chaingun": true, "max_daily_trades": 10, "risk_percent": 1.25}'::jsonb,
  '{"daily_loss_limit": 8.5, "tcs_minimum": 85}'::jsonb),
-('COMMANDER', 'Commander', 139.00,
- '{"single_shot": true, "chaingun": true, "auto_fire": true, "max_daily_trades": 10, "risk_percent": 1.25}'::jsonb,
- '{"daily_loss_limit": 8.5, "tcs_minimum": 91}'::jsonb),
-('APEX', 'Apex', 188.00,
+('COMMANDER', 'Commander', 189.00,
  '{"single_shot": true, "chaingun": true, "auto_fire": true, "stealth": true, "unlimited_trades": true, "risk_percent": 1.25}'::jsonb,
  '{"daily_loss_limit": 8.5, "tcs_minimum": 91}'::jsonb);
 

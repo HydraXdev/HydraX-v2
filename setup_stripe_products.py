@@ -48,7 +48,7 @@ def create_products():
             'tier': 'COMMANDER',
             'name': 'BITTEN Commander',
             'description': 'Pro tier - 20 trades/day, full automation',
-            'price_cents': 13900,  # $139.00
+            'price_cents': 18900,  # $189.00
             'features': [
                 '20 trades per day',
                 '90% TCS auto / 75% semi',

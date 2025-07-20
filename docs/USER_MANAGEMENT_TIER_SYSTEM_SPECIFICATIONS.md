@@ -93,7 +93,7 @@ The system implements a 5-tier subscription model with progressive feature unloc
   - Advanced risk controls
 
 #### 4. COMMANDER (Advanced)
-- **Price**: $139/month
+- **Price**: $189/month
 - **Target**: Experienced traders
 - **Features**:
   - Daily shots: 20

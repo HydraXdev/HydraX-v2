@@ -38,14 +38,13 @@ perfect_month: 2000 XP
 basic_rewards: 0 XP (free for everyone)
 premium_rewards: 50 XP (badges, cosmetics)
 elite_rewards: 200 XP (titles, special items)
-legendary_rewards: 500 XP (APEX exclusive content)
+legendary_rewards: 500 XP (COMMANDER exclusive content)
 
 // Tier Requirements + XP Cost
 press_pass: Access to basic rewards only (0 XP)
 nibbler: Access to premium rewards (50 XP each)
 fang: Access to elite rewards (200 XP each)
-commander: Access to all rewards (up to 500 XP)
-apex: All access + exclusive legendary items
+commander: Access to all rewards including legendary items (up to 500 XP)
 ```
 
 ## 🏆 **Tier-Based Access System**
@@ -65,15 +64,10 @@ apex: All access + exclusive legendary items
 - **XP Cost**: 0-200 XP per reward
 - **Examples**: Custom titles, advanced cosmetics
 
-### **COMMANDER ($139/month)**
-- **Access**: All standard rewards
+### **COMMANDER ($189/month)**
+- **Access**: All rewards including legendary exclusives
 - **XP Cost**: 0-500 XP per reward
-- **Examples**: Leadership titles, exclusive items
-
-### **APEX ($188/month)**
-- **Access**: Everything + APEX exclusives
-- **XP Cost**: 0-500 XP + legendary exclusives
-- **Examples**: Ultra-rare items, APEX-only content
+- **Examples**: Leadership titles, exclusive items, ultra-rare content
 
 ## 🎮 **Reward Distribution Strategy**
 
@@ -88,7 +82,7 @@ level_2, 4, 6, etc: Premium badges (50 XP cost)
 // Every 10 levels: COMMANDER+ only
 level_10, 20, 30, etc: Elite titles (200 XP cost)
 
-// Every 25 levels: APEX only
+// Every 25 levels: COMMANDER only
 level_25, 50, 75, 100: Legendary exclusives (500 XP cost)
 ```
 

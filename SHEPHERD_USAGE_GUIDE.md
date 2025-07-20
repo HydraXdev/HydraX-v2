@@ -152,7 +152,7 @@ python3 bitten/core/shepherd/quick_index.py
 
 # Query the index
 python3 bitten/core/shepherd/query.py --name calculate_xp
-python3 bitten/core/shepherd/query.py --tier tier_1
+python3 bitten/core/shepherd/query.py --tier NIBBLER
 python3 bitten/core/shepherd/query.py --flag critical
 ```
 
@@ -172,7 +172,7 @@ python3 bitten/interfaces/shepherd_webhook.py --port 8888
 curl -X POST http://localhost:8888/api/v1/validate \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"type": "function", "name": "calculate_xp", "tier": "tier_1"}'
+  -d '{"type": "function", "name": "calculate_xp", "tier": "NIBBLER"}'
 ```
 
 #### Trace Module
@@ -215,7 +215,7 @@ trade_signal = {
 }
 
 # Interceptor validates before execution
-success = interceptor.fire_trade('user123', trade_signal, 'tier_1')
+success = interceptor.fire_trade('user123', trade_signal, 'NIBBLER')
 ```
 
 ### 2. Validating AI Code

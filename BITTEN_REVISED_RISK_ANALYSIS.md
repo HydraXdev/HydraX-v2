@@ -161,8 +161,7 @@ Account survives and grows slowly
 
 **NIBBLER**: 0.000001% (1 in 100 million)
 **FANG**: 0.00001% (1 in 10 million)
-**COMMANDER**: 0.00001% (1 in 10 million)
-**APEX**: 0.0001% (1 in 1 million) - only because unlimited trades
+**COMMANDER**: 0.0001% (1 in 1 million) - unlimited trades but excellent risk management
 
 ### Why Traditional Trading Fails:
 - Multiple positions = multiple ways to die

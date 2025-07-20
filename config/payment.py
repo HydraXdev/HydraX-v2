@@ -15,16 +15,14 @@ class PaymentConfig:
     PRICE_IDS = {
         'NIBBLER': os.getenv('STRIPE_PRICE_NIBBLER', 'price_nibbler_monthly'),
         'FANG': os.getenv('STRIPE_PRICE_FANG', 'price_fang_monthly'),
-        'COMMANDER': os.getenv('STRIPE_PRICE_COMMANDER', 'price_commander_monthly'),
-        'APEX': os.getenv('STRIPE_PRICE_APEX', 'price_apex_monthly')
+        'COMMANDER': os.getenv('STRIPE_PRICE_COMMANDER', 'price_commander_monthly')
     }
     
     # Subscription Pricing (in USD)
     TIER_PRICING = {
-        'NIBBLER': 39,
-        'FANG': 89,
-        'COMMANDER': 139,
-        'APEX': 188  # Includes all COMMANDER features + exclusive APEX features
+        'NIBBLER': 39,  # 1 trade slot, SELECT FIRE only, voice personalities
+        'FANG': 89,     # 2 trade slots, SELECT FIRE only, voice personalities, all signals
+        'COMMANDER': 189  # Unlimited trades, SELECT + AUTO modes, voice personalities, all premium features
     }
     
     # Trial Configuration

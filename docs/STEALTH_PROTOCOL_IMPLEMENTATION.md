@@ -53,7 +53,7 @@ class StealthLevel(Enum):
     LOW = "low"           # Minimal obfuscation
     MEDIUM = "medium"     # Standard stealth
     HIGH = "high"         # Maximum randomization
-    GHOST = "ghost"       # Ultra-stealth mode (APEX only)
+    GHOST = "ghost"       # Ultra-stealth mode (COMMANDER only)
 ```
 
 ### 3. Tier Integration
@@ -62,8 +62,7 @@ class StealthLevel(Enum):
 |------|----------------|-----------|-----------------|
 | NIBBLER | ❌ No | - | None |
 | FANG | ✅ Yes | LOW | CHAINGUN only |
-| COMMANDER | ✅ Yes | MEDIUM | CHAINGUN, AUTO-FIRE, SEMI-AUTO |
-| APEX | ✅ Yes | GHOST | All modes + exclusive STEALTH mode |
+| COMMANDER | ✅ Yes | GHOST | All modes + exclusive STEALTH mode |
 
 ## Implementation Details
 

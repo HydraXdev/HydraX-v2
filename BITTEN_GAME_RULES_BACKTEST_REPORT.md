@@ -46,7 +46,7 @@ TCS accuracy needs calibration - 85%+ TCS signals achieving 77.9% win rate vs 85
 #### **4. Tier Access Control** ✅
 - **CHAINGUN**: Restricted to FANG+ tiers
 - **AUTO-FIRE**: Restricted to COMMANDER+ tiers
-- **STEALTH**: Restricted to APEX tier only
+- **STEALTH**: Restricted to COMMANDER tier only
 - Fire mode validation working correctly
 
 #### **5. Risk Management Systems** ✅
@@ -58,7 +58,7 @@ TCS accuracy needs calibration - 85%+ TCS signals achieving 77.9% win rate vs 85
 #### **6. Advanced Game Mechanics Ready:**
 - **CHAINGUN Mode**: Progressive risk (2%→4%→8%→16%) ✅
 - **AUTO-FIRE**: 91%+ TCS, position limits ✅
-- **STEALTH Mode**: APEX-only randomization ✅
+- **STEALTH Mode**: COMMANDER-only randomization ✅
 - **MIDNIGHT HAMMER**: 95%+ TCS community events ✅
 - **News Event Pauses**: High-impact news filtering ✅
 
@@ -69,7 +69,7 @@ TCS accuracy needs calibration - 85%+ TCS signals achieving 77.9% win rate vs 85
 ### **Test Configuration:**
 - **Period**: 2024-01-01 to 2024-01-14 (2 weeks)
 - **Pairs**: EURUSD, GBPUSD, USDJPY, USDCAD (4 pairs)
-- **Tiers**: NIBBLER, FANG, COMMANDER, APEX (all tiers)
+- **Tiers**: NIBBLER, FANG, COMMANDER (all tiers)
 - **Signals Generated**: 124 realistic market signals
 - **Game Rules**: FULLY ENFORCED
 

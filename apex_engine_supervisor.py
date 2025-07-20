@@ -11,8 +11,10 @@ import requests
 import json
 import subprocess
 import os
+import signal
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
+from pathlib import Path
 import psutil
 
 class APEXEngineSupervisor:
@@ -234,14 +236,30 @@ class APEXEngineSupervisor:
         try:
             self.logger.info("🔄 Auto-restarting APEX engine")
             
-            # Kill existing processes
-            subprocess.run(['pkill', '-f', 'apex_v5_live_real.py'], check=False)
-            time.sleep(2)
+            # Check if singleton lock exists
+            lock_file = Path('/root/HydraX-v2/.apex_engine.lock')
+            pid_file = Path('/root/HydraX-v2/.apex_engine.pid')
             
-            # Start new process
+            # Kill existing processes PROPERLY
+            if pid_file.exists():
+                try:
+                    old_pid = int(pid_file.read_text().strip())
+                    self.logger.info(f"🔫 Killing old APEX process PID={old_pid}")
+                    os.kill(old_pid, signal.SIGTERM)
+                    time.sleep(2)
+                except:
+                    pass
+            
+            # Clean up lock files
+            if lock_file.exists():
+                lock_file.unlink()
+            if pid_file.exists():
+                pid_file.unlink()
+            
+            # Start new process (singleton will handle duplicate prevention)
             subprocess.Popen([
                 'python3', '/root/HydraX-v2/apex_v5_live_real.py'
-            ], stdout=open('/root/HydraX-v2/apex_v5_live_real.log', 'w'), 
+            ], stdout=open('/root/HydraX-v2/apex_v5_live_real.log', 'a'),  # append, don't overwrite!
                stderr=subprocess.STDOUT)
             
             time.sleep(5)

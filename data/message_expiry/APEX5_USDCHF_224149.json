@@ -1,0 +1,11 @@
+{
+  "message_id": 3730,
+  "mission_id": "APEX5_USDCHF_224149",
+  "original_message": "\ud83d\udd2b RAPID ASSAULT [65%]\n\ud83d\udd25 USDCHF STRIKE \ud83d\udca5\n[MISSION BRIEF](https://joinbitten.com/hud?mission_id=APEX5_USDCHF_224149)",
+  "symbol": "USDCHF",
+  "signal_type": "RAPID_ASSAULT",
+  "sent_at": "2025-07-17T22:41:50.309336",
+  "entry_expires_at": "2025-07-17T23:11:50.309344",
+  "delete_at": "2025-07-18T02:41:50.309351",
+  "chat_id": "-1002581996861"
+}

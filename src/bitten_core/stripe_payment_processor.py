@@ -29,8 +29,7 @@ class StripePaymentProcessor:
         self.price_ids = {
             'NIBBLER': os.getenv('STRIPE_PRICE_NIBBLER', 'price_nibbler_monthly'),
             'FANG': os.getenv('STRIPE_PRICE_FANG', 'price_fang_monthly'),
-            'COMMANDER': os.getenv('STRIPE_PRICE_COMMANDER', 'price_commander_monthly'),
-            'APEX': os.getenv('STRIPE_PRICE_APEX', 'price_apex_monthly'),
+            'COMMANDER': os.getenv('STRIPE_PRICE_COMMANDER', 'price_commander_monthly')
         }
         
         logger.info("Stripe payment processor initialized")

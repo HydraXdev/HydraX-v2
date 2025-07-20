@@ -298,6 +298,20 @@
                     </div>
                 </div>
                 
+                <div class="voice-messages-setting">
+                    <div class="setting-item">
+                        <div>
+                            <div class="setting-label">
+                                <span class="voice-icon">🎙️</span> Voice Messages
+                            </div>
+                            <div class="setting-description">AI personalities speak with unique voices (Default: ON)</div>
+                        </div>
+                        <div class="toggle-switch active" id="voice_messages_enabled" onclick="toggleSetting('voice_messages_enabled')">
+                            <div class="toggle-slider"></div>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="setting-item">
                     <div>
                         <div class="setting-label">Achievement Sounds</div>
@@ -473,6 +487,9 @@
             applyToggle('achievement_sounds', currentSettings.sounds?.achievements);
             applyToggle('warning_sounds', currentSettings.sounds?.warnings);
             
+            // Apply voice settings (default: enabled)
+            applyToggle('voice_messages_enabled', currentSettings.voice?.enabled !== false);
+            
             // Apply notification settings
             applyToggle('signal_notifications', currentSettings.notifications?.signals);
             applyToggle('trade_notifications', currentSettings.notifications?.trades);
@@ -524,6 +541,11 @@
             if (settingId === 'cash_register_sound' && isActive) {
                 playTestSound();
             }
+            
+            // Handle voice messages toggle
+            if (settingId === 'voice_messages_enabled') {
+                handleVoiceToggle(isActive);
+            }
         }
         
         function playTestSound() {
@@ -532,6 +554,93 @@
                 const effects = new window.MissionHUDEffects();
                 effects.playCashRegisterSound(0.5); // Half volume for test
             }
+        }
+        
+        function handleVoiceToggle(isActive) {
+            // Send voice toggle to backend
+            fetch('/api/toggle-voice', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ enabled: isActive })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show status message
+                    showVoiceToggleMessage(isActive);
+                    
+                    // If enabling and we have test voice available, play it
+                    if (isActive && data.test_voice_available) {
+                        playTestVoiceMessage();
+                    }
+                } else {
+                    console.error('Voice toggle failed:', data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error toggling voice:', error);
+            });
+        }
+        
+        function showVoiceToggleMessage(enabled) {
+            const statusDiv = document.createElement('div');
+            statusDiv.className = 'voice-status-message';
+            statusDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${enabled ? '#1a5d1a' : '#5d1a1a'};
+                color: #00ff00;
+                padding: 10px 15px;
+                border-radius: 5px;
+                border: 1px solid #00ff00;
+                z-index: 1000;
+                font-family: 'Courier New', monospace;
+                font-size: 14px;
+                animation: slideIn 0.3s ease-out;
+            `;
+            
+            statusDiv.innerHTML = enabled ? 
+                '🔊 Voice Messages ENABLED<br><small>All 3 personality layers will speak</small>' : 
+                '🔇 Voice Messages DISABLED<br><small>Text-only responses</small>';
+            
+            document.body.appendChild(statusDiv);
+            
+            // Remove message after 3 seconds
+            setTimeout(() => {
+                statusDiv.remove();
+            }, 3000);
+        }
+        
+        function playTestVoiceMessage() {
+            // This would play a test voice message if available
+            // For now, just show a message
+            const testDiv = document.createElement('div');
+            testDiv.className = 'voice-test-message';
+            testDiv.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background: #1a5d1a;
+                color: #00ff00;
+                padding: 10px 15px;
+                border-radius: 5px;
+                border: 1px solid #00ff00;
+                z-index: 1000;
+                font-family: 'Courier New', monospace;
+                font-size: 12px;
+                max-width: 300px;
+            `;
+            
+            testDiv.innerHTML = '🎙️ Voice system activated!<br><small>Your personality will speak on the next message</small>';
+            
+            document.body.appendChild(testDiv);
+            
+            setTimeout(() => {
+                testDiv.remove();
+            }, 4000);
         }
         
         async function saveSettings() {

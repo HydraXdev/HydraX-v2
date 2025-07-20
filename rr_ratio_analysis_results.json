@@ -1,0 +1,66 @@
+{
+  "analysis_metadata": {
+    "total_signals_analyzed": 16236,
+    "overall_win_rate": 56.0,
+    "overall_expectancy": 0.853,
+    "analysis_date": "2025-07-18T20:30:47.736246"
+  },
+  "rr_category_performance": {
+    "1:1.5-1:2": {
+      "total_signals": 5512,
+      "wins": 3090,
+      "losses": 2422,
+      "win_rate_percent": 56.1,
+      "avg_rr_ratio": 1.75,
+      "total_r_multiple": 2974.7,
+      "avg_r_per_trade": 0.54,
+      "breakeven_rate_needed": 36.4,
+      "profit_margin_percent": 19.6,
+      "expectancy": 0.54
+    },
+    "1:2-1:2.5": {
+      "total_signals": 5466,
+      "wins": 3051,
+      "losses": 2415,
+      "win_rate_percent": 55.8,
+      "avg_rr_ratio": 2.24,
+      "total_r_multiple": 4419.93,
+      "avg_r_per_trade": 0.809,
+      "breakeven_rate_needed": 30.9,
+      "profit_margin_percent": 24.9,
+      "expectancy": 0.809
+    },
+    "1:2.5-1:3": {
+      "total_signals": 2702,
+      "wins": 1508,
+      "losses": 1194,
+      "win_rate_percent": 55.8,
+      "avg_rr_ratio": 2.72,
+      "total_r_multiple": 2910.16,
+      "avg_r_per_trade": 1.077,
+      "breakeven_rate_needed": 26.9,
+      "profit_margin_percent": 28.9,
+      "expectancy": 1.077
+    },
+    "1:3+": {
+      "total_signals": 2556,
+      "wins": 1436,
+      "losses": 1120,
+      "win_rate_percent": 56.2,
+      "avg_rr_ratio": 3.25,
+      "total_r_multiple": 3545.95,
+      "avg_r_per_trade": 1.387,
+      "breakeven_rate_needed": 23.5,
+      "profit_margin_percent": 32.6,
+      "expectancy": 1.387
+    }
+  },
+  "key_insights": [
+    "Best R:R Category: 1:3+ with 1.387R expectancy",
+    "SNIPER_OPS trades (1:2.5-3+) outperform RAPID_ASSAULT (1:1.5-2.5): 1.228R vs 0.674R",
+    "1:1.5-1:2: Excellent profit margin of 19.6% above breakeven",
+    "1:2-1:2.5: Excellent profit margin of 24.9% above breakeven",
+    "1:2.5-1:3: Excellent profit margin of 28.9% above breakeven",
+    "1:3+: Excellent profit margin of 32.6% above breakeven"
+  ]
+}

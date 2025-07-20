@@ -52,7 +52,8 @@
         .stat-value {
             font-size: 18px;
             font-weight: bold;
-            color: #4CAF50;
+            color: #ffffff;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
         }
         
         .stat-value.negative {
@@ -124,7 +125,8 @@
         .detail-value {
             font-size: 20px;
             font-weight: bold;
-            color: #4CAF50;
+            color: #ffffff;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
         }
         
         /* Live Trade Tracking */
@@ -1080,8 +1082,7 @@
                     
                     <!-- Quick Action Buttons - Limited to FIRE, OBSERVE, ABORT -->
                     <div style="display: flex; gap: 10px; margin-top: 15px; justify-content: center;">
-                        <button style="background: #666; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-size: 12px; cursor: not-allowed;" disabled>🔫 FIRED</button>
-                        <button style="background: #4CAF50; color: #000; border: none; padding: 8px 16px; border-radius: 6px; font-size: 12px; cursor: pointer;" onclick="observeTrade('EUR/USD')">👁️ OBSERVE</button>
+                            <button style="background: #4CAF50; color: #000; border: none; padding: 8px 16px; border-radius: 6px; font-size: 12px; cursor: pointer;" onclick="observeTrade('EUR/USD')">👁️ OBSERVE</button>
                         <button style="background: #f44336; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-size: 12px; cursor: pointer;" onclick="abortTrade('EUR/USD')">⚡ ABORT</button>
                     </div>
                 </div>
@@ -1126,8 +1127,7 @@
                     
                     <!-- Quick Action Buttons - Limited to FIRE, OBSERVE, ABORT -->
                     <div style="display: flex; gap: 10px; margin-top: 15px; justify-content: center;">
-                        <button style="background: #666; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-size: 12px; cursor: not-allowed;" disabled>🔫 FIRED</button>
-                        <button style="background: #4CAF50; color: #000; border: none; padding: 8px 16px; border-radius: 6px; font-size: 12px; cursor: pointer;" onclick="observeTrade('GBP/JPY')">👁️ OBSERVE</button>
+                            <button style="background: #4CAF50; color: #000; border: none; padding: 8px 16px; border-radius: 6px; font-size: 12px; cursor: pointer;" onclick="observeTrade('GBP/JPY')">👁️ OBSERVE</button>
                         <button style="background: #f44336; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-size: 12px; cursor: pointer;" onclick="abortTrade('GBP/JPY')">⚡ ABORT</button>
                     </div>
                 </div>
@@ -1917,7 +1917,6 @@
                 </div>
                 
                 <div style="display: flex; gap: 10px; margin-top: 15px; justify-content: center;">
-                    <button style="background: #666; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-size: 12px; cursor: not-allowed;" disabled>🔫 FIRED</button>
                     <button style="background: #4CAF50; color: #000; border: none; padding: 8px 16px; border-radius: 6px; font-size: 12px; cursor: pointer;" onclick="observeTrade('${trade.symbol}', '${trade.trade_id}')">👁️ OBSERVE</button>
                     <button style="background: #f44336; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-size: 12px; cursor: pointer;" onclick="abortTrade('${trade.symbol}', '${trade.trade_id}')">⚡ ABORT</button>
                 </div>
@@ -2118,7 +2117,6 @@
                 </div>
                 
                 <div style="display: flex; gap: 10px; margin-top: 15px; justify-content: center;">
-                    <button style="background: #666; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-size: 12px; cursor: not-allowed;" disabled>🔫 FIRED</button>
                     <button style="background: #4CAF50; color: #000; border: none; padding: 8px 16px; border-radius: 6px; font-size: 12px; cursor: pointer;" onclick="observeTrade('${tradeData.symbol}')">👁️ OBSERVE</button>
                     <button style="background: #f44336; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-size: 12px; cursor: pointer;" onclick="abortTrade('${tradeData.symbol}')">⚡ ABORT</button>
                 </div>

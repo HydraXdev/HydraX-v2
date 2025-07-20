@@ -1,0 +1,3315 @@
+{
+  "signals": [
+    {
+      "symbol": "USDTRY",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 50.2265,
+      "expected_win_probability": 0.6874255322778415,
+      "pip_target": 22,
+      "expected_duration_min": 16,
+      "timestamp": "2020-03-02T00:00:00"
+    },
+    {
+      "symbol": "XAGUSD",
+      "direction": "SELL",
+      "trade_type": "sniper",
+      "confidence_score": 64.6,
+      "expected_win_probability": 0.5813784673457829,
+      "pip_target": 6,
+      "expected_duration_min": 46,
+      "timestamp": "2020-03-02T08:00:00"
+    },
+    {
+      "symbol": "EURJPY",
+      "direction": "BUY",
+      "trade_type": "sniper",
+      "confidence_score": 65.16525,
+      "expected_win_probability": 0.5824246595214777,
+      "pip_target": 27,
+      "expected_duration_min": 47,
+      "timestamp": "2020-03-02T11:00:00"
+    },
+    {
+      "symbol": "GBPUSD",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 70.65625,
+      "expected_win_probability": 0.8415,
+      "pip_target": 18,
+      "expected_duration_min": 19,
+      "timestamp": "2020-03-02T19:00:00"
+    },
+    {
+      "symbol": "USDJPY",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 69.04124999999999,
+      "expected_win_probability": 0.8415,
+      "pip_target": 19,
+      "expected_duration_min": 19,
+      "timestamp": "2020-03-03T05:00:00"
+    },
+    {
+      "symbol": "NZDUSD",
+      "direction": "SELL",
+      "trade_type": "sniper",
+      "confidence_score": 56.6865,
+      "expected_win_probability": 0.5205051251725367,
+      "pip_target": 34,
+      "expected_duration_min": 45,
+      "timestamp": "2020-03-03T09:00:00"
+    },
+    {
+      "symbol": "GBPJPY",
+      "direction": "SELL",
+      "trade_type": "sniper",
+      "confidence_score": 66.29575,
+      "expected_win_probability": 0.5846374780858696,
+      "pip_target": 35,
+      "expected_duration_min": 47,
+      "timestamp": "2020-03-03T10:00:00"
+    },
+    {
+      "symbol": "USDCHF",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 62.74275,
+      "expected_win_probability": 0.7775995626556587,
+      "pip_target": 24,
+      "expected_duration_min": 18,
+      "timestamp": "2020-03-04T00:00:00"
+    },
+    {
+      "symbol": "EURGBP",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 70.2525,
+      "expected_win_probability": 0.8415,
+      "pip_target": 19,
+      "expected_duration_min": 19,
+      "timestamp": "2020-03-04T03:00:00"
+    },
+    {
+      "symbol": "USDJPY",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 57.00949999999999,
+      "expected_win_probability": 0.7040326066928153,
+      "pip_target": 28,
+      "expected_duration_min": 17,
+      "timestamp": "2020-03-04T14:00:00"
+    },
+    {
+      "symbol": "EURUSD",
+      "direction": "BUY",
+      "trade_type": "sniper",
+      "confidence_score": 56.848,
+      "expected_win_probability": 0.5207657073979998,
+      "pip_target": 21,
+      "expected_duration_min": 45,
+      "timestamp": "2020-03-05T00:00:00"
+    },
+    {
+      "symbol": "AUDUSD",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 71.78675,
+      "expected_win_probability": 0.8415,
+      "pip_target": 13,
+      "expected_duration_min": 19,
+      "timestamp": "2020-03-05T02:00:00"
+    },
+    {
+      "symbol": "GBPUSD",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 55.79824999999999,
+      "expected_win_probability": 0.701186942645796,
+      "pip_target": 18,
+      "expected_duration_min": 16,
+      "timestamp": "2020-03-05T15:00:00"
+    },
+    {
+      "symbol": "USDCHF",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 64.19625,
+      "expected_win_probability": 0.7810465269344585,
+      "pip_target": 22,
+      "expected_duration_min": 18,
+      "timestamp": "2020-03-06T00:00:00"
+    },
+    {
+      "symbol": "EURGBP",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 60.23949999999999,
+      "expected_win_probability": 0.7120538914595238,
+      "pip_target": 24,
+      "expected_duration_min": 17,
+      "timestamp": "2020-03-06T10:00:00"
+    },
+    {
+      "symbol": "NZDUSD",
+      "direction": "SELL",
+      "trade_type": "sniper",
+      "confidence_score": 54.82925,
+      "expected_win_probability": 0.5170184226095386,
+      "pip_target": 42,
+      "expected_duration_min": 44,
+      "timestamp": "2020-03-06T11:00:00"
+    },
+    {
+      "symbol": "GBPUSD",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 65.40749999999998,
+      "expected_win_probability": 0.7839954250456095,
+      "pip_target": 27,
+      "expected_duration_min": 18,
+      "timestamp": "2020-03-06T12:00:00"
+    },
+    {
+      "symbol": "AUDUSD",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 58.220749999999995,
+      "expected_win_probability": 0.7069661506352579,
+      "pip_target": 31,
+      "expected_duration_min": 17,
+      "timestamp": "2020-03-06T19:00:00"
+    },
+    {
+      "symbol": "XAUUSD",
+      "direction": "SELL",
+      "trade_type": "sniper",
+      "confidence_score": 68.153,
+      "expected_win_probability": 0.5881493112734609,
+      "pip_target": 5,
+      "expected_duration_min": 48,
+      "timestamp": "2020-03-06T20:00:00"
+    },
+    {
+      "symbol": "USDCHF",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 56.20199999999999,
+      "expected_win_probability": 0.7020272966733536,
+      "pip_target": 25,
+      "expected_duration_min": 16,
+      "timestamp": "2020-03-06T23:00:00"
+    },
+    {
+      "symbol": "AUDUSD",
+      "direction": "SELL",
+      "trade_type": "sniper",
+      "confidence_score": 68.07225,
+      "expected_win_probability": 0.5880222869348625,
+      "pip_target": 27,
+      "expected_duration_min": 48,
+      "timestamp": "2020-03-09T00:00:00"
+    },
+    {
+      "symbol": "EURJPY",
+      "direction": "BUY",
+      "trade_type": "sniper",
+      "confidence_score": 67.50699999999999,
+      "expected_win_probability": 0.5869360904357432,
+      "pip_target": 54,
+      "expected_duration_min": 48,
+      "timestamp": "2020-03-09T10:00:00"
+    },
+    {
+      "symbol": "EURGBP",
+      "direction": "SELL",
+      "trade_type": "sniper",
+      "confidence_score": 57.97849999999999,
+      "expected_win_probability": 0.5228825265108645,
+      "pip_target": 21,
+      "expected_duration_min": 45,
+      "timestamp": "2020-03-09T15:00:00"
+    },
+    {
+      "symbol": "USDTRY",
+      "direction": "SELL",
+      "trade_type": "sniper",
+      "confidence_score": 63.954,
+      "expected_win_probability": 0.580175157581934,
+      "pip_target": 27,
+      "expected_duration_min": 46,
+      "timestamp": "2020-03-10T13:00:00"
+    },
+    {
+      "symbol": "GBPJPY",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 65.00375,
+      "expected_win_probability": 0.7831355979622543,
+      "pip_target": 27,
+      "expected_duration_min": 18,
+      "timestamp": "2020-03-10T21:00:00"
+    },
+    {
+      "symbol": "USDCAD",
+      "direction": "SELL",
+      "trade_type": "sniper",
+      "confidence_score": 63.146499999999996,
+      "expected_win_probability": 0.5787058931073592,
+      "pip_target": 24,
+      "expected_duration_min": 46,
+      "timestamp": "2020-03-11T00:00:00"
+    },
+    {
+      "symbol": "EURUSD",
+      "direction": "SELL",
+      "trade_type": "sniper",
+      "confidence_score": 62.016,
+      "expected_win_probability": 0.5764436350068235,
+      "pip_target": 23,
+      "expected_duration_min": 46,
+      "timestamp": "2020-03-11T10:00:00"
+    },
+    {
+      "symbol": "USDJPY",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 72.1905,
+      "expected_win_probability": 0.8415,
+      "pip_target": 24,
+      "expected_duration_min": 19,
+      "timestamp": "2020-03-11T21:00:00"
+    },
+    {
+      "symbol": "AUDUSD",
+      "direction": "SELL",
+      "trade_type": "sniper",
+      "confidence_score": 62.90425,
+      "expected_win_probability": 0.5781629663312268,
+      "pip_target": 21,
+      "expected_duration_min": 46,
+      "timestamp": "2020-03-12T05:00:00"
+    },
+    {
+      "symbol": "USDZAR",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 58.38225,
+      "expected_win_probability": 0.7074607323187216,
+      "pip_target": 13,
+      "expected_duration_min": 17,
+      "timestamp": "2020-03-12T14:00:00"
+    },
+    {
+      "symbol": "GBPUSD",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 62.339,
+      "expected_win_probability": 0.7765975864030522,
+      "pip_target": 12,
+      "expected_duration_min": 18,
+      "timestamp": "2020-03-12T15:00:00"
+    },
+    {
+      "symbol": "USDZAR",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 59.431999999999995,
+      "expected_win_probability": 0.7100038299454745,
+      "pip_target": 33,
+      "expected_duration_min": 17,
+      "timestamp": "2020-03-12T16:00:00"
+    },
+    {
+      "symbol": "USDTRY",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 53.86025,
+      "expected_win_probability": 0.6963579013419383,
+      "pip_target": 31,
+      "expected_duration_min": 16,
+      "timestamp": "2020-03-12T17:00:00"
+    },
+    {
+      "symbol": "GBPUSD",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 70.97925,
+      "expected_win_probability": 0.8415,
+      "pip_target": 15,
+      "expected_duration_min": 19,
+      "timestamp": "2020-03-12T22:00:00"
+    },
+    {
+      "symbol": "XAUUSD",
+      "direction": "BUY",
+      "trade_type": "sniper",
+      "confidence_score": 66.13425000000001,
+      "expected_win_probability": 0.5843693925899557,
+      "pip_target": 5,
+      "expected_duration_min": 47,
+      "timestamp": "2020-03-12T23:00:00"
+    },
+    {
+      "symbol": "EURUSD",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 59.83574999999999,
+      "expected_win_probability": 0.7109627164785925,
+      "pip_target": 34,
+      "expected_duration_min": 17,
+      "timestamp": "2020-03-13T09:00:00"
+    },
+    {
+      "symbol": "GBPJPY",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 59.83574999999999,
+      "expected_win_probability": 0.7110982993065001,
+      "pip_target": 33,
+      "expected_duration_min": 17,
+      "timestamp": "2020-03-13T15:00:00"
+    },
+    {
+      "symbol": "EURUSD",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 60.481750000000005,
+      "expected_win_probability": 0.7125381985673984,
+      "pip_target": 34,
+      "expected_duration_min": 17,
+      "timestamp": "2020-03-13T16:00:00"
+    },
+    {
+      "symbol": "USDCAD",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 55.47525,
+      "expected_win_probability": 0.7003264814969838,
+      "pip_target": 21,
+      "expected_duration_min": 16,
+      "timestamp": "2020-03-13T20:00:00"
+    },
+    {
+      "symbol": "USDTRY",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 59.59349999999999,
+      "expected_win_probability": 0.7103539379433758,
+      "pip_target": 16,
+      "expected_duration_min": 17,
+      "timestamp": "2020-03-16T07:00:00"
+    },
+    {
+      "symbol": "USDMXN",
+      "direction": "SELL",
+      "trade_type": "sniper",
+      "confidence_score": 61.531499999999994,
+      "expected_win_probability": 0.5756167102114415,
+      "pip_target": 31,
+      "expected_duration_min": 46,
+      "timestamp": "2020-03-16T23:00:00"
+    },
+    {
+      "symbol": "XAUUSD",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 65.32675,
+      "expected_win_probability": 0.7839169159103502,
+      "pip_target": 7,
+      "expected_duration_min": 18,
+      "timestamp": "2020-03-17T10:00:00"
+    },
+    {
+      "symbol": "GBPUSD",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 54.58699999999999,
+      "expected_win_probability": 0.6980751540037026,
+      "pip_target": 16,
+      "expected_duration_min": 16,
+      "timestamp": "2020-03-18T04:00:00"
+    },
+    {
+      "symbol": "USDCAD",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 56.363499999999995,
+      "expected_win_probability": 0.7025167402296548,
+      "pip_target": 28,
+      "expected_duration_min": 16,
+      "timestamp": "2020-03-18T09:00:00"
+    },
+    {
+      "symbol": "USDJPY",
+      "direction": "BUY",
+      "trade_type": "sniper",
+      "confidence_score": 67.26474999999999,
+      "expected_win_probability": 0.5864964490884556,
+      "pip_target": 27,
+      "expected_duration_min": 47,
+      "timestamp": "2020-03-18T12:00:00"
+    },
+    {
+      "symbol": "USDTRY",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 65.97275,
+      "expected_win_probability": 0.7855257726592998,
+      "pip_target": 18,
+      "expected_duration_min": 18,
+      "timestamp": "2020-03-19T04:00:00"
+    },
+    {
+      "symbol": "USDTRY",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 63.146499999999996,
+      "expected_win_probability": 0.7784753860363637,
+      "pip_target": 19,
+      "expected_duration_min": 18,
+      "timestamp": "2020-03-19T09:00:00"
+    },
+    {
+      "symbol": "NZDUSD",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 56.121249999999996,
+      "expected_win_probability": 0.7019011348006577,
+      "pip_target": 28,
+      "expected_duration_min": 16,
+      "timestamp": "2020-03-20T02:00:00"
+    },
+    {
+      "symbol": "GBPUSD",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 71.22149999999999,
+      "expected_win_probability": 0.8415,
+      "pip_target": 28,
+      "expected_duration_min": 19,
+      "timestamp": "2020-03-20T10:00:00"
+    },
+    {
+      "symbol": "EURJPY",
+      "direction": "BUY",
+      "trade_type": "sniper",
+      "confidence_score": 57.332499999999996,
+      "expected_win_probability": 0.5217822503166698,
+      "pip_target": 37,
+      "expected_duration_min": 45,
+      "timestamp": "2020-03-20T11:00:00"
+    },
+    {
+      "symbol": "XAGUSD",
+      "direction": "BUY",
+      "trade_type": "sniper",
+      "confidence_score": 49.419000000000004,
+      "expected_win_probability": 0.5066970025645989,
+      "pip_target": 7,
+      "expected_duration_min": 43,
+      "timestamp": "2020-03-20T12:00:00"
+    },
+    {
+      "symbol": "AUDUSD",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 58.13999999999999,
+      "expected_win_probability": 0.7069544081932982,
+      "pip_target": 33,
+      "expected_duration_min": 17,
+      "timestamp": "2020-03-20T15:00:00"
+    },
+    {
+      "symbol": "USDMXN",
+      "direction": "SELL",
+      "trade_type": "sniper",
+      "confidence_score": 56.525,
+      "expected_win_probability": 0.5202555640846425,
+      "pip_target": 24,
+      "expected_duration_min": 45,
+      "timestamp": "2020-03-20T17:00:00"
+    },
+    {
+      "symbol": "USDCHF",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 54.263999999999996,
+      "expected_win_probability": 0.6972817603143072,
+      "pip_target": 24,
+      "expected_duration_min": 16,
+      "timestamp": "2020-03-23T00:00:00"
+    },
+    {
+      "symbol": "GBPJPY",
+      "direction": "SELL",
+      "trade_type": "sniper",
+      "confidence_score": 61.12775,
+      "expected_win_probability": 0.5747649988560022,
+      "pip_target": 46,
+      "expected_duration_min": 46,
+      "timestamp": "2020-03-23T08:00:00"
+    },
+    {
+      "symbol": "EURUSD",
+      "direction": "SELL",
+      "trade_type": "sniper",
+      "confidence_score": 59.59349999999999,
+      "expected_win_probability": 0.5260299722557246,
+      "pip_target": 48,
+      "expected_duration_min": 46,
+      "timestamp": "2020-03-23T09:00:00"
+    },
+    {
+      "symbol": "GBPJPY",
+      "direction": "SELL",
+      "trade_type": "sniper",
+      "confidence_score": 60.80474999999999,
+      "expected_win_probability": 0.5741349933321435,
+      "pip_target": 29,
+      "expected_duration_min": 46,
+      "timestamp": "2020-03-23T10:00:00"
+    },
+    {
+      "symbol": "USDCHF",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 57.81699999999999,
+      "expected_win_probability": 0.7061484594123296,
+      "pip_target": 30,
+      "expected_duration_min": 17,
+      "timestamp": "2020-03-23T23:00:00"
+    },
+    {
+      "symbol": "USDZAR",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 65.892,
+      "expected_win_probability": 0.7853030286544607,
+      "pip_target": 15,
+      "expected_duration_min": 18,
+      "timestamp": "2020-03-24T00:00:00"
+    },
+    {
+      "symbol": "EURUSD",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 57.25175,
+      "expected_win_probability": 0.704619318856919,
+      "pip_target": 12,
+      "expected_duration_min": 17,
+      "timestamp": "2020-03-24T03:00:00"
+    },
+    {
+      "symbol": "GBPUSD",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 55.717499999999994,
+      "expected_win_probability": 0.7008661237285734,
+      "pip_target": 27,
+      "expected_duration_min": 16,
+      "timestamp": "2020-03-24T10:00:00"
+    },
+    {
+      "symbol": "GBPUSD",
+      "direction": "SELL",
+      "trade_type": "sniper",
+      "confidence_score": 59.59349999999999,
+      "expected_win_probability": 0.5260816110370249,
+      "pip_target": 43,
+      "expected_duration_min": 46,
+      "timestamp": "2020-03-24T22:00:00"
+    },
+    {
+      "symbol": "USDZAR",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 55.15224999999999,
+      "expected_win_probability": 0.6995848084336586,
+      "pip_target": 25,
+      "expected_duration_min": 16,
+      "timestamp": "2020-03-25T11:00:00"
+    },
+    {
+      "symbol": "USDTRY",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 64.6,
+      "expected_win_probability": 0.7820892112474573,
+      "pip_target": 25,
+      "expected_duration_min": 18,
+      "timestamp": "2020-03-25T13:00:00"
+    },
+    {
+      "symbol": "AUDUSD",
+      "direction": "BUY",
+      "trade_type": "sniper",
+      "confidence_score": 58.463,
+      "expected_win_probability": 0.5238655841882365,
+      "pip_target": 31,
+      "expected_duration_min": 45,
+      "timestamp": "2020-03-25T14:00:00"
+    },
+    {
+      "symbol": "EURGBP",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 67.26474999999999,
+      "expected_win_probability": 0.7886876440166055,
+      "pip_target": 37,
+      "expected_duration_min": 18,
+      "timestamp": "2020-03-25T23:00:00"
+    },
+    {
+      "symbol": "USDZAR",
+      "direction": "BUY",
+      "trade_type": "sniper",
+      "confidence_score": 57.81699999999999,
+      "expected_win_probability": 0.5226055948765213,
+      "pip_target": 47,
+      "expected_duration_min": 45,
+      "timestamp": "2020-03-26T08:00:00"
+    },
+    {
+      "symbol": "GBPJPY",
+      "direction": "SELL",
+      "trade_type": "sniper",
+      "confidence_score": 67.82999999999998,
+      "expected_win_probability": 0.5875661208882798,
+      "pip_target": 34,
+      "expected_duration_min": 48,
+      "timestamp": "2020-03-26T10:00:00"
+    },
+    {
+      "symbol": "NZDUSD",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 64.03475,
+      "expected_win_probability": 0.7806781490178907,
+      "pip_target": 27,
+      "expected_duration_min": 18,
+      "timestamp": "2020-03-26T13:00:00"
+    },
+    {
+      "symbol": "XAUUSD",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 65.16525,
+      "expected_win_probability": 0.7835522052397677,
+      "pip_target": 7,
+      "expected_duration_min": 18,
+      "timestamp": "2020-03-26T17:00:00"
+    },
+    {
+      "symbol": "USDTRY",
+      "direction": "SELL",
+      "trade_type": "sniper",
+      "confidence_score": 71.30224999999999,
+      "expected_win_probability": 0.65025,
+      "pip_target": 52,
+      "expected_duration_min": 49,
+      "timestamp": "2020-03-26T19:00:00"
+    },
+    {
+      "symbol": "USDCHF",
+      "direction": "SELL",
+      "trade_type": "sniper",
+      "confidence_score": 70.091,
+      "expected_win_probability": 0.65025,
+      "pip_target": 47,
+      "expected_duration_min": 49,
+      "timestamp": "2020-03-27T16:00:00"
+    },
+    {
+      "symbol": "XAUUSD",
+      "direction": "BUY",
+      "trade_type": "sniper",
+      "confidence_score": 69.68724999999999,
+      "expected_win_probability": 0.65025,
+      "pip_target": 5,
+      "expected_duration_min": 48,
+      "timestamp": "2020-03-27T22:00:00"
+    },
+    {
+      "symbol": "EURUSD",
+      "direction": "BUY",
+      "trade_type": "sniper",
+      "confidence_score": 72.59425,
+      "expected_win_probability": 0.65025,
+      "pip_target": 55,
+      "expected_duration_min": 49,
+      "timestamp": "2020-03-30T08:00:00"
+    },
+    {
+      "symbol": "GBPJPY",
+      "direction": "SELL",
+      "trade_type": "sniper",
+      "confidence_score": 69.52574999999999,
+      "expected_win_probability": 0.65025,
+      "pip_target": 33,
+      "expected_duration_min": 48,
+      "timestamp": "2020-03-30T10:00:00"
+    },
+    {
+      "symbol": "AUDUSD",
+      "direction": "SELL",
+      "trade_type": "sniper",
+      "confidence_score": 66.45725,
+      "expected_win_probability": 0.584896732402267,
+      "pip_target": 25,
+      "expected_duration_min": 47,
+      "timestamp": "2020-03-30T11:00:00"
+    },
+    {
+      "symbol": "USDMXN",
+      "direction": "BUY",
+      "trade_type": "sniper",
+      "confidence_score": 70.414,
+      "expected_win_probability": 0.65025,
+      "pip_target": 35,
+      "expected_duration_min": 49,
+      "timestamp": "2020-03-30T14:00:00"
+    },
+    {
+      "symbol": "EURUSD",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 60.724,
+      "expected_win_probability": 0.7726225911652271,
+      "pip_target": 22,
+      "expected_duration_min": 18,
+      "timestamp": "2020-03-30T16:00:00"
+    },
+    {
+      "symbol": "AUDUSD",
+      "direction": "SELL",
+      "trade_type": "sniper",
+      "confidence_score": 65.08449999999999,
+      "expected_win_probability": 0.5822815936214563,
+      "pip_target": 39,
+      "expected_duration_min": 47,
+      "timestamp": "2020-03-31T16:00:00"
+    },
+    {
+      "symbol": "NZDUSD",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 55.47525,
+      "expected_win_probability": 0.7003615252122178,
+      "pip_target": 22,
+      "expected_duration_min": 16,
+      "timestamp": "2020-03-31T21:00:00"
+    },
+    {
+      "symbol": "USDCHF",
+      "direction": "BUY",
+      "trade_type": "sniper",
+      "confidence_score": 72.45460000000001,
+      "expected_win_probability": 0.5513453630623655,
+      "pip_target": 55,
+      "expected_duration_min": 70,
+      "timestamp": "2020-04-01T08:00:00"
+    },
+    {
+      "symbol": "USDJPY",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 68.609,
+      "expected_win_probability": 0.5667075566268484,
+      "pip_target": 11,
+      "expected_duration_min": 26,
+      "timestamp": "2020-04-01T23:00:00"
+    },
+    {
+      "symbol": "XAUUSD",
+      "direction": "BUY",
+      "trade_type": "sniper",
+      "confidence_score": 71.05999999999999,
+      "expected_win_probability": 0.6120000000000001,
+      "pip_target": 5,
+      "expected_duration_min": 63,
+      "timestamp": "2020-04-02T20:00:00"
+    },
+    {
+      "symbol": "USDMXN",
+      "direction": "BUY",
+      "trade_type": "sniper",
+      "confidence_score": 61.96660000000001,
+      "expected_win_probability": 0.49095890119841795,
+      "pip_target": 37,
+      "expected_duration_min": 67,
+      "timestamp": "2020-04-03T11:00:00"
+    },
+    {
+      "symbol": "XAUUSD",
+      "direction": "SELL",
+      "trade_type": "sniper",
+      "confidence_score": 71.84280000000001,
+      "expected_win_probability": 0.5503012960954486,
+      "pip_target": 5,
+      "expected_duration_min": 70,
+      "timestamp": "2020-04-06T00:00:00"
+    },
+    {
+      "symbol": "EURJPY",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 68.2594,
+      "expected_win_probability": 0.5660378238842155,
+      "pip_target": 10,
+      "expected_duration_min": 26,
+      "timestamp": "2020-04-06T10:00:00"
+    },
+    {
+      "symbol": "USDCAD",
+      "direction": "SELL",
+      "trade_type": "sniper",
+      "confidence_score": 66.29575,
+      "expected_win_probability": 0.5502106748322211,
+      "pip_target": 55,
+      "expected_duration_min": 61,
+      "timestamp": "2020-04-07T09:00:00"
+    },
+    {
+      "symbol": "AUDUSD",
+      "direction": "BUY",
+      "trade_type": "sniper",
+      "confidence_score": 60.15874999999999,
+      "expected_win_probability": 0.4961001058979392,
+      "pip_target": 20,
+      "expected_duration_min": 59,
+      "timestamp": "2020-04-08T23:00:00"
+    },
+    {
+      "symbol": "EURJPY",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 62.25825,
+      "expected_win_probability": 0.564603291829245,
+      "pip_target": 8,
+      "expected_duration_min": 23,
+      "timestamp": "2020-04-09T10:00:00"
+    },
+    {
+      "symbol": "USDMXN",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 67.9915,
+      "expected_win_probability": 0.574779742184757,
+      "pip_target": 10,
+      "expected_duration_min": 23,
+      "timestamp": "2020-04-10T13:00:00"
+    },
+    {
+      "symbol": "NZDUSD",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 61.12775,
+      "expected_win_probability": 0.5625958927913511,
+      "pip_target": 14,
+      "expected_duration_min": 23,
+      "timestamp": "2020-04-10T22:00:00"
+    },
+    {
+      "symbol": "NZDUSD",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 63.22724999999999,
+      "expected_win_probability": 0.5663332590277709,
+      "pip_target": 23,
+      "expected_duration_min": 23,
+      "timestamp": "2020-04-13T10:00:00"
+    },
+    {
+      "symbol": "GBPJPY",
+      "direction": "SELL",
+      "trade_type": "sniper",
+      "confidence_score": 73.416,
+      "expected_win_probability": 0.5528975313935307,
+      "pip_target": 34,
+      "expected_duration_min": 71,
+      "timestamp": "2020-04-14T13:00:00"
+    },
+    {
+      "symbol": "USDJPY",
+      "direction": "BUY",
+      "trade_type": "sniper",
+      "confidence_score": 74.2026,
+      "expected_win_probability": 0.5542623877255809,
+      "pip_target": 32,
+      "expected_duration_min": 71,
+      "timestamp": "2020-04-15T06:00:00"
+    },
+    {
+      "symbol": "USDMXN",
+      "direction": "BUY",
+      "trade_type": "sniper",
+      "confidence_score": 70.81775,
+      "expected_win_probability": 0.6120000000000001,
+      "pip_target": 50,
+      "expected_duration_min": 63,
+      "timestamp": "2020-04-16T10:00:00"
+    },
+    {
+      "symbol": "USDJPY",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 55.47525,
+      "expected_win_probability": 0.5093873707402113,
+      "pip_target": 9,
+      "expected_duration_min": 20,
+      "timestamp": "2020-04-16T12:00:00"
+    },
+    {
+      "symbol": "XAUUSD",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 58.995,
+      "expected_win_probability": 0.5075858593947646,
+      "pip_target": 5,
+      "expected_duration_min": 24,
+      "timestamp": "2020-04-17T05:00:00"
+    },
+    {
+      "symbol": "GBPJPY",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 73.67819999999999,
+      "expected_win_probability": 0.5749231005565675,
+      "pip_target": 19,
+      "expected_duration_min": 27,
+      "timestamp": "2020-04-17T20:00:00"
+    },
+    {
+      "symbol": "USDJPY",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 66.69949999999999,
+      "expected_win_probability": 0.5726159658915945,
+      "pip_target": 19,
+      "expected_duration_min": 23,
+      "timestamp": "2020-04-20T03:00:00"
+    },
+    {
+      "symbol": "USDZAR",
+      "direction": "SELL",
+      "trade_type": "sniper",
+      "confidence_score": 61.87919999999999,
+      "expected_win_probability": 0.4907583643774871,
+      "pip_target": 28,
+      "expected_duration_min": 67,
+      "timestamp": "2020-04-21T06:00:00"
+    },
+    {
+      "symbol": "USDZAR",
+      "direction": "SELL",
+      "trade_type": "sniper",
+      "confidence_score": 68.3468,
+      "expected_win_probability": 0.5445759356071045,
+      "pip_target": 33,
+      "expected_duration_min": 68,
+      "timestamp": "2020-04-22T09:00:00"
+    },
+    {
+      "symbol": "EURUSD",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 70.2696,
+      "expected_win_probability": 0.5694468102395894,
+      "pip_target": 10,
+      "expected_duration_min": 27,
+      "timestamp": "2020-04-22T20:00:00"
+    },
+    {
+      "symbol": "AUDUSD",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 60.39339999999999,
+      "expected_win_probability": 0.5099405442254921,
+      "pip_target": 20,
+      "expected_duration_min": 24,
+      "timestamp": "2020-04-22T22:00:00"
+    },
+    {
+      "symbol": "GBPUSD",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 68.71825,
+      "expected_win_probability": 0.6120000000000001,
+      "pip_target": 12,
+      "expected_duration_min": 24,
+      "timestamp": "2020-04-23T02:00:00"
+    },
+    {
+      "symbol": "GBPJPY",
+      "direction": "SELL",
+      "trade_type": "sniper",
+      "confidence_score": 66.37650000000001,
+      "expected_win_probability": 0.5503383552626794,
+      "pip_target": 43,
+      "expected_duration_min": 61,
+      "timestamp": "2020-04-23T13:00:00"
+    },
+    {
+      "symbol": "USDMXN",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 62.823499999999996,
+      "expected_win_probability": 0.5656991327446242,
+      "pip_target": 13,
+      "expected_duration_min": 23,
+      "timestamp": "2020-04-23T14:00:00"
+    },
+    {
+      "symbol": "GBPUSD",
+      "direction": "SELL",
+      "trade_type": "sniper",
+      "confidence_score": 64.239,
+      "expected_win_probability": 0.49459728053562946,
+      "pip_target": 44,
+      "expected_duration_min": 67,
+      "timestamp": "2020-04-24T06:00:00"
+    },
+    {
+      "symbol": "USDCAD",
+      "direction": "SELL",
+      "trade_type": "sniper",
+      "confidence_score": 68.609,
+      "expected_win_probability": 0.5449949249895193,
+      "pip_target": 37,
+      "expected_duration_min": 68,
+      "timestamp": "2020-04-24T13:00:00"
+    },
+    {
+      "symbol": "USDJPY",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 60.1312,
+      "expected_win_probability": 0.509431862392985,
+      "pip_target": 23,
+      "expected_duration_min": 24,
+      "timestamp": "2020-04-24T16:00:00"
+    },
+    {
+      "symbol": "AUDUSD",
+      "direction": "BUY",
+      "trade_type": "sniper",
+      "confidence_score": 57.41324999999999,
+      "expected_win_probability": 0.4911716120258976,
+      "pip_target": 38,
+      "expected_duration_min": 58,
+      "timestamp": "2020-04-27T03:00:00"
+    },
+    {
+      "symbol": "USDMXN",
+      "direction": "BUY",
+      "trade_type": "sniper",
+      "confidence_score": 63.22724999999999,
+      "expected_win_probability": 0.5447507317343098,
+      "pip_target": 47,
+      "expected_duration_min": 59,
+      "timestamp": "2020-04-27T16:00:00"
+    },
+    {
+      "symbol": "USDZAR",
+      "direction": "BUY",
+      "trade_type": "sniper",
+      "confidence_score": 66.215,
+      "expected_win_probability": 0.5501460154231226,
+      "pip_target": 51,
+      "expected_duration_min": 61,
+      "timestamp": "2020-04-28T10:00:00"
+    },
+    {
+      "symbol": "AUDUSD",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 69.2208,
+      "expected_win_probability": 0.5675886062978391,
+      "pip_target": 9,
+      "expected_duration_min": 26,
+      "timestamp": "2020-04-29T00:00:00"
+    },
+    {
+      "symbol": "XAUUSD",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 60.743,
+      "expected_win_probability": 0.5104450125731935,
+      "pip_target": 5,
+      "expected_duration_min": 24,
+      "timestamp": "2020-04-29T07:00:00"
+    },
+    {
+      "symbol": "XAGUSD",
+      "direction": "SELL",
+      "trade_type": "sniper",
+      "confidence_score": 66.861,
+      "expected_win_probability": 0.5421669823999675,
+      "pip_target": 7,
+      "expected_duration_min": 67,
+      "timestamp": "2020-04-29T15:00:00"
+    },
+    {
+      "symbol": "USDMXN",
+      "direction": "BUY",
+      "trade_type": "sniper",
+      "confidence_score": 64.9382,
+      "expected_win_probability": 0.4957432122854544,
+      "pip_target": 49,
+      "expected_duration_min": 67,
+      "timestamp": "2020-04-29T17:00:00"
+    },
+    {
+      "symbol": "XAUUSD",
+      "direction": "BUY",
+      "trade_type": "sniper",
+      "confidence_score": 58.470600000000005,
+      "expected_win_probability": 0.4852055666349609,
+      "pip_target": 5,
+      "expected_duration_min": 66,
+      "timestamp": "2020-04-29T22:00:00"
+    },
+    {
+      "symbol": "XAGUSD",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 73.67819999999999,
+      "expected_win_probability": 0.5750510526602121,
+      "pip_target": 5,
+      "expected_duration_min": 27,
+      "timestamp": "2020-04-29T23:00:00"
+    },
+    {
+      "symbol": "USDMXN",
+      "direction": "SELL",
+      "trade_type": "sniper",
+      "confidence_score": 58.220749999999995,
+      "expected_win_probability": 0.49269366956764793,
+      "pip_target": 33,
+      "expected_duration_min": 58,
+      "timestamp": "2020-04-30T01:00:00"
+    },
+    {
+      "symbol": "USDCHF",
+      "direction": "SELL",
+      "trade_type": "sniper",
+      "confidence_score": 58.62449999999999,
+      "expected_win_probability": 0.49335161659408555,
+      "pip_target": 33,
+      "expected_duration_min": 58,
+      "timestamp": "2020-04-30T04:00:00"
+    },
+    {
+      "symbol": "USDCHF",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 59.9165,
+      "expected_win_probability": 0.5172005704764968,
+      "pip_target": 11,
+      "expected_duration_min": 22,
+      "timestamp": "2020-04-30T07:00:00"
+    },
+    {
+      "symbol": "USDJPY",
+      "direction": "BUY",
+      "trade_type": "sniper",
+      "confidence_score": 69.04124999999999,
+      "expected_win_probability": 0.6120000000000001,
+      "pip_target": 33,
+      "expected_duration_min": 62,
+      "timestamp": "2020-04-30T12:00:00"
+    },
+    {
+      "symbol": "EURGBP",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 79.895,
+      "expected_win_probability": 0.5387686517997516,
+      "pip_target": 27,
+      "expected_duration_min": 27,
+      "timestamp": "2020-05-01T05:00:00"
+    },
+    {
+      "symbol": "XAGUSD",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 85.1,
+      "expected_win_probability": 0.6375,
+      "pip_target": 5,
+      "expected_duration_min": 28,
+      "timestamp": "2020-05-04T13:00:00"
+    },
+    {
+      "symbol": "EURGBP",
+      "direction": "BUY",
+      "trade_type": "sniper",
+      "confidence_score": 77.8,
+      "expected_win_probability": 0.5099904230132356,
+      "pip_target": 43,
+      "expected_duration_min": 67,
+      "timestamp": "2020-05-05T21:00:00"
+    },
+    {
+      "symbol": "NZDUSD",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 70.61919999999999,
+      "expected_win_probability": 0.5342684199966066,
+      "pip_target": 24,
+      "expected_duration_min": 21,
+      "timestamp": "2020-05-06T19:00:00"
+    },
+    {
+      "symbol": "USDCHF",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 71.576,
+      "expected_win_probability": 0.5892709320881504,
+      "pip_target": 14,
+      "expected_duration_min": 20,
+      "timestamp": "2020-05-08T12:00:00"
+    },
+    {
+      "symbol": "AUDUSD",
+      "direction": "SELL",
+      "trade_type": "sniper",
+      "confidence_score": 73.50800000000001,
+      "expected_win_probability": 0.5129008589862273,
+      "pip_target": 39,
+      "expected_duration_min": 53,
+      "timestamp": "2020-05-11T11:00:00"
+    },
+    {
+      "symbol": "USDMXN",
+      "direction": "SELL",
+      "trade_type": "sniper",
+      "confidence_score": 80.316,
+      "expected_win_probability": 0.57375,
+      "pip_target": 48,
+      "expected_duration_min": 56,
+      "timestamp": "2020-05-12T11:00:00"
+    },
+    {
+      "symbol": "USDCAD",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 69.18400000000001,
+      "expected_win_probability": 0.5852411152239315,
+      "pip_target": 22,
+      "expected_duration_min": 20,
+      "timestamp": "2020-05-12T12:00:00"
+    },
+    {
+      "symbol": "XAGUSD",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 72.2798,
+      "expected_win_probability": 0.5368528927411365,
+      "pip_target": 5,
+      "expected_duration_min": 21,
+      "timestamp": "2020-05-13T01:00:00"
+    },
+    {
+      "symbol": "USDCAD",
+      "direction": "BUY",
+      "trade_type": "sniper",
+      "confidence_score": 70.2696,
+      "expected_win_probability": 0.46224574607074737,
+      "pip_target": 23,
+      "expected_duration_min": 54,
+      "timestamp": "2020-05-13T22:00:00"
+    },
+    {
+      "symbol": "XAGUSD",
+      "direction": "SELL",
+      "trade_type": "sniper",
+      "confidence_score": 82.4,
+      "expected_win_probability": 0.5162380983757875,
+      "pip_target": 9,
+      "expected_duration_min": 68,
+      "timestamp": "2020-05-18T15:00:00"
+    },
+    {
+      "symbol": "XAGUSD",
+      "direction": "SELL",
+      "trade_type": "sniper",
+      "confidence_score": 71.93019999999999,
+      "expected_win_probability": 0.46455083662412716,
+      "pip_target": 5,
+      "expected_duration_min": 54,
+      "timestamp": "2020-05-19T06:00:00"
+    },
+    {
+      "symbol": "USDCAD",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 78.48519999999999,
+      "expected_win_probability": 0.57375,
+      "pip_target": 12,
+      "expected_duration_min": 22,
+      "timestamp": "2020-05-20T00:00:00"
+    },
+    {
+      "symbol": "EURJPY",
+      "direction": "BUY",
+      "trade_type": "sniper",
+      "confidence_score": 70.585,
+      "expected_win_probability": 0.41827825794883244,
+      "pip_target": 48,
+      "expected_duration_min": 66,
+      "timestamp": "2020-05-25T09:00:00"
+    },
+    {
+      "symbol": "NZDUSD",
+      "direction": "BUY",
+      "trade_type": "sniper",
+      "confidence_score": 60.89499999999999,
+      "expected_win_probability": 0.4059898629158051,
+      "pip_target": 43,
+      "expected_duration_min": 63,
+      "timestamp": "2020-05-25T14:00:00"
+    },
+    {
+      "symbol": "USDZAR",
+      "direction": "SELL",
+      "trade_type": "sniper",
+      "confidence_score": 74.8,
+      "expected_win_probability": 0.46544655805919394,
+      "pip_target": 49,
+      "expected_duration_min": 66,
+      "timestamp": "2020-05-27T12:00:00"
+    },
+    {
+      "symbol": "EURUSD",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 76.8,
+      "expected_win_probability": 0.5876834897603987,
+      "pip_target": 14,
+      "expected_duration_min": 26,
+      "timestamp": "2020-05-28T18:00:00"
+    },
+    {
+      "symbol": "XAGUSD",
+      "direction": "BUY",
+      "trade_type": "sniper",
+      "confidence_score": 69.0,
+      "expected_win_probability": 0.4657210375623285,
+      "pip_target": 5,
+      "expected_duration_min": 52,
+      "timestamp": "2020-05-29T13:00:00"
+    },
+    {
+      "symbol": "USDZAR",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 77.9,
+      "expected_win_probability": 0.9,
+      "pip_target": 20,
+      "expected_duration_min": 23,
+      "timestamp": "2020-06-01T01:00:00"
+    },
+    {
+      "symbol": "USDCHF",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 87.4,
+      "expected_win_probability": 0.9,
+      "pip_target": 23,
+      "expected_duration_min": 25,
+      "timestamp": "2020-06-01T18:00:00"
+    },
+    {
+      "symbol": "EURJPY",
+      "direction": "BUY",
+      "trade_type": "sniper",
+      "confidence_score": 80.0,
+      "expected_win_probability": 0.8740864091934061,
+      "pip_target": 39,
+      "expected_duration_min": 61,
+      "timestamp": "2020-06-01T21:00:00"
+    },
+    {
+      "symbol": "AUDUSD",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 67.9,
+      "expected_win_probability": 0.8116553593343816,
+      "pip_target": 21,
+      "expected_duration_min": 21,
+      "timestamp": "2020-06-02T10:00:00"
+    },
+    {
+      "symbol": "USDCHF",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 80.9,
+      "expected_win_probability": 0.7917700590975149,
+      "pip_target": 9,
+      "expected_duration_min": 24,
+      "timestamp": "2020-06-03T11:00:00"
+    },
+    {
+      "symbol": "NZDUSD",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 88.4,
+      "expected_win_probability": 0.85,
+      "pip_target": 24,
+      "expected_duration_min": 25,
+      "timestamp": "2020-06-04T10:00:00"
+    },
+    {
+      "symbol": "XAUUSD",
+      "direction": "BUY",
+      "trade_type": "sniper",
+      "confidence_score": 71.5,
+      "expected_win_probability": 0.7855611019968973,
+      "pip_target": 5,
+      "expected_duration_min": 58,
+      "timestamp": "2020-06-05T05:00:00"
+    },
+    {
+      "symbol": "USDZAR",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 77.3,
+      "expected_win_probability": 0.9,
+      "pip_target": 9,
+      "expected_duration_min": 23,
+      "timestamp": "2020-06-05T09:00:00"
+    },
+    {
+      "symbol": "XAGUSD",
+      "direction": "SELL",
+      "trade_type": "sniper",
+      "confidence_score": 73.9,
+      "expected_win_probability": 0.6877419983528847,
+      "pip_target": 5,
+      "expected_duration_min": 59,
+      "timestamp": "2020-06-08T02:00:00"
+    },
+    {
+      "symbol": "GBPJPY",
+      "direction": "SELL",
+      "trade_type": "sniper",
+      "confidence_score": 81.7,
+      "expected_win_probability": 0.7633069940736426,
+      "pip_target": 54,
+      "expected_duration_min": 61,
+      "timestamp": "2020-06-08T13:00:00"
+    },
+    {
+      "symbol": "NZDUSD",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 82.0,
+      "expected_win_probability": 0.9,
+      "pip_target": 14,
+      "expected_duration_min": 24,
+      "timestamp": "2020-06-09T16:00:00"
+    },
+    {
+      "symbol": "USDTRY",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 68.6,
+      "expected_win_probability": 0.7071004837292412,
+      "pip_target": 24,
+      "expected_duration_min": 21,
+      "timestamp": "2020-06-10T02:00:00"
+    },
+    {
+      "symbol": "GBPJPY",
+      "direction": "SELL",
+      "trade_type": "sniper",
+      "confidence_score": 75.8,
+      "expected_win_probability": 0.7516772536176262,
+      "pip_target": 24,
+      "expected_duration_min": 59,
+      "timestamp": "2020-06-11T23:00:00"
+    },
+    {
+      "symbol": "EURGBP",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 71.7,
+      "expected_win_probability": 0.7134812676166743,
+      "pip_target": 20,
+      "expected_duration_min": 22,
+      "timestamp": "2020-06-16T07:00:00"
+    },
+    {
+      "symbol": "USDMXN",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 75.7,
+      "expected_win_probability": 0.8987087264120204,
+      "pip_target": 15,
+      "expected_duration_min": 23,
+      "timestamp": "2020-06-16T08:00:00"
+    },
+    {
+      "symbol": "EURUSD",
+      "direction": "SELL",
+      "trade_type": "sniper",
+      "confidence_score": 81.7,
+      "expected_win_probability": 0.7633858258394313,
+      "pip_target": 27,
+      "expected_duration_min": 61,
+      "timestamp": "2020-06-16T14:00:00"
+    },
+    {
+      "symbol": "USDJPY",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 83.3,
+      "expected_win_probability": 0.7966579004421694,
+      "pip_target": 13,
+      "expected_duration_min": 24,
+      "timestamp": "2020-06-17T12:00:00"
+    },
+    {
+      "symbol": "EURGBP",
+      "direction": "SELL",
+      "trade_type": "sniper",
+      "confidence_score": 84.4,
+      "expected_win_probability": 0.7687834850200966,
+      "pip_target": 47,
+      "expected_duration_min": 62,
+      "timestamp": "2020-06-18T04:00:00"
+    },
+    {
+      "symbol": "GBPJPY",
+      "direction": "BUY",
+      "trade_type": "sniper",
+      "confidence_score": 89.7,
+      "expected_win_probability": 0.9,
+      "pip_target": 46,
+      "expected_duration_min": 63,
+      "timestamp": "2020-06-18T07:00:00"
+    },
+    {
+      "symbol": "EURUSD",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 72.0,
+      "expected_win_probability": 0.8210072274245807,
+      "pip_target": 18,
+      "expected_duration_min": 22,
+      "timestamp": "2020-06-19T02:00:00"
+    },
+    {
+      "symbol": "USDTRY",
+      "direction": "BUY",
+      "trade_type": "sniper",
+      "confidence_score": 79.1,
+      "expected_win_probability": 0.8719628287212523,
+      "pip_target": 38,
+      "expected_duration_min": 60,
+      "timestamp": "2020-06-19T04:00:00"
+    },
+    {
+      "symbol": "EURUSD",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 84.5,
+      "expected_win_probability": 0.9,
+      "pip_target": 23,
+      "expected_duration_min": 24,
+      "timestamp": "2020-06-19T15:00:00"
+    },
+    {
+      "symbol": "XAUUSD",
+      "direction": "SELL",
+      "trade_type": "sniper",
+      "confidence_score": 77.8,
+      "expected_win_probability": 0.75553908270615,
+      "pip_target": 5,
+      "expected_duration_min": 60,
+      "timestamp": "2020-06-22T06:00:00"
+    },
+    {
+      "symbol": "EURGBP",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 77.4,
+      "expected_win_probability": 0.9,
+      "pip_target": 10,
+      "expected_duration_min": 23,
+      "timestamp": "2020-06-23T06:00:00"
+    },
+    {
+      "symbol": "USDJPY",
+      "direction": "BUY",
+      "trade_type": "sniper",
+      "confidence_score": 90.9,
+      "expected_win_probability": 0.9,
+      "pip_target": 48,
+      "expected_duration_min": 63,
+      "timestamp": "2020-06-23T15:00:00"
+    },
+    {
+      "symbol": "USDZAR",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 68.3,
+      "expected_win_probability": 0.7066516089261069,
+      "pip_target": 19,
+      "expected_duration_min": 21,
+      "timestamp": "2020-06-23T19:00:00"
+    },
+    {
+      "symbol": "GBPUSD",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 88.3,
+      "expected_win_probability": 0.9,
+      "pip_target": 25,
+      "expected_duration_min": 25,
+      "timestamp": "2020-06-25T17:00:00"
+    },
+    {
+      "symbol": "USDJPY",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 91.2,
+      "expected_win_probability": 0.85,
+      "pip_target": 25,
+      "expected_duration_min": 26,
+      "timestamp": "2020-06-25T22:00:00"
+    },
+    {
+      "symbol": "NZDUSD",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 76.6,
+      "expected_win_probability": 0.7831159648520888,
+      "pip_target": 23,
+      "expected_duration_min": 23,
+      "timestamp": "2020-06-26T17:00:00"
+    },
+    {
+      "symbol": "EURUSD",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 72.2,
+      "expected_win_probability": 0.7143690774827822,
+      "pip_target": 24,
+      "expected_duration_min": 22,
+      "timestamp": "2020-06-29T02:00:00"
+    },
+    {
+      "symbol": "GBPUSD",
+      "direction": "BUY",
+      "trade_type": "sniper",
+      "confidence_score": 76.2,
+      "expected_win_probability": 0.8652117255300892,
+      "pip_target": 40,
+      "expected_duration_min": 59,
+      "timestamp": "2020-06-29T08:00:00"
+    },
+    {
+      "symbol": "USDCAD",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 80.7,
+      "expected_win_probability": 0.9,
+      "pip_target": 10,
+      "expected_duration_min": 24,
+      "timestamp": "2020-06-29T14:00:00"
+    },
+    {
+      "symbol": "USDTRY",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 72.3,
+      "expected_win_probability": 0.714640389655781,
+      "pip_target": 15,
+      "expected_duration_min": 22,
+      "timestamp": "2020-06-30T03:00:00"
+    },
+    {
+      "symbol": "USDCAD",
+      "direction": "BUY",
+      "trade_type": "sniper",
+      "confidence_score": 71.2,
+      "expected_win_probability": 0.784671906740649,
+      "pip_target": 21,
+      "expected_duration_min": 58,
+      "timestamp": "2020-07-01T07:00:00"
+    },
+    {
+      "symbol": "USDCAD",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 77.7,
+      "expected_win_probability": 0.9,
+      "pip_target": 17,
+      "expected_duration_min": 23,
+      "timestamp": "2020-07-01T12:00:00"
+    },
+    {
+      "symbol": "XAGUSD",
+      "direction": "BUY",
+      "trade_type": "sniper",
+      "confidence_score": 90.1,
+      "expected_win_probability": 0.9,
+      "pip_target": 6,
+      "expected_duration_min": 63,
+      "timestamp": "2020-07-01T16:00:00"
+    },
+    {
+      "symbol": "EURGBP",
+      "direction": "BUY",
+      "trade_type": "sniper",
+      "confidence_score": 82.1,
+      "expected_win_probability": 0.8787628998872818,
+      "pip_target": 36,
+      "expected_duration_min": 61,
+      "timestamp": "2020-07-02T02:00:00"
+    },
+    {
+      "symbol": "USDCAD",
+      "direction": "BUY",
+      "trade_type": "sniper",
+      "confidence_score": 78.5,
+      "expected_win_probability": 0.8704532683994226,
+      "pip_target": 24,
+      "expected_duration_min": 60,
+      "timestamp": "2020-07-03T08:00:00"
+    },
+    {
+      "symbol": "GBPJPY",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 77.9,
+      "expected_win_probability": 0.9,
+      "pip_target": 11,
+      "expected_duration_min": 23,
+      "timestamp": "2020-07-06T16:00:00"
+    },
+    {
+      "symbol": "USDMXN",
+      "direction": "BUY",
+      "trade_type": "sniper",
+      "confidence_score": 87.9,
+      "expected_win_probability": 0.9,
+      "pip_target": 47,
+      "expected_duration_min": 63,
+      "timestamp": "2020-07-07T16:00:00"
+    },
+    {
+      "symbol": "EURJPY",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 76.5,
+      "expected_win_probability": 0.9,
+      "pip_target": 12,
+      "expected_duration_min": 23,
+      "timestamp": "2020-07-07T17:00:00"
+    },
+    {
+      "symbol": "USDTRY",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 74.6,
+      "expected_win_probability": 0.7192415970479323,
+      "pip_target": 19,
+      "expected_duration_min": 22,
+      "timestamp": "2020-07-08T14:00:00"
+    },
+    {
+      "symbol": "NZDUSD",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 86.8,
+      "expected_win_probability": 0.85,
+      "pip_target": 9,
+      "expected_duration_min": 25,
+      "timestamp": "2020-07-09T14:00:00"
+    },
+    {
+      "symbol": "EURGBP",
+      "direction": "BUY",
+      "trade_type": "sniper",
+      "confidence_score": 68.6,
+      "expected_win_probability": 0.778776087684746,
+      "pip_target": 32,
+      "expected_duration_min": 57,
+      "timestamp": "2020-07-10T13:00:00"
+    },
+    {
+      "symbol": "USDMXN",
+      "direction": "BUY",
+      "trade_type": "sniper",
+      "confidence_score": 95.4,
+      "expected_win_probability": 0.9,
+      "pip_target": 47,
+      "expected_duration_min": 64,
+      "timestamp": "2020-07-13T04:00:00"
+    },
+    {
+      "symbol": "GBPUSD",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 87.7,
+      "expected_win_probability": 0.9,
+      "pip_target": 12,
+      "expected_duration_min": 25,
+      "timestamp": "2020-07-13T08:00:00"
+    },
+    {
+      "symbol": "EURUSD",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 86.4,
+      "expected_win_probability": 0.85,
+      "pip_target": 10,
+      "expected_duration_min": 25,
+      "timestamp": "2020-07-13T11:00:00"
+    },
+    {
+      "symbol": "GBPJPY",
+      "direction": "BUY",
+      "trade_type": "sniper",
+      "confidence_score": 61.8,
+      "expected_win_probability": 0.763182878247677,
+      "pip_target": 31,
+      "expected_duration_min": 55,
+      "timestamp": "2020-07-13T13:00:00"
+    },
+    {
+      "symbol": "USDTRY",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 71.2,
+      "expected_win_probability": 0.8191509999420071,
+      "pip_target": 12,
+      "expected_duration_min": 22,
+      "timestamp": "2020-07-14T09:00:00"
+    },
+    {
+      "symbol": "XAUUSD",
+      "direction": "BUY",
+      "trade_type": "sniper",
+      "confidence_score": 81.2,
+      "expected_win_probability": 0.876651769721088,
+      "pip_target": 5,
+      "expected_duration_min": 61,
+      "timestamp": "2020-07-15T12:00:00"
+    },
+    {
+      "symbol": "USDMXN",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 76.3,
+      "expected_win_probability": 0.7826000970805743,
+      "pip_target": 9,
+      "expected_duration_min": 23,
+      "timestamp": "2020-07-16T19:00:00"
+    },
+    {
+      "symbol": "AUDUSD",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 78.0,
+      "expected_win_probability": 0.7860570225152235,
+      "pip_target": 21,
+      "expected_duration_min": 23,
+      "timestamp": "2020-07-17T22:00:00"
+    },
+    {
+      "symbol": "NZDUSD",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 81.7,
+      "expected_win_probability": 0.7934218704567503,
+      "pip_target": 18,
+      "expected_duration_min": 24,
+      "timestamp": "2020-07-21T06:00:00"
+    },
+    {
+      "symbol": "USDCHF",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 86.9,
+      "expected_win_probability": 0.85,
+      "pip_target": 21,
+      "expected_duration_min": 25,
+      "timestamp": "2020-07-24T09:00:00"
+    },
+    {
+      "symbol": "USDZAR",
+      "direction": "SELL",
+      "trade_type": "sniper",
+      "confidence_score": 75.3,
+      "expected_win_probability": 0.7505934068310768,
+      "pip_target": 46,
+      "expected_duration_min": 59,
+      "timestamp": "2020-07-24T15:00:00"
+    },
+    {
+      "symbol": "NZDUSD",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 80.0,
+      "expected_win_probability": 0.7900926648993309,
+      "pip_target": 27,
+      "expected_duration_min": 24,
+      "timestamp": "2020-07-29T00:00:00"
+    },
+    {
+      "symbol": "USDCAD",
+      "direction": "SELL",
+      "trade_type": "sniper",
+      "confidence_score": 82.3,
+      "expected_win_probability": 0.7646552061087774,
+      "pip_target": 35,
+      "expected_duration_min": 61,
+      "timestamp": "2020-07-30T01:00:00"
+    },
+    {
+      "symbol": "GBPJPY",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 80.5,
+      "expected_win_probability": 0.7909152528218589,
+      "pip_target": 21,
+      "expected_duration_min": 24,
+      "timestamp": "2020-07-31T15:00:00"
+    },
+    {
+      "symbol": "USDMXN",
+      "direction": "BUY",
+      "trade_type": "sniper",
+      "confidence_score": 81.6,
+      "expected_win_probability": 0.7632704670831362,
+      "pip_target": 32,
+      "expected_duration_min": 68,
+      "timestamp": "2020-08-03T12:00:00"
+    },
+    {
+      "symbol": "AUDUSD",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 78.0,
+      "expected_win_probability": 0.82527898973407,
+      "pip_target": 18,
+      "expected_duration_min": 26,
+      "timestamp": "2020-08-03T23:00:00"
+    },
+    {
+      "symbol": "USDJPY",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 86.3,
+      "expected_win_probability": 0.8925,
+      "pip_target": 20,
+      "expected_duration_min": 28,
+      "timestamp": "2020-08-04T16:00:00"
+    },
+    {
+      "symbol": "EURUSD",
+      "direction": "BUY",
+      "trade_type": "sniper",
+      "confidence_score": 83.8,
+      "expected_win_probability": 0.7676318712899516,
+      "pip_target": 39,
+      "expected_duration_min": 69,
+      "timestamp": "2020-08-05T08:00:00"
+    },
+    {
+      "symbol": "USDCHF",
+      "direction": "BUY",
+      "trade_type": "sniper",
+      "confidence_score": 79.0,
+      "expected_win_probability": 0.7580561022968133,
+      "pip_target": 23,
+      "expected_duration_min": 67,
+      "timestamp": "2020-08-06T03:00:00"
+    },
+    {
+      "symbol": "NZDUSD",
+      "direction": "BUY",
+      "trade_type": "sniper",
+      "confidence_score": 71.9,
+      "expected_win_probability": 0.6838215042022868,
+      "pip_target": 38,
+      "expected_duration_min": 65,
+      "timestamp": "2020-08-06T11:00:00"
+    },
+    {
+      "symbol": "USDCAD",
+      "direction": "BUY",
+      "trade_type": "sniper",
+      "confidence_score": 79.9,
+      "expected_win_probability": 0.7598558049762784,
+      "pip_target": 36,
+      "expected_duration_min": 67,
+      "timestamp": "2020-08-11T01:00:00"
+    },
+    {
+      "symbol": "AUDUSD",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 63.5,
+      "expected_win_probability": 0.7318167254433643,
+      "pip_target": 9,
+      "expected_duration_min": 23,
+      "timestamp": "2020-08-14T09:00:00"
+    },
+    {
+      "symbol": "USDMXN",
+      "direction": "SELL",
+      "trade_type": "sniper",
+      "confidence_score": 75.0,
+      "expected_win_probability": 0.7500098964114095,
+      "pip_target": 29,
+      "expected_duration_min": 66,
+      "timestamp": "2020-08-14T11:00:00"
+    },
+    {
+      "symbol": "EURGBP",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 79.3,
+      "expected_win_probability": 0.8280440688935665,
+      "pip_target": 15,
+      "expected_duration_min": 26,
+      "timestamp": "2020-08-14T15:00:00"
+    },
+    {
+      "symbol": "USDZAR",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 76.5,
+      "expected_win_probability": 0.8221531245125951,
+      "pip_target": 11,
+      "expected_duration_min": 26,
+      "timestamp": "2020-08-18T17:00:00"
+    },
+    {
+      "symbol": "USDCAD",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 89.7,
+      "expected_win_probability": 0.8925,
+      "pip_target": 16,
+      "expected_duration_min": 28,
+      "timestamp": "2020-08-20T05:00:00"
+    },
+    {
+      "symbol": "NZDUSD",
+      "direction": "BUY",
+      "trade_type": "sniper",
+      "confidence_score": 68.1,
+      "expected_win_probability": 0.6762241490961027,
+      "pip_target": 32,
+      "expected_duration_min": 64,
+      "timestamp": "2020-08-20T08:00:00"
+    },
+    {
+      "symbol": "NZDUSD",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 67.0,
+      "expected_win_probability": 0.7392132526617359,
+      "pip_target": 18,
+      "expected_duration_min": 24,
+      "timestamp": "2020-08-27T14:00:00"
+    },
+    {
+      "symbol": "GBPUSD",
+      "direction": "SELL",
+      "trade_type": "raid",
+      "confidence_score": 80.1,
+      "expected_win_probability": 0.8296056350310167,
+      "pip_target": 8,
+      "expected_duration_min": 27,
+      "timestamp": "2020-08-27T17:00:00"
+    },
+    {
+      "symbol": "USDCAD",
+      "direction": "SELL",
+      "trade_type": "sniper",
+      "confidence_score": 75.4,
+      "expected_win_probability": 0.7507817298473813,
+      "pip_target": 16,
+      "expected_duration_min": 66,
+      "timestamp": "2020-08-28T03:00:00"
+    },
+    {
+      "symbol": "EURUSD",
+      "direction": "BUY",
+      "trade_type": "raid",
+      "confidence_score": 75.9,
+      "expected_win_probability": 0.8209341900427767,
+      "pip_target": 12,
+      "expected_duration_min": 26,
+      "timestamp": "2020-08-28T05:00:00"
+    }
+  ],
+  "performance": {
+    "period": "March 2020 - August 2020",
+    "total_days": 183,
+    "total_signals": 215,
+    "signals_per_day": 1.2,
+    "win_rate_percent": 67.9,
+    "expectancy": 1.036,
+    "total_r_multiple": 222.8,
+    "total_pips": 3478,
+    "trade_type_breakdown": {
+      "raid_count": 116,
+      "sniper_count": 99,
+      "raid_percentage": 54.0
+    },
+    "market_stress_survival": "PASSED",
+    "volatility_periods": 44
+  },
+  "regime_breakdown": {
+    "crash": {
+      "signals": 80,
+      "win_rate": 58.8,
+      "expectancy": 0.751,
+      "assessment": "ACCEPTABLE"
+    },
+    "intervention": {
+      "signals": 42,
+      "win_rate": 54.8,
+      "expectancy": 0.712,
+      "assessment": "ACCEPTABLE"
+    },
+    "whipsaw": {
+      "signals": 18,
+      "win_rate": 55.6,
+      "expectancy": 0.639,
+      "assessment": "ACCEPTABLE"
+    },
+    "recovery": {
+      "signals": 58,
+      "win_rate": 84.5,
+      "expectancy": 1.538,
+      "assessment": "EXCELLENT"
+    },
+    "consolidation": {
+      "signals": 17,
+      "win_rate": 70.6,
+      "expectancy": 1.182,
+      "assessment": "EXCELLENT"
+    }
+  },
+  "volatility_analysis": {
+    "high_volatility_periods": 45,
+    "extreme_volatility_periods": 15,
+    "volatility_adaptation": "Engine adapted thresholds based on VIX levels",
+    "correlation_breakdown_impact": "Reduced confidence during correlation breakdowns"
+  },
+  "market_timeline": [
+    {
+      "date": "2020-03-01T00:00:00",
+      "regime": "crash",
+      "vix_level": 72.10866585578167,
+      "volatility_multiplier": 3.896007898567873
+    },
+    {
+      "date": "2020-03-02T00:00:00",
+      "regime": "crash",
+      "vix_level": 80.86553347366078,
+      "volatility_multiplier": 4.364564047552147
+    },
+    {
+      "date": "2020-03-03T00:00:00",
+      "regime": "crash",
+      "vix_level": 75.95321197648401,
+      "volatility_multiplier": 4.284159470396421
+    },
+    {
+      "date": "2020-03-04T00:00:00",
+      "regime": "crash",
+      "vix_level": 52.507943316788754,
+      "volatility_multiplier": 4.487536132796614
+    },
+    {
+      "date": "2020-03-05T00:00:00",
+      "regime": "crash",
+      "vix_level": 54.760995926406395,
+      "volatility_multiplier": 3.5602863192304146
+    },
+    {
+      "date": "2020-03-06T00:00:00",
+      "regime": "crash",
+      "vix_level": 61.661454689293194,
+      "volatility_multiplier": 3.7786453133920324
+    },
+    {
+      "date": "2020-03-07T00:00:00",
+      "regime": "crash",
+      "vix_level": 60.53826557727028,
+      "volatility_multiplier": 3.9124708467704323
+    },
+    {
+      "date": "2020-03-08T00:00:00",
+      "regime": "crash",
+      "vix_level": 81.57368349877994,
+      "volatility_multiplier": 3.681430259561451
+    },
+    {
+      "date": "2020-03-09T00:00:00",
+      "regime": "crash",
+      "vix_level": 62.88127090386999,
+      "volatility_multiplier": 3.4184688543418114
+    },
+    {
+      "date": "2020-03-10T00:00:00",
+      "regime": "crash",
+      "vix_level": 77.58954904294711,
+      "volatility_multiplier": 3.6801604587364913
+    },
+    {
+      "date": "2020-03-11T00:00:00",
+      "regime": "crash",
+      "vix_level": 78.16446978780972,
+      "volatility_multiplier": 4.897544020784686
+    },
+    {
+      "date": "2020-03-12T00:00:00",
+      "regime": "crash",
+      "vix_level": 60.19470763321105,
+      "volatility_multiplier": 3.4183219856978266
+    },
+    {
+      "date": "2020-03-13T00:00:00",
+      "regime": "crash",
+      "vix_level": 64.58378262534852,
+      "volatility_multiplier": 3.5239916205203734
+    },
+    {
+      "date": "2020-03-14T00:00:00",
+      "regime": "crash",
+      "vix_level": 52.74840412258794,
+      "volatility_multiplier": 4.372669481743852
+    },
+    {
+      "date": "2020-03-15T00:00:00",
+      "regime": "crash",
+      "vix_level": 74.93044177835404,
+      "volatility_multiplier": 3.3187385782589853
+    },
+    {
+      "date": "2020-03-16T00:00:00",
+      "regime": "crash",
+      "vix_level": 50.77687879974984,
+      "volatility_multiplier": 3.9249678119107956
+    },
+    {
+      "date": "2020-03-17T00:00:00",
+      "regime": "crash",
+      "vix_level": 69.80456330665292,
+      "volatility_multiplier": 3.214109822826693
+    },
+    {
+      "date": "2020-03-18T00:00:00",
+      "regime": "crash",
+      "vix_level": 73.46203012771203,
+      "volatility_multiplier": 4.24718021093682
+    },
+    {
+      "date": "2020-03-19T00:00:00",
+      "regime": "crash",
+      "vix_level": 59.94453340458554,
+      "volatility_multiplier": 3.2876476661109546
+    },
+    {
+      "date": "2020-03-20T00:00:00",
+      "regime": "crash",
+      "vix_level": 50.28556728892413,
+      "volatility_multiplier": 4.332970190836637
+    },
+    {
+      "date": "2020-03-21T00:00:00",
+      "regime": "crash",
+      "vix_level": 74.26173865497971,
+      "volatility_multiplier": 4.802300606647455
+    },
+    {
+      "date": "2020-03-22T00:00:00",
+      "regime": "crash",
+      "vix_level": 62.31463867270098,
+      "volatility_multiplier": 4.863400884635478
+    },
+    {
+      "date": "2020-03-23T00:00:00",
+      "regime": "crash",
+      "vix_level": 52.368507814675176,
+      "volatility_multiplier": 3.064608470908598
+    },
+    {
+      "date": "2020-03-24T00:00:00",
+      "regime": "crash",
+      "vix_level": 79.56130841138337,
+      "volatility_multiplier": 4.116742955723149
+    },
+    {
+      "date": "2020-03-25T00:00:00",
+      "regime": "crash",
+      "vix_level": 54.009883264335315,
+      "volatility_multiplier": 4.806200021127877
+    },
+    {
+      "date": "2020-03-26T00:00:00",
+      "regime": "crash",
+      "vix_level": 72.17725297950601,
+      "volatility_multiplier": 3.5020353842898846
+    },
+    {
+      "date": "2020-03-27T00:00:00",
+      "regime": "crash",
+      "vix_level": 64.46098742994906,
+      "volatility_multiplier": 3.6605988710728194
+    },
+    {
+      "date": "2020-03-28T00:00:00",
+      "regime": "crash",
+      "vix_level": 72.59907804196436,
+      "volatility_multiplier": 4.753933495968632
+    },
+    {
+      "date": "2020-03-29T00:00:00",
+      "regime": "crash",
+      "vix_level": 69.02087111617946,
+      "volatility_multiplier": 4.479576219545663
+    },
+    {
+      "date": "2020-03-30T00:00:00",
+      "regime": "crash",
+      "vix_level": 64.98736267270117,
+      "volatility_multiplier": 4.5045665563391575
+    },
+    {
+      "date": "2020-03-31T00:00:00",
+      "regime": "crash",
+      "vix_level": 67.81378166074687,
+      "volatility_multiplier": 3.244562695627253
+    },
+    {
+      "date": "2020-04-01T00:00:00",
+      "regime": "intervention",
+      "vix_level": 41.41229498653697,
+      "volatility_multiplier": 2.966802691997721
+    },
+    {
+      "date": "2020-04-02T00:00:00",
+      "regime": "intervention",
+      "vix_level": 56.76538338634077,
+      "volatility_multiplier": 3.3653699880911128
+    },
+    {
+      "date": "2020-04-03T00:00:00",
+      "regime": "intervention",
+      "vix_level": 39.54806441474828,
+      "volatility_multiplier": 2.4098760888998845
+    },
+    {
+      "date": "2020-04-04T00:00:00",
+      "regime": "intervention",
+      "vix_level": 58.57592243611819,
+      "volatility_multiplier": 2.181271384015351
+    },
+    {
+      "date": "2020-04-05T00:00:00",
+      "regime": "intervention",
+      "vix_level": 56.192443995338536,
+      "volatility_multiplier": 2.707962057719306
+    },
+    {
+      "date": "2020-04-06T00:00:00",
+      "regime": "intervention",
+      "vix_level": 41.031842842603226,
+      "volatility_multiplier": 3.2416092279598416
+    },
+    {
+      "date": "2020-04-07T00:00:00",
+      "regime": "intervention",
+      "vix_level": 55.86382534930824,
+      "volatility_multiplier": 2.988278755886933
+    },
+    {
+      "date": "2020-04-08T00:00:00",
+      "regime": "intervention",
+      "vix_level": 57.039954348932746,
+      "volatility_multiplier": 2.432834759077418
+    },
+    {
+      "date": "2020-04-09T00:00:00",
+      "regime": "intervention",
+      "vix_level": 59.59020723585152,
+      "volatility_multiplier": 3.2002460859205346
+    },
+    {
+      "date": "2020-04-10T00:00:00",
+      "regime": "intervention",
+      "vix_level": 52.266083321118366,
+      "volatility_multiplier": 2.83196282002555
+    },
+    {
+      "date": "2020-04-11T00:00:00",
+      "regime": "intervention",
+      "vix_level": 48.094556351099556,
+      "volatility_multiplier": 2.561476078170878
+    },
+    {
+      "date": "2020-04-12T00:00:00",
+      "regime": "intervention",
+      "vix_level": 59.218066018470296,
+      "volatility_multiplier": 3.2652490820383386
+    },
+    {
+      "date": "2020-04-13T00:00:00",
+      "regime": "intervention",
+      "vix_level": 59.8091240760309,
+      "volatility_multiplier": 2.536607368919524
+    },
+    {
+      "date": "2020-04-14T00:00:00",
+      "regime": "intervention",
+      "vix_level": 49.111791455924006,
+      "volatility_multiplier": 2.9043256641409165
+    },
+    {
+      "date": "2020-04-15T00:00:00",
+      "regime": "intervention",
+      "vix_level": 49.30931039489428,
+      "volatility_multiplier": 2.036518022933048
+    },
+    {
+      "date": "2020-04-16T00:00:00",
+      "regime": "intervention",
+      "vix_level": 59.067703984354445,
+      "volatility_multiplier": 2.015622308076719
+    },
+    {
+      "date": "2020-04-17T00:00:00",
+      "regime": "intervention",
+      "vix_level": 48.64552032388094,
+      "volatility_multiplier": 3.124910997732579
+    },
+    {
+      "date": "2020-04-18T00:00:00",
+      "regime": "intervention",
+      "vix_level": 57.762999757278685,
+      "volatility_multiplier": 3.034329883596456
+    },
+    {
+      "date": "2020-04-19T00:00:00",
+      "regime": "intervention",
+      "vix_level": 50.23600881699931,
+      "volatility_multiplier": 2.216838001830271
+    },
+    {
+      "date": "2020-04-20T00:00:00",
+      "regime": "intervention",
+      "vix_level": 56.85707327453275,
+      "volatility_multiplier": 2.73113294670326
+    },
+    {
+      "date": "2020-04-21T00:00:00",
+      "regime": "intervention",
+      "vix_level": 49.25814618728864,
+      "volatility_multiplier": 2.0698796459732156
+    },
+    {
+      "date": "2020-04-22T00:00:00",
+      "regime": "intervention",
+      "vix_level": 48.37576288160835,
+      "volatility_multiplier": 2.1696512998672643
+    },
+    {
+      "date": "2020-04-23T00:00:00",
+      "regime": "intervention",
+      "vix_level": 50.52590279285275,
+      "volatility_multiplier": 3.1532964028441115
+    },
+    {
+      "date": "2020-04-24T00:00:00",
+      "regime": "intervention",
+      "vix_level": 40.22249913983838,
+      "volatility_multiplier": 3.2763156211394473
+    },
+    {
+      "date": "2020-04-25T00:00:00",
+      "regime": "intervention",
+      "vix_level": 48.666515663389184,
+      "volatility_multiplier": 3.0548443157849783
+    },
+    {
+      "date": "2020-04-26T00:00:00",
+      "regime": "intervention",
+      "vix_level": 49.663034180618844,
+      "volatility_multiplier": 2.6131818330481495
+    },
+    {
+      "date": "2020-04-27T00:00:00",
+      "regime": "intervention",
+      "vix_level": 54.29476163978268,
+      "volatility_multiplier": 3.1569084940602474
+    },
+    {
+      "date": "2020-04-28T00:00:00",
+      "regime": "intervention",
+      "vix_level": 53.130449425318666,
+      "volatility_multiplier": 2.6467058819103384
+    },
+    {
+      "date": "2020-04-29T00:00:00",
+      "regime": "intervention",
+      "vix_level": 39.82521659769534,
+      "volatility_multiplier": 3.2702484525030826
+    },
+    {
+      "date": "2020-04-30T00:00:00",
+      "regime": "intervention",
+      "vix_level": 55.649461389441186,
+      "volatility_multiplier": 3.320445150610893
+    },
+    {
+      "date": "2020-05-01T00:00:00",
+      "regime": "whipsaw",
+      "vix_level": 26.70661704683253,
+      "volatility_multiplier": 1.586382141711518
+    },
+    {
+      "date": "2020-05-02T00:00:00",
+      "regime": "whipsaw",
+      "vix_level": 37.967512639607065,
+      "volatility_multiplier": 2.3255440122944235
+    },
+    {
+      "date": "2020-05-03T00:00:00",
+      "regime": "whipsaw",
+      "vix_level": 36.335067857754154,
+      "volatility_multiplier": 2.272960602372694
+    },
+    {
+      "date": "2020-05-04T00:00:00",
+      "regime": "whipsaw",
+      "vix_level": 29.593764364712673,
+      "volatility_multiplier": 1.6576773866660415
+    },
+    {
+      "date": "2020-05-05T00:00:00",
+      "regime": "whipsaw",
+      "vix_level": 27.31337133200394,
+      "volatility_multiplier": 1.8728022830417144
+    },
+    {
+      "date": "2020-05-06T00:00:00",
+      "regime": "whipsaw",
+      "vix_level": 36.12681049886611,
+      "volatility_multiplier": 2.3584393825130388
+    },
+    {
+      "date": "2020-05-07T00:00:00",
+      "regime": "whipsaw",
+      "vix_level": 27.109957771860095,
+      "volatility_multiplier": 1.54654045661709
+    },
+    {
+      "date": "2020-05-08T00:00:00",
+      "regime": "whipsaw",
+      "vix_level": 42.33731559964317,
+      "volatility_multiplier": 1.7715884358874139
+    },
+    {
+      "date": "2020-05-09T00:00:00",
+      "regime": "whipsaw",
+      "vix_level": 36.86319557821902,
+      "volatility_multiplier": 2.3972390214812327
+    },
+    {
+      "date": "2020-05-10T00:00:00",
+      "regime": "whipsaw",
+      "vix_level": 41.63958338478455,
+      "volatility_multiplier": 1.783170987229906
+    },
+    {
+      "date": "2020-05-11T00:00:00",
+      "regime": "whipsaw",
+      "vix_level": 37.944652645739964,
+      "volatility_multiplier": 2.309367286136406
+    },
+    {
+      "date": "2020-05-12T00:00:00",
+      "regime": "whipsaw",
+      "vix_level": 38.49556696520993,
+      "volatility_multiplier": 2.452040826792855
+    },
+    {
+      "date": "2020-05-13T00:00:00",
+      "regime": "whipsaw",
+      "vix_level": 38.26463513660371,
+      "volatility_multiplier": 2.3518700461501556
+    },
+    {
+      "date": "2020-05-14T00:00:00",
+      "regime": "whipsaw",
+      "vix_level": 34.06395559565257,
+      "volatility_multiplier": 2.2658388893734522
+    },
+    {
+      "date": "2020-05-15T00:00:00",
+      "regime": "whipsaw",
+      "vix_level": 36.824475302412246,
+      "volatility_multiplier": 2.233364018725631
+    },
+    {
+      "date": "2020-05-16T00:00:00",
+      "regime": "whipsaw",
+      "vix_level": 34.98660400298359,
+      "volatility_multiplier": 1.7015154384588813
+    },
+    {
+      "date": "2020-05-17T00:00:00",
+      "regime": "whipsaw",
+      "vix_level": 36.89836451992869,
+      "volatility_multiplier": 2.49035655377978
+    },
+    {
+      "date": "2020-05-18T00:00:00",
+      "regime": "whipsaw",
+      "vix_level": 28.77235384780683,
+      "volatility_multiplier": 1.5175576098631542
+    },
+    {
+      "date": "2020-05-19T00:00:00",
+      "regime": "whipsaw",
+      "vix_level": 37.96746274387072,
+      "volatility_multiplier": 1.984875215774911
+    },
+    {
+      "date": "2020-05-20T00:00:00",
+      "regime": "whipsaw",
+      "vix_level": 37.04330044793147,
+      "volatility_multiplier": 2.384595619945547
+    },
+    {
+      "date": "2020-05-21T00:00:00",
+      "regime": "whipsaw",
+      "vix_level": 34.7771477534567,
+      "volatility_multiplier": 2.0614457424483525
+    },
+    {
+      "date": "2020-05-22T00:00:00",
+      "regime": "whipsaw",
+      "vix_level": 32.93629057958877,
+      "volatility_multiplier": 2.1667175023768745
+    },
+    {
+      "date": "2020-05-23T00:00:00",
+      "regime": "whipsaw",
+      "vix_level": 42.73255926394984,
+      "volatility_multiplier": 2.1785251810596913
+    },
+    {
+      "date": "2020-05-24T00:00:00",
+      "regime": "whipsaw",
+      "vix_level": 26.330101429425394,
+      "volatility_multiplier": 1.9263523244721013
+    },
+    {
+      "date": "2020-05-25T00:00:00",
+      "regime": "whipsaw",
+      "vix_level": 30.557221625308664,
+      "volatility_multiplier": 1.5511349309457707
+    },
+    {
+      "date": "2020-05-26T00:00:00",
+      "regime": "whipsaw",
+      "vix_level": 44.08513853184817,
+      "volatility_multiplier": 2.1991649009495524
+    },
+    {
+      "date": "2020-05-27T00:00:00",
+      "regime": "whipsaw",
+      "vix_level": 33.82214392457487,
+      "volatility_multiplier": 1.821588764045635
+    },
+    {
+      "date": "2020-05-28T00:00:00",
+      "regime": "whipsaw",
+      "vix_level": 33.42110735634189,
+      "volatility_multiplier": 2.124447455240175
+    },
+    {
+      "date": "2020-05-29T00:00:00",
+      "regime": "whipsaw",
+      "vix_level": 40.187691619924635,
+      "volatility_multiplier": 2.1782047928111314
+    },
+    {
+      "date": "2020-05-30T00:00:00",
+      "regime": "whipsaw",
+      "vix_level": 44.976404192697096,
+      "volatility_multiplier": 1.8363970209808749
+    },
+    {
+      "date": "2020-05-31T00:00:00",
+      "regime": "whipsaw",
+      "vix_level": 34.98608374297693,
+      "volatility_multiplier": 1.6341012108942428
+    },
+    {
+      "date": "2020-06-01T00:00:00",
+      "regime": "recovery",
+      "vix_level": 29.721091708774185,
+      "volatility_multiplier": 1.3556694635005444
+    },
+    {
+      "date": "2020-06-02T00:00:00",
+      "regime": "recovery",
+      "vix_level": 28.660933564830913,
+      "volatility_multiplier": 1.2499780363591715
+    },
+    {
+      "date": "2020-06-03T00:00:00",
+      "regime": "recovery",
+      "vix_level": 32.548304971838434,
+      "volatility_multiplier": 1.2012455471233734
+    },
+    {
+      "date": "2020-06-04T00:00:00",
+      "regime": "recovery",
+      "vix_level": 33.94662715049267,
+      "volatility_multiplier": 1.4047865954997598
+    },
+    {
+      "date": "2020-06-05T00:00:00",
+      "regime": "recovery",
+      "vix_level": 27.199048591290474,
+      "volatility_multiplier": 1.7142717141667911
+    },
+    {
+      "date": "2020-06-06T00:00:00",
+      "regime": "recovery",
+      "vix_level": 25.33191038351346,
+      "volatility_multiplier": 1.6337814008041374
+    },
+    {
+      "date": "2020-06-07T00:00:00",
+      "regime": "recovery",
+      "vix_level": 27.889878182258034,
+      "volatility_multiplier": 1.4828599141153982
+    },
+    {
+      "date": "2020-06-08T00:00:00",
+      "regime": "recovery",
+      "vix_level": 28.693758551358762,
+      "volatility_multiplier": 1.9678176463537265
+    },
+    {
+      "date": "2020-06-09T00:00:00",
+      "regime": "recovery",
+      "vix_level": 29.68212767019818,
+      "volatility_multiplier": 1.6346038569570742
+    },
+    {
+      "date": "2020-06-10T00:00:00",
+      "regime": "recovery",
+      "vix_level": 31.09344274489772,
+      "volatility_multiplier": 1.3727772344755886
+    },
+    {
+      "date": "2020-06-11T00:00:00",
+      "regime": "recovery",
+      "vix_level": 31.601454775942337,
+      "volatility_multiplier": 1.8079868321146788
+    },
+    {
+      "date": "2020-06-12T00:00:00",
+      "regime": "recovery",
+      "vix_level": 30.943984717218367,
+      "volatility_multiplier": 1.8322867622630754
+    },
+    {
+      "date": "2020-06-13T00:00:00",
+      "regime": "recovery",
+      "vix_level": 32.42848274111083,
+      "volatility_multiplier": 1.2743269750341113
+    },
+    {
+      "date": "2020-06-14T00:00:00",
+      "regime": "recovery",
+      "vix_level": 28.668527245193538,
+      "volatility_multiplier": 1.4807798029938015
+    },
+    {
+      "date": "2020-06-15T00:00:00",
+      "regime": "recovery",
+      "vix_level": 24.71100286725119,
+      "volatility_multiplier": 1.4484748312674898
+    },
+    {
+      "date": "2020-06-16T00:00:00",
+      "regime": "recovery",
+      "vix_level": 26.129063954474262,
+      "volatility_multiplier": 1.4431398410288032
+    },
+    {
+      "date": "2020-06-17T00:00:00",
+      "regime": "recovery",
+      "vix_level": 31.073125797357626,
+      "volatility_multiplier": 1.5098076174458546
+    },
+    {
+      "date": "2020-06-18T00:00:00",
+      "regime": "recovery",
+      "vix_level": 20.82267596529321,
+      "volatility_multiplier": 1.2645291797603522
+    },
+    {
+      "date": "2020-06-19T00:00:00",
+      "regime": "recovery",
+      "vix_level": 25.778963873341,
+      "volatility_multiplier": 1.732366004775758
+    },
+    {
+      "date": "2020-06-20T00:00:00",
+      "regime": "recovery",
+      "vix_level": 28.514947150620127,
+      "volatility_multiplier": 1.8601804417674694
+    },
+    {
+      "date": "2020-06-21T00:00:00",
+      "regime": "recovery",
+      "vix_level": 20.36971284172086,
+      "volatility_multiplier": 1.845749199635583
+    },
+    {
+      "date": "2020-06-22T00:00:00",
+      "regime": "recovery",
+      "vix_level": 34.076119548956264,
+      "volatility_multiplier": 1.4069771041675054
+    },
+    {
+      "date": "2020-06-23T00:00:00",
+      "regime": "recovery",
+      "vix_level": 27.399085478057863,
+      "volatility_multiplier": 1.4948497113785877
+    },
+    {
+      "date": "2020-06-24T00:00:00",
+      "regime": "recovery",
+      "vix_level": 23.209309253264895,
+      "volatility_multiplier": 1.4210849129092022
+    },
+    {
+      "date": "2020-06-25T00:00:00",
+      "regime": "recovery",
+      "vix_level": 20.398925966702596,
+      "volatility_multiplier": 1.7405711469666154
+    },
+    {
+      "date": "2020-06-26T00:00:00",
+      "regime": "recovery",
+      "vix_level": 22.43531801519442,
+      "volatility_multiplier": 1.609342403537719
+    },
+    {
+      "date": "2020-06-27T00:00:00",
+      "regime": "recovery",
+      "vix_level": 20.262273758364028,
+      "volatility_multiplier": 1.7515895100790053
+    },
+    {
+      "date": "2020-06-28T00:00:00",
+      "regime": "recovery",
+      "vix_level": 26.09045999547426,
+      "volatility_multiplier": 1.604544899952789
+    },
+    {
+      "date": "2020-06-29T00:00:00",
+      "regime": "recovery",
+      "vix_level": 26.987730643976697,
+      "volatility_multiplier": 1.3820247195626059
+    },
+    {
+      "date": "2020-06-30T00:00:00",
+      "regime": "recovery",
+      "vix_level": 25.745870936622882,
+      "volatility_multiplier": 1.530208359300718
+    },
+    {
+      "date": "2020-07-01T00:00:00",
+      "regime": "recovery",
+      "vix_level": 22.393737282237176,
+      "volatility_multiplier": 1.7887669309559144
+    },
+    {
+      "date": "2020-07-02T00:00:00",
+      "regime": "recovery",
+      "vix_level": 26.963732331178974,
+      "volatility_multiplier": 1.3947383888827727
+    },
+    {
+      "date": "2020-07-03T00:00:00",
+      "regime": "recovery",
+      "vix_level": 22.589598988629838,
+      "volatility_multiplier": 1.846816460123052
+    },
+    {
+      "date": "2020-07-04T00:00:00",
+      "regime": "recovery",
+      "vix_level": 34.90711221713825,
+      "volatility_multiplier": 1.6512033537995132
+    },
+    {
+      "date": "2020-07-05T00:00:00",
+      "regime": "recovery",
+      "vix_level": 21.768023134911342,
+      "volatility_multiplier": 1.5494092152370507
+    },
+    {
+      "date": "2020-07-06T00:00:00",
+      "regime": "recovery",
+      "vix_level": 22.009370377951424,
+      "volatility_multiplier": 1.4335480796092641
+    },
+    {
+      "date": "2020-07-07T00:00:00",
+      "regime": "recovery",
+      "vix_level": 23.19492456325523,
+      "volatility_multiplier": 1.712821325880109
+    },
+    {
+      "date": "2020-07-08T00:00:00",
+      "regime": "recovery",
+      "vix_level": 29.029245161127776,
+      "volatility_multiplier": 1.3746124545713414
+    },
+    {
+      "date": "2020-07-09T00:00:00",
+      "regime": "recovery",
+      "vix_level": 21.259909896933884,
+      "volatility_multiplier": 1.2981072602133799
+    },
+    {
+      "date": "2020-07-10T00:00:00",
+      "regime": "recovery",
+      "vix_level": 23.05522806427015,
+      "volatility_multiplier": 1.7908240978686796
+    },
+    {
+      "date": "2020-07-11T00:00:00",
+      "regime": "recovery",
+      "vix_level": 21.36469727542932,
+      "volatility_multiplier": 1.8531323382395264
+    },
+    {
+      "date": "2020-07-12T00:00:00",
+      "regime": "recovery",
+      "vix_level": 22.266432907246514,
+      "volatility_multiplier": 1.6710022289309026
+    },
+    {
+      "date": "2020-07-13T00:00:00",
+      "regime": "recovery",
+      "vix_level": 33.112707816349015,
+      "volatility_multiplier": 1.2188465613195252
+    },
+    {
+      "date": "2020-07-14T00:00:00",
+      "regime": "recovery",
+      "vix_level": 23.45756762957957,
+      "volatility_multiplier": 1.835305391849555
+    },
+    {
+      "date": "2020-07-15T00:00:00",
+      "regime": "recovery",
+      "vix_level": 28.53032533686747,
+      "volatility_multiplier": 1.8027850938239636
+    },
+    {
+      "date": "2020-07-16T00:00:00",
+      "regime": "recovery",
+      "vix_level": 21.118572190476527,
+      "volatility_multiplier": 1.2149019206149811
+    },
+    {
+      "date": "2020-07-17T00:00:00",
+      "regime": "recovery",
+      "vix_level": 21.59462713852729,
+      "volatility_multiplier": 1.7187111004348523
+    },
+    {
+      "date": "2020-07-18T00:00:00",
+      "regime": "recovery",
+      "vix_level": 22.54911306297663,
+      "volatility_multiplier": 1.6203333252072858
+    },
+    {
+      "date": "2020-07-19T00:00:00",
+      "regime": "recovery",
+      "vix_level": 25.310184270406342,
+      "volatility_multiplier": 1.807593327660331
+    },
+    {
+      "date": "2020-07-20T00:00:00",
+      "regime": "recovery",
+      "vix_level": 20.756410969326815,
+      "volatility_multiplier": 1.5933268256008606
+    },
+    {
+      "date": "2020-07-21T00:00:00",
+      "regime": "recovery",
+      "vix_level": 23.780578900621826,
+      "volatility_multiplier": 1.6310595127624705
+    },
+    {
+      "date": "2020-07-22T00:00:00",
+      "regime": "recovery",
+      "vix_level": 33.5704674013149,
+      "volatility_multiplier": 1.5145993371719508
+    },
+    {
+      "date": "2020-07-23T00:00:00",
+      "regime": "recovery",
+      "vix_level": 26.342839508994917,
+      "volatility_multiplier": 1.6382301190943152
+    },
+    {
+      "date": "2020-07-24T00:00:00",
+      "regime": "recovery",
+      "vix_level": 23.715060565398257,
+      "volatility_multiplier": 1.9816888635880547
+    },
+    {
+      "date": "2020-07-25T00:00:00",
+      "regime": "recovery",
+      "vix_level": 34.3326504128155,
+      "volatility_multiplier": 1.227605891558599
+    },
+    {
+      "date": "2020-07-26T00:00:00",
+      "regime": "recovery",
+      "vix_level": 23.796731524505162,
+      "volatility_multiplier": 1.4391494424304778
+    },
+    {
+      "date": "2020-07-27T00:00:00",
+      "regime": "recovery",
+      "vix_level": 22.759460804675676,
+      "volatility_multiplier": 1.3774139213351355
+    },
+    {
+      "date": "2020-07-28T00:00:00",
+      "regime": "recovery",
+      "vix_level": 34.76312321757201,
+      "volatility_multiplier": 1.2907367038206463
+    },
+    {
+      "date": "2020-07-29T00:00:00",
+      "regime": "recovery",
+      "vix_level": 32.753892386827005,
+      "volatility_multiplier": 1.695849152575119
+    },
+    {
+      "date": "2020-07-30T00:00:00",
+      "regime": "recovery",
+      "vix_level": 28.662780056058132,
+      "volatility_multiplier": 1.9215713373566246
+    },
+    {
+      "date": "2020-07-31T00:00:00",
+      "regime": "recovery",
+      "vix_level": 23.455736829589057,
+      "volatility_multiplier": 1.5044457957195427
+    },
+    {
+      "date": "2020-08-01T00:00:00",
+      "regime": "consolidation",
+      "vix_level": 27.49609797121392,
+      "volatility_multiplier": 1.180386353118815
+    },
+    {
+      "date": "2020-08-02T00:00:00",
+      "regime": "consolidation",
+      "vix_level": 24.82235345786147,
+      "volatility_multiplier": 1.4169221115876511
+    },
+    {
+      "date": "2020-08-03T00:00:00",
+      "regime": "consolidation",
+      "vix_level": 27.073493948719676,
+      "volatility_multiplier": 1.0283485320175751
+    },
+    {
+      "date": "2020-08-04T00:00:00",
+      "regime": "consolidation",
+      "vix_level": 29.298307599270803,
+      "volatility_multiplier": 1.1325939282388835
+    },
+    {
+      "date": "2020-08-05T00:00:00",
+      "regime": "consolidation",
+      "vix_level": 21.85017195144481,
+      "volatility_multiplier": 1.4706768184410617
+    },
+    {
+      "date": "2020-08-06T00:00:00",
+      "regime": "consolidation",
+      "vix_level": 22.667178846719537,
+      "volatility_multiplier": 1.345065909210557
+    },
+    {
+      "date": "2020-08-07T00:00:00",
+      "regime": "consolidation",
+      "vix_level": 20.051346265007925,
+      "volatility_multiplier": 1.089979179086908
+    },
+    {
+      "date": "2020-08-08T00:00:00",
+      "regime": "consolidation",
+      "vix_level": 26.02481926742563,
+      "volatility_multiplier": 1.2114065487166443
+    },
+    {
+      "date": "2020-08-09T00:00:00",
+      "regime": "consolidation",
+      "vix_level": 28.332247829853756,
+      "volatility_multiplier": 1.183333917403302
+    },
+    {
+      "date": "2020-08-10T00:00:00",
+      "regime": "consolidation",
+      "vix_level": 19.856441079323677,
+      "volatility_multiplier": 1.2129514795044751
+    },
+    {
+      "date": "2020-08-11T00:00:00",
+      "regime": "consolidation",
+      "vix_level": 24.28206106444013,
+      "volatility_multiplier": 1.4718795762653998
+    },
+    {
+      "date": "2020-08-12T00:00:00",
+      "regime": "consolidation",
+      "vix_level": 23.490213718137483,
+      "volatility_multiplier": 1.08174993825765
+    },
+    {
+      "date": "2020-08-13T00:00:00",
+      "regime": "consolidation",
+      "vix_level": 23.75730864686799,
+      "volatility_multiplier": 1.410101799274285
+    },
+    {
+      "date": "2020-08-14T00:00:00",
+      "regime": "consolidation",
+      "vix_level": 23.938299865980298,
+      "volatility_multiplier": 1.3932597084712497
+    },
+    {
+      "date": "2020-08-15T00:00:00",
+      "regime": "consolidation",
+      "vix_level": 20.222618320699294,
+      "volatility_multiplier": 1.1990481927402152
+    },
+    {
+      "date": "2020-08-16T00:00:00",
+      "regime": "consolidation",
+      "vix_level": 20.762547046259808,
+      "volatility_multiplier": 1.3276094942869636
+    },
+    {
+      "date": "2020-08-17T00:00:00",
+      "regime": "consolidation",
+      "vix_level": 26.52578941944176,
+      "volatility_multiplier": 1.2539193005845262
+    },
+    {
+      "date": "2020-08-18T00:00:00",
+      "regime": "consolidation",
+      "vix_level": 25.18587687650984,
+      "volatility_multiplier": 1.1358627287755045
+    },
+    {
+      "date": "2020-08-19T00:00:00",
+      "regime": "consolidation",
+      "vix_level": 19.89090069601411,
+      "volatility_multiplier": 1.1568998524009788
+    },
+    {
+      "date": "2020-08-20T00:00:00",
+      "regime": "consolidation",
+      "vix_level": 24.626101856476968,
+      "volatility_multiplier": 1.2709276599923816
+    },
+    {
+      "date": "2020-08-21T00:00:00",
+      "regime": "consolidation",
+      "vix_level": 24.218161751264503,
+      "volatility_multiplier": 1.4316370036179358
+    },
+    {
+      "date": "2020-08-22T00:00:00",
+      "regime": "consolidation",
+      "vix_level": 29.337639191801962,
+      "volatility_multiplier": 1.0410720476782438
+    },
+    {
+      "date": "2020-08-23T00:00:00",
+      "regime": "consolidation",
+      "vix_level": 23.91227512094641,
+      "volatility_multiplier": 1.4619788094852022
+    },
+    {
+      "date": "2020-08-24T00:00:00",
+      "regime": "consolidation",
+      "vix_level": 27.815037644813582,
+      "volatility_multiplier": 1.2059988673084092
+    },
+    {
+      "date": "2020-08-25T00:00:00",
+      "regime": "consolidation",
+      "vix_level": 29.821697874512687,
+      "volatility_multiplier": 1.1359606296499722
+    },
+    {
+      "date": "2020-08-26T00:00:00",
+      "regime": "consolidation",
+      "vix_level": 22.132604597975863,
+      "volatility_multiplier": 1.2065687159325595
+    },
+    {
+      "date": "2020-08-27T00:00:00",
+      "regime": "consolidation",
+      "vix_level": 26.47435831451869,
+      "volatility_multiplier": 1.101382194693496
+    },
+    {
+      "date": "2020-08-28T00:00:00",
+      "regime": "consolidation",
+      "vix_level": 21.10345947817211,
+      "volatility_multiplier": 1.098299003651554
+    },
+    {
+      "date": "2020-08-29T00:00:00",
+      "regime": "consolidation",
+      "vix_level": 21.01439667307301,
+      "volatility_multiplier": 1.4479140526719316
+    },
+    {
+      "date": "2020-08-30T00:00:00",
+      "regime": "consolidation",
+      "vix_level": 18.324254041014903,
+      "volatility_multiplier": 1.2528184553965942
+    },
+    {
+      "date": "2020-08-31T00:00:00",
+      "regime": "consolidation",
+      "vix_level": 26.374922108703984,
+      "volatility_multiplier": 1.3993877041108584
+    }
+  ]
+}

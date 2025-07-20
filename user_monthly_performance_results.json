@@ -1,0 +1,33 @@
+{
+  "user_constraints": {
+    "max_risk_per_trade": "2.0%",
+    "max_concurrent_trades": 1,
+    "max_trades_per_day": 6,
+    "trading_days_per_month": 22
+  },
+  "theoretical_performance": {
+    "trades_per_day": 2,
+    "total_trades_per_month": 44,
+    "expected_r_per_trade": 0.85,
+    "expected_gain_per_trade_percent": 1.7,
+    "simple_monthly_gain_percent": 74.78,
+    "compounded_monthly_gain_percent": 109.92
+  },
+  "simulation_results": {
+    "simulations_run": 1000,
+    "average_monthly_gain_percent": 107.49,
+    "median_monthly_gain_percent": 102.4,
+    "percentile_10": 51.31,
+    "percentile_25": 75.43,
+    "percentile_75": 135.66,
+    "percentile_90": 167.36,
+    "winning_months_rate": 99.9,
+    "projected_annual_gain_percent": 636753.7
+  },
+  "risk_analysis": {
+    "best_month_percent": 307.6,
+    "worst_month_percent": -6.92,
+    "months_with_loss": 1,
+    "largest_loss_percent": -6.92
+  }
+}

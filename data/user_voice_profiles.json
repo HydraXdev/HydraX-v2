@@ -1,0 +1,46 @@
+{
+  "12345": {
+    "assigned_personality": "DRILL_SERGEANT",
+    "voice_id": "ErXwobaYiN019PkySvjV",
+    "current_mood": "evolving",
+    "energy": 0.9,
+    "humor": 0.2,
+    "aggression": 0.8,
+    "voice_settings": {
+      "stability": 0.4,
+      "similarity_boost": 0.7,
+      "style": 0.5
+    },
+    "xp_tier": "FANG",
+    "assigned_at": "2025-07-15T16:17:47.168125",
+    "last_evolution": "2025-07-15T17:18:50.349155",
+    "evolution_stage": 0.3,
+    "adaptation_factors": {
+      "success_rate": 0.5,
+      "engagement_level": 0.5,
+      "interaction_frequency": 0.5
+    }
+  },
+  "test_user_123": {
+    "assigned_personality": "DRILL_SERGEANT",
+    "voice_id": "ErXwobaYiN019PkySvjV",
+    "current_mood": "default",
+    "energy": 0.9,
+    "humor": 0.2,
+    "aggression": 0.8,
+    "voice_settings": {
+      "stability": 0.3,
+      "similarity_boost": 0.8,
+      "style": 0.6
+    },
+    "xp_tier": "FANG",
+    "assigned_at": "2025-07-15T17:57:06.398681",
+    "last_evolution": "2025-07-15T17:57:06.398688",
+    "evolution_stage": 0,
+    "adaptation_factors": {
+      "success_rate": 0.5,
+      "engagement_level": 0.5,
+      "interaction_frequency": 0.5
+    }
+  }
+}

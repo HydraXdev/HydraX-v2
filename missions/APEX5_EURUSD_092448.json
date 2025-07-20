@@ -1,0 +1,60 @@
+{
+  "mission_id": "APEX5_EURUSD_092448",
+  "signal": {
+    "id": "APEX5_EURUSD_092448",
+    "symbol": "EURUSD",
+    "direction": "BUY",
+    "entry_price": 1.1619,
+    "stop_loss": 1.16074,
+    "take_profit": 1.16461,
+    "tcs_score": 81,
+    "signal_type": "RAPID_ASSAULT",
+    "risk_reward_ratio": 2.33
+  },
+  "mission": {
+    "title": "\ud83d\udd2b RAPID ASSAULT - EURUSD",
+    "description": "Quick scalp trade - 10-45 min execution window",
+    "urgency": "HIGH",
+    "tactical_notes": [
+      "\ud83d\ude80 APEX v5.0 Engine: Ultra-aggressive signal generation active",
+      "\ud83d\udcca Target: 40+ signals/day @ 89% win rate",
+      "\u2705 Strong TCS score - Good execution candidate"
+    ]
+  },
+  "user": {
+    "id": "demo_user",
+    "tier": "FANG",
+    "stats": {
+      "last_7d_pips": 0.0,
+      "win_rate": 0.0,
+      "trades_today": 0,
+      "total_fires": 0,
+      "streak_days": 0,
+      "rank": "RECRUIT",
+      "last_fire_time": "Never"
+    }
+  },
+  "account": {
+    "balance": 10000.0,
+    "equity": 0.0,
+    "margin_free": 0.0,
+    "currency": "USD"
+  },
+  "timing": {
+    "created_at": "2025-07-16T09:24:48.262625",
+    "expires_at": "2025-07-16T09:29:48.262625",
+    "time_remaining": 300
+  },
+  "enhanced_signal": {
+    "symbol": "EURUSD",
+    "direction": "BUY",
+    "entry_price": 1.1619,
+    "stop_loss": 1.16074,
+    "take_profit": 1.16461,
+    "risk_reward_ratio": 2.33,
+    "signal_type": "RAPID_ASSAULT",
+    "tcs_score": 81,
+    "volume": 10.0,
+    "comment": "Fallback RR for APEX5_EURUSD_092448"
+  }
+}

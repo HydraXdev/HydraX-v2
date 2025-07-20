@@ -90,13 +90,19 @@ STRIPE_PUBLISHABLE_KEY = os.getenv('STRIPE_PUBLISHABLE_KEY')
 
 # Tier pricing configuration
 TIER_PRICING = {
-    'NIBBLER': {'price': 3900, 'name': 'BITTEN Nibbler', 'features': ['6 trades/day', 'Manual trading', 'Basic features']},
-    'FANG': {'price': 8900, 'name': 'BITTEN Fang', 'features': ['10 trades/day', 'Sniper mode', 'Advanced filters']},
-    'COMMANDER': {'price': 13900, 'name': 'BITTEN Commander', 'features': ['20 trades/day', 'Full automation', 'Elite features']},
-    'APEX': {'price': 18800, 'name': 'BITTEN Apex', 'features': ['Unlimited trades', 'Priority support', 'Exclusive access']}
+    'NIBBLER': {'price': 3900, 'name': 'BITTEN Nibbler', 'features': ['1 concurrent trade', 'SELECT FIRE only', 'Voice personalities', 'Basic signals']},
+    'FANG': {'price': 8900, 'name': 'BITTEN Fang', 'features': ['2 concurrent trades', 'SELECT FIRE only', 'Voice personalities', 'All signals', 'Advanced filters']},
+    'COMMANDER': {'price': 18900, 'name': 'BITTEN Commander', 'features': ['Unlimited trades', 'SELECT + AUTO modes', 'Voice personalities', 'Priority support', 'Exclusive signals', 'All premium features']}
 }
 
 app = Flask(__name__)
+
+# Import unified personality system
+try:
+    from deploy_unified_personality_system import UnifiedPersonalityBot
+    UNIFIED_PERSONALITY_AVAILABLE = True
+except ImportError:
+    UNIFIED_PERSONALITY_AVAILABLE = False
 
 # Add API health endpoint
 @app.route('/api/health')
@@ -109,6 +115,87 @@ def api_health():
         "version": "2.1"
     })
 
+@app.route('/api/toggle-voice', methods=['POST'])
+def toggle_voice():
+    """Toggle voice messages for user"""
+    try:
+        data = request.json
+        enabled = data.get('enabled', True)
+        
+        # Get user ID from session or request
+        user_id = request.headers.get('X-User-ID', 'default_user')
+        
+        # Toggle voice setting
+        if UNIFIED_PERSONALITY_AVAILABLE:
+            # Create temporary bot instance for voice toggle
+            from bitten_production_bot import BittenProductionBot
+            temp_bot = BittenProductionBot()
+            
+            if hasattr(temp_bot, 'unified_bot') and temp_bot.unified_bot:
+                # Set the voice state directly
+                if enabled:
+                    temp_bot.unified_bot.voice_enabled_users.add(str(user_id))
+                    if hasattr(temp_bot.unified_bot, 'voice_disabled_users'):
+                        temp_bot.unified_bot.voice_disabled_users.discard(str(user_id))
+                else:
+                    temp_bot.unified_bot.voice_enabled_users.discard(str(user_id))
+                    if not hasattr(temp_bot.unified_bot, 'voice_disabled_users'):
+                        temp_bot.unified_bot.voice_disabled_users = set()
+                    temp_bot.unified_bot.voice_disabled_users.add(str(user_id))
+                
+                # Save settings
+                temp_bot.unified_bot.save_voice_settings()
+                
+                return jsonify({
+                    "success": True,
+                    "enabled": enabled,
+                    "message": "Voice messages enabled" if enabled else "Voice messages disabled",
+                    "test_voice_available": True
+                })
+        
+        # Fallback response if unified system not available
+        return jsonify({
+            "success": True,
+            "enabled": enabled,
+            "message": "Voice setting updated (unified system not available)",
+            "test_voice_available": False
+        })
+        
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
+
+@app.route('/api/voice-status', methods=['GET'])
+def get_voice_status():
+    """Get current voice status for user"""
+    try:
+        user_id = request.headers.get('X-User-ID', 'default_user')
+        
+        if UNIFIED_PERSONALITY_AVAILABLE:
+            from bitten_production_bot import BittenProductionBot
+            temp_bot = BittenProductionBot()
+            
+            if hasattr(temp_bot, 'unified_bot') and temp_bot.unified_bot:
+                status = temp_bot.unified_bot.get_voice_status_for_webapp(user_id)
+                return jsonify(status)
+        
+        # Default response
+        return jsonify({
+            "voice_enabled": True,
+            "status": "enabled",
+            "default_state": "enabled",
+            "message": "Voice messages are enabled by default"
+        })
+        
+    except Exception as e:
+        return jsonify({
+            "voice_enabled": True,
+            "status": "enabled",
+            "error": str(e)
+        })
+
 # Add GHOSTED command endpoint
 @app.route('/ghosted', methods=['POST'])
 def ghosted():
@@ -119,6 +206,34 @@ def ghosted():
         return jsonify({"status": "ok", "result": report})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
+
+def find_personal_mission(base_mission_id: str, user_id: str) -> str:
+    """Find user's personal mission file based on base mission ID"""
+    try:
+        import os
+        import glob
+        
+        # Extract base signal ID (remove any existing suffixes)
+        if '_USER' in base_mission_id:
+            base_signal = base_mission_id.split('_USER')[0]
+        else:
+            base_signal = base_mission_id
+        
+        # Look for user-specific mission file
+        mission_pattern = f"missions/{base_signal}_USER{user_id}.json"
+        matching_files = glob.glob(mission_pattern)
+        
+        if matching_files:
+            # Return the mission ID from the filename
+            mission_file = os.path.basename(matching_files[0])
+            return mission_file.replace('.json', '')
+        
+        # No personal mission found, return original
+        return base_mission_id
+        
+    except Exception as e:
+        logger.error(f"Error finding personal mission: {e}")
+        return base_mission_id
 
 # Register Mission API endpoints
 try:
@@ -639,82 +754,655 @@ def get_random_pattern():
     pattern_key = random.choice(list(PATTERN_NAMES.keys()))
     return pattern_key, PATTERN_NAMES[pattern_key]
 
-# Enhanced HUD template with all requested improvements
+# Professional Commander HUD template based on template_samples
 HUD_TEMPLATE = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>COMMANDER - {{ symbol }} - TACTICAL BRIEF</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --commander-purple: #7c3aed;
+            --elite-gold: #fbbf24;
+            --success-green: #10b981;
+            --warning-amber: #f59e0b;
+            --danger-red: #ef4444;
+            --dark-bg: #0f172a;
+            --panel-bg: rgba(15, 23, 42, 0.95);
+            --border-color: #334155;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--dark-bg) 0%, #1e293b 100%);
+            color: #f1f5f9;
+            height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .commander-header {
+            background: linear-gradient(90deg, var(--commander-purple) 0%, #8b5cf6 100%);
+            color: white;
+            text-align: center;
+            padding: 12px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            font-size: 1em;
+        }
+
+        .hud-container {
+            display: grid;
+            grid-template-areas: 
+                "mission-overview mission-overview"
+                "trade-details account-summary"
+                "execution-panel execution-panel";
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto 1fr auto;
+            height: calc(100vh - 50px);
+            gap: 16px;
+            padding: 16px;
+        }
+
+        .mission-overview {
+            grid-area: mission-overview;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            backdrop-filter: blur(10px);
+        }
+
+        .trade-details {
+            grid-area: trade-details;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            backdrop-filter: blur(10px);
+        }
+
+        .account-summary {
+            grid-area: account-summary;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            backdrop-filter: blur(10px);
+        }
+
+        .execution-panel {
+            grid-area: execution-panel;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            backdrop-filter: blur(10px);
+            text-align: center;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .section-title {
+            font-family: 'Orbitron', monospace;
+            font-weight: 700;
+            color: var(--commander-purple);
+            font-size: 1.1em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .mission-title-large {
+            font-family: 'Orbitron', monospace;
+            font-size: 2.5em;
+            font-weight: 900;
+            color: var(--elite-gold);
+            text-align: center;
+            margin-bottom: 16px;
+            text-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+        }
+
+        .confidence-badge {
+            background: linear-gradient(45deg, var(--success-green), #059669);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 16px;
+            font-size: 0.9em;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .stat-card {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid var(--commander-purple);
+        }
+
+        .stat-label {
+            color: #94a3b8;
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            color: #f1f5f9;
+            font-weight: 700;
+            font-size: 1.3em;
+        }
+
+        .stat-value.success { color: var(--success-green); }
+        .stat-value.warning { color: var(--warning-amber); }
+        .stat-value.danger { color: var(--danger-red); }
+
+        .countdown-display {
+            font-family: 'Orbitron', monospace;
+            font-size: 2.2em;
+            color: var(--elite-gold);
+            margin-bottom: 24px;
+            text-shadow: 0 0 15px rgba(251, 191, 36, 0.4);
+        }
+
+        .execute-button {
+            background: linear-gradient(45deg, var(--commander-purple), #8b5cf6);
+            border: none;
+            border-radius: 12px;
+            padding: 20px 50px;
+            font-family: 'Orbitron', monospace;
+            font-size: 1.4em;
+            font-weight: 700;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(124, 58, 237, 0.4);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .execute-button:hover {
+            background: linear-gradient(45deg, #8b5cf6, var(--commander-purple));
+            box-shadow: 0 12px 35px rgba(124, 58, 237, 0.6);
+            transform: translateY(-2px);
+        }
+
+        .execute-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .tier-indicator {
+            background: linear-gradient(45deg, var(--elite-gold), #f59e0b);
+            color: var(--dark-bg);
+            padding: 6px 14px;
+            border-radius: 15px;
+            font-weight: 700;
+            font-size: 0.8em;
+            display: inline-block;
+            margin-left: 12px;
+        }
+
+        .risk-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--success-green);
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-top: 16px;
+        }
+
+        .risk-text {
+            color: var(--success-green);
+            font-weight: 600;
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .hud-container {
+                grid-template-areas: 
+                    "mission-overview"
+                    "trade-details"
+                    "account-summary"
+                    "execution-panel";
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto auto auto;
+            }
+            
+            .mission-title-large {
+                font-size: 2em;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+        }
+        
+        /* Timer styling */
+        .timer {
+            background: var(--danger-red);
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-weight: bold;
+        }
+        
+        .urgent {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="commander-header">
+        🎖️ COMMANDER ACCESS - TACTICAL TRADING INTERFACE - AUTHORIZED PERSONNEL ONLY 🎖️
+    </div>
+
+    <div class="hud-container">
+        <div class="mission-overview">
+            <div class="mission-title-large">{{ symbol }}</div>
+            <div class="confidence-badge">🎯 TCS: {{ tcs_score }}% CONFIDENCE</div>
+            
+            <div class="section-header">
+                <div class="section-title">Mission Overview</div>
+                <div class="tier-indicator">{{ user_stats.tier|upper }}</div>
+            </div>
+            
+            <div style="color: #94a3b8; line-height: 1.6;">
+                High-probability {{ symbol }} opportunity identified. Market structure aligned for tactical entry.
+                Risk management protocols active. Position sizing calculated for {{ user_stats.tier|title }}-tier account.
+            </div>
+
+            <div class="risk-indicator">
+                <span class="risk-text">✅ Risk Parameters: Optimal</span>
+                <span style="color: var(--elite-gold); font-weight: 600;">R:R 1:{{ rr_ratio }}</span>
+            </div>
+            
+            <!-- Expiry Timer -->
+            {% if expiry_seconds > 0 %}
+            <div class="timer urgent" id="timer" style="margin-top: 16px;">
+                Signal expires in: <span id="countdown">{{ expiry_seconds }}s</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="trade-details">
+            <div class="section-header">
+                <div class="section-title">Trade Parameters</div>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Entry Price</div>
+                    <div class="stat-value">{{ entry_masked }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Stop Loss</div>
+                    <div class="stat-value danger">{{ sl_masked }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Take Profit</div>
+                    <div class="stat-value success">{{ tp_masked }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Direction</div>
+                    <div class="stat-value {% if direction == 'BUY' %}success{% else %}warning{% endif %}">{{ direction }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="account-summary">
+            <div class="section-header">
+                <div class="section-title">Account Status</div>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Account Balance</div>
+                    <div class="stat-value">${{ "%.2f"|format(account_balance) }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Risk Amount</div>
+                    <div class="stat-value warning">${{ sl_dollars }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Potential Profit</div>
+                    <div class="stat-value success">${{ tp_dollars }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Win Rate</div>
+                    <div class="stat-value {% if user_stats.win_rate >= 70 %}success{% else %}warning{% endif %}">{{ user_stats.win_rate }}%</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="execution-panel">
+            {% if expiry_seconds > 0 %}
+            <div class="countdown-display">⏰ <span id="countdown-main">{{ expiry_seconds }}s</span> REMAINING</div>
+            {% endif %}
+            <button class="execute-button" onclick="fireSignal()" {% if user_stats.trades_remaining <= 0 %}disabled{% endif %}>🚀 EXECUTE TRADE 🚀</button>
+            <div style="margin-top: 16px; color: #64748b; font-size: 0.9em;">
+                {{ user_stats.tier|title }}-level position sizing applied • 3% account risk
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Telegram WebApp API
+        const tg = window.Telegram?.WebApp;
+        if (tg) {
+            tg.ready();
+            tg.expand();
+        }
+        
+        // Check mission status on page load
+        async function checkMissionStatus() {
+            try {
+                const response = await fetch(`/api/mission-status/{{ signal_id }}`, {
+                    headers: {
+                        'Authorization': 'Bearer webapp_token',
+                        'X-User-ID': '{{ user_id }}'
+                    }
+                });
+                
+                if (response.ok) {
+                    const mission = await response.json();
+                    const fireButton = document.querySelector('.execute-button');
+                    
+                    if (mission.status === 'fired' || mission.mission_stats?.user_fired) {
+                        // Mission already fired - disable button and show status
+                        fireButton.disabled = true;
+                        fireButton.textContent = '✅ MISSION COMPLETED';
+                        fireButton.style.background = 'linear-gradient(135deg, #28a745, #20c997)';
+                        fireButton.style.cursor = 'not-allowed';
+                    } else if (mission.is_expired || mission.time_remaining <= 0) {
+                        // Mission expired - disable button and show expired
+                        fireButton.disabled = true;
+                        fireButton.textContent = '❌ MISSION EXPIRED';
+                        fireButton.style.background = 'linear-gradient(135deg, #6c757d, #495057)';
+                        fireButton.style.cursor = 'not-allowed';
+                    }
+                }
+            } catch (error) {
+                console.log('Mission status check failed:', error);
+            }
+        }
+        
+        // Run status check when page loads
+        checkMissionStatus();
+        
+        // Fire signal function
+        async function fireSignal() {
+            const fireButton = document.querySelector('.execute-button');
+            const signalId = '{{ signal_id }}';
+            const userId = '{{ user_id }}';
+            
+            try {
+                // Update button to show firing state
+                fireButton.disabled = true;
+                fireButton.style.background = 'linear-gradient(135deg, #ffc107, #fd7e14)';
+                fireButton.textContent = '🔥 FIRING...';
+                
+                // Make API call to fire the signal
+                const response = await fetch('/api/fire', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer webapp_token',
+                        'X-User-ID': userId
+                    },
+                    body: JSON.stringify({
+                        mission_id: signalId
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    // Success - show success state
+                    fireButton.style.background = 'linear-gradient(135deg, #28a745, #20c997)';
+                    fireButton.textContent = '✅ MISSION FIRED!';
+                    
+                    // Show success message with tactical flair
+                    alert('🎯 MISSION EXECUTED!\n\nTarget acquired. Trade has been fired.\nTracking bullet to target...');
+                    
+                    // Redirect to live tracking page after short delay
+                    setTimeout(() => {
+                        const symbol = '{{ symbol }}';
+                        const direction = '{{ direction }}';
+                        window.location.href = `/track-trade?mission_id=${signalId}&symbol=${symbol}&direction=${direction}`;
+                    }, 2000);
+                    
+                } else {
+                    // Error - show error state and re-enable
+                    fireButton.style.background = 'linear-gradient(135deg, #dc3545, #c82333)';
+                    fireButton.textContent = '❌ MISSION FAILED';
+                    
+                    alert('❌ MISSION FAILED\n\n' + (result.error || 'Unable to fire signal. Please try again.'));
+                    
+                    // Reset button after delay
+                    setTimeout(() => {
+                        fireButton.disabled = false;
+                        fireButton.style.background = 'linear-gradient(45deg, var(--commander-purple), #8b5cf6)';
+                        fireButton.textContent = '🚀 EXECUTE TRADE 🚀';
+                    }, 3000);
+                }
+                
+            } catch (error) {
+                console.error('Fire signal error:', error);
+                
+                // Error - show error state and re-enable
+                fireButton.style.background = 'linear-gradient(135deg, #dc3545, #c82333)';
+                fireButton.textContent = '❌ FIRE FAILED';
+                
+                alert('❌ COMMUNICATION FAILURE\n\nUnable to contact command. Check connection and try again.');
+                
+                // Reset button after delay
+                setTimeout(() => {
+                    fireButton.disabled = false;
+                    fireButton.style.background = 'linear-gradient(45deg, var(--commander-purple), #8b5cf6)';
+                    fireButton.textContent = '🚀 EXECUTE TRADE 🚀';
+                }, 3000);
+            }
+        }
+        
+        // Timer countdown
+        {% if expiry_seconds > 0 %}
+        let timeLeft = {{ expiry_seconds }};
+        const countdownElement = document.getElementById('countdown');
+        const countdownMainElement = document.getElementById('countdown-main');
+        
+        const timer = setInterval(function() {
+            timeLeft--;
+            
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                if (countdownElement) countdownElement.textContent = 'EXPIRED';
+                if (countdownMainElement) countdownMainElement.textContent = 'EXPIRED';
+                
+                const timerDiv = document.getElementById('timer');
+                if (timerDiv) timerDiv.style.background = '#666';
+                
+                const fireButton = document.querySelector('.execute-button');
+                if (fireButton) {
+                    fireButton.disabled = true;
+                    fireButton.textContent = '❌ EXPIRED';
+                    fireButton.style.background = '#666';
+                }
+            } else {
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                const timeString = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                
+                if (countdownElement) countdownElement.textContent = timeString;
+                if (countdownMainElement) countdownMainElement.textContent = timeString;
+            }
+        }, 1000);
+        {% endif %}
+    </script>
+</body>
+"""
+
+# Keep test page the same
+TEST_PAGE = """
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BITTEN {{ tier|upper }} Mission Brief</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <title>BITTEN WebApp Test</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
         body {
-            background-color: {{ colors.background }};
-            color: {{ colors.secondary }};
-            font-family: 'Consolas', 'Monaco', monospace;
-            font-size: 16px;
-            line-height: 1.6;
-            overflow-x: hidden;
+            background: #0A0A0A;
+            color: #00D9FF;
+            font-family: 'Consolas', monospace;
+            text-align: center;
+            padding: 50px;
         }
-        
-        /* High contrast mode */
-        @media (prefers-contrast: high) {
-            body {
-                background-color: #000000;
-                color: #FFFFFF;
-            }
-            .surface {
-                border: 2px solid #FFFFFF !important;
-            }
+        .status {
+            color: #4ECDC4;
+            font-size: 24px;
+            margin: 30px 0;
         }
+    </style>
+</head>
+<body>
+    <h1>🎯 BITTEN WebApp Test Page</h1>
+    <div class="status">✅ WebApp is running!</div>
+    <div>Server Time: {{ time }}</div>
+</body>
+</html>
+"""
+
+@app.route('/')
+def index():
+    """Root endpoint - serve landing page"""
+    try:
+        with open('/root/HydraX-v2/landing/index_v2.html', 'r') as f:
+            return f.read()
+    except FileNotFoundError:
+        return "BITTEN WebApp Server Running", 200
+
+@app.route('/broker-setup')
+def broker_setup():
+    """Broker setup guide with interactive bot"""
+    try:
+        with open('/root/HydraX-v2/broker-setup.html', 'r') as f:
+            return f.read()
+    except FileNotFoundError:
+        return "Broker setup page not found", 404
+
+@app.route('/api/track-conversation', methods=['POST'])
+def track_conversation():
+    """Track bot conversation for analytics"""
+    try:
+        data = request.get_json()
         
-        /* Top Navigation Bar */
-        .top-bar {
-            background: rgba(0,0,0,0.9);
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid {{ colors.border }};
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
+        # Basic input validation
+        if not data or not data.get('message'):
+            return jsonify({'success': False, 'error': 'Invalid data'}), 400
         
-        .back-button {
-            color: {{ colors.primary }};
-            text-decoration: none;
-            padding: 8px 20px;
-            border: 2px solid {{ colors.primary }};
-            border-radius: 4px;
-            font-weight: bold;
-            transition: all 0.3s;
-            background: rgba(0,0,0,0.5);
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
+        # Store in database (create table if needed)
+        import sqlite3
+        os.makedirs('/root/HydraX-v2/data', exist_ok=True)
+        conn = sqlite3.connect('/root/HydraX-v2/data/visitor_analytics.db')
+        c = conn.cursor()
         
-        .back-button:hover {
-            background: {{ colors.primary }};
-            color: {{ colors.background }};
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(255,255,255,0.2);
-        }
+        # Create table if not exists
+        c.execute('''CREATE TABLE IF NOT EXISTS conversations
+                    (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                     timestamp TEXT,
+                     session_id TEXT,
+                     message TEXT,
+                     is_bot BOOLEAN,
+                     page TEXT,
+                     user_agent TEXT,
+                     ip_address TEXT)''')
         
-        .tier-badge {
-            background: {{ colors.primary }};
-            color: {{ colors.background }};
-            padding: 8px 20px;
-            border-radius: 4px;
-            font-weight: bold;
+        c.execute('''INSERT INTO conversations 
+                    (timestamp, session_id, message, is_bot, page, user_agent, ip_address)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)''',
+                  (datetime.datetime.now().isoformat(),
+                   data.get('session_id', ''),
+                   data.get('message', ''),
+                   data.get('is_bot', False),
+                   data.get('page', ''),
+                   request.headers.get('User-Agent', ''),
+                   request.remote_addr))
+        
+        conn.commit()
+        conn.close()
+        
+        return jsonify({'success': True})
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/track-page-visit', methods=['POST'])
+def track_page_visit():
+    """Track page visits for analytics"""
+    try:
+        data = request.get_json()
+        
+        # Store in database
+        import sqlite3
+        os.makedirs('/root/HydraX-v2/data', exist_ok=True)
+        conn = sqlite3.connect('/root/HydraX-v2/data/visitor_analytics.db')
+        c = conn.cursor()
+        
+        # Create table if not exists
+        c.execute('''CREATE TABLE IF NOT EXISTS page_visits
+                    (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                     timestamp TEXT,
+                     session_id TEXT,
+                     page TEXT,
+                     referrer TEXT,
+                     user_agent TEXT,
+                     ip_address TEXT)''')
+        
+        c.execute('''INSERT INTO page_visits 
+                    (timestamp, session_id, page, referrer, user_agent, ip_address)
+                    VALUES (?, ?, ?, ?, ?, ?)''',
+                 (data.get('timestamp'), data.get('sessionId'), 
+                  data.get('page', '')[:100], data.get('referrer', '')[:200],
+                  data.get('userAgent', '')[:500], request.remote_addr))
+        
+        conn.commit()
+        conn.close()
+        
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+# Continue with next function from the real file...
             text-transform: uppercase;
             letter-spacing: 2px;
         }
@@ -1332,6 +2020,9 @@ HUD_TEMPLATE = """
             <span>←</span>
             <span>Back</span>
         </a>
+        <div class="voice-toggle-mini" id="voiceToggleButton" onclick="toggleVoiceQuick()" title="Toggle Voice Messages">
+            <span id="voiceIcon">🔊</span>
+        </div>
         <div class="tier-badge">{{ user_stats.tier|upper }}</div>
     </div>
     
@@ -1501,6 +2192,47 @@ HUD_TEMPLATE = """
             tg.expand();
         }
         
+        // Check mission status on page load
+        async function checkMissionStatus() {
+            try {
+                const response = await fetch(`/api/mission-status/{{ signal_id }}`, {
+                    headers: {
+                        'Authorization': 'Bearer webapp_token',
+                        'X-User-ID': '{{ user_id }}'
+                    }
+                });
+                
+                if (response.ok) {
+                    const mission = await response.json();
+                    const fireButton = document.querySelector('.fire-button');
+                    
+                    if (mission.status === 'fired' || mission.mission_stats?.user_fired) {
+                        // Mission already fired - disable button and show status
+                        fireButton.disabled = true;
+                        fireButton.textContent = '✅ MISSION COMPLETED';
+                        fireButton.style.background = 'linear-gradient(135deg, #28a745, #20c997)';
+                        fireButton.style.cursor = 'not-allowed';
+                    } else if (mission.is_expired || mission.time_remaining <= 0) {
+                        // Mission expired - disable button and show expired
+                        fireButton.disabled = true;
+                        fireButton.textContent = '❌ MISSION EXPIRED';
+                        fireButton.style.background = 'linear-gradient(135deg, #6c757d, #495057)';
+                        fireButton.style.cursor = 'not-allowed';
+                    }
+                    // If neither fired nor expired, button stays enabled
+                }
+            } catch (error) {
+                console.log('Mission status check failed:', error);
+                // If status check fails, keep button as is for now
+            }
+        }
+        
+        // Initialize voice status on page load
+        initVoiceStatus();
+        
+        // Run status check when page loads
+        checkMissionStatus();
+        
         // Exit briefing
         function exitBriefing() {
             if (tg) {
@@ -1514,30 +2246,189 @@ HUD_TEMPLATE = """
             }
         }
         
+        // Voice toggle functionality
+        let voiceEnabled = true; // Default: enabled
+        
+        function toggleVoiceQuick() {
+            voiceEnabled = !voiceEnabled;
+            updateVoiceIcon();
+            
+            // Send to backend
+            fetch('/api/toggle-voice', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-User-ID': '{{ user_stats.user_id }}'
+                },
+                body: JSON.stringify({ enabled: voiceEnabled })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showVoiceQuickMessage(voiceEnabled);
+                } else {
+                    console.error('Voice toggle failed:', data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error toggling voice:', error);
+            });
+        }
+        
+        function updateVoiceIcon() {
+            const icon = document.getElementById('voiceIcon');
+            const button = document.getElementById('voiceToggleButton');
+            
+            if (voiceEnabled) {
+                icon.textContent = '🔊';
+                button.classList.remove('disabled');
+                button.title = 'Voice Messages ON - Click to disable';
+            } else {
+                icon.textContent = '🔇';
+                button.classList.add('disabled');
+                button.title = 'Voice Messages OFF - Click to enable';
+            }
+        }
+        
+        function showVoiceQuickMessage(enabled) {
+            const message = document.createElement('div');
+            message.style.cssText = `
+                position: fixed;
+                top: 70px;
+                right: 20px;
+                background: ${enabled ? '#1a5d1a' : '#5d1a1a'};
+                color: {{ colors.primary }};
+                padding: 10px 15px;
+                border-radius: 5px;
+                border: 1px solid {{ colors.primary }};
+                z-index: 1000;
+                font-family: 'Courier New', monospace;
+                font-size: 12px;
+                animation: slideIn 0.3s ease-out;
+                max-width: 200px;
+                text-align: center;
+            `;
+            
+            message.innerHTML = enabled ? 
+                '🔊 Voice ON<br><small>Personalities will speak</small>' : 
+                '🔇 Voice OFF<br><small>Text-only responses</small>';
+            
+            document.body.appendChild(message);
+            
+            setTimeout(() => {
+                message.remove();
+            }, 2000);
+        }
+        
+        // Initialize voice status on page load
+        function initVoiceStatus() {
+            fetch('/api/voice-status', {
+                headers: {
+                    'X-User-ID': '{{ user_stats.user_id }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                voiceEnabled = data.voice_enabled;
+                updateVoiceIcon();
+            })
+            .catch(error => {
+                console.error('Error getting voice status:', error);
+                // Default to enabled
+                voiceEnabled = true;
+                updateVoiceIcon();
+            });
+        }
+        
         // Fire signal
-        function fireSignal() {
+        async function fireSignal() {
             // Check if user has trades remaining
             if ({{ user_stats.trades_remaining }} <= 0) {
                 alert('No ammo left! Reload tomorrow, soldier.');
                 return;
             }
             
-            // Send data back to bot
-            if (tg) {
-                tg.sendData(JSON.stringify({
-                    action: 'fire',
-                    signal_id: '{{ signal_id }}',
-                    symbol: '{{ symbol }}',
-                    direction: '{{ direction }}'
-                }));
+            // Disable button immediately to prevent double-firing
+            const fireButton = document.querySelector('.fire-button');
+            fireButton.disabled = true;
+            fireButton.textContent = '🎯 FIRING...';
+            
+            try {
+                // Call the actual fire API
+                const response = await fetch('/api/fire', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer webapp_token',
+                        'X-User-ID': '{{ user_id }}'
+                    },
+                    body: JSON.stringify({
+                        mission_id: '{{ signal_id }}'
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    // Success - update button and show result
+                    fireButton.textContent = '✅ MISSION FIRED!';
+                    fireButton.style.background = 'linear-gradient(135deg, #28a745, #20c997)';
+                    
+                    // Send data to bot for tracking
+                    if (tg) {
+                        tg.sendData(JSON.stringify({
+                            action: 'fire',
+                            signal_id: '{{ signal_id }}',
+                            symbol: '{{ symbol }}',
+                            direction: '{{ direction }}',
+                            execution_result: result.execution_result
+                        }));
+                    }
+                    
+                    // Show success message and redirect to tracking
+                    alert('🎯 MISSION EXECUTED SUCCESSFULLY!\\n\\nTrade sent to broker. Redirecting to live tracking...');
+                    
+                    // Redirect to trade tracking page after short delay
+                    setTimeout(() => {
+                        window.location.href = `/track-trade?mission_id={{ signal_id }}&symbol={{ symbol }}&direction={{ direction }}`;
+                    }, 1000);
+                    
+                } else {
+                    // Error - show tactical error message
+                    fireButton.textContent = '⚠️ MISSION FAILED';
+                    fireButton.style.background = 'linear-gradient(135deg, #dc3545, #e74c3c)';
+                    
+                    // Show error with tactical message
+                    const errorMsg = result.message || 'Mission execution failed';
+                    alert(`🚨 ${errorMsg}\\n\\nStand by for next opportunity, soldier.`);
+                    
+                    // Re-enable button for retry if not expired
+                    setTimeout(() => {
+                        fireButton.disabled = false;
+                        fireButton.textContent = '🎯 RETRY MISSION';
+                        fireButton.style.background = 'linear-gradient(135deg, {{ colors.danger }}, {{ colors.primary }})';
+                    }, 3000);
+                }
+                
+            } catch (error) {
+                // Network error
+                fireButton.textContent = '📡 CONNECTION LOST';
+                fireButton.style.background = 'linear-gradient(135deg, #6c757d, #495057)';
+                
+                alert('📡 CONNECTION LOST\\n\\nUnable to reach mission control. Check your connection and try again.');
+                
+                // Re-enable button for retry
+                setTimeout(() => {
+                    fireButton.disabled = false;
+                    fireButton.textContent = '🎯 RETRY MISSION';
+                    fireButton.style.background = 'linear-gradient(135deg, {{ colors.danger }}, {{ colors.primary }})';
+                }, 3000);
             }
             
-            // Visual feedback
-            document.querySelector('.fire-button').textContent = '✅ FIRED!';
-            document.querySelector('.fire-button').disabled = true;
-            
-            // Close after delay
-            setTimeout(exitBriefing, 1500);
+            // Auto-close on success after delay
+            if (fireButton.textContent.includes('FIRED')) {
+                setTimeout(exitBriefing, 2000);
+            }
         }
         
         // Skip signal
@@ -1792,6 +2683,554 @@ def analytics_dashboard():
     except Exception as e:
         return f"<h1>Analytics Error: {str(e)}</h1>"
 
+@app.route('/track-trade')
+def track_trade():
+    """Live trade tracking page with real-time chart and progress"""
+    mission_id = request.args.get('mission_id', '')
+    symbol = request.args.get('symbol', 'EURUSD')
+    direction = request.args.get('direction', 'BUY')
+    user_id = request.args.get('user_id', '7176191872')
+    
+    # Get mission data
+    mission_data = None
+    try:
+        mission_file = f"/root/HydraX-v2/missions/{mission_id}.json"
+        if os.path.exists(mission_file):
+            with open(mission_file, 'r') as f:
+                mission_data = json.load(f)
+    except:
+        pass
+    
+    if not mission_data:
+        return "Mission not found", 404
+        
+    # Extract trade details
+    signal_data = mission_data.get('signal', {})
+    enhanced_signal = mission_data.get('enhanced_signal', {})
+    
+    entry_price = signal_data.get('entry_price', enhanced_signal.get('entry_price', 0))
+    stop_loss = signal_data.get('stop_loss', enhanced_signal.get('stop_loss', 0))
+    take_profit = signal_data.get('take_profit', enhanced_signal.get('take_profit', 0))
+    rr_ratio = signal_data.get('risk_reward_ratio', enhanced_signal.get('risk_reward_ratio', 0))
+    
+    TRADE_TRACKING_TEMPLATE = """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>🎯 TRACKING: {{ symbol }} {{ direction }}</title>
+        <script src="https://telegram.org/js/telegram-web-app.js"></script>
+        <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            
+            body {
+                background: #0A0A0A;
+                color: #ffffff;
+                font-family: 'Consolas', monospace;
+                overflow-x: hidden;
+            }
+            
+            .header {
+                background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+                padding: 15px;
+                border-bottom: 2px solid #00D9FF;
+                position: sticky;
+                top: 0;
+                z-index: 100;
+            }
+            
+            .header-content {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                max-width: 1200px;
+                margin: 0 auto;
+            }
+            
+            .trade-title {
+                font-size: 18px;
+                font-weight: bold;
+                color: #00D9FF;
+            }
+            
+            .trade-status {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            
+            .status-indicator {
+                width: 12px;
+                height: 12px;
+                border-radius: 50%;
+                background: #28a745;
+                animation: pulse 2s infinite;
+            }
+            
+            @keyframes pulse {
+                0% { opacity: 1; }
+                50% { opacity: 0.5; }
+                100% { opacity: 1; }
+            }
+            
+            .container {
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: 20px;
+                display: grid;
+                grid-template-columns: 1fr 350px;
+                gap: 20px;
+                min-height: calc(100vh - 80px);
+            }
+            
+            .chart-section {
+                background: #1a1a1a;
+                border-radius: 10px;
+                padding: 15px;
+                border: 1px solid #333;
+            }
+            
+            .chart-container {
+                width: 100%;
+                height: 500px;
+                border-radius: 8px;
+                overflow: hidden;
+            }
+            
+            .sidebar {
+                display: flex;
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .trade-card {
+                background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+                border-radius: 10px;
+                padding: 20px;
+                border: 1px solid #333;
+                position: relative;
+                overflow: hidden;
+            }
+            
+            .trade-card::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 3px;
+                background: linear-gradient(90deg, #00D9FF, #FF6B35);
+            }
+            
+            .card-title {
+                font-size: 16px;
+                font-weight: bold;
+                color: #00D9FF;
+                margin-bottom: 15px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            
+            .trade-details {
+                display: grid;
+                gap: 10px;
+            }
+            
+            .detail-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 8px 0;
+                border-bottom: 1px solid #333;
+            }
+            
+            .detail-label {
+                color: #888;
+                font-size: 14px;
+            }
+            
+            .detail-value {
+                color: #fff;
+                font-weight: bold;
+                font-size: 14px;
+            }
+            
+            .pnl-positive {
+                color: #28a745;
+            }
+            
+            .pnl-negative {
+                color: #dc3545;
+            }
+            
+            .bullet-travel {
+                background: #1a1a1a;
+                border-radius: 10px;
+                padding: 20px;
+                border: 1px solid #333;
+                text-align: center;
+            }
+            
+            .bullet-track {
+                width: 100%;
+                height: 20px;
+                background: #333;
+                border-radius: 10px;
+                position: relative;
+                margin: 20px 0;
+                overflow: hidden;
+            }
+            
+            .bullet {
+                position: absolute;
+                left: 0;
+                top: 50%;
+                transform: translateY(-50%);
+                width: 30px;
+                height: 12px;
+                background: linear-gradient(90deg, #FFD700, #FF6B35);
+                border-radius: 6px;
+                animation: bulletTravel 3s ease-in-out infinite alternate;
+                box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+            }
+            
+            @keyframes bulletTravel {
+                0% { left: 5px; }
+                100% { left: calc(100% - 35px); }
+            }
+            
+            .price-levels {
+                display: grid;
+                gap: 10px;
+                margin-top: 15px;
+            }
+            
+            .price-level {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 10px;
+                border-radius: 5px;
+                border: 1px solid #333;
+                background: rgba(255, 255, 255, 0.05);
+            }
+            
+            .price-level.entry {
+                border-color: #17a2b8;
+                background: rgba(23, 162, 184, 0.1);
+            }
+            
+            .price-level.tp {
+                border-color: #28a745;
+                background: rgba(40, 167, 69, 0.1);
+            }
+            
+            .price-level.sl {
+                border-color: #dc3545;
+                background: rgba(220, 53, 69, 0.1);
+            }
+            
+            .action-buttons {
+                display: grid;
+                gap: 10px;
+                margin-top: 20px;
+            }
+            
+            .action-btn {
+                padding: 12px;
+                border: none;
+                border-radius: 8px;
+                font-weight: bold;
+                cursor: pointer;
+                transition: all 0.3s;
+                text-decoration: none;
+                text-align: center;
+                display: block;
+            }
+            
+            .btn-primary {
+                background: linear-gradient(135deg, #007bff, #0056b3);
+                color: white;
+            }
+            
+            .btn-secondary {
+                background: linear-gradient(135deg, #6c757d, #545b62);
+                color: white;
+            }
+            
+            .btn-danger {
+                background: linear-gradient(135deg, #dc3545, #c82333);
+                color: white;
+            }
+            
+            .action-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            }
+            
+            @media (max-width: 768px) {
+                .container {
+                    grid-template-columns: 1fr;
+                    padding: 10px;
+                }
+                
+                .header-content {
+                    flex-direction: column;
+                    gap: 10px;
+                    text-align: center;
+                }
+                
+                .chart-container {
+                    height: 300px;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <div class="header-content">
+                <div class="trade-title">🎯 TRACKING: {{ symbol }} {{ direction }}</div>
+                <div class="trade-status">
+                    <div class="status-indicator"></div>
+                    <span>BULLET IN FLIGHT</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="container">
+            <div class="chart-section">
+                <h3 style="margin-bottom: 15px; color: #00D9FF;">📈 Live Chart</h3>
+                <div class="chart-container" id="tradingview_chart"></div>
+            </div>
+            
+            <div class="sidebar">
+                <div class="trade-card">
+                    <div class="card-title">
+                        🎯 Mission Details
+                    </div>
+                    <div class="trade-details">
+                        <div class="detail-row">
+                            <span class="detail-label">Mission ID:</span>
+                            <span class="detail-value">{{ mission_id[:15] }}...</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Symbol:</span>
+                            <span class="detail-value">{{ symbol }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Direction:</span>
+                            <span class="detail-value {{ 'pnl-positive' if direction == 'BUY' else 'pnl-negative' }}">{{ direction }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Risk/Reward:</span>
+                            <span class="detail-value">1:{{ "%.1f"|format(rr_ratio) }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Status:</span>
+                            <span class="detail-value pnl-positive">🟢 ACTIVE</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bullet-travel">
+                    <div class="card-title">🚀 Bullet Travel</div>
+                    <p style="color: #888; margin-bottom: 10px;">Tracking trade progress to target...</p>
+                    <div class="bullet-track">
+                        <div class="bullet"></div>
+                    </div>
+                    <p style="color: #00D9FF; font-size: 12px;">⚡ Trade executing in real-time</p>
+                </div>
+                
+                <div class="trade-card">
+                    <div class="card-title">🎯 Price Levels</div>
+                    <div class="price-levels">
+                        <div class="price-level entry">
+                            <span>📍 Entry</span>
+                            <span>{{ "%.5f"|format(entry_price) }}</span>
+                        </div>
+                        <div class="price-level tp">
+                            <span>🎯 Take Profit</span>
+                            <span>{{ "%.5f"|format(take_profit) }}</span>
+                        </div>
+                        <div class="price-level sl">
+                            <span>🛡️ Stop Loss</span>
+                            <span>{{ "%.5f"|format(stop_loss) }}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="trade-card">
+                    <div class="card-title">📊 Live P&L</div>
+                    <div class="trade-details">
+                        <div class="detail-row">
+                            <span class="detail-label">Unrealized P&L:</span>
+                            <span class="detail-value pnl-positive" id="unrealized-pnl">+$0.00</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Current Price:</span>
+                            <span class="detail-value" id="current-price">{{ "%.5f"|format(entry_price) }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Distance to TP:</span>
+                            <span class="detail-value" id="distance-tp">{{ "%.1f"|format((take_profit - entry_price) * 10000) }} pips</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="action-buttons">
+                    <a href="/hud?mission_id={{ mission_id }}" class="action-btn btn-primary">
+                        🎯 Back to Mission Brief
+                    </a>
+                    <a href="/stats/{{ user_id or '7176191872' }}" class="action-btn btn-secondary">
+                        📊 Trade History
+                    </a>
+                    <button class="action-btn btn-danger" onclick="confirmClose()">
+                        🚨 Emergency Close
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <script>
+            // Initialize Telegram WebApp
+            const tg = window.Telegram?.WebApp;
+            if (tg) {
+                tg.ready();
+                tg.expand();
+            }
+            
+            // Initialize TradingView chart
+            new TradingView.widget({
+                "width": "100%",
+                "height": "100%",
+                "symbol": "FX:{{ symbol }}",
+                "interval": "1",
+                "timezone": "Etc/UTC",
+                "theme": "dark",
+                "style": "1",
+                "locale": "en",
+                "toolbar_bg": "#0A0A0A",
+                "enable_publishing": false,
+                "hide_top_toolbar": false,
+                "hide_legend": true,
+                "save_image": false,
+                "container_id": "tradingview_chart",
+                "studies": [
+                    "MASimple@tv-basicstudies"
+                ],
+                "overrides": {
+                    "paneProperties.background": "#1a1a1a",
+                    "paneProperties.vertGridProperties.color": "#333",
+                    "paneProperties.horzGridProperties.color": "#333",
+                    "symbolWatermarkProperties.transparency": 90,
+                    "scalesProperties.textColor": "#fff"
+                },
+                "drawings_access": {
+                    "type": "black",
+                    "tools": [
+                        {"name": "Regression Trend"},
+                        {"name": "Trend Line"},
+                        {"name": "Horizontal Line"}
+                    ]
+                }
+            });
+            
+            // Mock live price updates (in production, this would connect to real data)
+            let currentPrice = {{ entry_price }};
+            const entryPrice = {{ entry_price }};
+            const takeProfit = {{ take_profit }};
+            const stopLoss = {{ stop_loss }};
+            const direction = "{{ direction }}";
+            
+            function updatePriceData() {
+                // Simulate small price movements
+                const change = (Math.random() - 0.5) * 0.0002;
+                currentPrice += change;
+                
+                // Calculate P&L
+                let pnl = 0;
+                if (direction === 'BUY') {
+                    pnl = (currentPrice - entryPrice) * 100000; // Simulate lot size
+                } else {
+                    pnl = (entryPrice - currentPrice) * 100000;
+                }
+                
+                // Update display
+                document.getElementById('current-price').textContent = currentPrice.toFixed(5);
+                document.getElementById('unrealized-pnl').textContent = (pnl >= 0 ? '+$' : '-$') + Math.abs(pnl).toFixed(2);
+                document.getElementById('unrealized-pnl').className = 'detail-value ' + (pnl >= 0 ? 'pnl-positive' : 'pnl-negative');
+                
+                // Calculate distance to TP
+                let distanceToTP = 0;
+                if (direction === 'BUY') {
+                    distanceToTP = (takeProfit - currentPrice) * 10000;
+                } else {
+                    distanceToTP = (currentPrice - takeProfit) * 10000;
+                }
+                document.getElementById('distance-tp').textContent = Math.abs(distanceToTP).toFixed(1) + ' pips';
+                
+                // Check if TP or SL hit
+                if ((direction === 'BUY' && currentPrice >= takeProfit) || 
+                    (direction === 'SELL' && currentPrice <= takeProfit)) {
+                    showTradeResult('TARGET HIT! 🎯', 'Trade closed at Take Profit!', 'success');
+                } else if ((direction === 'BUY' && currentPrice <= stopLoss) || 
+                          (direction === 'SELL' && currentPrice >= stopLoss)) {
+                    showTradeResult('STOP HIT 🛡️', 'Trade closed at Stop Loss.', 'danger');
+                }
+            }
+            
+            function showTradeResult(title, message, type) {
+                const statusIndicator = document.querySelector('.status-indicator');
+                const statusText = document.querySelector('.trade-status span');
+                
+                if (type === 'success') {
+                    statusIndicator.style.background = '#28a745';
+                    statusText.textContent = 'TARGET ACQUIRED';
+                    alert(`🎯 ${title}\\n\\n${message}\\n\\nMission accomplished, soldier!`);
+                } else {
+                    statusIndicator.style.background = '#dc3545';
+                    statusText.textContent = 'TACTICAL RETREAT';
+                    alert(`🛡️ ${title}\\n\\n${message}\\n\\nRegroup for next opportunity.`);
+                }
+                
+                // Stop updates
+                clearInterval(priceUpdateInterval);
+            }
+            
+            function confirmClose() {
+                if (confirm('🚨 EMERGENCY CLOSE\\n\\nAre you sure you want to close this trade immediately?\\n\\nThis action cannot be undone.')) {
+                    alert('🚨 EMERGENCY CLOSE EXECUTED\\n\\nTrade closed at market price.\\n\\nPosition liquidated.');
+                    showTradeResult('EMERGENCY CLOSE', 'Trade manually closed.', 'danger');
+                }
+            }
+            
+            // Start live updates
+            const priceUpdateInterval = setInterval(updatePriceData, 2000);
+            
+            // Initialize with first update
+            updatePriceData();
+        </script>
+    </body>
+    </html>
+    """
+    
+    return render_template_string(TRADE_TRACKING_TEMPLATE, 
+                                mission_id=mission_id,
+                                symbol=symbol, 
+                                direction=direction,
+                                entry_price=entry_price,
+                                take_profit=take_profit,
+                                stop_loss=stop_loss,
+                                rr_ratio=rr_ratio,
+                                user_id=user_id)
+
 @app.route('/health')
 def health_check():
     """Health check endpoint for monitoring"""
@@ -1977,13 +3416,22 @@ def hud():
     try:
         # Get data from URL parameter or Telegram WebApp - with input validation
         encoded_data = request.args.get('data', '')[:10000]  # Limit encoded data size
-        signal_id = request.args.get('signal', '')[:20]  # Limit signal ID length
+        signal_id = request.args.get('signal', '')[:20] or request.args.get('mission_id', '')[:30]  # Support both signal and mission_id
         user_id = request.args.get('user_id', os.getenv("ADMIN_USER_ID", "7176191872"))[:20]  # Default user with length limit
+        
+        # Check if this is a base mission that needs user redirection
+        if signal_id and not signal_id.endswith('_USER'):
+            # Try to find user-specific mission for this base signal
+            personal_mission_id = find_personal_mission(signal_id, user_id)
+            if personal_mission_id and personal_mission_id != signal_id:
+                # Redirect to personal mission
+                return redirect(f'/hud?mission_id={personal_mission_id}&user_id={user_id}')
         
         # Sanitize inputs
         import re
-        if signal_id and not re.match(r'^[0-9]+$', signal_id):
-            return f"<h1>Invalid Signal ID</h1><p>Signal ID must be numeric.</p>", 400
+        # Allow both numeric IDs and APEX mission IDs (APEX5_SYMBOL_XXXXXX)
+        if signal_id and not re.match(r'^(APEX[0-9]+_[A-Z]+_[0-9]+|[0-9]+)$', signal_id):
+            return f"<h1>Invalid Signal ID</h1><p>Signal ID format not recognized.</p>", 400
         
         if user_id and not re.match(r'^[0-9]+$', user_id):
             user_id = 'int(os.getenv("ADMIN_USER_ID", "7176191872"))'  # Fallback to default

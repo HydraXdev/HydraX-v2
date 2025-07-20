@@ -22,7 +22,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, Set, Optional
 
-from telegram import Bot
+from telegram import Bot, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.error import TelegramError
 from dotenv import load_dotenv
 
@@ -72,8 +72,9 @@ except ImportError:
 
 # Configuration
 class Config:
-    BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-    CHAT_ID = os.getenv("CHAT_ID", "7176191872")
+    BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "7854827710:AAGsO-vgMpsTOVNu6zoo_-GGJkYQd97Mc5w")
+    CHAT_ID = os.getenv("CHAT_ID", "-1002581996861")  # Main group
+    COMMANDER_ID = "7176191872"  # Commander's personal ID for dual notifications
     LOG_FILE = "/root/HydraX-v2/apex_v5_live_real.log"
     WEBAPP_URL = "https://joinbitten.com/hud"
     COOLDOWN_SECONDS = 60
@@ -206,39 +207,55 @@ class ApexTelegramConnector:
         
         return None
     
-    def format_telegram_message(self, signal: Dict, mission: Dict, urgency: str) -> str:
-        """Format Telegram message with proper WebApp URL"""
+    def format_telegram_message(self, signal: Dict, mission: Dict, urgency: str) -> tuple:
+        """Format Telegram message with button markup - returns (message, keyboard)"""
         symbol = signal["symbol"].upper()
         direction = signal["type"].upper()
         tcs = signal["tcs_score"]
         
-        webapp_url = f"{Config.WEBAPP_URL}?mission_id={mission['mission_id']}"
+        # Create mission data with tier routing
+        import json
+        import urllib.parse
+        mission_data = {
+            'mission_id': mission['mission_id'],
+            'signal': signal,
+            'timestamp': mission.get('timestamp'),
+            'user_tier': 'COMMANDER'  # Default tier - will be user-specific later
+        }
         
-        # Format message based on urgency
-        if tcs >= Config.TCS_CRITICAL:
-            msg = f"🚨 **{urgency}** SIGNAL DETECTED\n"
-        elif tcs >= Config.TCS_HIGH:
-            msg = f"⚡ **{urgency}** Signal Alert\n"
+        encoded_data = urllib.parse.quote(json.dumps(mission_data))
+        webapp_url = f"{Config.WEBAPP_URL}?data={encoded_data}"
+        
+        # Two different alert templates based on TCS - ORIGINAL CORRECT FORMAT
+        if tcs >= 80:
+            # SNIPER OPS: High confidence (80%+)
+            message = f"⚡ **SNIPER OPS** ⚡ [{tcs}%]\n🎖️ {symbol} ELITE ACCESS"
+            button_text = "VIEW INTEL"
         else:
-            msg = f"📊 **{urgency}** Signal\n"
+            # RAPID ASSAULT: Medium confidence (65-79%)
+            message = f"🔫 **RAPID ASSAULT** [{tcs}%]\n🔥 {symbol} STRIKE 💥"
+            button_text = "MISSION BRIEF"
         
-        msg += f"**{symbol}** | {direction} | {tcs}% TCS\n"
-        msg += f"⏰ Expires in 5 minutes\n"
-        msg += f"[🎯 VIEW INTEL]({webapp_url})"
+        # Create inline keyboard with button
+        from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+        keyboard = InlineKeyboardMarkup([[
+            InlineKeyboardButton(text=button_text, url=webapp_url)
+        ]])
         
-        return msg
+        return message, keyboard
     
     async def send_telegram_alert(self, signal: Dict, mission: Dict) -> bool:
         """Send Telegram alert for signal"""
         try:
             urgency = self.get_urgency_level(signal["tcs_score"])
-            message = self.format_telegram_message(signal, mission, urgency)
+            message, keyboard = self.format_telegram_message(signal, mission, urgency)
             
             await self.bot.send_message(
                 chat_id=Config.CHAT_ID,
                 text=message,
                 parse_mode="Markdown",
-                disable_web_page_preview=False
+                reply_markup=keyboard,
+                disable_web_page_preview=True
             )
             
             logger.info(f"Sent Telegram alert for {signal['symbol']} {signal['type']} (TCS: {signal['tcs_score']}%)")

@@ -1,0 +1,108 @@
+[
+  {
+    "user_id": "12345",
+    "timestamp": "2025-07-15T16:17:48.199934",
+    "trigger_type": "tier_advancement",
+    "trigger_data": {
+      "new_tier": "COMMANDER"
+    },
+    "old_profile": {
+      "assigned_personality": "DRILL_SERGEANT",
+      "voice_id": "ErXwobaYiN019PkySvjV",
+      "current_mood": "default",
+      "energy": 0.9,
+      "humor": 0.2,
+      "aggression": 0.8,
+      "voice_settings": {
+        "stability": 0.3,
+        "similarity_boost": 0.8,
+        "style": 0.6
+      },
+      "xp_tier": "FANG",
+      "assigned_at": "2025-07-15T16:17:47.168125",
+      "last_evolution": "2025-07-15T16:17:47.168134",
+      "evolution_stage": 0,
+      "adaptation_factors": {
+        "success_rate": 0.5,
+        "engagement_level": 0.5,
+        "interaction_frequency": 0.5
+      }
+    },
+    "new_profile": {
+      "assigned_personality": "DRILL_SERGEANT",
+      "voice_id": "ErXwobaYiN019PkySvjV",
+      "current_mood": "evolving",
+      "energy": 0.9,
+      "humor": 0.2,
+      "aggression": 0.8,
+      "voice_settings": {
+        "stability": 0.4,
+        "similarity_boost": 0.7,
+        "style": 0.5
+      },
+      "xp_tier": "COMMANDER",
+      "assigned_at": "2025-07-15T16:17:47.168125",
+      "last_evolution": "2025-07-15T16:17:48.199926",
+      "evolution_stage": 0.6,
+      "adaptation_factors": {
+        "success_rate": 0.5,
+        "engagement_level": 0.5,
+        "interaction_frequency": 0.5
+      }
+    },
+    "personality": "DRILL_SERGEANT"
+  },
+  {
+    "user_id": "12345",
+    "timestamp": "2025-07-15T17:18:50.349161",
+    "trigger_type": "tier_advancement",
+    "trigger_data": {
+      "new_tier": "FANG"
+    },
+    "old_profile": {
+      "assigned_personality": "DRILL_SERGEANT",
+      "voice_id": "ErXwobaYiN019PkySvjV",
+      "current_mood": "evolving",
+      "energy": 0.9,
+      "humor": 0.2,
+      "aggression": 0.8,
+      "voice_settings": {
+        "stability": 0.4,
+        "similarity_boost": 0.7,
+        "style": 0.5
+      },
+      "xp_tier": "COMMANDER",
+      "assigned_at": "2025-07-15T16:17:47.168125",
+      "last_evolution": "2025-07-15T16:17:48.199926",
+      "evolution_stage": 0.6,
+      "adaptation_factors": {
+        "success_rate": 0.5,
+        "engagement_level": 0.5,
+        "interaction_frequency": 0.5
+      }
+    },
+    "new_profile": {
+      "assigned_personality": "DRILL_SERGEANT",
+      "voice_id": "ErXwobaYiN019PkySvjV",
+      "current_mood": "evolving",
+      "energy": 0.9,
+      "humor": 0.2,
+      "aggression": 0.8,
+      "voice_settings": {
+        "stability": 0.4,
+        "similarity_boost": 0.7,
+        "style": 0.5
+      },
+      "xp_tier": "FANG",
+      "assigned_at": "2025-07-15T16:17:47.168125",
+      "last_evolution": "2025-07-15T17:18:50.349155",
+      "evolution_stage": 0.3,
+      "adaptation_factors": {
+        "success_rate": 0.5,
+        "engagement_level": 0.5,
+        "interaction_frequency": 0.5
+      }
+    },
+    "personality": "DRILL_SERGEANT"
+  }
+]

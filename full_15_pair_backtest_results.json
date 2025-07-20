@@ -1,0 +1,148 @@
+{
+  "backtest_metadata": {
+    "period_days": 213,
+    "start_date": "2023-06-01T00:00:00",
+    "end_date": "2023-12-31T00:00:00",
+    "pairs_analyzed": 15,
+    "total_signals_generated": 16236,
+    "signals_50_plus_tcs": 16236
+  },
+  "overall_performance_50_plus": {
+    "total_signals": 16236,
+    "win_rate_percent": 56.1,
+    "total_r_multiple": 14734.65,
+    "avg_r_per_trade": 0.908,
+    "daily_signal_rate": 76.2,
+    "expectancy": 0.908
+  },
+  "tcs_range_analysis": {
+    "60-65": {
+      "total_signals": 10,
+      "win_rate_percent": 60.0,
+      "total_r_multiple": 7.71,
+      "avg_r_per_trade": 0.771
+    },
+    "65-70": {
+      "total_signals": 215,
+      "win_rate_percent": 52.6,
+      "total_r_multiple": 159.69,
+      "avg_r_per_trade": 0.743
+    },
+    "70-75": {
+      "total_signals": 1459,
+      "win_rate_percent": 54.6,
+      "total_r_multiple": 1118.83,
+      "avg_r_per_trade": 0.767
+    },
+    "75-80": {
+      "total_signals": 4132,
+      "win_rate_percent": 55.8,
+      "total_r_multiple": 3349.12,
+      "avg_r_per_trade": 0.811
+    },
+    "80-85": {
+      "total_signals": 5583,
+      "win_rate_percent": 56.4,
+      "total_r_multiple": 4683.82,
+      "avg_r_per_trade": 0.839
+    },
+    "85-90": {
+      "total_signals": 3637,
+      "win_rate_percent": 56.1,
+      "total_r_multiple": 3996.03,
+      "avg_r_per_trade": 1.099
+    },
+    "90+": {
+      "total_signals": 1200,
+      "win_rate_percent": 58.3,
+      "total_r_multiple": 1419.45,
+      "avg_r_per_trade": 1.183
+    }
+  },
+  "pair_performance": {
+    "EURUSD": {
+      "total_signals": 1945,
+      "win_rate_percent": 59.4,
+      "total_r_multiple": 1992.64,
+      "avg_tcs": 81.5
+    },
+    "GBPUSD": {
+      "total_signals": 1952,
+      "win_rate_percent": 56.0,
+      "total_r_multiple": 1812.63,
+      "avg_tcs": 83.0
+    },
+    "USDJPY": {
+      "total_signals": 1656,
+      "win_rate_percent": 56.0,
+      "total_r_multiple": 1433.34,
+      "avg_tcs": 80.3
+    },
+    "USDCAD": {
+      "total_signals": 1015,
+      "win_rate_percent": 57.5,
+      "total_r_multiple": 956.9,
+      "avg_tcs": 81.3
+    },
+    "GBPJPY": {
+      "total_signals": 1042,
+      "win_rate_percent": 55.3,
+      "total_r_multiple": 951.97,
+      "avg_tcs": 84.0
+    },
+    "AUDJPY": {
+      "total_signals": 698,
+      "win_rate_percent": 56.4,
+      "total_r_multiple": 620.11,
+      "avg_tcs": 78.3
+    },
+    "GBPCHF": {
+      "total_signals": 980,
+      "win_rate_percent": 58.4,
+      "total_r_multiple": 971.32,
+      "avg_tcs": 83.1
+    },
+    "AUDUSD": {
+      "total_signals": 732,
+      "win_rate_percent": 54.1,
+      "total_r_multiple": 571.16,
+      "avg_tcs": 77.9
+    },
+    "NZDUSD": {
+      "total_signals": 685,
+      "win_rate_percent": 55.9,
+      "total_r_multiple": 566.05,
+      "avg_tcs": 78.0
+    },
+    "USDCHF": {
+      "total_signals": 991,
+      "win_rate_percent": 58.4,
+      "total_r_multiple": 973.27,
+      "avg_tcs": 81.1
+    },
+    "EURGBP": {
+      "total_signals": 1024,
+      "win_rate_percent": 58.1,
+      "total_r_multiple": 988.81,
+      "avg_tcs": 82.1
+    },
+    "GBPNZD": {
+      "total_signals": 1035,
+      "win_rate_percent": 53.6,
+      "total_r_multiple": 910.9,
+      "avg_tcs": 84.1
+    },
+    "GBPAUD": {
+      "total_signals": 1733,
+      "win_rate_percent": 52.3,
+      "total_r_multiple": 1406.83,
+      "avg_tcs": 82.1
+    },
+    "EURAUD": {
+      "total_signals": 748,
+      "win_rate_percent": 53.1,
+      "total_r_multiple": 578.72,
+      "avg_tcs": 79.1
+    }
+  }
+}

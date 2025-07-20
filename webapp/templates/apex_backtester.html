@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 APEX 6.0 Backtester | BITTEN</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
+            color: #00ff00;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.3);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #00ff00;
+        }
+
+        .header h1 {
+            color: #00ff00;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px #00ff00;
+        }
+
+        .header p {
+            color: #888;
+            font-size: 1.1rem;
+        }
+
+        .config-info {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid #00ff00;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+
+        .run-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .run-btn {
+            background: linear-gradient(45deg, #00aa00, #00ff00);
+            color: #000;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 255, 0, 0.3);
+        }
+
+        .run-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 255, 0, 0.5);
+        }
+
+        .run-btn:disabled {
+            background: #333;
+            color: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .progress-section {
+            margin: 20px 0;
+            display: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #333;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00aa00, #00ff00);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .debug-info {
+            background: rgba(0, 100, 255, 0.1);
+            border: 1px solid #0066ff;
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 0.8rem;
+            color: #0099ff;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        .metric-card {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid #00ff00;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #00ff00;
+            margin-bottom: 5px;
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            color: #888;
+        }
+
+        .chart-section {
+            margin: 30px 0;
+        }
+
+        .chart-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .chart-tab {
+            background: #333;
+            color: #888;
+            border: 1px solid #555;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .chart-tab.active {
+            background: #00aa00;
+            color: #000;
+            border-color: #00ff00;
+        }
+
+        .chart-container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+            height: 500px;
+            position: relative;
+        }
+
+        .results-summary {
+            background: linear-gradient(135deg, rgba(0, 100, 255, 0.1), rgba(128, 0, 255, 0.1));
+            border: 2px solid #0066ff;
+            border-radius: 10px;
+            padding: 25px;
+            margin-top: 30px;
+        }
+
+        .results-summary h3 {
+            color: #0099ff;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .performance-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .performance-section h4 {
+            color: #888;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 5px;
+        }
+
+        .performance-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            font-size: 0.9rem;
+        }
+
+        .performance-row .label {
+            color: #ccc;
+        }
+
+        .performance-row .value {
+            font-weight: bold;
+        }
+
+        .value.positive { color: #00ff00; }
+        .value.negative { color: #ff4444; }
+        .value.neutral { color: #0099ff; }
+
+        .assessment {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .assessment h4 {
+            margin-bottom: 15px;
+        }
+
+        .disclaimer {
+            background: rgba(128, 128, 128, 0.1);
+            border: 1px solid #666;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 0.8rem;
+            color: #999;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .chart-tabs {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧪 APEX 6.0 Enhanced Backtester</h1>
+            <p>Comprehensive testing framework for the BITTEN trading system</p>
+        </div>
+
+        <div class="config-info">
+            <strong>Configuration:</strong> <span id="config-summary">Loading...</span>
+        </div>
+
+        <div class="run-section">
+            <button id="runBacktest" class="run-btn">🚀 START BACKTEST</button>
+        </div>
+
+        <div id="progressSection" class="progress-section">
+            <div class="progress-bar">
+                <div id="progressFill" class="progress-fill"></div>
+            </div>
+            <div class="text-center" id="progressText">Progress: 0%</div>
+            <div id="debugInfo" class="debug-info"></div>
+        </div>
+
+        <div id="resultsSection" style="display: none;">
+            <div class="metrics-grid" id="metricsGrid">
+                <!-- Metrics will be populated by JavaScript -->
+            </div>
+
+            <div class="chart-section">
+                <div class="chart-tabs" id="chartTabs">
+                    <!-- Chart tabs will be populated by JavaScript -->
+                </div>
+                <div class="chart-container">
+                    <canvas id="resultsChart"></canvas>
+                </div>
+            </div>
+
+            <div class="results-summary">
+                <h3>📊 Backtest Results Summary</h3>
+                <div class="performance-grid" id="performanceGrid">
+                    <!-- Performance details will be populated by JavaScript -->
+                </div>
+                <div class="assessment" id="systemAssessment">
+                    <!-- System assessment will be populated by JavaScript -->
+                </div>
+                <div class="disclaimer">
+                    <strong>Disclaimer:</strong> This is a simulated backtest with realistic but not perfect market conditions. 
+                    Real trading results may vary due to spreads, slippage, execution delays, and market conditions not captured in simulation.
+                    Always validate with forward testing and proper risk management.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration - matches the React component
+        const config = {
+            pairs: [
+                'EURUSD', 'GBPUSD', 'USDJPY', 'USDCAD', 'GBPJPY', 'AUDUSD',
+                'EURGBP', 'USDCHF', 'EURJPY', 'NZDUSD', 'AUDJPY', 'GBPCHF',
+                'GBPAUD', 'EURAUD', 'GBPNZD'
+            ],
+            targetSignalsPerDay: 25,
+            scanEveryHours: 1,
+            forceSignalGeneration: true,
+            defaultSL: 10,
+            defaultTP: 20,
+            maxRiskPerTrade: 2,
+            minWinRate: 50,
+            minProfitFactor: 1.2,
+            backtestDays: 180,
+            startingBalance: 10000,
+            dollarPerPip: 12
+        };
+
+        // Global variables
+        let isRunning = false;
+        let results = null;
+        let currentChart = null;
+        let selectedChartType = 'equity';
+
+        // Chart configurations
+        const chartConfigs = [
+            { id: 'equity', name: 'Equity Curve', icon: '📈' },
+            { id: 'daily', name: 'Daily Performance', icon: '📊' },
+            { id: 'pairs', name: 'Pair Analysis', icon: '💱' },
+            { id: 'volume', name: 'Signal Volume', icon: '⚡' }
+        ];
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            updateConfigSummary();
+            setupEventListeners();
+            createChartTabs();
+        });
+
+        function updateConfigSummary() {
+            const summary = `${config.pairs.length} pairs • ${config.backtestDays} days • Target: ${config.targetSignalsPerDay} signals/day • Starting: $${config.startingBalance.toLocaleString()}`;
+            document.getElementById('config-summary').textContent = summary;
+        }
+
+        function setupEventListeners() {
+            document.getElementById('runBacktest').addEventListener('click', runBacktest);
+        }
+
+        function createChartTabs() {
+            const tabsContainer = document.getElementById('chartTabs');
+            chartConfigs.forEach(chart => {
+                const tab = document.createElement('div');
+                tab.className = `chart-tab ${chart.id === selectedChartType ? 'active' : ''}`;
+                tab.textContent = `${chart.icon} ${chart.name}`;
+                tab.addEventListener('click', () => selectChart(chart.id));
+                tabsContainer.appendChild(tab);
+            });
+        }
+
+        function selectChart(chartType) {
+            selectedChartType = chartType;
+            document.querySelectorAll('.chart-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            if (results) {
+                renderChart();
+            }
+        }
+
+        async function runBacktest() {
+            isRunning = true;
+            document.getElementById('runBacktest').disabled = true;
+            document.getElementById('runBacktest').textContent = 'Running Backtest...';
+            document.getElementById('progressSection').style.display = 'block';
+            document.getElementById('resultsSection').style.display = 'none';
+
+            try {
+                setProgress(0, 'Initializing backtest...');
+                
+                // Call the backend API to run the backtest
+                const response = await fetch('/api/run_apex_backtest', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(config)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                // Simulate progress updates (since we can't get real-time updates easily)
+                for (let i = 10; i <= 90; i += 10) {
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                    setProgress(i, `Processing day ${Math.floor(i * config.backtestDays / 100)}...`);
+                }
+
+                setProgress(100, 'Backtest complete!');
+                results = data.results;
+                
+                setTimeout(() => {
+                    displayResults();
+                }, 500);
+
+            } catch (error) {
+                console.error('Backtest failed:', error);
+                setDebugInfo(`Error: ${error.message}`, true);
+            } finally {
+                isRunning = false;
+                document.getElementById('runBacktest').disabled = false;
+                document.getElementById('runBacktest').textContent = '🚀 START BACKTEST';
+            }
+        }
+
+        function setProgress(percent, message) {
+            document.getElementById('progressFill').style.width = `${percent}%`;
+            document.getElementById('progressText').textContent = `Progress: ${percent}%`;
+            if (message) {
+                setDebugInfo(message);
+            }
+        }
+
+        function setDebugInfo(message, isError = false) {
+            const debugElement = document.getElementById('debugInfo');
+            debugElement.textContent = message;
+            debugElement.style.borderColor = isError ? '#ff4444' : '#0066ff';
+            debugElement.style.color = isError ? '#ff6666' : '#0099ff';
+        }
+
+        function displayResults() {
+            if (!results) return;
+
+            document.getElementById('resultsSection').style.display = 'block';
+            createMetricsCards();
+            renderChart();
+            createPerformanceGrid();
+            createSystemAssessment();
+            
+            // Scroll to results
+            document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function createMetricsCards() {
+            const metrics = [
+                { label: 'Total Trades', value: results.summary.totalTrades, class: 'neutral' },
+                { label: 'Win Rate', value: `${results.summary.winRate}%`, class: parseFloat(results.summary.winRate) >= 50 ? 'positive' : 'negative' },
+                { label: 'Signals/Day', value: results.summary.avgSignalsPerDay, class: 'neutral' },
+                { label: 'Total Pips', value: results.summary.totalPips, class: parseFloat(results.summary.totalPips) > 0 ? 'positive' : 'negative' },
+                { label: 'Profit Factor', value: results.summary.profitFactor, class: parseFloat(results.summary.profitFactor) >= 1.2 ? 'positive' : 'negative' },
+                { label: 'Net Profit', value: `$${results.summary.netProfit}`, class: parseFloat(results.summary.netProfit) > 0 ? 'positive' : 'negative' }
+            ];
+
+            const grid = document.getElementById('metricsGrid');
+            grid.innerHTML = '';
+            
+            metrics.forEach(metric => {
+                const card = document.createElement('div');
+                card.className = 'metric-card';
+                card.innerHTML = `
+                    <div class="metric-value ${metric.class}">${metric.value}</div>
+                    <div class="metric-label">${metric.label}</div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function renderChart() {
+            const ctx = document.getElementById('resultsChart').getContext('2d');
+            
+            // Destroy existing chart
+            if (currentChart) {
+                currentChart.destroy();
+            }
+
+            let chartData;
+            let chartOptions;
+
+            switch (selectedChartType) {
+                case 'equity':
+                    chartData = {
+                        labels: results.equityCurve.map(point => new Date(point.date).toLocaleDateString()),
+                        datasets: [{
+                            label: 'Account Equity',
+                            data: results.equityCurve.map(point => point.equity),
+                            borderColor: '#00ff00',
+                            backgroundColor: 'rgba(0, 255, 0, 0.1)',
+                            fill: true,
+                            tension: 0.1
+                        }]
+                    };
+                    chartOptions = {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { labels: { color: '#fff' } }
+                        },
+                        scales: {
+                            x: { 
+                                ticks: { display: false },
+                                grid: { color: '#333' }
+                            },
+                            y: { 
+                                ticks: { color: '#fff' },
+                                grid: { color: '#333' }
+                            }
+                        }
+                    };
+                    break;
+
+                case 'daily':
+                    chartData = {
+                        labels: results.dailyStats.map(day => new Date(day.date).toLocaleDateString()),
+                        datasets: [
+                            {
+                                label: 'Daily Signals',
+                                data: results.dailyStats.map(day => day.signals),
+                                backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                                type: 'bar'
+                            },
+                            {
+                                label: 'Daily Pips',
+                                data: results.dailyStats.map(day => day.pips),
+                                backgroundColor: 'rgba(16, 185, 129, 0.8)',
+                                type: 'bar'
+                            }
+                        ]
+                    };
+                    chartOptions = {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { labels: { color: '#fff' } }
+                        },
+                        scales: {
+                            x: { 
+                                ticks: { display: false },
+                                grid: { color: '#333' }
+                            },
+                            y: { 
+                                ticks: { color: '#fff' },
+                                grid: { color: '#333' }
+                            }
+                        }
+                    };
+                    break;
+
+                case 'pairs':
+                    const pairData = Object.entries(results.pairStats).map(([pair, stats]) => ({
+                        pair,
+                        trades: stats.trades,
+                        pips: parseFloat(stats.pips.toFixed(1))
+                    }));
+                    
+                    chartData = {
+                        labels: pairData.map(item => item.pair),
+                        datasets: [
+                            {
+                                label: 'Trades',
+                                data: pairData.map(item => item.trades),
+                                backgroundColor: 'rgba(59, 130, 246, 0.8)'
+                            },
+                            {
+                                label: 'Pips',
+                                data: pairData.map(item => item.pips),
+                                backgroundColor: 'rgba(16, 185, 129, 0.8)'
+                            }
+                        ]
+                    };
+                    chartOptions = {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { labels: { color: '#fff' } }
+                        },
+                        scales: {
+                            x: { 
+                                ticks: { color: '#fff' },
+                                grid: { color: '#333' }
+                            },
+                            y: { 
+                                ticks: { color: '#fff' },
+                                grid: { color: '#333' }
+                            }
+                        }
+                    };
+                    break;
+
+                case 'volume':
+                    chartData = {
+                        labels: results.dailyStats.map(day => new Date(day.date).toLocaleDateString()),
+                        datasets: [
+                            {
+                                label: 'Daily Signals',
+                                data: results.dailyStats.map(day => day.signals),
+                                borderColor: '#3b82f6',
+                                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                fill: false
+                            },
+                            {
+                                label: 'Target',
+                                data: new Array(results.dailyStats.length).fill(config.targetSignalsPerDay),
+                                borderColor: '#ef4444',
+                                borderDash: [5, 5],
+                                fill: false
+                            }
+                        ]
+                    };
+                    chartOptions = {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { labels: { color: '#fff' } }
+                        },
+                        scales: {
+                            x: { 
+                                ticks: { display: false },
+                                grid: { color: '#333' }
+                            },
+                            y: { 
+                                ticks: { color: '#fff' },
+                                grid: { color: '#333' }
+                            }
+                        }
+                    };
+                    break;
+            }
+
+            currentChart = new Chart(ctx, {
+                type: selectedChartType === 'pairs' || selectedChartType === 'daily' ? 'bar' : 'line',
+                data: chartData,
+                options: chartOptions
+            });
+        }
+
+        function createPerformanceGrid() {
+            const grid = document.getElementById('performanceGrid');
+            grid.innerHTML = `
+                <div class="performance-section">
+                    <h4>📈 Performance Metrics</h4>
+                    <div class="performance-row">
+                        <span class="label">Return:</span>
+                        <span class="value ${parseFloat(results.summary.returnPercent) > 0 ? 'positive' : 'negative'}">${results.summary.returnPercent}%</span>
+                    </div>
+                    <div class="performance-row">
+                        <span class="label">Sharpe Ratio:</span>
+                        <span class="value neutral">${results.summary.sharpeRatio}</span>
+                    </div>
+                    <div class="performance-row">
+                        <span class="label">Max Drawdown:</span>
+                        <span class="value negative">${results.summary.maxDrawdownPercent}%</span>
+                    </div>
+                    <div class="performance-row">
+                        <span class="label">Avg Win:</span>
+                        <span class="value positive">${results.summary.avgWin} pips</span>
+                    </div>
+                    <div class="performance-row">
+                        <span class="label">Avg Loss:</span>
+                        <span class="value negative">${results.summary.avgLoss} pips</span>
+                    </div>
+                </div>
+                
+                <div class="performance-section">
+                    <h4>⚖️ Risk Metrics</h4>
+                    <div class="performance-row">
+                        <span class="label">Max Consecutive Losses:</span>
+                        <span class="value negative">${results.summary.maxConsecutiveLosses}</span>
+                    </div>
+                    <div class="performance-row">
+                        <span class="label">Total Trading Days:</span>
+                        <span class="value neutral">${config.backtestDays}</span>
+                    </div>
+                    <div class="performance-row">
+                        <span class="label">Trades per Day:</span>
+                        <span class="value neutral">${results.summary.avgTradesPerDay}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function createSystemAssessment() {
+            const profitFactor = parseFloat(results.summary.profitFactor);
+            let assessment;
+
+            if (profitFactor >= 1.5) {
+                assessment = {
+                    status: 'EXCELLENT SYSTEM',
+                    color: 'positive',
+                    icon: '✅',
+                    message: `Profit factor of ${results.summary.profitFactor} indicates a robust trading system.`
+                };
+            } else if (profitFactor >= 1.2) {
+                assessment = {
+                    status: 'PROFITABLE SYSTEM',
+                    color: 'neutral',
+                    icon: '📊',
+                    message: `Profit factor of ${results.summary.profitFactor} shows consistent profitability.`
+                };
+            } else if (profitFactor >= 1.0) {
+                assessment = {
+                    status: 'MARGINAL SYSTEM',
+                    color: 'neutral',
+                    icon: '⚠️',
+                    message: `Profit factor of ${results.summary.profitFactor} requires optimization.`
+                };
+            } else {
+                assessment = {
+                    status: 'UNPROFITABLE',
+                    color: 'negative',
+                    icon: '❌',
+                    message: 'System needs significant improvement.'
+                };
+            }
+
+            document.getElementById('systemAssessment').innerHTML = `
+                <h4>🎯 System Assessment</h4>
+                <p class="value ${assessment.color}" style="font-weight: bold; margin: 15px 0;">
+                    ${assessment.icon} <strong>${assessment.status}:</strong> ${assessment.message}
+                </p>
+                <p style="margin-top: 15px; color: #ccc;">
+                    <strong>Signal Generation:</strong> System generated ${results.summary.avgSignalsPerDay} signals per day 
+                    with ${results.summary.winRate}% win rate over ${config.backtestDays} trading days.
+                </p>
+            `;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "message_id": 3728,
+  "mission_id": "APEX5_AUDUSD_224047",
+  "original_message": "\ud83d\udd2b RAPID ASSAULT [65%]\n\ud83d\udd25 AUDUSD STRIKE \ud83d\udca5\n[MISSION BRIEF](https://joinbitten.com/hud?mission_id=APEX5_AUDUSD_224047)",
+  "symbol": "AUDUSD",
+  "signal_type": "RAPID_ASSAULT",
+  "sent_at": "2025-07-17T22:40:48.440946",
+  "entry_expires_at": "2025-07-17T23:10:48.440954",
+  "delete_at": "2025-07-18T02:40:48.440961",
+  "chat_id": "-1002581996861"
+}

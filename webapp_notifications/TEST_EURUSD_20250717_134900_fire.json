@@ -1,0 +1,13 @@
+{
+  "type": "fire_confirmation",
+  "timestamp": "2025-07-17T13:51:30.638626",
+  "data": {
+    "trade_uuid": "TEST_EURUSD_20250717_134900",
+    "symbol": "EURUSD",
+    "direction": "BUY",
+    "strike_price": 1.0895
+  },
+  "display_duration": 5000,
+  "sound": true,
+  "animation": true
+}

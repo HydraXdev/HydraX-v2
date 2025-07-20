@@ -1,12 +1,14 @@
 //+------------------------------------------------------------------+
-//|                          BITTENBridge_v3_ENHANCED.mq5            |
+//| BITTENBridge_V3_ENHANCED.mq5 – v3.1.0 (Symbol Patch Edition)     |
 //|                                          BITTEN Trading System   |
 //|              Enhanced EA with full two-way communication         |
 //|                     Account data, advanced trade management      |
 //+------------------------------------------------------------------+
 #property strict
-#property version   "3.0"
+#property version   "3.1.0"
 #property description "BITTEN Enhanced Bridge v3 - Full account integration & advanced management"
+
+#include <Trade\Trade.mqh>
 
 // Input parameters
 input string InstructionFile = "bitten_instructions_secure.txt";  // Trade instructions
@@ -80,10 +82,19 @@ MultiTPLevel multiTPPositions[];
 //+------------------------------------------------------------------+
 int OnInit()
 {
-    Print("=== BITTEN Enhanced Bridge v3.0 Initialized ===");
+    Print("=== BITTEN Enhanced Bridge v3.1.0 (Symbol Patch Edition) Initialized ===");
+    Print("🔥 UNIQUE_ID_CLAUDE_PATCH_SUCCESS_2025_07_15 🔥");
+    Print("✅ FILE_COMMON + SymbolSelect() patches ACTIVE");
     Print("Two-way communication enabled");
     Print("Account reporting: YES");
     Print("Advanced trade management: YES");
+    
+    // Print file paths for debugging
+    Print("📁 Common Data Path: ", TerminalInfoString(TERMINAL_COMMONDATA_PATH));
+    Print("📄 Files will be written to: ", TerminalInfoString(TERMINAL_COMMONDATA_PATH), "\\Files\\");
+    Print("🎯 BITTEN signal files path: ", TerminalInfoString(TERMINAL_COMMONDATA_PATH), "\\Files\\BITTEN\\");
+    Print("📊 Market data will update every 1 second");
+    Print("🔄 Timer interval: ", CheckIntervalMs, "ms");
     
     // Write initial status
     WriteStatus("initialized", "BITTEN Enhanced Bridge v3 ready");
@@ -138,7 +149,7 @@ void OnTimer()
 //+------------------------------------------------------------------+
 void WriteAccountData()
 {
-    int handle = FileOpen(AccountFile, FILE_WRITE | FILE_TXT | FILE_ANSI);
+    int handle = FileOpen(AccountFile, FILE_WRITE | FILE_TXT | FILE_ANSI | FILE_COMMON);
     if (handle == INVALID_HANDLE) return;
     
     // Gather comprehensive account data
@@ -198,7 +209,8 @@ void WriteAccountData()
 //+------------------------------------------------------------------+
 void WriteMarketData()
 {
-    int handle = FileOpen(MarketFile, FILE_WRITE | FILE_TXT | FILE_ANSI);
+    // Legacy market data file for compatibility
+    int handle = FileOpen(MarketFile, FILE_WRITE | FILE_TXT | FILE_ANSI | FILE_COMMON);
     if (handle == INVALID_HANDLE) return;
     
     // Get market data for major pairs
@@ -223,14 +235,105 @@ void WriteMarketData()
     
     FileWriteString(handle, json);
     FileClose(handle);
+    
+    // NEW: Write individual signal files for APEX
+    WriteSignalFiles();
+}
+
+//+------------------------------------------------------------------+
+void WriteSignalFiles()
+{
+    // APEX v5.0 expects individual files per symbol in BITTEN subdirectory
+    string symbols[] = {"EURUSD", "GBPUSD", "USDJPY", "USDCAD", "AUDUSD", "USDCHF", 
+                       "NZDUSD", "EURGBP", "EURJPY", "GBPJPY", "XAUUSD", "GBPNZD", 
+                       "GBPAUD", "EURAUD", "GBPCHF"};
+    
+    for (int i = 0; i < ArraySize(symbols); i++)
+    {
+        SymbolSelect(symbols[i], true);  // Force selection if needed
+        if (SymbolInfoInteger(symbols[i], SYMBOL_SELECT))
+        {
+            // Create BITTEN subdirectory signal file
+            string filename = "BITTEN\\" + symbols[i] + ".json";
+            int handle = FileOpen(filename, FILE_WRITE | FILE_TXT | FILE_ANSI | FILE_COMMON);
+            
+            if (handle != INVALID_HANDLE)
+            {
+                double bid = SymbolInfoDouble(symbols[i], SYMBOL_BID);
+                double ask = SymbolInfoDouble(symbols[i], SYMBOL_ASK);
+                double spread = (ask - bid) / SymbolInfoDouble(symbols[i], SYMBOL_POINT);
+                
+                // Format matching APEX expectations
+                string signalJson = StringFormat(
+                    "{\"symbol\":\"%s\",\"bid\":%.5f,\"ask\":%.5f,\"spread\":%.1f,\"timestamp\":\"%s\"}",
+                    symbols[i], bid, ask, spread,
+                    TimeToString(TimeCurrent(), TIME_DATE | TIME_SECONDS)
+                );
+                
+                FileWriteString(handle, signalJson);
+                FileClose(handle);
+                
+                // Debug output to MT5 Experts tab
+                Print("🎯 CLAUDE_PATCH_WORKING: Wrote bridge file: ", symbols[i], ".json at ", 
+                      TimeToString(TimeCurrent(), TIME_DATE | TIME_SECONDS), " to COMMON/Files/BITTEN/");
+            }
+            else
+            {
+                Print("❌ CLAUDE_PATCH_ERROR: Failed to write bridge file for: ", symbols[i]);
+                // Print full path for debugging
+                Print("📁 CLAUDE_PATCH_PATH: ", TerminalInfoString(TERMINAL_COMMONDATA_PATH), "\\Files\\BITTEN\\", symbols[i], ".json");
+            }
+        }
+    }
+    
+    // Also write current chart symbol if not in list
+    string currentSymbol = _Symbol;
+    bool found = false;
+    for (int i = 0; i < ArraySize(symbols); i++)
+    {
+        if (symbols[i] == currentSymbol)
+        {
+            found = true;
+            break;
+        }
+    }
+    
+    if (!found)
+    {
+        SymbolSelect(currentSymbol, true);  // Force selection if needed
+        if (SymbolInfoInteger(currentSymbol, SYMBOL_SELECT))
+        {
+        string filename = "BITTEN\\" + currentSymbol + ".json";
+        int handle = FileOpen(filename, FILE_WRITE | FILE_TXT | FILE_ANSI | FILE_COMMON);
+        
+        if (handle != INVALID_HANDLE)
+        {
+            double bid = SymbolInfoDouble(currentSymbol, SYMBOL_BID);
+            double ask = SymbolInfoDouble(currentSymbol, SYMBOL_ASK);
+            double spread = (ask - bid) / SymbolInfoDouble(currentSymbol, SYMBOL_POINT);
+            
+            string signalJson = StringFormat(
+                "{\"symbol\":\"%s\",\"bid\":%.5f,\"ask\":%.5f,\"spread\":%.1f,\"timestamp\":\"%s\"}",
+                currentSymbol, bid, ask, spread,
+                TimeToString(TimeCurrent(), TIME_DATE | TIME_SECONDS)
+            );
+            
+            FileWriteString(handle, signalJson);
+            FileClose(handle);
+            
+            Print("✅ Wrote chart symbol bridge file: ", currentSymbol, ".json at ", 
+                  TimeToString(TimeCurrent(), TIME_DATE | TIME_SECONDS));
+        }
+        }
+    }
 }
 
 //+------------------------------------------------------------------+
 void ProcessInstructions()
 {
-    if (!FileIsExist(InstructionFile)) return;
+    if (!FileIsExist(InstructionFile, FILE_COMMON)) return;
     
-    int fileHandle = FileOpen(InstructionFile, FILE_READ | FILE_TXT | FILE_ANSI);
+    int fileHandle = FileOpen(InstructionFile, FILE_READ | FILE_TXT | FILE_ANSI | FILE_COMMON);
     if (fileHandle == INVALID_HANDLE) return;
     
     string content = "";
@@ -252,7 +355,7 @@ void ProcessInstructions()
         ProcessCSVInstruction(content);
     }
     
-    FileDelete(InstructionFile);
+    FileDelete(InstructionFile, FILE_COMMON);
 }
 
 //+------------------------------------------------------------------+
@@ -333,9 +436,9 @@ double CalculateLotFromRisk(string symbol, string direction, double sl, double r
 //+------------------------------------------------------------------+
 void ProcessCommands()
 {
-    if (!FileIsExist(CommandFile)) return;
+    if (!FileIsExist(CommandFile, FILE_COMMON)) return;
     
-    int fileHandle = FileOpen(CommandFile, FILE_READ | FILE_TXT | FILE_ANSI);
+    int fileHandle = FileOpen(CommandFile, FILE_READ | FILE_TXT | FILE_ANSI | FILE_COMMON);
     if (fileHandle == INVALID_HANDLE) return;
     
     string command = "";
@@ -361,7 +464,7 @@ void ProcessCommands()
     else if (action == "scale_out")
         ProcessScaleOutCommand(command);
     
-    FileDelete(CommandFile);
+    FileDelete(CommandFile, FILE_COMMON);
 }
 
 //+------------------------------------------------------------------+
@@ -607,7 +710,7 @@ void UpdatePositions()
 //+------------------------------------------------------------------+
 void WriteEnhancedPositions()
 {
-    int handle = FileOpen(PositionsFile, FILE_WRITE | FILE_TXT | FILE_ANSI);
+    int handle = FileOpen(PositionsFile, FILE_WRITE | FILE_TXT | FILE_ANSI | FILE_COMMON);
     if (handle == INVALID_HANDLE) return;
     
     string json = "[";
@@ -673,7 +776,7 @@ void WriteHeartbeat()
 //+------------------------------------------------------------------+
 void WriteStatus(string type, string message)
 {
-    int handle = FileOpen(StatusFile, FILE_WRITE | FILE_TXT | FILE_ANSI);
+    int handle = FileOpen(StatusFile, FILE_WRITE | FILE_TXT | FILE_ANSI | FILE_COMMON);
     if (handle == INVALID_HANDLE) return;
     
     string json = StringFormat(
@@ -697,7 +800,7 @@ void WriteStatus(string type, string message)
 //+------------------------------------------------------------------+
 void WriteResult(string id, string status, ulong ticket, string message, double price)
 {
-    int handle = FileOpen(ResultFile, FILE_WRITE | FILE_TXT | FILE_ANSI);
+    int handle = FileOpen(ResultFile, FILE_WRITE | FILE_TXT | FILE_ANSI | FILE_COMMON);
     if (handle == INVALID_HANDLE) return;
     
     // Include comprehensive account state
@@ -727,14 +830,6 @@ double CalculateDailyPL()
     // This would need to track balance at day start
     // For now, return current profit
     return AccountInfoDouble(ACCOUNT_PROFIT);
-}
-
-//+------------------------------------------------------------------+
-void ProcessPartialCloseAtLevel(ulong ticket, double percent)
-{
-    string command = StringFormat("{\"action\":\"close_partial\",\"ticket\":%d,\"percent\":%.1f}", 
-                                 ticket, percent);
-    ProcessEnhancedPartialClose(command);
 }
 
 //+------------------------------------------------------------------+
@@ -769,6 +864,108 @@ ulong GetLastTicket()
         }
     }
     return 0;
+}
+
+//+------------------------------------------------------------------+
+//+------------------------------------------------------------------+
+bool ExecuteEnhancedTrade(string id, string symbol, string direction, double volume, double sl, double tp, string comment)
+{
+    MqlTrade trade;
+    
+    ENUM_ORDER_TYPE orderType = (direction == "BUY") ? ORDER_TYPE_BUY : ORDER_TYPE_SELL;
+    double price = (direction == "BUY") ? SymbolInfoDouble(symbol, SYMBOL_ASK) : SymbolInfoDouble(symbol, SYMBOL_BID);
+    
+    bool result = trade.Buy(volume, symbol, price, sl, tp, comment);
+    if (!result && direction == "SELL")
+        result = trade.Sell(volume, symbol, price, sl, tp, comment);
+    
+    if (result)
+    {
+        WriteResult(id, "success", trade.ResultOrder(), "Trade executed successfully", price);
+        return true;
+    }
+    else
+    {
+        WriteResult(id, "error", 0, trade.ResultComment(), 0);
+        return false;
+    }
+}
+
+//+------------------------------------------------------------------+
+void ProcessCSVInstruction(string content)
+{
+    // Legacy CSV format: symbol,direction,volume,sl,tp,comment
+    string parts[];
+    int count = StringSplit(content, ',', parts);
+    
+    if (count >= 6)
+    {
+        string symbol = parts[0];
+        string direction = parts[1];
+        double volume = StringToDouble(parts[2]);
+        double sl = StringToDouble(parts[3]);
+        double tp = StringToDouble(parts[4]);
+        string comment = parts[5];
+        
+        ExecuteEnhancedTrade("csv_trade", symbol, direction, volume, sl, tp, comment);
+    }
+}
+
+//+------------------------------------------------------------------+
+void ProcessPartialCloseAtLevel(ulong ticket, double percent)
+{
+    string command = StringFormat("{\"action\":\"close_partial\",\"ticket\":%d,\"percent\":%.1f}", 
+                                 ticket, percent);
+    ProcessEnhancedPartialClose(command);
+}
+
+//+------------------------------------------------------------------+
+void AddTrailingPosition(ulong ticket, int distance, int step)
+{
+    // Simplified trailing implementation
+    if (PositionSelectByTicket(ticket))
+    {
+        string symbol = PositionGetString(POSITION_SYMBOL);
+        ENUM_POSITION_TYPE type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+        double point = SymbolInfoDouble(symbol, SYMBOL_POINT);
+        double currentSL = PositionGetDouble(POSITION_SL);
+        double currentPrice = (type == POSITION_TYPE_BUY) ? 
+                             SymbolInfoDouble(symbol, SYMBOL_BID) : 
+                             SymbolInfoDouble(symbol, SYMBOL_ASK);
+        
+        double newSL = 0;
+        if (type == POSITION_TYPE_BUY)
+        {
+            newSL = currentPrice - distance * point;
+            if (newSL > currentSL)
+            {
+                MqlTrade trade;
+                trade.PositionModify(ticket, newSL, PositionGetDouble(POSITION_TP));
+            }
+        }
+        else
+        {
+            newSL = currentPrice + distance * point;
+            if (currentSL == 0 || newSL < currentSL)
+            {
+                MqlTrade trade;
+                trade.PositionModify(ticket, newSL, PositionGetDouble(POSITION_TP));
+            }
+        }
+    }
+}
+
+//+------------------------------------------------------------------+
+void UpdateTrailingStops()
+{
+    // Simplified trailing stops update
+    for (int i = 0; i < ArraySize(positions); i++)
+    {
+        if (EnableTrailing)
+        {
+            AddTrailingPosition(positions[i].ticket, 30, 10);
+        }
+    }
 }
 
 //+------------------------------------------------------------------+

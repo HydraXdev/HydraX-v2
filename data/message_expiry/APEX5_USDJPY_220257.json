@@ -1,0 +1,11 @@
+{
+  "message_id": 3631,
+  "mission_id": "APEX5_USDJPY_220257",
+  "original_message": "\ud83d\udd2b RAPID ASSAULT [70%]\n\ud83d\udd25 USDJPY STRIKE \ud83d\udca5\n[MISSION BRIEF](https://joinbitten.com/hud?mission_id=APEX5_USDJPY_220257)",
+  "symbol": "USDJPY",
+  "signal_type": "RAPID_ASSAULT",
+  "sent_at": "2025-07-16T22:02:57.998556",
+  "entry_expires_at": "2025-07-16T22:32:57.998563",
+  "delete_at": "2025-07-17T02:02:57.998569",
+  "chat_id": "-1002581996861"
+}

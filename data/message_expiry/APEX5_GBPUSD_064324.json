@@ -1,0 +1,11 @@
+{
+  "message_id": 3661,
+  "mission_id": "APEX5_GBPUSD_064324",
+  "original_message": "\ud83d\udd2b RAPID ASSAULT [81%]\n\ud83d\udd25 GBPUSD STRIKE \ud83d\udca5\n[MISSION BRIEF](https://joinbitten.com/hud?mission_id=APEX5_GBPUSD_064324)",
+  "symbol": "GBPUSD",
+  "signal_type": "RAPID_ASSAULT",
+  "sent_at": "2025-07-17T06:43:24.866784",
+  "entry_expires_at": "2025-07-17T07:13:24.866792",
+  "delete_at": "2025-07-17T10:43:24.866798",
+  "chat_id": "-1002581996861"
+}

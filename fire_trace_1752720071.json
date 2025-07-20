@@ -1,0 +1,250 @@
+[
+  {
+    "timestamp": "2025-07-17T02:41:05.797612",
+    "step": "STEP_1_BRIDGE_CREDENTIALS",
+    "status": "CHECKING",
+    "details": {}
+  },
+  {
+    "timestamp": "2025-07-17T02:41:05.806103",
+    "step": "EMERGENCY_BRIDGE_STATUS",
+    "status": "FAILURE",
+    "details": {
+      "running": false
+    }
+  },
+  {
+    "timestamp": "2025-07-17T02:41:05.851912",
+    "step": "PRODUCTION_BRIDGE_CONNECTION",
+    "status": "SUCCESS",
+    "details": {
+      "host": "3.145.84.187",
+      "port": 5555,
+      "reachable": true
+    }
+  },
+  {
+    "timestamp": "2025-07-17T02:41:05.852263",
+    "step": "STEP_2_TRADING_VERIFICATION",
+    "status": "CHECKING",
+    "details": {}
+  },
+  {
+    "timestamp": "2025-07-17T02:41:05.852317",
+    "step": "TRADING_ACCOUNT_INFO",
+    "status": "SUCCESS",
+    "details": {
+      "trade_allowed": true,
+      "login": "SIMULATED_LOGIN",
+      "margin_mode": "HEDGING",
+      "server": "SIMULATED_SERVER",
+      "balance": 10000.0
+    }
+  },
+  {
+    "timestamp": "2025-07-17T02:41:05.852607",
+    "step": "STEP_3_FIRE_PAYLOAD",
+    "status": "CHECKING",
+    "details": {}
+  },
+  {
+    "timestamp": "2025-07-17T02:41:05.852655",
+    "step": "FIRE_PAYLOAD_FORMAT",
+    "status": "SUCCESS",
+    "details": {
+      "symbol": "XAUUSD",
+      "type": "buy",
+      "lot": 0.01,
+      "tp": 2650.0,
+      "sl": 2600.0,
+      "comment": "BITTEN FIRE TCS:85%",
+      "mission_id": "TEST_MISSION_001",
+      "user_id": "7176191872",
+      "timestamp": "2025-07-17T02:41:05.852651"
+    }
+  },
+  {
+    "timestamp": "2025-07-17T02:41:05.853018",
+    "step": "SYMBOL_VALIDATION",
+    "status": "SUCCESS",
+    "details": {
+      "symbol": "XAUUSD",
+      "valid": true
+    }
+  },
+  {
+    "timestamp": "2025-07-17T02:41:05.853131",
+    "step": "STEP_4_FIRE_EXECUTION",
+    "status": "TESTING",
+    "details": {}
+  },
+  {
+    "timestamp": "2025-07-17T02:41:05.853277",
+    "step": "EMERGENCY_BRIDGE_CONNECT",
+    "status": "SUCCESS",
+    "details": {
+      "host": "127.0.0.1",
+      "port": 9000
+    }
+  },
+  {
+    "timestamp": "2025-07-17T02:41:05.853504",
+    "step": "EMERGENCY_PAYLOAD_SENT",
+    "status": "SUCCESS",
+    "details": {
+      "payload_size": 212,
+      "payload": {
+        "symbol": "XAUUSD",
+        "type": "buy",
+        "lot": 0.01,
+        "tp": 2650.0,
+        "sl": 2600.0,
+        "comment": "BITTEN FIRE TCS:85%",
+        "mission_id": "TEST_MISSION_001",
+        "user_id": "7176191872",
+        "timestamp": "2025-07-17T02:41:05.852651"
+      }
+    }
+  },
+  {
+    "timestamp": "2025-07-17T02:41:05.853989",
+    "step": "EMERGENCY_RESPONSE_RECEIVED",
+    "status": "SUCCESS",
+    "details": {
+      "retcode": 10001,
+      "comment": "Unknown command: "
+    }
+  },
+  {
+    "timestamp": "2025-07-17T02:41:05.854175",
+    "step": "EMERGENCY_EXECUTION_RESULT",
+    "status": "FAILURE",
+    "details": {
+      "error": "Unknown error"
+    }
+  },
+  {
+    "timestamp": "2025-07-17T02:41:05.898987",
+    "step": "PRODUCTION_BRIDGE_CONNECT",
+    "status": "SUCCESS",
+    "details": {
+      "host": "3.145.84.187",
+      "port": 5555
+    }
+  },
+  {
+    "timestamp": "2025-07-17T02:41:05.899315",
+    "step": "PRODUCTION_PAYLOAD_SENT",
+    "status": "SUCCESS",
+    "details": {
+      "payload_size": 212,
+      "payload": {
+        "symbol": "XAUUSD",
+        "type": "buy",
+        "lot": 0.01,
+        "tp": 2650.0,
+        "sl": 2600.0,
+        "comment": "BITTEN FIRE TCS:85%",
+        "mission_id": "TEST_MISSION_001",
+        "user_id": "7176191872",
+        "timestamp": "2025-07-17T02:41:05.852651"
+      }
+    }
+  },
+  {
+    "timestamp": "2025-07-17T02:41:10.904648",
+    "step": "PRODUCTION_RESPONSE_TIMEOUT",
+    "status": "FAILURE",
+    "details": {
+      "timeout": "5 seconds"
+    }
+  },
+  {
+    "timestamp": "2025-07-17T02:41:10.905199",
+    "step": "STEP_5_FIRE_ROUTER",
+    "status": "CHECKING",
+    "details": {}
+  },
+  {
+    "timestamp": "2025-07-17T02:41:10.956000",
+    "step": "FIRE_ROUTER_IMPORT",
+    "status": "SUCCESS",
+    "details": {
+      "class": "FireRouter"
+    }
+  },
+  {
+    "timestamp": "2025-07-17T02:41:10.956133",
+    "step": "TRADE_REQUEST_CREATED",
+    "status": "SUCCESS",
+    "details": {
+      "symbol": "XAUUSD",
+      "direction": "buy",
+      "volume": 0.01
+    }
+  },
+  {
+    "timestamp": "2025-07-17T02:41:10.956315",
+    "step": "BRIDGE_PAYLOAD_CONVERSION",
+    "status": "SUCCESS",
+    "details": {
+      "symbol": "XAUUSD",
+      "type": "buy",
+      "lot": 0.01,
+      "tp": 2650.0,
+      "sl": 2600.0,
+      "comment": "DIAGNOSTIC_TEST TCS:85.0%",
+      "mission_id": "DIAGNOSTIC_001",
+      "user_id": "7176191872",
+      "timestamp": "2025-07-17T02:41:10.956311"
+    }
+  },
+  {
+    "timestamp": "2025-07-17T02:41:10.956929",
+    "step": "FIRE_ROUTER_EXECUTION",
+    "status": "FAILURE",
+    "details": {
+      "success": false,
+      "message": "\u274c Validation failed: High-risk symbol XAUUSD requires Commander+ tier",
+      "trade_id": null,
+      "execution_time_ms": 0
+    }
+  },
+  {
+    "timestamp": "2025-07-17T02:41:10.957145",
+    "step": "STEP_6_WEBAPP_FIRE_API",
+    "status": "CHECKING",
+    "details": {}
+  },
+  {
+    "timestamp": "2025-07-17T02:41:11.027670",
+    "step": "WEBAPP_FIRE_API_TEST",
+    "status": "FAILURE",
+    "details": {
+      "status_code": 404,
+      "response": "{\"error\":\"Mission not found\",\"success\":false}\n"
+    }
+  },
+  {
+    "timestamp": "2025-07-17T02:41:11.027990",
+    "step": "STEP_7_SYSTEM_ROUTING",
+    "status": "CHECKING",
+    "details": {}
+  },
+  {
+    "timestamp": "2025-07-17T02:41:11.028911",
+    "step": "PORT_USAGE_CHECK",
+    "status": "FAILURE",
+    "details": {
+      "error": "[Errno 2] No such file or directory: 'netstat'"
+    }
+  },
+  {
+    "timestamp": "2025-07-17T02:41:11.041525",
+    "step": "PROCESS_CHECK",
+    "status": "SUCCESS",
+    "details": {
+      "processes": 5
+    }
+  }
+]

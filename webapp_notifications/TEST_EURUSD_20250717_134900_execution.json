@@ -1,0 +1,14 @@
+{
+  "type": "execution_result",
+  "timestamp": "2025-07-17T13:51:33.123794",
+  "data": {
+    "trade_uuid": "TEST_EURUSD_20250717_134900",
+    "success": true,
+    "ticket": 123456789,
+    "execution_price": 1.0896,
+    "message": "Order executed successfully"
+  },
+  "display_duration": 5000,
+  "sound": true,
+  "animation": true
+}

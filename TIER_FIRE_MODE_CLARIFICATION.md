@@ -42,7 +42,7 @@
 
 ## 🎮 Fire Mode Mechanics
 
-### FULL AUTO Mode (COMMANDER/APEX only)
+### FULL AUTO Mode (COMMANDER only)
 1. User sets number of trading slots
 2. When a slot opens (trade closes), system automatically:
    - Checks next available signal

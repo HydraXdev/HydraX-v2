@@ -1,0 +1,370 @@
+[
+  {
+    "symbol": "XAUUSD",
+    "timestamp": "2025-07-17T02:48:58.408823",
+    "status": "BLOCKED_CHECK",
+    "details": {
+      "tradable": false,
+      "trade_mode": "BLOCKED",
+      "reason": "US account restriction",
+      "visible": true
+    }
+  },
+  {
+    "symbol": "XAGUSD",
+    "timestamp": "2025-07-17T02:48:58.409060",
+    "status": "BLOCKED_CHECK",
+    "details": {
+      "tradable": false,
+      "trade_mode": "BLOCKED",
+      "reason": "US account restriction",
+      "visible": true
+    }
+  },
+  {
+    "symbol": "BTCUSD",
+    "timestamp": "2025-07-17T02:48:58.409259",
+    "status": "BLOCKED_CHECK",
+    "details": {
+      "tradable": false,
+      "trade_mode": "BLOCKED",
+      "reason": "US account restriction",
+      "visible": true
+    }
+  },
+  {
+    "symbol": "ETHUSD",
+    "timestamp": "2025-07-17T02:48:58.409461",
+    "status": "BLOCKED_CHECK",
+    "details": {
+      "tradable": false,
+      "trade_mode": "BLOCKED",
+      "reason": "US account restriction",
+      "visible": true
+    }
+  },
+  {
+    "symbol": "EURUSD",
+    "timestamp": "2025-07-17T02:48:58.409822",
+    "status": "SYMBOL_CHECK",
+    "details": {
+      "tradable": true,
+      "trade_mode": "TRADE_MODE_FULL",
+      "reason": "Major forex pair",
+      "visible": true,
+      "spread": 2
+    }
+  },
+  {
+    "symbol": "EURUSD",
+    "timestamp": "2025-07-17T02:48:58.410069",
+    "status": "PAYLOAD_CREATED",
+    "details": {
+      "entry_price": 1.09,
+      "sl_price": 1.088,
+      "tp_price": 1.094,
+      "sl_pips": 20,
+      "tp_pips": 40
+    }
+  },
+  {
+    "symbol": "EURUSD",
+    "timestamp": "2025-07-17T02:48:58.451570",
+    "status": "BRIDGE_CONNECTED",
+    "details": {
+      "bridge": "PRODUCTION",
+      "host": "3.145.84.187",
+      "port": 5555
+    }
+  },
+  {
+    "symbol": "EURUSD",
+    "timestamp": "2025-07-17T02:48:58.451963",
+    "status": "PAYLOAD_SENT",
+    "details": {
+      "bridge": "PRODUCTION",
+      "lot_size": 0.01,
+      "sl_pips": 20,
+      "tp_pips": 40
+    }
+  },
+  {
+    "symbol": "EURUSD",
+    "timestamp": "2025-07-17T02:49:06.456499",
+    "status": "RESPONSE_TIMEOUT",
+    "details": {
+      "bridge": "PRODUCTION",
+      "timeout_seconds": 8
+    }
+  },
+  {
+    "symbol": "USDJPY",
+    "timestamp": "2025-07-17T02:49:07.458435",
+    "status": "SYMBOL_CHECK",
+    "details": {
+      "tradable": true,
+      "trade_mode": "TRADE_MODE_FULL",
+      "reason": "Major forex pair",
+      "visible": true,
+      "spread": 2
+    }
+  },
+  {
+    "symbol": "USDJPY",
+    "timestamp": "2025-07-17T02:49:07.458791",
+    "status": "PAYLOAD_CREATED",
+    "details": {
+      "entry_price": 150.0,
+      "sl_price": 149.8,
+      "tp_price": 150.4,
+      "sl_pips": 20,
+      "tp_pips": 40
+    }
+  },
+  {
+    "symbol": "USDJPY",
+    "timestamp": "2025-07-17T02:49:07.501356",
+    "status": "BRIDGE_CONNECTED",
+    "details": {
+      "bridge": "PRODUCTION",
+      "host": "3.145.84.187",
+      "port": 5555
+    }
+  },
+  {
+    "symbol": "USDJPY",
+    "timestamp": "2025-07-17T02:49:07.501873",
+    "status": "PAYLOAD_SENT",
+    "details": {
+      "bridge": "PRODUCTION",
+      "lot_size": 0.01,
+      "sl_pips": 20,
+      "tp_pips": 40
+    }
+  },
+  {
+    "symbol": "USDJPY",
+    "timestamp": "2025-07-17T02:49:15.510206",
+    "status": "RESPONSE_TIMEOUT",
+    "details": {
+      "bridge": "PRODUCTION",
+      "timeout_seconds": 8
+    }
+  },
+  {
+    "symbol": "GBPJPY",
+    "timestamp": "2025-07-17T02:49:16.512180",
+    "status": "SYMBOL_CHECK",
+    "details": {
+      "tradable": true,
+      "trade_mode": "TRADE_MODE_FULL",
+      "reason": "Major forex pair",
+      "visible": true,
+      "spread": 2
+    }
+  },
+  {
+    "symbol": "GBPJPY",
+    "timestamp": "2025-07-17T02:49:16.512923",
+    "status": "PAYLOAD_CREATED",
+    "details": {
+      "entry_price": 185.0,
+      "sl_price": 184.75,
+      "tp_price": 185.5,
+      "sl_pips": 25,
+      "tp_pips": 50
+    }
+  },
+  {
+    "symbol": "GBPJPY",
+    "timestamp": "2025-07-17T02:49:16.557983",
+    "status": "BRIDGE_CONNECTED",
+    "details": {
+      "bridge": "PRODUCTION",
+      "host": "3.145.84.187",
+      "port": 5555
+    }
+  },
+  {
+    "symbol": "GBPJPY",
+    "timestamp": "2025-07-17T02:49:16.558495",
+    "status": "PAYLOAD_SENT",
+    "details": {
+      "bridge": "PRODUCTION",
+      "lot_size": 0.01,
+      "sl_pips": 25,
+      "tp_pips": 50
+    }
+  },
+  {
+    "symbol": "GBPJPY",
+    "timestamp": "2025-07-17T02:49:24.564492",
+    "status": "RESPONSE_TIMEOUT",
+    "details": {
+      "bridge": "PRODUCTION",
+      "timeout_seconds": 8
+    }
+  },
+  {
+    "symbol": "USDCAD",
+    "timestamp": "2025-07-17T02:49:25.566555",
+    "status": "SYMBOL_CHECK",
+    "details": {
+      "tradable": true,
+      "trade_mode": "TRADE_MODE_FULL",
+      "reason": "Major forex pair",
+      "visible": true,
+      "spread": 2
+    }
+  },
+  {
+    "symbol": "USDCAD",
+    "timestamp": "2025-07-17T02:49:25.566862",
+    "status": "PAYLOAD_CREATED",
+    "details": {
+      "entry_price": 1.35,
+      "sl_price": 1.348,
+      "tp_price": 1.354,
+      "sl_pips": 20,
+      "tp_pips": 40
+    }
+  },
+  {
+    "symbol": "USDCAD",
+    "timestamp": "2025-07-17T02:49:25.607294",
+    "status": "BRIDGE_CONNECTED",
+    "details": {
+      "bridge": "PRODUCTION",
+      "host": "3.145.84.187",
+      "port": 5555
+    }
+  },
+  {
+    "symbol": "USDCAD",
+    "timestamp": "2025-07-17T02:49:25.607776",
+    "status": "PAYLOAD_SENT",
+    "details": {
+      "bridge": "PRODUCTION",
+      "lot_size": 0.01,
+      "sl_pips": 20,
+      "tp_pips": 40
+    }
+  },
+  {
+    "symbol": "USDCAD",
+    "timestamp": "2025-07-17T02:49:33.611122",
+    "status": "RESPONSE_TIMEOUT",
+    "details": {
+      "bridge": "PRODUCTION",
+      "timeout_seconds": 8
+    }
+  },
+  {
+    "symbol": "GBPUSD",
+    "timestamp": "2025-07-17T02:49:34.613100",
+    "status": "SYMBOL_CHECK",
+    "details": {
+      "tradable": true,
+      "trade_mode": "TRADE_MODE_FULL",
+      "reason": "Major forex pair",
+      "visible": true,
+      "spread": 2
+    }
+  },
+  {
+    "symbol": "GBPUSD",
+    "timestamp": "2025-07-17T02:49:34.613802",
+    "status": "PAYLOAD_CREATED",
+    "details": {
+      "entry_price": 1.27,
+      "sl_price": 1.268,
+      "tp_price": 1.274,
+      "sl_pips": 20,
+      "tp_pips": 40
+    }
+  },
+  {
+    "symbol": "GBPUSD",
+    "timestamp": "2025-07-17T02:49:34.659584",
+    "status": "BRIDGE_CONNECTED",
+    "details": {
+      "bridge": "PRODUCTION",
+      "host": "3.145.84.187",
+      "port": 5555
+    }
+  },
+  {
+    "symbol": "GBPUSD",
+    "timestamp": "2025-07-17T02:49:34.660141",
+    "status": "PAYLOAD_SENT",
+    "details": {
+      "bridge": "PRODUCTION",
+      "lot_size": 0.01,
+      "sl_pips": 20,
+      "tp_pips": 40
+    }
+  },
+  {
+    "symbol": "GBPUSD",
+    "timestamp": "2025-07-17T02:49:42.668635",
+    "status": "RESPONSE_TIMEOUT",
+    "details": {
+      "bridge": "PRODUCTION",
+      "timeout_seconds": 8
+    }
+  },
+  {
+    "symbol": "AUDUSD",
+    "timestamp": "2025-07-17T02:49:43.670736",
+    "status": "SYMBOL_CHECK",
+    "details": {
+      "tradable": true,
+      "trade_mode": "TRADE_MODE_FULL",
+      "reason": "Major forex pair",
+      "visible": true,
+      "spread": 2
+    }
+  },
+  {
+    "symbol": "AUDUSD",
+    "timestamp": "2025-07-17T02:49:43.671191",
+    "status": "PAYLOAD_CREATED",
+    "details": {
+      "entry_price": 0.68,
+      "sl_price": 0.678,
+      "tp_price": 0.684,
+      "sl_pips": 20,
+      "tp_pips": 40
+    }
+  },
+  {
+    "symbol": "AUDUSD",
+    "timestamp": "2025-07-17T02:49:43.715767",
+    "status": "BRIDGE_CONNECTED",
+    "details": {
+      "bridge": "PRODUCTION",
+      "host": "3.145.84.187",
+      "port": 5555
+    }
+  },
+  {
+    "symbol": "AUDUSD",
+    "timestamp": "2025-07-17T02:49:43.716264",
+    "status": "PAYLOAD_SENT",
+    "details": {
+      "bridge": "PRODUCTION",
+      "lot_size": 0.01,
+      "sl_pips": 20,
+      "tp_pips": 40
+    }
+  },
+  {
+    "symbol": "AUDUSD",
+    "timestamp": "2025-07-17T02:49:51.724199",
+    "status": "RESPONSE_TIMEOUT",
+    "details": {
+      "bridge": "PRODUCTION",
+      "timeout_seconds": 8
+    }
+  }
+]

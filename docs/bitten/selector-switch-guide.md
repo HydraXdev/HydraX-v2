@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Selector Switch is an exclusive feature for COMMANDER and APEX tiers that controls how signals are executed.
+The Selector Switch is an exclusive feature for COMMANDER tier that controls how signals are executed.
 
 ## Three Modes
 
@@ -118,6 +118,6 @@ Your COMMANDER is working 24/7! 🎖️
 - **SINGLE SHOT**: Works in all modes
 - **CHAINGUN**: Requires manual trigger (SAFE/SEMI)
 - **AUTO-FIRE**: Only with FULL mode
-- **STEALTH**: APEX + FULL mode only
+- **STEALTH**: COMMANDER + FULL mode only
 
 The Selector Switch transforms your COMMANDER into a 24/7 trading machine when you're ready!

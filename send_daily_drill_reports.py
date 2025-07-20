@@ -55,13 +55,12 @@ class DrillReportScheduler:
             logger.info("✅ Drill report system initialized")
             
             # Import and initialize telegram bot
-            from telegram.ext import Application
-            from config.trading import TELEGRAM_BOT_TOKEN  # Assuming this exists
+            import telebot
             
-            if not TELEGRAM_BOT_TOKEN:
-                raise ValueError("TELEGRAM_BOT_TOKEN not found in config")
-                
-            self.telegram_bot = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
+            # Use BITTEN production bot token (from CLAUDE.md)
+            BOT_TOKEN = '8103700393:AAEK3RjTGHHYyy_X1Uc9FUuUoRcLuzYZe4k'
+            
+            self.telegram_bot = telebot.TeleBot(BOT_TOKEN)
             logger.info("✅ Telegram bot initialized")
             
             return True
@@ -133,26 +132,17 @@ class DrillReportScheduler:
             # Format for Telegram
             telegram_report = self.drill_system.format_telegram_report(drill_message, user_id)
             
-            # Send via Telegram bot
-            import asyncio
-            
-            async def send_message():
-                try:
-                    await self.telegram_bot.bot.send_message(
-                        chat_id=user_id, 
-                        text=telegram_report,
-                        parse_mode='HTML'
-                    )
-                    return True
-                except Exception as e:
-                    logger.error(f"❌ Telegram send error for user {user_id}: {e}")
-                    return False
-            
-            # Run async send
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            success = loop.run_until_complete(send_message())
-            loop.close()
+            # Send via Telegram bot (telebot is synchronous)
+            try:
+                self.telegram_bot.send_message(
+                    chat_id=user_id, 
+                    text=telegram_report,
+                    parse_mode='HTML'
+                )
+                success = True
+            except Exception as e:
+                logger.error(f"❌ Telegram send error for user {user_id}: {e}")
+                success = False
             
             if success:
                 # Mark as sent in database

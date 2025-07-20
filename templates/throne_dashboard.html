@@ -238,60 +238,100 @@
         </div>
     </div>
     
-    <div class="dashboard-grid">
-        <!-- Mission Table -->
-        <div class="dashboard-panel">
-            <div class="panel-title">🛰️ MISSION TABLE</div>
-            <div class="mission-stats live-update" id="missionStats">
-                <div class="stat-item">
-                    <span>Active Users:</span>
-                    <span class="stat-value" id="activeUsers">--</span>
+    <!-- Primary Command View - Full Width Top Section -->
+    <div class="dashboard-panel full-width" style="margin-bottom: 20px;">
+        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 20px;">
+            <!-- Revenue & Subscriptions -->
+            <div>
+                <div class="panel-title" style="font-size: 16px; margin-bottom: 10px;">💰 REVENUE COMMAND</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div>
+                        <div style="font-size: 28px; font-weight: bold; color: #00ff41;">
+                            $<span id="totalMRR">0</span>
+                        </div>
+                        <div style="font-size: 12px; color: #888;">Monthly Recurring</div>
+                        <div style="font-size: 14px; margin-top: 5px;">
+                            <span id="mrrGrowth" style="color: #00ff41;">↑ 0%</span> this month
+                        </div>
+                    </div>
+                    <div>
+                        <div style="font-size: 24px; font-weight: bold; color: #ff6b00;">
+                            <span id="totalActiveUsers">0</span>
+                        </div>
+                        <div style="font-size: 12px; color: #888;">Paid Soldiers</div>
+                        <div style="font-size: 14px; margin-top: 5px;">
+                            <span id="pressPassCount" style="color: #ffaa00;">0</span> Press Pass
+                        </div>
+                    </div>
                 </div>
-                <div class="stat-item">
-                    <span>Trades Today:</span>
-                    <span class="stat-value" id="tradesToday">--</span>
+                <div style="margin-top: 15px;">
+                    <div id="tierBreakdown" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; font-size: 11px;">
+                        <!-- Tier counts will be populated here -->
+                    </div>
                 </div>
+            </div>
+            
+            <!-- System Health -->
+            <div>
+                <div class="panel-title" style="font-size: 16px; margin-bottom: 10px;">⚡ SYSTEM STATUS</div>
                 <div class="stat-item">
-                    <span>Win Rate:</span>
-                    <span class="stat-value" id="winRate">--</span>
-                </div>
-                <div class="stat-item">
-                    <span>Total XP:</span>
-                    <span class="stat-value" id="totalXP">--</span>
-                </div>
-                <div class="stat-item">
-                    <span>Bridge Status:</span>
+                    <span>Bridge:</span>
                     <span class="stat-value" id="bridgeStatus">
-                        <span class="status-indicator status-offline"></span>--
+                        <span class="status-indicator status-offline"></span>OFFLINE
                     </span>
                 </div>
                 <div class="stat-item">
-                    <span>Missions:</span>
-                    <span class="stat-value" id="missionCount">--</span>
+                    <span>APEX:</span>
+                    <span class="stat-value" id="apexQuickStatus">
+                        <span class="status-indicator status-offline"></span>OFFLINE
+                    </span>
+                </div>
+                <div class="stat-item">
+                    <span>Signals/Hr:</span>
+                    <span class="stat-value" id="signalRate">0</span>
                 </div>
             </div>
-        </div>
-        
-        <!-- Command Panel -->
-        <div class="dashboard-panel">
-            <div class="panel-title">🎮 COMMAND PANEL</div>
-            <div class="command-grid">
-                <button class="command-btn" onclick="executeCommand('toggle_stealth')">Stealth Mode</button>
-                <button class="command-btn" onclick="executeCommand('global_alert')">Global Alert</button>
-                <button class="command-btn" onclick="executeCommand('double_xp_event')">Double XP</button>
-                <button class="command-btn" onclick="executeCommand('reset_cooldowns')">Reset Cooldowns</button>
-                <button class="command-btn danger" onclick="executeCommand('halt_trades')">Halt Trades</button>
-                <button class="command-btn" onclick="showSitrep()">SITREP</button>
+            
+            <!-- Performance Metrics -->
+            <div>
+                <div class="panel-title" style="font-size: 16px; margin-bottom: 10px;">📊 PERFORMANCE</div>
+                <div class="stat-item">
+                    <span>Win Rate:</span>
+                    <span class="stat-value" id="winRate" style="color: #00ff41;">--%</span>
+                </div>
+                <div class="stat-item">
+                    <span>True Rate:</span>
+                    <span class="stat-value" id="trueWinRate" style="color: #ffaa00;">--%</span>
+                </div>
+                <div class="stat-item">
+                    <span>Execution:</span>
+                    <span class="stat-value" id="executionRate">--%</span>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div>
+                <div class="panel-title" style="font-size: 16px; margin-bottom: 10px;">🎮 QUICK ACTIONS</div>
+                <button class="command-btn" onclick="executeCommand('toggle_stealth')" style="width: 100%; margin-bottom: 5px; font-size: 11px;">STEALTH MODE</button>
+                <button class="command-btn" onclick="executeCommand('double_xp_event')" style="width: 100%; margin-bottom: 5px; font-size: 11px;">DOUBLE XP</button>
+                <button class="command-btn danger" onclick="executeCommand('halt_trades')" style="width: 100%; font-size: 11px;">EMERGENCY HALT</button>
             </div>
         </div>
+    </div>
+    
+    <div class="dashboard-grid">
         
-        <!-- XP Console -->
+        <!-- Live Activity Feed -->
         <div class="dashboard-panel">
-            <div class="panel-title">🧠 XP CONSOLE</div>
-            <div>
-                <input type="text" id="xpUserId" placeholder="User ID" style="width: 100%; margin-bottom: 10px; padding: 8px; background: rgba(0,0,0,0.7); border: 1px solid #00ff41; color: #00ff41;">
-                <input type="number" id="xpAmount" placeholder="XP Amount" style="width: 100%; margin-bottom: 10px; padding: 8px; background: rgba(0,0,0,0.7); border: 1px solid #00ff41; color: #00ff41;">
-                <button class="command-btn" onclick="awardXP()" style="width: 100%;">Award XP</button>
+            <div class="panel-title">📡 LIVE ACTIVITY</div>
+            <div class="trade-log" style="max-height: 250px;">
+                <div id="liveActivityFeed" style="font-size: 11px;">
+                    <!-- Live updates will appear here -->
+                </div>
+            </div>
+            <div style="margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <button class="command-btn" onclick="showSitrep()" style="font-size: 11px;">GENERATE SITREP</button>
+                <button class="command-btn" onclick="executeCommand('global_alert')" style="font-size: 11px;">GLOBAL ALERT</button>
             </div>
         </div>
         
@@ -313,6 +353,138 @@
                     <tr><td colspan="6">Loading soldiers...</td></tr>
                 </tbody>
             </table>
+        </div>
+        
+        <!-- APEX Control Panel -->
+        <div class="dashboard-panel full-width">
+            <div class="panel-title">🎯 APEX ENGINE CONTROL</div>
+            <div class="apex-control-grid" style="display: grid; grid-template-columns: 1fr 1.5fr 1fr 1.5fr; gap: 20px;">
+                <!-- Status Section -->
+                <div class="apex-status">
+                    <h4 style="color: #ff6b00; margin-bottom: 10px;">ENGINE STATUS</h4>
+                    <div class="stat-item">
+                        <span>Status:</span>
+                        <span class="stat-value" id="apexStatus">
+                            <span class="status-indicator status-offline"></span>OFFLINE
+                        </span>
+                    </div>
+                    <div class="stat-item">
+                        <span>PID:</span>
+                        <span class="stat-value" id="apexPid">--</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Signals:</span>
+                        <span class="stat-value" id="apexSignalCount">0</span>
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <button class="command-btn" id="apexStartBtn" onclick="controlAPEX('start')" style="width: 100%; margin-bottom: 5px;">START</button>
+                        <button class="command-btn danger" id="apexStopBtn" onclick="controlAPEX('stop')" style="width: 100%; margin-bottom: 5px;">STOP</button>
+                        <button class="command-btn" onclick="controlAPEX('restart')" style="width: 100%;">RESTART</button>
+                    </div>
+                </div>
+                
+                <!-- Configuration Section -->
+                <div class="apex-config">
+                    <h4 style="color: #ff6b00; margin-bottom: 10px;">CONFIGURATION</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div>
+                            <label style="font-size: 11px; color: #888;">Signals/Hour Target</label>
+                            <input type="range" id="apexSignalsPerHour" min="10" max="100" value="40" onchange="updateAPEXConfig()" style="width: 100%;">
+                            <span id="apexSignalsPerHourValue" style="font-size: 12px;">40</span>
+                        </div>
+                        <div>
+                            <label style="font-size: 11px; color: #888;">TCS Threshold (%)</label>
+                            <input type="range" id="apexTcsThreshold" min="50" max="90" value="65" onchange="updateAPEXConfig()" style="width: 100%;">
+                            <span id="apexTcsThresholdValue" style="font-size: 12px;">65%</span>
+                        </div>
+                        <div>
+                            <label style="font-size: 11px; color: #888;">Scan Interval (sec)</label>
+                            <input type="range" id="apexScanInterval" min="15" max="120" value="45" onchange="updateAPEXConfig()" style="width: 100%;">
+                            <span id="apexScanIntervalValue" style="font-size: 12px;">45s</span>
+                        </div>
+                        <div>
+                            <label style="font-size: 11px; color: #888;">Max Spread</label>
+                            <input type="range" id="apexMaxSpread" min="20" max="100" value="50" onchange="updateAPEXConfig()" style="width: 100%;">
+                            <span id="apexMaxSpreadValue" style="font-size: 12px;">50</span>
+                        </div>
+                    </div>
+                    <div style="margin-top: 10px;">
+                        <button class="command-btn" onclick="saveAPEXConfig()" style="width: 100%;">APPLY CONFIGURATION</button>
+                    </div>
+                </div>
+                
+                <!-- Ghost Trade Tracker -->
+                <div class="dashboard-panel">
+                    <div class="panel-title">👻 GHOST TRADE TRACKER</div>
+                    <div id="ghostTracker">
+                        <div class="mission-stats">
+                            <div class="stat-item">
+                                <span>Total Missions:</span>
+                                <span class="stat-value" id="ghostTotalMissions">--</span>
+                            </div>
+                            <div class="stat-item">
+                                <span>Executed:</span>
+                                <span class="stat-value" id="ghostExecuted">--</span>
+                            </div>
+                            <div class="stat-item">
+                                <span>Ghosted:</span>
+                                <span class="stat-value" id="ghostGhosted" style="color: #ffaa00;">--</span>
+                            </div>
+                            <div class="stat-item">
+                                <span>Ghost Wins:</span>
+                                <span class="stat-value" id="ghostWins" style="color: #00ff41;">--</span>
+                            </div>
+                        </div>
+                        <hr style="margin: 10px 0; border-color: #333;">
+                        <div class="ghost-rates" style="font-size: 12px;">
+                            <div style="display: flex; justify-content: space-between; margin: 5px 0;">
+                                <span>Fired Win Rate:</span>
+                                <span id="ghostFiredWinRate" style="font-weight: bold;">--%</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin: 5px 0;">
+                                <span>Ghost Win Rate:</span>
+                                <span id="ghostGhostWinRate" style="font-weight: bold; color: #ffaa00;">--%</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin: 5px 0;">
+                                <span>True Win Rate:</span>
+                                <span id="ghostTrueWinRate" style="font-weight: bold; color: #00ff41;">--%</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin: 5px 0;">
+                                <span>Impact:</span>
+                                <span id="ghostImpact" style="font-weight: bold; color: #ff6b00;">--%</span>
+                            </div>
+                        </div>
+                        <hr style="margin: 10px 0; border-color: #333;">
+                        <div id="ghostTopMissed" style="font-size: 11px; max-height: 100px; overflow-y: auto;">
+                            <div style="font-weight: bold; color: #ff6b00; margin-bottom: 5px;">Top Missed Wins:</div>
+                            <div id="ghostMissedList">Loading...</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Trading Pairs Section -->
+                <div class="apex-pairs">
+                    <h4 style="color: #ff6b00; margin-bottom: 10px;">TRADING PAIRS</h4>
+                    <div id="apexPairToggles" style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; max-height: 200px; overflow-y: auto;">
+                        <!-- Pair toggles will be populated here -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Signals -->
+            <div style="margin-top: 20px;">
+                <h4 style="color: #ff6b00; margin-bottom: 10px;">RECENT SIGNALS</h4>
+                <div class="trade-log" style="max-height: 150px;">
+                    <div class="trade-row" style="font-weight: bold; background: rgba(255,107,0,0.2); grid-template-columns: 120px 1fr 80px 60px 60px;">
+                        <div>Time</div>
+                        <div>Signal #</div>
+                        <div>Symbol</div>
+                        <div>Direction</div>
+                        <div>TCS</div>
+                    </div>
+                    <div id="apexSignalLog">Loading signals...</div>
+                </div>
+            </div>
         </div>
         
         <!-- Trade Log -->
@@ -357,21 +529,78 @@
         setInterval(updateTime, 1000);
         updateTime();
         
+        // Subscription Analytics Functions
+        async function loadSubscriptionAnalytics() {
+            try {
+                const response = await fetch('/throne/api/subscription_analytics');
+                const data = await response.json();
+                
+                // Update MRR and growth
+                document.getElementById('totalMRR').textContent = data.mrr.total.toLocaleString();
+                const growthEl = document.getElementById('mrrGrowth');
+                if (data.mrr.growth_percentage > 0) {
+                    growthEl.innerHTML = `↑ ${data.mrr.growth_percentage}%`;
+                    growthEl.style.color = '#00ff41';
+                } else if (data.mrr.growth_percentage < 0) {
+                    growthEl.innerHTML = `↓ ${Math.abs(data.mrr.growth_percentage)}%`;
+                    growthEl.style.color = '#ff0040';
+                } else {
+                    growthEl.innerHTML = '→ 0%';
+                    growthEl.style.color = '#888';
+                }
+                
+                // Update user counts
+                document.getElementById('totalActiveUsers').textContent = data.users.total_active;
+                document.getElementById('pressPassCount').textContent = data.users.press_pass;
+                
+                // Update tier breakdown
+                const tierBreakdown = document.getElementById('tierBreakdown');
+                tierBreakdown.innerHTML = '';
+                
+                const tiers = ['NIBBLER', 'FANG', 'COMMANDER', 'APEX'];
+                const tierColors = {
+                    'NIBBLER': '#00ff41',
+                    'FANG': '#ffaa00',
+                    'COMMANDER': '#ff6b00',
+                    'APEX': '#ff0040'
+                };
+                
+                tiers.forEach(tier => {
+                    const tierData = data.mrr.by_tier[tier] || {count: 0, mrr: 0};
+                    const tierDiv = document.createElement('div');
+                    tierDiv.style.cssText = 'text-align: center; padding: 8px; background: rgba(0,0,0,0.5); border-radius: 5px;';
+                    tierDiv.innerHTML = `
+                        <div style="font-weight: bold; color: ${tierColors[tier]};">${tier}</div>
+                        <div style="font-size: 18px; font-weight: bold;">${tierData.count}</div>
+                        <div style="font-size: 10px; color: #888;">$${tierData.mrr}</div>
+                    `;
+                    tierBreakdown.appendChild(tierDiv);
+                });
+                
+            } catch (error) {
+                console.error('Error loading subscription analytics:', error);
+            }
+        }
+        
         // Load initial data
         async function loadMissionStats() {
             try {
                 const response = await fetch('/throne/api/mission_stats');
                 const data = await response.json();
                 
-                document.getElementById('activeUsers').textContent = data.active_users;
-                document.getElementById('tradesToday').textContent = data.trades_today;
-                document.getElementById('winRate').textContent = data.win_rate + '%';
-                document.getElementById('totalXP').textContent = data.total_xp_awarded.toLocaleString();
-                document.getElementById('missionCount').textContent = data.mission_count;
-                
+                // Update bridge status in top bar
                 const bridgeStatus = document.getElementById('bridgeStatus');
                 const statusClass = data.bridge_status === 'ONLINE' ? 'status-online' : 'status-offline';
                 bridgeStatus.innerHTML = `<span class="status-indicator ${statusClass}"></span>${data.bridge_status}`;
+                
+                // Update win rate
+                document.getElementById('winRate').textContent = data.win_rate + '%';
+                
+                // Calculate signal rate (trades today / hours so far)
+                const hoursToday = new Date().getHours() || 1;
+                const signalRate = Math.round(data.trades_today / hoursToday);
+                document.getElementById('signalRate').textContent = signalRate;
+                
             } catch (error) {
                 console.error('Error loading mission stats:', error);
             }
@@ -662,15 +891,293 @@
             document.getElementById('winRate').textContent = data.win_rate + '%';
         });
         
+        // APEX Control Functions
+        let apexConfig = {};
+        
+        async function loadAPEXStatus() {
+            try {
+                const response = await fetch('/throne/api/apex/status');
+                const data = await response.json();
+                
+                // Update status display in control panel
+                const statusEl = document.getElementById('apexStatus');
+                const statusClass = data.running ? 'status-online' : 'status-offline';
+                const statusText = data.running ? 'ONLINE' : 'OFFLINE';
+                statusEl.innerHTML = `<span class="status-indicator ${statusClass}"></span>${statusText}`;
+                
+                // Update quick status in top bar
+                const quickStatusEl = document.getElementById('apexQuickStatus');
+                quickStatusEl.innerHTML = `<span class="status-indicator ${statusClass}"></span>${statusText}`;
+                
+                // Update PID
+                document.getElementById('apexPid').textContent = data.pid || '--';
+                
+                // Update signal count
+                document.getElementById('apexSignalCount').textContent = data.signal_count || '0';
+                
+                // Update config if available
+                if (data.config) {
+                    apexConfig = data.config;
+                    updateConfigDisplay();
+                }
+                
+                // Update button states
+                document.getElementById('apexStartBtn').disabled = data.running;
+                document.getElementById('apexStopBtn').disabled = !data.running;
+                
+            } catch (error) {
+                console.error('Error loading APEX status:', error);
+            }
+        }
+        
+        function updateConfigDisplay() {
+            // Update sliders and values
+            if (apexConfig.signal_generation) {
+                const sg = apexConfig.signal_generation;
+                
+                document.getElementById('apexSignalsPerHour').value = sg.signals_per_hour_target || 40;
+                document.getElementById('apexSignalsPerHourValue').textContent = sg.signals_per_hour_target || 40;
+                
+                document.getElementById('apexTcsThreshold').value = sg.min_tcs_threshold || 65;
+                document.getElementById('apexTcsThresholdValue').textContent = (sg.min_tcs_threshold || 65) + '%';
+                
+                document.getElementById('apexScanInterval').value = sg.scan_interval_seconds || 45;
+                document.getElementById('apexScanIntervalValue').textContent = (sg.scan_interval_seconds || 45) + 's';
+                
+                document.getElementById('apexMaxSpread').value = sg.max_spread_allowed || 50;
+                document.getElementById('apexMaxSpreadValue').textContent = sg.max_spread_allowed || 50;
+            }
+            
+            // Update pair toggles
+            if (apexConfig.trading_pairs) {
+                updatePairToggles(apexConfig.trading_pairs.pairs || []);
+            }
+        }
+        
+        function updatePairToggles(activePairs) {
+            const container = document.getElementById('apexPairToggles');
+            const allPairs = [
+                'EURUSD', 'GBPUSD', 'USDJPY', 'USDCHF', 'USDCAD',
+                'AUDUSD', 'NZDUSD', 'EURJPY', 'GBPJPY', 'EURGBP',
+                'AUDJPY', 'EURAUD', 'GBPAUD', 'GBPNZD', 'NZDJPY'
+            ];
+            
+            container.innerHTML = '';
+            allPairs.forEach(pair => {
+                const isActive = activePairs.includes(pair);
+                const toggle = document.createElement('label');
+                toggle.style.cssText = 'display: flex; align-items: center; gap: 5px; font-size: 11px; padding: 5px; background: rgba(0,255,65,0.1); border-radius: 3px; cursor: pointer;';
+                toggle.innerHTML = `
+                    <input type="checkbox" id="pair_${pair}" value="${pair}" ${isActive ? 'checked' : ''} onchange="updateAPEXConfig()">
+                    <span>${pair}</span>
+                `;
+                container.appendChild(toggle);
+            });
+        }
+        
+        function updateAPEXConfig() {
+            // Update display values in real-time
+            document.getElementById('apexSignalsPerHourValue').textContent = document.getElementById('apexSignalsPerHour').value;
+            document.getElementById('apexTcsThresholdValue').textContent = document.getElementById('apexTcsThreshold').value + '%';
+            document.getElementById('apexScanIntervalValue').textContent = document.getElementById('apexScanInterval').value + 's';
+            document.getElementById('apexMaxSpreadValue').textContent = document.getElementById('apexMaxSpread').value;
+        }
+        
+        async function saveAPEXConfig() {
+            try {
+                // Gather all selected pairs
+                const pairs = [];
+                const pairCheckboxes = document.querySelectorAll('#apexPairToggles input[type="checkbox"]:checked');
+                pairCheckboxes.forEach(cb => pairs.push(cb.value));
+                
+                const config = {
+                    signals_per_hour: parseInt(document.getElementById('apexSignalsPerHour').value),
+                    min_tcs: parseInt(document.getElementById('apexTcsThreshold').value),
+                    scan_interval: parseInt(document.getElementById('apexScanInterval').value),
+                    max_spread: parseInt(document.getElementById('apexMaxSpread').value),
+                    pairs: pairs
+                };
+                
+                const response = await fetch('/throne/api/apex/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(config)
+                });
+                
+                const result = await response.json();
+                alert(result.success ? '✅ Configuration updated!' : '❌ ' + result.message);
+                
+                if (result.success) {
+                    loadAPEXStatus(); // Reload to confirm changes
+                }
+            } catch (error) {
+                alert('❌ Failed to update configuration: ' + error.message);
+            }
+        }
+        
+        async function controlAPEX(action) {
+            try {
+                const response = await fetch('/throne/api/apex/control', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action })
+                });
+                
+                const result = await response.json();
+                alert(result.success ? '✅ ' + result.message : '❌ ' + result.message);
+                
+                // Reload status after a moment
+                setTimeout(loadAPEXStatus, 2000);
+                
+            } catch (error) {
+                alert('❌ Failed to control APEX: ' + error.message);
+            }
+        }
+        
+        async function loadAPEXSignals() {
+            try {
+                const response = await fetch('/throne/api/apex/signals');
+                const data = await response.json();
+                
+                const container = document.getElementById('apexSignalLog');
+                container.innerHTML = '';
+                
+                if (data.signals && data.signals.length > 0) {
+                    // Show last 10 signals
+                    data.signals.slice(-10).reverse().forEach(signal => {
+                        const row = document.createElement('div');
+                        row.className = 'trade-row';
+                        row.style.cssText = 'grid-template-columns: 120px 1fr 80px 60px 60px;';
+                        row.innerHTML = `
+                            <div>${signal.timestamp ? signal.timestamp.split(' ')[1] : '--'}</div>
+                            <div>${signal.number}</div>
+                            <div>${signal.symbol}</div>
+                            <div>${signal.direction}</div>
+                            <div>${signal.tcs}%</div>
+                        `;
+                        container.appendChild(row);
+                    });
+                } else {
+                    container.innerHTML = '<div style="padding: 10px; color: #888;">No signals yet</div>';
+                }
+            } catch (error) {
+                console.error('Error loading APEX signals:', error);
+            }
+        }
+        
+        // Ghost Trade Tracker Functions
+        async function loadGhostTrades() {
+            try {
+                const response = await fetch('/throne/api/ghost_trades');
+                const data = await response.json();
+                
+                // Update summary stats
+                document.getElementById('ghostTotalMissions').textContent = data.summary.total_missions || '0';
+                document.getElementById('ghostExecuted').textContent = data.summary.executed || '0';
+                document.getElementById('ghostGhosted').textContent = data.summary.ghosted || '0';
+                document.getElementById('ghostWins').textContent = data.summary.ghost_wins || '0';
+                
+                // Update hit rates
+                document.getElementById('ghostFiredWinRate').textContent = (data.hit_rates.fired_win_rate || 0).toFixed(1) + '%';
+                document.getElementById('ghostGhostWinRate').textContent = (data.hit_rates.ghost_win_rate || 0).toFixed(1) + '%';
+                document.getElementById('ghostTrueWinRate').textContent = (data.hit_rates.true_win_rate || 0).toFixed(1) + '%';
+                document.getElementById('ghostImpact').textContent = (data.hit_rates.impact || 0).toFixed(1) + '%';
+                
+                // Update true win rate in top bar
+                document.getElementById('trueWinRate').textContent = (data.hit_rates.true_win_rate || 0).toFixed(1) + '%';
+                
+                // Calculate and update execution rate
+                const totalMissions = data.summary.total_missions || 0;
+                const executed = data.summary.executed || 0;
+                const executionRate = totalMissions > 0 ? ((executed / totalMissions) * 100).toFixed(1) : 0;
+                document.getElementById('executionRate').textContent = executionRate + '%';
+                
+                // Update top missed wins
+                const missedList = document.getElementById('ghostMissedList');
+                if (data.top_missed && data.top_missed.length > 0) {
+                    missedList.innerHTML = '';
+                    data.top_missed.forEach(miss => {
+                        const item = document.createElement('div');
+                        item.style.cssText = 'padding: 3px 0; border-bottom: 1px solid #333;';
+                        item.innerHTML = `
+                            <span style="color: #00ff41;">${miss.symbol}</span> - 
+                            <span>${miss.potential_pips || 0} pips</span> - 
+                            <span style="color: #888; font-size: 10px;">${miss.timestamp || ''}</span>
+                        `;
+                        missedList.appendChild(item);
+                    });
+                } else {
+                    missedList.innerHTML = '<div style="color: #888;">No missed wins tracked yet</div>';
+                }
+                
+            } catch (error) {
+                console.error('Error loading ghost trades:', error);
+            }
+        }
+        
+        // Live Activity Feed
+        let activityBuffer = [];
+        const MAX_ACTIVITIES = 20;
+        
+        function addActivity(type, message, color = '#00ff41') {
+            const timestamp = new Date().toLocaleTimeString();
+            const activity = {
+                time: timestamp,
+                type: type,
+                message: message,
+                color: color
+            };
+            
+            activityBuffer.unshift(activity);
+            if (activityBuffer.length > MAX_ACTIVITIES) {
+                activityBuffer.pop();
+            }
+            
+            updateActivityFeed();
+        }
+        
+        function updateActivityFeed() {
+            const feed = document.getElementById('liveActivityFeed');
+            feed.innerHTML = '';
+            
+            activityBuffer.forEach(activity => {
+                const item = document.createElement('div');
+                item.style.cssText = `padding: 5px; border-bottom: 1px solid #333; opacity: 0.9;`;
+                item.innerHTML = `
+                    <span style="color: #888; font-size: 10px;">${activity.time}</span>
+                    <span style="color: ${activity.color}; margin-left: 10px;">[${activity.type}]</span>
+                    <span style="margin-left: 10px;">${activity.message}</span>
+                `;
+                feed.appendChild(item);
+            });
+        }
+        
+        // Simulate some initial activities
+        function initializeActivityFeed() {
+            addActivity('SYSTEM', 'Commander Throne initialized', '#ff6b00');
+            addActivity('APEX', 'Signal engine monitoring active', '#00ff41');
+            addActivity('REVENUE', 'Subscription analytics loaded', '#ffaa00');
+        }
+        
         // Load initial data
         loadMissionStats();
         loadSoldierRoster();
         loadTradeLog();
+        loadAPEXStatus();
+        loadAPEXSignals();
+        loadGhostTrades();
+        loadSubscriptionAnalytics();
+        initializeActivityFeed();
         
         // Refresh data every 30 seconds
         setInterval(() => {
             loadMissionStats();
             loadTradeLog();
+            loadAPEXStatus();
+            loadAPEXSignals();
+            loadGhostTrades();
+            loadSubscriptionAnalytics();
+            addActivity('REFRESH', 'Dashboard data updated', '#888');
         }, 30000);
         
         // Refresh soldier roster every 2 minutes

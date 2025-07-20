@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>COMMANDER - {{ symbol }} - TACTICAL BRIEF</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --commander-purple: #7c3aed;
+            --elite-gold: #fbbf24;
+            --success-green: #10b981;
+            --warning-amber: #f59e0b;
+            --danger-red: #ef4444;
+            --dark-bg: #0f172a;
+            --panel-bg: rgba(15, 23, 42, 0.95);
+            --border-color: #334155;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--dark-bg) 0%, #1e293b 100%);
+            color: #f1f5f9;
+            height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .commander-header {
+            background: linear-gradient(90deg, var(--commander-purple) 0%, #8b5cf6 100%);
+            color: white;
+            text-align: center;
+            padding: 12px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            font-size: 1em;
+        }
+
+        .hud-container {
+            display: grid;
+            grid-template-areas: 
+                "mission-overview mission-overview"
+                "trade-details account-summary"
+                "execution-panel execution-panel";
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto 1fr auto;
+            height: calc(100vh - 50px);
+            gap: 16px;
+            padding: 16px;
+        }
+
+        .mission-overview {
+            grid-area: mission-overview;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            backdrop-filter: blur(10px);
+        }
+
+        .trade-details {
+            grid-area: trade-details;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            backdrop-filter: blur(10px);
+        }
+
+        .account-summary {
+            grid-area: account-summary;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            backdrop-filter: blur(10px);
+        }
+
+        .execution-panel {
+            grid-area: execution-panel;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            backdrop-filter: blur(10px);
+            text-align: center;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .section-title {
+            font-family: 'Orbitron', monospace;
+            font-weight: 700;
+            color: var(--commander-purple);
+            font-size: 1.1em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .mission-title-large {
+            font-family: 'Orbitron', monospace;
+            font-size: 2.5em;
+            font-weight: 900;
+            color: var(--elite-gold);
+            text-align: center;
+            margin-bottom: 16px;
+            text-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+        }
+
+        .confidence-badge {
+            background: linear-gradient(45deg, var(--success-green), #059669);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 16px;
+            font-size: 0.9em;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .stat-card {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid var(--commander-purple);
+        }
+
+        .stat-label {
+            color: #94a3b8;
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            color: #f1f5f9;
+            font-weight: 700;
+            font-size: 1.3em;
+        }
+
+        .stat-value.success { color: var(--success-green); }
+        .stat-value.warning { color: var(--warning-amber); }
+        .stat-value.danger { color: var(--danger-red); }
+
+        .countdown-display {
+            font-family: 'Orbitron', monospace;
+            font-size: 2.2em;
+            color: var(--elite-gold);
+            margin-bottom: 24px;
+            text-shadow: 0 0 15px rgba(251, 191, 36, 0.4);
+        }
+
+        .execute-button {
+            background: linear-gradient(45deg, var(--commander-purple), #8b5cf6);
+            border: none;
+            border-radius: 12px;
+            padding: 20px 50px;
+            font-family: 'Orbitron', monospace;
+            font-size: 1.4em;
+            font-weight: 700;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(124, 58, 237, 0.4);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .execute-button:hover {
+            background: linear-gradient(45deg, #8b5cf6, var(--commander-purple));
+            box-shadow: 0 12px 35px rgba(124, 58, 237, 0.6);
+            transform: translateY(-2px);
+        }
+
+        .execute-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .tier-indicator {
+            background: linear-gradient(45deg, var(--elite-gold), #f59e0b);
+            color: var(--dark-bg);
+            padding: 6px 14px;
+            border-radius: 15px;
+            font-weight: 700;
+            font-size: 0.8em;
+            display: inline-block;
+            margin-left: 12px;
+        }
+
+        .risk-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--success-green);
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-top: 16px;
+        }
+
+        .risk-text {
+            color: var(--success-green);
+            font-weight: 600;
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .hud-container {
+                grid-template-areas: 
+                    "mission-overview"
+                    "trade-details"
+                    "account-summary"
+                    "execution-panel";
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto auto auto;
+            }
+            
+            .mission-title-large {
+                font-size: 2em;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+        }
+        
+        /* Timer styling */
+        .timer {
+            background: var(--danger-red);
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-weight: bold;
+        }
+        
+        .urgent {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="commander-header">
+        🎖️ COMMANDER ACCESS - TACTICAL TRADING INTERFACE - AUTHORIZED PERSONNEL ONLY 🎖️
+    </div>
+
+    <div class="hud-container">
+        <div class="mission-overview">
+            <div class="mission-title-large">{{ symbol }}</div>
+            <div class="confidence-badge">🎯 TCS: {{ tcs_score }}% CONFIDENCE</div>
+            
+            <div class="section-header">
+                <div class="section-title">Mission Overview</div>
+                <div class="tier-indicator">{{ user_stats.tier|upper }}</div>
+            </div>
+            
+            <div style="color: #94a3b8; line-height: 1.6;">
+                High-probability {{ symbol }} opportunity identified. Market structure aligned for tactical entry.
+                Risk management protocols active. Position sizing calculated for {{ user_stats.tier|title }}-tier account.
+            </div>
+
+            <div class="risk-indicator">
+                <span class="risk-text">✅ Risk Parameters: Optimal</span>
+                <span style="color: var(--elite-gold); font-weight: 600;">R:R 1:{{ rr_ratio }}</span>
+            </div>
+            
+            <!-- Expiry Timer -->
+            {% if expiry_seconds > 0 %}
+            <div class="timer urgent" id="timer" style="margin-top: 16px;">
+                Signal expires in: <span id="countdown">{{ expiry_seconds }}s</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="trade-details">
+            <div class="section-header">
+                <div class="section-title">Trade Parameters</div>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Entry Price</div>
+                    <div class="stat-value">{{ entry_masked }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Stop Loss</div>
+                    <div class="stat-value danger">{{ sl_masked }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Take Profit</div>
+                    <div class="stat-value success">{{ tp_masked }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Direction</div>
+                    <div class="stat-value {% if direction == 'BUY' %}success{% else %}warning{% endif %}">{{ direction }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="account-summary">
+            <div class="section-header">
+                <div class="section-title">Account Status</div>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Account Balance</div>
+                    <div class="stat-value">${{ "%.2f"|format(account_balance) }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Risk Amount</div>
+                    <div class="stat-value warning">${{ sl_dollars }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Potential Profit</div>
+                    <div class="stat-value success">${{ tp_dollars }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Win Rate</div>
+                    <div class="stat-value {% if user_stats.win_rate >= 70 %}success{% else %}warning{% endif %}">{{ user_stats.win_rate }}%</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="execution-panel">
+            {% if expiry_seconds > 0 %}
+            <div class="countdown-display">⏰ <span id="countdown-main">{{ expiry_seconds }}s</span> REMAINING</div>
+            {% endif %}
+            <button class="execute-button" onclick="fireSignal()" {% if user_stats.trades_remaining <= 0 %}disabled{% endif %}>🚀 EXECUTE TRADE 🚀</button>
+            <div style="margin-top: 16px; color: #64748b; font-size: 0.9em;">
+                {{ user_stats.tier|title }}-level position sizing applied • 3% account risk
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Telegram WebApp API
+        const tg = window.Telegram?.WebApp;
+        if (tg) {
+            tg.ready();
+            tg.expand();
+        }
+        
+        // Check mission status on page load
+        async function checkMissionStatus() {
+            try {
+                const response = await fetch(`/api/mission-status/{{ signal_id }}`, {
+                    headers: {
+                        'Authorization': 'Bearer webapp_token',
+                        'X-User-ID': '{{ user_id }}'
+                    }
+                });
+                
+                if (response.ok) {
+                    const mission = await response.json();
+                    const fireButton = document.querySelector('.execute-button');
+                    
+                    if (mission.status === 'fired' || mission.mission_stats?.user_fired) {
+                        // Mission already fired - disable button and show status
+                        fireButton.disabled = true;
+                        fireButton.textContent = '✅ MISSION COMPLETED';
+                        fireButton.style.background = 'linear-gradient(135deg, #28a745, #20c997)';
+                        fireButton.style.cursor = 'not-allowed';
+                    } else if (mission.is_expired || mission.time_remaining <= 0) {
+                        // Mission expired - disable button and show expired
+                        fireButton.disabled = true;
+                        fireButton.textContent = '❌ MISSION EXPIRED';
+                        fireButton.style.background = 'linear-gradient(135deg, #6c757d, #495057)';
+                        fireButton.style.cursor = 'not-allowed';
+                    }
+                }
+            } catch (error) {
+                console.log('Mission status check failed:', error);
+            }
+        }
+        
+        // Run status check when page loads
+        checkMissionStatus();
+        
+        // Fire signal function
+        async function fireSignal() {
+            const fireButton = document.querySelector('.execute-button');
+            const signalId = '{{ signal_id }}';
+            const userId = '{{ user_id }}';
+            
+            try {
+                // Update button to show firing state
+                fireButton.disabled = true;
+                fireButton.style.background = 'linear-gradient(135deg, #ffc107, #fd7e14)';
+                fireButton.textContent = '🔥 FIRING...';
+                
+                // Make API call to fire the signal
+                const response = await fetch('/api/fire', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer webapp_token',
+                        'X-User-ID': userId
+                    },
+                    body: JSON.stringify({
+                        mission_id: signalId
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    // Success - show success state
+                    fireButton.style.background = 'linear-gradient(135deg, #28a745, #20c997)';
+                    fireButton.textContent = '✅ MISSION FIRED!';
+                    
+                    // Show success message with tactical flair
+                    alert('🎯 MISSION EXECUTED!\n\nTarget acquired. Trade has been fired.\nTracking bullet to target...');
+                    
+                    // Redirect to live tracking page after short delay
+                    setTimeout(() => {
+                        const symbol = '{{ symbol }}';
+                        const direction = '{{ direction }}';
+                        window.location.href = `/track-trade?mission_id=${signalId}&symbol=${symbol}&direction=${direction}`;
+                    }, 2000);
+                    
+                } else {
+                    // Error - show error state and re-enable
+                    fireButton.style.background = 'linear-gradient(135deg, #dc3545, #c82333)';
+                    fireButton.textContent = '❌ MISSION FAILED';
+                    
+                    alert('❌ MISSION FAILED\n\n' + (result.error || 'Unable to fire signal. Please try again.'));
+                    
+                    // Reset button after delay
+                    setTimeout(() => {
+                        fireButton.disabled = false;
+                        fireButton.style.background = 'linear-gradient(45deg, var(--commander-purple), #8b5cf6)';
+                        fireButton.textContent = '🚀 EXECUTE TRADE 🚀';
+                    }, 3000);
+                }
+                
+            } catch (error) {
+                console.error('Fire signal error:', error);
+                
+                // Error - show error state and re-enable
+                fireButton.style.background = 'linear-gradient(135deg, #dc3545, #c82333)';
+                fireButton.textContent = '❌ FIRE FAILED';
+                
+                alert('❌ COMMUNICATION FAILURE\n\nUnable to contact command. Check connection and try again.');
+                
+                // Reset button after delay
+                setTimeout(() => {
+                    fireButton.disabled = false;
+                    fireButton.style.background = 'linear-gradient(45deg, var(--commander-purple), #8b5cf6)';
+                    fireButton.textContent = '🚀 EXECUTE TRADE 🚀';
+                }, 3000);
+            }
+        }
+        
+        // Timer countdown
+        {% if expiry_seconds > 0 %}
+        let timeLeft = {{ expiry_seconds }};
+        const countdownElement = document.getElementById('countdown');
+        const countdownMainElement = document.getElementById('countdown-main');
+        
+        const timer = setInterval(function() {
+            timeLeft--;
+            
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                if (countdownElement) countdownElement.textContent = 'EXPIRED';
+                if (countdownMainElement) countdownMainElement.textContent = 'EXPIRED';
+                
+                const timerDiv = document.getElementById('timer');
+                if (timerDiv) timerDiv.style.background = '#666';
+                
+                const fireButton = document.querySelector('.execute-button');
+                if (fireButton) {
+                    fireButton.disabled = true;
+                    fireButton.textContent = '❌ EXPIRED';
+                    fireButton.style.background = '#666';
+                }
+            } else {
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                const timeString = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                
+                if (countdownElement) countdownElement.textContent = timeString;
+                if (countdownMainElement) countdownMainElement.textContent = timeString;
+            }
+        }, 1000);
+        {% endif %}
+    </script>
+</body>
+</html>

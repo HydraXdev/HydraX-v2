@@ -1,0 +1,22 @@
+{
+  "12345": {
+    "messages": [
+      "i want to execute trades fast and aggressively!",
+      "i want to execute trades fast and aggressively!",
+      "i want to execute trades fast and aggressively!"
+    ],
+    "patterns": [
+      "fast_execution",
+      "risk_taking"
+    ],
+    "traits": {
+      "speed": 0.30000000000000004,
+      "patience": -0.15000000000000002,
+      "aggression": 0.30000000000000004,
+      "caution": -0.15000000000000002
+    },
+    "last_updated": "2025-07-15T17:18:50.348672",
+    "interaction_count": 3,
+    "tier": "FANG"
+  }
+}

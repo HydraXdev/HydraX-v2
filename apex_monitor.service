@@ -1,0 +1,18 @@
+[Unit]
+Description=APEX Process Monitor - Prevents duplicate APEX processes
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/HydraX-v2
+ExecStart=/usr/bin/python3 /root/HydraX-v2/apex_process_monitor.py
+Restart=always
+RestartSec=10
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

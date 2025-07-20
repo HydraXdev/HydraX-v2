@@ -83,12 +83,22 @@ def load_mission_data(mission_id: str) -> Optional[Dict[str, Any]]:
         with open(mission_path, 'r') as f:
             mission_data = json.load(f)
             
-        # Validate mission data structure
-        required_fields = ['mission_id', 'expires_at', 'status', 'user_id']
-        for field in required_fields:
-            if field not in mission_data:
-                logger.error(f"Mission {mission_id} missing required field: {field}")
-                return None
+        # Validate mission data structure and normalize format
+        if 'mission_id' not in mission_data:
+            logger.error(f"Mission {mission_id} missing mission_id")
+            return None
+            
+        # Normalize expires_at from timing section if needed
+        if 'expires_at' not in mission_data and 'timing' in mission_data:
+            mission_data['expires_at'] = mission_data['timing'].get('expires_at')
+            
+        # Add default status if missing
+        if 'status' not in mission_data:
+            mission_data['status'] = 'pending'
+            
+        # Add default user_id from user section if missing
+        if 'user_id' not in mission_data and 'user' in mission_data:
+            mission_data['user_id'] = mission_data['user'].get('id')
         
         return mission_data
     except json.JSONDecodeError as e:
@@ -299,6 +309,15 @@ def handle_fire():
         mission_data["fired_at"] = datetime.utcnow().isoformat()
         mission_data["fired_by"] = request.user_id
         
+        # Record engagement in database
+        try:
+            from engagement_db import handle_fire_action
+            engagement_result = handle_fire_action(request.user_id, mission_id)
+            logger.info(f"Recorded fire action for user {request.user_id}: {engagement_result}")
+        except Exception as e:
+            logger.warning(f"Failed to record engagement data: {e}")
+            # Continue with mission execution even if engagement tracking fails
+        
         # Save updated mission data
         if not save_mission_data(mission_id, mission_data):
             return jsonify({
@@ -307,10 +326,25 @@ def handle_fire():
                 "message": "Failed to update mission status"
             }), 500
         
-        # Execute trade through fire router
+        # Execute trade through TOC system
         try:
-            from ..bitten_core.fire_router import execute_trade
-            execution_result = execute_trade(mission_data)
+            from ..bitten_core.mission_fire_integration import MissionFireIntegration
+            
+            # Create mock mission briefing object from mission data
+            class MockMissionBriefing:
+                def __init__(self, data):
+                    self.mission_id = data['mission_id']
+                    self.symbol = data['symbol']
+                    self.direction = data['direction']
+                    self.entry_price = data['entry_price']
+                    self.signal_class = type('SignalClass', (), {'value': data['signal_type']})()
+                    self.tcs_score = data['tcs_score']
+                    self.position_size = data['position_size']
+            
+            # Fire through TOC integration
+            fire_integration = MissionFireIntegration()
+            mission_briefing = MockMissionBriefing(mission_data)
+            execution_result = fire_integration.fire_mission(mission_briefing, request.user_id)
             
             # Update mission with execution result
             mission_data["execution_result"] = execution_result
@@ -330,16 +364,42 @@ def handle_fire():
             })
             
         except ImportError as e:
-            logger.error(f"Fire router import failed: {e}")
+            logger.error(f"Fire integration import failed: {e}")
             return jsonify({
                 "status": "error",
-                "reason": "execution_unavailable",
-                "message": "Trade execution service unavailable"
+                "reason": "execution_unavailable", 
+                "message": "🎯 TOC offline - Mission control temporarily unavailable",
+                "tactical_message": "📡 Command center experiencing interference. Stand by for reconnection."
             }), 503
-            
+        
         except Exception as e:
-            logger.error(f"Trade execution failed for mission {mission_id}: {e}")
+            logger.error(f"Trade execution failed: {e}")
             
+            # Tactical error messages based on error type
+            error_msg = str(e).lower()
+            if "connection" in error_msg or "timeout" in error_msg:
+                tactical_msg = "📡 Lost contact with mission control - Signal interference detected"
+                reason = "connection_lost"
+            elif "insufficient" in error_msg or "margin" in error_msg:
+                tactical_msg = "💰 Insufficient ammo reserves - Cannot deploy at current risk level"
+                reason = "insufficient_resources"
+            elif "invalid" in error_msg or "symbol" in error_msg:
+                tactical_msg = "🎯 Target unavailable - Market conditions preventing deployment"
+                reason = "target_unavailable"
+            elif "denied" in error_msg or "rejected" in error_msg:
+                tactical_msg = "🛡️ Mission denied by command - Broker resistance too strong"
+                reason = "mission_denied"
+            else:
+                tactical_msg = "⚡ Avoided counterattack - Tactical retreat executed"
+                reason = "tactical_retreat"
+            
+            return jsonify({
+                "status": "error",
+                "reason": reason,
+                "message": f"🚨 {tactical_msg}",
+                "technical_details": str(e),
+                "mission_id": mission_id
+            }), 500
             # Revert mission status
             mission_data["status"] = "pending"
             mission_data.pop("fired_at", None)
@@ -421,9 +481,9 @@ def cancel_mission(mission_id: str):
         }), 500
 
 
-@app.route("/api/health", methods=["GET"])
-def health_check():
-    """Health check endpoint"""
+@app.route("/api/mission-health", methods=["GET"])
+def mission_health_check():
+    """Mission API health check endpoint"""
     return jsonify({
         "status": "healthy",
         "service": "mission_endpoints",
@@ -431,6 +491,23 @@ def health_check():
         "missions_dir": MISSIONS_DIR,
         "missions_dir_exists": os.path.exists(MISSIONS_DIR)
     })
+
+
+def register_mission_api(flask_app):
+    """Register mission API endpoints with the given Flask app"""
+    try:
+        # Register all mission endpoints with the main app
+        flask_app.add_url_rule("/api/mission-status/<mission_id>", "mission_status", mission_status, methods=["GET"])
+        flask_app.add_url_rule("/api/missions", "list_missions", list_missions, methods=["GET"])
+        flask_app.add_url_rule("/api/fire", "handle_fire", handle_fire, methods=["POST"])
+        flask_app.add_url_rule("/api/missions/<mission_id>/cancel", "cancel_mission", cancel_mission, methods=["POST"])
+        flask_app.add_url_rule("/api/mission-health", "mission_health_check", mission_health_check, methods=["GET"])
+        
+        logger.info("Mission API endpoints registered successfully")
+        return True
+    except Exception as e:
+        logger.error(f"Failed to register mission API endpoints: {e}")
+        return False
 
 
 if __name__ == "__main__":

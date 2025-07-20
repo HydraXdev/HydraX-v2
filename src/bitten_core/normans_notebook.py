@@ -693,6 +693,49 @@ The dominant feeling was {dominant_mood}. """
         
         return review
     
+    def get_recent_entries(self, limit: int = 10) -> List[Dict]:
+        """Get recent journal entries for display"""
+        # Sort entries by timestamp (most recent first)
+        sorted_entries = sorted(self.entries, 
+                               key=lambda x: x.get('timestamp', ''), 
+                               reverse=True)
+        return sorted_entries[:limit]
+    
+    def get_user_emotional_state(self) -> Dict[str, Any]:
+        """Get current user emotional state metrics"""
+        recent_entries = self.get_recent_entries(limit=30)
+        
+        if not recent_entries:
+            return {
+                'confidence': 'Building...',
+                'discipline': 'Growing...',
+                'patience': 'Learning...'
+            }
+        
+        # Calculate emotional metrics from recent entries
+        mood_scores = defaultdict(list)
+        for entry in recent_entries:
+            for mood, score in entry.get('mood', {}).items():
+                mood_scores[mood].append(score)
+        
+        # Average the scores
+        metrics = {}
+        for mood, scores in mood_scores.items():
+            avg_score = statistics.mean(scores) if scores else 0
+            if mood == 'calm':
+                metrics['confidence'] = f"{avg_score:.1f}/10"
+            elif mood == 'disciplined':
+                metrics['discipline'] = f"{avg_score:.1f}/10"
+            elif mood == 'patient':
+                metrics['patience'] = f"{avg_score:.1f}/10"
+        
+        # Provide defaults if no data
+        return {
+            'confidence': metrics.get('confidence', 'N/A'),
+            'discipline': metrics.get('discipline', 'N/A'),
+            'patience': metrics.get('patience', 'N/A')
+        }
+
     def find_repeated_mistakes(self, min_occurrences: int = 3) -> Dict[str, List[Dict]]:
         """Find patterns that keep repeating"""
         pattern_entries = defaultdict(list)

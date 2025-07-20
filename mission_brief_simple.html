@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BITTEN Mission Brief</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --primary: #00ccff;
+            --secondary: #0099cc;
+            --success: #00ff88;
+            --danger: #ff0066;
+            --warning: #ffaa00;
+            --bg-dark: #0a0a0a;
+            --bg-panel: #111;
+            --text-primary: #e0e0e0;
+            --text-secondary: #999;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        /* Personal Stats - First Thing They See */
+        .personal-stats {
+            background: var(--bg-panel);
+            border: 2px solid var(--primary);
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            border-radius: 8px;
+        }
+
+        .tier-badge {
+            color: var(--warning);
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 10px;
+            color: var(--text-secondary);
+            display: block;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--success);
+        }
+
+        /* Signal Info - Compact */
+        .signal-info {
+            background: var(--bg-panel);
+            border: 1px solid var(--primary);
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+
+        .signal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .symbol {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--text-primary);
+        }
+
+        .direction {
+            padding: 8px 16px;
+            background: var(--success);
+            color: var(--bg-dark);
+            font-weight: bold;
+            border-radius: 4px;
+        }
+
+        .direction.sell {
+            background: var(--danger);
+        }
+
+        /* TCS Score - Prominent */
+        .tcs-display {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .tcs-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+        }
+
+        .tcs-score {
+            font-size: 48px;
+            font-weight: bold;
+            color: var(--primary);
+            text-shadow: 0 0 20px var(--primary);
+        }
+
+        .tcs-score.high {
+            color: var(--success);
+            text-shadow: 0 0 20px var(--success);
+        }
+
+        .confidence-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+
+        /* Basic Trade Info */
+        .trade-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .trade-param {
+            text-align: center;
+        }
+
+        .param-label {
+            font-size: 10px;
+            color: var(--text-secondary);
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .param-value {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .param-value.entry {
+            color: var(--primary);
+        }
+
+        .param-value.stop {
+            color: var(--danger);
+        }
+
+        .param-value.target {
+            color: var(--success);
+        }
+
+        /* BIG FIRE BUTTON */
+        .fire-section {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .fire-button {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--danger), #cc0052);
+            border: 3px solid var(--danger);
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 30px rgba(255, 0, 102, 0.5);
+        }
+
+        .fire-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 50px rgba(255, 0, 102, 0.8);
+        }
+
+        .fire-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #333;
+            border-color: #555;
+            box-shadow: none;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 15px;
+            background: var(--bg-panel);
+            border: 1px solid var(--primary);
+            color: var(--text-primary);
+            cursor: pointer;
+            text-align: center;
+            font-size: 12px;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn:hover {
+            background: var(--primary);
+            color: var(--bg-dark);
+        }
+
+        /* Timer */
+        .timer-section {
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: var(--bg-panel);
+            border: 1px solid var(--warning);
+            border-radius: 4px;
+        }
+
+        .countdown {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--warning);
+            font-family: 'Courier New', monospace;
+        }
+
+        .countdown.critical {
+            color: var(--danger);
+            animation: blink 0.5s infinite;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0.3; }
+        }
+
+        .timer-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .container {
+                max-width: 100%;
+                padding: 0 10px;
+            }
+            
+            .fire-button {
+                width: 120px;
+                height: 120px;
+                font-size: 16px;
+            }
+            
+            .tcs-score {
+                font-size: 36px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Personal Stats First -->
+        <div class="personal-stats">
+            <div class="tier-badge" id="userTier">TIER: LOADING...</div>
+            <div class="stats-row">
+                <div class="stat-item">
+                    <span class="stat-label">STREAK</span>
+                    <span class="stat-value" id="currentStreak">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">WIN%</span>
+                    <span class="stat-value" id="winRate">0%</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">TODAY</span>
+                    <span class="stat-value" id="todayPnL">+0%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Signal Info -->
+        <div class="signal-info">
+            <div class="signal-header">
+                <span class="symbol" id="symbol">LOADING...</span>
+                <span class="direction" id="direction">--</span>
+            </div>
+            
+            <!-- TCS Score - Big and Prominent -->
+            <div class="tcs-display">
+                <div class="tcs-label">TACTICAL CONFIDENCE SCORE</div>
+                <div class="tcs-score" id="tcsScore">--</div>
+                <div class="confidence-text" id="confidenceText">Analyzing...</div>
+            </div>
+
+            <!-- Basic Trade Info -->
+            <div class="trade-info">
+                <div class="trade-param">
+                    <span class="param-label">ENTRY</span>
+                    <div class="param-value entry" id="entryPrice">0.00000</div>
+                </div>
+                <div class="trade-param">
+                    <span class="param-label">STOP</span>
+                    <div class="param-value stop" id="stopLoss">0.00000</div>
+                </div>
+                <div class="trade-param">
+                    <span class="param-label">TARGET</span>
+                    <div class="param-value target" id="takeProfit">0.00000</div>
+                </div>
+                <div class="trade-param">
+                    <span class="param-label">R:R</span>
+                    <div class="param-value" id="riskRatio">1:0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timer -->
+        <div class="timer-section">
+            <div class="timer-label">TIME REMAINING</div>
+            <div class="countdown" id="countdown">--:--</div>
+        </div>
+
+        <!-- BIG FIRE BUTTON -->
+        <div class="fire-section">
+            <button class="fire-button" id="fireButton" disabled>
+                LOADING...
+            </button>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <div class="action-btn" onclick="window.open('https://joinbitten.com/profile', '_blank')">
+                📊 PROFILE
+            </div>
+            <div class="action-btn" onclick="refreshData()">
+                🔄 REFRESH
+            </div>
+            <div class="action-btn" onclick="closeApp()">
+                ✖ CLOSE
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Telegram WebApp
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        let missionData = null;
+        let countdownInterval = null;
+
+        // Load mission data from URL parameter
+        function loadMissionData() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const missionId = urlParams.get('mission_id');
+            
+            if (missionId) {
+                // Load mission data (would be injected server-side)
+                updateDisplay();
+            }
+        }
+
+        // Update display with mission data
+        function updateDisplay() {
+            // Personal stats (mock data for now)
+            document.getElementById('userTier').textContent = 'TIER: FANG';
+            document.getElementById('currentStreak').textContent = '7';
+            document.getElementById('winRate').textContent = '68%';
+            document.getElementById('todayPnL').textContent = '+3.2%';
+
+            // Signal info (will be replaced by server-side injection)
+            document.getElementById('symbol').textContent = 'USDJPY';
+            document.getElementById('direction').textContent = 'BUY';
+            document.getElementById('tcsScore').textContent = '74';
+            document.getElementById('confidenceText').textContent = 'High Confidence Signal';
+            document.getElementById('entryPrice').textContent = '148.919';
+            document.getElementById('stopLoss').textContent = '148.770';
+            document.getElementById('takeProfit').textContent = '149.235';
+            document.getElementById('riskRatio').textContent = '1:2.1';
+
+            // Color TCS score
+            const tcsElement = document.getElementById('tcsScore');
+            const tcsValue = parseInt(tcsElement.textContent);
+            if (tcsValue >= 80) {
+                tcsElement.classList.add('high');
+            }
+
+            // Enable fire button
+            const fireButton = document.getElementById('fireButton');
+            fireButton.textContent = 'FIRE MISSION';
+            fireButton.disabled = false;
+
+            // Start countdown (5 minutes example)
+            startCountdown(300);
+        }
+
+        // Countdown timer
+        function startCountdown(seconds) {
+            let timeLeft = seconds;
+            const countdownElement = document.getElementById('countdown');
+            
+            countdownInterval = setInterval(() => {
+                const minutes = Math.floor(timeLeft / 60);
+                const secs = timeLeft % 60;
+                countdownElement.textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                
+                if (timeLeft <= 60) {
+                    countdownElement.classList.add('critical');
+                }
+                
+                if (timeLeft <= 0) {
+                    clearInterval(countdownInterval);
+                    countdownElement.textContent = 'EXPIRED';
+                    document.getElementById('fireButton').disabled = true;
+                    document.getElementById('fireButton').textContent = 'EXPIRED';
+                }
+                
+                timeLeft--;
+            }, 1000);
+        }
+
+        // Fire button handler
+        document.getElementById('fireButton').addEventListener('click', function() {
+            if (this.disabled) return;
+            
+            this.disabled = true;
+            this.textContent = 'FIRING...';
+            
+            // Send trade data to Telegram
+            const tradeData = {
+                action: 'fire_trade',
+                symbol: document.getElementById('symbol').textContent,
+                direction: document.getElementById('direction').textContent,
+                entry: document.getElementById('entryPrice').textContent,
+                stop: document.getElementById('stopLoss').textContent,
+                target: document.getElementById('takeProfit').textContent,
+                timestamp: Date.now()
+            };
+            
+            tg.sendData(JSON.stringify(tradeData));
+            
+            setTimeout(() => {
+                this.textContent = 'FIRED!';
+                this.style.background = 'linear-gradient(135deg, #00ff88, #00cc70)';
+            }, 2000);
+        });
+
+        // Refresh data
+        function refreshData() {
+            location.reload();
+        }
+
+        // Close app
+        function closeApp() {
+            tg.close();
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', loadMissionData);
+    </script>
+</body>
+</html>

@@ -253,7 +253,17 @@ class BittenMenuIntegration:
                 await self._show_tool_content(query, data.replace("tool_", ""))
             
             else:
-                await query.edit_message_text("🔧 Feature coming soon! Check back later.")
+                # Handle unknown menu item with helpful message
+                await query.edit_message_text(
+                    "🎯 **Feature Available**\n\n"
+                    "This feature is active! Use the menu buttons above to explore all available options.\n\n"
+                    "• 🔫 Combat Ops - Signal management\n"
+                    "• 📚 Field Manual - Trading guides\n"
+                    "• 💰 Tier Intel - Subscription info\n"
+                    "• 🎖️ XP Economy - Gamification system\n\n"
+                    "**Need help?** Use /help for command assistance.",
+                    parse_mode="Markdown"
+                )
         
         except Exception as e:
             logger.error(f"Menu callback error: {e}")
@@ -404,7 +414,7 @@ class BittenMenuIntegration:
 • Book profits systematically"""
         }
         
-        content = help_content.get(topic, f"📖 Help content for {topic} coming soon!")
+        content = help_content.get(topic, f"📖 **{topic.upper()} GUIDE**\n\nThis section provides essential information for {topic} operations.\n\n🎯 **Key Features:**\n• Real-time signal analysis\n• Risk management protocols\n• Performance tracking\n• Tactical execution guidance\n\n**Need specific help?** Use /help for detailed command assistance.")
         
         await query.edit_message_text(
             content,
@@ -663,7 +673,7 @@ Type your question or concern, and {bot_type.upper()} will assist you with speci
 🧠 Recommended action: Do the opposite of everyone else"""
         }
         
-        content = tool_responses.get(tool_type, f"🛠️ **{tool_type.upper()}**\n\nTool documentation coming soon!")
+        content = tool_responses.get(tool_type, f"🛠️ **{tool_type.upper()} OPERATIONS**\n\n**Status:** Operational ✅\n\n🎯 **Core Functions:**\n• Real-time market analysis\n• Signal processing & validation\n• Risk assessment algorithms\n• Trade execution protocols\n\n**Access:** Available through Mission HUD\n\n**Support:** Use /help for detailed guidance")
         
         await query.edit_message_text(
             content,

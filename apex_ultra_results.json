@@ -1,0 +1,89 @@
+{
+  "performance": {
+    "total_signals": 6,
+    "win_rate_percent": 83.3,
+    "expectancy": 1.946,
+    "total_r_multiple": 11.68,
+    "strength_performance": {
+      "precision": {
+        "signals": 2,
+        "win_rate": 100.0,
+        "expectancy": 2.475
+      },
+      "tactical": {
+        "signals": 4,
+        "win_rate": 75.0,
+        "expectancy": 1.682
+      }
+    },
+    "quality_metrics": {
+      "total_generated": 6,
+      "surgical_signals": 0,
+      "precision_signals": 2,
+      "tactical_signals": 4,
+      "rejected_signals": 38
+    }
+  },
+  "signals_sample": [
+    {
+      "symbol": "USDCAD",
+      "direction": "BUY",
+      "ultra_confidence_score": 78.2,
+      "signal_strength": "tactical",
+      "expected_win_probability": 0.554,
+      "ai_pattern_score": 65.1,
+      "multi_timeframe_score": 68.2,
+      "fundamental_score": 72.0
+    },
+    {
+      "symbol": "GBPJPY",
+      "direction": "SELL",
+      "ultra_confidence_score": 85.0,
+      "signal_strength": "precision",
+      "expected_win_probability": 0.581,
+      "ai_pattern_score": 63.6,
+      "multi_timeframe_score": 80.6,
+      "fundamental_score": 87.2
+    },
+    {
+      "symbol": "GBPUSD",
+      "direction": "BUY",
+      "ultra_confidence_score": 76.1,
+      "signal_strength": "tactical",
+      "expected_win_probability": 0.565,
+      "ai_pattern_score": 69.2,
+      "multi_timeframe_score": 78.6,
+      "fundamental_score": 52.8
+    },
+    {
+      "symbol": "AUDUSD",
+      "direction": "SELL",
+      "ultra_confidence_score": 75.6,
+      "signal_strength": "tactical",
+      "expected_win_probability": 0.565,
+      "ai_pattern_score": 69.9,
+      "multi_timeframe_score": 78.3,
+      "fundamental_score": 76.1
+    },
+    {
+      "symbol": "AUDUSD",
+      "direction": "SELL",
+      "ultra_confidence_score": 82.9,
+      "signal_strength": "precision",
+      "expected_win_probability": 0.576,
+      "ai_pattern_score": 70.2,
+      "multi_timeframe_score": 71.1,
+      "fundamental_score": 85.4
+    },
+    {
+      "symbol": "EURJPY",
+      "direction": "BUY",
+      "ultra_confidence_score": 75.0,
+      "signal_strength": "tactical",
+      "expected_win_probability": 0.564,
+      "ai_pattern_score": 70.5,
+      "multi_timeframe_score": 78.4,
+      "fundamental_score": 42.2
+    }
+  ]
+}

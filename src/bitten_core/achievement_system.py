@@ -259,6 +259,51 @@ class AchievementSystem:
             requirements={"level": 100}
         ))
         
+        # Tactical Strategy achievements
+        self.register_achievement(AchievementDefinition(
+            id="tactical_first_blood",
+            name="Tactical First Blood",
+            description="Unlock your first tactical strategy at 120 XP",
+            tier=AchievementTier.BRONZE,
+            category=AchievementCategory.PROGRESSION,
+            xp_reward=150,
+            icon="tactical_bronze",
+            requirements={"total_xp": 120}
+        ))
+        
+        self.register_achievement(AchievementDefinition(
+            id="tactical_double_tap",
+            name="Tactical Double Tap",
+            description="Unlock your second tactical strategy at 240 XP",
+            tier=AchievementTier.SILVER,
+            category=AchievementCategory.PROGRESSION,
+            xp_reward=300,
+            icon="tactical_silver",
+            requirements={"total_xp": 240, "strategies_unlocked": 2}
+        ))
+        
+        self.register_achievement(AchievementDefinition(
+            id="tactical_command",
+            name="Tactical Command",
+            description="Unlock advanced tactical strategies at 360 XP",
+            tier=AchievementTier.GOLD,
+            category=AchievementCategory.PROGRESSION,
+            xp_reward=500,
+            icon="tactical_gold",
+            requirements={"total_xp": 360, "strategies_unlocked": 3}
+        ))
+        
+        self.register_achievement(AchievementDefinition(
+            id="master_tactician",
+            name="Master Tactician",
+            description="Master all tactical strategies and become the ultimate field commander",
+            tier=AchievementTier.PLATINUM,
+            category=AchievementCategory.PROGRESSION,
+            xp_reward=1000,
+            icon="tactical_platinum",
+            requirements={"all_strategies_mastered": True}
+        ))
+        
         # Mastery achievements
         self.register_achievement(AchievementDefinition(
             id="skill_master",

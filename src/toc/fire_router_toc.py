@@ -20,7 +20,7 @@ from contextlib import contextmanager
 from enum import Enum
 
 # Import terminal assignment system
-from .terminal_assignment import TerminalAssignment, TerminalType, TerminalStatus
+from terminal_assignment import TerminalAssignment, TerminalType, TerminalStatus
 
 # Configure logging
 logger = logging.getLogger(__name__)

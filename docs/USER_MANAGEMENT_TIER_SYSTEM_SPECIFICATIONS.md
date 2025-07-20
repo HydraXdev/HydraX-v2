@@ -68,7 +68,7 @@ The system implements a 5-tier subscription model with progressive feature unloc
   - Max open trades: 1
   - Manual execution only
   - **Unique**: XP resets nightly at 00:00 UTC
-  - Access to APEX-tier features during trial
+  - Access to COMMANDER-tier features during trial
 
 #### 2. NIBBLER (Entry Level)
 - **Price**: $39/month

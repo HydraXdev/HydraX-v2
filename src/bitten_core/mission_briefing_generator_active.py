@@ -49,7 +49,9 @@ class APEXv5UrgencyLevel(Enum):
     LOW = "LOW"                # > 10 minutes
 
 class APEXv5SignalClass(Enum):
-    """APEX v5.0 Signal classifications"""
+    """APEX v5.0 Signal classifications - Updated for RAPID/SNIPER"""
+    RAPID_ASSAULT = "RAPID_ASSAULT"       # Quick scalp trades (5-45 min)
+    SNIPER_OPS = "SNIPER_OPS"             # Precision trades (30-90 min)
     M1_INSTANT = "M1_INSTANT"             # M1 hair-trigger signals
     M3_PRIMARY = "M3_PRIMARY"             # M3 primary signals (60% focus)
     M5_ENHANCED = "M5_ENHANCED"           # M5 enhanced patterns
@@ -130,6 +132,8 @@ class APEXv5MissionBriefingGenerator:
         }
         
         self.v5_signal_descriptions = {
+            'RAPID_ASSAULT': "Quick scalp trade - 10-45 min execution window",
+            'SNIPER_OPS': "Precision trade - 30-90 min high-reward targeting",
             'M1_INSTANT': "Lightning-fast M1 hair-trigger signal",
             'M3_PRIMARY': "Primary M3 timeframe signal (60% focus)",
             'M5_ENHANCED': "Enhanced M5 pattern recognition",
@@ -185,7 +189,7 @@ class APEXv5MissionBriefingGenerator:
         mission_id = f"APEX5_{symbol}_{timestamp.strftime('%H%M%S')}"
         
         # Determine signal class based on pattern and timeframe
-        signal_class = self._determine_v5_signal_class(pattern_name, timeframe, confluence_count)
+        signal_class = self._determine_v5_signal_class(pattern_name, timeframe, confluence_count, signal_data.get('signal_type'))
         
         # Determine mission type
         mission_type = self._determine_v5_mission_type(signal_class, session, tcs_score)
@@ -284,9 +288,17 @@ class APEXv5MissionBriefingGenerator:
         return briefing
     
     def _determine_v5_signal_class(self, pattern_name: str, timeframe: str, 
-                                 confluence_count: int) -> APEXv5SignalClass:
-        """Determine v5.0 signal class"""
+                                 confluence_count: int, signal_type: str = None) -> APEXv5SignalClass:
+        """Determine v5.0 signal class - prioritizes APEX signal_type"""
         
+        # New: Use signal_type from APEX if available
+        if signal_type:
+            if signal_type == "RAPID ASSAULT" or signal_type == "RAPID_ASSAULT":
+                return APEXv5SignalClass.RAPID_ASSAULT
+            elif signal_type == "SNIPER OPS" or signal_type == "SNIPER_OPS":
+                return APEXv5SignalClass.SNIPER_OPS
+        
+        # Legacy: Confluence count determines class
         if confluence_count >= 4:
             return APEXv5SignalClass.ULTRA_CONFLUENCE
         elif confluence_count >= 2:
@@ -431,8 +443,12 @@ class APEXv5MissionBriefingGenerator:
         pair_info = self.v5_pair_classifications.get(symbol, {'icon': '📊'})
         session_info = self.v5_session_names.get(session, {'icon': '🎯'})
         
-        # Generate title based on signal class
-        if signal_class == APEXv5SignalClass.ULTRA_CONFLUENCE:
+        # Generate title based on signal class - prioritize new signal types
+        if signal_class == APEXv5SignalClass.RAPID_ASSAULT:
+            title = f"🔫 RAPID ASSAULT - {symbol}"
+        elif signal_class == APEXv5SignalClass.SNIPER_OPS:
+            title = f"⚡ SNIPER OPS - {symbol}"
+        elif signal_class == APEXv5SignalClass.ULTRA_CONFLUENCE:
             title = f"🔥 ULTRA CONFLUENCE x{confluence_count} - {symbol}"
         elif signal_class == APEXv5SignalClass.MEGA_CONFLUENCE:
             title = f"⚡ MEGA CONFLUENCE x{confluence_count} - {symbol}"

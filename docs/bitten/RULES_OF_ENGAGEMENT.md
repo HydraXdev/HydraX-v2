@@ -27,7 +27,7 @@ Last Updated: 2025-01-04
 ---
 
 ## 🔥 **CHAINGUN MODE** (Fang+ Tiers)
-**Access**: Fang, Commander, APEX only
+**Access**: Fang, Commander only
 
 **Progressive Risk**:
 - Shot 1: 2% risk (base)
@@ -46,7 +46,7 @@ Last Updated: 2025-01-04
 ---
 
 ## 🤖 **AUTO-FIRE** (Commander+ Tiers)
-**Access**: Commander and APEX only
+**Access**: Commander only
 
 **Rules**:
 - **TCS Threshold**: 91%+ only
@@ -58,8 +58,8 @@ Last Updated: 2025-01-04
 
 ---
 
-## 👻 **STEALTH MODE** (APEX Exclusive)
-**Access**: APEX tier only
+## 👻 **STEALTH MODE** (COMMANDER Exclusive)
+**Access**: COMMANDER tier only
 
 **Features**:
 - **Entry Randomization**: ±2-5 minutes

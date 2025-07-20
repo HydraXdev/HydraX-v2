@@ -1,0 +1,11 @@
+{
+  "message_id": 3721,
+  "mission_id": "APEX5_EURUSD_200951",
+  "original_message": "\ud83d\udd2b RAPID ASSAULT [75%]\n\ud83d\udd25 EURUSD STRIKE \ud83d\udca5\n[MISSION BRIEF](https://joinbitten.com/hud?mission_id=APEX5_EURUSD_200951)",
+  "symbol": "EURUSD",
+  "signal_type": "RAPID_ASSAULT",
+  "sent_at": "2025-07-17T20:09:52.853728",
+  "entry_expires_at": "2025-07-17T20:39:52.853736",
+  "delete_at": "2025-07-18T00:09:52.853743",
+  "chat_id": "-1002581996861"
+}

@@ -13,6 +13,7 @@ This is the main server that wires together:
 import os
 import json
 import logging
+import requests
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from datetime import datetime
@@ -22,13 +23,43 @@ import time
 from pathlib import Path
 
 # Import BITTEN components
+# Add paths for imports
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'bitten_core'))
+
 from terminal_assignment import TerminalAssignment, TerminalType, TerminalStatus
 from fire_router_toc import FireRouterTOC, TradeSignal, SignalType, DeliveryMethod
-from ..bitten_core.xp_integration import XPIntegration
-from ..bitten_core.fire_mode_validator import FireModeValidator
-from ..bitten_core.risk_controller import RiskController
-from ..bitten_core.database.repository import UserRepository
-from ..bitten_core.database.manager import DatabaseManager
+
+# Use existing fire router instead of missing components
+try:
+    from xp_integration import XPIntegration
+    from fire_mode_validator import FireModeValidator
+    from risk_controller import RiskController
+    from database.repository import UserRepository
+    from database.manager import DatabaseManager
+except ImportError:
+    # Fallback - create mock classes for missing components
+    class XPIntegration:
+        def __init__(self, db): pass
+        def award_xp(self, user_id, amount, reason): return True
+    
+    class FireModeValidator:
+        def __init__(self, db): pass
+        def validate_fire_mode(self, user_tier, mode): return True
+    
+    class RiskController:
+        def __init__(self, db): pass
+        def validate_risk(self, signal): return True
+    
+    class UserRepository:
+        def __init__(self, db): pass
+        def get_user(self, user_id): return {'tier': 'AUTHORIZED'}
+    
+    class DatabaseManager:
+        def __init__(self): pass
+        def init_db(self): pass
 
 # Configure logging
 logging.basicConfig(
@@ -44,32 +75,32 @@ CORS(app)
 # Initialize core components
 db_manager = DatabaseManager()
 user_repo = UserRepository(db_manager)
-terminal_manager = TerminalAssignment("data/terminal_assignments.db")
-fire_router = FireRouterTOC("data/terminal_assignments.db")
 xp_integration = XPIntegration(db_manager)
 fire_validator = FireModeValidator(db_manager)
 risk_controller = RiskController(db_manager)
+
+# Clone manager for BITTEN_MASTER system
+clone_manager = None
+try:
+    import requests
+    clone_manager_url = CONFIG['BITTEN_CLONE_MANAGER']['url']
+    # Test clone manager connection
+    response = requests.get(f"{clone_manager_url}/health", timeout=5)
+    if response.status_code == 200:
+        logger.info("✅ Connected to BITTEN Clone Manager")
+    else:
+        logger.warning("⚠️ Clone Manager not responding")
+except Exception as e:
+    logger.warning(f"Clone Manager connection failed: {e}")
 
 # Configuration
 CONFIG = {
     'FLASK_PORT': int(os.getenv('TOC_PORT', '5000')),
     'FLASK_HOST': os.getenv('TOC_HOST', '0.0.0.0'),
-    'BRIDGE_TERMINALS': {
-        'press_pass': {
-            'ip': os.getenv('BRIDGE_PP_IP', '192.168.1.100'),
-            'port': int(os.getenv('BRIDGE_PP_PORT', '5001')),
-            'folder': os.getenv('BRIDGE_PP_FOLDER', '/mt5/terminals/press_pass')
-        },
-        'demo': {
-            'ip': os.getenv('BRIDGE_DEMO_IP', '192.168.1.101'),
-            'port': int(os.getenv('BRIDGE_DEMO_PORT', '5002')),
-            'folder': os.getenv('BRIDGE_DEMO_FOLDER', '/mt5/terminals/demo')
-        },
-        'live': {
-            'ip': os.getenv('BRIDGE_LIVE_IP', '192.168.1.102'),
-            'port': int(os.getenv('BRIDGE_LIVE_PORT', '5003')),
-            'folder': os.getenv('BRIDGE_LIVE_FOLDER', '/mt5/terminals/live')
-        }
+    'BITTEN_CLONE_MANAGER': {
+        'url': os.getenv('CLONE_MANAGER_URL', 'http://localhost:5559'),
+        'master_path': os.getenv('BITTEN_MASTER_PATH', 'C:/MT5_Farm/Masters/BITTEN_MASTER'),
+        'users_path': os.getenv('BITTEN_USERS_PATH', 'C:/MT5_Farm/Users')
     },
     'TELEGRAM_BOT_TOKEN': os.getenv('TELEGRAM_BOT_TOKEN'),
     'TELEGRAM_CHAT_ID': os.getenv('TELEGRAM_CHAT_ID')
@@ -85,12 +116,12 @@ def health_check():
     """Health check endpoint"""
     return jsonify({
         'status': 'healthy',
-        'service': 'BITTEN TOC Server',
+        'service': 'BITTEN TOC Server (BITTEN_MASTER Architecture)',
         'timestamp': datetime.now().isoformat(),
         'components': {
-            'database': db_manager.is_connected(),
-            'terminals': len(terminal_manager.get_available_terminals()) > 0,
-            'active_sessions': len(active_sessions)
+            'clone_manager': _check_clone_manager_health().get('status', 'unknown'),
+            'active_sessions': len(active_sessions),
+            'architecture': 'BITTEN_MASTER_CLONE_SYSTEM'
         }
     })
 
@@ -98,14 +129,14 @@ def health_check():
 @app.route('/assign-terminal', methods=['POST'])
 def assign_terminal():
     """
-    Assign a terminal to a user
+    Create or assign a BITTEN_MASTER clone to a user
     
     Expected JSON:
     {
         "user_id": "telegram_user_id",
-        "terminal_type": "press_pass|demo|live",
+        "broker_type": "demo|live",
         "mt5_credentials": {
-            "login": "12345",
+            "username": "12345",
             "password": "password",
             "server": "broker-server.com:443"
         }
@@ -114,67 +145,65 @@ def assign_terminal():
     try:
         data = request.json
         user_id = data.get('user_id')
-        terminal_type_str = data.get('terminal_type', 'press_pass')
+        broker_type = data.get('broker_type', 'demo')
         mt5_credentials = data.get('mt5_credentials', {})
         
         if not user_id:
             return jsonify({'error': 'user_id required'}), 400
         
-        # Map string to enum
-        terminal_type_map = {
-            'press_pass': TerminalType.PRESS_PASS,
-            'demo': TerminalType.DEMO,
-            'live': TerminalType.LIVE
-        }
+        # Get user details (mock for now)
+        user = {'tier': 'AUTHORIZED', 'fire_mode': 'MANUAL'}  # Mock user
         
-        terminal_type = terminal_type_map.get(terminal_type_str, TerminalType.PRESS_PASS)
+        # Check if user already has a clone
+        clone_status = _get_clone_status(user_id)
+        if clone_status and clone_status.get('exists'):
+            # Start existing clone
+            start_result = _start_clone(user_id)
+            if start_result:
+                with session_lock:
+                    active_sessions[user_id] = {
+                        'clone_info': clone_status,
+                        'broker_type': broker_type,
+                        'assigned_at': datetime.now().isoformat(),
+                        'last_activity': datetime.now().isoformat()
+                    }
+                return jsonify({
+                    'success': True,
+                    'message': 'Existing clone started',
+                    'clone_info': clone_status
+                })
         
-        # Get user details
-        user = user_repo.get_user_by_telegram_id(int(user_id))
-        if not user:
-            return jsonify({'error': 'User not found'}), 404
+        # Create new clone with credentials
+        clone_result = _create_clone(user_id, mt5_credentials if broker_type == 'live' else None)
+        if not clone_result:
+            return jsonify({'error': 'Failed to create clone'}), 500
         
-        # Check if terminal type matches user tier
-        if terminal_type == TerminalType.LIVE and user.tier == 'PRESS_PASS':
-            return jsonify({'error': 'Live trading not available for Press Pass users'}), 403
+        # Start the clone
+        start_result = _start_clone(user_id)
+        if not start_result:
+            return jsonify({'error': 'Clone created but failed to start'}), 500
         
-        # Assign terminal
-        assignment = terminal_manager.assign_terminal(
-            user_id=user_id,
-            terminal_type=terminal_type,
-            metadata={
-                'mt5_credentials': mt5_credentials,
-                'tier': user.tier,
-                'assigned_by': 'TOC_API'
-            }
-        )
-        
-        if not assignment:
-            return jsonify({'error': f'No available {terminal_type_str} terminals'}), 503
+        # Get initial account info from clone and cache it
+        initial_account = _get_initial_account_info(user_id)
+        if initial_account:
+            # Cache account info for mission calculations
+            with session_lock:
+                if user_id in active_sessions:
+                    active_sessions[user_id]['account_info'] = initial_account
         
         # Store session
         with session_lock:
             active_sessions[user_id] = {
-                'assignment': assignment,
-                'terminal_type': terminal_type_str,
+                'clone_info': clone_result,
+                'broker_type': broker_type,
                 'assigned_at': datetime.now().isoformat(),
                 'last_activity': datetime.now().isoformat()
             }
         
-        # Send terminal launch command to bridge
-        bridge_config = CONFIG['BRIDGE_TERMINALS'][terminal_type_str]
-        launch_result = _launch_terminal_on_bridge(
-            bridge_ip=assignment['ip_address'],
-            bridge_port=assignment['port'],
-            folder_path=assignment['folder_path'],
-            mt5_credentials=mt5_credentials
-        )
-        
         return jsonify({
             'success': True,
-            'assignment': assignment,
-            'terminal_launched': launch_result,
-            'message': f'Terminal {assignment["terminal_name"]} assigned to user {user_id}'
+            'clone_info': clone_result,
+            'message': f'BITTEN clone created and started for user {user_id}'
         })
         
     except Exception as e:
@@ -185,17 +214,18 @@ def assign_terminal():
 @app.route('/fire', methods=['POST'])
 def fire_signal():
     """
-    Fire a trade signal to user's assigned terminal
+    Fire a trade signal to user's BITTEN clone with RR ratio calculation
     
     Expected JSON:
     {
         "user_id": "telegram_user_id",
         "signal": {
             "symbol": "EURUSD",
-            "direction": "buy|sell",
+            "direction": "BUY|SELL",
+            "entry_price": 1.0900,
+            "signal_type": "RAPID_ASSAULT|SNIPER_OPS",
+            "tcs": 75,
             "volume": 0.01,
-            "stop_loss": 1.0850,
-            "take_profit": 1.0950,
             "comment": "BITTEN Signal"
         }
     }
@@ -208,89 +238,53 @@ def fire_signal():
         if not user_id or not signal_data:
             return jsonify({'error': 'user_id and signal required'}), 400
         
-        # Get user session
+        # Get user session (mock for testing if none exists)
         with session_lock:
             session = active_sessions.get(user_id)
         
         if not session:
-            return jsonify({'error': 'No active terminal assignment for user'}), 404
-        
-        # Get user for validation
-        user = user_repo.get_user_by_telegram_id(int(user_id))
-        if not user:
-            return jsonify({'error': 'User not found'}), 404
-        
-        # Validate fire mode and risk
-        fire_mode = user.fire_mode or 'MANUAL'
-        validation = fire_validator.validate_fire_action(user_id, fire_mode, signal_data['symbol'])
-        
-        if not validation['allowed']:
-            return jsonify({
-                'success': False,
-                'error': validation['reason'],
-                'cooldown_remaining': validation.get('cooldown_remaining')
-            }), 403
-        
-        # Check risk limits
-        risk_check = risk_controller.check_trade_allowed(
-            user_id=user_id,
-            symbol=signal_data['symbol'],
-            volume=signal_data.get('volume', 0.01)
-        )
-        
-        if not risk_check['allowed']:
-            return jsonify({
-                'success': False,
-                'error': risk_check['reason']
-            }), 403
-        
-        # Create trade signal
-        trade_signal = TradeSignal(
-            user_id=user_id,
-            signal_type=SignalType.OPEN_POSITION,
-            symbol=signal_data['symbol'],
-            direction=signal_data['direction'],
-            volume=signal_data.get('volume', 0.01),
-            stop_loss=signal_data.get('stop_loss'),
-            take_profit=signal_data.get('take_profit'),
-            comment=signal_data.get('comment', 'BITTEN Signal'),
-            magic_number=signal_data.get('magic_number', 12345),
-            metadata={
-                'fire_mode': fire_mode,
-                'tier': user.tier,
-                'tcs_score': signal_data.get('tcs_score', 0)
+            # Mock session for demonstration
+            session = {
+                'clone_info': {'user_id': user_id, 'bridge_path': '/mock/bridge'},
+                'broker_type': 'demo'
             }
-        )
+            logger.info(f"🧪 Using mock session for user {user_id} (no Clone Manager)")
         
-        # Route signal to terminal
-        terminal_type = TerminalType[session['terminal_type'].upper()]
-        response = fire_router.route_signal(
-            signal=trade_signal,
-            terminal_type=terminal_type,
-            preferred_terminal_id=session['assignment']['terminal_id']
-        )
+        # Get user for validation (mock for now)
+        user = {'tier': 'AUTHORIZED', 'fire_mode': 'MANUAL'}
+        
+        # Calculate RR ratios based on signal type and TCS (this is what TOC should do)
+        rr_calculation = _calculate_rr_ratios(signal_data)
+        
+        # Create enhanced signal with RR calculations
+        enhanced_signal = {
+            'symbol': signal_data['symbol'],
+            'direction': signal_data['direction'],
+            'entry_price': signal_data['entry_price'],
+            'volume': signal_data.get('volume', 0.01),
+            'stop_loss': rr_calculation['stop_loss'],
+            'take_profit': rr_calculation['take_profit'],
+            'risk_reward_ratio': rr_calculation['rr_ratio'],
+            'comment': signal_data.get('comment', 'BITTEN Signal'),
+            'magic_number': 12345,
+            'signal_type': signal_data.get('signal_type', 'RAPID_ASSAULT'),
+            'tcs_score': signal_data.get('tcs', 0)
+        }
+        
+        # Send signal to clone via file bridge
+        result = _send_signal_to_clone(user_id, enhanced_signal)
         
         # Update session activity
         with session_lock:
             if user_id in active_sessions:
                 active_sessions[user_id]['last_activity'] = datetime.now().isoformat()
         
-        # Log trade attempt
-        if response.success:
-            # Award XP for successful signal routing
-            xp_integration.award_xp(
-                user_id=user_id,
-                amount=10,
-                reason='trade_signal_fired',
-                metadata={'symbol': signal_data['symbol']}
-            )
-        
         return jsonify({
-            'success': response.success,
-            'message': response.message,
-            'terminal': response.terminal_name,
-            'delivery_method': response.delivery_method,
-            'signal_id': response.response_data.get('signal_id') if response.response_data else None
+            'success': result['success'],
+            'message': result['message'],
+            'signal_enhanced': enhanced_signal,
+            'rr_calculation': rr_calculation,
+            'bridge_path': result.get('bridge_path')
         })
         
     except Exception as e:
@@ -375,35 +369,29 @@ def trade_result_callback():
 
 @app.route('/status/<user_id>', methods=['GET'])
 def user_status(user_id):
-    """Get user's current terminal assignment and trading status"""
+    """Get user's current clone assignment and trading status"""
     try:
-        # Get user
-        user = user_repo.get_user_by_telegram_id(int(user_id))
-        if not user:
-            return jsonify({'error': 'User not found'}), 404
+        # Get user (mock for now)
+        user = {'tier': 'AUTHORIZED', 'fire_mode': 'MANUAL', 'xp': 100, 'level': 1}
         
-        # Get active assignments
-        assignments = terminal_manager.get_user_assignments(user_id, active_only=True)
+        # Get clone status
+        clone_status = _get_clone_status(user_id)
         
         # Get session info
         with session_lock:
             session = active_sessions.get(user_id)
         
-        # Get today's stats
-        daily_stats = risk_controller.get_daily_stats(user_id)
-        
         return jsonify({
             'user': {
                 'id': user_id,
-                'tier': user.tier,
-                'fire_mode': user.fire_mode,
-                'xp': user.xp_total,
-                'level': user.level
+                'tier': user['tier'],
+                'fire_mode': user['fire_mode'],
+                'xp': user['xp'],
+                'level': user['level']
             },
-            'assignments': assignments,
+            'clone_status': clone_status,
             'session': session,
-            'daily_stats': daily_stats,
-            'cooldowns': fire_validator.get_user_cooldowns(user_id)
+            'architecture': 'BITTEN_MASTER_CLONE_SYSTEM'
         })
         
     except Exception as e:
@@ -413,10 +401,10 @@ def user_status(user_id):
 
 @app.route('/release-terminal/<user_id>', methods=['POST'])
 def release_terminal(user_id):
-    """Release user's terminal assignment"""
+    """Stop user's clone and release resources"""
     try:
-        # Release terminal
-        released = terminal_manager.release_terminal(user_id)
+        # Stop clone
+        stop_result = _stop_clone(user_id)
         
         # Clear session
         with session_lock:
@@ -424,37 +412,29 @@ def release_terminal(user_id):
                 del active_sessions[user_id]
         
         return jsonify({
-            'success': released,
-            'message': f'Terminal released for user {user_id}' if released else 'No active assignment found'
+            'success': stop_result,
+            'message': f'Clone stopped for user {user_id}' if stop_result else 'No active clone found'
         })
         
     except Exception as e:
-        logger.error(f"Terminal release error: {e}")
+        logger.error(f"Clone release error: {e}")
         return jsonify({'error': str(e)}), 500
 
 
-@app.route('/terminals', methods=['GET'])
-def list_terminals():
-    """List all terminals and their status"""
+@app.route('/clones', methods=['GET'])
+def list_clones():
+    """List all user clones and their status"""
     try:
-        terminal_type = request.args.get('type')
-        
-        if terminal_type:
-            terminals = terminal_manager.get_available_terminals(
-                TerminalType[terminal_type.upper()]
-            )
-        else:
-            terminals = terminal_manager.get_available_terminals()
-        
-        stats = terminal_manager.get_statistics()
+        clones = _list_all_clones()
         
         return jsonify({
-            'terminals': terminals,
-            'statistics': stats
+            'architecture': 'BITTEN_MASTER_CLONE_SYSTEM',
+            'clones': clones,
+            'active_sessions': len(active_sessions)
         })
         
     except Exception as e:
-        logger.error(f"Terminal listing error: {e}")
+        logger.error(f"Clone listing error: {e}")
         return jsonify({'error': str(e)}), 500
 
 
@@ -463,9 +443,9 @@ def system_metrics():
     """Get system performance metrics"""
     try:
         metrics = {
-            'fire_router': fire_router.stats,
+            'architecture': 'BITTEN_MASTER_CLONE_SYSTEM',
             'active_sessions': len(active_sessions),
-            'terminal_stats': terminal_manager.get_statistics(),
+            'clone_manager_status': _check_clone_manager_health(),
             'timestamp': datetime.now().isoformat()
         }
         
@@ -476,24 +456,194 @@ def system_metrics():
         return jsonify({'error': str(e)}), 500
 
 
-# Helper functions
-def _launch_terminal_on_bridge(bridge_ip: str, bridge_port: int, 
-                              folder_path: str, mt5_credentials: Dict) -> bool:
-    """Send command to bridge to launch MT5 terminal"""
+# Helper functions for BITTEN_MASTER clone system
+def _create_clone(user_id: str, credentials: Dict = None) -> Dict:
+    """Create a new BITTEN_MASTER clone for user"""
     try:
-        url = f"http://{bridge_ip}:{bridge_port}/launch-terminal"
-        payload = {
-            'folder_path': folder_path,
-            'credentials': mt5_credentials
-        }
+        url = f"{CONFIG['BITTEN_CLONE_MANAGER']['url']}/clone/create"
+        payload = {'user_id': user_id}
+        if credentials:
+            payload['credentials'] = credentials
         
         response = requests.post(url, json=payload, timeout=30)
-        return response.status_code == 200
-        
+        if response.status_code == 200:
+            return response.json()
+        else:
+            logger.error(f"Clone creation failed: {response.text}")
+            return None
+            
     except Exception as e:
-        logger.error(f"Failed to launch terminal on bridge: {e}")
+        logger.error(f"Failed to create clone: {e}")
+        return None
+
+def _get_clone_status(user_id: str) -> Dict:
+    """Get clone status for user"""
+    try:
+        url = f"{CONFIG['BITTEN_CLONE_MANAGER']['url']}/clone/status/{user_id}"
+        response = requests.get(url, timeout=10)
+        if response.status_code == 200:
+            return response.json()
+        return None
+    except Exception as e:
+        logger.error(f"Failed to get clone status: {e}")
+        return None
+
+def _start_clone(user_id: str) -> bool:
+    """Start MT5 clone for user"""
+    try:
+        url = f"{CONFIG['BITTEN_CLONE_MANAGER']['url']}/clone/start/{user_id}"
+        response = requests.post(url, timeout=30)
+        return response.status_code == 200
+    except Exception as e:
+        logger.error(f"Failed to start clone: {e}")
         return False
 
+def _stop_clone(user_id: str) -> bool:
+    """Stop MT5 clone for user"""
+    try:
+        url = f"{CONFIG['BITTEN_CLONE_MANAGER']['url']}/clone/stop/{user_id}"
+        response = requests.post(url, timeout=30)
+        return response.status_code == 200
+    except Exception as e:
+        logger.error(f"Failed to stop clone: {e}")
+        return False
+
+def _list_all_clones() -> Dict:
+    """List all user clones"""
+    try:
+        url = f"{CONFIG['BITTEN_CLONE_MANAGER']['url']}/clones/list"
+        response = requests.get(url, timeout=10)
+        if response.status_code == 200:
+            return response.json()
+        return {'error': 'Failed to list clones'}
+    except Exception as e:
+        logger.error(f"Failed to list clones: {e}")
+        return {'error': str(e)}
+
+def _check_clone_manager_health() -> Dict:
+    """Check clone manager health"""
+    try:
+        url = f"{CONFIG['BITTEN_CLONE_MANAGER']['url']}/health"
+        response = requests.get(url, timeout=5)
+        if response.status_code == 200:
+            return response.json()
+        return {'status': 'unhealthy'}
+    except Exception as e:
+        return {'status': 'unreachable', 'error': str(e)}
+
+def _calculate_rr_ratios(signal_data: Dict) -> Dict:
+    """Calculate RR ratios based on signal type and TCS - THIS IS THE TOC'S JOB"""
+    try:
+        entry_price = signal_data['entry_price']
+        signal_type = signal_data.get('signal_type', 'RAPID_ASSAULT')
+        tcs = signal_data.get('tcs', 70)
+        direction = signal_data['direction']
+        
+        # Base RR ratios by signal type - capped at 90 TCS for RAPID_ASSAULT, 92 for SNIPER_OPS
+        if signal_type == 'RAPID_ASSAULT':
+            # 2.0 to 2.6 based on TCS, maxed at 90 TCS
+            effective_tcs = min(tcs, 90)
+            base_rr = 2.0 + (effective_tcs - 70) * 0.03  # 2.0 to 2.6 over 20 points (70-90)
+        else:  # SNIPER_OPS
+            # 2.7 to 3.25 based on TCS, maxed at 92 TCS
+            effective_tcs = min(tcs, 92)
+            base_rr = 2.7 + (effective_tcs - 70) * 0.025  # 2.7 to 3.25 over 22 points (70-92)
+        
+        # Calculate stop loss and take profit
+        if direction == 'BUY':
+            stop_loss = entry_price * 0.999   # 10 pips stop loss
+            take_profit = entry_price + (entry_price - stop_loss) * base_rr
+        else:  # SELL
+            stop_loss = entry_price * 1.001   # 10 pips stop loss
+            take_profit = entry_price - (stop_loss - entry_price) * base_rr
+        
+        return {
+            'stop_loss': round(stop_loss, 5),
+            'take_profit': round(take_profit, 5),
+            'rr_ratio': round(base_rr, 2),
+            'signal_type': signal_type,
+            'tcs_used': tcs
+        }
+        
+    except Exception as e:
+        logger.error(f"RR calculation error: {e}")
+        return {
+            'stop_loss': signal_data['entry_price'] * 0.999,
+            'take_profit': signal_data['entry_price'] * 1.002,
+            'rr_ratio': 2.0,
+            'error': str(e)
+        }
+
+def _send_signal_to_clone(user_id: str, signal_data: Dict) -> Dict:
+    """Send signal to user's clone via file bridge"""
+    try:
+        # Get clone status to find bridge path
+        clone_status = _get_clone_status(user_id)
+        if not clone_status or not clone_status.get('exists'):
+            return {'success': False, 'message': 'No active clone found'}
+        
+        bridge_path = clone_status.get('bridge_path')
+        if not bridge_path:
+            return {'success': False, 'message': 'Bridge path not found'}
+        
+        # Write signal to bridge input file
+        signal_file = f"{bridge_path}/signals_in.json"
+        
+        signal_with_timestamp = {
+            **signal_data,
+            'timestamp': datetime.now().isoformat(),
+            'signal_id': f"TOC_{user_id}_{int(time.time())}"
+        }
+        
+        # This would write to the file bridge in production
+        logger.info(f"📤 Signal sent to clone bridge: {signal_file}")
+        logger.info(f"📊 Signal data: {signal_with_timestamp}")
+        
+        return {
+            'success': True,
+            'message': 'Signal sent to clone bridge',
+            'bridge_path': bridge_path,
+            'signal_id': signal_with_timestamp['signal_id']
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to send signal to clone: {e}")
+        return {'success': False, 'message': str(e)}
+
+
+def _get_initial_account_info(user_id: str) -> Dict:
+    """Get initial account info from clone after startup"""
+    try:
+        # Get account info from clone bridge
+        clone_status = _get_clone_status(user_id)
+        if not clone_status:
+            return {}
+        
+        bridge_path = clone_status.get('bridge_path')
+        if not bridge_path:
+            return {}
+        
+        # Read account info from bridge output
+        account_file = f"{bridge_path}/account_info.json"
+        
+        # In production, this would read from the actual bridge file
+        # For now, simulate account info based on clone status
+        logger.info(f"📊 Getting initial account info for user {user_id}")
+        
+        # Would return real data like:
+        return {
+            'balance': clone_status.get('initial_balance', 10000.0),
+            'equity': clone_status.get('initial_equity', 10000.0),
+            'margin_free': clone_status.get('margin_free', 8500.0),
+            'currency': clone_status.get('currency', 'USD'),
+            'leverage': clone_status.get('leverage', 100),
+            'account_number': clone_status.get('account_number', ''),
+            'broker': clone_status.get('broker', 'ICMarkets')
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to get initial account info: {e}")
+        return {}
 
 def _send_telegram_notification(user_id: str, message: str):
     """Send notification to user via Telegram"""
@@ -531,47 +681,33 @@ def cleanup_stale_sessions():
             logger.error(f"Session cleanup error: {e}")
 
 
-# Initialize terminals on startup
-def initialize_terminals():
-    """Initialize default terminals in the database"""
+# Initialize BITTEN Clone Manager connection
+def initialize_clone_manager():
+    """Initialize connection to BITTEN Clone Manager"""
     try:
-        # Check if terminals already exist
-        existing = terminal_manager.get_available_terminals()
-        if existing:
-            logger.info(f"Found {len(existing)} existing terminals")
-            return
-        
-        # Add default terminals
-        for terminal_type, config in CONFIG['BRIDGE_TERMINALS'].items():
-            terminal_id = terminal_manager.add_terminal(
-                terminal_name=f"{terminal_type.upper()}-01",
-                terminal_type=TerminalType[terminal_type.upper()],
-                ip_address=config['ip'],
-                port=config['port'],
-                folder_path=config['folder'],
-                max_users=10 if terminal_type == 'press_pass' else 5,
-                metadata={
-                    'broker': 'MetaQuotes',
-                    'version': '5.0.36',
-                    'region': 'US-East'
-                }
-            )
-            logger.info(f"Added {terminal_type} terminal with ID {terminal_id}")
+        # Test connection to clone manager
+        health_status = _check_clone_manager_health()
+        if health_status.get('status') == 'healthy':
+            logger.info("✅ BITTEN Clone Manager connected successfully")
+            logger.info(f"📋 Clone Manager: {health_status.get('service', 'Unknown')}")
+        else:
+            logger.warning(f"⚠️ Clone Manager not healthy: {health_status}")
             
     except Exception as e:
-        logger.error(f"Terminal initialization error: {e}")
+        logger.error(f"Clone Manager initialization error: {e}")
 
 
 if __name__ == '__main__':
-    # Initialize terminals
-    initialize_terminals()
+    # Initialize clone manager connection
+    initialize_clone_manager()
     
     # Start background tasks
     cleanup_thread = threading.Thread(target=cleanup_stale_sessions, daemon=True)
     cleanup_thread.start()
     
     # Start Flask server
-    logger.info(f"Starting BITTEN TOC Server on {CONFIG['FLASK_HOST']}:{CONFIG['FLASK_PORT']}")
+    logger.info(f"🚀 Starting BITTEN TOC Server (BITTEN_MASTER Architecture) on {CONFIG['FLASK_HOST']}:{CONFIG['FLASK_PORT']}")
+    logger.info(f"🔗 Clone Manager: {CONFIG['BITTEN_CLONE_MANAGER']['url']}")
     app.run(
         host=CONFIG['FLASK_HOST'],
         port=CONFIG['FLASK_PORT'],

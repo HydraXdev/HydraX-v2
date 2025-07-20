@@ -29,8 +29,7 @@ class TierLevel(PyEnum):
     PRESS_PASS = "PRESS_PASS"  # Tier 0 - Press/Trial tier
     NIBBLER = "NIBBLER"
     FANG = "FANG"
-    COMMANDER = "COMMANDER"
-    APEX = "APEX"
+    COMMANDER = "COMMANDER"  # Premium tier with all features
 
 class SubscriptionStatus(PyEnum):
     INACTIVE = "inactive"

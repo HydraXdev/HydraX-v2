@@ -1,0 +1,9 @@
+{
+  "user_id": "test_user_123",
+  "current_balance": 530,
+  "lifetime_earned": 530,
+  "lifetime_spent": 0,
+  "prestige_level": 0,
+  "active_purchases": [],
+  "last_purchase": null
+}

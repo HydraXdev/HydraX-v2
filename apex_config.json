@@ -1,0 +1,46 @@
+{
+    "description": "APEX Session-Optimized Configuration - NY Session",
+    "session_info": {
+        "session_name": "NY",
+        "pairs": [
+            "EURUSD",
+            "GBPUSD",
+            "USDJPY",
+            "USDCAD",
+            "AUDUSD",
+            "NZDUSD",
+            "USDCHF"
+        ],
+        "pair_count": 7,
+        "boost_multiplier": 2.0,
+        "adjusted_threshold": 25,
+        "utc_hour": 21,
+        "local_time": "21:03:13"
+    },
+    "signal_generation": {
+        "signals_per_hour_target": 2,
+        "min_tcs_threshold": 10,
+        "max_spread_allowed": 15,
+        "scan_interval_seconds": 60
+    },
+    "trading_pairs": {
+        "enabled": true,
+        "pairs": [
+            "EURUSD",
+            "GBPUSD",
+            "USDJPY",
+            "USDCAD",
+            "AUDUSD",
+            "NZDUSD",
+            "USDCHF"
+        ],
+        "notes": "Optimized for NY session activity"
+    },
+    "session_boosts": {
+        "LONDON": 2,
+        "NY": 2,
+        "OVERLAP": 3,
+        "ASIAN": 1,
+        "OTHER": 0
+    }
+}

@@ -1,0 +1,70 @@
+{
+  "mission_id": "APEX5_GBPUSD_151726",
+  "signal": {
+    "id": "APEX5_GBPUSD_151726",
+    "symbol": "GBPUSD",
+    "direction": "SELL",
+    "entry_price": 1.25,
+    "stop_loss": 1.25125,
+    "take_profit": 1.24719,
+    "tcs_score": 88,
+    "signal_type": "SNIPER_OPS",
+    "risk_reward_ratio": 2.25
+  },
+  "mission": {
+    "title": "\u26a1 SNIPER OPS - GBPUSD",
+    "description": "Precision trade - 30-90 min high-reward targeting \u2b50 Ultra-high confidence signal detected!",
+    "urgency": "ULTRA_HIGH",
+    "tactical_notes": [
+      "\ud83d\ude80 APEX v5.0 Engine: Ultra-aggressive signal generation active",
+      "\ud83d\udcca Target: 40+ signals/day @ 89% win rate",
+      "\ud83c\udfc6 Premium TCS score - Execute with confidence"
+    ],
+    "athena_briefing": "Afternoon intel update.\n\n\ud83c\udfaf **MISSION BRIEFING - SNIPER_OPS_GBPUSD_20250717_151726_3a07a889**\n\ud83d\udcca **Target**: GBPUSD SELL\n\ud83d\udccd **Strike Zone**: 1.25\n\ud83c\udf96\ufe0f **Confidence**: 0% TCS\n\u2694\ufe0f **Objective**: Breach and exploit market momentum\n\n**TACTICAL PARAMETERS:**\n\u2022 Entry Vector: 1.25\n\u2022 Primary Target: 0\n\u2022 Fallback Position: 0\n\u2022 Mission Classification: Priority operation sanctioned.\n\n**RULES OF ENGAGEMENT:**\nYour position is tactical. Execute with precision.\nThis operation matters - fire when ready.\n\n*ATHENA Command*"
+  },
+  "user": {
+    "id": "7176191872",
+    "tier": "COMMANDER",
+    "stats": {
+      "last_7d_pips": 45.3,
+      "win_rate": 72.5,
+      "trades_today": 23,
+      "total_fires": 89,
+      "streak_days": 3,
+      "rank": "WARRIOR",
+      "last_fire_time": "2025-07-15T10:30:00"
+    }
+  },
+  "account": {
+    "balance": 28350.0,
+    "equity": 28917.0,
+    "margin_free": 24097.5,
+    "currency": "USD"
+  },
+  "timing": {
+    "created_at": "2025-07-17T15:17:26.929420",
+    "expires_at": "2025-07-17T15:22:26.929420",
+    "time_remaining": 300
+  },
+  "enhanced_signal": {
+    "symbol": "GBPUSD",
+    "direction": "SELL",
+    "entry_price": 1.25,
+    "stop_loss": 1.25125,
+    "take_profit": 1.24719,
+    "risk_reward_ratio": 2.25,
+    "signal_type": "SNIPER_OPS",
+    "tcs_score": 88,
+    "volume": 10.0,
+    "comment": "TEST_RR_2.25_SNIPER_OPS_APEX5_GBPUSD_151726",
+    "rr_test_config": {
+      "test_type": "24_HOUR_LOGGING_TEST",
+      "rapid_assault_rr": 1.5,
+      "sniper_ops_rr": 2.25,
+      "fallback_rr": 2.0,
+      "volatility_factor": 0.001,
+      "timestamp": "2025-07-17T15:17:26.995013"
+    },
+    "trade_uuid": "SNIPER_OPS_GBPUSD_20250717_151726_3a07a889"
+  }
+}

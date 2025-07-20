@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BITTEN - Elite Tactical Trading Academy | 76.2% Mission Success Rate</title>
+    <meta name="description" content="Join the elite tactical trading academy. Master financial warfare through military-grade training. Proven 76.2% mission success rate. Start with FREE PRESS PASS access."
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #00D4AA;
+            --primary-dark: #00B896;
+            --secondary: #6C5CE7;
+            --accent: #FD79A8;
+            --success: #00B894;
+            --warning: #FDCB6E;
+            --error: #E84393;
+            --dark: #0D1117;
+            --gray-900: #1C2128;
+            --gray-800: #22272E;
+            --gray-700: #2D333B;
+            --gray-600: #373E47;
+            --gray-500: #545D68;
+            --gray-400: #768390;
+            --gray-300: #ADBAC7;
+            --gray-200: #CDD9E5;
+            --gray-100: #F0F6FC;
+            --white: #FFFFFF;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--dark);
+            color: var(--gray-100);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            background: linear-gradient(135deg, var(--dark) 0%, var(--gray-900) 100%);
+            position: relative;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(0, 212, 170, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(108, 92, 231, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, rgba(253, 121, 168, 0.1) 0%, transparent 50%);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            position: relative;
+            z-index: 10;
+        }
+
+        .hero-content {
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(90deg, var(--error), var(--warning));
+            border: 1px solid var(--error);
+            padding: 0.75rem 1.5rem;
+            border-radius: 0;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            animation: urgent-pulse 2s ease-in-out infinite;
+            box-shadow: 0 0 20px rgba(232, 67, 147, 0.4);
+        }
+
+        @keyframes urgent-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .hero-title {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, var(--white) 0%, var(--gray-200) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--gray-300);
+            margin-bottom: 3rem;
+            font-weight: 500;
+        }
+
+        /* Performance Metrics */
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin: 4rem 0;
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: 0 20px 40px rgba(0, 212, 170, 0.1);
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            font-family: 'JetBrains Mono', monospace;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            color: var(--gray-400);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .metric-description {
+            font-size: 0.8rem;
+            color: var(--gray-500);
+            margin-top: 0.5rem;
+        }
+
+        /* CTA Buttons */
+        .cta-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 3rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: var(--dark);
+            box-shadow: 0 4px 20px rgba(0, 212, 170, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 212, 170, 0.4);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary);
+            color: var(--dark);
+            transform: translateY(-2px);
+        }
+
+        /* Features Section */
+        .features {
+            padding: 8rem 0;
+            background: var(--gray-900);
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--white);
+        }
+
+        .section-subtitle {
+            text-align: center;
+            font-size: 1.1rem;
+            color: var(--gray-400);
+            margin-bottom: 4rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 2.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            background: rgba(0, 212, 170, 0.05);
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--white);
+        }
+
+        .feature-description {
+            color: var(--gray-400);
+            line-height: 1.6;
+        }
+
+        /* Pricing Section */
+        .pricing {
+            padding: 8rem 0;
+            background: var(--dark);
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 4rem;
+        }
+
+        .pricing-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 2.5rem;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .pricing-card.featured {
+            border-color: var(--primary);
+            background: rgba(0, 212, 170, 0.05);
+            transform: scale(1.05);
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+        }
+
+        .pricing-card.featured:hover {
+            transform: scale(1.05) translateY(-5px);
+        }
+
+        .pricing-badge {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary);
+            color: var(--dark);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .pricing-tier {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .pricing-amount {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--white);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .pricing-period {
+            color: var(--gray-400);
+            font-size: 1rem;
+        }
+
+        .pricing-features {
+            list-style: none;
+            margin: 2rem 0;
+        }
+
+        .pricing-features li {
+            padding: 0.75rem 0;
+            color: var(--gray-300);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .pricing-features li::before {
+            content: '✓';
+            color: var(--success);
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--gray-900);
+            padding: 3rem 0;
+            text-align: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .footer p {
+            color: var(--gray-500);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+            
+            .metrics {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: 1rem;
+            }
+
+            .metric-card {
+                padding: 1.5rem 1rem;
+            }
+
+            .metric-value {
+                font-size: 2rem;
+            }
+
+            .cta-container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn {
+                width: 100%;
+                max-width: 300px;
+                justify-content: center;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .pricing-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .pricing-card.featured {
+                transform: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="badge">
+                    🚨 TACTICAL ACADEMY RECRUITMENT ACTIVE 🚨
+                </div>
+                
+                <h1 class="hero-title">
+                    ELITE TACTICAL TRADING ACADEMY
+                </h1>
+                
+                <p class="hero-subtitle">
+                    Master financial warfare through military-grade training. Progress from LONE_WOLF → TACTICAL_COMMAND. 
+                    <strong>76.2% mission success rate</strong> in live combat scenarios.
+                </p>
+
+                <!-- Combat Performance Metrics -->
+                <div class="metrics">
+                    <div class="metric-card">
+                        <span class="metric-value">76.2%</span>
+                        <div class="metric-label">Mission Success Rate</div>
+                        <div class="metric-description">Live combat operations</div>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-value">7.34</span>
+                        <div class="metric-label">Tactical Superiority</div>
+                        <div class="metric-description">Industry-leading precision</div>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-value">35,484</span>
+                        <div class="metric-label">Battle Points Earned</div>
+                        <div class="metric-description">Successful market operations</div>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-value">4,257%</span>
+                        <div class="metric-label">Campaign Gains</div>
+                        <div class="metric-description">3-month combat results</div>
+                    </div>
+                </div>
+
+                <div class="cta-container">
+                    <a href="https://t.me/Bitten_Commander_bot?start=presspass" class="btn btn-primary">
+                        🆓 CLAIM FREE PRESS PASS
+                    </a>
+                    <a href="#tactics" class="btn btn-secondary">
+                        ⚔️ View Tactical Systems
+                    </a>
+                </div>
+                
+                <div style="margin-top: 2rem; padding: 1rem; background: rgba(232, 67, 147, 0.1); border: 1px solid rgba(232, 67, 147, 0.3); border-radius: 8px;">
+                    <p style="color: var(--error); font-weight: 600; margin: 0; text-align: center;">
+                        🔒 <strong>BETA RECRUITMENT:</strong> Press Pass access limited to select operatives. 
+                        Full academy launch in 2 weeks.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="container">
+            <h2 class="section-title">Comprehensive Trading Psychology Education</h2>
+            <p class="section-subtitle">
+                Learn proper risk management and emotional control through structured behavioral exercises with real market data.
+            </p>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🧠</div>
+                    <h3 class="feature-title">Behavioral Learning System</h3>
+                    <p class="feature-description">
+                        Master trading psychology through 6 progressive learning modules. Build discipline, patience, and emotional control through structured practice.
+                    </p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🛡️</div>
+                    <h3 class="feature-title">Comprehensive Safety Framework</h3>
+                    <p class="feature-description">
+                        Learn with confidence through absolute risk controls. Fixed 2% position sizing and safety stops ensure educational value without excessive exposure.
+                    </p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3 class="feature-title">Real Market Integration</h3>
+                    <p class="feature-description">
+                        Practice with live market data through educational scenarios. Learn pattern recognition and timing while maintaining complete account control.
+                    </p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🎮</div>
+                    <h3 class="feature-title">Gamified Progress Tracking</h3>
+                    <p class="feature-description">
+                        Advance through structured learning tiers with XP points, achievements, and skill assessments. Track your development over time.
+                    </p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🤖</div>
+                    <h3 class="feature-title">AI Learning Guides</h3>
+                    <p class="feature-description">
+                        Receive personalized guidance from specialized educational personas: Course Coordinator, Discipline Coach, and Strategy Instructor.
+                    </p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">📈</div>
+                    <h3 class="feature-title">Skill Development Assessment</h3>
+                    <p class="feature-description">
+                        Measure progress through risk management compliance, decision consistency, and long-term skill retention metrics.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section class="pricing" id="pricing">
+        <div class="container">
+            <h2 class="section-title">Educational Learning Tiers</h2>
+            <p class="section-subtitle">
+                Choose your learning path based on your current knowledge level and educational goals.
+            </p>
+            
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <div class="pricing-tier">Foundation Level</div>
+                    <div>
+                        <span class="pricing-amount">$39</span>
+                        <span class="pricing-period">/month</span>
+                    </div>
+                    <ul class="pricing-features">
+                        <li>Basic risk management training</li>
+                        <li>Structured learning exercises</li>
+                        <li>Individual position practice</li>
+                        <li>Core behavioral modification programs</li>
+                        <li>Foundation safety framework</li>
+                        <li>Progress tracking & assessment</li>
+                    </ul>
+                    <a href="https://t.me/Bitten_Commander_bot?start=foundation" class="btn btn-secondary" style="width: 100%; justify-content: center;">
+                        Begin Foundation
+                    </a>
+                </div>
+                
+                <div class="pricing-card featured">
+                    <div class="pricing-badge">Most Popular</div>
+                    <div class="pricing-tier">Intermediate Level</div>
+                    <div>
+                        <span class="pricing-amount">$89</span>
+                        <span class="pricing-period">/month</span>
+                    </div>
+                    <ul class="pricing-features">
+                        <li>Advanced risk scenarios</li>
+                        <li>Multiple position management (2 concurrent)</li>
+                        <li>Precision timing exercises</li>
+                        <li>Extended simulation access</li>
+                        <li>AI learning guide access</li>
+                        <li>Advanced progress analytics</li>
+                    </ul>
+                    <a href="https://t.me/Bitten_Commander_bot?start=intermediate" class="btn btn-primary" style="width: 100%; justify-content: center;">
+                        Start Intermediate
+                    </a>
+                </div>
+                
+                <div class="pricing-card">
+                    <div class="pricing-tier">Advanced Level</div>
+                    <div>
+                        <span class="pricing-amount">$189</span>
+                        <span class="pricing-period">/month</span>
+                    </div>
+                    <ul class="pricing-features">
+                        <li>Automated execution studies</li>
+                        <li>Portfolio management simulation</li>
+                        <li>Professional-level tools</li>
+                        <li>Comprehensive system access</li>
+                        <li>Elite learning community</li>
+                        <li>Personal educational coaching</li>
+                    </ul>
+                    <a href="https://t.me/Bitten_Commander_bot?start=advanced" class="btn btn-secondary" style="width: 100%; justify-content: center;">
+                        Access Advanced
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p><strong>Educational Disclaimer:</strong> This platform provides trading psychology education through practical application. Students maintain complete control over their accounts and make all decisions independently.</p>
+            <p><strong>Risk Notice:</strong> Educational exercises involve real market conditions. Past simulation results do not guarantee future learning outcomes. Only risk capital you can afford to lose for educational purposes.</p>
+            <p>© 2025 BITTEN Educational Platform. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Add loading animation to metrics
+        function animateMetrics() {
+            const metrics = document.querySelectorAll('.metric-value');
+            metrics.forEach(metric => {
+                const finalValue = metric.textContent;
+                let currentValue = 0;
+                const increment = parseFloat(finalValue.replace(/[^\d.-]/g, '')) / 50;
+                
+                const timer = setInterval(() => {
+                    currentValue += increment;
+                    if (currentValue >= parseFloat(finalValue.replace(/[^\d.-]/g, ''))) {
+                        metric.textContent = finalValue;
+                        clearInterval(timer);
+                    } else {
+                        if (finalValue.includes('%')) {
+                            metric.textContent = currentValue.toFixed(1) + '%';
+                        } else if (finalValue.includes(',')) {
+                            metric.textContent = Math.floor(currentValue).toLocaleString();
+                        } else {
+                            metric.textContent = currentValue.toFixed(2);
+                        }
+                    }
+                }, 50);
+            });
+        }
+
+        // Trigger animation when page loads
+        window.addEventListener('load', () => {
+            setTimeout(animateMetrics, 500);
+        });
+
+        // Track educational engagement
+        function trackEducationalEvent(action, tier) {
+            // Analytics tracking for educational platform engagement
+            if (typeof gtag !== 'undefined') {
+                gtag('event', action, {
+                    'event_category': 'Education',
+                    'event_label': tier
+                });
+            }
+        }
+
+        // Track tier selection
+        document.querySelectorAll('.pricing-card .btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const tier = this.closest('.pricing-card').querySelector('.pricing-tier').textContent;
+                trackEducationalEvent('tier_selected', tier);
+            });
+        });
+    </script>
+</body>
+</html>

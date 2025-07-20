@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>COMMANDER - EURUSD - TACTICAL BRIEF</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --commander-purple: #7c3aed;
+            --elite-gold: #fbbf24;
+            --success-green: #10b981;
+            --warning-amber: #f59e0b;
+            --danger-red: #ef4444;
+            --dark-bg: #0f172a;
+            --panel-bg: rgba(15, 23, 42, 0.95);
+            --border-color: #334155;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--dark-bg) 0%, #1e293b 100%);
+            color: #f1f5f9;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .commander-header {
+            background: linear-gradient(90deg, var(--commander-purple) 0%, #8b5cf6 100%);
+            color: white;
+            text-align: center;
+            padding: 12px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            font-size: 1em;
+        }
+
+        .hud-container {
+            display: grid;
+            grid-template-areas: 
+                "mission-overview mission-overview"
+                "trade-details account-summary"
+                "execution-panel execution-panel";
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto 1fr auto;
+            height: calc(100vh - 50px);
+            gap: 16px;
+            padding: 16px;
+        }
+
+        .mission-overview {
+            grid-area: mission-overview;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            backdrop-filter: blur(10px);
+        }
+
+        .trade-details {
+            grid-area: trade-details;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            backdrop-filter: blur(10px);
+        }
+
+        .account-summary {
+            grid-area: account-summary;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            backdrop-filter: blur(10px);
+        }
+
+        .execution-panel {
+            grid-area: execution-panel;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            backdrop-filter: blur(10px);
+            text-align: center;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .section-title {
+            font-family: 'Orbitron', monospace;
+            font-weight: 700;
+            color: var(--commander-purple);
+            font-size: 1.1em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .mission-title-large {
+            font-family: 'Orbitron', monospace;
+            font-size: 2.5em;
+            font-weight: 900;
+            color: var(--elite-gold);
+            text-align: center;
+            margin-bottom: 16px;
+            text-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+        }
+
+        .confidence-badge {
+            background: linear-gradient(45deg, var(--success-green), #059669);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 16px;
+            font-size: 0.9em;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .stat-card {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid var(--commander-purple);
+        }
+
+        .stat-label {
+            color: #94a3b8;
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            color: #f1f5f9;
+            font-weight: 700;
+            font-size: 1.3em;
+        }
+
+        .stat-value.success { color: var(--success-green); }
+        .stat-value.warning { color: var(--warning-amber); }
+        .stat-value.danger { color: var(--danger-red); }
+
+        .countdown-display {
+            font-family: 'Orbitron', monospace;
+            font-size: 2.2em;
+            color: var(--elite-gold);
+            margin-bottom: 24px;
+            text-shadow: 0 0 15px rgba(251, 191, 36, 0.4);
+        }
+
+        .execute-button {
+            background: linear-gradient(45deg, var(--commander-purple), #8b5cf6);
+            border: none;
+            border-radius: 12px;
+            padding: 20px 50px;
+            font-family: 'Orbitron', monospace;
+            font-size: 1.4em;
+            font-weight: 700;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(124, 58, 237, 0.4);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .execute-button:hover {
+            background: linear-gradient(45deg, #8b5cf6, var(--commander-purple));
+            box-shadow: 0 12px 35px rgba(124, 58, 237, 0.6);
+            transform: translateY(-2px);
+        }
+
+        .tier-indicator {
+            background: linear-gradient(45deg, var(--elite-gold), #f59e0b);
+            color: var(--dark-bg);
+            padding: 6px 14px;
+            border-radius: 15px;
+            font-weight: 700;
+            font-size: 0.8em;
+            display: inline-block;
+            margin-left: 12px;
+        }
+
+        .risk-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--success-green);
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-top: 16px;
+        }
+
+        .risk-text {
+            color: var(--success-green);
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="commander-header">
+        🎖️ COMMANDER ACCESS - TACTICAL TRADING INTERFACE - AUTHORIZED PERSONNEL ONLY 🎖️
+    </div>
+
+    <div class="hud-container">
+        <div class="mission-overview">
+            <div class="mission-title-large">EURUSD</div>
+            <div class="confidence-badge">🎯 TCS: 85% CONFIDENCE</div>
+            
+            <div class="section-header">
+                <div class="section-title">Mission Overview</div>
+                <div class="tier-indicator">COMMANDER</div>
+            </div>
+            
+            <div style="color: #94a3b8; line-height: 1.6;">
+                High-probability EURUSD opportunity identified. Market structure aligned for tactical entry.
+                Risk management protocols active. Position sizing calculated for Commander-tier account.
+            </div>
+
+            <div class="risk-indicator">
+                <span class="risk-text">✅ Risk Parameters: Optimal</span>
+                <span style="color: var(--elite-gold); font-weight: 600;">R:R 1:2.0</span>
+            </div>
+        </div>
+
+        <div class="trade-details">
+            <div class="section-header">
+                <div class="section-title">Trade Parameters</div>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Entry Price</div>
+                    <div class="stat-value">1.0900</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Stop Loss</div>
+                    <div class="stat-value danger">1.0890</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Take Profit</div>
+                    <div class="stat-value success">1.0920</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Direction</div>
+                    <div class="stat-value success">BUY</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="account-summary">
+            <div class="section-header">
+                <div class="section-title">Account Status</div>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Account Balance</div>
+                    <div class="stat-value">$15,750.25</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Risk Amount</div>
+                    <div class="stat-value warning">$472.51</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Potential Profit</div>
+                    <div class="stat-value success">$945.02</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Position Size</div>
+                    <div class="stat-value">2.36 lots</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="execution-panel">
+            <div class="countdown-display">⏰ 26:42 REMAINING</div>
+            <button class="execute-button">🚀 EXECUTE TRADE 🚀</button>
+            <div style="margin-top: 16px; color: #64748b; font-size: 0.9em;">
+                Commander-level position sizing applied • 3% account risk
+            </div>
+        </div>
+    </div>
+</body>
+</html>

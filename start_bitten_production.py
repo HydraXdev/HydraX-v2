@@ -11,6 +11,8 @@ import signal
 import subprocess
 from datetime import datetime
 import multiprocessing
+from pathlib import Path
+import psutil
 
 def print_banner():
     print("="*60)
@@ -67,6 +69,20 @@ def check_requirements():
 def start_apex_engine():
     """Start the APEX v5.0 signal generation engine"""
     print("\n🚀 Starting APEX v5.0 Signal Engine...")
+    
+    # Check if already running
+    pid_file = Path('/root/HydraX-v2/.apex_engine.pid')
+    if pid_file.exists():
+        try:
+            pid = int(pid_file.read_text().strip())
+            # Check if process is actually running
+            os.kill(pid, 0)  # This will raise an exception if process doesn't exist
+            print(f"✅ APEX already running with PID {pid}")
+            return psutil.Process(pid)
+        except (OSError, ValueError, psutil.NoSuchProcess):
+            # Process not running, clean up stale PID file
+            print("🧹 Cleaning up stale PID file")
+            pid_file.unlink()
     
     try:
         os.chdir("/root/HydraX-v2")

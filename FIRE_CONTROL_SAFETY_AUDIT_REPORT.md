@@ -183,7 +183,7 @@ RISK_LIMITS = {
 - **Execution**: All modes available
 
 ### **🔨 MIDNIGHT HAMMER Events**
-- **Access**: APEX tier exclusive
+- **Access**: COMMANDER tier exclusive
 - **TCS Range**: 95%+
 - **Frequency**: 1-2 per month
 - **Risk Profile**: Community event
@@ -240,7 +240,7 @@ def validate_trade_request(user, signal, fire_mode):
 - **Signal Engine**: ✅ Compatible with 40+ signals/day
 - **Risk Management**: ✅ Enhanced for v5.0 volume
 - **Fire Modes**: ✅ All modes operational
-- **Tier System**: ✅ APEX tier optimized for v5.0
+- **Tier System**: ✅ COMMANDER tier optimized for v5.0
 - **Safety Systems**: ✅ Scaled for increased activity
 
 ### **v5.0 Enhancements**
@@ -278,7 +278,7 @@ def validate_trade_request(user, signal, fire_mode):
 ### **Priority 2 (Important)**
 1. **AI Risk Management**: Machine learning risk adjustment
 2. **Social Features**: Squad chat and community tools
-3. **Advanced Analytics**: APEX tier premium features
+3. **Advanced Analytics**: COMMANDER tier premium features
 4. **Mobile Optimization**: Responsive design improvements
 
 ### **Priority 3 (Enhancement)**

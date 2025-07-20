@@ -24,7 +24,7 @@ bridge_terminals:
     port: 5001
     folder: "/mt5/terminals/press_pass"
     max_users: 10
-    broker: "MetaQuotes-Demo"
+    broker: "${MT5_DEMO_SERVER:-MetaQuotes-Demo}"
     
   demo:
     name: "Demo Terminal Pool"
@@ -32,7 +32,7 @@ bridge_terminals:
     port: 5002
     folder: "/mt5/terminals/demo"
     max_users: 5
-    broker: "ICMarkets-Demo"
+    broker: "${MT5_DEMO_SERVER:-ICMarkets-Demo}"
     
   live:
     name: "Live Terminal Pool"
@@ -40,7 +40,7 @@ bridge_terminals:
     port: 5003
     folder: "/mt5/terminals/live"
     max_users: 3
-    broker: "ICMarkets-Live"
+    broker: "${MT5_LIVE_SERVER:-ICMarkets-Live}"
 
 # Signal Routing Configuration
 signal_routing:

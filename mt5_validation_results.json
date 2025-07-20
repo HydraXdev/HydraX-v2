@@ -1,0 +1,50 @@
+{
+  "MetaQuotes-Demo": {
+    "success": false,
+    "server": "MetaQuotes-Demo",
+    "error": "MT5 library not available",
+    "timestamp": "2025-07-16T20:07:32.162552"
+  },
+  "press_pass_pool": {
+    "ICMarkets-Demo": {
+      "success": false,
+      "server": "ICMarkets-Demo",
+      "error": "MT5 library not available",
+      "timestamp": "2025-07-16T20:07:32.162575"
+    },
+    "Coinexx-Demo": {
+      "success": false,
+      "server": "Coinexx-Demo",
+      "error": "MT5 library not available",
+      "timestamp": "2025-07-16T20:07:32.162578"
+    }
+  },
+  "demo_pool": {
+    "ICMarkets-Demo": {
+      "success": false,
+      "server": "ICMarkets-Demo",
+      "error": "MT5 library not available",
+      "timestamp": "2025-07-16T20:07:32.162581"
+    },
+    "Coinexx-Demo": {
+      "success": false,
+      "server": "Coinexx-Demo",
+      "error": "MT5 library not available",
+      "timestamp": "2025-07-16T20:07:32.162583"
+    }
+  },
+  "live_pool": {
+    "ICMarkets-Live": {
+      "success": false,
+      "server": "ICMarkets-Live",
+      "error": "MT5 library not available",
+      "timestamp": "2025-07-16T20:07:32.162587"
+    },
+    "Coinexx-Live": {
+      "success": false,
+      "server": "Coinexx-Live",
+      "error": "MT5 library not available",
+      "timestamp": "2025-07-16T20:07:32.162589"
+    }
+  }
+}

@@ -8,20 +8,18 @@ class TierNames:
     PRESS_PASS = "PRESS_PASS"  # 7-day trial
     NIBBLER = "NIBBLER"        # $39/month
     FANG = "FANG"              # $89/month
-    COMMANDER = "COMMANDER"    # $139/month
-    APEX = "APEX"              # $188/month (includes all COMMANDER features + exclusives)
+    COMMANDER = "COMMANDER"    # $189/month (premium tier with all features)
     
     # List for validation
-    ALL_TIERS = [PRESS_PASS, NIBBLER, FANG, COMMANDER, APEX]
-    PAID_TIERS = [NIBBLER, FANG, COMMANDER, APEX]
+    ALL_TIERS = [PRESS_PASS, NIBBLER, FANG, COMMANDER]
+    PAID_TIERS = [NIBBLER, FANG, COMMANDER]
     
     # Tier hierarchy (for access control)
     TIER_HIERARCHY = {
         PRESS_PASS: 0,
         NIBBLER: 1,
         FANG: 2,
-        COMMANDER: 3,
-        APEX: 4  # Highest level (COMMANDER + APEX addon)
+        COMMANDER: 3  # Highest level with all premium features
     }
 
 
@@ -30,7 +28,8 @@ LEGACY_TO_NEW = {
     "tier_1": TierNames.NIBBLER,
     "tier_2": TierNames.FANG,
     "tier_3": TierNames.COMMANDER,
-    "tier_4": TierNames.APEX,
+    "tier_4": TierNames.COMMANDER,  # APEX migrates to COMMANDER
+    "APEX": TierNames.COMMANDER,   # APEX tier becomes COMMANDER
     "tier_general": None,  # Maps to no specific tier
     "TRIAL": TierNames.PRESS_PASS,
     "PRESS PASS": TierNames.PRESS_PASS,

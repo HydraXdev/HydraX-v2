@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SNIPER OPS - GBPUSD - ELITE ACCESS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sniper-blue: #00d4ff;
+            --tactical-green: #00ff41;
+            --electric-blue: #0099ff;
+            --dark-bg: #0a0a0a;
+            --panel-bg: rgba(0, 10, 15, 0.95);
+            --elite-gold: #ffd700;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Courier Prime', monospace;
+            background: linear-gradient(135deg, var(--dark-bg) 0%, #001a2e 100%);
+            color: var(--tactical-green);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .elite-header {
+            background: linear-gradient(90deg, var(--sniper-blue) 0%, var(--electric-blue) 100%);
+            color: var(--dark-bg);
+            text-align: center;
+            padding: 10px;
+            font-weight: bold;
+            letter-spacing: 3px;
+            font-size: 1.1em;
+            text-shadow: none;
+        }
+
+        .hud-container {
+            display: grid;
+            grid-template-areas: 
+                "intel-header intel-header"
+                "precision-data account-status" 
+                "scope-view scope-view"
+                "fire-control fire-control";
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto auto 1fr auto;
+            height: calc(100vh - 50px);
+            gap: 12px;
+            padding: 12px;
+        }
+
+        .intel-header {
+            grid-area: intel-header;
+            background: var(--panel-bg);
+            border: 2px solid var(--sniper-blue);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 0 25px rgba(0, 212, 255, 0.3);
+        }
+
+        .mission-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 2.2em;
+            font-weight: 900;
+            color: var(--sniper-blue);
+            text-shadow: 0 0 12px var(--sniper-blue);
+            margin-bottom: 8px;
+        }
+
+        .elite-badge {
+            background: linear-gradient(45deg, var(--elite-gold), #ffaa00);
+            color: var(--dark-bg);
+            padding: 6px 15px;
+            border-radius: 15px;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+        }
+
+        .precision-data {
+            grid-area: precision-data;
+            background: var(--panel-bg);
+            border: 2px solid var(--tactical-green);
+            border-radius: 8px;
+            padding: 18px;
+        }
+
+        .account-status {
+            grid-area: account-status;
+            background: var(--panel-bg);
+            border: 2px solid var(--tactical-green);
+            border-radius: 8px;
+            padding: 18px;
+        }
+
+        .scope-view {
+            grid-area: scope-view;
+            background: var(--panel-bg);
+            border: 3px solid var(--sniper-blue);
+            border-radius: 50%;
+            margin: 20px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 0 50px rgba(0, 212, 255, 0.2);
+        }
+
+        .crosshair {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        .crosshair::before,
+        .crosshair::after {
+            content: '';
+            position: absolute;
+            background: var(--sniper-blue);
+            box-shadow: 0 0 10px var(--sniper-blue);
+        }
+
+        .crosshair::before {
+            width: 2px;
+            height: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .crosshair::after {
+            height: 2px;
+            width: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .target-info {
+            text-align: center;
+            z-index: 10;
+        }
+
+        .target-symbol {
+            font-family: 'Orbitron', monospace;
+            font-size: 3em;
+            font-weight: bold;
+            color: var(--elite-gold);
+            text-shadow: 0 0 15px var(--elite-gold);
+        }
+
+        .section-title {
+            font-family: 'Orbitron', monospace;
+            font-weight: bold;
+            color: var(--sniper-blue);
+            font-size: 1em;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .precision-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .precision-item {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-left: 3px solid var(--sniper-blue);
+            border-radius: 5px;
+        }
+
+        .precision-label {
+            color: var(--tactical-green);
+            font-size: 0.85em;
+            text-transform: uppercase;
+        }
+
+        .precision-value {
+            color: var(--sniper-blue);
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-top: 3px;
+        }
+
+        .fire-control {
+            grid-area: fire-control;
+            background: var(--panel-bg);
+            border: 3px solid var(--elite-gold);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .sniper-timer {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.8em;
+            color: var(--elite-gold);
+            margin-bottom: 15px;
+            text-shadow: 0 0 8px var(--elite-gold);
+        }
+
+        .sniper-fire-button {
+            background: linear-gradient(45deg, var(--sniper-blue), var(--electric-blue));
+            border: 2px solid var(--elite-gold);
+            border-radius: 12px;
+            padding: 18px 45px;
+            font-family: 'Orbitron', monospace;
+            font-size: 1.3em;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .sniper-fire-button:hover {
+            background: linear-gradient(45deg, var(--electric-blue), var(--sniper-blue));
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.7);
+            transform: scale(1.03);
+        }
+
+        .tcs-precision {
+            background: linear-gradient(90deg, var(--sniper-blue), var(--tactical-green));
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="elite-header">
+        ⚡ ELITE ACCESS - SNIPER OPERATIONS - PRECISION ENGAGEMENT ⚡
+    </div>
+
+    <div class="hud-container">
+        <div class="intel-header">
+            <div class="elite-badge">🎖️ ELITE ACCESS 🎖️</div>
+            <div class="tcs-precision">⚡ TCS: 92% PRECISION ⚡</div>
+            <div class="mission-title">SNIPER OPS</div>
+            <div style="color: var(--sniper-blue); font-size: 1.1em; letter-spacing: 2px;">GBPUSD ELITE TARGET</div>
+        </div>
+
+        <div class="precision-data">
+            <div class="section-title">🎯 PRECISION PARAMETERS</div>
+            <div class="precision-grid">
+                <div class="precision-item">
+                    <div class="precision-label">Entry Zone</div>
+                    <div class="precision-value">1.2500</div>
+                </div>
+                <div class="precision-item">
+                    <div class="precision-label">Stop Loss</div>
+                    <div class="precision-value">1.2485</div>
+                </div>
+                <div class="precision-item">
+                    <div class="precision-label">Take Profit</div>
+                    <div class="precision-value">1.2530</div>
+                </div>
+                <div class="precision-item">
+                    <div class="precision-label">Risk:Reward</div>
+                    <div class="precision-value">1:3.2</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="account-status">
+            <div class="section-title">💎 COMMANDER STATUS</div>
+            <div class="precision-grid">
+                <div class="precision-item">
+                    <div class="precision-label">Elite Balance</div>
+                    <div class="precision-value">$15,750</div>
+                </div>
+                <div class="precision-item">
+                    <div class="precision-label">Precision Risk</div>
+                    <div class="precision-value">$472</div>
+                </div>
+                <div class="precision-item">
+                    <div class="precision-label">Elite Reward</div>
+                    <div class="precision-value">$1,510</div>
+                </div>
+                <div class="precision-item">
+                    <div class="precision-label">Position Size</div>
+                    <div class="precision-value">3.15 lots</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="scope-view">
+            <div class="crosshair"></div>
+            <div class="target-info">
+                <div class="target-symbol">GBPUSD</div>
+                <div style="color: var(--tactical-green); margin-top: 10px;">TARGET ACQUIRED</div>
+            </div>
+        </div>
+
+        <div class="fire-control">
+            <div class="sniper-timer">⏰ 28:45 PRECISION WINDOW</div>
+            <button class="sniper-fire-button">🎯 EXECUTE PRECISION SHOT 🎯</button>
+        </div>
+    </div>
+</body>
+</html>

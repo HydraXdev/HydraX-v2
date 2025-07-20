@@ -1,0 +1,11 @@
+{
+  "message_id": 3729,
+  "mission_id": "APEX5_NZDUSD_224048",
+  "original_message": "\ud83d\udd2b RAPID ASSAULT [65%]\n\ud83d\udd25 NZDUSD STRIKE \ud83d\udca5\n[MISSION BRIEF](https://joinbitten.com/hud?mission_id=APEX5_NZDUSD_224048)",
+  "symbol": "NZDUSD",
+  "signal_type": "RAPID_ASSAULT",
+  "sent_at": "2025-07-17T22:40:49.514693",
+  "entry_expires_at": "2025-07-17T23:10:49.514701",
+  "delete_at": "2025-07-18T02:40:49.514708",
+  "chat_id": "-1002581996861"
+}

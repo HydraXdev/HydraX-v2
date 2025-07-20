@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAPID ASSAULT - EURUSD - CLASSIFIED</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --rapid-red: #ff073a;
+            --orange-alert: #ff6b00;
+            --bright-yellow: #ffff00;
+            --dark-bg: #0a0a0a;
+            --panel-bg: rgba(15, 5, 5, 0.95);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Courier Prime', monospace;
+            background: linear-gradient(135deg, var(--dark-bg) 0%, #2d0000 100%);
+            color: var(--bright-yellow);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .classified-header {
+            background: linear-gradient(90deg, var(--rapid-red) 0%, #cc0000 100%);
+            color: white;
+            text-align: center;
+            padding: 8px;
+            font-weight: bold;
+            letter-spacing: 3px;
+            animation: flash 1.5s infinite alternate;
+            font-size: 1.2em;
+        }
+
+        @keyframes flash {
+            0% { opacity: 0.8; }
+            100% { opacity: 1; }
+        }
+
+        .hud-container {
+            display: grid;
+            grid-template-areas: 
+                "mission-header mission-header"
+                "signal-data account-data"
+                "fire-control fire-control";
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto 1fr auto;
+            height: calc(100vh - 60px);
+            gap: 15px;
+            padding: 15px;
+        }
+
+        .mission-header {
+            grid-area: mission-header;
+            background: var(--panel-bg);
+            border: 3px solid var(--rapid-red);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(255, 7, 58, 0.4);
+        }
+
+        .mission-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 2.5em;
+            font-weight: 900;
+            color: var(--rapid-red);
+            text-shadow: 0 0 15px var(--rapid-red);
+            margin-bottom: 10px;
+        }
+
+        .mission-subtitle {
+            font-size: 1.2em;
+            color: var(--orange-alert);
+            letter-spacing: 2px;
+        }
+
+        .signal-data {
+            grid-area: signal-data;
+            background: var(--panel-bg);
+            border: 2px solid var(--orange-alert);
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .account-data {
+            grid-area: account-data;
+            background: var(--panel-bg);
+            border: 2px solid var(--orange-alert);
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .section-title {
+            font-family: 'Orbitron', monospace;
+            font-weight: bold;
+            color: var(--rapid-red);
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .data-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .data-item {
+            background: rgba(0, 0, 0, 0.6);
+            padding: 12px;
+            border-left: 4px solid var(--orange-alert);
+            border-radius: 5px;
+        }
+
+        .data-label {
+            color: var(--bright-yellow);
+            font-size: 0.9em;
+            text-transform: uppercase;
+        }
+
+        .data-value {
+            color: var(--orange-alert);
+            font-weight: bold;
+            font-size: 1.3em;
+            margin-top: 5px;
+        }
+
+        .fire-control {
+            grid-area: fire-control;
+            background: var(--panel-bg);
+            border: 3px solid var(--rapid-red);
+            border-radius: 10px;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .countdown-timer {
+            font-family: 'Orbitron', monospace;
+            font-size: 2em;
+            color: var(--bright-yellow);
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px var(--bright-yellow);
+        }
+
+        .fire-button {
+            background: linear-gradient(45deg, var(--rapid-red), #ff4500);
+            border: none;
+            border-radius: 15px;
+            padding: 20px 50px;
+            font-family: 'Orbitron', monospace;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 0 25px rgba(255, 7, 58, 0.6);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .fire-button:hover {
+            background: linear-gradient(45deg, #ff4500, var(--rapid-red));
+            box-shadow: 0 0 35px rgba(255, 7, 58, 0.8);
+            transform: scale(1.05);
+        }
+
+        .tcs-indicator {
+            background: linear-gradient(90deg, var(--rapid-red), var(--orange-alert));
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="classified-header">
+        🔫 CLASSIFIED - RAPID ASSAULT MISSION - FOR COMMANDER EYES ONLY 🔫
+    </div>
+
+    <div class="hud-container">
+        <div class="mission-header">
+            <div class="tcs-indicator">🔥 TCS: 85% 🔥</div>
+            <div class="mission-title">RAPID ASSAULT</div>
+            <div class="mission-subtitle">EURUSD STRIKE MISSION</div>
+        </div>
+
+        <div class="signal-data">
+            <div class="section-title">🎯 TARGET PARAMETERS</div>
+            <div class="data-grid">
+                <div class="data-item">
+                    <div class="data-label">Entry Zone</div>
+                    <div class="data-value">1.0900</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-label">Stop Loss</div>
+                    <div class="data-value">1.0890</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-label">Take Profit</div>
+                    <div class="data-value">1.0920</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-label">Risk:Reward</div>
+                    <div class="data-value">1:2.0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="account-data">
+            <div class="section-title">💰 COMMANDER ACCOUNT</div>
+            <div class="data-grid">
+                <div class="data-item">
+                    <div class="data-label">Balance</div>
+                    <div class="data-value">$15,750</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-label">Risk Amount</div>
+                    <div class="data-value">$472</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-label">Potential Reward</div>
+                    <div class="data-value">$944</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-label">Position Size</div>
+                    <div class="data-value">2.36 lots</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="fire-control">
+            <div class="countdown-timer">⏰ 24:35 REMAINING</div>
+            <button class="fire-button">🔥 FIRE MISSION 🔥</button>
+        </div>
+    </div>
+</body>
+</html>

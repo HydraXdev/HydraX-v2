@@ -465,7 +465,7 @@ async def execute_trade():
 ```
 
 ### 8.2 Multi-Level Take Profit System
-For COMMANDER and APEX tiers on high-confidence signals:
+For COMMANDER tier on high-confidence signals:
 - **TP1**: 50% of distance (30% position close)
 - **TP2**: 80% of distance (30% position close)
 - **TP3**: Full distance (40% position close)

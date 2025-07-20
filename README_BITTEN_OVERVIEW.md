@@ -37,12 +37,18 @@ TCS Filtering → Tier Validation → Risk Checks → MT5 Execution
   70-95% Score   Tier Access    Position Limits  Live Trading
 ```
 
-**Execution Modes**:
-1. **SINGLE_SHOT**: Manual precision trading (All tiers)
-2. **CHAINGUN**: Progressive risk scaling (Fang+)
-3. **AUTO_FIRE**: Autonomous 24/7 operation (Commander+)
-4. **STEALTH**: Anti-detection randomization (APEX)
-5. **MIDNIGHT_HAMMER**: Community event trading (Platform-wide)
+**Fire Modes**:
+1. **SELECT**: Manual precision trading (All tiers)
+2. **AUTO**: Autonomous 24/7 operation (Commander only)
+
+**Signal Types**:
+1. **RAPID_ASSAULT**: Fast market action signals (All tiers)
+2. **SNIPER_OPS**: High-precision signals (FANG+)
+
+**Special Weapons & Events**:
+1. **CHAINGUN**: Progressive risk weapon (FANG+ unlock)
+2. **STEALTH**: Anti-detection mode (COMMANDER)
+3. **MIDNIGHT_HAMMER**: Community event weapon (Platform-wide)
 
 ### Risk Management System
 

@@ -214,7 +214,7 @@ class EnhancedEngineEngineer:
                 self.config = {}
                 # Create default config
                 self.save_config({
-                    "engine_type": "APEX_v5",
+                    "engine_type": "APEX_v6_Enhanced",
                     "monitoring_enabled": True,
                     "log_level": "INFO",
                     "created_at": datetime.now(timezone.utc).isoformat()

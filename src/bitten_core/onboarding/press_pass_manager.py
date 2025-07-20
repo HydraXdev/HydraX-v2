@@ -453,19 +453,19 @@ class PressPassManager:
             },
             'upgrade_paths': {
                 'starter': {
-                    'name': 'BITTEN Starter',
-                    'price': '$29/month',
+                    'name': 'BITTEN NIBBLER',
+                    'price': '$39/month',
                     'features': 'Keep your progress, basic signals, live trading'
                 },
                 'professional': {
-                    'name': 'BITTEN Professional', 
-                    'price': '$99/month',
+                    'name': 'BITTEN FANG', 
+                    'price': '$89/month',
                     'features': 'Advanced signals, multiple strategies, priority support'
                 },
                 'elite': {
-                    'name': 'BITTEN Elite',
-                    'price': '$299/month',
-                    'features': 'All features, custom strategies, dedicated support'
+                    'name': 'BITTEN COMMANDER',
+                    'price': '$189/month',
+                    'features': 'All features, unlimited trades, elite support'
                 }
             }
         }

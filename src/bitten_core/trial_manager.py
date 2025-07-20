@@ -222,11 +222,8 @@ Perfect for focused traders
 ⚡ **FANG** - $89/month
 Unlock advanced strategies
 
-🔥 **COMMANDER** - $139/month
-Full automation suite
-
-🌟 **APEX** - $188/month
-Elite trader status
+🔥 **COMMANDER** - $189/month
+Full automation suite & elite features
 
 Ready to lock in your gains?"""
         
@@ -438,8 +435,7 @@ Select your tier:"""
         keyboard = InlineKeyboardMarkup([
             [InlineKeyboardButton("🥉 NIBBLER $39/mo", callback_data="subscribe_NIBBLER")],
             [InlineKeyboardButton("🥈 FANG $89/mo", callback_data="subscribe_FANG")],
-            [InlineKeyboardButton("🥇 COMMANDER $139/mo", callback_data="subscribe_COMMANDER")],
-            [InlineKeyboardButton("💎 APEX $188/mo", callback_data="subscribe_APEX")],
+            [InlineKeyboardButton("🥇 COMMANDER $189/mo", callback_data="subscribe_COMMANDER")],
             [InlineKeyboardButton("❓ Help Me Choose", callback_data="help_choose_plan")],
             [InlineKeyboardButton("🔙 Back", callback_data="trial_back")]
         ])
@@ -463,17 +459,13 @@ Select your tier:"""
 • Chaingun progressive risk
 • Advanced filters
 
-**🥇 COMMANDER** ($139/month)
-• 20 trades per day
+**🥇 COMMANDER** ($189/month)
+• Unlimited trades
 • Full automation
 • Stealth mode
 • All strategies
-
-**💎 APEX** ($188/month)
-• Unlimited trades
-• Midnight Hammer
 • Priority support
-• Elite network access
+• Elite features
 
 ✅ Cancel anytime
 ✅ No long-term commitment

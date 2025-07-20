@@ -64,22 +64,19 @@ class SubscriptionManager:
                 "PRESS_PASS": 0,     # Free tier
                 "NIBBLER": 39,
                 "FANG": 89,
-                "COMMANDER": 139,
-                "APEX": 188
+                "COMMANDER": 189
             },
             BillingCycle.QUARTERLY: {
                 "PRESS_PASS": 0,     # Free tier
                 "NIBBLER": 105,      # ~10% discount
                 "FANG": 240,         # ~10% discount
-                "COMMANDER": 375,    # ~10% discount
-                "APEX": 507          # ~10% discount
+                "COMMANDER": 510     # ~10% discount
             },
             BillingCycle.ANNUAL: {
                 "PRESS_PASS": 0,     # Free tier
                 "NIBBLER": 374,      # ~20% discount
                 "FANG": 854,         # ~20% discount
-                "COMMANDER": 1339,   # ~20% discount
-                "APEX": 1805         # ~20% discount
+                "COMMANDER": 1814    # ~20% discount
             }
         }
         

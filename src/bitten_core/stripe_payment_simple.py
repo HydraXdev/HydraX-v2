@@ -22,8 +22,7 @@ class SimpleStripeProcessor:
         self.tier_prices = {
             'NIBBLER': 39,
             'FANG': 89,
-            'COMMANDER': 139,
-            'APEX': 188
+            'COMMANDER': 189
         }
         
         # Price IDs will be set after creating products
@@ -40,8 +39,7 @@ class SimpleStripeProcessor:
             for tier, price_cents in [
                 ('NIBBLER', 3900),      # $39.00
                 ('FANG', 8900),         # $89.00
-                ('COMMANDER', 13900),   # $139.00
-                ('APEX', 18800)         # $188.00
+                ('COMMANDER', 18900)    # $189.00
             ]:
                 # Create product
                 product = stripe.Product.create(

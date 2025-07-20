@@ -31,12 +31,11 @@ class TierUpgradeRouter:
     
     def __init__(self, payment_processor=None):
         self.payment_processor = payment_processor  # Payment integration (Stripe, etc.)
-        self.tier_order = ["NIBBLER", "FANG", "COMMANDER", "APEX"]
+        self.tier_order = ["NIBBLER", "FANG", "COMMANDER"]
         self.tier_pricing = {
             "NIBBLER": 39,
             "FANG": 89,
-            "COMMANDER": 139,
-            "APEX": 188
+            "COMMANDER": 189
         }
         
     def get_upgrade_options(self, user_id: int) -> CommandResult:
@@ -406,7 +405,7 @@ Features: + Sniper mode
 Perfect for: Developing traders
 ```
 
-**🥇 COMMANDER ($139/mo)**
+**🥇 COMMANDER ($189/mo)**
 ```
 Daily Trades: 20
 TCS Required: 90% auto / 75% semi

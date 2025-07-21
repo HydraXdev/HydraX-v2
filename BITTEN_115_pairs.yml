@@ -1,0 +1,138 @@
+# BITTEN Trading Pairs Configuration
+# HydraX MT5 Terminal Automation System
+
+pairs:
+  # Major EUR pairs
+  - EURUSD
+  - EURGBP
+  - EURJPY
+  - EURAUD
+  - EURNZD
+  - EURCHF
+  - EURCAD
+  
+  # Major GBP pairs  
+  - GBPUSD
+  - GBPJPY
+  - GBPAUD
+  - GBPNZD
+  - GBPCHF
+  - GBPCAD
+  
+  # Major USD pairs
+  - USDJPY
+  - USDCAD
+  - USDCHF
+  - AUDUSD
+  - NZDUSD
+  
+  # Cross pairs
+  - AUDCAD
+  - AUDCHF
+  - AUDJPY
+  - AUDNZD
+  - CADCHF
+  - CADJPY
+  - CHFJPY
+  - NZDCAD
+  - NZDCHF
+  - NZDJPY
+  
+  # Exotic pairs (if broker supports)
+  - USDZAR
+  - USDTRY
+  - USDMXN
+  - USDSEK
+  - USDNOK
+  - USDDKK
+  - USDPLN
+  - USDHUF
+  - USDCZK
+  - USDSGD
+  - USDHKD
+  
+  # Additional majors
+  - GBPTRY
+  - EURTRY
+  - EURPLN
+  - EURSEK
+  - EURNOK
+  - EURDKK
+  - EURHUF
+  - EURCZK
+  - GBPSEK
+  - GBPNOK
+  - GBPDKK
+  - GBPPLN
+  - GBPHUF
+  - GBPCZK
+  
+  # Commodities (if available)
+  - XAUUSD  # Gold
+  - XAGUSD  # Silver
+  - XPTUSD  # Platinum
+  - XPDUSD  # Palladium
+  
+  # Indices (if available) 
+  - US30    # Dow Jones
+  - NAS100  # Nasdaq
+  - SPX500  # S&P 500
+  - GER30   # DAX
+  - UK100   # FTSE
+  - FRA40   # CAC
+  - JPN225  # Nikkei
+  - AUS200  # ASX
+  
+  # Oil (if available)
+  - USOIL   # WTI Crude
+  - UKOIL   # Brent Crude
+  
+  # Crypto (if broker supports)
+  - BTCUSD
+  - ETHUSD
+  - LTCUSD
+  - BCHUSD
+  - XRPUSD
+  - ADAUSD
+  - DOTUSD
+  - LINKUSD
+  - BNBUSD
+  - SOLUSD
+  
+  # High-volume pairs for scalping
+  - EURCHF
+  - USDSGD
+  - USDHKD
+  - EURSGD
+  - GBPSGD
+  - AUDJPY
+  - NZDJPY
+  - CADJPY
+  - CHFJPY
+  
+  # Emerging market pairs
+  - USDZAR
+  - USDBRL
+  - USDMXN
+  - USDTRY
+  - USDRON
+  - USDHUF
+  - USDPLN
+  - USDCZK
+  - USDRUB
+  - USDCNH
+
+# Configuration
+config:
+  total_pairs: 115
+  auto_load: true
+  ea_name: "BITTENBridge"
+  chart_template: "BITTEN.tpl"
+  default_timeframe: "H1"
+  
+# HydraX specific settings
+hydrax:
+  fire_file: "fire.txt"
+  bridge_port: 9013
+  auto_attach_ea: true
+  headless_mode: true

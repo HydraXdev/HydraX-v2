@@ -1,0 +1,66 @@
+{
+  "timestamp": "2025-07-28T04:23:33.250363",
+  "core_production_files": {
+    "bitten_production_bot.py": {
+      "purpose": "Main Telegram bot - handles signals, tactics, execution, drill reports",
+      "status": "ACTIVE - Currently running",
+      "dependencies": [
+        "src/bitten_core/*",
+        "config/*"
+      ],
+      "tokens": "BOT_TOKEN (7854827710...)"
+    },
+    "webapp_server_optimized.py": {
+      "purpose": "WebApp server - mission HUD, onboarding, War Room",
+      "status": "ACTIVE - Currently running",
+      "port": "8888",
+      "dependencies": [
+        "src/bitten_core/*",
+        "templates/*"
+      ]
+    },
+    "commander_throne.py": {
+      "purpose": "Command center dashboard",
+      "status": "ACTIVE - Currently running",
+      "port": "8899",
+      "dependencies": [
+        "minimal"
+      ]
+    },
+    "bridge_fortress_daemon.py": {
+      "purpose": "Bridge health monitoring and heartbeat system",
+      "status": "ACTIVE - Currently running",
+      "location": "/root/core/bridge_fortress_daemon.py (symlinked)"
+    },
+    "bitten_voice_personality_bot.py": {
+      "purpose": "Voice/personality bot - ATHENA, DRILL, NEXUS, DOC, OBSERVER",
+      "status": "AVAILABLE - Not currently running",
+      "tokens": "VOICE_BOT_TOKEN (8103700393...)"
+    }
+  },
+  "signal_generation": {
+    "apex_venom_v7_unfiltered.py": {
+      "purpose": "VENOM v7.0 - Main signal generation engine",
+      "status": "PRODUCTION ENGINE - 84.3% win rate",
+      "performance": "25+ signals/day, 3,250 trades validated"
+    },
+    "apex_venom_v7_with_smart_timer.py": {
+      "purpose": "VENOM v7.0 with smart timer integration",
+      "status": "ENHANCED VERSION"
+    }
+  },
+  "supporting_systems": {
+    "src/bitten_core/": "Core business logic modules",
+    "src/mt5_bridge/": "MT5 integration adapters",
+    "config/": "Configuration files",
+    "citadel_core/": "CITADEL Shield System modules",
+    "database/": "Database management",
+    "tests/": "Test suite"
+  },
+  "infrastructure": {
+    "start_both_bots.py": "Dual bot launcher (recommended)",
+    "start_production_bot.py": "Single bot launcher",
+    "webapp_server_optimized.py": "WebApp server (standalone)",
+    "commander_throne.py": "Command center (standalone)"
+  }
+}

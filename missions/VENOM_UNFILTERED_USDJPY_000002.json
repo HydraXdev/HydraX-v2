@@ -1,0 +1,32 @@
+{
+  "mission_id": "VENOM_UNFILTERED_USDJPY_000002",
+  "status": "pending",
+  "created_at": "2025-07-28T04:50:14.368959",
+  "timing": {
+    "expires_at": "2025-07-28T05:20:14.368950",
+    "timer_seconds": 1800
+  },
+  "signal": {
+    "signal_id": "VENOM_UNFILTERED_USDJPY_000002",
+    "symbol": "USDJPY",
+    "direction": "BUY",
+    "confidence": 99,
+    "shield_score": 6.5,
+    "shield_class": "SHIELD_ACTIVE",
+    "signal_type": "RAPID_ASSAULT",
+    "target_pips": 24,
+    "stop_pips": 12,
+    "risk_reward": 2.0,
+    "timestamp": 1753678214.3637815,
+    "source": "VENOM_CITADEL_LIVE"
+  },
+  "mission": {
+    "type": "tactical_strike",
+    "urgency": "high",
+    "intel": "CITADEL Shield: 6.5/10 - SHIELD_ACTIVE"
+  },
+  "user": {
+    "tier": "NIBBLER",
+    "ready_for_fire": true
+  }
+}

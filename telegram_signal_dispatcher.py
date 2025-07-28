@@ -49,7 +49,7 @@ def send_mission_alert_to_group(mission_data):
             "reply_markup": {
                 "inline_keyboard": [[{
                     "text": button_text,
-                    "url": f"https://joinbitten.com/hud?signal={signal_id}"
+                    "url": f"https://joinbitten.com/hud?mission_id={signal_id}"
                 }]]
             },
             "disable_web_page_preview": True

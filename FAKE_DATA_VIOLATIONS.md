@@ -1,5 +1,5 @@
 # FAKE DATA VIOLATION REPORT
-Generated: 2025-07-28 04:09:09.506289
+Generated: 2025-07-28 04:11:23.948139
 Total files with violations: 137
 
 ## apex_vs_venom_real_comparison.py
@@ -61,17 +61,11 @@ Violations: 14
 - Line 305: `'confidence_score': random.randint(70, 90)...`
 
 ## 🚨 CRITICAL: apex_venom_v7_unfiltered.py
-Violations: 10
-- Line 196: `if random.random() < 0.02:  # 2% chance...`
-- Line 201: `return np.random.choice(regimes, p=weights)...`
-- Line 362: `return random.random() < final_prob...`
-- Line 439: `def generate_realistic_market_data(self, pair: str, timestamp: datetime) -> Dict...`
-- Line 440: `"""PERMANENTLY DISABLED - NO FAKE DATA ALLOWED"""...`
-- Line 441: `raise RuntimeError(f"FAKE DATA GENERATION FORBIDDEN! Use get_real_mt5_data() for...`
-- Line 484: `is_win = random.random() < signal['win_probability']...`
-- Line 487: `slippage = random.uniform(0.1, 0.3) if signal['quality'] in ['gold', 'platinum']...`
-- Line 549: `pairs_to_scan = primary_pairs + random.sample(secondary_pairs, k=min(4, len(seco...`
-- Line 551: `pairs_to_scan = random.sample(self.trading_pairs, k=random.randint(6, 10))...`
+Violations: 4
+- Line 436: `def generate_realistic_market_data(self, pair: str, timestamp: datetime) -> Dict...`
+- Line 437: `"""PERMANENTLY DISABLED - NO FAKE DATA ALLOWED"""...`
+- Line 438: `raise RuntimeError(f"FAKE DATA GENERATION FORBIDDEN! Use get_real_mt5_data() for...`
+- Line 485: `slippage = 0.2  # Fixed reasonable slippage - NO FAKE DATA...`
 
 ## test_fake_data_disabled.py
 Violations: 10

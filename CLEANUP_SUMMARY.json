@@ -1,0 +1,18 @@
+{
+  "cleanup_date": "2025-07-28T04:23:33.256138",
+  "total_files_archived": 41,
+  "categories": {
+    "broken_syntax": 9,
+    "duplicates": 6,
+    "orphaned": 13,
+    "backup_versions": 7,
+    "outdated_tests": 6
+  },
+  "archive_structure": {
+    "archive/broken_syntax/": "Files with syntax errors",
+    "archive/duplicates/": "Duplicate implementations",
+    "archive/orphaned/": "Unconnected files",
+    "archive/old_versions/": "Backup and version files",
+    "archive/outdated_tests/": "Outdated test files"
+  }
+}

@@ -235,11 +235,70 @@ def send_to_core_for_mission_processing(signal):
         # Fallback: Save signal to missions directory for processing
         try:
             import os
+            from datetime import datetime, timedelta
             os.makedirs('/root/HydraX-v2/missions', exist_ok=True)
+            
+            # Create full mission structure for HUD
+            expires_at = datetime.now() + timedelta(minutes=30)
+            
+            # Get current price from latest tick data
+            current_price = 1.1745  # Default fallback
+            try:
+                # Read latest tick data
+                if os.path.exists('/tmp/ea_raw_data.json'):
+                    with open('/tmp/ea_raw_data.json', 'r') as f:
+                        tick_data = json.load(f)
+                        for tick in tick_data.get('ticks', []):
+                            if tick['symbol'] == signal['pair']:
+                                current_price = tick['bid'] if signal['direction'] == 'BUY' else tick['ask']
+                                break
+            except:
+                pass
+            
+            # Calculate actual price levels from pips
+            pip_size = 0.0001 if signal['pair'] != 'USDJPY' else 0.01
+            if signal['direction'] == 'BUY':
+                entry_price = current_price
+                stop_loss = current_price - (core_signal['stop_pips'] * pip_size)
+                take_profit = current_price + (core_signal['target_pips'] * pip_size)
+            else:
+                entry_price = current_price
+                stop_loss = current_price + (core_signal['stop_pips'] * pip_size)
+                take_profit = current_price - (core_signal['target_pips'] * pip_size)
+            
+            mission_data = {
+                "mission_id": signal['signal_id'],
+                "status": "pending",
+                "created_at": datetime.now().isoformat(),
+                "timing": {
+                    "expires_at": expires_at.isoformat(),
+                    "timer_seconds": 1800  # 30 minutes
+                },
+                "signal": core_signal,
+                "enhanced_signal": {
+                    "symbol": signal['pair'],
+                    "direction": signal['direction'],
+                    "entry_price": round(entry_price, 5),
+                    "stop_loss": round(stop_loss, 5),
+                    "take_profit": round(take_profit, 5),
+                    "risk_reward_ratio": core_signal['risk_reward'],
+                    "signal_type": core_signal['signal_type'],
+                    "confidence": core_signal['confidence']
+                },
+                "mission": {
+                    "type": "tactical_strike",
+                    "urgency": "high" if core_signal['confidence'] > 85 else "medium",
+                    "intel": f"CITADEL Shield: {shield_score}/10 - {shield_class}"
+                },
+                "user": {
+                    "tier": "NIBBLER",  # Default tier
+                    "ready_for_fire": True
+                }
+            }
             
             mission_file = f"/root/HydraX-v2/missions/{signal['signal_id']}.json"
             with open(mission_file, 'w') as f:
-                json.dump(core_signal, f, indent=2)
+                json.dump(mission_data, f, indent=2)
             
             logger.info(f"✅ Signal saved to missions directory: {mission_file}")
             

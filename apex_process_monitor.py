@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-APEX Process Monitor
-Continuously monitors for duplicate APEX processes and kills them
+Process Monitor
+Continuously monitors for duplicate processes and kills them
 Can be run as a systemd service or cron job
 """
 
@@ -9,12 +9,12 @@ import time
 import logging
 import psutil
 from datetime import datetime
-from apex_singleton_manager import APEXSingletonManager
+from apex_singleton_manager import SingletonManager
 
-class APEXProcessMonitor:
+class ProcessMonitor:
     def __init__(self):
         self.setup_logging()
-        self.manager = APEXSingletonManager()
+        self.manager = SingletonManager()
         self.check_interval = 30  # seconds
         self.last_check = None
         self.violations_found = 0
@@ -23,26 +23,26 @@ class APEXProcessMonitor:
         """Setup monitoring logger"""
         logging.basicConfig(
             level=logging.INFO,
-            format='%(asctime)s - APEX_MONITOR - %(levelname)s - %(message)s',
+            format='%(asctime)s - _MONITOR - %(levelname)s - %(message)s',
             handlers=[
                 logging.FileHandler('/root/HydraX-v2/apex_monitor.log'),
                 logging.StreamHandler()
             ]
         )
-        self.logger = logging.getLogger("APEX_MONITOR")
+        self.logger = logging.getLogger("_MONITOR")
     
     def check_for_duplicates(self) -> int:
-        """Check for and kill duplicate APEX processes"""
+        """Check for and kill duplicate processes"""
         processes = self.manager.find_apex_processes()
         
         if len(processes) == 0:
-            self.logger.info("✅ No APEX processes running")
+            self.logger.info("✅ No processes running")
             return 0
         elif len(processes) == 1:
-            self.logger.info(f"✅ Single APEX process running (PID: {processes[0].pid})")
+            self.logger.info(f"✅ Single process running (PID: {processes[0].pid})")
             return 0
         else:
-            self.logger.warning(f"⚠️ Found {len(processes)} APEX processes!")
+            self.logger.warning(f"⚠️ Found {len(processes)} processes!")
             
             # Find the legitimate process (with lock file)
             legitimate_pid = self.manager.read_pid_file()
@@ -65,7 +65,7 @@ class APEXProcessMonitor:
     
     def run_monitoring(self):
         """Run continuous monitoring"""
-        self.logger.info("🚀 Starting APEX Process Monitor")
+        self.logger.info("🚀 Starting Process Monitor")
         self.logger.info(f"📊 Check interval: {self.check_interval} seconds")
         
         while True:
@@ -88,12 +88,10 @@ class APEXProcessMonitor:
         
         self.logger.info(f"📊 Final stats: {self.violations_found} violations found and fixed")
 
-
 def main():
     """Main entry point"""
-    monitor = APEXProcessMonitor()
+    monitor = ProcessMonitor()
     monitor.run_monitoring()
-
 
 if __name__ == "__main__":
     main()

@@ -28,14 +28,12 @@ router = APIRouter(prefix="/api/v1/metaquotes", tags=["metaquotes"])
 # Security
 security = HTTPBearer()
 
-
 # Request/Response Models
 class ActivatePressPassRequest(BaseModel):
     user_id: str = Field(..., description="User ID")
     real_name: str = Field(..., description="User's real name")
     delivery_method: str = Field("telegram", description="Credential delivery method")
     contact_info: Optional[str] = Field(None, description="Contact info for delivery")
-
 
 class ActivatePressPassResponse(BaseModel):
     success: bool
@@ -44,13 +42,11 @@ class ActivatePressPassResponse(BaseModel):
     message: str
     error: Optional[str] = None
 
-
 class AccountHealthResponse(BaseModel):
     success: bool
     health_status: Optional[str] = None
     account_status: Optional[Dict[str, Any]] = None
     error: Optional[str] = None
-
 
 class PoolStatusResponse(BaseModel):
     healthy_available: int
@@ -62,12 +58,10 @@ class PoolStatusResponse(BaseModel):
     pool_health: str
     provisions_last_hour: int
 
-
 class ResendCredentialsRequest(BaseModel):
     user_id: str
     delivery_method: str
     contact_info: str
-
 
 # Helper functions
 async def verify_api_key(credentials: HTTPAuthorizationCredentials = Depends(security)):
@@ -77,7 +71,6 @@ async def verify_api_key(credentials: HTTPAuthorizationCredentials = Depends(sec
     if not api_key or len(api_key) < 10:
         raise HTTPException(status_code=401, detail="Invalid API key")
     return api_key
-
 
 # Endpoints
 @router.post("/press-pass/activate", response_model=ActivatePressPassResponse)
@@ -128,7 +121,6 @@ async def activate_press_pass(
         logger.error(f"Error activating Press Pass: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
-
 @router.get("/account/{user_id}/health", response_model=AccountHealthResponse)
 async def check_account_health(
     user_id: str,
@@ -150,7 +142,6 @@ async def check_account_health(
     except Exception as e:
         logger.error(f"Error checking account health: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
-
 
 @router.get("/account/{user_id}/credentials")
 async def get_account_credentials(
@@ -194,7 +185,6 @@ async def get_account_credentials(
         logger.error(f"Error getting credentials: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
-
 @router.post("/account/resend-credentials")
 async def resend_credentials(
     request: ResendCredentialsRequest,
@@ -232,7 +222,6 @@ async def resend_credentials(
         logger.error(f"Error resending credentials: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
-
 @router.get("/credentials/retrieve/{delivery_id}")
 async def retrieve_credentials_by_link(
     delivery_id: str,
@@ -266,7 +255,6 @@ async def retrieve_credentials_by_link(
         logger.error(f"Error retrieving credentials: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
-
 @router.get("/pool/status", response_model=PoolStatusResponse)
 async def get_pool_status(api_key: str = Depends(verify_api_key)):
     """Get current demo account pool status"""
@@ -278,7 +266,6 @@ async def get_pool_status(api_key: str = Depends(verify_api_key)):
     except Exception as e:
         logger.error(f"Error getting pool status: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
-
 
 @router.post("/pool/replenish")
 async def replenish_pool(
@@ -304,7 +291,6 @@ async def replenish_pool(
         logger.error(f"Error replenishing pool: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
-
 @router.get("/statistics")
 async def get_press_pass_statistics(api_key: str = Depends(verify_api_key)):
     """Get comprehensive Press Pass and demo account statistics"""
@@ -326,7 +312,6 @@ async def get_press_pass_statistics(api_key: str = Depends(verify_api_key)):
     except Exception as e:
         logger.error(f"Error getting statistics: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
-
 
 # Health check endpoint
 @router.get("/health")

@@ -37,7 +37,6 @@ def create_trade_confirmation_message(*args, **kwargs):
 
 logger = logging.getLogger(__name__)
 
-
 class MT5BridgeIntegration:
     """
     Integrates MT5 trade results with BITTEN system
@@ -458,10 +457,8 @@ class MT5BridgeIntegration:
             'fire_mode': fire_mode
         })
 
-
 # Global instance
 _bridge_integration: Optional[MT5BridgeIntegration] = None
-
 
 def get_bridge_integration(telegram_router: Optional[TelegramRouter] = None) -> MT5BridgeIntegration:
     """Get or create global bridge integration instance"""
@@ -469,7 +466,6 @@ def get_bridge_integration(telegram_router: Optional[TelegramRouter] = None) -> 
     if _bridge_integration is None:
         _bridge_integration = MT5BridgeIntegration(telegram_router)
     return _bridge_integration
-
 
 async def process_mt5_result(result_string: str, user_id: int, 
                            fire_mode: str = None) -> Dict[str, Any]:

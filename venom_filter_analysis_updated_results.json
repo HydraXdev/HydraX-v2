@@ -1,0 +1,10 @@
+{
+  "verdict": "AVOID FILTER",
+  "confidence": "MEDIUM",
+  "filter_impact_live": -65.7044880279148,
+  "filter_impact_backtest": -71.22728913488147,
+  "volume_reduction": 70.0,
+  "quality_improvement": 7.0,
+  "live_filtered_score": 142.515,
+  "live_unfiltered_score": 415.54999999999995
+}

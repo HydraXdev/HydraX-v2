@@ -11,7 +11,6 @@ import time
 BOT_TOKEN = 'os.getenv("BOT_TOKEN", "DISABLED_FOR_SECURITY")'
 CHAT_ID = 'int(os.getenv("CHAT_ID", "-1002581996861"))'
 
-
 async def fix_and_start():
     """Delete webhook and start bot"""
     print("🔧 Fixing webhook issue...")
@@ -47,7 +46,6 @@ async def fix_and_start():
         
     except Exception as e:
         print(f"❌ Error: {e}")
-
 
 if __name__ == '__main__':
     print("BITTEN Webhook Fix & Start\n")

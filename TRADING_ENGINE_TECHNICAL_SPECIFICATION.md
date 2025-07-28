@@ -253,8 +253,7 @@ TIER_CONFIGS = {
         daily_shots: 12,
         min_tcs: 91,
         modes: [SINGLE_SHOT, CHAINGUN, AUTO_FIRE]
-    },
-    APEX: {
+    }: {
         price: 188,
         daily_shots: 9999,
         min_tcs: 91,
@@ -286,7 +285,7 @@ Maximum 2 sequences per day with 4-hour time limit.
 - **NIBBLER**: -6% daily limit
 - **FANG**: -8.5% daily limit
 - **COMMANDER**: -8.5% daily limit
-- **APEX**: -8.5% daily limit
+- ****: -8.5% daily limit
 
 #### 6.1.2 Trading States
 ```python

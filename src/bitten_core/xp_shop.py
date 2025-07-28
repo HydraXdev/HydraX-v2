@@ -13,14 +13,12 @@ from .xp_economy import XPEconomy, XPItem, PurchaseType
 
 logger = logging.getLogger(__name__)
 
-
 class ShopCategory(Enum):
     """Shop item categories"""
     TACTICAL_INTEL = "Tactical Intel"
     ELITE_PROTOCOLS = "Elite Protocols"
     AMMUNITION = "Ammunition Upgrades"
     SPECIAL = "Special Items"
-
 
 @dataclass
 class ShopDisplay:
@@ -29,7 +27,6 @@ class ShopDisplay:
     items: List[Dict[str, Any]]
     category_icon: str
     category_description: str
-
 
 class XPShop:
     """XP Shop manager with categorized display"""
@@ -104,7 +101,7 @@ class XPShop:
                         continue
                     
                     # Check if user can see this item (tier requirement)
-                    tier_hierarchy = ["NIBBLER", "FANG", "COMMANDER", "APEX"]
+                    tier_hierarchy = ["NIBBLER", "FANG", "COMMANDER"]
                     user_tier_index = tier_hierarchy.index(user_tier)
                     item_tier_index = tier_hierarchy.index(item.tier_required)
                     
@@ -247,7 +244,7 @@ class XPShop:
     def _get_unlock_progress(self, current_tier: int, required_tier: int) -> Dict[str, Any]:
         """Get unlock progress information"""
         tiers_needed = required_tier - current_tier
-        tier_names = ["NIBBLER", "FANG", "COMMANDER", "APEX"]
+        tier_names = ["NIBBLER", "FANG", "COMMANDER"]
         
         return {
             "tiers_to_unlock": tiers_needed,
@@ -314,7 +311,7 @@ class XPShop:
     def _get_special_offers(self, user_id: str, user_tier: str) -> List[Dict[str, Any]]:
         """Get active special offers for user"""
         special_items = []
-        tier_hierarchy = ["NIBBLER", "FANG", "COMMANDER", "APEX"]
+        tier_hierarchy = ["NIBBLER", "FANG", "COMMANDER"]
         user_tier_index = tier_hierarchy.index(user_tier)
         
         for offer_id, offer in self.special_offers.items():
@@ -359,7 +356,6 @@ class XPShop:
             return f"{hours}h {minutes}m"
         else:
             return f"{minutes}m"
-
 
 # Example usage
 if __name__ == "__main__":

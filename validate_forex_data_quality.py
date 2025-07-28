@@ -208,7 +208,7 @@ def generate_validation_report(validation_results: dict, summary: dict):
         
         f.write(f"📊 OVERALL SUMMARY\n")
         f.write("-" * 30 + "\n")
-        f.write(f"Total Records: {summary['total_records']:,}\n")
+        f.write(f"Total Records: {summary['total_records']:}\n")
         f.write(f"Valid Pairs: {summary['valid_pairs']}/6\n") 
         f.write(f"Invalid Pairs: {summary['invalid_pairs']}/6\n")
         f.write(f"Average Quality Score: {summary['avg_quality_score']:.1f}/100\n")
@@ -222,7 +222,7 @@ def generate_validation_report(validation_results: dict, summary: dict):
             f.write(f"{pair}: {status} (Score: {validation.get('quality_score', 0)}/100)\n")
             
             if validation.get('total_records'):
-                f.write(f"  Records: {validation['total_records']:,}\n")
+                f.write(f"  Records: {validation['total_records']:}\n")
             
             if validation.get('avg_spread_pips'):
                 f.write(f"  Avg Spread: {validation['avg_spread_pips']:.1f} pips\n")
@@ -292,7 +292,7 @@ if __name__ == "__main__":
     print(f"\n📊 VALIDATION RESULTS")
     print("=" * 30)
     print(f"✅ Valid Pairs: {summary['valid_pairs']}/6")
-    print(f"📊 Total Records: {summary['total_records']:,}")
+    print(f"📊 Total Records: {summary['total_records']:}")
     print(f"🎯 Quality Score: {summary['avg_quality_score']:.1f}/100")
     print(f"🚀 Backtesting Ready: {'YES' if summary['ready_for_backtesting'] else 'NO'}")
     

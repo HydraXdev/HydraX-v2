@@ -20,7 +20,6 @@ logger = logging.getLogger(__name__)
 # Conversation states
 GEAR_MENU, INVENTORY_VIEW, LOADOUT_VIEW, EQUIP_ITEM, CRAFT_MENU, TRADE_MENU = range(6)
 
-
 class GearCommands:
     """Handles all gear-related telegram commands"""
     
@@ -58,7 +57,7 @@ class GearCommands:
             "━━━━━━━━━━━━━━━━━━━━━━\n\n"
             f"**Operative:** {update.effective_user.first_name}\n"
             f"**Total Gear:** {display['total_items']} items\n"
-            f"**Power Score:** {display['total_power']:,}\n\n"
+            f"**Power Score:** {display['total_power']:}\n\n"
             "**Rarity Breakdown:**\n"
         )
         
@@ -204,7 +203,7 @@ class GearCommands:
                 is_active = active_loadout and loadout.loadout_id == active_loadout.loadout_id
                 
                 message += f"**{loadout.name}** {'✅ ACTIVE' if is_active else ''}\n"
-                message += f"Power: {loadout.get_power_score(inventory):,}\n"
+                message += f"Power: {loadout.get_power_score(inventory):}\n"
                 
                 # Show equipped items
                 equipped_count = sum(1 for item_id in loadout.slots.values() if item_id)
@@ -361,7 +360,7 @@ class GearCommands:
         
         # Inventory summary
         message += f"**Total Items:** {display['total_items']}\n"
-        message += f"**Total Power:** {display['total_power']:,}\n"
+        message += f"**Total Power:** {display['total_power']:}\n"
         message += f"**Storage:** {display['inventory_space']['used']}/{display['inventory_space']['max']}\n\n"
         
         # Best items by type
@@ -390,7 +389,7 @@ class GearCommands:
             loadout_power = display['active_loadout'].get_power_score(
                 self.gear_system.get_user_inventory(user_id)
             )
-            message += f"\n**Active Loadout Power:** {loadout_power:,}"
+            message += f"\n**Active Loadout Power:** {loadout_power:}"
         
         keyboard = [[InlineKeyboardButton("🔙 Back", callback_data="gear_back_to_menu")]]
         reply_markup = InlineKeyboardMarkup(keyboard)
@@ -435,7 +434,7 @@ class GearCommands:
             "━━━━━━━━━━━━━━━━━━━━━━\n\n"
             f"**Operative:** {update.effective_user.first_name}\n"
             f"**Total Gear:** {display['total_items']} items\n"
-            f"**Power Score:** {display['total_power']:,}\n\n"
+            f"**Power Score:** {display['total_power']:}\n\n"
             "*Select an option to manage your tactical gear:*"
         )
         
@@ -633,31 +632,24 @@ class GearCommands:
             entry_points=[CommandHandler('gear', self.gear_command)],
             states={
                 GEAR_MENU: [
-                    CallbackQueryHandler(self.gear_menu_handler, pattern='^gear_'),
-                ],
+                    CallbackQueryHandler(self.gear_menu_handler, pattern='^gear_')],
                 INVENTORY_VIEW: [
                     CallbackQueryHandler(self.handle_inventory_action, pattern='^inventory_'),
-                    CallbackQueryHandler(self.handle_back_to_menu, pattern='^gear_back_to_menu$'),
-                ],
+                    CallbackQueryHandler(self.handle_back_to_menu, pattern='^gear_back_to_menu$')],
                 LOADOUT_VIEW: [
                     CallbackQueryHandler(self.handle_loadout_action, pattern='^loadout_'),
-                    CallbackQueryHandler(self.handle_back_to_menu, pattern='^gear_back_to_menu$'),
-                ],
+                    CallbackQueryHandler(self.handle_back_to_menu, pattern='^gear_back_to_menu$')],
                 CRAFT_MENU: [
                     CallbackQueryHandler(self.handle_craft_action, pattern='^craft_'),
-                    CallbackQueryHandler(self.handle_back_to_menu, pattern='^gear_back_to_menu$'),
-                ],
+                    CallbackQueryHandler(self.handle_back_to_menu, pattern='^gear_back_to_menu$')],
                 TRADE_MENU: [
                     CallbackQueryHandler(self.handle_trade_action, pattern='^trade_'),
-                    CallbackQueryHandler(self.handle_back_to_menu, pattern='^gear_back_to_menu$'),
-                ],
-            },
+                    CallbackQueryHandler(self.handle_back_to_menu, pattern='^gear_back_to_menu$')]},
             fallbacks=[
                 CallbackQueryHandler(self.gear_menu_handler, pattern='^gear_close$'),
                 CommandHandler('gear', self.gear_command)
             ],
         )
-
 
 # Quick action commands
 async def equip_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -709,7 +701,6 @@ async def equip_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"*❌ {message}*",
             parse_mode='Markdown'
         )
-
 
 async def salvage_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Quick salvage command"""
@@ -766,7 +757,6 @@ async def salvage_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_markup=reply_markup
     )
 
-
 async def handle_salvage_confirmation(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle salvage confirmation"""
     query = update.callback_query
@@ -794,7 +784,6 @@ async def handle_salvage_confirmation(update: Update, context: ContextTypes.DEFA
                 f"*❌ {message}*",
                 parse_mode='Markdown'
             )
-
 
 # Drop simulation command (for testing)
 async def gear_drop_command(update: Update, context: ContextTypes.DEFAULT_TYPE):

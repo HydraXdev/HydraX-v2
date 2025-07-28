@@ -4,10 +4,14 @@ Telegram bot commands and UI for daily tactical strategy selection
 """
 
 from typing import Dict, List, Optional, Tuple
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
+try:
+    from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
+except ImportError:
+    # Fallback for newer telegram versions
+    from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+    from telegram.constants import ParseMode
 from .tactical_strategies import TacticalStrategy, tactical_strategy_manager
 from .xp_economy import XPEconomy
-
 
 class TacticalInterface:
     """Interface for tactical strategy selection and management"""
@@ -30,7 +34,7 @@ class TacticalInterface:
         # Build message
         message = f"""🎯 **DAILY TACTICAL SELECTION**
 
-💰 **Current XP**: {user_xp:,}
+💰 **Current XP**: {user_xp:}
 📊 **Today's Status**: """
 
         if daily_state.selected_strategy:
@@ -153,8 +157,8 @@ Ready to hunt! 🎯"""
         
         message = f"""📊 **TACTICAL PERFORMANCE REPORT**
 
-💰 **Current XP**: {user_balance.current_balance:,}
-🏆 **Lifetime Earned**: {user_balance.lifetime_earned:,}
+💰 **Current XP**: {user_balance.current_balance:}
+🏆 **Lifetime Earned**: {user_balance.lifetime_earned:}
 
 📅 **Today's Mission**:"""
         
@@ -266,7 +270,6 @@ Each tactic teaches specific trading skills:
 ⚠️ **Confirm this shot?**"""
         
         return True, confirmation_message, shot_info
-
 
 # Telegram bot command handlers
 def register_tactical_commands(bot_instance):

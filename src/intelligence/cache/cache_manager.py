@@ -20,13 +20,11 @@ from functools import wraps
 from ..monitoring.logger import LoggerManager, timed_operation
 from ..config.manager import CacheConfig
 
-
 class CacheBackend(Enum):
     """Available cache backends"""
     MEMORY = auto()
     REDIS = auto()
     HYBRID = auto()  # Memory + Redis
-
 
 @dataclass
 class CacheEntry:
@@ -51,7 +49,6 @@ class CacheEntry:
             return float('inf')
         age = (datetime.utcnow() - self.created_at).total_seconds()
         return max(0, self.ttl - age)
-
 
 class CacheStats:
     """Cache statistics"""
@@ -81,7 +78,6 @@ class CacheStats:
             'hit_rate': self.hit_rate,
             'total_size': self.total_size
         }
-
 
 class BaseCacheBackend(ABC):
     """Base class for cache backends"""
@@ -143,7 +139,6 @@ class BaseCacheBackend(ABC):
         except (json.JSONDecodeError, UnicodeDecodeError):
             # Fall back to pickle
             return pickle.loads(data)
-
 
 class MemoryCacheBackend(BaseCacheBackend):
     """In-memory cache backend using LRU eviction"""
@@ -267,7 +262,6 @@ class MemoryCacheBackend(BaseCacheBackend):
             entry = self._cache.pop(key)
             self.stats.evictions += 1
             self.stats.total_size -= entry.size
-
 
 class RedisCacheBackend(BaseCacheBackend):
     """Redis cache backend"""
@@ -405,7 +399,6 @@ class RedisCacheBackend(BaseCacheBackend):
             self.logger.error(f"Redis size error: {e}")
             return 0
 
-
 class HybridCacheBackend(BaseCacheBackend):
     """Hybrid cache using memory as L1 and Redis as L2"""
     
@@ -481,7 +474,6 @@ class HybridCacheBackend(BaseCacheBackend):
         l1_size = await self.l1_cache.size()
         l2_size = await self.l2_cache.size()
         return l1_size + l2_size
-
 
 class CacheManager:
     """Main cache manager for intelligence system"""
@@ -582,7 +574,6 @@ class CacheManager:
         """Generate hash-based cache key"""
         serialized = json.dumps(data, sort_keys=True, default=str)
         return hashlib.md5(serialized.encode()).hexdigest()
-
 
 def cached(ttl: Optional[int] = None, key_prefix: Optional[str] = None):
     """Decorator for caching function results"""

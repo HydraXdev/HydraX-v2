@@ -36,8 +36,7 @@ class StrategyOrchestrator:
                 'london_breakout': LondonBreakoutStrategy(symbol),
                 'support_resistance': SupportResistanceStrategy(symbol),
                 'momentum_continuation': MomentumContinuationStrategy(symbol),
-                'mean_reversion': MeanReversionStrategy(symbol),
-            }
+                'mean_reversion': MeanReversionStrategy(symbol)}
             self.market_analyzers[symbol] = MarketAnalyzer(symbol)
         
         # Global validator
@@ -141,8 +140,7 @@ class StrategyOrchestrator:
             'london_breakout': ['support_resistance', 'momentum_continuation'],
             'support_resistance': ['momentum_continuation', 'mean_reversion'],
             'momentum_continuation': ['support_resistance', 'mean_reversion'],
-            'mean_reversion': ['support_resistance', 'momentum_continuation'],
-        }
+            'mean_reversion': ['support_resistance', 'momentum_continuation']}
         
         for backup in backup_order.get(excluded_strategy, []):
             try:

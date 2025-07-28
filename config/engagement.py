@@ -15,7 +15,6 @@ REDIS_URL = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
 FUSION_DASHBOARD_PORT = int(os.getenv('FUSION_DASHBOARD_PORT', '5000'))
 FUSION_DASHBOARD_HOST = os.getenv('FUSION_DASHBOARD_HOST', '0.0.0.0')
 
-
 @dataclass
 class EngagementConfig:
     """Configuration for engagement system"""
@@ -94,7 +93,6 @@ class EngagementConfig:
                 'legendary': 0.01
             }
 
-
 @dataclass
 class FusionDashboardConfig:
     """Configuration for fusion dashboard"""
@@ -123,7 +121,6 @@ class FusionDashboardConfig:
     chart_update_interval: int = 10  # seconds
     notification_timeout: int = 5000  # milliseconds
 
-
 @dataclass
 class DatabaseConfig:
     """Configuration for database connections"""
@@ -144,7 +141,6 @@ class DatabaseConfig:
     backup_retention_days: int = 7
     backup_directory: str = "backups/engagement"
 
-
 @dataclass
 class CacheConfig:
     """Configuration for caching"""
@@ -164,7 +160,6 @@ class CacheConfig:
     max_connections: int = 10
     retry_on_timeout: bool = True
     health_check_interval: int = 30
-
 
 @dataclass
 class LoggingConfig:
@@ -191,14 +186,12 @@ class LoggingConfig:
     database_level: str = "WARNING"
     cache_level: str = "WARNING"
 
-
 # Create configuration instances
 engagement_config = EngagementConfig()
 dashboard_config = FusionDashboardConfig()
 database_config = DatabaseConfig()
 cache_config = CacheConfig()
 logging_config = LoggingConfig()
-
 
 # Configuration validation
 def validate_config():
@@ -231,7 +224,6 @@ def validate_config():
         raise ValueError(f"Configuration validation failed: {errors}")
     
     return True
-
 
 # Environment-specific configurations
 def get_config_for_environment(env: str = "development") -> Dict[str, Any]:
@@ -268,7 +260,6 @@ def get_config_for_environment(env: str = "development") -> Dict[str, Any]:
     
     return base_config
 
-
 # Feature flags
 class FeatureFlags:
     """Feature flags for engagement system"""
@@ -300,7 +291,6 @@ class FeatureFlags:
     ENABLE_DEBUG_ENDPOINTS = ENGAGEMENT_DEBUG
     ENABLE_MOCK_DATA = ENGAGEMENT_DEBUG
     ENABLE_PROFILING = False
-
 
 # Export configuration
 __all__ = [

@@ -260,7 +260,7 @@ class TradingPairsConfig:
         if not isinstance(tiers, dict):
             raise ValueError("Invalid tiers structure")
         
-        required_tiers = ['NIBBLER', 'FANG', 'COMMANDER', 'APEX']
+        required_tiers = ['NIBBLER', 'FANG', 'COMMANDER', '']
         for tier_name in required_tiers:
             if tier_name not in tiers:
                 raise ValueError(f"Missing required tier: {tier_name}")

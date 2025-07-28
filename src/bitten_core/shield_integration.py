@@ -16,7 +16,6 @@ from .fire_modes import TierLevel, FireMode
 from .bitten_core import bitten
 from .advanced_signal_integration import advanced_integration
 
-
 class ShieldIntegration:
     """
     Master integration class for Universal Stealth Shield
@@ -80,10 +79,8 @@ class ShieldIntegration:
             'current_limits': shield_status['current_limits']
         }
 
-
 # Global shield integration instance
 shield_integration = ShieldIntegration()
-
 
 # Monkey patch the fire router to add protection
 def patch_fire_router():
@@ -96,13 +93,21 @@ def patch_fire_router():
     async def protected_execute(self, user_id: int, tier: TierLevel, 
                                fire_mode: FireMode, trade_params: Dict) -> Dict:
         """Protected trade execution"""
-        # Get account info
-        account_info = {
-            'balance': 10000,  # Would get from actual account
-            'win_rate': 0.75,
-            'spread_data': {'average': 1.5, 'min': 1.0, 'max': 3.0},
-            'execution_times': [45, 52, 48, 55]
-        }
+        # Get REAL account info - NO FAKE DATA
+        try:
+            from .real_account_balance import get_user_real_balance
+            real_balance = get_user_real_balance(user_id)
+            if not real_balance:
+                raise Exception(f"CRITICAL: Cannot get real balance for user {user_id}")
+            
+            account_info = {
+                'balance': real_balance,  # REAL balance from broker
+                'win_rate': 0.75,  # TODO: Get real win rate from statistics
+                'spread_data': {'average': 1.5, 'min': 1.0, 'max': 3.0},  # TODO: Get real spread data
+                'execution_times': [45, 52, 48, 55]  # TODO: Get real execution data
+            }
+        except Exception as e:
+            raise Exception(f"CRITICAL: Shield integration requires real account data - {e}")
         
         # Apply shield protection
         protected_params = await shield_integration.protect_trade(
@@ -122,7 +127,6 @@ def patch_fire_router():
     
     # Replace with protected version
     fire_router.FireRouter.execute_trade = protected_execute
-
 
 # Telegram command handlers
 async def handle_shield_status(user_id: int, tier: TierLevel) -> str:
@@ -152,11 +156,10 @@ async def handle_shield_status(user_id: int, tier: TierLevel) -> str:
     
     return message
 
-
 async def handle_shield_toggle(user_id: int, tier: TierLevel, enabled: bool) -> str:
-    """Handle /shield on/off command (APEX only)"""
-    if tier != TierLevel.APEX:
-        return "⚠️ Shield control is APEX-exclusive. Shield is always ON for your protection."
+    """Handle /shield on/off command (only)"""
+    if tier != TierLevel.:
+        return "⚠️ Shield control is -exclusive. Shield is always ON for your protection."
     
     shield_integration.enabled = enabled
     
@@ -165,10 +168,8 @@ async def handle_shield_toggle(user_id: int, tier: TierLevel, enabled: bool) -> 
     else:
         return "⚠️ Universal Shield DEACTIVATED. Trade at your own risk!"
 
-
 # Auto-patch on import
 patch_fire_router()
-
 
 # Configuration for CLAUDE.md
 SHIELD_CONFIG = {

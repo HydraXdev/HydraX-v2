@@ -20,7 +20,7 @@ Ghost mode protection adds performance bonus based on tier effectiveness:
 | NIBBLER  | 85.0%            | -0.0%           | **84.9%** |
 | FANG     | 85.0%            | +0.4%           | **85.3%** |
 | COMMANDER| 85.0%            | +0.8%           | **85.7%** |
-| APEX     | 85.0%            | +0.8%           | **85.7%** |
+| | 85.0%            | +0.8%           | **85.7%** |
 
 ---
 
@@ -33,7 +33,7 @@ Ghost mode protection adds performance bonus based on tier effectiveness:
 | **NIBBLER** | 84.9% | 156 executed | **$577** | 148% |
 | **FANG** | 85.3% | 351 executed | **$6,546** | 149% |
 | **COMMANDER** | 85.7% | 660 executed | **$24,809** | 150% |
-| **APEX** | 85.7% | 828 executed | **$62,219** | 150% |
+| **** | 85.7% | 828 executed | **$62,219** | 150% |
 
 ---
 
@@ -63,7 +63,7 @@ Ghost mode protection adds performance bonus based on tier effectiveness:
 - **Account Size**: Standard lots (0.10), $1.00/pip
 - **Signal Access**: Full (25/day)
 
-### **👑 APEX TIER**
+### **👑 TIER**
 - **Winning Probability**: **85.7%**
 - **Monthly Activity**: 828 executed signals (900 available, 92% execution rate)
 - **Expected Results**: 710 wins, 118 losses
@@ -97,7 +97,7 @@ Ghost mode protection adds performance bonus based on tier effectiveness:
 | NIBBLER   | 48.3%            | Basic Protection |
 | FANG      | 69.5%            | Enhanced Protection |
 | COMMANDER | 89.2%            | Advanced Protection |
-| APEX      | 88.0%            | Maximum Protection |
+| | 88.0%            | Maximum Protection |
 
 ### **🔒 Risk Management**
 - **Stop Loss**: 25 pips average per trade

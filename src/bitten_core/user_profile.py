@@ -81,8 +81,7 @@ class UserProfileManager:
         Medal("recruiter", "Recruiter", "Recruit 1 active trader", "🤝", 100, "recruits", 1, "bronze"),
         Medal("squad_leader", "Squad Leader", "Recruit 5 active traders", "👥", 300, "recruits", 5, "silver"),
         Medal("commander", "Commander", "Recruit 20 active traders", "🎖️", 1000, "recruits", 20, "gold"),
-        Medal("general", "General", "Recruit 50 active traders", "⭐", 2500, "recruits", 50, "platinum"),
-    ]
+        Medal("general", "General", "Recruit 50 active traders", "⭐", 2500, "recruits", 50, "platinum")]
     
     # XP rewards
     XP_REWARDS = {
@@ -93,8 +92,7 @@ class UserProfileManager:
         'recruit_first_trade': 100,
         'recruit_milestone': 200,  # Every 10 trades by recruit
         'daily_login': 20,
-        'weekly_streak': 100,
-    }
+        'weekly_streak': 100}
     
     # Rank thresholds
     RANK_THRESHOLDS = {

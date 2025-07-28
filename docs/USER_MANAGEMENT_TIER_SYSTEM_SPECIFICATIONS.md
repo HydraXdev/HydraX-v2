@@ -103,8 +103,8 @@ The system implements a 5-tier subscription model with progressive feature unloc
   - **Unlocks**: Auto-fire, Stealth mode
   - Professional risk management
 
-#### 5. APEX (Elite)
-- **Price**: $188/month
+#### 5. (Elite)
+- **Price**: /month
 - **Target**: Professional traders
 - **Features**:
   - Daily shots: 999 (unlimited)
@@ -180,11 +180,11 @@ graph TD
 ```python
 class FeatureAuthorization:
     FEATURES = {
-        'basic_trading': ['NIBBLER', 'FANG', 'COMMANDER', 'APEX'],
-        'chaingun_mode': ['FANG', 'COMMANDER', 'APEX'],
-        'auto_fire': ['COMMANDER', 'APEX'],
-        'stealth_mode': ['COMMANDER', 'APEX'],
-        'midnight_hammer': ['APEX'],
+        'basic_trading': ['NIBBLER', 'FANG', 'COMMANDER', ''],
+        'chaingun_mode': ['FANG', 'COMMANDER', ''],
+        'auto_fire': ['COMMANDER', ''],
+        'stealth_mode': ['COMMANDER', ''],
+        'midnight_hammer': [''],
         'press_pass_trial': ['PRESS_PASS']
     }
 ```
@@ -261,7 +261,7 @@ class BillingCycle:
 
 ### Core Concept
 
-The Press Pass is a unique trial system that provides full APEX access but with a dramatic XP reset mechanism that occurs nightly at 00:00 UTC.
+The Press Pass is a unique trial system that provides full access but with a dramatic XP reset mechanism that occurs nightly at 00:00 UTC.
 
 ### XP Reset Mechanism
 
@@ -352,7 +352,7 @@ XP_MULTIPLIERS = {
         'NIBBLER': 1.0,
         'FANG': 1.1,
         'COMMANDER': 1.2,
-        'APEX': 1.3
+        '': 1.3
     },
     'streak_bonus': 'progressive',
     'event_bonus': 'variable'
@@ -751,7 +751,7 @@ graph TD
     E -->|Direct Purchase| G[Tier Upgrade]
     E -->|Continue Free| H[NIBBLER Experience]
     
-    F --> I[APEX Access + XP Reset]
+    F --> I[Access + XP Reset]
     I --> J{Trial End}
     J -->|Convert| K[Paid Subscription]
     J -->|Expire| L[Downgrade to NIBBLER]

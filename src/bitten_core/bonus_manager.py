@@ -193,7 +193,7 @@ def example_fourth_of_july_event():
     event_data = {
         'start_datetime': '2024-07-04 00:00:00',
         'end_datetime': '2024-07-04 23:59:59',
-        'eligible_tiers': ['NIBBLER', 'FANG', 'COMMANDER', 'APEX'],
+        'eligible_tiers': ['NIBBLER', 'FANG', 'COMMANDER', ''],
         'bonuses': {
             'risk_percent': 0.5,
             'daily_shots': 2,

@@ -387,7 +387,6 @@ class EngagementDatabaseInitializer:
             logger.error(f"Error getting database stats: {e}")
             return {}
 
-
 async def main():
     """Main initialization function"""
     logger.info("Starting HydraX v2 Engagement Database Initialization")
@@ -437,7 +436,6 @@ async def main():
     except Exception as e:
         logger.error(f"❌ Database initialization failed: {e}")
         raise
-
 
 if __name__ == "__main__":
     # Run the initialization

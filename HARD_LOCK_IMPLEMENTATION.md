@@ -20,7 +20,7 @@ The HARD LOCK system has been successfully implemented to prevent trades from ex
   - NIBBLER: 2.0% max per trade
   - FANG: 2.5% max per trade
   - COMMANDER: 3.0% max per trade
-  - APEX: 3.0% max per trade
+  - : 3.0% max per trade
 - Global hard cap: 5.0% (never exceeded)
 - Added `auto_adjust_enabled: true` for automatic size reduction
 - Added bitmode configuration from user specifications
@@ -34,7 +34,7 @@ The HARD LOCK system has been successfully implemented to prevent trades from ex
 ### Layer 2: Daily Risk Cap Protection
 - Prevents total daily losses from exceeding limits:
   - NIBBLER/FANG: 6% daily cap
-  - COMMANDER/APEX: 10% daily cap
+  - COMMANDER/: 10% daily cap
 - Tracks cumulative daily P&L
 - Reduces or blocks trades that would exceed cap
 

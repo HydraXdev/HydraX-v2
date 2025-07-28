@@ -709,19 +709,19 @@ def create_sample_season() -> BattlePassSeason:
                 xp_cost=200  # Higher XP cost for elite rewards
             ))
         
-        # APEX exclusive rewards every 25 levels
+        # exclusive rewards every 25 levels
         if level % 25 == 0:
             level_rewards.append(BattlePassReward(
                 id=f"apex_exclusive_{level}",
-                name=f"APEX Legendary Lv.{level//25}",
-                description=f"Ultra-rare APEX exclusive item",
+                name=f"Legendary Lv.{level//25}",
+                description=f"Ultra-rare exclusive item",
                 type=RewardType.SPECIAL,
                 tier_requirement="apex",
                 rarity="legendary",
                 metadata={"apex_tier": level//25},
                 image_url=f"/static/rewards/apex_{level//25}.png",
                 unlock_level=level,
-                xp_cost=500  # Expensive XP cost for APEX exclusives
+                xp_cost=500  # Expensive XP cost for exclusives
             ))
         
         if level_rewards:

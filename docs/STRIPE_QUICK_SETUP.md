@@ -7,8 +7,8 @@
    - ❓ Still need: Webhook signing secret (`whsec_...`)
 
 2. **Products & Prices**
-   - Need to create 4 products (NIBBLER, FANG, COMMANDER, APEX)
-   - Monthly prices only ($39, $89, $139, $188)
+   - Need to create 4 products (NIBBLER, FANG, COMMANDER)
+   - Monthly prices only ($39, $89, $189, )
 
 ## Step 1: Create Products
 
@@ -46,7 +46,7 @@ STRIPE_WEBHOOK_SECRET=whsec_[YOUR_WEBHOOK_SECRET_HERE]
 STRIPE_PRICE_NIBBLER=price_[from_setup_script]
 STRIPE_PRICE_FANG=price_[from_setup_script]
 STRIPE_PRICE_COMMANDER=price_[from_setup_script]
-STRIPE_PRICE_APEX=price_[from_setup_script]
+STRIPE_PRICE_=price_[from_setup_script]
 ```
 
 ## Step 4: Configure Stripe Settings

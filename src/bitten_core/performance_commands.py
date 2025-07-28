@@ -118,7 +118,7 @@ def handle_ghost_stats_command() -> str:
         response += "⏰ **Period**: Last 24 hours\n\n"
         
         total_actions = sum(data['usage_count'] for data in ghost_summary.values())
-        response += f"🎯 **Total Stealth Actions**: {total_actions:,}\n\n"
+        response += f"🎯 **Total Stealth Actions**: {total_actions:}\n\n"
         
         response += "📊 **STEALTH BREAKDOWN:**\n"
         for action, data in ghost_summary.items():

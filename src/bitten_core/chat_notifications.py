@@ -24,7 +24,6 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
-
 class NotificationType(Enum):
     """Types of chat notifications"""
     DIRECT_MESSAGE = "direct_message"
@@ -36,14 +35,12 @@ class NotificationType(Enum):
     USER_JOINED = "user_joined"
     USER_LEFT = "user_left"
 
-
 class NotificationPriority(Enum):
     """Priority levels for notifications"""
     LOW = "low"
     NORMAL = "normal"
     HIGH = "high"
     URGENT = "urgent"
-
 
 class DeliveryMethod(Enum):
     """Methods of delivering notifications"""
@@ -52,7 +49,6 @@ class DeliveryMethod(Enum):
     EMAIL = "email"         # Email notifications
     SMS = "sms"            # SMS notifications
     TELEGRAM = "telegram"   # Telegram bot notifications
-
 
 @dataclass
 class NotificationSettings:
@@ -91,7 +87,6 @@ class NotificationSettings:
         if self.mention_keywords is None:
             self.mention_keywords = []
 
-
 @dataclass
 class ChatNotification:
     """Chat notification data structure"""
@@ -120,7 +115,6 @@ class ChatNotification:
             self.delivery_methods_used = []
         if self.delivery_status is None:
             self.delivery_status = {}
-
 
 class ChatNotificationService:
     """Handles all chat notifications and integrations"""
@@ -788,7 +782,6 @@ class ChatNotificationService:
         """Get count of unread notifications"""
         history = self.notification_history.get(user_id, [])
         return sum(1 for n in history if not n.metadata.get('read', False))
-
 
 # Example usage and integration
 if __name__ == "__main__":

@@ -9,8 +9,7 @@
 - Bright cyan (#00D9FF) for Nibbler instead of green
 - Dark orange (#FF8C00) for Fang
 - Gold (#FFD700) for Commander
-- Magenta (#FF00FF) for APEX
-- TCS scores now use distinct colors: Gold (85+), Cyan/Orange (75-84), Red-orange (<75)
+- Magenta (#FF00FF) for - TCS scores now use distinct colors: Gold (85+), Cyan/Orange (75-84), Red-orange (<75)
 - Added support for high contrast mode
 - Black background (#0A0A0A) with white text for maximum readability
 

@@ -1,0 +1,50 @@
+
+🧪 **APEX ENGINE REAL DATA VALIDATION REPORT**
+📅 Generated: 2025-07-20 22:16:05
+
+📊 **REAL DATA TEST RESULTS:**
+• Total Real Market Samples: 8
+• Signals Generated: 8
+• Valid Signals (70%+ confidence): 0
+• High Confidence Signals (80%+): 0
+
+📈 **PERFORMANCE ON REAL DATA:**
+• Signal Generation Rate: 100.0%
+• Valid Signal Rate: 0.0%
+• High Confidence Rate: 0.0%
+• Average Confidence: 65.3%
+• Average Risk:Reward: 1:1.8
+
+🔬 **DATA SOURCE VERIFICATION:**
+✅ Real market prices from actual trading sessions
+✅ Real spreads applied to calculations
+✅ Real session volatility characteristics
+✅ Real volume patterns included
+❌ NO SIMULATION DATA USED
+
+🎯 **MATHEMATICAL INTEGRITY STATUS:**
+❌ ENGINE FAILED ON REAL DATA
+
+💰 **FINANCIAL ASSESSMENT:**
+Signal Quality: Poor
+Risk Management: Conservative
+Deployment Ready: No
+
+📋 **SIGNAL BREAKDOWN:**
+
+• EURUSD BUY - 67.5% confidence
+  Risk: 15.0 pips | Reward: 27.0 pips
+  Session: LONDON | Spread: 0.8 points
+• EURUSD BUY - 61.7% confidence
+  Risk: 15.0 pips | Reward: 27.0 pips
+  Session: LONDON | Spread: 0.8 points
+• GBPUSD BUY - 64.6% confidence
+  Risk: 15.0 pips | Reward: 27.0 pips
+  Session: LONDON | Spread: 1.2 points
+• GBPUSD BUY - 68.2% confidence
+  Risk: 15.0 pips | Reward: 27.0 pips
+  Session: OVERLAP | Spread: 1.0 points
+• USDJPY BUY - 63.6% confidence
+  Risk: 15.0 pips | Reward: 27.0 pips
+  Session: TOKYO | Spread: 1.0 points
+  ... and 3 more signals

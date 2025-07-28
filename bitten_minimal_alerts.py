@@ -144,6 +144,6 @@ if __name__ == "__main__":
     
     print("\nACCESS RULES:")
     print("• NIBBLER: 70%+ RAPID_ASSAULT only")
-    print("• FANG/COMMANDER/APEX: All signals")
+    print("• FANG/COMMANDER/: All signals")
     print("• AUTO mode: 90%+ filter (safety)")
     print("• SEMI mode: 75%+ filter (more shots)")

@@ -23,7 +23,7 @@ def serve_report():
     
     # Get file size
     file_size = os.path.getsize(pdf_path)
-    print(f"📄 PDF file size: {file_size:,} bytes ({file_size/1024:.1f} KB)")
+    print(f"📄 PDF file size: {file_size:} bytes ({file_size/1024:.1f} KB)")
     
     PORT = 8889
     

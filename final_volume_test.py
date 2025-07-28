@@ -7,7 +7,7 @@ Guarantee 30-50 signals/day by directly targeting the count
 import json
 import random
 from datetime import datetime, timedelta
-from apex_realistic_flow_engine import APEXRealisticFlowEngine, TradeType
+from apex_realistic_flow_engine import RealisticFlowEngine, TradeType
 import statistics
 
 def run_simple_volume_test():
@@ -17,7 +17,7 @@ def run_simple_volume_test():
     print("📊 Target: 30-50 signals/day guaranteed")
     print("=" * 50)
     
-    engine = APEXRealisticFlowEngine()
+    engine = RealisticFlowEngine()
     start_date = datetime(2025, 7, 1)
     end_date = datetime(2025, 7, 18)
     

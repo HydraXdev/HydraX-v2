@@ -187,7 +187,6 @@ def dev():
         "timestamp": datetime.utcnow().isoformat() + "Z"
     }), 400
 
-
 @app.route("/logs", methods=["GET"])
 def logs():
     if request.headers.get("X-Dev-Key") != DEV_API_KEY:

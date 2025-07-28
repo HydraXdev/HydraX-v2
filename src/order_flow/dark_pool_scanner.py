@@ -15,7 +15,6 @@ import random
 
 logger = logging.getLogger(__name__)
 
-
 @dataclass
 class DarkPoolPrint:
     """Represents a detected dark pool print"""
@@ -44,7 +43,6 @@ class DarkPoolPrint:
             'detection_method': self.detection_method
         }
 
-
 @dataclass
 class DarkPoolFlow:
     """Represents aggregated dark pool flow over time"""
@@ -71,7 +69,6 @@ class DarkPoolFlow:
             'flow_score': self.flow_score,
             'buy_percentage': (self.buy_volume / self.total_volume * 100) if self.total_volume > 0 else 0
         }
-
 
 class DarkPoolActivityScanner:
     """Scans for and analyzes dark pool activity patterns"""
@@ -477,7 +474,6 @@ class DarkPoolActivityScanner:
             'neutral_prints': sum(1 for p in prints if p.likely_direction == 'neutral')
         }
 
-
 # Example usage
 async def main():
     scanner = DarkPoolActivityScanner(
@@ -525,7 +521,6 @@ async def main():
     # Get statistics
     stats = scanner.get_statistics('BTC/USDT')
     print(f"\nStatistics: {stats}")
-
 
 if __name__ == "__main__":
     import asyncio

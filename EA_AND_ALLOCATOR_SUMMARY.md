@@ -41,7 +41,7 @@ C:\MT5_Farm\Masters\[InstanceType]\MQL5\Experts\BITTENBridge_v3_ENHANCED.mq5
 ```
 PRESS_PASS → Generic_Demo (instant, no login needed)
 NIBBLER/FANG → Forex_Demo (default) or Coinexx_Demo (if user prefers)
-COMMANDER/APEX → Forex_Live (conservative) or Coinexx_Live (high leverage)
+COMMANDER/→ Forex_Live (conservative) or Coinexx_Live (high leverage)
 ```
 
 ### Key Features:

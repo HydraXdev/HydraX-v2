@@ -1,9 +1,9 @@
-# 🎖️ SHEPHERD APEX ENGINE TRACKER
+# 🎖️ SHEPHERD ENGINE TRACKER
 ## Critical Engine Specifications for Permanent System Reference
 
 **Last Updated**: July 13, 2025  
-**Engine Version**: APEX-FX v5.0 FINAL ALL-IN  
-**Stored At**: `/root/HydraX-v2/APEX_FX_v5.0_FINAL_BLUEPRINT.md`
+**Engine Version**: -FX v5.0 FINAL ALL-IN  
+**Stored At**: `/root/HydraX-v2/_FX_v5.0_FINAL_BLUEPRINT.md`
 
 ---
 
@@ -171,7 +171,7 @@ TOTAL TARGET: 175 signals/day
 
 ### Primary Blueprint
 ```
-/root/HydraX-v2/APEX_FX_v5.0_FINAL_BLUEPRINT.md
+/root/HydraX-v2/_FX_v5.0_FINAL_BLUEPRINT.md
 ```
 
 ### Implementation Files (when built)
@@ -207,7 +207,7 @@ BITTEN Risk Management Override
 
 ## 💬 SHEPHERD NOTES
 
-**Purpose**: This tracker ensures the APEX v5.0 engine specifications are never lost and remain accessible to any AI assistant working on the BITTEN system.
+**Purpose**: This tracker ensures the v5.0 engine specifications are never lost and remain accessible to any AI assistant working on the BITTEN system.
 
 **Key Insight**: The engine is intentionally hyper-aggressive (TCS 35-40) because BITTEN's safety systems (6 trade limit, 2% risk, TCS filtering) turn this aggression into controlled precision.
 
@@ -223,4 +223,4 @@ BITTEN Risk Management Override
 
 ---
 
-*This file serves as BITTEN's permanent memory for the APEX engine specifications.*
+*This file serves as BITTEN's permanent memory for the engine specifications.*

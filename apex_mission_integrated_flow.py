@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-APEX-Mission Integrated Flow
-This creates the proper flow: APEX → Mission Builder → TOC → Telegram → WebApp
+-Mission Integrated Flow
+This creates the proper flow: → Mission Builder → TOC → Telegram → WebApp
 
-This should be called directly from APEX when it generates a signal,
+This should be called directly from when it generates a signal,
 instead of the current log-monitoring approach.
 """
 
@@ -18,7 +18,7 @@ import os
 # Add paths for imports
 sys.path.append('/root/HydraX-v2/src/bitten_core')
 
-from mission_briefing_generator_active import APEXv5MissionBriefingGenerator
+from mission_briefing_generator_active import v5MissionBriefingGenerator
 from mission_fire_integration import MissionFireIntegration
 from dynamic_position_sizing import DynamicPositionSizing
 
@@ -62,11 +62,11 @@ logger = logging.getLogger(__name__)
 
 class ApexMissionIntegratedFlow:
     """
-    Handles the complete flow from APEX signal to user notification
+    Handles the complete flow from signal to user notification
     """
     
     def __init__(self):
-        self.mission_generator = APEXv5MissionBriefingGenerator()
+        self.mission_generator = v5MissionBriefingGenerator()
         self.fire_integration = MissionFireIntegration()
         self.position_sizer = DynamicPositionSizing()
         
@@ -134,7 +134,7 @@ class ApexMissionIntegratedFlow:
                     'nibbler': 'NIBBLER',
                     'fang': 'FANG', 
                     'commander': 'COMMANDER',
-                    'apex': 'APEX'
+                    'apex': ''
                 }
                 
                 # Calculate rank based on activity
@@ -241,7 +241,7 @@ class ApexMissionIntegratedFlow:
                 'NIBBLER': 2500.0,
                 'FANG': 7500.0,
                 'COMMANDER': 15000.0,
-                'APEX': 25000.0
+                '': 25000.0
             }
             
             fallback_balance = fallback_balances.get(tier, 5000.0)
@@ -257,7 +257,7 @@ class ApexMissionIntegratedFlow:
     
     async def process_apex_signal(self, apex_signal: Dict, user_id: str = None) -> Dict:
         """
-        Process APEX signal through complete flow:
+        Process signal through complete flow:
         1. Generate UUID for trade tracking
         2. Generate mission briefing
         3. Calculate RR ratios via TOC
@@ -266,7 +266,7 @@ class ApexMissionIntegratedFlow:
         6. Return mission data for WebApp
         """
         try:
-            logger.info(f"🚀 Processing APEX signal for user {user_id}: {apex_signal['symbol']} {apex_signal.get('signal_type', 'Unknown')}")
+            logger.info(f"🚀 Processing signal for user {user_id}: {apex_signal['symbol']} {apex_signal.get('signal_type', 'Unknown')}")
             
             # Step 1: Generate UUID and track signal generation
             trade_uuid = None
@@ -334,7 +334,7 @@ class ApexMissionIntegratedFlow:
             }
             
         except Exception as e:
-            logger.error(f"❌ Error processing APEX signal: {e}")
+            logger.error(f"❌ Error processing signal: {e}")
             return {
                 'success': False,
                 'error': str(e),
@@ -342,16 +342,16 @@ class ApexMissionIntegratedFlow:
             }
     
     async def _generate_mission_briefing(self, apex_signal: Dict, user_id: str = None) -> object:
-        """Generate mission briefing from APEX signal with real user data"""
+        """Generate mission briefing from signal with real user data"""
         
-        # Convert APEX signal format to mission format
+        # Convert signal format to mission format
         signal_data = {
             'symbol': apex_signal['symbol'],
             'direction': apex_signal['direction'],
             'entry_price': apex_signal.get('entry_price', 0.0),
             'signal_type': apex_signal.get('signal_type', 'RAPID_ASSAULT'),
             'tcs': apex_signal.get('tcs', 70),
-            'pattern': apex_signal.get('pattern', 'APEX Pattern'),
+            'pattern': apex_signal.get('pattern', 'Pattern'),
             'timeframe': apex_signal.get('timeframe', 'M5'),
             'session': apex_signal.get('session', 'NORMAL'),
             'bid': apex_signal.get('bid', apex_signal.get('entry_price', 0.0)),
@@ -746,17 +746,19 @@ class ApexMissionIntegratedFlow:
             logger.error(f"Failed to delete expired message: {e}")
             return False
 
-# Factory function for APEX integration
+# Factory function for integration
 def create_apex_mission_flow():
-    """Create APEX mission flow instance"""
+    """Create mission flow instance"""
     return ApexMissionIntegratedFlow()
 
-# Direct integration function for APEX
-async def process_apex_signal_direct(apex_signal: Dict, user_id: str = None) -> Dict:
+# Direct integration function for async def process_apex_signal_direct(apex_signal: Dict, user_id: str = None) -> Dict:
     """
-    Direct function that APEX can call when generating signals
+    ZERO SIMULATION SIGNAL PROCESSING - REAL DATA ONLY
     
-    Usage from APEX:
+    CRITICAL: Routes signals through personalized mission brain for REAL trades
+    NO SIMULATION - ALL DATA MUST BE REAL
+    
+    Usage from :
     result = await process_apex_signal_direct({
         'symbol': 'EURUSD',
         'direction': 'BUY',
@@ -767,14 +769,62 @@ async def process_apex_signal_direct(apex_signal: Dict, user_id: str = None) -> 
         'ask': 1.09005
     }, user_id="123456789")
     """
-    flow = create_apex_mission_flow()
-    return await flow.process_apex_signal(apex_signal, user_id)
+    try:
+        # CRITICAL: Use ZERO SIMULATION integration for REAL trades
+        from src.bitten_core.zero_simulation_integration import process_signal_real_pipeline
+        
+        # Log signal processing start
+        logger.info(f"🎯 Processing REAL signal: {apex_signal.get('symbol')} {apex_signal.get('direction')}")
+        
+        # Process through REAL pipeline (ZERO SIMULATION)
+        pipeline_result = process_signal_real_pipeline(apex_signal)
+        
+        if pipeline_result['success']:
+            logger.info(f"✅ REAL pipeline success: {pipeline_result['successful_executions']} trades executed")
+            return {
+                'success': True,
+                'mission_id': f"REAL_PIPELINE_{apex_signal['symbol']}_{int(datetime.now().timestamp())}",
+                'users_processed': pipeline_result['users_processed'],
+                'real_executions': pipeline_result['successful_executions'],
+                'pipeline_result': pipeline_result,
+                'real_processing_verified': True,  # FLAG: Real processing
+                'simulation_mode': False           # FLAG: Not simulation
+            }
+        else:
+            logger.error(f"❌ REAL pipeline failed: {pipeline_result.get('error')}")
+            
+            # FALLBACK: Legacy system ONLY for testing (NOT for live trading)
+            if user_id and user_id != "system":
+                logger.warning(f"⚠️ Using legacy fallback for user {user_id} - NOT RECOMMENDED FOR LIVE TRADING")
+                flow = create_apex_mission_flow()
+                legacy_result = await flow.process_apex_signal(apex_signal, user_id)
+                
+                # Mark as legacy
+                legacy_result['legacy_fallback'] = True
+                legacy_result['real_processing_verified'] = False
+                legacy_result['simulation_warning'] = "Legacy system used - may contain simulation data"
+                
+                return legacy_result
+            else:
+                return {
+                    'success': False,
+                    'error': 'Real pipeline failed and no fallback available',
+                    'pipeline_error': pipeline_result.get('error')
+                }
+            
+    except Exception as e:
+        logger.error(f"❌ Signal processing failed: {e}")
+        return {
+            'success': False,
+            'error': str(e),
+            'signal': apex_signal
+        }
 
 # Test function
 async def test_complete_flow():
     """Test the complete integrated flow"""
     
-    print("🧪 Testing APEX-Mission Integrated Flow")
+    print("🧪 Testing -Mission Integrated Flow")
     print("=" * 50)
     
     # Test RAPID_ASSAULT signal
@@ -786,7 +836,7 @@ async def test_complete_flow():
         'tcs': 75,
         'bid': 1.08995,
         'ask': 1.09005,
-        'pattern': 'APEX Pattern',
+        'pattern': 'Pattern',
         'timeframe': 'M5',
         'session': 'LONDON'
     }
@@ -812,7 +862,7 @@ async def test_complete_flow():
         'tcs': 88,
         'bid': 1.24995,
         'ask': 1.25005,
-        'pattern': 'APEX Pattern',
+        'pattern': 'Pattern',
         'timeframe': 'M15',
         'session': 'OVERLAP'
     }

@@ -454,9 +454,8 @@ class SignalAccuracyTracker:
 # Global tracker instance
 signal_accuracy_tracker = SignalAccuracyTracker()
 
-# Integration function for APEX
-def track_apex_signal(signal_data: Dict):
-    """Track APEX signal for accuracy analysis"""
+# Integration function for def track_apex_signal(signal_data: Dict):
+    """Track signal for accuracy analysis"""
     signal_accuracy_tracker.track_signal(signal_data)
 
 # Example usage

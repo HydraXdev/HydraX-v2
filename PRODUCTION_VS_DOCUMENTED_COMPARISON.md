@@ -26,12 +26,12 @@
 ### 3. Trade Execution Flow
 **Documented**:
 ```
-MT5 Bridge → APEX → TOC → Terminal Assignment → Fire Router → MT5 Terminal
+MT5 Bridge → → TOC → Terminal Assignment → Fire Router → MT5 Terminal
 ```
 
 **Actual Production**:
 ```
-MT5 Bridge → APEX Lean → Log File → Telegram Connector → Direct MT5 Execution
+MT5 Bridge → Lean → Log File → Telegram Connector → Direct MT5 Execution
 ```
 
 ### 4. Telegram Integration
@@ -89,7 +89,7 @@ MT5 Bridge → APEX Lean → Log File → Telegram Connector → Direct MT5 Exec
 ## Production Stability
 
 Despite differences, the production system appears stable:
-- APEX Lean generating consistent signals
+- Lean generating consistent signals
 - Telegram bots functioning
 - WebApp accessible
 - MT5 bridge connected

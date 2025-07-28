@@ -1,13 +1,25 @@
-import os
 #!/usr/bin/env python3
 """Set the bot's menu button to open the Mini App"""
 
+import os
+import sys
 import asyncio
+from pathlib import Path
 from telegram import Bot, MenuButtonWebApp, WebAppInfo
 from telegram.constants import ParseMode
+from dotenv import load_dotenv
 
-BOT_TOKEN = "os.getenv("BOT_TOKEN", "DISABLED_FOR_SECURITY")"
-CHAT_ID = "int(os.getenv("CHAT_ID", "-1002581996861"))"
+# Add the src directory to path for imports
+sys.path.append(str(Path(__file__).parent / 'src'))
+
+# Load environment variables
+load_dotenv()
+
+# Import config loader
+from config_loader import get_bot_token
+
+BOT_TOKEN = get_bot_token()  # Use main trading bot for menu setup
+CHAT_ID = int(os.getenv('CHAT_ID', '-1002581996861'))
 
 async def set_menu_button():
     """Configure the bot's menu button as a Mini App launcher"""

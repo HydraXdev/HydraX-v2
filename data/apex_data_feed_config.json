@@ -1,0 +1,27 @@
+{
+  "README": "APEX ENGINE DEDICATED DATA FEED - NEW DEDICATED ACCOUNT",
+  "WARNING": "This account is ONLY for APEX market data - NOT for user trading",
+  "PURPOSE": "Provides live market data to APEX engine independently of user accounts",
+  
+  "apex_data_feed": {
+    "broker": "MetaQuotes",
+    "server": "MetaQuotes-Demo",
+    "account_number": 5038318494,
+    "account_name": "chr kim",
+    "account_type": "Forex Hedged USD",
+    "deposit": 3000,
+    "api_credentials": {
+      "login": 5038318494,
+      "password": "Hx*8PoXq",
+      "investor_password": "Ag_qGkR7",
+      "server": "MetaQuotes-Demo"
+    },
+    "connection_verified": false,
+    "account_type_detail": "demo",
+    "currency": "USD",
+    "leverage": 100,
+    "purpose": "APEX_MARKET_DATA_FEED_ONLY",
+    "uptime_requirement": "24/7",
+    "status": "DEDICATED_DATA_FEED"
+  }
+}

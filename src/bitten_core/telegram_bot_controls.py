@@ -44,11 +44,9 @@ class TelegramBotControls:
         logger.info(f"Mock bot message sent via {bot_id}: {message}")
         return True
 
-
 def should_show_bot_message(message: str, user_context: Dict[str, Any] = None) -> bool:
     """Mock function to determine if bot message should be shown"""
     return True
-
 
 def format_bot_message(message: str, format_type: str = "default") -> str:
     """Mock function to format bot message"""

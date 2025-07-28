@@ -27,7 +27,7 @@ Day 17: Account blown (-102%)
 
 **Probability**: <0.01% - Would require 17 consecutive max loss days, which safety systems prevent.
 
-### Scenario 2: APEX Tier with High Risk Mode
+### Scenario 2: Tier with High Risk Mode
 **Settings**:
 - 2% risk per trade (high-risk mode)
 - 8.5% daily drawdown limit
@@ -149,7 +149,7 @@ TradeManagementFeature.LEROY_JENKINS: {
 - Sometimes ignores warnings
 - **Path to Failure**: Requires sustained bad luck + poor decisions
 
-### 3. **Reckless APEX**: 1-5%
+### 3. **Reckless **: 1-5%
 - Disables safety features (if possible)
 - Max risk always
 - Ignores all warnings

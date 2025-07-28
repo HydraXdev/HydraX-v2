@@ -56,8 +56,7 @@ All the technical setups that worked in v1.0:
 ```python
 'thresholds': {
     'rapid_tcs': 77,      # Higher quality
-    'sniper_tcs': 80,     
-}
+    'sniper_tcs': 80}
 'signal_limits': {
     'max_per_hour': 2     # Limit frequency
 }

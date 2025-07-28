@@ -3,7 +3,7 @@
 Test Signal Pipeline - Generate test signals and verify complete flow
 
 This script:
-1. Generates test signals in APEX log format
+1. Generates test signals in log format
 2. Writes them to the log file
 3. Verifies mission generation
 4. Tests API endpoints
@@ -408,7 +408,6 @@ class SignalPipelineTest:
             logger.error(f"Pipeline test failed: {e}")
             return False
 
-
 def main():
     """Main function"""
     test_runner = SignalPipelineTest()
@@ -423,7 +422,6 @@ def main():
     except Exception as e:
         print(f"Test runner failed: {e}")
         return 1
-
 
 if __name__ == "__main__":
     sys.exit(main())

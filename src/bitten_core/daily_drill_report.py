@@ -14,7 +14,6 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-
 class DrillTone(Enum):
     """Different drill sergeant tones based on performance"""
     OUTSTANDING = "outstanding"    # 80%+ win rate, 4+ trades
@@ -22,7 +21,6 @@ class DrillTone(Enum):
     DECENT = "decent"             # 40-59% win rate or 1 trade
     ROUGH = "rough"               # <40% win rate or 0 trades
     COMEBACK = "comeback"         # Improved from yesterday
-
 
 @dataclass
 class DailyTradingStats:
@@ -57,7 +55,6 @@ class DailyTradingStats:
             return 0.0
         return ((self.max_shots - self.shots_remaining) / self.max_shots) * 100
 
-
 @dataclass
 class DrillMessage:
     """Drill sergeant message components"""
@@ -68,7 +65,6 @@ class DrillMessage:
     tomorrow_guidance: str
     rank_progress: Optional[str] = None
     achievements_unlocked: List[str] = field(default_factory=list)
-
 
 class DailyDrillReportSystem:
     """Daily End-of-Day Drill Report System"""
@@ -584,7 +580,6 @@ class DailyDrillReportSystem:
             "best_streak": stats[6] or 0
         }
 
-
 # Integration with existing tactical strategy system
 def integrate_with_tactical_system(tactical_manager, drill_system):
     """Integration point with tactical strategy manager"""
@@ -620,7 +615,6 @@ def integrate_with_tactical_system(tactical_manager, drill_system):
         drill_system.record_daily_stats(user_id, stats)
     
     return record_trade_result
-
 
 # Example usage
 if __name__ == "__main__":

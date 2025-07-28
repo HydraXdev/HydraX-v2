@@ -34,7 +34,6 @@ try:
 except ImportError:
     ACHIEVEMENT_SYSTEM_AVAILABLE = False
 
-
 class PurchaseType(Enum):
     """Types of XP purchases"""
     # Tactical Intel
@@ -56,14 +55,12 @@ class PurchaseType(Enum):
     # Prestige
     PRESTIGE_RESET = "prestige_reset"
 
-
 class PurchaseStatus(Enum):
     """Status of XP purchase"""
     PENDING = "pending"
     COMPLETED = "completed"
     FAILED = "failed"
     REFUNDED = "refunded"
-
 
 @dataclass
 class XPItem:
@@ -73,7 +70,7 @@ class XPItem:
     description: str
     cost: int
     purchase_type: PurchaseType
-    tier_required: str  # NIBBLER, FANG, COMMANDER, APEX
+    tier_required: str  # NIBBLER, FANG, COMMANDER
     duration_hours: Optional[int] = None  # For temporary items
     max_uses: Optional[int] = None  # For consumables
     cooldown_hours: Optional[int] = None  # Between purchases
@@ -82,7 +79,6 @@ class XPItem:
     def is_permanent(self) -> bool:
         """Check if item is permanent unlock"""
         return self.duration_hours is None and self.max_uses is None
-
 
 @dataclass
 class XPTransaction:
@@ -99,7 +95,6 @@ class XPTransaction:
     expires_at: Optional[datetime] = None
     metadata: Dict[str, Any] = field(default_factory=dict)
 
-
 @dataclass
 class UserXPBalance:
     """User's XP balance and purchase history"""
@@ -111,7 +106,6 @@ class UserXPBalance:
     active_purchases: List[str] = field(default_factory=list)
     purchase_history: List[XPTransaction] = field(default_factory=list)
     last_purchase: Optional[datetime] = None
-
 
 class XPEconomy:
     """Main XP economy manager"""
@@ -225,8 +219,7 @@ class XPEconomy:
             description="Auto-reduce to 1% risk after 3 consecutive wins",
             cost=20000,
             purchase_type=PurchaseType.FORTRESS_MODE,
-            tier_required="APEX"
-        )
+            tier_required=UserTier.COMMANDER)
         
         # Ammunition Upgrades
         catalog["extended_mag"] = XPItem(
@@ -363,7 +356,7 @@ class XPEconomy:
             return False, f"Insufficient XP. Need {item.cost}, have {balance.current_balance}"
         
         # Check tier requirement
-        tier_hierarchy = ["NIBBLER", "FANG", "COMMANDER", "APEX"]
+        tier_hierarchy = ["NIBBLER", "FANG", "COMMANDER"]
         if tier_hierarchy.index(user_tier) < tier_hierarchy.index(item.tier_required):
             return False, f"Requires {item.tier_required} tier or higher"
         
@@ -927,7 +920,6 @@ Soldier, you've earned this tactical advantage. Use it wisely!
                     })
         
         return sorted(recent_unlocks, key=lambda x: x["unlock_date"], reverse=True)
-
 
 # Example usage and testing
 if __name__ == "__main__":

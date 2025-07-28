@@ -62,8 +62,7 @@ Users are assigned personalities based on:
 
 ### **Evolution Triggers**
 Personalities evolve through:
-- **Tier Advancement**: NIBBLER → FANG → COMMANDER → APEX
-- **Behavioral Adaptation**: Success/failure patterns
+- **Tier Advancement**: NIBBLER → FANG → COMMANDER → - **Behavioral Adaptation**: Success/failure patterns
 - **Interaction Patterns**: Communication frequency and style
 - **Trading Performance**: Win/loss ratios and risk management
 
@@ -181,8 +180,7 @@ personality_engine.assign_personality(user_id, "COMMANDER", "OVERWATCH")
 
 # Trigger evolution
 personality_engine.evolve_personality(user_id, "tier_advancement", {
-    "new_tier": "APEX"
-})
+    "new_tier": })
 
 # Get user stats
 stats = personality_engine.get_personality_stats(user_id)

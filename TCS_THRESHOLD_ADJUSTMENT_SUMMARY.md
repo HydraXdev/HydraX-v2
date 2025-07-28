@@ -28,7 +28,7 @@
 - **NIBBLER**: 70% → **50%** ✅
 - **FANG**: 85% → **50%** ✅
 - **COMMANDER**: 90% → **50%** ✅
-- **APEX**: 91% → **50%** ✅
+- ****: 91% → **50%** ✅
 
 ---
 
@@ -55,7 +55,7 @@
 | NIBBLER | 50% | N/A | Manual only |
 | FANG | 50% | N/A | Manual + Chaingun |
 | COMMANDER | 50% | 80% | All modes, lower auto threshold |
-| APEX | 50% | 80% | All modes, maximum flexibility |
+| | 50% | 80% | All modes, maximum flexibility |
 
 ### **New Chaingun Progression**
 | Shot | Risk % | TCS Required | Change |
@@ -71,7 +71,7 @@
 
 ### **Increased Signal Access**
 - **More trading opportunities** for all tiers
-- **Higher volume** with APEX v5.0's 40+ signals/day
+- **Higher volume** with v5.0's 40+ signals/day
 - **Greater flexibility** for experienced traders
 
 ### **Risk Considerations**
@@ -79,7 +79,7 @@
 - **User responsibility** increased ("his money, his choice")
 - **Safety systems still active** (daily limits, position sizing, emergency stops)
 
-### **APEX v5.0 Compatibility**
+### **v5.0 Compatibility**
 - ✅ **Perfect alignment** with v5.0's 35-95 TCS range
 - ✅ **Maximum extraction** potential unlocked
 - ✅ **All 15 pairs** accessible at lower thresholds
@@ -124,7 +124,7 @@ All requested changes have been implemented in the configuration files. The syst
 1. ✅ **COMMANDER auto mode**: 80% TCS requirement
 2. ✅ **Universal minimum**: 50% TCS to fire across all tiers
 3. ✅ **Chaingun progression**: 70-72-74-76% TCS requirements
-4. ✅ **APEX v5.0 compatibility**: Full access to ultra-aggressive signal range
+4. ✅ **v5.0 compatibility**: Full access to ultra-aggressive signal range
 
 The changes maintain all safety systems while providing maximum trading flexibility as requested.
 

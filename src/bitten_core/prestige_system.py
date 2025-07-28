@@ -13,7 +13,6 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-
 class PrestigeRank(Enum):
     """Prestige rank levels"""
     NONE = (0, "Recruit", "⚪")
@@ -38,7 +37,6 @@ class PrestigeRank(Enum):
         # Return highest rank if level exceeds defined ranks
         return cls.MASTER if level > 6 else cls.NONE
 
-
 @dataclass
 class PrestigeReward:
     """Reward for achieving prestige"""
@@ -48,7 +46,6 @@ class PrestigeReward:
     badge_icon: str             # Visual badge
     chat_color: str             # Special chat color
     perks: List[str]            # Additional perks
-
 
 @dataclass
 class PrestigeProgress:
@@ -61,7 +58,6 @@ class PrestigeProgress:
     lifetime_xp: int = 0
     unlocked_rewards: List[str] = field(default_factory=list)
     active_multiplier: float = 1.0
-
 
 class PrestigeSystem:
     """Manages the prestige system"""
@@ -142,7 +138,7 @@ class PrestigeSystem:
         """Check if user can prestige"""
         if current_xp < self.PRESTIGE_THRESHOLD:
             xp_needed = self.PRESTIGE_THRESHOLD - current_xp
-            return False, f"Need {xp_needed:,} more XP to prestige (requires {self.PRESTIGE_THRESHOLD:,})"
+            return False, f"Need {xp_needed:} more XP to prestige (requires {self.PRESTIGE_THRESHOLD:})"
         
         return True, "Ready to prestige!"
     
@@ -385,7 +381,6 @@ class PrestigeSystem:
                 ]
             except Exception as e:
                 logger.error(f"Error loading leaderboard: {e}")
-
 
 # Example usage
 if __name__ == "__main__":

@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-Test complete BITTEN signal flow: APEX → Mission → TOC → Fire
+Test complete BITTEN signal flow: → Mission → TOC → Fire
 """
 
 import sys
 import os
 sys.path.append('/root/HydraX-v2/src/bitten_core')
 
-from mission_briefing_generator_active import APEXv5MissionBriefingGenerator
+from mission_briefing_generator_active import v5MissionBriefingGenerator
 from mission_fire_integration import MissionFireIntegration
 import json
 
@@ -18,19 +18,19 @@ def test_complete_flow():
     print("=" * 50)
     print()
     
-    print("📊 FLOW: APEX → Mission Briefing → TOC → Execution")
+    print("📊 FLOW: → Mission Briefing → TOC → Execution")
     print("-" * 50)
     print()
     
-    # Step 1: Simulate APEX signal (this comes from apex_v5_lean.py)
-    print("🎯 Step 1: APEX Signal Generation")
+    # Step 1: Simulate signal (this comes from apex_v5_lean.py)
+    print("🎯 Step 1: Signal Generation")
     apex_signal = {
         'symbol': 'EURUSD',
         'direction': 'BUY',
         'entry_price': 1.0900,
         'signal_type': 'RAPID_ASSAULT',
         'tcs': 75,
-        'pattern': 'APEX Pattern',
+        'pattern': 'Pattern',
         'timeframe': 'M5',
         'session': 'LONDON',
         'bid': 1.08995,
@@ -39,7 +39,7 @@ def test_complete_flow():
         'timestamp': '2025-07-15T18:30:00'
     }
     
-    print(f"   ✅ APEX Generated: {apex_signal['symbol']} {apex_signal['direction']}")
+    print(f"   ✅ Generated: {apex_signal['symbol']} {apex_signal['direction']}")
     print(f"   📈 Signal Type: {apex_signal['signal_type']}")
     print(f"   🎯 TCS Score: {apex_signal['tcs']}%")
     print(f"   💰 Entry Price: {apex_signal['entry_price']}")
@@ -47,7 +47,7 @@ def test_complete_flow():
     
     # Step 2: Convert to Mission Briefing
     print("🎮 Step 2: Mission Briefing Generation")
-    generator = APEXv5MissionBriefingGenerator()
+    generator = v5MissionBriefingGenerator()
     
     user_data = {
         'tier': 'FANG',
@@ -120,7 +120,7 @@ def test_complete_flow():
     print("🎯 FLOW SUMMARY")
     print("-" * 50)
     print()
-    print("✅ APEX Engine: Clean signal generation (TCS + signal type)")
+    print("✅ Engine: Clean signal generation (TCS + signal type)")
     print("✅ Mission System: Gamified briefing generation")  
     print("✅ TOC Server: RR ratio calculation & trade logic")
     print("✅ Fire Integration: Mission → TOC → Execution")

@@ -27,9 +27,7 @@ class TierLevel(Enum):
     NIBBLER = "NIBBLER"
     FANG = "FANG"
     COMMANDER = "COMMANDER"
-    APEX = "APEX"
-
-@dataclass
+    = @dataclass
 class TierRiskConfig:
     """Risk configuration per tier"""
     tier: TierLevel
@@ -73,9 +71,8 @@ TIER_CONFIGS = {
         cooldown_max_trades=4,
         cooldown_risk=1.0
     ),
-    TierLevel.APEX: TierRiskConfig(
-        tier=TierLevel.APEX,
-        default_risk=1.25,
+    TierLevel.: TierRiskConfig(
+        tier=TierLevel.default_risk=1.25,
         boost_risk=2.0,
         max_trades_per_day=10,
         drawdown_cap=8.5,
@@ -491,7 +488,6 @@ class RiskController:
                 json.dump(data, f, indent=2)
         except Exception as e:
             logger.error(f"Error saving profiles: {e}")
-
 
 # Global instance for easy access
 _risk_controller: Optional[RiskController] = None

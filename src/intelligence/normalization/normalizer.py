@@ -17,7 +17,6 @@ import numpy as np
 from ..core.base import DataProcessor, ProcessingError
 from ..monitoring.logger import timed_operation
 
-
 @dataclass
 class NormalizedData:
     """Standardized data format for all sources"""
@@ -39,7 +38,6 @@ class NormalizedData:
             'value': self.value,
             'metadata': self.metadata
         }
-
 
 class DataNormalizer(DataProcessor):
     """Base class for data normalizers"""
@@ -277,7 +275,6 @@ class DataNormalizer(DataProcessor):
                 
         return max(0.0, score)
 
-
 class MarketDataNormalizer(DataNormalizer):
     """Normalizer for market data"""
     
@@ -309,7 +306,6 @@ class MarketDataNormalizer(DataNormalizer):
         data.data_type = 'market_data'
         
         return data
-
 
 class NewsDataNormalizer(DataNormalizer):
     """Normalizer for news data"""
@@ -357,7 +353,6 @@ class NewsDataNormalizer(DataNormalizer):
         
         return normalized
 
-
 class SocialMediaNormalizer(DataNormalizer):
     """Normalizer for social media data"""
     
@@ -383,7 +378,6 @@ class SocialMediaNormalizer(DataNormalizer):
         data.data_type = 'social_media'
         
         return data
-
 
 class NormalizerFactory:
     """Factory for creating normalizers"""

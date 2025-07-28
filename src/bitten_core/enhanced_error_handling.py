@@ -19,14 +19,12 @@ from contextlib import contextmanager
 import sqlite3
 import requests
 
-
 class ErrorSeverity(Enum):
     """Error severity levels for proper handling"""
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
     CRITICAL = "critical"
-
 
 class ErrorCategory(Enum):
     """Categories of errors for targeted recovery"""
@@ -40,7 +38,6 @@ class ErrorCategory(Enum):
     RATE_LIMIT = "rate_limit"
     VALIDATION = "validation"
     SYSTEM = "system"
-
 
 @dataclass
 class ErrorEvent:
@@ -57,7 +54,6 @@ class ErrorEvent:
     recovery_attempts: int = 0
     resolution_time: Optional[datetime] = None
 
-
 class ErrorRecoveryRegistry:
     """Registry for error recovery strategies"""
     
@@ -68,8 +64,7 @@ class ErrorRecoveryRegistry:
             ErrorCategory.NETWORK: {"max_retries": 5, "delay": 2, "backoff": 1.5},
             ErrorCategory.TELEGRAM: {"max_retries": 3, "delay": 3, "backoff": 2},
             ErrorCategory.MT5: {"max_retries": 2, "delay": 5, "backoff": 2},
-            ErrorCategory.SIGNAL: {"max_retries": 1, "delay": 1, "backoff": 1},
-        }
+            ErrorCategory.SIGNAL: {"max_retries": 1, "delay": 1, "backoff": 1}}
     
     def register_strategy(self, error_code: str, strategy: Callable):
         """Register a recovery strategy for specific error code"""
@@ -82,7 +77,6 @@ class ErrorRecoveryRegistry:
     def get_retry_config(self, category: ErrorCategory) -> Dict:
         """Get retry configuration for error category"""
         return self.retry_configs.get(category, {"max_retries": 1, "delay": 1, "backoff": 1})
-
 
 class EnhancedErrorHandler:
     """Main error handling system with logging and recovery"""
@@ -487,7 +481,6 @@ class EnhancedErrorHandler:
         except Exception as e:
             return {"error": f"Failed to get error stats: {e}"}
 
-
 # Decorator for automatic error handling
 def handle_errors(category: ErrorCategory, 
                  severity: ErrorSeverity = ErrorSeverity.MEDIUM,
@@ -524,7 +517,6 @@ def handle_errors(category: ErrorCategory,
         return wrapper
     return decorator
 
-
 @contextmanager
 def error_recovery_context(handler: EnhancedErrorHandler,
                           category: ErrorCategory,
@@ -545,10 +537,8 @@ def error_recovery_context(handler: EnhancedErrorHandler,
         if not result["success"]:
             raise RuntimeError(f"Error handling failed: {result}")
 
-
 # Global error handler instance
 global_error_handler = EnhancedErrorHandler()
-
 
 # Convenience functions
 def log_database_error(error: Exception, context: Dict[str, Any], user_id: Optional[str] = None):
@@ -562,7 +552,6 @@ def log_database_error(error: Exception, context: Dict[str, Any], user_id: Optio
         user_id=user_id
     )
 
-
 def log_network_error(error: Exception, context: Dict[str, Any], user_id: Optional[str] = None):
     """Quick function to log network errors"""
     return global_error_handler.handle_error(
@@ -574,7 +563,6 @@ def log_network_error(error: Exception, context: Dict[str, Any], user_id: Option
         user_id=user_id
     )
 
-
 def log_telegram_error(error: Exception, context: Dict[str, Any], user_id: Optional[str] = None):
     """Quick function to log Telegram errors"""
     return global_error_handler.handle_error(
@@ -585,7 +573,6 @@ def log_telegram_error(error: Exception, context: Dict[str, Any], user_id: Optio
         context=context,
         user_id=user_id
     )
-
 
 def get_system_health() -> Dict[str, Any]:
     """Get overall system health status"""
@@ -613,7 +600,6 @@ def get_system_health() -> Dict[str, Any]:
         "stats": stats,
         "timestamp": datetime.now().isoformat()
     }
-
 
 if __name__ == "__main__":
     # Test the error handling system

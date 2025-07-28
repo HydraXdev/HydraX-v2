@@ -58,10 +58,10 @@ def create_products():
             ]
         },
         {
-            'tier': 'APEX',
+            'tier': '',
             'name': 'BITTEN Apex',
             'description': 'Elite tier - Unlimited trades, priority support',
-            'price_cents': 18800,  # $188.00
+            'price_cents': ,  # .00
             'features': [
                 'Unlimited trades',
                 '91% TCS minimum',

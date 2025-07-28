@@ -7,7 +7,7 @@ Last Updated: 2025-01-04
 ---
 
 ## 🎯 **SINGLE SHOT** (All Tiers)
-**Access**: All subscription tiers (Nibbler, Fang, Commander, APEX)
+**Access**: All subscription tiers (Nibbler, Fang, Commander)
 
 **Rules**:
 - **Risk**: 2% of account balance per shot
@@ -15,12 +15,12 @@ Last Updated: 2025-01-04
   - Nibbler: 6 shots/day
   - Fang: 8-10 shots/day
   - Commander: 12+ shots/day
-  - APEX: Unlimited shots
+  - : Unlimited shots
 - **TCS Requirement**: 
   - Nibbler: 70%+ TCS
   - Fang: 85%+ TCS
   - Commander: 91%+ TCS
-  - APEX: 91%+ TCS
+  - : 91%+ TCS
 - **Execution**: Manual trigger by user
 - **Cooldown**: 30 minutes between shots
 

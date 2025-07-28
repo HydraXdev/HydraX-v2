@@ -12,7 +12,6 @@ from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
-
 @dataclass
 class UserSettings:
     """User preference settings"""
@@ -56,7 +55,6 @@ class UserSettings:
         data = asdict(self)
         data['last_updated'] = datetime.now().isoformat()
         return data
-
 
 class UserSettingsManager:
     """Manages user settings with persistence"""
@@ -239,21 +237,17 @@ class UserSettingsManager:
             logger.error(f"Error importing settings: {e}")
             raise ValueError(f"Invalid settings format: {e}")
 
-
 # Global instance
 settings_manager = UserSettingsManager()
-
 
 # Helper functions for easy access
 def get_user_settings(user_id: str) -> UserSettings:
     """Get user settings"""
     return settings_manager.get_user_settings(user_id)
 
-
 def update_user_settings(user_id: str, updates: Dict[str, Any]) -> UserSettings:
     """Update user settings"""
     return settings_manager.update_user_settings(user_id, updates)
-
 
 def should_play_sound(user_id: str, sound_type: str = "general") -> bool:
     """Check if a sound should be played for user"""
@@ -270,7 +264,6 @@ def should_play_sound(user_id: str, sound_type: str = "general") -> bool:
         return settings.warning_sounds
     
     return True
-
 
 # Example usage
 if __name__ == "__main__":

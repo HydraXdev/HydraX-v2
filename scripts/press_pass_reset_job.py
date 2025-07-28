@@ -29,7 +29,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-
 class PressPassResetJob:
     """Handles the nightly Press Pass XP reset job"""
     
@@ -91,7 +90,7 @@ class PressPassResetJob:
         try:
             message = (
                 f"💀 **XP RESET EXECUTED** 💀\n\n"
-                f"🔥 **{xp_wiped:,} XP DESTROYED** 🔥\n\n"
+                f"🔥 **{xp_wiped:} XP DESTROYED** 🔥\n\n"
                 f"Your Press Pass XP has been reset to ZERO.\n"
                 f"**NO RECOVERY. NO RESTORATION.**\n\n"
                 f"⏰ Next reset: Tomorrow at 00:00 UTC\n"
@@ -151,7 +150,7 @@ class PressPassResetJob:
             
             logger.info(f"Press Pass reset completed:")
             logger.info(f"  - Users reset: {len(resets)}")
-            logger.info(f"  - Total XP wiped: {total_wiped:,}")
+            logger.info(f"  - Total XP wiped: {total_wiped:}")
             logger.info(f"  - Notifications sent: {notifications_sent}")
             logger.info(f"  - Duration: {duration:.2f} seconds")
             
@@ -195,14 +194,14 @@ class PressPassResetJob:
                         message = (
                             f"⚠️ **PRESS PASS XP RESET WARNING** ⚠️\n\n"
                             f"🕐 **1 HOUR UNTIL RESET**\n\n"
-                            f"💀 Your {user['current_balance']:,} XP will be **WIPED** at 00:00 UTC!\n\n"
+                            f"💀 Your {user['current_balance']:} XP will be **WIPED** at 00:00 UTC!\n\n"
                             f"⏰ Time is running out! Use your XP NOW or lose it FOREVER!\n"
                             f"🛒 Visit /xpshop before it's too late!"
                         )
                     else:  # 15 minutes
                         message = (
                             f"🚨 **FINAL WARNING - 15 MINUTES** 🚨\n\n"
-                            f"💥 **{user['current_balance']:,} XP DELETION IMMINENT** 💥\n\n"
+                            f"💥 **{user['current_balance']:} XP DELETION IMMINENT** 💥\n\n"
                             f"⏱️ You have 15 MINUTES to spend your XP!\n"
                             f"🔥 This is your LAST CHANCE!\n"
                             f"💸 /xpshop - HURRY!"
@@ -233,7 +232,6 @@ class PressPassResetJob:
         if self.telegram:
             await self.telegram.close()
 
-
 async def main(action: str = "reset"):
     """Main entry point for the job"""
     job = PressPassResetJob()
@@ -252,7 +250,6 @@ async def main(action: str = "reset"):
             
     finally:
         await job.cleanup()
-
 
 if __name__ == "__main__":
     # Get action from command line argument

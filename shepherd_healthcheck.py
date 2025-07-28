@@ -57,7 +57,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-
 @dataclass
 class HealthStatus:
     """Health check result"""
@@ -72,7 +71,6 @@ class HealthStatus:
             self.timestamp = datetime.now().isoformat()
         if self.details is None:
             self.details = {}
-
 
 class ShepherdHealthCheck:
     """Comprehensive health monitoring for SHEPHERD system"""
@@ -541,7 +539,6 @@ class ShepherdHealthCheck:
         
         return summary
 
-
 def main():
     """Main entry point"""
     parser = argparse.ArgumentParser(description="SHEPHERD Health Check System")
@@ -615,7 +612,6 @@ def main():
             sys.exit(1)
         else:
             sys.exit(0)
-
 
 if __name__ == "__main__":
     main()

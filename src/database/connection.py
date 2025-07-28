@@ -45,7 +45,6 @@ class DatabaseConfig:
         if os.getenv('DB_SSL_MODE'):
             self.connection_string += f"?sslmode={os.getenv('DB_SSL_MODE')}"
 
-
 class DatabaseManager:
     """Manages database connections and sessions"""
     
@@ -186,10 +185,8 @@ class DatabaseManager:
             self._engine.dispose()
             logger.info("Database connections closed")
 
-
 # Global database manager instance
 _db_manager: Optional[DatabaseManager] = None
-
 
 def get_db_manager() -> DatabaseManager:
     """Get or create global database manager"""
@@ -198,11 +195,9 @@ def get_db_manager() -> DatabaseManager:
         _db_manager = DatabaseManager()
     return _db_manager
 
-
 def get_db_session() -> Session:
     """Get a database session"""
     return get_db_manager().scoped_session()
-
 
 # Convenience functions
 def init_database():
@@ -211,14 +206,12 @@ def init_database():
     db.create_all_tables()
     logger.info("Database initialized")
 
-
 def close_database():
     """Close database connections"""
     global _db_manager
     if _db_manager:
         _db_manager.close()
         _db_manager = None
-
 
 # Health check function
 def check_database_health() -> Dict[str, Any]:

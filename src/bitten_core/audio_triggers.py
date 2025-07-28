@@ -16,7 +16,6 @@ from .user_settings import get_user_settings
 
 logger = logging.getLogger(__name__)
 
-
 class TriggerType(Enum):
     """Types of audio triggers"""
     TIME_BASED = "time_based"
@@ -24,7 +23,6 @@ class TriggerType(Enum):
     CONDITION_BASED = "condition_based"
     USER_ACTION = "user_action"
     MARKET_STATE = "market_state"
-
 
 class MarketCondition(Enum):
     """Market conditions that trigger audio"""
@@ -37,7 +35,6 @@ class MarketCondition(Enum):
     CONSOLIDATION = "consolidation"
     NEWS_RELEASE = "news_release"
     WEEKEND_APPROACH = "weekend_approach"
-
 
 @dataclass
 class AudioTrigger:
@@ -52,7 +49,6 @@ class AudioTrigger:
     cooldown_minutes: int = 5
     priority: int = 5
     enabled: bool = True
-
 
 class AudioTriggerManager:
     """Manages automated audio triggers for trading events"""
@@ -570,10 +566,8 @@ class AudioTriggerManager:
             'total_triggers': len(self.triggers)
         }
 
-
 # Global instance
 audio_trigger_manager = AudioTriggerManager()
-
 
 # Convenience functions for integration
 async def trigger_market_event(user_id: str, event_type: str, market_data: Dict = None):
@@ -585,7 +579,6 @@ async def trigger_market_event(user_id: str, event_type: str, market_data: Dict 
     }
     return await audio_trigger_manager.process_trigger_event(user_id, context)
 
-
 async def trigger_trading_event(user_id: str, event_type: str, trade_data: Dict = None):
     """Trigger trading-related audio events"""
     context = {
@@ -594,7 +587,6 @@ async def trigger_trading_event(user_id: str, event_type: str, trade_data: Dict 
         'timestamp': datetime.now()
     }
     return await audio_trigger_manager.process_trigger_event(user_id, context)
-
 
 async def trigger_achievement_event(user_id: str, achievement_data: Dict):
     """Trigger achievement-related audio events"""
@@ -605,11 +597,9 @@ async def trigger_achievement_event(user_id: str, achievement_data: Dict):
     }
     return await audio_trigger_manager.process_trigger_event(user_id, context)
 
-
 def start_audio_triggers():
     """Start the audio trigger monitoring system"""
     audio_trigger_manager.start_monitoring()
-
 
 def stop_audio_triggers():
     """Stop the audio trigger monitoring system"""

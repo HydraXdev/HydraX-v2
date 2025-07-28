@@ -1,0 +1,14 @@
+{
+  "signal_id": "VENOM_UNFILTERED_USDCAD_000104",
+  "symbol": "USDCAD",
+  "direction": "BUY",
+  "confidence": 99,
+  "shield_score": 6.0,
+  "shield_class": "SHIELD_ACTIVE",
+  "signal_type": "RAPID_ASSAULT",
+  "target_pips": 20,
+  "stop_pips": 10,
+  "risk_reward": 2.0,
+  "timestamp": 1753674539.7774146,
+  "source": "VENOM_CITADEL_LIVE"
+}

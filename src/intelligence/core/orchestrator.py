@@ -25,7 +25,6 @@ from ..monitoring.metrics import MetricsMonitor, PrometheusExporter, JSONExporte
 from ..ingestion.base import BaseDataIngester
 from ..normalization.normalizer import DataNormalizer, NormalizerFactory
 
-
 class ComponentRegistry:
     """Registry for intelligence components"""
     
@@ -63,7 +62,6 @@ class ComponentRegistry:
     def get_all(self) -> List[IntelligenceComponent]:
         """Get all registered components"""
         return list(self._components.values())
-
 
 class DataPipeline:
     """Manages data flow between components"""
@@ -106,7 +104,6 @@ class DataPipeline:
             results[destination] = processed_data
             
         return results
-
 
 class IntelligenceOrchestrator:
     """Main orchestrator for the intelligence system"""
@@ -412,7 +409,6 @@ class IntelligenceOrchestrator:
             yield self
         finally:
             await self.shutdown()
-
 
 # Example usage
 async def create_intelligence_system(config_path: Optional[str] = None) -> IntelligenceOrchestrator:

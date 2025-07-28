@@ -22,7 +22,7 @@ def analyze_rr_risk():
     print("-" * 40)
     
     for account in account_sizes:
-        print(f"\n💰 ${account:,} Account:")
+        print(f"\n💰 ${account:} Account:")
         for risk_pct in [1.0, 2.0]:
             risk_amount = account * (risk_pct / 100)
             
@@ -39,7 +39,7 @@ def analyze_rr_risk():
     print("-" * 40)
     
     for account in account_sizes:
-        print(f"\n💰 ${account:,} Account:")
+        print(f"\n💰 ${account:} Account:")
         for risk_pct in [1.0, 2.0]:
             risk_amount = account * (risk_pct / 100)
             

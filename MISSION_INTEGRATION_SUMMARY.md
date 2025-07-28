@@ -1,13 +1,13 @@
 # Mission Briefing Generator Integration Summary
 
 ## Overview
-Successfully integrated the simple mission file creation system with the comprehensive APEXv5MissionBriefing class to create a unified solution that generates rich mission briefing objects AND saves them to files for WebApp retrieval.
+Successfully integrated the simple mission file creation system with the comprehensive v5MissionBriefing class to create a unified solution that generates rich mission briefing objects AND saves them to files for WebApp retrieval.
 
 ## Key Components Integrated
 
 ### 1. Source Files
 - **Deployment Version**: `/root/mission_briefing_generator_v5.py` - Simple file creation system
-- **Complex Version**: `/root/HydraX-v2/src/bitten_core/mission_briefing_generator_active.py` - APEXv5MissionBriefing class
+- **Complex Version**: `/root/HydraX-v2/src/bitten_core/mission_briefing_generator_active.py` - v5MissionBriefing class
 - **Target File**: `/root/HydraX-v2/src/bitten_core/mission_briefing_generator_v5.py` - Integrated system
 
 ### 2. Integration Features
@@ -19,7 +19,7 @@ Successfully integrated the simple mission file creation system with the compreh
 - Cleanup of expired mission files
 
 #### ✅ Rich Mission Briefing Data
-- Integrates APEXv5MissionBriefing class for comprehensive mission data
+- Integrates v5MissionBriefing class for comprehensive mission data
 - Enhanced signal classification and mission typing
 - User tier-based expiry calculations
 - Pattern recognition and confluence counting
@@ -58,7 +58,7 @@ Successfully integrated the simple mission file creation system with the compreh
   "execution_window": 300,
   "file_path": "./missions/user_123_1752507290.json",
   "created_timestamp": 1752507290,
-  "apex_briefing": { /* Rich APEX briefing data */ },
+  "apex_briefing": { /* Rich briefing data */ },
   "has_apex_briefing": true,
   "generator_version": "v5.0_integrated",
   "format_version": "1.0"
@@ -111,7 +111,7 @@ The system calculates expiry times based on:
 - **AUTHORIZED**: 1.0x
 - **COMMANDER**: 1.2x
 - **ELITE**: 1.3x
-- **APEX**: 1.5x (more time)
+- ****: 1.5x (more time)
 - **ADMIN**: 2.0x (maximum time)
 
 ## WebApp Integration
@@ -170,7 +170,7 @@ all_missions = get_active_missions()
 === TESTING DIFFERENT SIGNAL TYPES ===
 - Arcade (AUTHORIZED): 5 minutes expiry
 - Sniper (ELITE): 26 minutes expiry (15 base + 5 for M15 + 1.3x for ELITE)
-- Midnight Hammer (APEX): 15 minutes expiry (10 base + 1.5x for APEX)
+- Midnight Hammer (): 15 minutes expiry (10 base + 1.5x for )
 ```
 
 ## Benefits Achieved
@@ -181,7 +181,7 @@ all_missions = get_active_missions()
 - ✅ No breaking changes to existing integrations
 
 ### 2. Enhanced Functionality
-- ✅ Rich mission briefing data from APEXv5 system
+- ✅ Rich mission briefing data from v5 system
 - ✅ Smart expiry calculations
 - ✅ User tier-based timing
 - ✅ Pattern and confluence tracking
@@ -259,10 +259,10 @@ mission = get_mission_by_id("user_123_1752507290")
 
 ## Conclusion
 
-The integration successfully combines the simplicity of the deployment version with the comprehensive functionality of the APEXv5 system. The result is a production-ready mission briefing generator that:
+The integration successfully combines the simplicity of the deployment version with the comprehensive functionality of the v5 system. The result is a production-ready mission briefing generator that:
 
 1. **Maintains backward compatibility** with existing code
-2. **Provides rich mission data** from the APEXv5 system
+2. **Provides rich mission data** from the v5 system
 3. **Saves files automatically** for WebApp retrieval
 4. **Handles expiry timestamps** and cleanup
 5. **Scales with user tiers** and signal complexity

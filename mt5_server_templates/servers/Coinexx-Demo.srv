@@ -1,0 +1,8 @@
+[Common]
+Name=Coinexx-Demo
+Address=demo.coinexx.com:443
+Environment=Demo
+DataServer=demo.coinexx.com:443
+Ping=demo.coinexx.com:443
+Company=Coinexx
+AccountServer=demo.coinexx.com:443

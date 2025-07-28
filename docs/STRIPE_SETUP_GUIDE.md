@@ -45,7 +45,7 @@ products = {
         name='BITTEN Commander',
         description='Pro tier - 20 trades/day, full automation'
     ),
-    'APEX': stripe.Product.create(
+    '': stripe.Product.create(
         name='BITTEN Apex',
         description='Elite tier - Unlimited trades, priority support'
     )
@@ -56,8 +56,8 @@ prices = {}
 pricing = {
     'NIBBLER': {'monthly': 3900, 'annual': 31200},
     'FANG': {'monthly': 8900, 'annual': 71200},
-    'COMMANDER': {'monthly': 13900, 'annual': 111200},
-    'APEX': {'monthly': 18800, 'annual': 150400}
+    'COMMANDER': {'monthly': 18900, 'annual': 111200},
+    '': {'monthly': , 'annual': 150400}
 }
 
 for tier, product in products.items():

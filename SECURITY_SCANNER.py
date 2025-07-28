@@ -49,16 +49,14 @@ class SecurityScanner:
         
         # Bot token usage
         r'7854827710',  # The specific bot token
-        r'telegram.*bot.*start',
-    ]
+        r'telegram.*bot.*start']
     
     DANGEROUS_FILES = [
         'webapp-watchdog.py',
         'intelligent_controller.py', 
         'webapp-monitor.sh',
         'NUCLEAR_STOP_ALL.py',  # Ironically, this is also dangerous if misused
-        'BULLETPROOF_BOT_MANAGER.py',
-    ]
+        'BULLETPROOF_BOT_MANAGER.py']
     
     def scan_file(self, filepath: str) -> List[Dict]:
         """Scan a single file for dangerous patterns"""

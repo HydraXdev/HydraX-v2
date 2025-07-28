@@ -64,8 +64,7 @@ Implemented a comprehensive Press Pass system with email-only signup, instant MT
 ### Telegram Updates (`/root/HydraX-v2/config/telegram.py`)
 - Press Pass daily limit: 10
 - Duration: 7 days
-- Tier granted: APEX
-- Deep linking parameters for tracking
+- Tier granted: - Deep linking parameters for tracking
 
 ## 4. Press Pass Manager (`/root/HydraX-v2/src/bitten_core/press_pass_manager.py`)
 
@@ -178,7 +177,7 @@ Created test script: `/root/HydraX-v2/test_press_pass.py`
 1. **Scarcity**: Daily limits on press passes
 2. **Urgency**: Countdown timers and expiry dates
 3. **Social Proof**: Live counters and activity metrics
-4. **Value Anchoring**: $188 value for $0
+4. **Value Anchoring**:  value for $0
 5. **Loss Aversion**: Show what they'll lose after expiry
 6. **Progressive Disclosure**: Reveal benefits over time
 7. **Personalization**: Dynamic content based on performance

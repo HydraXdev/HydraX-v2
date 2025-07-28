@@ -22,7 +22,7 @@ STRIPE_WEBHOOK_SECRET=whsec_YOUR_WEBHOOK_SECRET_HERE
 STRIPE_PRICE_NIBBLER=price_nibbler_monthly
 STRIPE_PRICE_FANG=price_fang_monthly
 STRIPE_PRICE_COMMANDER=price_commander_monthly
-STRIPE_PRICE_APEX=price_apex_monthly
+STRIPE_PRICE_=price_apex_monthly
 ```
 
 ### 2. **Where to Get These Keys**
@@ -57,7 +57,7 @@ python3 setup_stripe_products.py
 ```
 
 This script will:
-- Create 4 subscription products (NIBBLER, FANG, COMMANDER, APEX)
+- Create 4 subscription products (NIBBLER, FANG, COMMANDER)
 - Generate monthly recurring prices
 - Output the price IDs to add to your .env file
 
@@ -87,8 +87,8 @@ systemctl restart bitten-webapp
 |------|-------|----------|
 | NIBBLER | $39/month | 6 trades/day, Manual trading, Basic features |
 | FANG | $89/month | 10 trades/day, Sniper mode, Advanced filters |
-| COMMANDER | $139/month | 20 trades/day, Full automation, Elite features |
-| APEX | $188/month | Unlimited trades, Priority support, Exclusive access |
+| COMMANDER | $189/month | 20 trades/day, Full automation, Elite features |
+| | /month | Unlimited trades, Priority support, Exclusive access |
 
 ---
 

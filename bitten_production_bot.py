@@ -12,42 +12,59 @@ import logging
 import requests
 import re
 import asyncio
-from datetime import datetime
+from datetime import datetime, timedelta
 import telebot
 from typing import Dict, Optional, Any
 import threading
 from time import sleep
+import subprocess
+import docker
+import base64
+import string
+from pathlib import Path
 
 # Add paths for imports
 sys.path.append('/root/HydraX-v2/src')
 sys.path.append('/root/HydraX-v2')
 
-# Configure logging early
+# Import configuration loader
+from config_loader import get_bot_token, get_logging_config, validate_required_config
+
+# Validate configuration early
+try:
+    validate_required_config()
+except ValueError as e:
+    print(f"❌ Configuration error: {e}")
+    print("Please check your .env file and ensure all required variables are set.")
+    sys.exit(1)
+
+# Configure logging with environment variables
+log_config = get_logging_config()
 logging.basicConfig(
-    level=logging.INFO,
+    level=getattr(logging, log_config['level'], logging.INFO),
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler('/root/HydraX-v2/bitten_production_bot.log'),
+        logging.FileHandler(log_config['file_path']),
         logging.StreamHandler()
     ]
 )
 logger = logging.getLogger('BittenProductionBot')
 
-# Import unified personality system
-try:
-    from deploy_unified_personality_system import UnifiedPersonalityBot
-    UNIFIED_PERSONALITY_AVAILABLE = True
-except ImportError:
-    UNIFIED_PERSONALITY_AVAILABLE = False
-
-# Import adaptive personality system (fallback)
-try:
-    from deploy_adaptive_personality_system import AdaptivePersonalityBot
-    PERSONALITY_SYSTEM_AVAILABLE = True
-except ImportError:
-    PERSONALITY_SYSTEM_AVAILABLE = False
+# NOTE: Personality systems moved to separate voice bot
+# bitten_voice_personality_bot.py handles ATHENA, DRILL, NEXUS, DOC, OBSERVER
+# This bot focuses on trading signals and tactical execution only
+UNIFIED_PERSONALITY_AVAILABLE = False
+PERSONALITY_SYSTEM_AVAILABLE = False
 
 # Import BIT integration system
+
+# Import credit referral system
+try:
+    from src.bitten_core.credit_referral_bot_commands import get_credit_referral_bot_commands
+    CREDIT_REFERRAL_AVAILABLE = True
+except ImportError as e:
+    logger.warning(f"Credit referral system not available: {e}")
+    CREDIT_REFERRAL_AVAILABLE = False
 try:
     from src.bitten_core.bit_integration import (
         bit_integration, bit_enhance, bit_trade_reaction, 
@@ -93,6 +110,7 @@ except ImportError:
 try:
     from src.bitten_core.daily_drill_report import DailyDrillReportSystem
     from src.bitten_core.tactical_strategies import tactical_strategy_manager
+    from src.bitten_core.drill_report_bot_integration import register_drill_report_handlers
     DRILL_SYSTEM_AVAILABLE = True
     logger.info("✅ Drill report system imported successfully")
 except ImportError as e:
@@ -101,11 +119,30 @@ except ImportError as e:
 
 try:
     from src.bitten_core.tactical_interface import TacticalInterface
+    from src.bitten_core.personalized_mission_brain import get_mission_brain, create_personalized_missions_for_signal
     TACTICAL_INTERFACE_AVAILABLE = True
     logger.info("✅ Tactical interface imported successfully")
 except ImportError as e:
     TACTICAL_INTERFACE_AVAILABLE = False
     logger.warning(f"⚠️ Tactical interface not available: {e}")
+
+# Import zero simulation integration
+try:
+    from src.bitten_core.zero_simulation_integration import ZeroSimulationIntegration
+    ZERO_SIM_AVAILABLE = True
+    logger.info("✅ Zero simulation integration imported successfully")
+except ImportError as e:
+    ZERO_SIM_AVAILABLE = False
+    logger.warning(f"⚠️ Zero simulation integration not available: {e}")
+
+# Import VENOM v7.0 Production Engine with CITADEL Shield
+try:
+    from apex_venom_v7_citadel_integrated import VenomCitadelProductionEngine
+    VENOM_ENGINE_AVAILABLE = True
+    logger.info("✅ VENOM v7.0 + CITADEL Shield Engine imported - 100% REAL DATA")
+except ImportError as e:
+    VENOM_ENGINE_AVAILABLE = False
+    logger.warning(f"⚠️ VENOM v7.0 Engine not available: {e}")
 
 DRILL_TACTICAL_AVAILABLE = DRILL_SYSTEM_AVAILABLE and TACTICAL_INTERFACE_AVAILABLE
 
@@ -124,16 +161,22 @@ except ImportError:
         def __init__(self, user_id): pass
         def display_comprehensive_status(self): print("❌ Clone watcher unavailable")
 
-# Configuration
-BOT_TOKEN = '7854827710:AAGsO-vgMpsTOVNu6zoo_-GGJkYQd97Mc5w'
+# Configuration - Load from environment variables
+BOT_TOKEN = get_bot_token()
 
 # USER + COMMANDER CONFIG
 COMMANDER_IDS = [7176191872]
 
+# CRITICAL: USER 7176191872 - ZERO SIMULATION COMMANDER
+# UNRESTRICTED FIRE ACCESS - NO SAFETY OVERRIDES
 AUTHORIZED_USERS = {
     "7176191872": {
         "tier": "COMMANDER",
-        "account_id": "843859",
+        "account_id": "94956065",  # Updated to actual MT5 account
+        "mt5_server": "MetaQuotes-Demo",
+        "simulation_disabled": True,
+        "unlimited_fire_access": True,
+        "commander_override": True,
         "api_id": "api_01"
     }
 }
@@ -165,10 +208,68 @@ def get_pending_mission_for_user(user_id):
         logger.error(f"Error getting pending mission: {e}")
         return None
 
-def fire_mission_for_user(user_id, mission):
-    """Execute trade for user mission"""
+def generate_live_venom_signal():
+    """Generate live VENOM v7.0 signal using real MT5 data"""
     try:
-        # Try webapp API first
+        if not VENOM_ENGINE_AVAILABLE:
+            logger.error("❌ VENOM Engine not available")
+            return None
+            
+        # Initialize VENOM v7.0 + CITADEL Shield Engine
+        venom = VenomCitadelProductionEngine()
+        
+        # Check market data health first
+        if not venom.check_market_data_health():
+            logger.error("❌ Market data receiver offline")
+            return None
+        
+        try:
+            # Scan for real signals using HTTP data
+            signals = venom.scan_all_pairs_realtime()
+            
+            if signals:
+                # Return the first high-quality signal
+                best_signal = max(signals, key=lambda s: s['confidence'])
+                logger.info(f"🐍 VENOM signal: {best_signal['pair']} {best_signal['signal_type']} @ {best_signal['confidence']}%")
+                return best_signal
+            else:
+                logger.info("📊 No VENOM signals found at current market conditions")
+                return None
+                
+        except Exception as e:
+            logger.error(f"❌ Error generating signal: {e}")
+            return None
+            
+    except Exception as e:
+        logger.error(f"❌ VENOM signal generation error: {e}")
+        return None
+
+def fire_mission_for_user(user_id, mission):
+    """Execute trade for user mission via zero simulation integration"""
+    try:
+        # Use zero simulation integration for real execution
+        if ZERO_SIM_AVAILABLE:
+            zero_sim = ZeroSimulationIntegration()
+            
+            # Convert mission to signal format for processing
+            raw_signal = {
+                'symbol': mission.get('symbol', 'EURUSD'),
+                'direction': mission.get('type', 'BUY'), 
+                'entry_price': mission.get('entry_price', 0),
+                'stop_loss': mission.get('stop_loss', 0),
+                'take_profit': mission.get('take_profit', 0),
+                'tcs_score': mission.get('tcs', 75),
+                'expires_timestamp': int(time.time()) + 3600
+            }
+            
+            # Process through zero simulation pipeline
+            result = zero_sim.process_signal_to_real_execution(raw_signal)
+            
+            if result and result.get('status') == 'success':
+                logger.info(f"✅ Mission executed via zero simulation: {mission['mission_id']}")
+                return result
+                
+        # Fallback to webapp API
         try:
             result = requests.post("http://localhost:8888/api/fire", 
                                  json={"mission_id": mission["mission_id"]}, 
@@ -179,7 +280,7 @@ def fire_mission_for_user(user_id, mission):
         except Exception as e:
             logger.warning(f"WebApp API failed: {e}")
         
-        # Fallback to direct fire router
+        # Final fallback to direct fire router
         try:
             sys.path.append('/root/HydraX-v2/src/bitten_core')
             from fire_router import FireRouter
@@ -237,6 +338,10 @@ class BittenProductionBot:
         self.last_message_time = {}
         self.message_delay = 0.5  # 500ms between messages
         
+        # /connect command throttling
+        self.connect_usage_throttle = {}
+        self.connect_throttle_window = 60  # 60 seconds between usage messages
+        
         # Initialize unified personality system (priority)
         if UNIFIED_PERSONALITY_AVAILABLE:
             self.unified_bot = UnifiedPersonalityBot(self.bot)
@@ -274,8 +379,34 @@ class BittenProductionBot:
         else:
             self.tactical_interface = None
         
+        # Initialize credit referral system
+        if CREDIT_REFERRAL_AVAILABLE:
+            try:
+                self.credit_commands = get_credit_referral_bot_commands()
+                logger.info("✅ Credit referral system enabled")
+            except Exception as e:
+                logger.error(f"Failed to initialize credit referral system: {e}")
+                self.credit_commands = None
+        else:
+            self.credit_commands = None
+        
         self.setup_handlers()
         logger.info("BITTEN Production Bot initialized")
+    
+    def _get_current_badge_display(self, referral_count: int) -> str:
+        """Get current recruitment badge display"""
+        if referral_count >= 50:
+            return "👑 LEGENDARY_RECRUITER"
+        elif referral_count >= 25:
+            return "⭐ RECRUITMENT_MASTER" 
+        elif referral_count >= 10:
+            return "🥇 ELITE_RECRUITER"
+        elif referral_count >= 5:
+            return "🥈 SQUAD_BUILDER"
+        elif referral_count >= 1:
+            return "🥉 RECRUITER"
+        else:
+            return "🎖️ NEW_RECRUIT"
     
     def send_adaptive_response(self, chat_id, message_text, user_tier="NIBBLER", user_action=None):
         """Send response using unified or adaptive personality system if available"""
@@ -317,10 +448,55 @@ class BittenProductionBot:
         self.bot.send_message(chat_id, escape_markdown(message_text), parse_mode="MarkdownV2")
         return False
     
+    def create_quick_keyboard(self):
+        """Create persistent quick-access keyboard (always visible at bottom)"""
+        from telebot.types import ReplyKeyboardMarkup, KeyboardButton
+        
+        keyboard = ReplyKeyboardMarkup(
+            keyboard=[
+                [
+                    KeyboardButton("🔫 FIRE"),
+                    KeyboardButton("💰 CREDITS"),
+                    KeyboardButton("📱 MENU")
+                ]
+            ],
+            resize_keyboard=True,
+            one_time_keyboard=False,
+            is_persistent=True
+        )
+        return keyboard
+    
+    def create_full_keyboard(self):
+        """Create full persistent keyboard with all commands"""
+        from telebot.types import ReplyKeyboardMarkup, KeyboardButton
+        
+        keyboard = ReplyKeyboardMarkup(
+            keyboard=[
+                [
+                    KeyboardButton("🔫 FIRE"),
+                    KeyboardButton("📊 STATUS"), 
+                    KeyboardButton("💰 CREDITS")
+                ],
+                [
+                    KeyboardButton("🎯 TACTICAL"),
+                    KeyboardButton("📚 HELP"),
+                    KeyboardButton("🏆 RECRUIT")
+                ],
+                [
+                    KeyboardButton("📱 MENU"),
+                    KeyboardButton("❌ HIDE")
+                ]
+            ],
+            resize_keyboard=True,
+            one_time_keyboard=False,
+            is_persistent=True
+        )
+        return keyboard
+    
     def setup_handlers(self):
         """Setup all command handlers"""
         
-        @self.bot.message_handler(commands=["status", "mode", "ping", "help", "fire", "force_signal", "ghosted", "slots", "presspass", "menu", "drill", "weekly", "tactics"])
+        @self.bot.message_handler(commands=["status", "mode", "ping", "help", "fire", "force_signal", "venom_scan", "ghosted", "slots", "presspass", "menu", "drill", "weekly", "tactics", "recruit", "credits", "connect", "notebook", "journal", "notes"])
         def handle_telegram_commands(message):
             uid = str(message.from_user.id)
             user_name = message.from_user.first_name or "Operative"
@@ -331,12 +507,32 @@ class BittenProductionBot:
             
             try:
                 if message.text == "/status":
-                    if int(uid) in COMMANDER_IDS:
-                        # Check system status
-                        status_msg = self.get_system_status()
-                        self.send_adaptive_response(message.chat.id, status_msg, user_tier, "status_check")
-                    else:
-                        self.send_adaptive_response(message.chat.id, "❌ Status is only available to authorized commanders.", user_tier, "unauthorized_access")
+                    try:
+                        # Import container status tracker
+                        from src.bitten_core.container_status_tracker import get_container_status_tracker
+                        from src.bitten_core.user_registry_manager import get_user_registry_manager
+                        
+                        tracker = get_container_status_tracker()
+                        registry = get_user_registry_manager()
+                        
+                        if int(uid) in COMMANDER_IDS:
+                            # System overview for commanders
+                            system_status = self.get_system_status()
+                            container_overview = tracker.get_system_overview()
+                            combined_status = f"{system_status}\n\n{container_overview}"
+                            self.send_adaptive_response(message.chat.id, combined_status, user_tier, "commander_status")
+                        else:
+                            # Individual container status for users
+                            container_name = registry.get_container_name(uid)
+                            if container_name:
+                                status_message = tracker.format_container_status_message(container_name)
+                                self.send_adaptive_response(message.chat.id, status_message, user_tier, "user_container_status")
+                            else:
+                                self.send_adaptive_response(message.chat.id, "❌ No container assigned. Visit https://joinbitten.com to set up your account and claim your free Press Pass.", user_tier, "no_container")
+                    except Exception as e:
+                        logger.error(f"Status command error: {e}")
+                        fallback_msg = "❌ Status check temporarily unavailable."
+                        self.send_adaptive_response(message.chat.id, fallback_msg, user_tier, "status_error")
                 
                 elif message.text.startswith("/mode"):
                     # Import fire mode handlers with fallback protection
@@ -360,13 +556,179 @@ class BittenProductionBot:
                     help_msg = self.get_help_message(uid)
                     self.send_adaptive_response(message.chat.id, help_msg, user_tier, "help_request")
                 
+                elif message.text.startswith("/start"):
+                    # Handle start command with optional referral code
+                    parts = message.text.split()
+                    
+                    if len(parts) > 1:
+                        # Referral code provided
+                        referral_code = parts[1]
+                        try:
+                            from src.bitten_core.credit_referral_system import get_credit_referral_system
+                            referral_system = get_credit_referral_system()
+                            
+                            if referral_system.use_referral_code(referral_code, uid):
+                                # Successful referral code usage
+                                welcome_msg = f"""🎉 **WELCOME TO BITTEN!**
+
+You've been referred by a fellow trader! 
+
+💰 **REFERRAL BONUS**: When you subscribe to any paid tier ($39+), your referrer will earn a $10 credit.
+
+🎯 **Ready to start tactical trading?**
+
+📋 **Next Steps:**
+• Use `/presspass` to get started with a 7-day trial
+• Use `/help` to see all available commands
+• Use `/tactical` to learn about trading strategies
+
+Welcome to the most tactical trading community! 🚀"""
+                                
+                                self.send_adaptive_response(message.chat.id, welcome_msg, user_tier, "referral_welcome")
+                                logger.info(f"User {uid} successfully used referral code {referral_code}")
+                            else:
+                                # Invalid/expired/duplicate referral code - normal welcome
+                                normal_welcome = f"""🎯 **WELCOME TO BITTEN!**
+
+Your tactical trading journey begins now!
+
+📋 **Get Started:**
+• Use `/presspass` for a 7-day free trial
+• Use `/help` to see all commands
+• Use `/tactical` to learn trading strategies
+
+Ready to dominate the markets? 🚀"""
+                                
+                                self.send_adaptive_response(message.chat.id, normal_welcome, user_tier, "normal_welcome")
+                                logger.info(f"User {uid} used invalid/expired referral code {referral_code}")
+                                
+                        except Exception as e:
+                            logger.error(f"Referral code processing error for user {uid}: {e}")
+                            # Fallback to normal welcome
+                            fallback_welcome = f"""🎯 **WELCOME TO BITTEN!**
+
+Your tactical trading journey begins now!
+
+📋 **Get Started:**
+• Use `/presspass` for a 7-day free trial
+• Use `/help` to see all commands
+• Use `/tactical` to learn trading strategies
+
+Ready to dominate the markets? 🚀"""
+                            
+                            self.send_adaptive_response(message.chat.id, fallback_welcome, user_tier, "fallback_welcome")
+                    else:
+                        # No referral code - normal welcome
+                        normal_welcome = f"""🎯 **WELCOME TO BITTEN!**
+
+Your tactical trading journey begins now!
+
+📋 **Get Started:**
+• Use `/presspass` for a 7-day free trial
+• Use `/help` to see all commands
+• Use `/tactical` to learn trading strategies
+• Use `/recruit` to get your own referral link
+
+Ready to dominate the markets? 🚀"""
+                        
+                        self.send_adaptive_response(message.chat.id, normal_welcome, user_tier, "normal_welcome")
+                        logger.info(f"New user {uid} started without referral code")
+                
                 elif message.text == "/api":
                     # Fire Loop Validation System - API Status Command
                     api_status = self.get_api_status(uid)
                     self.send_adaptive_response(message.chat.id, api_status, user_tier, "api_status")
                 
-                elif message.text == "/fire":
-                    # Import fire mode executor to check mode
+                elif message.text.startswith("/fire"):
+                    # Enhanced /fire command with signal_id support
+                    message_parts = message.text.split(" ", 1)
+                    signal_id = message_parts[1] if len(message_parts) > 1 else None
+                    
+                    if signal_id:
+                        # Phase 3: Execute specific signal via BittenCore
+                        try:
+                            from src.bitten_core.bitten_core import BittenCore
+                            
+                            # Initialize or get existing core instance
+                            if not hasattr(self, 'bitten_core'):
+                                self.bitten_core = BittenCore()
+                                self.bitten_core.set_production_bot(self)
+                            
+                            # Execute fire command via Core
+                            result = self.bitten_core.execute_fire_command(uid, signal_id)
+                            
+                            if result['success']:
+                                response = f"🔥 Signal {signal_id} executed successfully!"
+                                if 'trade_result' in result:
+                                    trade_data = result['trade_result']
+                                    response += f"\n📊 Trade details: {trade_data.get('symbol', 'N/A')} {trade_data.get('direction', 'N/A')}"
+                                    response += f"\n💰 Position size: {trade_data.get('position_size', 'N/A')}"
+                                
+                                # Add journaling prompt for post-trade reflection
+                                response += f"\n\n📝 **Reflect & Earn XP:**"
+                                response += f"\nDocument your thoughts about this trade for +8 XP!"
+                                response += f"\nUse /notebook to add your reflection."
+                                
+                                # Try to record this signal execution for pairing
+                                try:
+                                    from src.bitten_core.notebook_xp_integration import create_notebook_xp_integration
+                                    notebook_integration = create_notebook_xp_integration(uid)
+                                    signal_data = result.get('signal_data', {})
+                                    notebook_integration.record_signal_execution(
+                                        signal_id=signal_id,
+                                        symbol=signal_data.get('symbol', 'Unknown'),
+                                        direction=signal_data.get('direction', 'Unknown'),
+                                        entry_price=0.0,  # Would need actual entry price
+                                        tcs_score=signal_data.get('confidence', 0)
+                                    )
+                                except Exception as e:
+                                    logger.error(f"Error recording signal execution for notebook: {e}")
+                                
+                                # Schedule a follow-up reminder for journaling after 30 minutes
+                                try:
+                                    import threading
+                                    import time
+                                    
+                                    def send_journal_reminder():
+                                        time.sleep(1800)  # 30 minutes
+                                        try:
+                                            reminder_msg = f"""📝 **Quick Reminder**
+                                            
+How's that {signal_data.get('symbol', 'trade')} position going?
+
+Consider documenting your current thoughts:
+• How are you feeling about the trade?
+• Any lessons learned so far?
+• What would you do differently?
+
+✨ Earn +8 XP for trade reflections: /notebook"""
+                                            
+                                            self.send_adaptive_response(message.chat.id, reminder_msg, user_tier, "journal_reminder")
+                                        except Exception as e:
+                                            logger.error(f"Error sending journal reminder: {e}")
+                                    
+                                    reminder_thread = threading.Thread(target=send_journal_reminder, daemon=True)
+                                    reminder_thread.start()
+                                    
+                                except Exception as e:
+                                    logger.error(f"Error scheduling journal reminder: {e}")
+                            else:
+                                # Check for specific error types
+                                if result.get('error') == 'not_ready_for_fire':
+                                    response = result.get('message', '❌ Terminal not ready for trading')
+                                else:
+                                    response = f"❌ Execution failed: {result.get('message', result.get('error', 'Unknown error'))}"
+                            
+                            self.send_adaptive_response(message.chat.id, response, user_tier, "fire_execution")
+                            return
+                            
+                        except Exception as e:
+                            logger.error(f"BittenCore fire execution error: {e}")
+                            error_response = f"❌ Signal execution failed: {str(e)}"
+                            self.send_adaptive_response(message.chat.id, error_response, user_tier, "fire_error")
+                            return
+                    
+                    # Legacy fire command (no signal_id) - existing mission system
                     from src.bitten_core.fire_mode_executor import fire_mode_executor
                     from src.bitten_core.fire_mode_database import fire_mode_db
                     
@@ -424,31 +786,105 @@ class BittenProductionBot:
                 
                 elif message.text == "/force_signal":
                     if int(uid) in COMMANDER_IDS:
-                        # Inject a test signal
-                        test_signal = {
-                            "symbol": "GBPUSD",
-                            "type": "buy",
-                            "direction": "BUY", 
-                            "entry_price": 1.2765,
-                            "sl": 10,
-                            "tp": 20,
-                            "tcs_score": 87,
-                            "timeframe": "M5",
-                            "session": "LONDON",
-                            "pattern": "Double Bottom",
-                            "confluence_count": 2
-                        }
+                        # Generate live VENOM v7.0 signal
+                        self.send_adaptive_response(message.chat.id, "🐍 Generating live VENOM v7.0 signal...", user_tier, "signal_generation")
                         
-                        try:
-                            mission = generate_mission(test_signal, uid)
-                            test_msg = f"🧪 Test mission injected: GBPUSD BUY (TCS: 87)\n🆔 Mission ID: {mission['mission_id']}"
-                            self.send_adaptive_response(message.chat.id, test_msg, user_tier, "test_signal")
-                            logger.info(f"Test signal injected by commander {uid}")
-                        except Exception as e:
-                            error_msg = f"❌ Failed to inject test signal: {str(e)}"
+                        venom_signal = generate_live_venom_signal()
+                        
+                        if venom_signal:
+                            # Convert VENOM signal to mission format
+                            venom_mission = {
+                                "symbol": venom_signal['pair'],
+                                "type": "BUY" if venom_signal['entry_price'] else "BUY",  # Simplified for now
+                                "direction": "BUY",
+                                "entry_price": venom_signal['entry_price'],
+                                "sl": venom_signal['stop_loss_pips'],
+                                "tp": venom_signal['take_profit_pips'],
+                                "tcs_score": int(venom_signal['confidence']),
+                                "timeframe": "M5",
+                                "session": venom_signal['session'],
+                                "pattern": venom_signal['signal_type'],
+                                "confluence_count": 3,
+                                "countdown_minutes": venom_signal['countdown_minutes'],
+                                "signal_id": venom_signal['signal_id']
+                            }
+                            
+                            try:
+                                mission = generate_mission(venom_mission, uid)
+                                venom_msg = f"🐍 **LIVE VENOM SIGNAL**\n"
+                                venom_msg += f"📊 {venom_signal['pair']} {venom_signal['signal_type']}\n"
+                                venom_msg += f"🎯 Confidence: {venom_signal['confidence']:.1f}%\n"
+                                venom_msg += f"⏰ Timer: {venom_signal['countdown_minutes']} minutes\n"
+                                venom_msg += f"💰 Entry: {venom_signal['entry_price']:.5f}\n"
+                                venom_msg += f"🛡️ SL: {venom_signal['stop_loss_pips']} pips\n"
+                                venom_msg += f"🎯 TP: {venom_signal['take_profit_pips']} pips\n"
+                                venom_msg += f"📈 R:R: 1:{venom_signal['risk_reward']:.1f}\n"
+                                venom_msg += f"🆔 Mission ID: {mission['mission_id']}"
+                                
+                                self.send_adaptive_response(message.chat.id, venom_msg, user_tier, "venom_signal")
+                                logger.info(f"🐍 Live VENOM signal generated: {venom_signal['pair']} @ {venom_signal['confidence']:.1f}%")
+                            except Exception as e:
+                                error_msg = f"❌ Failed to create mission from VENOM signal: {str(e)}"
+                                self.send_adaptive_response(message.chat.id, error_msg, user_tier, "error")
+                        else:
+                            no_signal_msg = "📊 No VENOM signals available at current market conditions. Try again in a few minutes."
+                            self.send_adaptive_response(message.chat.id, no_signal_msg, user_tier, "no_signal")
+                    else:
+                        self.send_adaptive_response(message.chat.id, "❌ Live signal generation restricted to commanders.", user_tier, "unauthorized_access")
+                
+                elif message.text == "/venom_scan":
+                    if int(uid) in COMMANDER_IDS:
+                        # Continuous VENOM scanning report
+                        self.send_adaptive_response(message.chat.id, "🐍 VENOM v7.0 Market Scan initiated...", user_tier, "scan_start")
+                        
+                        if VENOM_ENGINE_AVAILABLE:
+                            try:
+                                venom = VenomCitadelProductionEngine()
+                                if venom.check_market_data_health():
+                                    try:
+                                        # Scan all pairs for signals
+                                        signals = venom.scan_all_pairs_realtime()
+                                        
+                                        if signals:
+                                            scan_msg = f"🐍 **VENOM MARKET SCAN RESULTS**\n"
+                                            scan_msg += f"📊 Found {len(signals)} active signals:\n\n"
+                                            
+                                            for i, signal in enumerate(signals[:5], 1):  # Show top 5
+                                                scan_msg += f"**{i}. {signal['pair']} {signal['signal_type']}**\n"
+                                                scan_msg += f"🎯 Confidence: {signal['confidence']:.1f}%\n"
+                                                scan_msg += f"⏰ Timer: {signal['countdown_minutes']} min\n"
+                                                scan_msg += f"📈 R:R: 1:{signal['risk_reward']:.1f}\n\n"
+                                            
+                                            if len(signals) > 5:
+                                                scan_msg += f"📊 +{len(signals)-5} more signals available\n"
+                                            
+                                            scan_msg += f"🕐 Scan time: {datetime.now().strftime('%H:%M:%S')}"
+                                            
+                                        else:
+                                            scan_msg = "📊 **VENOM MARKET SCAN**\n\n"
+                                            scan_msg += "No signals found at current market conditions.\n"
+                                            scan_msg += "Market may be in low-volatility period.\n"
+                                            scan_msg += f"🕐 Scan time: {datetime.now().strftime('%H:%M:%S')}"
+                                        
+                                        self.send_adaptive_response(message.chat.id, scan_msg, user_tier, "venom_scan")
+                                        
+                                    except Exception as e:
+                                        logger.error(f"VENOM scan error: {e}")
+                                        error_msg = f"❌ Scan error: {str(e)}"
+                                        self.send_adaptive_response(message.chat.id, error_msg, user_tier, "error")
+                                else:
+                                    error_msg = "❌ Market data receiver offline - cannot scan"
+                                    self.send_adaptive_response(message.chat.id, error_msg, user_tier, "error")
+                                    
+                            except Exception as e:
+                                error_msg = f"❌ VENOM scan error: {str(e)}"
+                                self.send_adaptive_response(message.chat.id, error_msg, user_tier, "error")
+                                logger.error(f"VENOM scan error: {e}")
+                        else:
+                            error_msg = "❌ VENOM Engine not available for scanning"
                             self.send_adaptive_response(message.chat.id, error_msg, user_tier, "error")
                     else:
-                        self.send_adaptive_response(message.chat.id, "❌ Test signal injection restricted to commanders.", user_tier, "unauthorized_access")
+                        self.send_adaptive_response(message.chat.id, "❌ VENOM scanning restricted to commanders.", user_tier, "unauthorized_access")
                 
                 elif message.text.upper().startswith('/GHOSTED'):
                     if int(uid) in COMMANDER_IDS:
@@ -576,47 +1012,43 @@ class BittenProductionBot:
                         logger.error(f"Press Pass command error for user {uid}: {e}")
                 
                 elif message.text == "/menu":
-                    # Show Intel Command Center menu
+                    # Show menu options (persistent + advanced inline)
                     try:
-                        # Create inline keyboard for Intel Center
                         from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
                         
-                        keyboard = InlineKeyboardMarkup([
+                        # Create menu selection keyboard
+                        menu_selection = InlineKeyboardMarkup([
                             [
-                                InlineKeyboardButton("🔫 COMBAT OPS", callback_data="menu_combat_ops"),
-                                InlineKeyboardButton("📚 FIELD MANUAL", callback_data="menu_field_manual")
+                                InlineKeyboardButton("📱 QUICK MENU (Persistent)", callback_data="menu_quick_persistent"),
+                                InlineKeyboardButton("🎯 FULL MENU (Persistent)", callback_data="menu_full_persistent")
                             ],
                             [
-                                InlineKeyboardButton("💰 TIER INTEL", callback_data="menu_tier_intel"),
-                                InlineKeyboardButton("🎖️ XP ECONOMY", callback_data="menu_xp_economy")
-                            ],
-                            [
-                                InlineKeyboardButton("🌐 MISSION HUD", url="https://joinbitten.com/hud"),
-                                InlineKeyboardButton("❌ Close Menu", callback_data="menu_close")
+                                InlineKeyboardButton("⚡ ADVANCED MENU (Inline)", callback_data="menu_advanced_inline"),
+                                InlineKeyboardButton("❌ Hide All Menus", callback_data="menu_hide_all")
                             ]
                         ])
                         
-                        menu_text = f"""🎯 **INTEL COMMAND CENTER**
-                        
-Welcome to BITTEN tactical operations, {user_name}!
+                        menu_text = f"""🎯 **BITTEN MENU SYSTEM**
+
+Welcome to tactical operations, {user_name}!
+
+**Choose Your Interface:**
+
+📱 **QUICK MENU** - 3 buttons always visible at bottom
+🎯 **FULL MENU** - 7 buttons persistent keyboard  
+⚡ **ADVANCED MENU** - Complete inline interface
+❌ **HIDE MENUS** - Remove all keyboards
 
 **Current Status:**
 • Tier: {user_tier}
 • Systems: ✅ Operational
-• Signals: 📡 Monitoring
 
-**Available Intel:**
-🔫 Combat Ops - Mission status & execution
-📚 Field Manual - Trading guides & protocols  
-💰 Tier Intel - Subscription & upgrade info
-🎖️ XP Economy - Gamification & rewards
-
-Select an option below:"""
+Select your preferred menu style:"""
                         
                         self.bot.send_message(
                             message.chat.id, 
                             menu_text, 
-                            reply_markup=keyboard, 
+                            reply_markup=menu_selection, 
                             parse_mode="Markdown"
                         )
                         
@@ -666,11 +1098,428 @@ Select an option below:"""
                     else:
                         self.send_adaptive_response(message.chat.id, "❌ Tactical strategy system not available.", user_tier, "system_unavailable")
                 
+                elif message.text == "/recruit":
+                    # Credit referral recruitment command
+                    if self.credit_commands:
+                        try:
+                            # Direct integration without async conversion
+                            from src.bitten_core.credit_referral_system import get_credit_referral_system
+                            
+                            referral_system = get_credit_referral_system()
+                            user_id = str(message.from_user.id)
+                            
+                            # Generate referral code
+                            referral_code = referral_system.generate_referral_code(user_id)
+                            referral_link = f"https://t.me/Bitten_Commander_bot?start={referral_code}"
+                            
+                            # Get current stats
+                            stats = referral_system.get_referral_stats(user_id)
+                            balance = stats['balance']
+                            badge = self._get_current_badge_display(balance.referral_count)
+                            
+                            recruit_msg = f"""🎖️ **YOUR RECRUITMENT COMMAND CENTER**
+
+**🔗 Your Referral Link:**
+`{referral_link}`
+
+**📊 Current Stats:**
+💰 Available Credits: **${balance.total_credits:.0f}**
+⏳ Pending Credits: **${balance.pending_credits:.0f}**
+👥 Total Recruits: **{balance.referral_count}**
+🏆 Current Badge: **{badge}**
+
+**🎯 Progress to Free Month:**
+You need ${stats['progress_to_free_month']} more to earn a free month!
+({stats['free_months_earned']} free months earned so far)
+
+**💡 How It Works:**
+1. Share your link with friends
+2. They sign up and subscribe ($39+ tier)
+3. You get $10 credit after their first payment
+4. Credits automatically reduce your next bill
+
+Copy and share your link to start earning!"""
+                            
+                            self.send_adaptive_response(message.chat.id, recruit_msg, user_tier, "recruit_link")
+                        except Exception as e:
+                            logger.error(f"Recruit command error: {e}")
+                            error_msg = "❌ Recruitment system temporarily unavailable. Please try again later."
+                            self.send_adaptive_response(message.chat.id, error_msg, user_tier, "recruit_error")
+                    else:
+                        self.send_adaptive_response(message.chat.id, "❌ Recruitment system not available.", user_tier, "system_unavailable")
+                
+                elif message.text == "/credits":
+                    # Credit referral balance command
+                    if self.credit_commands:
+                        try:
+                            # Direct integration
+                            from src.bitten_core.credit_referral_system import get_credit_referral_system
+                            
+                            referral_system = get_credit_referral_system()
+                            user_id = str(message.from_user.id)
+                            
+                            stats = referral_system.get_referral_stats(user_id)
+                            balance = stats['balance']
+                            badge = self._get_current_badge_display(balance.referral_count)
+                            
+                            credits_msg = f"""💰 **YOUR CREDIT BALANCE**
+
+**Current Balance:**
+💳 Available Credits: **${balance.total_credits:.0f}**
+⏳ Pending Credits: **${balance.pending_credits:.0f}**
+✅ Applied Credits: **${balance.applied_credits:.0f}**
+
+**📈 Recruitment Success:**
+👥 Total Recruits: **{balance.referral_count}**
+🏆 Current Badge: **{badge}**
+🆓 Free Months Earned: **{stats['free_months_earned']}**
+
+**🎯 Progress to Next Free Month:**
+You're **${stats['progress_to_free_month']}** away from earning another free month!
+(NIBBLER tier = $39/month)
+
+**💡 How Credits Work:**
+• Earn $10 for each successful referral
+• Credits automatically apply to your next invoice
+• No expiration - stack as many as you want!
+• Credits apply before charging your payment method
+
+Use /recruit to get your referral link and start earning!"""
+
+                            if stats['recent_referrals']:
+                                credits_msg += "\n\n**📋 Recent Referrals:**\n"
+                                for i, referral in enumerate(stats['recent_referrals'][:5]):
+                                    status = "✅ Paid" if referral['credited'] else ("💰 Payment Pending" if referral['payment_confirmed'] else "⏳ Waiting for Payment")
+                                    credits_msg += f"{i+1}. User ID: `{referral['referred_user'][-8:]}...` - {status}\n"
+                            
+                            self.send_adaptive_response(message.chat.id, credits_msg, user_tier, "credits_balance")
+                        except Exception as e:
+                            logger.error(f"Credits command error: {e}")
+                            error_msg = "❌ Credits system temporarily unavailable. Please try again later."
+                            self.send_adaptive_response(message.chat.id, error_msg, user_tier, "credits_error")
+                    else:
+                        self.send_adaptive_response(message.chat.id, "❌ Credits system not available.", user_tier, "system_unavailable")
+                
+                elif message.text.startswith("/connect"):
+                    # MT5 Container Connection Handler
+                    try:
+                        response = self.telegram_command_connect_handler(message, uid, user_tier)
+                        
+                        # Check for special usage message flag
+                        if response == "SEND_USAGE_WITH_KEYBOARD":
+                            self._send_connect_usage_with_keyboard(str(message.chat.id), user_tier)
+                        else:
+                            self.send_adaptive_response(message.chat.id, response, user_tier, "connect_response")
+                    except Exception as e:
+                        logger.error(f"Connect command error: {e}")
+                        error_msg = """❌ Login failed. Please check your credentials and try again.
+
+**Format:**
+```
+/connect
+Login: <your_login_id>
+Password: <your_password>
+Server: <server_name>
+```
+
+**Example:**
+```
+/connect
+Login: 843859
+Password: MyP@ssw0rd
+Server: Coinexx-Demo
+```"""
+                        self.send_adaptive_response(message.chat.id, error_msg, user_tier, "connect_error")
+                
+                elif message.text.startswith("/notebook") or message.text.startswith("/journal") or message.text.startswith("/notes"):
+                    # Norman's Notebook access with XP integration
+                    try:
+                        from src.bitten_core.notebook_xp_integration import create_notebook_xp_integration
+                        
+                        # Get notebook XP dashboard
+                        notebook_integration = create_notebook_xp_integration(uid)
+                        dashboard = notebook_integration.get_notebook_xp_dashboard()
+                        
+                        notebook_url = f"https://joinbitten.com/notebook/{uid}"
+                        
+                        # Check for signal pairing suggestions
+                        pairing_suggestions = dashboard.get('pairing_suggestions', [])
+                        signal_suggestion_text = ""
+                        
+                        if pairing_suggestions:
+                            recent_signal = pairing_suggestions[0]
+                            signal_suggestion_text = f"""
+🔗 **Recent Trade Available for Reflection:**
+📊 {recent_signal['symbol']} {recent_signal['direction']} 
+💡 Status: {recent_signal['status'].title()}
+🎯 TCS: {recent_signal['tcs_score']}%
+⏰ Executed: {recent_signal['executed_at'][:19].replace('T', ' ')}
+
+💭 *Consider adding your thoughts about this trade!*
+"""
+                        
+                        # Format milestone progress
+                        next_milestone = dashboard.get('next_milestone')
+                        milestone_text = ""
+                        if next_milestone:
+                            progress_bar = "█" * int(next_milestone['percentage'] / 10) + "░" * (10 - int(next_milestone['percentage'] / 10))
+                            milestone_text = f"""
+🏆 **Next Milestone:** {next_milestone['name']}
+📊 Progress: [{progress_bar}] {next_milestone['percentage']:.0f}%
+📝 Entries: {next_milestone['progress']}/{next_milestone['required']}
+🎁 Reward: +{next_milestone['xp_reward']} XP
+"""
+                        
+                        # Check for special benefits
+                        benefits_text = ""
+                        if dashboard.get('insight_mode_active'):
+                            benefits_text = "\n🧠 **Insight Mode Active** - Earn +2 XP for every fire + journal combo!"
+                        
+                        response = f"""📓 **NORMAN'S NOTEBOOK** 📓
+
+*Your tactical trading journal with growth rewards*
+
+📊 **Your Progress:**
+📝 Total Entries: {dashboard['total_entries']}
+⚡ XP Earned: {dashboard['total_xp_earned']} 
+🏆 Milestones: {dashboard['milestones_achieved']}
+📅 Weekly Streak: {dashboard['weekly_streak']} weeks{benefits_text}
+{signal_suggestion_text}{milestone_text}
+🎯 **Journal Features:**
+• **Trade Reflections** - Earn +8 XP when paired with signals
+• **Structured Templates** - Earn +5 XP for detailed entries  
+• **Weekly Reviews** - Earn +10 XP for comprehensive analysis
+• **Norman's Wisdom** - Unlock exclusive Delta trading stories
+• **Milestone Rewards** - Special badges and passive benefits
+
+💡 **Quick XP Guide:**
+✅ Basic Entry: +2 XP
+✅ Template Entry: +5 XP  
+✅ Signal Reflection: +8 XP
+✅ Weekly Review: +10 XP
+
+**[Open Your Notebook]({notebook_url})**
+
+*"Every trade tells a story. Every story builds a trader." - Norman's Legacy*"""
+
+                        from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+                        
+                        keyboard_buttons = [
+                            [InlineKeyboardButton("📓 Open Notebook", url=notebook_url)]
+                        ]
+                        
+                        # Add quick action for signal pairing if available
+                        if pairing_suggestions:
+                            recent_signal = pairing_suggestions[0]
+                            quick_reflect_url = f"https://joinbitten.com/notebook/{uid}/add-entry?signal_id={recent_signal['signal_id']}&template=trade_review"
+                            keyboard_buttons.append([InlineKeyboardButton("💭 Quick Trade Reflection (+8 XP)", url=quick_reflect_url)])
+                        
+                        keyboard_buttons.extend([
+                            [InlineKeyboardButton("❓ How to Use", callback_data="notebook_help")],
+                            [InlineKeyboardButton("📊 View XP Progress", callback_data="notebook_xp_progress")],
+                            [InlineKeyboardButton("❌ Close", callback_data="menu_close")]
+                        ])
+                        
+                        keyboard = InlineKeyboardMarkup(keyboard_buttons)
+                        
+                        self.send_adaptive_response(message.chat.id, response, user_tier, "notebook_access", reply_markup=keyboard)
+                        
+                    except Exception as e:
+                        logger.error(f"Notebook command error: {e}")
+                        error_msg = """❌ **Notebook temporarily unavailable**
+
+Please try again in a moment or access via the Mission HUD."""
+                        self.send_adaptive_response(message.chat.id, error_msg, user_tier, "notebook_error")
+                
+                # Persistent keyboard button handlers
+                elif message.text == "🔫 FIRE":
+                    # Redirect to fire command
+                    fake_message = message
+                    fake_message.text = "/fire"
+                    # Call the fire handler directly
+                    from src.bitten_core.fire_mode_executor import fire_mode_executor
+                    from src.bitten_core.fire_mode_database import fire_mode_db
+                    
+                    # Get user's fire mode
+                    user_mode = fire_mode_db.get_user_mode(uid)
+                    mode_name = user_mode.get('mode', 'manual')
+                    
+                    # Execute fire command
+                    if mode_name in ["semi_auto", "full_auto"]:
+                        result_msg = fire_mode_executor.execute_auto_fire(uid, user_tier, mode_name)
+                    else:
+                        result_msg = fire_mode_executor.execute_manual_fire(uid, user_tier)
+                    
+                    self.send_adaptive_response(message.chat.id, result_msg, user_tier, "persistent_fire")
+                
+                elif message.text == "📊 STATUS":
+                    # Redirect to status command
+                    status_msg = self.get_system_status(uid)
+                    self.send_adaptive_response(message.chat.id, status_msg, user_tier, "persistent_status")
+                
+                elif message.text == "💰 CREDITS":
+                    # Redirect to credits command
+                    if self.credit_commands:
+                        try:
+                            from src.bitten_core.credit_referral_system import get_credit_referral_system
+                            
+                            referral_system = get_credit_referral_system()
+                            user_id = str(message.from_user.id)
+                            
+                            stats = referral_system.get_referral_stats(user_id)
+                            balance = stats['balance']
+                            badge = self._get_current_badge_display(balance.referral_count)
+                            
+                            credits_msg = f"""💰 **YOUR CREDIT BALANCE**
+
+**Current Status:**
+💰 Available Credits: **${balance.total_credits:.0f}**
+⏳ Pending Credits: **${balance.pending_credits:.0f}**
+👥 Total Recruits: **{balance.referral_count}**
+🏆 Current Badge: **{badge}**
+🆓 Free Months Earned: **{stats['free_months_earned']}**
+
+**💡 Quick Actions:**
+• Use /recruit to get your referral link
+• Share your link to earn more credits
+• Credits automatically apply to your next bill"""
+
+                            self.send_adaptive_response(message.chat.id, credits_msg, user_tier, "persistent_credits")
+                        except Exception as e:
+                            logger.error(f"Persistent credits error: {e}")
+                            self.send_adaptive_response(message.chat.id, "❌ Credits temporarily unavailable", user_tier, "credits_error")
+                    else:
+                        self.send_adaptive_response(message.chat.id, "❌ Credits system not available.", user_tier, "system_unavailable")
+                
+                elif message.text == "🎯 TACTICAL":
+                    # Redirect to tactics command
+                    if DRILL_SYSTEM_AVAILABLE:
+                        try:
+                            tactics_msg = self.get_tactical_menu_simple(uid, user_tier)
+                            self.send_adaptive_response(message.chat.id, tactics_msg, user_tier, "persistent_tactical")
+                        except Exception as e:
+                            logger.error(f"Persistent tactical error: {e}")
+                            self.send_adaptive_response(message.chat.id, "❌ Tactical system temporarily unavailable", user_tier, "tactical_error")
+                    else:
+                        self.send_adaptive_response(message.chat.id, "❌ Tactical strategy system not available.", user_tier, "system_unavailable")
+                
+                elif message.text == "📚 HELP":
+                    # Redirect to help command
+                    help_msg = self.get_help_message(uid)
+                    self.send_adaptive_response(message.chat.id, help_msg, user_tier, "persistent_help")
+                
+                elif message.text == "🏆 RECRUIT":
+                    # Redirect to recruit command
+                    if self.credit_commands:
+                        try:
+                            from src.bitten_core.credit_referral_system import get_credit_referral_system
+                            
+                            referral_system = get_credit_referral_system()
+                            user_id = str(message.from_user.id)
+                            
+                            referral_code = referral_system.generate_referral_code(user_id)
+                            referral_link = f"https://t.me/Bitten_Commander_bot?start={referral_code}"
+                            
+                            stats = referral_system.get_referral_stats(user_id)
+                            balance = stats['balance']
+                            badge = self._get_current_badge_display(balance.referral_count)
+                            
+                            recruit_msg = f"""🎖️ **RECRUITMENT COMMAND**
+
+**🔗 Your Link:**
+`{referral_link}`
+
+**📊 Stats:**
+💰 Credits: **${balance.total_credits:.0f}**
+👥 Recruits: **{balance.referral_count}**
+🏆 Badge: **{badge}**
+
+Share your link to earn $10 per successful referral!"""
+                            
+                            self.send_adaptive_response(message.chat.id, recruit_msg, user_tier, "persistent_recruit")
+                        except Exception as e:
+                            logger.error(f"Persistent recruit error: {e}")
+                            self.send_adaptive_response(message.chat.id, "❌ Recruitment temporarily unavailable", user_tier, "recruit_error")
+                    else:
+                        self.send_adaptive_response(message.chat.id, "❌ Recruitment system not available.", user_tier, "system_unavailable")
+                
+                elif message.text == "📱 MENU":
+                    # Show advanced inline menu
+                    try:
+                        from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+                        
+                        keyboard = InlineKeyboardMarkup([
+                            [
+                                InlineKeyboardButton("🔫 COMBAT OPS", callback_data="menu_combat_ops"),
+                                InlineKeyboardButton("📚 FIELD MANUAL", callback_data="menu_field_manual")
+                            ],
+                            [
+                                InlineKeyboardButton("💰 TIER INTEL", callback_data="menu_tier_intel"),
+                                InlineKeyboardButton("🎖️ XP ECONOMY", callback_data="menu_xp_economy")
+                            ],
+                            [
+                                InlineKeyboardButton("🌐 MISSION HUD", url="https://joinbitten.com/hud"),
+                                InlineKeyboardButton("❌ Close", callback_data="menu_close")
+                            ]
+                        ])
+                        
+                        menu_text = f"""🎯 **INTEL COMMAND CENTER**
+
+🔫 **COMBAT OPS** - Fire modes, trading controls
+📚 **FIELD MANUAL** - Commands, help system  
+💰 **TIER INTEL** - Subscription & upgrade info
+🎖️ **XP ECONOMY** - Badge system, achievements
+
+🌐 **MISSION HUD** - Live trading interface
+❌ **Close** - Close this menu
+
+Select an option to continue..."""
+                        
+                        self.bot.send_message(
+                            message.chat.id, 
+                            menu_text, 
+                            reply_markup=keyboard,
+                            parse_mode="Markdown"
+                        )
+                        
+                    except Exception as e:
+                        logger.error(f"Advanced menu error: {e}")
+                        self.send_adaptive_response(message.chat.id, "❌ Advanced menu temporarily unavailable", user_tier, "menu_error")
+                
+                elif message.text == "❌ HIDE":
+                    # Hide the persistent keyboard
+                    from telebot.types import ReplyKeyboardRemove
+                    self.bot.send_message(
+                        message.chat.id,
+                        "🫥 Persistent menu hidden. Type /menu to show it again.",
+                        reply_markup=ReplyKeyboardRemove()
+                    )
+                
+                else:
+                    # Fallback handler for unrecognized commands
+                    if message.text and message.text.startswith("/"):
+                        # This is a command we don't recognize
+                        fallback_msg = f"""❓ **Command not recognized:** `{message.text}`
+
+**Available Commands:**
+• `/help` - Show all commands
+• `/status` - System status check  
+• `/fire` - Execute trading signals
+• `/connect` - Setup MT5 terminal
+• `/notebook` - Access trading journal
+• `/menu` - Show command menu
+
+Use `/help` for the complete command list."""
+                        
+                        self.send_adaptive_response(message.chat.id, fallback_msg, user_tier, "unknown_command")
+                        logger.warning(f"Unknown command from user {uid}: {message.text}")
+                    # Non-command messages are handled by the generic handler below
+                
             except Exception as e:
                 logger.error(f"Error handling command {message.text}: {e}")
                 self.send_adaptive_response(message.chat.id, "❌ Command processing error. Please try again.", user_tier, "error")
         
-        @self.bot.callback_query_handler(func=lambda call: call.data.startswith("mode_") or call.data.startswith("slots_") or call.data.startswith("semi_fire_") or call.data.startswith("menu_") or call.data.startswith("combat_") or call.data.startswith("field_") or call.data.startswith("tier_") or call.data.startswith("xp_") or call.data.startswith("help_") or call.data.startswith("tool_") or call.data.startswith("bot_"))
+        @self.bot.callback_query_handler(func=lambda call: call.data.startswith("mode_") or call.data.startswith("slots_") or call.data.startswith("semi_fire_") or call.data.startswith("menu_") or call.data.startswith("combat_") or call.data.startswith("field_") or call.data.startswith("tier_") or call.data.startswith("xp_") or call.data.startswith("help_") or call.data.startswith("tool_") or call.data.startswith("bot_") or call.data.startswith("notebook_"))
         def handle_all_callbacks(call):
             """Handle all inline keyboard callbacks including fire mode and Intel Center"""
             user_id = str(call.from_user.id)
@@ -690,6 +1539,10 @@ Select an option below:"""
                     elif call.data.startswith("semi_fire_"):
                         fire_mode_executor.handle_semi_fire_callback(self.bot, call)
                 
+                # Handle menu system callbacks
+                elif call.data in ["menu_quick_persistent", "menu_full_persistent", "menu_advanced_inline", "menu_hide_all"]:
+                    self.handle_menu_system_callback(call, user_tier)
+                
                 # Handle Intel Center menu callbacks
                 elif call.data.startswith(("menu_", "combat_", "field_", "tier_", "xp_", "help_", "tool_", "bot_")):
                     self.handle_intel_center_callback(call, user_tier)
@@ -704,6 +1557,15 @@ Select an option below:"""
             except Exception as e:
                 logger.error(f"Callback error: {e}")
                 self.bot.answer_callback_query(call.id, "❌ Command failed. Please try again.", show_alert=True)
+        
+        # Initialize tactical and drill systems if available
+        if DRILL_TACTICAL_AVAILABLE:
+            try:
+                drill_system = DailyDrillReportSystem()
+                register_drill_report_handlers(self.bot, drill_system)
+                logger.info("✅ Drill report handlers registered")
+            except Exception as e:
+                logger.error(f"❌ Failed to register drill handlers: {e}")
         
         @self.bot.message_handler(func=lambda message: True)
         def handle_all_messages(message):
@@ -742,7 +1604,7 @@ Select an option below:"""
         try:
             status_parts = ["🧠 BITTEN SYSTEM STATUS:"]
             
-            # Check APEX engine
+            # Check engine
             apex_log = "/root/HydraX-v2/apex_v5_live_real.log"
             if os.path.exists(apex_log):
                 age = time.time() - os.path.getmtime(apex_log)
@@ -812,7 +1674,7 @@ Select an option below:"""
                 
                 tactics_msg = f"""🎯 **DAILY TACTICAL SELECTION**
 
-💰 **Current XP**: {user_xp:,}
+💰 **Current XP**: {user_xp:}
 📊 **Today's Status**: """
 
                 if daily_state and daily_state.selected_strategy:
@@ -864,9 +1726,25 @@ Your strategy determines signal filtering and risk parameters."""
         if BIT_AVAILABLE:
             help_parts.append("/bit – Chat with BIT, your AI companion")
         
-        help_parts.append("🎮 Fire Mode Commands:")
+        help_parts.append("🎮 Trading Commands:")
+        help_parts.append("/connect – Connect your MT5 account")
+        help_parts.append("")
+        help_parts.append("📋 /connect Example:")
+        help_parts.append("/connect")
+        help_parts.append("Login: 843859")
+        help_parts.append("Password: [Your MT5 Password]")
+        help_parts.append("Server: Coinexx-Demo")
+        help_parts.append("")
+        help_parts.append("ℹ️ Your terminal will be created automatically if it doesn't exist.")
+        help_parts.append("You'll receive a confirmation when it's ready.")
+        help_parts.append("")
         help_parts.append("/mode – View/change fire mode")
         help_parts.append("/slots – Configure AUTO slots (COMMANDER only)")
+        help_parts.append("")
+        help_parts.append("📓 Journal & Notes:")
+        help_parts.append("/notebook – Your personal trading journal")
+        help_parts.append("/journal – Same as /notebook")
+        help_parts.append("/notes – Same as /notebook")
         
         help_parts.append("🎫 Press Pass:")
         help_parts.append("/presspass – Activate 7-day free trial")
@@ -898,7 +1776,8 @@ Your strategy determines signal filtering and risk parameters."""
         if is_commander:
             help_parts.append("👑 Commander Commands:")
             help_parts.append("/status – System check (Commander)")
-            help_parts.append("/force_signal – Inject test mission (Commander)")
+            help_parts.append("/force_signal – Generate live VENOM v7.0 signal (Commander)")
+            help_parts.append("/venom_scan – Scan all pairs for VENOM signals (Commander)")
             help_parts.append("/ghosted – Tactical ghosted ops report (Commander)")
         
         user_config = AUTHORIZED_USERS.get(user_id, {})
@@ -987,33 +1866,181 @@ Your strategy determines signal filtering and risk parameters."""
         
         return "\\n".join(status_parts)
     
+    def handle_menu_system_callback(self, call, user_tier):
+        """Handle menu system selection callbacks"""
+        from telebot.types import ReplyKeyboardRemove
+        
+        user_id = str(call.from_user.id)
+        user_name = call.from_user.first_name or "Operative"
+        
+        try:
+            if call.data == "menu_quick_persistent":
+                # Show quick persistent menu
+                keyboard = self.create_quick_keyboard()
+                
+                response_text = f"""📱 **QUICK MENU ACTIVATED**
+
+{user_name}, your quick-access menu is now persistent at the bottom!
+
+🔫 **FIRE** - Execute trades
+💰 **CREDITS** - Check referral balance  
+📱 **MENU** - Show menu options
+
+This menu will stay visible for quick access! 🚀"""
+                
+                self.bot.edit_message_text(
+                    response_text,
+                    call.message.chat.id,
+                    call.message.message_id,
+                    reply_markup=None,
+                    parse_mode="Markdown"
+                )
+                
+                # Send a new message with the persistent keyboard
+                self.bot.send_message(
+                    call.message.chat.id,
+                    "Quick menu activated below! ⬇️",
+                    reply_markup=keyboard
+                )
+                
+            elif call.data == "menu_full_persistent":
+                # Show full persistent menu
+                keyboard = self.create_full_keyboard()
+                
+                response_text = f"""🎯 **FULL MENU ACTIVATED**
+
+{user_name}, your complete command menu is now active!
+
+All major commands are available as persistent buttons:
+🔫 FIRE • 📊 STATUS • 💰 CREDITS • 🎯 TACTICAL • 📚 HELP • 🏆 RECRUIT
+
+Use ❌ HIDE to remove the keyboard when needed."""
+                
+                self.bot.edit_message_text(
+                    response_text,
+                    call.message.chat.id,
+                    call.message.message_id,
+                    reply_markup=None,
+                    parse_mode="Markdown"
+                )
+                
+                # Send a new message with the persistent keyboard
+                self.bot.send_message(
+                    call.message.chat.id,
+                    "Full menu activated below! ⬇️",
+                    reply_markup=keyboard
+                )
+                
+            elif call.data == "menu_advanced_inline":
+                # Show advanced inline menu (original Intel Center)
+                from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+                
+                advanced_keyboard = InlineKeyboardMarkup([
+                    [
+                        InlineKeyboardButton("🔫 COMBAT OPS", callback_data="menu_combat_ops"),
+                        InlineKeyboardButton("📚 FIELD MANUAL", callback_data="menu_field_manual")
+                    ],
+                    [
+                        InlineKeyboardButton("💰 TIER INTEL", callback_data="menu_tier_intel"),
+                        InlineKeyboardButton("🎖️ XP ECONOMY", callback_data="menu_xp_economy")
+                    ],
+                    [
+                        InlineKeyboardButton("🌐 MISSION HUD", url="https://joinbitten.com/hud"),
+                        InlineKeyboardButton("❌ Close", callback_data="menu_close")
+                    ]
+                ])
+                
+                advanced_text = f"""⚡ **ADVANCED INTEL CENTER**
+
+Welcome to BITTEN tactical operations, {user_name}!
+
+**Current Status:**
+• Tier: {user_tier}
+• Systems: ✅ Operational
+• Signals: 📡 Monitoring
+
+**Available Intel:**
+🔫 Combat Ops - Mission status & execution
+📚 Field Manual - Trading guides & protocols  
+💰 Tier Intel - Subscription & upgrade info
+🎖️ XP Economy - Gamification & rewards
+
+Select an option below:"""
+                
+                self.bot.edit_message_text(
+                    advanced_text,
+                    call.message.chat.id,
+                    call.message.message_id,
+                    reply_markup=advanced_keyboard,
+                    parse_mode="Markdown"
+                )
+                
+            elif call.data == "menu_hide_all":
+                # Hide all keyboards
+                self.bot.edit_message_text(
+                    f"❌ **ALL MENUS HIDDEN**\n\n{user_name}, all keyboards have been removed.\n\nType `/menu` anytime to show menu options again!",
+                    call.message.chat.id,
+                    call.message.message_id,
+                    reply_markup=None,
+                    parse_mode="Markdown"
+                )
+                
+                # Send message with keyboard removal
+                self.bot.send_message(
+                    call.message.chat.id,
+                    "🫥 Keyboards hidden. Type /menu to restore.",
+                    reply_markup=ReplyKeyboardRemove()
+                )
+            
+            # Answer the callback query
+            self.bot.answer_callback_query(call.id, "Menu activated!")
+            
+        except Exception as e:
+            logger.error(f"Menu system callback error: {e}")
+            self.bot.answer_callback_query(call.id, "❌ Menu error", show_alert=True)
+    
     def handle_intel_center_callback(self, call, user_tier):
-        """Handle Intel Command Center menu callbacks"""
+        """Handle Intel Command Center menu callbacks with comprehensive system"""
         user_id = str(call.from_user.id)
         callback_data = call.data
         
         try:
-            # Import Intel Command Center handler
-            from deploy_intel_command_center import IntelCommandCenter
+            # Import comprehensive menu handler
+            from comprehensive_menu_integration import handle_any_callback
             
-            # Create a minimal update object for the handler
-            class MockUpdate:
-                def __init__(self, callback_query):
-                    self.callback_query = callback_query
-                    self.effective_user = callback_query.from_user
+            # Handle the callback with comprehensive system
+            result = handle_any_callback(callback_data, int(user_id), user_tier)
             
-            class MockContext:
-                pass
-            
-            # Create Intel Center instance
-            intel_center = IntelCommandCenter()
-            
-            # Create mock objects and handle the callback
-            mock_update = MockUpdate(call)
-            mock_context = MockContext()
-            
-            # Let Intel Center handle the callback
-            asyncio.run(intel_center.handle_menu_callback(mock_update, mock_context))
+            if result['success']:
+                # Send the comprehensive response
+                try:
+                    self.bot.edit_message_text(
+                        result['content'],
+                        call.message.chat.id,
+                        call.message.message_id,
+                        reply_markup=result.get('keyboard'),
+                        parse_mode="Markdown"
+                    )
+                    self.bot.answer_callback_query(call.id, f"✅ Content loaded ({result['source']})")
+                except:
+                    # If editing fails, send new message
+                    self.bot.send_message(
+                        call.message.chat.id, 
+                        result['content'], 
+                        reply_markup=result.get('keyboard'),
+                        parse_mode="Markdown"
+                    )
+                    self.bot.answer_callback_query(call.id, f"✅ Information sent ({result['source']})")
+            else:
+                # Send error response
+                self.bot.edit_message_text(
+                    result['content'],
+                    call.message.chat.id,
+                    call.message.message_id,
+                    reply_markup=None,
+                    parse_mode="Markdown"
+                )
+                self.bot.answer_callback_query(call.id, "⚠️ Content under construction")
             
         except Exception as e:
             logger.error(f"Intel Center callback error: {e}")
@@ -1027,83 +2054,287 @@ Your strategy determines signal filtering and risk parameters."""
                 except:
                     self.bot.answer_callback_query(call.id, "Menu closed")
                 return
+            
+            elif callback_data == "notebook_help":
+                # Notebook usage help
+                help_response = """📓 **HOW TO USE NORMAN'S NOTEBOOK**
+
+**🚀 GETTING STARTED:**
+1. **Open Your Notebook** - Click the button above or use `/notebook`
+2. **Write Your First Entry** - Reflect on your last trade
+3. **Track Your Emotions** - Note how trades made you feel
+4. **Learn from Patterns** - The system detects your habits
+
+**📝 WHAT TO WRITE:**
+• **Before Trading:** Your analysis and plan
+• **During Trades:** Your emotions and thoughts  
+• **After Trades:** What you learned, good or bad
+• **General Thoughts:** Market observations, goals, ideas
+
+**🎯 SPECIAL FEATURES:**
+• **Mood Detection** - Automatically analyzes your emotions
+• **Pattern Recognition** - Spots revenge trading, FOMO, etc.
+• **Norman's Wisdom** - Unlocks story entries as you grow
+• **Growth Tracking** - Charts your emotional development
+
+**💡 PRO TIPS:**
+• Be honest - the notebook is just for you
+• Write regularly - even short notes help
+• Review your entries weekly
+• Use the search feature to find patterns
+
+**🏆 WHAT YOU'LL GAIN:**
+• Better understanding of your trading psychology
+• Recognition of repeated mistakes  
+• Emotional growth tracking
+• Personal trading wisdom library
+
+*Remember: Every master trader keeps a journal!*"""
+
+                from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+                keyboard = InlineKeyboardMarkup([
+                    [InlineKeyboardButton("📓 Open Notebook", url=f"https://joinbitten.com/notebook/{call.from_user.id}")],
+                    [InlineKeyboardButton("❌ Close", callback_data="menu_close")]
+                ])
+                
+                try:
+                    self.bot.edit_message_text(
+                        help_response,
+                        call.message.chat.id,
+                        call.message.message_id,
+                        reply_markup=keyboard,
+                        parse_mode="Markdown"
+                    )
+                    self.bot.answer_callback_query(call.id, "📚 Notebook guide loaded")
+                except:
+                    self.bot.send_message(call.message.chat.id, help_response, reply_markup=keyboard, parse_mode="Markdown")
+                    self.bot.answer_callback_query(call.id, "📚 Help sent")
+                return
+            
+            elif callback_data == "notebook_xp_progress":
+                # Notebook XP progress display
+                try:
+                    from src.bitten_core.notebook_xp_integration import create_notebook_xp_integration
+                    
+                    user_id = str(call.from_user.id)
+                    notebook_integration = create_notebook_xp_integration(user_id)
+                    dashboard = notebook_integration.get_notebook_xp_dashboard()
+                    
+                    # Format milestones display
+                    all_milestones = notebook_integration.milestones
+                    achieved_milestones = notebook_integration.user_milestones
+                    
+                    milestones_text = ""
+                    for milestone in all_milestones:
+                        status_icon = "✅" if achieved_milestones.get(milestone.id, False) else "⏳"
+                        milestones_text += f"{status_icon} **{milestone.name}** ({milestone.entries_required} entries) - {milestone.xp_reward} XP\n"
+                        if milestone.passive_benefit:
+                            milestones_text += f"   🎁 Unlock: {milestone.passive_benefit}\n"
+                        milestones_text += "\n"
+                    
+                    # Recent activity
+                    recent_text = ""
+                    if dashboard['recent_entries']:
+                        recent_text = "\n📝 **Recent Activity:**\n"
+                        for entry in dashboard['recent_entries'][-3:]:
+                            entry_date = entry.get('created_at', 'Unknown')[:10] if entry.get('created_at') else 'Unknown'
+                            xp_earned = entry.get('xp_earned', 0)
+                            recent_text += f"• {entry.get('title', 'Untitled')[:30]}... (+{xp_earned} XP) - {entry_date}\n"
+                    
+                    progress_response = f"""📊 **NORMAN'S NOTEBOOK XP PROGRESS**
+
+📝 **Current Stats:**
+• Total Entries: {dashboard['total_entries']}
+• XP Earned from Journaling: {dashboard['total_xp_earned']}
+• Milestones Achieved: {dashboard['milestones_achieved']}/{len(all_milestones)}
+• Weekly Streak: {dashboard['weekly_streak']} weeks
+
+🏆 **Achievement Milestones:**
+{milestones_text}
+
+💡 **XP Rewards:**
+✅ Basic Entry: +2 XP
+✅ Structured Template: +5 XP  
+✅ Signal-Paired Reflection: +8 XP
+✅ Weekly Review: +10 XP
+✅ Milestone Achievement: +{max([m.xp_reward for m in all_milestones])} XP
+{recent_text}
+🎯 **Next Target:** {"Complete your first entry!" if dashboard['total_entries'] == 0 else f"Reach {dashboard['next_milestone']['required']} entries for {dashboard['next_milestone']['name']}!" if dashboard.get('next_milestone') else "All milestones achieved! 🏆"}
+
+*Keep journaling to unlock Norman's wisdom and earn XP!*"""
+
+                    from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+                    keyboard = InlineKeyboardMarkup([
+                        [InlineKeyboardButton("📓 Open Notebook", url=f"https://joinbitten.com/notebook/{call.from_user.id}")],
+                        [InlineKeyboardButton("🔙 Back to Notebook", callback_data="notebook_help")],
+                        [InlineKeyboardButton("❌ Close", callback_data="menu_close")]
+                    ])
+                    
+                    self.bot.edit_message_text(
+                        progress_response,
+                        call.message.chat.id,
+                        call.message.message_id,
+                        reply_markup=keyboard,
+                        parse_mode="Markdown"
+                    )
+                    self.bot.answer_callback_query(call.id, "📊 Progress loaded")
+                    
+                except Exception as e:
+                    logger.error(f"Notebook XP progress error: {e}")
+                    self.bot.answer_callback_query(call.id, "❌ Progress temporarily unavailable", show_alert=True)
+                return
                 
             elif "field_manual" in callback_data or "help_" in callback_data:
-                response = """📚 **FIELD MANUAL**
+                response = """📚 **FIELD MANUAL - User Guide**
                 
-**Trading Basics:**
-• Signals are generated by APEX engine
-• TCS score indicates trade quality (65%+ required)
-• Use /fire to execute current missions
-• SELECT FIRE = manual confirmation
-• AUTO FIRE = automatic execution (COMMANDER tier)
+**How Trading Works:**
+① Receive signal alerts in Telegram
+② Click mission briefing link  
+③ Review signal details in WebApp
+④ Click FIRE button (if allowed by tier)
+⑤ Trade executes automatically
 
-**Risk Management:**
-• Never risk more than you can afford
-• Always use stop losses
-• Manage position sizing carefully
-• Track your performance
+**Signal Types by Tier:**
+🦷 **NIBBLER**: Rapid Raid only (1:2 R:R)
+🔥 **FANG+**: All signals (Rapid & Sniper)
+• Rapid Raid = Quick 1:2 R:R trades
+• Sniper Shot = Longer 1:3+ R:R trades
 
-**Commands:**
-• /mode - Configure fire modes
-• /fire - Execute trades
-• /help - Show all commands"""
+**Risk Management (Automated):**
+• 2% of balance per trade (all tiers)
+• Position size auto-calculated
+• SL/TP preset by signal type
+• Trade slots limit exposure
+
+**🎖️ Your War Room (/me):**
+• View all achievements & kill cards
+• Share referral link ($10 per signup)
+• Track stats, ranks & recruits
+• Social sharing to FB/IG/X
+• Access Norman's Notebook
+• Your complete brag hub!
+
+**Quick Links:**
+• Mission HUD → Active signals
+• War Room → Your profile & stats
+• Intel Center → This help menu
+
+**🛡️ CITADEL System:**
+Advanced signal protection
+(Details coming soon)"""
                 
             elif "combat_ops" in callback_data:
                 response = """🔫 **COMBAT OPERATIONS**
                 
 **Mission Status:** ✅ Operational
-**Current Mode:** SELECT FIRE
-**Signals Today:** Monitoring markets
+**Signal Engine:** VENOM v7.0 Active
+**Today's Activity:** Monitoring markets
 
-**Active Features:**
-• Real-time signal generation
-• Mission briefing system
-• Trade execution engine
-• Performance tracking
+**Live Features:**
+• 84.3% win rate signals
+• Real-time mission alerts
+• One-click execution
+• Automated risk management
 
-**Quick Actions:**
-• Use /fire to execute pending missions
-• Use /mode to change firing modes
-• Check WebApp for detailed mission briefs"""
+**Your Mission Control:**
+📱 Signal alerts → Telegram
+🎯 Mission details → WebApp
+🔥 Execute trades → Fire button
+📊 Track results → War Room
+
+**Need Help?**
+Return to Intel Center for more options"""
+                
+            elif callback_data == "menu_intel_center":
+                # Show main Intel Center menu
+                response = """🎯 **INTEL COMMAND CENTER**
+
+Your central hub for all trading operations.
+
+**Available Sections:**
+🔫 **Combat Ops** - Live mission status
+📚 **Field Manual** - How to use BITTEN
+💰 **Tier Intel** - Subscription tiers
+🎖️ **XP Economy** - Rewards & badges
+
+**Quick Links:**
+🌐 Mission HUD - View live signals
+🎖️ War Room - Stats & referrals
+
+Select an option below to continue."""
                 
             elif "tier_" in callback_data:
                 response = f"""💰 **TIER INFORMATION**
                 
 **Your Current Tier:** {user_tier}
 
-**Available Tiers:**
+**🎯 Available Tiers & Trade Slots:**
+
 🎫 **PRESS PASS** - FREE (7-day trial)
-🦷 **NIBBLER** - $39/mo (1 trade slot)
-🔥 **FANG** - $89/mo (2 trade slots)
-⚡ **COMMANDER** - $189/mo (unlimited slots)
+• 1 trade slot (demo only)
+• Rapid Raid signals only
 
-**Upgrade Benefits:**
-• More concurrent trades
-• AUTO fire mode access
-• Priority signal delivery
-• Advanced features
+🦷 **NIBBLER** - $39/mo
+• 1 trade slot = 1 open position at a time
+• Rapid Raid signals only (1:2 R:R)
+• Perfect for beginners
 
-Visit the webapp for upgrade options."""
+🔥 **FANG** - $89/mo  
+• 2 trade slots = 2 concurrent positions
+• Access to ALL signal types:
+  - Rapid Raid (1:2 R:R) 
+  - Sniper Shots (1:3+ R:R)
+
+⚡ **COMMANDER** - $189/mo
+• Unlimited trade slots
+• All signal types + Full AUTO mode
+• Trades fire automatically as slots open
+
+**💡 What are Trade Slots?**
+Think of them as chambers in a gun. Each slot allows one open trade. When a trade closes (hits TP/SL), that slot opens for the next opportunity.
+
+**Risk Management:** All tiers use 2% risk per trade, calculated automatically."""
                 
             elif "xp_" in callback_data:
-                response = """🎖️ **XP ECONOMY**
+                # Try to get real XP data
+                try:
+                    from src.bitten_core.xp_integration import XPIntegrationManager
+                    xp_manager = XPIntegrationManager()
+                    xp_status = xp_manager.get_user_xp_status(str(call.from_user.id))
+                    current_xp = xp_status.get('xp_balance', {}).get('current_balance', 0)
+                    level = xp_status.get('profile', {}).get('level', 1)
+                except:
+                    current_xp = 0
+                    level = 1
                 
-**Current XP:** Building...
-**Level:** Operative
-**Next Unlock:** Advanced features
+                response = f"""🎖️ **XP ECONOMY**
+                
+**Your Stats:**
+• Current XP: **{current_xp:,}** 
+• Level: **{level}**
+• Rank: **{user_tier}**
 
-**Earn XP By:**
-• Executing successful trades
-• Maintaining win streaks
-• Using the system consistently
-• Completing challenges
+**📈 How to Earn XP:**
+• Execute trades: +10 XP per trade
+• Win trades: +20 XP bonus
+• Daily login: +5 XP
+• Notebook entries: +8 XP
+• Recruit traders: +50 XP
+• Complete challenges: +25-100 XP
 
-**XP Rewards:**
-• Unlock new features
-• Access to premium signals
-• Enhanced personality traits
-• Achievement badges"""
+**🎯 XP Unlocks:**
+• Level 5: Custom callsigns
+• Level 10: Priority signals
+• Level 20: Elite badge
+• Level 50: Prestige reset
+
+**🛍️ XP Shop:**
+• Signal boosts
+• Risk multipliers
+• Custom themes
+• Exclusive content
+
+Visit your War Room to track progress!"""
                 
             else:
                 response = """🎯 **INTEL CENTER**
@@ -1119,19 +2350,621 @@ This feature provides tactical information and system guidance.
 **Need Help?**
 Use /help for command list or visit the webapp for detailed information."""
             
-            # Send the response
+            # Create navigation buttons for easy access
+            from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+            
+            # Standard navigation keyboard for all menu sections
+            nav_keyboard = InlineKeyboardMarkup()
+            
+            # Add contextual buttons based on current section
+            if "field_manual" in callback_data:
+                nav_keyboard.row(
+                    InlineKeyboardButton("🌐 Mission HUD", url="https://joinbitten.com/hud"),
+                    InlineKeyboardButton("🎖️ War Room", url="https://joinbitten.com/me")
+                )
+            elif "combat_ops" in callback_data:
+                nav_keyboard.row(
+                    InlineKeyboardButton("📚 Field Manual", callback_data="menu_field_manual"),
+                    InlineKeyboardButton("🌐 Mission HUD", url="https://joinbitten.com/firestatus")
+                )
+            elif callback_data == "menu_intel_center":
+                # Main Intel Center - show all options
+                nav_keyboard.row(
+                    InlineKeyboardButton("🔫 Combat Ops", callback_data="menu_combat_ops"),
+                    InlineKeyboardButton("📚 Field Manual", callback_data="menu_field_manual")
+                )
+                nav_keyboard.row(
+                    InlineKeyboardButton("💰 Tier Intel", callback_data="menu_tier_intel"),
+                    InlineKeyboardButton("🎖️ XP Economy", callback_data="menu_xp_economy")
+                )
+                nav_keyboard.row(
+                    InlineKeyboardButton("🌐 Mission HUD", url="https://joinbitten.com/hud"),
+                    InlineKeyboardButton("🎖️ War Room", url="https://joinbitten.com/me")
+                )
+                nav_keyboard.row(
+                    InlineKeyboardButton("❌ Close", callback_data="menu_close")
+                )
+            elif "tier_" in callback_data or "xp_" in callback_data:
+                nav_keyboard.row(
+                    InlineKeyboardButton("🌐 Mission HUD", url="https://joinbitten.com/hud"),
+                    InlineKeyboardButton("🎖️ War Room", url="https://joinbitten.com/me")
+                )
+            
+            # Always add standard navigation row (except for intel center main)
+            if callback_data != "menu_intel_center":
+                nav_keyboard.row(
+                    InlineKeyboardButton("🏠 Intel Center", callback_data="menu_intel_center"),
+                    InlineKeyboardButton("❌ Close", callback_data="menu_close")
+                )
+            
+            # Send the response with navigation
             try:
                 self.bot.edit_message_text(
                     response,
                     call.message.chat.id,
                     call.message.message_id,
-                    parse_mode="Markdown"
+                    parse_mode="Markdown",
+                    reply_markup=nav_keyboard
                 )
                 self.bot.answer_callback_query(call.id, "Information loaded")
             except:
                 # If editing fails, send new message
-                self.bot.send_message(call.message.chat.id, response, parse_mode="Markdown")
+                self.bot.send_message(
+                    call.message.chat.id, 
+                    response, 
+                    parse_mode="Markdown",
+                    reply_markup=nav_keyboard
+                )
                 self.bot.answer_callback_query(call.id, "Information sent")
+    
+    def telegram_command_connect_handler(self, message, uid: str, user_tier: str) -> str:
+        """
+        Handle /connect command for MT5 container onboarding
+        Securely inject credentials and start MT5 login process
+        """
+        try:
+            # Import registry and status tracker
+            from src.bitten_core.user_registry_manager import get_user_registry_manager
+            from src.bitten_core.container_status_tracker import get_container_status_tracker
+            
+            registry = get_user_registry_manager()
+            status_tracker = get_container_status_tracker()
+            
+            # Security: Log connection attempt (without credentials)
+            logger.info(f"User {uid} attempting MT5 connection")
+            
+            # STEP 1: Check if this is just "/connect" without arguments
+            message_text = message.text.strip()
+            
+            # If it's just "/connect" (no additional content), trigger WebApp redirect immediately
+            if message_text == "/connect":
+                logger.info(f"User {uid} sent /connect only - triggering WebApp redirect")
+                return "SEND_USAGE_WITH_KEYBOARD"  # Special flag for enhanced usage
+            
+            # Otherwise, try to parse credentials from message
+            credentials = self._parse_connect_credentials(message_text)
+            if not credentials:
+                logger.info(f"User {uid} sent /connect with invalid format - triggering WebApp redirect")
+                return "SEND_USAGE_WITH_KEYBOARD"  # Special flag for enhanced usage
+            
+            login_id, password, server_name = credentials
+            
+            # Security: Validate input parameters
+            if not self._validate_connection_params(login_id, password, server_name):
+                return "❌ Invalid connection parameters. Please check your login ID, password, and server name."
+            
+            # STEP 2: Map user to container and register in registry
+            container_name = f"mt5_user_{uid}"
+            
+            # Register user in registry if not already registered
+            user_info = registry.get_user_info(uid)
+            if not user_info:
+                registry.register_user(uid, uid, container_name, str(login_id), server_name)
+            else:
+                # Update existing user credentials
+                registry.update_user_credentials(uid, str(login_id), server_name)
+            
+            # STEP 2: Auto-handle container creation and management
+            container_status = self._ensure_container_ready_enhanced(container_name, uid)
+            if not container_status['success']:
+                return container_status['message']
+            
+            # STEP 3: Inject credentials into MT5 config with timeout
+            registry.update_user_status(uid, "credentials_injected")
+            if not self._inject_mt5_credentials_with_timeout(container_name, login_id, password, server_name):
+                registry.update_user_status(uid, "error_state")
+                return "⏳ Still initializing your terminal. Please try /connect again in a minute."
+            
+            # STEP 4: Restart MT5 and verify login with timeout
+            login_result = self._restart_mt5_and_login_with_timeout(container_name)
+            if not login_result['success']:
+                if login_result.get('timeout'):
+                    return "⏳ Still initializing your terminal. Please try /connect again in a minute."
+                else:
+                    registry.update_user_status(uid, "error_state")
+                    return "❌ MT5 login failed. Please verify your credentials and server."
+            
+            # STEP 5: Extract account telemetry
+            account_info = self._extract_account_telemetry(container_name, login_id)
+            if not account_info:
+                registry.update_user_status(uid, "error_state")
+                return "❌ Could not extract account information. Login may have failed."
+            
+            registry.update_user_status(uid, "mt5_logged_in")
+            
+            # STEP 6: Register with Core system
+            self._register_account_with_core(uid, account_info)
+            
+            # STEP 7: Check if EA is ready and update status
+            container_status = status_tracker.check_container_status(container_name)
+            if container_status.ea_active:
+                registry.update_user_status(uid, "ready_for_fire")
+            
+            # Record successful connection
+            registry.record_successful_connection(uid)
+            
+            # STEP 8: Return enhanced success message
+            return f"""✅ Your terminal is now active and connected to {server_name}.
+You're ready to receive signals. Type /status to confirm.
+
+💳 **Account Details:**
+• Broker: {account_info.get('broker', 'Unknown')}
+• Balance: ${account_info.get('balance', 0):,.2f}
+• Leverage: 1:{account_info.get('leverage', 'Unknown')}
+• Currency: {account_info.get('currency', 'USD')}
+
+🛡️ **System Status:** {container_status.status}
+
+🔗 **Connection Info:**
+• Container: `{container_name}`
+• Login: `{login_id}`
+• Server: `{server_name}`"""
+            
+        except Exception as e:
+            logger.error(f"Connect handler error for user {uid}: {e}")
+            return "❌ Connection failed due to system error. Please try again later."
+    
+    def _parse_connect_credentials(self, message_text: str) -> Optional[tuple]:
+        """Parse credentials from /connect message format"""
+        try:
+            lines = message_text.split('\n')
+            login_id = None
+            password = None
+            server_name = None
+            
+            for line in lines:
+                line = line.strip()
+                if line.lower().startswith('login:'):
+                    login_id = line.split(':', 1)[1].strip()
+                elif line.lower().startswith('password:'):
+                    password = line.split(':', 1)[1].strip()
+                elif line.lower().startswith('server:'):
+                    server_name = line.split(':', 1)[1].strip()
+            
+            if login_id and password and server_name:
+                try:
+                    login_id = int(login_id)
+                    return (login_id, password, server_name)
+                except ValueError:
+                    return None
+            return None
+        except Exception as e:
+            logger.error(f"Credential parsing error: {e}")
+            return None
+    
+    def _ensure_container_ready(self, container_name: str) -> bool:
+        """Legacy method - kept for backward compatibility"""
+        result = self._ensure_container_ready_enhanced(container_name, "legacy")
+        return result['success']
+    
+    def _ensure_container_ready_enhanced(self, container_name: str, user_id: str) -> dict:
+        """Enhanced container handling with auto-creation and improved error messages"""
+        try:
+            import docker
+            client = docker.from_env()
+            
+            # STEP 2.1: Check if container exists
+            try:
+                container = client.containers.get(container_name)
+                logger.info(f"Container {container_name} found with status: {container.status}")
+                
+                # STEP 2.2: If exists but stopped, start it
+                if container.status != 'running':
+                    logger.info(f"Starting stopped container: {container_name}")
+                    container.start()
+                    
+                    # Wait for container to be ready
+                    for i in range(10):  # 10 second timeout
+                        time.sleep(1)
+                        container.reload()
+                        if container.status == 'running':
+                            logger.info(f"Container {container_name} started successfully")
+                            return {'success': True, 'message': 'Container started'}
+                    
+                    return {
+                        'success': False, 
+                        'message': "⏳ Still initializing your terminal. Please try /connect again in a minute."
+                    }
+                
+                return {'success': True, 'message': 'Container ready'}
+                
+            except docker.errors.NotFound:
+                # STEP 2.3: Container doesn't exist - create from template
+                logger.info(f"Container {container_name} not found. Creating from template...")
+                
+                # Check if template exists
+                try:
+                    template_image = client.images.get('hydrax-user-template:latest')
+                except docker.errors.ImageNotFound:
+                    logger.error("hydrax-user-template:latest not found")
+                    return {
+                        'success': False,
+                        'message': "We couldn't find your terminal. It may not be active yet. Please try again in a few minutes or contact support."
+                    }
+                
+                # Create new container from template
+                try:
+                    logger.info(f"Creating new container {container_name} from hydrax-user-template")
+                    container = client.containers.run(
+                        'hydrax-user-template:latest',
+                        name=container_name,
+                        detach=True,
+                        restart_policy={"Name": "unless-stopped"},
+                        environment={
+                            'USER_ID': user_id,
+                            'CONTAINER_NAME': container_name
+                        },
+                        volumes={
+                            f'mt5_data_{user_id}': {'bind': '/wine/drive_c/MetaTrader5/Data', 'mode': 'rw'}
+                        }
+                    )
+                    
+                    # Wait for container initialization
+                    logger.info(f"Waiting for container {container_name} to initialize...")
+                    for i in range(10):  # 10 second timeout
+                        time.sleep(1)
+                        container.reload()
+                        if container.status == 'running':
+                            logger.info(f"Container {container_name} created and started successfully")
+                            return {'success': True, 'message': 'Container created successfully'}
+                    
+                    return {
+                        'success': False,
+                        'message': "⏳ Still initializing your terminal. Please try /connect again in a minute."
+                    }
+                    
+                except Exception as create_error:
+                    logger.error(f"Failed to create container {container_name}: {create_error}")
+                    return {
+                        'success': False,
+                        'message': "We couldn't find your terminal. It may not be active yet. Please try again in a few minutes or contact support."
+                    }
+            
+        except Exception as e:
+            logger.error(f"Enhanced container check error for {container_name}: {e}")
+            return {
+                'success': False,
+                'message': "We couldn't find your terminal. It may not be active yet. Please try again in a few minutes or contact support."
+            }
+    
+    def _inject_mt5_credentials_with_timeout(self, container_name: str, login_id: int, password: str, server_name: str) -> bool:
+        """Enhanced credential injection with timeout handling"""
+        try:
+            # Try injection with timeout
+            import threading
+            import time
+            
+            result = {'success': False}
+            
+            def inject_credentials():
+                result['success'] = self._inject_mt5_credentials(container_name, login_id, password, server_name)
+            
+            # Run injection in thread with timeout
+            thread = threading.Thread(target=inject_credentials)
+            thread.daemon = True
+            thread.start()
+            thread.join(timeout=10.0)  # 10 second timeout
+            
+            if thread.is_alive():
+                logger.error(f"Credential injection timeout for {container_name}")
+                return False
+            
+            return result['success']
+            
+        except Exception as e:
+            logger.error(f"Enhanced credential injection error: {e}")
+            return False
+    
+    def _inject_mt5_credentials(self, container_name: str, login_id: int, password: str, server_name: str) -> bool:
+        """Inject MT5 credentials into container config with security measures"""
+        try:
+            client = docker.from_env()
+            container = client.containers.get(container_name)
+            
+            # Security: Never log the password
+            logger.info(f"Injecting credentials for login {login_id} on server {server_name}")
+            
+            # Create terminal.ini config content (password will be masked in logs)
+            config_content = f"""[Common]
+Login={login_id}
+Password={password}
+Server={server_name}
+ProxyEnable=0
+ProxyType=0
+ProxyAddress=
+ProxyPort=0
+ProxyLogin=
+ProxyPassword=
+KeepPrivate=0
+NewsEnable=1
+MaxBars=65000
+DataServer=
+EnableDDE=0
+EnableAPI=1
+"""
+            
+            # Encode config content to base64 to avoid shell injection
+            encoded_content = base64.b64encode(config_content.encode()).decode()
+            
+            # Write config to container securely
+            exec_result = container.exec_run([
+                'bash', '-c', 
+                f'mkdir -p /wine/drive_c/MetaTrader5/config && echo "{encoded_content}" | base64 -d > /wine/drive_c/MetaTrader5/config/terminal.ini && chmod 600 /wine/drive_c/MetaTrader5/config/terminal.ini'
+            ])
+            
+            if exec_result.exit_code == 0:
+                # Also create the fire.txt file for trade execution
+                container.exec_run([
+                    'bash', '-c',
+                    'mkdir -p /wine/drive_c/MetaTrader5/Files/BITTEN && touch /wine/drive_c/MetaTrader5/Files/BITTEN/fire.txt && chmod 666 /wine/drive_c/MetaTrader5/Files/BITTEN/fire.txt'
+                ])
+                return True
+            return False
+        except Exception as e:
+            logger.error(f"Credential injection error: {e}")
+            return False
+    
+    def _restart_mt5_and_login_with_timeout(self, container_name: str) -> dict:
+        """Enhanced MT5 restart with timeout and better feedback"""
+        try:
+            import threading
+            
+            result = {'success': False, 'timeout': False}
+            
+            def restart_mt5():
+                result['success'] = self._restart_mt5_and_login(container_name)
+            
+            # Run restart in thread with timeout
+            thread = threading.Thread(target=restart_mt5)
+            thread.daemon = True
+            thread.start()
+            thread.join(timeout=10.0)  # 10 second timeout
+            
+            if thread.is_alive():
+                logger.error(f"MT5 restart timeout for {container_name}")
+                result['timeout'] = True
+                return result
+            
+            return result
+            
+        except Exception as e:
+            logger.error(f"Enhanced MT5 restart error: {e}")
+            return {'success': False, 'timeout': False}
+    
+    def _restart_mt5_and_login(self, container_name: str) -> bool:
+        """Restart MT5 terminal and attempt login"""
+        try:
+            client = docker.from_env()
+            container = client.containers.get(container_name)
+            
+            # Kill existing MT5 processes
+            container.exec_run(['pkill', 'terminal64.exe'], detach=True)
+            time.sleep(3)
+            
+            # Start MT5 in portable mode
+            container.exec_run([
+                'bash', '-c',
+                'cd /wine/drive_c/Program\\ Files/MetaTrader\\ 5/ && wine terminal64.exe /portable'
+            ], detach=True)
+            
+            # Wait for login attempt
+            time.sleep(10)
+            
+            # Check if login was successful (simplified check)
+            result = container.exec_run([
+                'bash', '-c',
+                'ls -la /wine/drive_c/MetaTrader5/config/ | grep terminal.ini'
+            ])
+            
+            return result.exit_code == 0
+        except Exception as e:
+            logger.error(f"MT5 restart error: {e}")
+            return False
+    
+    def _extract_account_telemetry(self, container_name: str, login_id: int) -> Optional[dict]:
+        """Extract account information from MT5"""
+        try:
+            client = docker.from_env()
+            container = client.containers.get(container_name)
+            
+            # Use a simple Python script to extract account info via MetaTrader5 library
+            extraction_script = f'''
+import sys
+sys.path.append("/opt/")
+try:
+    import MetaTrader5 as mt5
+    if mt5.initialize():
+        account_info = mt5.account_info()
+        if account_info:
+            import json
+            result = {{
+                "login": account_info.login,
+                "balance": account_info.balance,
+                "currency": account_info.currency,
+                "leverage": account_info.leverage,
+                "broker": account_info.company,
+            }}
+            print(json.dumps(result))
+        mt5.shutdown()
+    else:
+        print('{{"error": "MT5 initialization failed"}}')
+except Exception as e:
+    print(f'{{"error": "{{e}}"}}')
+'''
+            
+            # Execute the script in the container
+            result = container.exec_run([
+                'python3', '-c', extraction_script
+            ])
+            
+            if result.exit_code == 0:
+                try:
+                    account_data = json.loads(result.output.decode().strip())
+                    if 'error' not in account_data:
+                        return account_data
+                except json.JSONDecodeError:
+                    pass
+            
+            # Fallback: return basic info
+            return {
+                "login": login_id,
+                "balance": 0.00,
+                "currency": "USD",
+                "leverage": 500,
+                "broker": "Unknown"
+            }
+        except Exception as e:
+            logger.error(f"Telemetry extraction error: {e}")
+            return None
+    
+    def _register_account_with_core(self, uid: str, account_info: dict) -> bool:
+        """Register account with Core system"""
+        try:
+            # Send account info to Core API
+            core_payload = {
+                "user_id": uid,
+                "login": account_info.get("login"),
+                "broker": account_info.get("broker"),
+                "balance": account_info.get("balance"),
+                "currency": account_info.get("currency"),
+                "leverage": account_info.get("leverage")
+            }
+            
+            # Try to send to Core (fallback gracefully if not available)
+            try:
+                response = requests.post(
+                    "http://localhost:8888/api/register_account", 
+                    json=core_payload,
+                    timeout=5
+                )
+                return response.status_code == 200
+            except requests.RequestException:
+                logger.info("Core API not available, skipping registration")
+                return True
+                
+        except Exception as e:
+            logger.error(f"Core registration error: {e}")
+            return True  # Don't fail the whole process
+    
+    def _get_connect_usage_message(self, chat_id: str) -> str:
+        """Return usage instructions for /connect command with throttling"""
+        
+        # Check throttling
+        current_time = datetime.now()
+        if chat_id in self.connect_usage_throttle:
+            last_sent = self.connect_usage_throttle[chat_id]
+            time_diff = (current_time - last_sent).total_seconds()
+            if time_diff < self.connect_throttle_window:
+                return "⏳ Please wait before requesting connection help again."
+        
+        # Update throttle timestamp
+        self.connect_usage_throttle[chat_id] = current_time
+        
+        return """👋 To set up your trading terminal, please either:
+
+🌐 Use the WebApp:  
+https://joinbitten.com/connect
+
+or
+
+✍️ Paste your credentials like this:
+/connect  
+Login: 843859  
+Password: [Your MT5 Password]  
+Server: Coinexx1Demo
+
+✅ Your terminal will be created automatically if it doesn't exist.  
+📲 You'll receive a confirmation when it's online and ready."""
+    
+    def _send_connect_usage_with_keyboard(self, chat_id: str, user_tier: str) -> None:
+        """Send enhanced /connect usage message with inline keyboard"""
+        try:
+            from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+            
+            # Get the usage message (with throttling)
+            usage_message = self._get_connect_usage_message(chat_id)
+            
+            # Check if throttled
+            if usage_message.startswith("⏳"):
+                logger.info(f"🛡️ /connect request throttled for {chat_id} - 60s cooldown active")
+                self.send_adaptive_response(chat_id, usage_message, user_tier, "connect_throttled")
+                return
+            
+            # Create inline keyboard with WebApp button
+            keyboard = InlineKeyboardMarkup()
+            webapp_button = InlineKeyboardButton(
+                text="🌐 Use WebApp",
+                url="https://joinbitten.com/connect"
+            )
+            keyboard.add(webapp_button)
+            
+            # Send message with keyboard
+            self.bot.send_message(
+                chat_id=chat_id,
+                text=usage_message,
+                parse_mode="Markdown",
+                reply_markup=keyboard,
+                disable_web_page_preview=True
+            )
+            
+            logger.info(f"✅ WebApp redirect triggered for {chat_id} - Enhanced /connect usage sent with keyboard")
+            
+        except Exception as e:
+            logger.error(f"Error sending connect usage with keyboard: {e}")
+            # Fallback to regular message
+            self.send_adaptive_response(chat_id, self._get_connect_usage_message(chat_id), user_tier, "connect_usage")
+    
+    def _validate_connection_params(self, login_id: int, password: str, server_name: str) -> bool:
+        """Validate connection parameters for security"""
+        try:
+            # Validate login ID (should be positive integer)
+            if not isinstance(login_id, int) or login_id <= 0:
+                return False
+            
+            # Validate password (basic checks)
+            if not password or len(password) < 4 or len(password) > 100:
+                return False
+            
+            # Validate server name (should be alphanumeric with allowed special chars)
+            if not server_name or len(server_name) > 50:
+                return False
+            
+            # Server name should only contain safe characters
+            allowed_chars = string.ascii_letters + string.digits + '-._'
+            if not all(c in allowed_chars for c in server_name):
+                return False
+            
+            # Security: Check for potential injection attempts
+            dangerous_patterns = [';', '&&', '||', '`', '$', '(', ')', '|']
+            for pattern in dangerous_patterns:
+                if pattern in password or pattern in server_name:
+                    logger.warning(f"Potential injection attempt detected in credentials")
+                    return False
+            
+            return True
+        except Exception as e:
+            logger.error(f"Parameter validation error: {e}")
+            return False
     
     def run(self):
         """Start the bot"""

@@ -23,7 +23,7 @@
 - Test results and analysis files maintained
 
 ### Old Implementations (Already in /archive/old_*)
-- `old_apex/` - Previous APEX versions
+- `old_apex/` - Previous versions
 - `old_bridges/` - Bridge system archives  
 - `old_webapps/` - Webapp iterations
 - `old_implementations/` - Legacy code

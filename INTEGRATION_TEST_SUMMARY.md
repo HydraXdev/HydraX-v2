@@ -32,7 +32,7 @@ This document summarizes the comprehensive integration testing performed on the 
 ## Components Tested
 
 ### ✅ Working Components
-1. **APEX Telegram Connector** (`/root/HydraX-v2/apex_telegram_connector.py`)
+1. **Telegram Connector** (`/root/HydraX-v2/apex_telegram_connector.py`)
    - Successfully parses signal formats: `🎯 SIGNAL #1: EURUSD BUY TCS:85%`
    - Handles multiple currency pairs and trade directions
    - Proper TCS score extraction
@@ -91,7 +91,7 @@ Success Rate: 100.0%
 ## Pipeline Validation
 
 ### Signal-to-Mission-to-Execution Flow
-1. **Signal Detection**: ✅ APEX log monitoring working
+1. **Signal Detection**: ✅ log monitoring working
 2. **Signal Parsing**: ✅ Telegram connector parsing correctly
 3. **Mission Generation**: ✅ Mission files created with proper structure
 4. **Mission Persistence**: ✅ Files saved to `/root/HydraX-v2/missions/`

@@ -17,11 +17,11 @@ A full-width panel at the top provides instant visibility of the most critical m
   - NIBBLER ($39): Green
   - FANG ($89): Orange  
   - COMMANDER ($189): Deep Orange
-  - APEX ($188): Red
+  - (): Red
 
 #### System Status (Center-Left)
 - **Bridge Status**: Real-time MT5 bridge connection status
-- **APEX Status**: Signal engine online/offline status
+- **Status**: Signal engine online/offline status
 - **Signals/Hour**: Current signal generation rate
 
 #### Performance Metrics (Center-Right)
@@ -51,7 +51,7 @@ A full-width panel at the top provides instant visibility of the most critical m
 - Maintains existing functionality
 - Shows active users with tier, XP, and activity
 
-#### APEX Engine Control (Full Width)
+#### Engine Control (Full Width)
 Now includes 4 sections in an optimized grid:
 1. **Engine Status**: Start/Stop controls, PID, signal count
 2. **Configuration**: Sliders for all tuning parameters
@@ -128,7 +128,7 @@ Now includes 4 sections in an optimized grid:
 
 ### Daily Operations
 1. Check MRR and growth trend
-2. Monitor system status (Bridge, APEX)
+2. Monitor system status (Bridge)
 3. Review execution rate for user engagement
 4. Check ghost trades for optimization opportunities
 
@@ -139,7 +139,7 @@ Now includes 4 sections in an optimized grid:
 4. Track Press Pass to paid conversion
 
 ### System Management
-1. APEX controls consolidated in one section
+1. controls consolidated in one section
 2. Quick actions for immediate response
 3. Live activity feed for real-time monitoring
 4. Emergency controls always visible

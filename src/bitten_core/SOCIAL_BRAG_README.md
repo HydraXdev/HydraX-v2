@@ -41,7 +41,7 @@ The Social Brag Notification System automatically sends military-themed squad no
 ### Rank Promotions
 - **FANG**: "🏆 {username} just achieved FANG rank! Sharp teeth, sharper trades!"
 - **COMMANDER**: "🏆 {username} just achieved COMMANDER rank! Leadership through firepower!"
-- **APEX**: "🏆 {username} just achieved APEX rank! The pinnacle of trading warfare!"
+- ****: "🏆 {username} just achieved rank! The pinnacle of trading warfare!"
 
 ### Prestige Achievements
 - **Level 1**: "⭐ {username} just achieved PRESTIGE LEVEL 1! Legendary status unlocked!"

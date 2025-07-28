@@ -168,8 +168,7 @@ The BITTEN system uses a hybrid approach for MT5 integration:
 {
     "user_id": 123456,
     "username": "trader123",
-    "tier": "APEX",
-    "xp": 15000,
+    "tier": "xp": 15000,
     "balance": 5000.00,
     "active_positions": 2,
     "session_pnl": 150.50
@@ -345,8 +344,7 @@ class DatabaseSession:
 {
     "user_id": 123456,
     "telegram_id": 987654321,
-    "tier": "APEX",
-    "xp": 15000,
+    "tier": "xp": 15000,
     "subscription_status": "active",
     "callsign": "ALPHA_TRADER",
     "created_at": "2024-01-01T00:00:00Z",

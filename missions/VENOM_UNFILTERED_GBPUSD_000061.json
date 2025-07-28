@@ -1,0 +1,14 @@
+{
+  "signal_id": "VENOM_UNFILTERED_GBPUSD_000061",
+  "symbol": "GBPUSD",
+  "direction": "SELL",
+  "confidence": 99,
+  "shield_score": 6.0,
+  "shield_class": "SHIELD_ACTIVE",
+  "signal_type": "RAPID_ASSAULT",
+  "target_pips": 28,
+  "stop_pips": 14,
+  "risk_reward": 2.0,
+  "timestamp": 1753674493.7527325,
+  "source": "VENOM_CITADEL_LIVE"
+}

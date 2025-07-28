@@ -33,7 +33,6 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-
 class MetaQuotesServiceManager:
     """Manages all MetaQuotes-related services"""
     
@@ -174,10 +173,8 @@ class MetaQuotesServiceManager:
                 'error': str(e)
             }
 
-
 # Global service manager instance
 service_manager = MetaQuotesServiceManager()
-
 
 async def main():
     """Main entry point"""
@@ -213,13 +210,11 @@ async def main():
         await shutdown()
         sys.exit(1)
 
-
 async def shutdown():
     """Graceful shutdown"""
     logger.info("Shutting down MetaQuotes services...")
     await service_manager.stop()
     logger.info("Shutdown complete")
-
 
 if __name__ == "__main__":
     # Create logs directory if it doesn't exist

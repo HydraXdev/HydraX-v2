@@ -1,0 +1,232 @@
+{
+  "component_weights": {
+    "signal_quality": {
+      "weight": 1.5,
+      "max_score": 2.5,
+      "factors": {
+        "signal_strength": {
+          "STRONG": 1.5,
+          "MODERATE": 1.0,
+          "WEAK": 0.5,
+          "VERY_WEAK": 0.0
+        },
+        "risk_reward_ratio": {
+          "threshold": 2.0,
+          "max_bonus": 1.0,
+          "scaling": "linear"
+        },
+        "entry_confluence": {
+          "bonus": 0.5,
+          "required_keywords": ["confluence", "alignment", "confirmation"]
+        }
+      }
+    },
+    "liquidity_analysis": {
+      "weight": 3.0,
+      "max_score": 4.0,
+      "factors": {
+        "sweep_detection": {
+          "high_quality": 2.0,
+          "medium_quality": 1.5,
+          "low_quality": 1.0,
+          "no_sweep": 0.0
+        },
+        "trap_probability": {
+          "HIGH": -2.5,
+          "MEDIUM": -1.0,
+          "LOW": -0.5,
+          "MINIMAL": 0.0
+        },
+        "order_block_proximity": {
+          "bonus": 0.5,
+          "penalty_if_against": -0.5
+        },
+        "psychological_level": {
+          "major": 0.5,
+          "strong": 0.3,
+          "minor": 0.1,
+          "none": 0.0
+        }
+      }
+    },
+    "market_regime": {
+      "weight": 2.0,
+      "max_score": 2.5,
+      "factors": {
+        "regime_favorability": {
+          "trending_bull": 1.0,
+          "trending_bear": 1.0,
+          "breakout": 0.8,
+          "ranging_calm": 0.3,
+          "ranging_volatile": -0.5,
+          "news_driven": -1.0,
+          "undefined": 0.0
+        },
+        "volatility_assessment": {
+          "low": 0.25,
+          "normal": 0.0,
+          "elevated": -0.25,
+          "high": -0.5,
+          "extreme": -1.0
+        },
+        "session_optimization": {
+          "optimal_pair_bonus": 0.5,
+          "suboptimal_penalty": -0.25
+        }
+      }
+    },
+    "timeframe_alignment": {
+      "weight": 2.5,
+      "max_score": 3.0,
+      "factors": {
+        "alignment_count": {
+          "4_of_4": 2.0,
+          "3_of_4": 1.5,
+          "2_of_4": 0.8,
+          "1_of_4": 0.2,
+          "0_of_4": -0.5
+        },
+        "conflict_penalties": {
+          "per_conflict": -0.5,
+          "max_penalty": -1.5
+        },
+        "confluence_bonuses": {
+          "per_confluence": 0.25,
+          "max_bonus": 0.75
+        },
+        "h4_weight_multiplier": 1.5
+      }
+    },
+    "timing_factors": {
+      "weight": 1.0,
+      "max_score": 1.0,
+      "factors": {
+        "news_proximity": {
+          "high_impact_90min": -2.0,
+          "high_impact_2hr": -1.0,
+          "medium_impact_1hr": -0.5,
+          "low_impact": -0.25,
+          "no_news": 0.0
+        },
+        "session_liquidity": {
+          "high_liquidity": 0.0,
+          "normal_liquidity": 0.0,
+          "low_liquidity": -0.5
+        },
+        "volatility_timing": {
+          "entry_in_spike": -0.5,
+          "entry_in_calm": 0.25
+        }
+      }
+    }
+  },
+  "risk_penalties": {
+    "news_high_impact": {
+      "penalty": -2.0,
+      "description": "High-impact news event approaching"
+    },
+    "trap_high_probability": {
+      "penalty": -2.5,
+      "description": "High probability of retail trap"
+    },
+    "volatility_extreme": {
+      "penalty": -1.5,
+      "description": "Extreme volatility conditions"
+    },
+    "timeframe_conflicts": {
+      "penalty": -1.0,
+      "description": "Multiple timeframe conflicts"
+    },
+    "low_liquidity_session": {
+      "penalty": -0.5,
+      "description": "Low liquidity trading session"
+    },
+    "counter_trend": {
+      "penalty": -1.0,
+      "description": "Signal against dominant trend"
+    },
+    "multiple_resistance": {
+      "penalty": -0.75,
+      "description": "Multiple resistance levels overhead"
+    }
+  },
+  "quality_bonuses": {
+    "post_sweep_entry": {
+      "bonus": 2.0,
+      "description": "Entry after liquidity sweep",
+      "required_conditions": ["sweep_detected", "time_since_sweep <= 3"]
+    },
+    "strong_tf_alignment": {
+      "bonus": 1.5,
+      "description": "Excellent multi-timeframe alignment",
+      "required_conditions": ["alignment_quality in ['EXCELLENT', 'GOOD']"]
+    },
+    "trend_continuation": {
+      "bonus": 1.0,
+      "description": "Strong trend continuation setup",
+      "required_conditions": ["signal_type == 'CONTINUATION'", "trend_strength >= 3"]
+    },
+    "key_level_confluence": {
+      "bonus": 1.0,
+      "description": "Multiple key level confluence",
+      "required_conditions": ["psychological_level", "order_block_nearby"]
+    },
+    "optimal_session": {
+      "bonus": 0.5,
+      "description": "Optimal session for pair",
+      "required_conditions": ["is_optimal_pair", "session_range == 'high'"]
+    },
+    "institutional_pattern": {
+      "bonus": 1.5,
+      "description": "Classic institutional setup",
+      "required_conditions": ["sweep_detected", "order_block_nearby", "no_retail_indicators"]
+    }
+  },
+  "classification_thresholds": {
+    "SHIELD_APPROVED": {
+      "min_score": 8.0,
+      "label": "SHIELD APPROVED",
+      "emoji": "🛡️",
+      "color": "green",
+      "recommendation_template": "High-confidence institutional setup. {position_sizing} recommended."
+    },
+    "SHIELD_ACTIVE": {
+      "min_score": 6.0,
+      "label": "SHIELD ACTIVE", 
+      "emoji": "✅",
+      "color": "blue",
+      "recommendation_template": "Decent setup with {caution_count} caution(s). Consider {position_sizing}."
+    },
+    "VOLATILITY_ZONE": {
+      "min_score": 4.0,
+      "label": "VOLATILITY ZONE",
+      "emoji": "⚠️",
+      "color": "yellow",
+      "recommendation_template": "Risky environment detected. {main_risk}. Trade with extreme caution or skip."
+    },
+    "UNVERIFIED": {
+      "min_score": 0.0,
+      "label": "UNVERIFIED",
+      "emoji": "🔍",
+      "color": "gray",
+      "recommendation_template": "Cannot verify institutional behavior. {main_issue}. Consider paper trading only."
+    }
+  },
+  "position_sizing_guidelines": {
+    "score_ranges": {
+      "9.0_10.0": "Full position",
+      "8.0_8.9": "Standard position",
+      "7.0_7.9": "75% position",
+      "6.0_6.9": "50% position",
+      "4.0_5.9": "25% position or skip",
+      "0.0_3.9": "Skip recommended"
+    }
+  },
+  "adaptive_parameters": {
+    "learning_rate": 0.01,
+    "min_samples_for_adjustment": 100,
+    "performance_threshold": 0.7,
+    "adjustment_frequency_days": 7,
+    "max_weight_change": 0.2
+  }
+}

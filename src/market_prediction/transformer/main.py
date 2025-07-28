@@ -41,7 +41,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-
 class MarketPredictionSystem:
     """
     Complete market prediction system with all components integrated.
@@ -384,7 +383,6 @@ class MarketPredictionSystem:
         
         logger.info("System shutdown completed")
 
-
 def main():
     """Main entry point."""
     parser = argparse.ArgumentParser(description='Market Prediction Transformer System')
@@ -483,7 +481,6 @@ def main():
     finally:
         system.shutdown()
 
-
 def create_default_config() -> Dict:
     """Create default configuration file."""
     config = {
@@ -569,7 +566,6 @@ def create_default_config() -> Dict:
     }
     
     return config
-
 
 if __name__ == '__main__':
     # Create default config if requested

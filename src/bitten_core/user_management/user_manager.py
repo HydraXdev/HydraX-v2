@@ -24,7 +24,6 @@ from ..onboarding.press_pass_manager import PressPassManager
 
 logger = logging.getLogger(__name__)
 
-
 class UserManager:
     """Comprehensive user management system for BITTEN"""
     
@@ -290,7 +289,7 @@ class UserManager:
         
         Args:
             user_id: User database ID
-            new_tier: Target tier (NIBBLER, FANG, COMMANDER, APEX)
+            new_tier: Target tier (NIBBLER, FANG, COMMANDER)
             payment_method: Payment method used
             
         Returns:
@@ -750,7 +749,6 @@ class UserManager:
                 
         except Exception as e:
             logger.error(f"Error logging tier upgrade: {e}")
-
 
 # Singleton instance
 user_manager = UserManager()

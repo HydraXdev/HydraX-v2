@@ -12,7 +12,6 @@ import numpy as np
 from typing import Optional, Tuple, Dict
 import math
 
-
 class LocalAttention(nn.Module):
     """
     Local attention mechanism that focuses on nearby time steps.
@@ -62,7 +61,6 @@ class LocalAttention(nn.Module):
             end = min(seq_len, i + window_size // 2 + 1)
             mask[i, start:end] = 1
         return mask.unsqueeze(0)
-
 
 class DilatedAttention(nn.Module):
     """
@@ -132,7 +130,6 @@ class DilatedAttention(nn.Module):
                     mask[i, j] = 1
         return mask.unsqueeze(0)
 
-
 class ProbabilisticAttention(nn.Module):
     """
     Probabilistic attention that models uncertainty in attention weights.
@@ -199,7 +196,6 @@ class ProbabilisticAttention(nn.Module):
         output = self.output(mean_output)
         
         return output, mean_weights, var_output
-
 
 class CrossTimeScaleAttention(nn.Module):
     """
@@ -268,7 +264,6 @@ class CrossTimeScaleAttention(nn.Module):
         output = self.dropout(output)
         
         return output, attention_maps
-
 
 class PatternMatchingAttention(nn.Module):
     """
@@ -339,7 +334,6 @@ class PatternMatchingAttention(nn.Module):
         output = self.output(weighted_patterns)
         
         return output, pattern_importance
-
 
 class HierarchicalAttention(nn.Module):
     """

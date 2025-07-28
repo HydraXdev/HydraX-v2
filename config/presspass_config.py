@@ -48,6 +48,12 @@ PRESS_PASS_CONFIG = {
         "ICMarkets-Demo": 0.3    # 30% ICMarkets accounts
     },
     
+    # 🚨 PROTECTED ACCOUNTS - DO NOT USE FOR PRESS PASS
+    "reserved_accounts": [
+        100007013135,  # MASTER CLONE TEMPLATE - PERMANENTLY RESERVED
+        5038318494,    # ENGINE DATA FEED - PERMANENTLY RESERVED
+    ],
+    
     # Security Settings
     "max_login_attempts": 3,
     "account_lockout_duration": timedelta(hours=1),

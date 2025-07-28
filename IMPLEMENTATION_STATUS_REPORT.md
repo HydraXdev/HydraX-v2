@@ -119,7 +119,7 @@ After thorough analysis of the codebase, the TODO.md file is **significantly out
 **Evidence**:
 - Daily loss limit enforcement:
   - NIBBLER: -6% (enforced)
-  - FANG/COMMANDER/APEX: -8.5% (enforced)
+  - FANG/COMMANDER/: -8.5% (enforced)
 - Tilt detection system
 - Medic mode activation at -5%
 - Force exit capabilities

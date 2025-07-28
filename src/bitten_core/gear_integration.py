@@ -17,7 +17,6 @@ from .reward_system import RewardSystem
 
 logger = logging.getLogger(__name__)
 
-
 class GearDropManager:
     """Manages gear drops from various game events"""
     
@@ -115,8 +114,7 @@ class GearDropManager:
         # Get user stats for luck calculation
         user_stats = {
             'win_rate': trade_result.get('win_rate', 0.5),
-            'profit_streak': trade_result.get('consecutive_wins', 0),
-        }
+            'profit_streak': trade_result.get('consecutive_wins', 0)}
         
         luck = self.calculate_luck_multiplier(user_id, user_stats)
         
@@ -180,8 +178,7 @@ class GearDropManager:
             'elite_sniper': GearType.INDICATOR,
             'mogul': GearType.BOOST,
             'speed_demon': GearType.CONSUMABLE,
-            'professor': GearType.INDICATOR,
-        }
+            'professor': GearType.INDICATOR}
         
         # Determine gear type based on achievement
         preferred_type = achievement_gear_map.get(achievement_id)
@@ -407,7 +404,6 @@ class GearDropManager:
             tradeable=False  # Achievement items are soulbound
         )
 
-
 class GearEventScheduler:
     """Schedules special gear drop events"""
     
@@ -487,7 +483,6 @@ class GearEventScheduler:
                     modified_chance *= 1.5
         
         return min(modified_chance, 1.0)  # Cap at 100%
-
 
 class GearRewardIntegration:
     """Integrates gear drops with the reward system"""
@@ -594,7 +589,6 @@ class GearRewardIntegration:
             enhanced_stats['critical_chance'] += set_bonus.critical_chance
         
         return enhanced_stats
-
 
 # Example usage in main bot
 def setup_gear_system(bot_instance):

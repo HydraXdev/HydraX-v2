@@ -11,7 +11,6 @@ from dataclasses import dataclass
 
 from .gear_system import GearItem, GearRarity, GearType, GearStats, Loadout
 
-
 class GearVisualizer:
     """Creates visual representations of gear and inventory"""
     
@@ -122,7 +121,7 @@ class GearVisualizer:
     ) -> str:
         """Format loadout display with equipped items"""
         display = f"⚔️ **{loadout.name}**\n"
-        display += f"Power Score: {loadout.get_power_score(gear_items):,}\n"
+        display += f"Power Score: {loadout.get_power_score(gear_items):}\n"
         display += "━" * 30 + "\n\n"
         
         # Show equipped items by slot
@@ -448,7 +447,6 @@ class GearVisualizer:
         
         return display
 
-
 class GearStatsFormatter:
     """Formats gear statistics for display"""
     
@@ -503,7 +501,7 @@ class GearStatsFormatter:
         
         # Total stats
         summary += f"**Total Gear:** {inventory_display['total_items']} items\n"
-        summary += f"**Total Power:** {inventory_display['total_power']:,}\n"
+        summary += f"**Total Power:** {inventory_display['total_power']:}\n"
         summary += f"**Storage Used:** {inventory_display['inventory_space']['used']}"
         summary += f"/{inventory_display['inventory_space']['max']}\n\n"
         

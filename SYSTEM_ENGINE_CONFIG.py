@@ -1,7 +1,7 @@
 """
 BITTEN SYSTEM ENGINE CONFIGURATION
 ==================================
-SINGLE ENGINE ONLY - APEX v5.0
+SINGLE ENGINE ONLY - v5.0
 
 This file is the SINGLE SOURCE OF TRUTH for which engine is active.
 There is ONLY ONE engine active at any time.
@@ -10,19 +10,19 @@ Previous recording of multiple engines was an ERROR.
 """
 
 # ACTIVE ENGINE CONFIGURATION
-ACTIVE_ENGINE = "APEX_v5.0"
+ACTIVE_ENGINE = "_v5.0"
 ENGINE_MODE = "ULTRA_AGGRESSIVE"
 TCS_MIN = 35
 TCS_MAX = 95
 TRADING_PAIRS_COUNT = 15
 
 # Engine Import Path
-from apex_v5_integration import APEXv5IntegrationManager as SignalEngine
+from apex_v5_integration import v5IntegrationManager as SignalEngine
 
 # Validation
 def validate_engine_config():
     """Ensure only one engine is active"""
-    assert ACTIVE_ENGINE == "APEX_v5.0", "Only APEX v5.0 should be active"
+    assert ACTIVE_ENGINE == "_v5.0", "Only v5.0 should be active"
     assert TCS_MIN == 35, "TCS minimum should be 35 for v5.0"
     assert TCS_MAX == 95, "TCS maximum should be 95 for v5.0"
     print(f"✅ Engine Validation Passed: {ACTIVE_ENGINE} (TCS {TCS_MIN}-{TCS_MAX})")

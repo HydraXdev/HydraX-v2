@@ -1,0 +1,8 @@
+[Common]
+Name=Forex.com-Demo
+Address=demo-mt5.forex.com:443
+Environment=Demo
+DataServer=demo-mt5.forex.com:443
+Ping=demo-mt5.forex.com:443
+Company=FOREX.com
+AccountServer=demo-mt5.forex.com:443

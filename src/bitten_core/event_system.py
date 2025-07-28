@@ -15,7 +15,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-
 class EventType(Enum):
     """Types of events in the system"""
     HAPPY_HOUR = "happy_hour"
@@ -25,14 +24,12 @@ class EventType(Enum):
     STUDY_SUNDAY = "study_sunday"
     CUSTOM = "custom"
 
-
 class EventStatus(Enum):
     """Status of an event"""
     SCHEDULED = "scheduled"
     ACTIVE = "active"
     COMPLETED = "completed"
     CANCELLED = "cancelled"
-
 
 @dataclass
 class Event:
@@ -48,7 +45,6 @@ class Event:
     restrictions: Dict[str, Any] = field(default_factory=dict)
     metadata: Dict[str, Any] = field(default_factory=dict)
     notifications_sent: List[str] = field(default_factory=list)
-
 
 class EventScheduler:
     """Handles scheduling and management of events"""
@@ -496,7 +492,6 @@ class EventScheduler:
         
         return schedule
 
-
 class EventManager:
     """High-level event management interface"""
     
@@ -591,7 +586,6 @@ class EventManager:
                 stats["metrics"][key] = 0
             stats["metrics"][key] += value
 
-
 # Example usage
 async def main():
     """Example usage of the event system"""
@@ -631,7 +625,6 @@ async def main():
     await asyncio.sleep(5)
     
     await manager.shutdown()
-
 
 if __name__ == "__main__":
     asyncio.run(main())

@@ -1,4 +1,28 @@
 {
+  "7176191872": {
+    "user_id": "7176191872",
+    "telegram_id": "7176191872",
+    "mt5_account": "94956065",
+    "timestamp": "2025-07-27T23:45:00.000000",
+    "ready_to_trade": true,
+    "ready_for_fire": true,
+    "tier": "COMMANDER",
+    "simulation_disabled": true,
+    "commander_override": true,
+    "unlimited_fire_access": true,
+    "checks": {
+      "account_linked": true,
+      "mt5_credentials_verified": true,
+      "fire_routing_enabled": true,
+      "hud_integration_active": true,
+      "zero_simulation_enforced": true,
+      "direct_mt5_routing": true
+    },
+    "message": "🎉 COMMANDER AUTHORIZED - ZERO SIMULATION - UNRESTRICTED FIRE ACCESS",
+    "next_steps": [],
+    "role": "PRIMARY_USER_TEST_TERMINAL",
+    "authorization": "MAXIMUM - NO RESTRICTIONS"
+  },
   "843859": {
     "user_id": "843859",
     "timestamp": "2025-07-17T12:49:42.812596",

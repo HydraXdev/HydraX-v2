@@ -36,7 +36,7 @@ class PositionManager:
             1000: 2,   # $1000-2000: 2 positions
             2000: 3,   # $2000-5000: 3 positions
             5000: 5,   # $5000+: 5 positions
-            10000: 10  # $10k+: 10 positions (APEX unlimited)
+            10000: 10  # $10k+: 10 positions (unlimited)
         }
         
         # Risk parameters
@@ -137,8 +137,8 @@ class PositionManager:
     def _get_position_limit(self, balance: float, tier: TierLevel) -> int:
         """Get position limit based on balance and tier"""
         
-        # APEX gets special treatment
-        if tier == TierLevel.APEX:
+        # gets special treatment
+        if tier == TierLevel.:
             if balance >= 10000:
                 return 99  # Effectively unlimited
             elif balance >= 5000:
@@ -164,7 +164,7 @@ class PositionManager:
             TierLevel.NIBBLER: 500,
             TierLevel.FANG: 500,
             TierLevel.COMMANDER: 1000,
-            TierLevel.APEX: 2000
+            TierLevel.: 2000
         }
         return min_balances.get(tier, 500)
     

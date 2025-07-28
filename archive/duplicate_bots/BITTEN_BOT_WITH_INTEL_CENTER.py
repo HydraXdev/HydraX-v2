@@ -179,7 +179,6 @@ class BITTENBot:
         
         return message
 
-
 # Bot handlers
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle /start command"""
@@ -361,8 +360,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         'norman': "🐱 Norman appears and stares at you judgmentally...",
         'signals': f"📡 Signals: {'ACTIVE' if bot_state['signals_active'] else 'DISABLED'}\n📊 Sent today: {bot_state['signals_sent']}",
         'status': f"🤖 BITTEN Bot Status: ONLINE\n📡 Signals: {'ACTIVE' if bot_state['signals_active'] else 'DISABLED'}\n🎯 Intel Center: {'ONLINE' if INTEL_CENTER_AVAILABLE else 'OFFLINE'}",
-        'ping': "🏓 Pong! Bot is responsive.",
-    }
+        'ping': "🏓 Pong! Bot is responsive."}
     
     if message_text in keyword_responses:
         await update.message.reply_text(keyword_responses[message_text])

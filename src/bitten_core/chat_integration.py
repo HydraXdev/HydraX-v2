@@ -22,7 +22,6 @@ from .security_utils import SecurityUtils  # Assuming this exists
 
 logger = logging.getLogger(__name__)
 
-
 class ChatIntegration:
     """Integrates chat system with BITTEN infrastructure"""
     
@@ -699,7 +698,6 @@ class ChatIntegration:
             logger.error(f"Failed to get chat statistics: {e}")
             return {}
 
-
 # Example usage and initialization
 def initialize_chat_integration(app: Flask, **kwargs) -> ChatIntegration:
     """Initialize chat integration with Flask app"""
@@ -715,7 +713,6 @@ def initialize_chat_integration(app: Flask, **kwargs) -> ChatIntegration:
     except Exception as e:
         logger.error(f"Failed to initialize chat integration: {e}")
         raise
-
 
 if __name__ == "__main__":
     # Test initialization

@@ -447,8 +447,7 @@ class IntermarketDivergenceDetector:
         ('SPX', 'VIX', 'negative'),
         ('EURUSD', 'DXY', 'negative'),
         ('COPPER', 'AUD', 'positive'),
-        ('DAX', 'EURUSD', 'mixed'),
-    ]
+        ('DAX', 'EURUSD', 'mixed')]
     
     def __init__(self):
         self.market_data = {}
@@ -997,8 +996,7 @@ if __name__ == "__main__":
         AssetData('EURUSD', AssetClass.FOREX, 1.0850, 0.5, 1000000, datetime.now()),
         AssetData('GOLD', AssetClass.COMMODITY, 2050.50, 1.2, 500000, datetime.now()),
         AssetData('SPX', AssetClass.INDEX, 4500.00, 0.8, 2000000, datetime.now()),
-        AssetData('US10Y', AssetClass.BOND, 4.25, 0.1, 0, datetime.now(), {'yield': 4.25}),
-    ]
+        AssetData('US10Y', AssetClass.BOND, 4.25, 0.1, 0, datetime.now(), {'yield': 4.25})]
     
     for data in test_data:
         correlation_system.update_market_data(data)

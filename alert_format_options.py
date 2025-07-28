@@ -16,8 +16,7 @@ arcade_formats = [
     ["🔫 CONTACT 78%", "🔫 ENGAGE 82%", "🔫 EXECUTE 91%"],
     
     # Format 4: Speed focused
-    ["🔫 FLASH 78%", "🔫 RAPID 82%", "🔫 QUICK 91%"],
-]
+    ["🔫 FLASH 78%", "🔫 RAPID 82%", "🔫 QUICK 91%"]]
 
 # SNIPER Alert Options (Long precision - lightning/fire)
 sniper_formats = [
@@ -31,8 +30,7 @@ sniper_formats = [
     ["⚡ CROSSHAIR 87%", "⚡ SCOPE 92%", "⚡ TARGET 96%"],
     
     # Format 4: Distance themed
-    ["🔥 DISTANCE 87%", "🔥 RANGE 92%", "🔥 HORIZON 96%"],
-]
+    ["🔥 DISTANCE 87%", "🔥 RANGE 92%", "🔥 HORIZON 96%"]]
 
 # Alternative visual combinations
 visual_options = [

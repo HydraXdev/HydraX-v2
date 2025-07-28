@@ -15,7 +15,6 @@ import base64
 from dataclasses import dataclass
 from enum import Enum
 
-
 class RankTier(Enum):
     """Military rank tiers based on profit levels"""
     RECRUIT = ("Recruit", 0, 50, "#808080", "⬤")
@@ -28,14 +27,12 @@ class RankTier(Enum):
     COLONEL = ("Colonel", 5000, 10000, "#E5E4E2", "★★★★★")
     GENERAL = ("General", 10000, float('inf'), "#B9F2FF", "⚔️")
 
-
 class CardTheme(Enum):
     """Card themes"""
     DARK = "dark"
     LIGHT = "light"
     TACTICAL = "tactical"
     NEON = "neon"
-
 
 @dataclass
 class TradeData:
@@ -57,7 +54,6 @@ class TradeData:
     def __post_init__(self):
         if self.achievements is None:
             self.achievements = []
-
 
 class KillCardGenerator:
     """Generates military-style kill cards for successful trades"""
@@ -577,7 +573,6 @@ class KillCardGenerator:
             "format": "png"
         }
 
-
 # Achievement detection functions
 def detect_achievements(trade_data: TradeData) -> List[str]:
     """Detect achievements earned from the trade"""
@@ -617,7 +612,6 @@ def detect_achievements(trade_data: TradeData) -> List[str]:
     
     return achievements
 
-
 def parse_duration_to_minutes(duration: str) -> float:
     """Parse duration string to minutes"""
     # Simple parser for formats like "5m", "1h 30m", "2d 3h"
@@ -639,7 +633,6 @@ def parse_duration_to_minutes(duration: str) -> float:
             total_minutes += seconds / 60
     
     return total_minutes
-
 
 # Example usage
 if __name__ == "__main__":

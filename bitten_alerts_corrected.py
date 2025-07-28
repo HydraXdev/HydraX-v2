@@ -42,8 +42,7 @@ CORRECT_EXAMPLES = [
     
     # FANG+ ACCESS
     {"tcs": 87, "filter": "SNIPER", "tier": "FANG", "alert": "⭐ 87%", "note": "FANG can access sniper"},
-    {"tcs": 92, "filter": "SNIPER", "tier": "COMMANDER", "alert": "💎 92%", "note": "COMMANDER AUTO would fire"},
-]
+    {"tcs": 92, "filter": "SNIPER", "tier": "COMMANDER", "alert": "💎 92%", "note": "COMMANDER AUTO would fire"}]
 
 def explain_system():
     """Explain the actual system"""
@@ -61,7 +60,7 @@ def explain_system():
     print("KEY POINT: NIBBLER can shoot ANY TCS!")
     print("They're limited by WHICH signals, not TCS level\n")
     
-    print("AUTO/SEMI (COMMANDER/APEX only):")
+    print("AUTO/SEMI (COMMANDER/only):")
     print("• AUTO mode: Fires at 90%+ automatically")
     print("• SEMI mode: Manual, can fire at 85%+ snipers\n")
 

@@ -25,7 +25,6 @@ from .xp_integration import XPIntegrationManager
 
 logger = logging.getLogger(__name__)
 
-
 class NPCMood(Enum):
     """NPC emotional states based on user performance"""
     ECSTATIC = "ecstatic"       # Amazing performance
@@ -33,7 +32,6 @@ class NPCMood(Enum):
     ENCOURAGING = "encouraging"  # Average performance
     CONCERNED = "concerned"     # Poor performance
     URGENT = "urgent"           # Critical situation
-
 
 @dataclass
 class NPCDialogue:
@@ -44,7 +42,6 @@ class NPCDialogue:
     emotion: str
     priority: int  # 1-10, higher = more important
     visual_cue: Optional[str] = None  # Special visual effect
-
 
 class NPCXPIntegration:
     """Manages NPC interactions with XP system"""
@@ -480,7 +477,6 @@ class NPCXPIntegration:
             })
         
         return suggestions
-
 
 # Example usage
 if __name__ == "__main__":

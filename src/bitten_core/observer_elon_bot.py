@@ -360,7 +360,6 @@ class ObserverElonBot:
         ]
         return random.choice(thoughts)
 
-
 # Integration helper functions
 def create_elon_observer():
     """Factory function to create Elon observer instance"""
@@ -409,7 +408,6 @@ def get_random_elon_appearance() -> Dict:
         'timestamp': observation.timestamp.isoformat() if observation.timestamp else None,
         'emoji': bot.emoji
     }
-
 
 # Example usage and testing
 if __name__ == "__main__":

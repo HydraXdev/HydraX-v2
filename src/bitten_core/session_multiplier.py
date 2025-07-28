@@ -88,8 +88,7 @@ class SessionMultiplierSystem:
             "GBPJPY": {MarketSession.LONDON: 0.05, MarketSession.ASIAN: 0.03},
             "USDCAD": {MarketSession.NY: 0.05, MarketSession.OVERLAP: 0.03},
             "AUDUSD": {MarketSession.ASIAN: 0.05},
-            "NZDUSD": {MarketSession.ASIAN: 0.05},
-        }
+            "NZDUSD": {MarketSession.ASIAN: 0.05}}
         
         # Strategy-specific session preferences
         self.strategy_session_bonus = {

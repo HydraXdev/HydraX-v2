@@ -1,0 +1,526 @@
+{
+  "test_period": "3_months_identical_data",
+  "total_market_data": 46800,
+  "apex_results": {
+    "signals_generated": 0,
+    "signals_tested": 0,
+    "wins": 0,
+    "losses": 0,
+    "win_rate": 0.0,
+    "total_pips": 0.0,
+    "total_profit_loss": 0.0,
+    "signal_details": []
+  },
+  "venom_results": {
+    "signals_generated": 960,
+    "signals_tested": 960,
+    "wins": 0,
+    "losses": 960,
+    "win_rate": 0.0,
+    "total_pips": 0.0,
+    "total_profit_loss": 0.0,
+    "signal_details": [
+      {
+        "symbol": "EURUSD",
+        "direction": "sell",
+        "confidence": 79.12692157539622,
+        "entry": 1.08596,
+        "stop_loss": 1.08758894,
+        "take_profit": 1.08270212,
+        "won": false,
+        "pips": 0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 70.64975151961737,
+        "entry": 1.08694,
+        "stop_loss": 1.08530959,
+        "take_profit": 1.09020082,
+        "won": false,
+        "pips": 0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "sell",
+        "confidence": 79.24283356314209,
+        "entry": 1.08853,
+        "stop_loss": 1.0901627950000001,
+        "take_profit": 1.0852644099999997,
+        "won": false,
+        "pips": 0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "sell",
+        "confidence": 78.85509694791291,
+        "entry": 1.09009,
+        "stop_loss": 1.0917251350000001,
+        "take_profit": 1.0868197299999998,
+        "won": false,
+        "pips": 0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "sell",
+        "confidence": 78.77948729555084,
+        "entry": 1.09246,
+        "stop_loss": 1.09409869,
+        "take_profit": 1.0891826199999999,
+        "won": false,
+        "pips": 0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "sell",
+        "confidence": 79.8789574797006,
+        "entry": 1.09404,
+        "stop_loss": 1.09568106,
+        "take_profit": 1.0907578799999997,
+        "won": false,
+        "pips": 0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 74.51288595986243,
+        "entry": 1.09528,
+        "stop_loss": 1.0936370800000002,
+        "take_profit": 1.0985658399999998,
+        "won": false,
+        "pips": 0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 75.06717574614099,
+        "entry": 1.09619,
+        "stop_loss": 1.094545715,
+        "take_profit": 1.09947857,
+        "won": false,
+        "pips": 0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 74.8182457229824,
+        "entry": 1.09665,
+        "stop_loss": 1.0950050249999999,
+        "take_profit": 1.09993995,
+        "won": false,
+        "pips": 0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 79.13236845351956,
+        "entry": 1.09647,
+        "stop_loss": 1.0948252950000001,
+        "take_profit": 1.0997594099999999,
+        "won": false,
+        "pips": 0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 79.0619104512254,
+        "entry": 1.09529,
+        "stop_loss": 1.093647065,
+        "take_profit": 1.0985758700000001,
+        "won": false,
+        "pips": 0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 78.73812303705179,
+        "entry": 1.09418,
+        "stop_loss": 1.09253873,
+        "take_profit": 1.0974625399999998,
+        "won": false,
+        "pips": 0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 79.49191908153131,
+        "entry": 1.09305,
+        "stop_loss": 1.091410425,
+        "take_profit": 1.09632915,
+        "won": false,
+        "pips": 0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 78.97222257570671,
+        "entry": 1.09194,
+        "stop_loss": 1.09030209,
+        "take_profit": 1.0952158199999997,
+        "won": false,
+        "pips": 0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 78.52915993668601,
+        "entry": 1.09117,
+        "stop_loss": 1.089533245,
+        "take_profit": 1.09444351,
+        "won": false,
+        "pips": 0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "sell",
+        "confidence": 79.13141018252092,
+        "entry": 1.09195,
+        "stop_loss": 1.093587925,
+        "take_profit": 1.08867415,
+        "won": false,
+        "pips": 0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 74.78712596147845,
+        "entry": 1.0936,
+        "stop_loss": 1.0919596,
+        "take_profit": 1.0968807999999997,
+        "won": false,
+        "pips": 0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "sell",
+        "confidence": 78.79247813647464,
+        "entry": 1.09486,
+        "stop_loss": 1.09650229,
+        "take_profit": 1.0915754199999996,
+        "won": false,
+        "pips": 0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 70.89143851948332,
+        "entry": 1.09726,
+        "stop_loss": 1.0956141099999999,
+        "take_profit": 1.10055178,
+        "won": false,
+        "pips": 0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "sell",
+        "confidence": 79.34939369181143,
+        "entry": 1.09931,
+        "stop_loss": 1.100958965,
+        "take_profit": 1.09601207,
+        "won": false,
+        "pips": 0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "sell",
+        "confidence": 79.40725184688992,
+        "entry": 1.1016,
+        "stop_loss": 1.1032524,
+        "take_profit": 1.0982952,
+        "won": false,
+        "pips": 0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "sell",
+        "confidence": 78.8894549671474,
+        "entry": 1.10322,
+        "stop_loss": 1.1048748300000002,
+        "take_profit": 1.0999103399999999,
+        "won": false,
+        "pips": 0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "sell",
+        "confidence": 78.58581015378677,
+        "entry": 1.10365,
+        "stop_loss": 1.105305475,
+        "take_profit": 1.10033905,
+        "won": false,
+        "pips": 0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 74.77544718988374,
+        "entry": 1.10392,
+        "stop_loss": 1.10226412,
+        "take_profit": 1.10723176,
+        "won": false,
+        "pips": 0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 78.99644215266677,
+        "entry": 1.10379,
+        "stop_loss": 1.102134315,
+        "take_profit": 1.10710137,
+        "won": false,
+        "pips": 0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 79.35698202814078,
+        "entry": 1.10309,
+        "stop_loss": 1.101435365,
+        "take_profit": 1.1063992699999998,
+        "won": false,
+        "pips": 0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 78.93981031485322,
+        "entry": 1.10164,
+        "stop_loss": 1.09998754,
+        "take_profit": 1.1049449199999997,
+        "won": false,
+        "pips": 0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 78.69514889518796,
+        "entry": 1.10023,
+        "stop_loss": 1.0985796550000002,
+        "take_profit": 1.1035306899999997,
+        "won": false,
+        "pips": 0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 78.4940372846217,
+        "entry": 1.09923,
+        "stop_loss": 1.097581155,
+        "take_profit": 1.1025276899999996,
+        "won": false,
+        "pips": 0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 75.12918365985489,
+        "entry": 1.09893,
+        "stop_loss": 1.097281605,
+        "take_profit": 1.1022267899999998,
+        "won": false,
+        "pips": 0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "sell",
+        "confidence": 79.34373578301286,
+        "entry": 1.09987,
+        "stop_loss": 1.101519805,
+        "take_profit": 1.09657039,
+        "won": false,
+        "pips": 0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "sell",
+        "confidence": 78.75159160012358,
+        "entry": 1.10132,
+        "stop_loss": 1.1029719800000002,
+        "take_profit": 1.0980160399999999,
+        "won": false,
+        "pips": 0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 71.18728440762034,
+        "entry": 1.10259,
+        "stop_loss": 1.100936115,
+        "take_profit": 1.1058977699999997,
+        "won": false,
+        "pips": 0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "sell",
+        "confidence": 79.49795492476088,
+        "entry": 1.10476,
+        "stop_loss": 1.10641714,
+        "take_profit": 1.1014457199999999,
+        "won": false,
+        "pips": 0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "sell",
+        "confidence": 78.77011260800454,
+        "entry": 1.10712,
+        "stop_loss": 1.1087806800000002,
+        "take_profit": 1.10379864,
+        "won": false,
+        "pips": 0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "sell",
+        "confidence": 78.99156987628311,
+        "entry": 1.10932,
+        "stop_loss": 1.11098398,
+        "take_profit": 1.10599204,
+        "won": false,
+        "pips": 0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "sell",
+        "confidence": 79.23177631679536,
+        "entry": 1.11069,
+        "stop_loss": 1.112356035,
+        "take_profit": 1.10735793,
+        "won": false,
+        "pips": 0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "sell",
+        "confidence": 78.81724160098138,
+        "entry": 1.11122,
+        "stop_loss": 1.11288683,
+        "take_profit": 1.10788634,
+        "won": false,
+        "pips": 0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "sell",
+        "confidence": 78.677073662576,
+        "entry": 1.11155,
+        "stop_loss": 1.1132173250000001,
+        "take_profit": 1.1082153499999998,
+        "won": false,
+        "pips": 0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 78.68427730386644,
+        "entry": 1.11142,
+        "stop_loss": 1.1097528700000001,
+        "take_profit": 1.11475426,
+        "won": false,
+        "pips": 0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 71.30253025760231,
+        "entry": 1.10966,
+        "stop_loss": 1.10799551,
+        "take_profit": 1.1129889800000001,
+        "won": false,
+        "pips": 0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 79.33292951373805,
+        "entry": 1.10821,
+        "stop_loss": 1.106547685,
+        "take_profit": 1.1115346299999997,
+        "won": false,
+        "pips": 0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 79.08843538161402,
+        "entry": 1.10697,
+        "stop_loss": 1.1053095450000001,
+        "take_profit": 1.1102909099999998,
+        "won": false,
+        "pips": 0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 79.22468321442284,
+        "entry": 1.10562,
+        "stop_loss": 1.10396157,
+        "take_profit": 1.10893686,
+        "won": false,
+        "pips": 0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 78.70700908511333,
+        "entry": 1.10491,
+        "stop_loss": 1.103252635,
+        "take_profit": 1.10822473,
+        "won": false,
+        "pips": 0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "sell",
+        "confidence": 78.5450920676462,
+        "entry": 1.10545,
+        "stop_loss": 1.107108175,
+        "take_profit": 1.10213365,
+        "won": false,
+        "pips": 0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "sell",
+        "confidence": 78.71908506450957,
+        "entry": 1.10694,
+        "stop_loss": 1.1086004100000002,
+        "take_profit": 1.1036191799999997,
+        "won": false,
+        "pips": 0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "sell",
+        "confidence": 78.86961639424158,
+        "entry": 1.10846,
+        "stop_loss": 1.11012269,
+        "take_profit": 1.1051346199999998,
+        "won": false,
+        "pips": 0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "sell",
+        "confidence": 79.0547422340344,
+        "entry": 1.11005,
+        "stop_loss": 1.111715075,
+        "take_profit": 1.10671985,
+        "won": false,
+        "pips": 0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "sell",
+        "confidence": 78.63500303095071,
+        "entry": 1.11189,
+        "stop_loss": 1.1135578350000002,
+        "take_profit": 1.1085543299999998,
+        "won": false,
+        "pips": 0
+      }
+    ],
+    "average_pips": 0.0
+  }
+}

@@ -19,13 +19,11 @@ import ipaddress
 
 logger = logging.getLogger(__name__)
 
-
 class ReferralTier(Enum):
     """Referral tier levels"""
     DIRECT = 1      # Direct referral
     SECONDARY = 2   # Referral of referral
     TERTIARY = 3    # Third level referral
-
 
 class SquadRank(Enum):
     """Squad leader ranks based on recruits"""
@@ -36,7 +34,6 @@ class SquadRank(Enum):
     COMPANY_CDR = "Company Commander"  # 25-49 recruits
     BATTALION_CDR = "Battalion Commander"  # 50-99 recruits
     BRIGADE_GENERAL = "Brigade General"    # 100+ recruits
-
 
 @dataclass
 class ReferralCode:
@@ -51,7 +48,6 @@ class ReferralCode:
     promo_multiplier: float = 1.0
     metadata: Dict[str, Any] = field(default_factory=dict)
 
-
 @dataclass
 class ReferralReward:
     """Reward structure for referrals"""
@@ -59,7 +55,6 @@ class ReferralReward:
     reason: str
     multiplier: float = 1.0
     bonus_type: Optional[str] = None
-
 
 @dataclass
 class Recruit:
@@ -77,7 +72,6 @@ class Recruit:
     is_active: bool = True
     last_activity: Optional[datetime] = None
 
-
 @dataclass
 class SquadMember:
     """Squad member for genealogy tracking"""
@@ -89,7 +83,6 @@ class SquadMember:
     xp_contributed: int
     recruits_count: int
     activity_score: float  # 0-100 based on recent activity
-
 
 class ReferralSystem:
     """Elite military-style referral system"""
@@ -578,9 +571,9 @@ class ReferralSystem:
                 # Check for rank rewards
                 if new_rank == 'FANG' and current_rank != 'FANG':
                     reward = self.REWARDS['reach_fang']
-                elif new_rank == 'COMMANDER' and current_rank not in ['COMMANDER', 'APEX']:
+                elif new_rank == 'COMMANDER' and current_rank not in ['COMMANDER', '']:
                     reward = self.REWARDS['reach_commander']
-                elif new_rank == 'APEX' and current_rank != 'APEX':
+                elif new_rank == '' and current_rank != '':
                     reward = self.REWARDS['reach_apex']
                 else:
                     reward = None
@@ -844,7 +837,7 @@ class ReferralSystem:
             f"**Rank:** {stats['squad_stats']['squad_rank']}",
             f"**Total Recruits:** {stats['squad_stats']['total_recruits']}",
             f"**Active Recruits:** {stats['squad_stats']['active_recruits']}",
-            f"**Total XP Earned:** {stats['squad_stats']['total_xp_earned']:,}",
+            f"**Total XP Earned:** {stats['squad_stats']['total_xp_earned']:}",
             f"**Current Multiplier:** {stats['current_multiplier']}x",
             ""
         ]
@@ -1084,7 +1077,6 @@ class ReferralSystem:
             'top_recruits': []
         }
 
-
 # Telegram command handler
 class ReferralCommandHandler:
     """Handle /refer commands in Telegram"""
@@ -1154,7 +1146,7 @@ class ReferralCommandHandler:
             f"**Squad Rank:** {stats['squad_stats']['squad_rank']}",
             f"**Total Recruits:** {stats['squad_stats']['total_recruits']}",
             f"**Active Recruits:** {stats['squad_stats']['active_recruits']}",
-            f"**Total XP Earned:** {stats['squad_stats']['total_xp_earned']:,}",
+            f"**Total XP Earned:** {stats['squad_stats']['total_xp_earned']:}",
             f"**Current Multiplier:** {stats['current_multiplier']}x",
             ""
         ]
@@ -1222,11 +1214,10 @@ class ReferralCommandHandler:
                 f"{medal} {entry['username']} - "
                 f"{entry['squad_rank']} - "
                 f"{entry['total_recruits']} recruits - "
-                f"{entry['total_xp']:,} XP"
+                f"{entry['total_xp']:} XP"
             )
         
         return "\n".join(lines)
-
 
 # Integration hooks for other systems
 class ReferralIntegration:
@@ -1275,7 +1266,6 @@ class ReferralIntegration:
                 logger.info(f"Weekly activity rewards given: {rewards}")
         except Exception as e:
             logger.error(f"Error processing weekly activity rewards: {e}")
-
 
 # Example usage
 if __name__ == "__main__":

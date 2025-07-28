@@ -91,8 +91,8 @@ def test_telegram_connector():
         return False
 
 def test_apex_engine():
-    """Test APEX engine is running"""
-    print("🚀 Testing APEX engine...")
+    """Test engine is running"""
+    print("🚀 Testing engine...")
     
     # Check if log file exists and has recent entries
     log_file = "/root/HydraX-v2/apex_v5_live_real.log"
@@ -101,14 +101,14 @@ def test_apex_engine():
             stat = os.stat(log_file)
             age = time.time() - stat.st_mtime
             if age < 3600:  # Modified within last hour
-                print(f"✅ APEX log file is recent (modified {age:.0f}s ago)")
+                print(f"✅ log file is recent (modified {age:.0f}s ago)")
                 return True
             else:
-                print(f"⚠️ APEX log file is old (modified {age:.0f}s ago)")
+                print(f"⚠️ log file is old (modified {age:.0f}s ago)")
         except Exception as e:
             print(f"❌ Error checking log file: {e}")
     else:
-        print("❌ APEX log file not found")
+        print("❌ log file not found")
     
     return False
 

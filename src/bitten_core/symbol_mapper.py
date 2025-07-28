@@ -572,8 +572,7 @@ def test_symbol_mapper():
         
         # Alternative names
         {"name": "GOLD", "digits": 2, "point": 0.01, "volume_min": 0.01},
-        {"name": "US30", "digits": 1, "point": 0.1, "volume_min": 0.1},
-    ]
+        {"name": "US30", "digits": 1, "point": 0.1, "volume_min": 0.1}]
     
     # Test initialization
     success = initialize_user_symbols("test_user_001", test_symbols, "Test Broker")

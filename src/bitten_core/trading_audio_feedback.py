@@ -17,7 +17,6 @@ from .user_settings import get_user_settings
 
 logger = logging.getLogger(__name__)
 
-
 class FeedbackType(Enum):
     """Types of trading feedback"""
     APPROVAL = "approval"           # Good decisions
@@ -29,7 +28,6 @@ class FeedbackType(Enum):
     DISCIPLINE = "discipline"     # Following rules
     CONFIDENCE = "confidence"     # Building momentum
 
-
 class DecisionQuality(Enum):
     """Quality of trading decisions for feedback"""
     EXCELLENT = "excellent"       # High TCS, good timing
@@ -38,7 +36,6 @@ class DecisionQuality(Enum):
     RISKY = "risky"              # Low TCS, high risk
     POOR = "poor"                # Very risky decision
 
-
 class TradeOutcome(Enum):
     """Possible trade outcomes"""
     BIG_WIN = "big_win"          # >50 pips profit
@@ -46,7 +43,6 @@ class TradeOutcome(Enum):
     SCRATCH = "scratch"          # -5 to +10 pips
     SMALL_LOSS = "small_loss"    # 5-25 pips loss
     BIG_LOSS = "big_loss"        # >25 pips loss
-
 
 @dataclass
 class TradingDecision:
@@ -61,7 +57,6 @@ class TradingDecision:
     story_phase: StoryPhase
     timestamp: datetime
 
-
 @dataclass
 class FeedbackRule:
     """Rule for determining appropriate feedback"""
@@ -73,7 +68,6 @@ class FeedbackRule:
     story_phase_modifiers: Dict[StoryPhase, Dict[str, Any]]
     cooldown_minutes: int = 5
     priority: int = 5
-
 
 class TradingAudioFeedbackEngine:
     """Engine for trading decision audio feedback"""
@@ -767,10 +761,8 @@ class TradingAudioFeedbackEngine:
             'available_feedback_types': [ft.value for ft in FeedbackType]
         }
 
-
 # Global instance
 trading_audio_feedback_engine = TradingAudioFeedbackEngine()
-
 
 # Convenience functions
 async def provide_entry_feedback(user_id: str, tcs_score: float, risk_percentage: float, 
@@ -790,7 +782,6 @@ async def provide_entry_feedback(user_id: str, tcs_score: float, risk_percentage
     )
     
     return await trading_audio_feedback_engine.provide_trading_feedback(decision)
-
 
 async def provide_outcome_feedback(user_id: str, profit_pips: float, profit_currency: float = 0) -> Optional[str]:
     """Provide feedback for trade outcomes"""

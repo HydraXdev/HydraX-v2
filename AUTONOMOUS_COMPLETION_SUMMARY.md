@@ -77,7 +77,7 @@ The system has been successfully transformed from AWS bridge architecture to a f
 
 ### System Architecture READY
 ```
-APEX Signal → CORE Calculation → Master Clone → User Clones → Real Brokers
+Signal → CORE Calculation → Master Clone → User Clones → Real Brokers
      ✅              ✅                ✅             ✅            ✅
    TCS 65%      2% Risk Sizing    Frozen Model   User Creds   Direct APIs
 ```
@@ -121,7 +121,7 @@ User → Signal → Core Brain → Master Clone → User Clone → Direct Broker
 ## 🚀 PRODUCTION DEPLOYMENT STATUS
 
 ### Core Services OPERATIONAL
-- **APEX Engine**: `apex_v5_lean.py` - Signal generation (TCS 65%+)
+- **Engine**: `apex_v5_lean.py` - Signal generation (TCS 65%+)
 - **Production Bot**: `bitten_production_bot.py` - User management
 - **WebApp**: `webapp_server_optimized.py` - Mission interface
 - **Clone Farm**: Master + user scaling architecture

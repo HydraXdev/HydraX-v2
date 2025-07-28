@@ -35,7 +35,6 @@ SECRET_KEY = os.environ.get('SHEPHERD_SECRET_KEY', 'development-secret-key')
 API_VERSION = 'v1'
 MAX_REQUEST_SIZE = 1024 * 1024  # 1MB
 
-
 class ShepherdWebhook:
     """Webhook API handler for the Shepherd system."""
     
@@ -335,10 +334,8 @@ class ShepherdWebhook:
         # Mock implementation
         return "15d 7h 23m"
 
-
 # Initialize webhook handler
 webhook_handler = ShepherdWebhook()
-
 
 def require_auth(f):
     """Decorator to require authentication for endpoints."""
@@ -359,13 +356,11 @@ def require_auth(f):
     
     return decorated_function
 
-
 def validate_request_size():
     """Validate request size to prevent abuse."""
     if request.content_length and request.content_length > MAX_REQUEST_SIZE:
         return jsonify({"error": "Request too large"}), 413
     return None
-
 
 # API Routes
 
@@ -389,7 +384,6 @@ def validate_endpoint():
         logger.error(f"Validation error: {str(e)}")
         return jsonify({"error": "Internal server error"}), 500
 
-
 @app.route('/api/v1/trace/<module>', methods=['GET'])
 @require_auth
 def trace_endpoint(module: str):
@@ -405,7 +399,6 @@ def trace_endpoint(module: str):
     except Exception as e:
         logger.error(f"Trace error: {str(e)}")
         return jsonify({"error": "Internal server error"}), 500
-
 
 @app.route('/api/v1/simulate', methods=['POST'])
 @require_auth
@@ -427,7 +420,6 @@ def simulate_endpoint():
         logger.error(f"Simulation error: {str(e)}")
         return jsonify({"error": "Internal server error"}), 500
 
-
 @app.route('/api/v1/status', methods=['GET'])
 def status_endpoint():
     """GET /status - System health (no auth required for health checks)."""
@@ -441,7 +433,6 @@ def status_endpoint():
             "overall_status": "error",
             "error": "Unable to determine system health"
         }), 500
-
 
 @app.route('/api/v1/webhook', methods=['POST'])
 def webhook_receiver():
@@ -471,7 +462,6 @@ def webhook_receiver():
         logger.error(f"Webhook error: {str(e)}")
         return jsonify({"error": "Webhook processing failed"}), 500
 
-
 @app.route('/', methods=['GET'])
 def root():
     """Root endpoint with API information."""
@@ -489,19 +479,16 @@ def root():
         "health": "/api/v1/status"
     }), 200
 
-
 @app.errorhandler(404)
 def not_found(error):
     """Handle 404 errors."""
     return jsonify({"error": "Endpoint not found"}), 404
-
 
 @app.errorhandler(500)
 def internal_error(error):
     """Handle 500 errors."""
     logger.error(f"Internal error: {str(error)}")
     return jsonify({"error": "Internal server error"}), 500
-
 
 if __name__ == '__main__':
     # Development server

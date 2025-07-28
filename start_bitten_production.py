@@ -67,8 +67,8 @@ def check_requirements():
     return True
 
 def start_apex_engine():
-    """Start the APEX v5.0 signal generation engine"""
-    print("\n🚀 Starting APEX v5.0 Signal Engine...")
+    """Start the v5.0 signal generation engine"""
+    print("\n🚀 Starting v5.0 Signal Engine...")
     
     # Check if already running
     pid_file = Path('/root/HydraX-v2/.apex_engine.pid')
@@ -77,7 +77,7 @@ def start_apex_engine():
             pid = int(pid_file.read_text().strip())
             # Check if process is actually running
             os.kill(pid, 0)  # This will raise an exception if process doesn't exist
-            print(f"✅ APEX already running with PID {pid}")
+            print(f"✅ already running with PID {pid}")
             return psutil.Process(pid)
         except (OSError, ValueError, psutil.NoSuchProcess):
             # Process not running, clean up stale PID file
@@ -90,11 +90,11 @@ def start_apex_engine():
             sys.executable, "apex_v5_live_real.py"
         ], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         
-        print(f"✅ APEX Engine started (PID: {proc.pid})")
+        print(f"✅ Engine started (PID: {proc.pid})")
         return proc
         
     except Exception as e:
-        print(f"❌ Failed to start APEX Engine: {e}")
+        print(f"❌ Failed to start Engine: {e}")
         return None
 
 def start_telegram_connector():
@@ -200,9 +200,9 @@ def main():
     # Start all components
     processes = {}
     
-    # Start APEX engine
+    # Start engine
     apex_proc = start_apex_engine()
-    processes['APEX Engine'] = apex_proc
+    processes['Engine'] = apex_proc
     time.sleep(2)
     
     # Start Telegram connector
@@ -218,7 +218,7 @@ def main():
     print("\n" + "="*60)
     print("🎉 BITTEN PRODUCTION SYSTEM ONLINE")
     print("="*60)
-    print("📡 Signal Flow: Bridge → APEX → Telegram → WebApp → Execution")
+    print("📡 Signal Flow: Bridge → → Telegram → WebApp → Execution")
     print("🎯 Mission Storage: /root/HydraX-v2/missions/")
     print("📊 Logs: /root/HydraX-v2/apex_v5_live_real.log")
     print("🌐 WebApp: https://joinbitten.com")

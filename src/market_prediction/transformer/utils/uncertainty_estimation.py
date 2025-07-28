@@ -16,7 +16,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from dataclasses import dataclass
 
-
 @dataclass
 class UncertaintyMetrics:
     """Container for uncertainty metrics."""
@@ -27,7 +26,6 @@ class UncertaintyMetrics:
     prediction_interval: Tuple[float, float]
     quantiles: Dict[float, float]
 
-
 class MCDropout(nn.Module):
     """Monte Carlo Dropout for uncertainty estimation."""
     
@@ -37,7 +35,6 @@ class MCDropout(nn.Module):
     
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return F.dropout(x, p=self.p, training=True)
-
 
 class UncertaintyEstimator:
     """
@@ -200,7 +197,6 @@ class UncertaintyEstimator:
             return raw_confidence
         return float(self.calibrator.predict([raw_confidence])[0])
 
-
 class AdaptiveUncertaintyEstimator(UncertaintyEstimator):
     """
     Adaptive uncertainty estimator that adjusts based on market conditions.
@@ -247,7 +243,6 @@ class AdaptiveUncertaintyEstimator(UncertaintyEstimator):
         metrics.confidence_score = metrics.confidence_score / (1 + 0.5 * (self.uncertainty_scaling_factor - 1))
         
         return metrics
-
 
 class BayesianUncertaintyLayer(nn.Module):
     """
@@ -315,7 +310,6 @@ class BayesianUncertaintyLayer(nn.Module):
         )
         
         return kl_weight + kl_bias
-
 
 class ConfidenceScorer:
     """
@@ -441,7 +435,6 @@ class ConfidenceScorer:
         plt.grid(True, alpha=0.3)
         plt.tight_layout()
         plt.show()
-
 
 def create_uncertainty_config() -> Dict:
     """Create default uncertainty estimation configuration."""

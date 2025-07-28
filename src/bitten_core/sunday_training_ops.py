@@ -146,8 +146,7 @@ class SundayTrainingOps:
         tier_hierarchy = {
             "NIBBLER": 0,
             "FANG": 1,
-            "COMMANDER": 2,
-            "APEX": 3
+            "COMMANDER": 2: 3
         }
         
         user_level = tier_hierarchy.get(tier, 0)
@@ -346,7 +345,6 @@ class SundayTrainingOps:
             "_Train harder. Climb higher._"
         )
 
-
 # Integration with weekend briefing
 def enhance_weekend_briefing_with_sunday_ops(briefing_message: str, user_tier: str) -> str:
     """Add Sunday training teaser to Friday briefing"""
@@ -363,7 +361,7 @@ def enhance_weekend_briefing_with_sunday_ops(briefing_message: str, user_tier: s
     )
     
     # Only add for FANG and above
-    if user_tier in ["FANG", "COMMANDER", "APEX"]:
+    if user_tier in ["FANG", "COMMANDER"]:
         return briefing_message + sunday_teaser
     
     return briefing_message

@@ -442,8 +442,7 @@ class UserRank(Enum):
 class PressPassManager:
     - daily_limit: 10 passes/day
     - duration: 7 days
-    - tier_granted: "APEX"
-    - urgency_mechanism: Real-time scarcity
+    - tier_granted: - urgency_mechanism: Real-time scarcity
 ```
 
 ### 6.2 Security Measures

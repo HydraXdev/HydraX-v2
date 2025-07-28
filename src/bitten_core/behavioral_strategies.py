@@ -12,7 +12,6 @@ from typing import Dict, List, Optional, Any
 from datetime import datetime, timedelta
 import json
 
-
 class BehavioralStrategy(Enum):
     """6 Behavioral strategies for NIBBLER gamification level"""
     LONE_WOLF = "LONE_WOLF"                    # Default - Always available
@@ -21,7 +20,6 @@ class BehavioralStrategy(Enum):
     DIAMOND_HANDS = "DIAMOND_HANDS"            # Unlock at 360 XP
     RESET_MASTER = "RESET_MASTER"              # Unlock at 480 XP
     STEADY_BUILDER = "STEADY_BUILDER"          # Unlock at 600 XP
-
 
 @dataclass
 class StrategyConfig:
@@ -35,7 +33,6 @@ class StrategyConfig:
     signal_filter: str          # Strategy-specific signal filtering
     unlock_message: str
     gameplay_mechanics: Dict[str, Any]
-
 
 class BehavioralStrategyManager:
     """Manager for behavioral strategies and progression system"""
@@ -305,7 +302,6 @@ class BehavioralStrategyManager:
                 json.dump(data, f, indent=2)
         except Exception as e:
             print(f"Error saving user strategy: {e}")
-
 
 # Global instance for easy access
 behavioral_strategy_manager = BehavioralStrategyManager()

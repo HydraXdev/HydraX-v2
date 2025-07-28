@@ -22,7 +22,6 @@ from .dark_pool_scanner import DarkPoolFlow, DarkPoolPrint
 
 logger = logging.getLogger(__name__)
 
-
 class SignalStrength(Enum):
     """Signal strength levels"""
     STRONG_BUY = "strong_buy"
@@ -30,7 +29,6 @@ class SignalStrength(Enum):
     NEUTRAL = "neutral"
     SELL = "sell"
     STRONG_SELL = "strong_sell"
-
 
 @dataclass
 class OrderFlowScore:
@@ -74,7 +72,6 @@ class OrderFlowScore:
             'warnings': self.warnings
         }
 
-
 @dataclass
 class TradingOpportunity:
     """Represents a specific trading opportunity"""
@@ -104,7 +101,6 @@ class TradingOpportunity:
             'confidence': self.confidence,
             'reasoning': self.reasoning
         }
-
 
 class OrderFlowScorer:
     """Combines all order flow indicators into actionable scores"""
@@ -598,7 +594,6 @@ class OrderFlowScorer:
             'hit_rate': len([o for o in opportunities if o.confidence > 0.7]) / len(opportunities) if opportunities else 0
         }
 
-
 # Example usage
 async def main():
     scorer = OrderFlowScorer(
@@ -706,7 +701,6 @@ async def main():
     # Get statistics
     stats = scorer.get_statistics('BTC/USDT', 'binance')
     print(f"\nStatistics: {stats}")
-
 
 if __name__ == "__main__":
     import asyncio

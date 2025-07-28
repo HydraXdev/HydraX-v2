@@ -16,7 +16,6 @@ import json
 
 logger = logging.getLogger(__name__)
 
-
 @dataclass
 class OrderBookLevel:
     """Represents a single level in the order book"""
@@ -24,7 +23,6 @@ class OrderBookLevel:
     quantity: float
     orders: int = 1
     timestamp: float = field(default_factory=lambda: datetime.now().timestamp())
-
 
 @dataclass
 class OrderBookSnapshot:
@@ -69,7 +67,6 @@ class OrderBookSnapshot:
             return self.get_mid_price()
         
         return (bid_weight + ask_weight) / (bid_volume + ask_volume)
-
 
 class OrderBookMaintainer:
     """Maintains order book state with efficient updates"""
@@ -166,7 +163,6 @@ class OrderBookMaintainer:
                 callback(snapshot)
             except Exception as e:
                 logger.error(f"Error in order book callback: {e}")
-
 
 class OrderBookReader:
     """Main order book reader that manages multiple order books"""
@@ -329,7 +325,6 @@ class OrderBookReader:
         self.history_buffer.clear()
         self.tasks.clear()
 
-
 # Example usage
 async def main():
     from exchange_manager import ExchangeManager, ExchangeConfig, RateLimitConfig
@@ -361,7 +356,6 @@ async def main():
     # Clean up
     await reader.close()
     await exchange_manager.close_all()
-
 
 if __name__ == "__main__":
     asyncio.run(main())

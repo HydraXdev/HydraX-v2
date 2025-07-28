@@ -136,7 +136,7 @@ class CharacterEventDispatcher:
         user_tier = user_context.get('tier', 'NIBBLER') if user_context else 'NIBBLER'
         
         # Tier-based character preferences
-        if user_tier in ['COMMANDER', 'APEX'] and 'ATHENA' in possible_characters:
+        if user_tier in ['COMMANDER', ''] and 'ATHENA' in possible_characters:
             return 'ATHENA'  # Strategic command for elite users
         elif user_tier == 'NIBBLER' and 'NEXUS' in possible_characters:
             return 'NEXUS'  # Recruitment focus for new users

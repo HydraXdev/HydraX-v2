@@ -22,7 +22,6 @@ from ...database.connection import get_async_db
 
 logger = logging.getLogger(__name__)
 
-
 @dataclass 
 class PoolConfig:
     """Configuration for account pool management"""
@@ -33,7 +32,6 @@ class PoolConfig:
     health_check_interval_minutes: int = 30
     cleanup_interval_hours: int = 6
     account_expiry_days: int = 30
-
 
 class AccountPoolManager:
     """Manages the pool of pre-provisioned demo accounts"""
@@ -385,10 +383,8 @@ class AccountPoolManager:
                 'message': f'Provisioned {to_provision} new accounts'
             }
 
-
 # Singleton instance
 _pool_manager = None
-
 
 async def get_pool_manager() -> AccountPoolManager:
     """Get or create the pool manager singleton"""

@@ -99,7 +99,6 @@ class PressPassTaskManager:
             logger.error(f"Error manually resetting XP for user {user_id}: {e}")
             return {'success': False, 'error': str(e)}
 
-
 # Singleton instance for the task manager
 _task_manager = None
 

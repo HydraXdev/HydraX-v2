@@ -135,7 +135,7 @@ SITREP_2025-07-14.pdf
 
 ### **Ready to Use**:
 1. **Access**: http://134.199.204.67:8899/throne
-2. **Login**: APEX_COMMANDER (empty password for demo)
+2. **Login**: _COMMANDER (empty password for demo)
 3. **SITREP**: Click Command Panel → SITREP button
 4. **Export**: Click "Export as PDF" for instant download
 5. **Reports**: Professional PDFs with live data

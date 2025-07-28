@@ -56,7 +56,7 @@ class InitSyncSession:
 ```
 
 #### 2. **Bridge Assignment Engine**
-- **Tier-based allocation**: Press Pass (001-005), Nibbler (006-010), Fang (011-015), Commander (016-020), APEX (021-025)
+- **Tier-based allocation**: Press Pass (001-005), Nibbler (006-010), Fang (011-015), Commander (016-020) (021-025)
 - **Health validation**: Integration with Bridge Troll for status checks
 - **Load balancing**: Automatic assignment to available bridges
 - **Failover support**: Recovery procedures for bridge failures
@@ -106,7 +106,7 @@ troll_validate_fire(bridge_id, telegram_id, trade_data)
 | **NIBBLER** | 0.1 | $200 | Manual | 24 hours |
 | **FANG** | 0.5 | $500 | Manual | 24 hours |
 | **COMMANDER** | 1.0 | $1,000 | Manual, Semi-Auto, Full-Auto | 24 hours |
-| **APEX** | 2.0 | $2,000 | Manual, Semi-Auto, Full-Auto | 24 hours |
+| **** | 2.0 | $2,000 | Manual, Semi-Auto, Full-Auto | 24 hours |
 
 ---
 

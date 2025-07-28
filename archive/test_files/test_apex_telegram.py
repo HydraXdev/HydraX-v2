@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test script for APEX Telegram Connector
+Test script for Telegram Connector
 """
 
 import asyncio
@@ -18,7 +18,7 @@ async def test_signal_parsing():
     connector = ApexTelegramConnector()
     
     # Test signal line
-    test_line = "2025-07-14 12:39:41,362 - APEX v5.0 LIVE - INFO - 🎯 SIGNAL #1: EURUSD SELL TCS:76%"
+    test_line = "2025-07-14 12:39:41,362 - v5.0 LIVE - INFO - 🎯 SIGNAL #1: EURUSD SELL TCS:76%"
     
     signal = connector.parse_signal_line(test_line)
     if signal:
@@ -115,13 +115,12 @@ def test_configuration():
 
 async def main():
     """Run all tests"""
-    logger.info("Starting APEX Telegram Connector Tests...")
+    logger.info("Starting Telegram Connector Tests...")
     
     tests = [
         ("Configuration", test_configuration),
         ("Signal Parsing", test_signal_parsing),
-        ("Cooldown", test_cooldown),
-    ]
+        ("Cooldown", test_cooldown)]
     
     results = []
     for test_name, test_func in tests:

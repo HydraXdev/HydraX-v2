@@ -546,7 +546,7 @@ class SocialLearning:
 .tier-badge[data-tier="NIBBLER"] { background: #4CAF50; }
 .tier-badge[data-tier="FANG"] { background: #FF9800; }
 .tier-badge[data-tier="COMMANDER"] { background: #F44336; }
-.tier-badge[data-tier="APEX"] { background: #9C27B0; }
+.tier-badge[data-tier=] { background: #9C27B0; }
 
 .dashboard-grid {
     display: grid;
@@ -738,7 +738,7 @@ async def calculate_education_xp(self, activity: str, details: Dict[str, Any]) -
         'NIBBLER': 1.0,
         'FANG': 1.2,
         'COMMANDER': 1.5,
-        'APEX': 2.0
+        '': 2.0
     }
     multipliers *= tier_multipliers.get(details.get('user_tier', 'NIBBLER'), 1.0)
     

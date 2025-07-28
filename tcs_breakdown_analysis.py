@@ -8,7 +8,7 @@ Expose the real mechanics behind the win rate calculations
 import json
 import random
 from datetime import datetime, timedelta
-from apex_realistic_flow_engine import APEXRealisticFlowEngine, TradeType
+from apex_realistic_flow_engine import RealisticFlowEngine, TradeType
 import statistics
 
 def analyze_tcs_win_rate_relationship():
@@ -19,7 +19,7 @@ def analyze_tcs_win_rate_relationship():
     print("🎯 No magic - just showing the real mechanics")
     print("=" * 70)
     
-    engine = APEXRealisticFlowEngine()
+    engine = RealisticFlowEngine()
     
     # Generate a large sample for statistical significance
     all_signals = []

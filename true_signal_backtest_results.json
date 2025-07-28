@@ -1,0 +1,606 @@
+{
+  "backtest_metadata": {
+    "analysis_date": "2025-07-21T03:40:22.937942",
+    "signals_analyzed": 44,
+    "method": "Historical signal forward simulation",
+    "tcs_threshold": 70
+  },
+  "overall_performance": {
+    "total_signals": 44,
+    "winning_signals": 23,
+    "losing_signals": 21,
+    "win_rate_percent": 52.3,
+    "total_r_multiple": 24.21,
+    "average_r_per_trade": 0.55,
+    "expectancy": 0.55
+  },
+  "tcs_range_analysis": {
+    "70-75": {
+      "total_signals": 5,
+      "wins": 2,
+      "losses": 3,
+      "win_rate_percent": 40.0,
+      "total_r_multiple": 1.0,
+      "avg_r_per_trade": 0.2,
+      "avg_tcs": 72.8
+    },
+    "75-80": {
+      "total_signals": 5,
+      "wins": 3,
+      "losses": 2,
+      "win_rate_percent": 60.0,
+      "total_r_multiple": 3.0,
+      "avg_r_per_trade": 0.6,
+      "avg_tcs": 76.8
+    },
+    "80-85": {
+      "total_signals": 3,
+      "wins": 2,
+      "losses": 1,
+      "win_rate_percent": 66.7,
+      "total_r_multiple": 2.5,
+      "avg_r_per_trade": 0.833,
+      "avg_tcs": 80.7
+    },
+    "85-90": {
+      "total_signals": 30,
+      "wins": 15,
+      "losses": 15,
+      "win_rate_percent": 50.0,
+      "total_r_multiple": 15.71,
+      "avg_r_per_trade": 0.524,
+      "avg_tcs": 85.6
+    },
+    "90+": {
+      "total_signals": 1,
+      "wins": 1,
+      "losses": 0,
+      "win_rate_percent": 100.0,
+      "total_r_multiple": 2.0,
+      "avg_r_per_trade": 2.0,
+      "avg_tcs": 90.0
+    }
+  },
+  "trading_pair_analysis": {
+    "EURUSD": {
+      "total_signals": 31,
+      "win_rate_percent": 51.6,
+      "total_r_multiple": 15.58,
+      "avg_tcs": 83.2
+    },
+    "GBPUSD": {
+      "total_signals": 12,
+      "win_rate_percent": 58.3,
+      "total_r_multiple": 9.63,
+      "avg_tcs": 83.1
+    },
+    "USDJPY": {
+      "total_signals": 1,
+      "win_rate_percent": 0.0,
+      "total_r_multiple": -1.0,
+      "avg_tcs": 73.0
+    }
+  },
+  "detailed_results": [
+    {
+      "signal_data": {
+        "signal_id": "APEX5_EURUSD_051619",
+        "symbol": "EURUSD",
+        "direction": "BUY",
+        "tcs_score": 72,
+        "entry_price": 1.0898,
+        "stop_loss": 1.08871,
+        "take_profit": 1.09204,
+        "risk_reward_ratio": 2.06,
+        "signal_time": "2025-07-16T05:16:35.684962",
+        "signal_type": "RAPID_ASSAULT",
+        "source": "fired_trades"
+      },
+      "market_outcome": {
+        "outcome": "LOSS",
+        "final_price": 1.08871,
+        "hours_to_close": 5.8,
+        "pnl_r_multiple": -1.0,
+        "win_probability_used": 0.458
+      },
+      "backtest_metadata": {
+        "backtest_time": "2025-07-21T03:40:22.937525",
+        "simulation_method": "TCS-weighted probability model"
+      }
+    },
+    {
+      "signal_data": {
+        "signal_id": "APEX5_EURUSD_051646",
+        "symbol": "EURUSD",
+        "direction": "BUY",
+        "tcs_score": 82,
+        "entry_price": 1.0895,
+        "stop_loss": 1.08841,
+        "take_profit": 1.09207,
+        "risk_reward_ratio": 2.36,
+        "signal_time": "2025-07-16T05:19:54.172244",
+        "signal_type": "RAPID_ASSAULT",
+        "source": "fired_trades"
+      },
+      "market_outcome": {
+        "outcome": "LOSS",
+        "final_price": 1.08841,
+        "hours_to_close": 11.6,
+        "pnl_r_multiple": -1.0,
+        "win_probability_used": 0.498
+      },
+      "backtest_metadata": {
+        "backtest_time": "2025-07-21T03:40:22.937545",
+        "simulation_method": "TCS-weighted probability model"
+      }
+    },
+    {
+      "signal_data": {
+        "signal_id": "APEX5_EURUSD_052506",
+        "symbol": "EURUSD",
+        "direction": "BUY",
+        "tcs_score": 85,
+        "entry_price": 1.0895,
+        "stop_loss": 1.08841,
+        "take_profit": 1.09217,
+        "risk_reward_ratio": 2.45,
+        "signal_time": "2025-07-16T05:25:06.606755",
+        "signal_type": "RAPID_ASSAULT",
+        "source": "fired_trades"
+      },
+      "market_outcome": {
+        "outcome": "WIN",
+        "final_price": 1.09217,
+        "hours_to_close": 26.1,
+        "pnl_r_multiple": 2.45,
+        "win_probability_used": 0.51
+      },
+      "backtest_metadata": {
+        "backtest_time": "2025-07-21T03:40:22.937553",
+        "simulation_method": "TCS-weighted probability model"
+      }
+    },
+    {
+      "signal_data": {
+        "signal_id": "APEX5_EURUSD_055049",
+        "symbol": "EURUSD",
+        "direction": "BUY",
+        "tcs_score": 85,
+        "entry_price": 1.09,
+        "stop_loss": 1.08891,
+        "take_profit": 1.09267,
+        "risk_reward_ratio": 2.45,
+        "signal_time": "2025-07-16T05:50:58.595805",
+        "signal_type": "RAPID_ASSAULT",
+        "source": "fired_trades"
+      },
+      "market_outcome": {
+        "outcome": "LOSS",
+        "final_price": 1.08891,
+        "hours_to_close": 3.2,
+        "pnl_r_multiple": -1.0,
+        "win_probability_used": 0.51
+      },
+      "backtest_metadata": {
+        "backtest_time": "2025-07-21T03:40:22.937559",
+        "simulation_method": "TCS-weighted probability model"
+      }
+    },
+    {
+      "signal_data": {
+        "signal_id": "APEX5_EURUSD_162803",
+        "symbol": "EURUSD",
+        "direction": "BUY",
+        "tcs_score": 85,
+        "entry_price": 1.09,
+        "stop_loss": 1.08891,
+        "take_profit": 1.09267,
+        "risk_reward_ratio": 2.45,
+        "signal_time": "2025-07-16T16:32:32.709309",
+        "signal_type": "RAPID_ASSAULT",
+        "source": "fired_trades"
+      },
+      "market_outcome": {
+        "outcome": "WIN",
+        "final_price": 1.09301,
+        "hours_to_close": 7.2,
+        "pnl_r_multiple": 3.25,
+        "win_probability_used": 0.51
+      },
+      "backtest_metadata": {
+        "backtest_time": "2025-07-21T03:40:22.937567",
+        "simulation_method": "TCS-weighted probability model"
+      }
+    },
+    {
+      "signal_data": {
+        "signal_id": "APEX5_GBPUSD_163359",
+        "symbol": "GBPUSD",
+        "direction": "SELL",
+        "tcs_score": 85,
+        "entry_price": 1.28,
+        "stop_loss": 1.28128,
+        "take_profit": 1.27686,
+        "risk_reward_ratio": 2.45,
+        "signal_time": "2025-07-16T16:34:17.810075",
+        "signal_type": "RAPID_ASSAULT",
+        "source": "fired_trades"
+      },
+      "market_outcome": {
+        "outcome": "WIN",
+        "final_price": 1.27533,
+        "hours_to_close": 39.1,
+        "pnl_r_multiple": 2.84,
+        "win_probability_used": 0.51
+      },
+      "backtest_metadata": {
+        "backtest_time": "2025-07-21T03:40:22.937575",
+        "simulation_method": "TCS-weighted probability model"
+      }
+    },
+    {
+      "signal_data": {
+        "signal_id": "APEX5_GBPUSD_163359",
+        "symbol": "GBPUSD",
+        "direction": "SELL",
+        "tcs_score": 85,
+        "entry_price": 1.28,
+        "stop_loss": 1.28128,
+        "take_profit": 1.27686,
+        "risk_reward_ratio": 2.45,
+        "signal_time": "2025-07-16T16:35:29.947048",
+        "signal_type": "RAPID_ASSAULT",
+        "source": "fired_trades"
+      },
+      "market_outcome": {
+        "outcome": "WIN",
+        "final_price": 1.27686,
+        "hours_to_close": 29.9,
+        "pnl_r_multiple": 2.45,
+        "win_probability_used": 0.51
+      },
+      "backtest_metadata": {
+        "backtest_time": "2025-07-21T03:40:22.937580",
+        "simulation_method": "TCS-weighted probability model"
+      }
+    },
+    {
+      "signal_data": {
+        "signal_id": "APEX5_GBPUSD_163359",
+        "symbol": "GBPUSD",
+        "direction": "SELL",
+        "tcs_score": 85,
+        "entry_price": 1.28,
+        "stop_loss": 1.28128,
+        "take_profit": 1.27686,
+        "risk_reward_ratio": 2.45,
+        "signal_time": "2025-07-16T16:36:03.817338",
+        "signal_type": "RAPID_ASSAULT",
+        "source": "fired_trades"
+      },
+      "market_outcome": {
+        "outcome": "LOSS",
+        "final_price": 1.28128,
+        "hours_to_close": 7.9,
+        "pnl_r_multiple": -1.0,
+        "win_probability_used": 0.51
+      },
+      "backtest_metadata": {
+        "backtest_time": "2025-07-21T03:40:22.937586",
+        "simulation_method": "TCS-weighted probability model"
+      }
+    },
+    {
+      "signal_data": {
+        "signal_id": "APEX5_EURUSD_164056",
+        "symbol": "EURUSD",
+        "direction": "BUY",
+        "tcs_score": 85,
+        "entry_price": 1.09,
+        "stop_loss": 1.08891,
+        "take_profit": 1.09267,
+        "risk_reward_ratio": 2.45,
+        "signal_time": "2025-07-16T16:41:10.631917",
+        "signal_type": "RAPID_ASSAULT",
+        "source": "fired_trades"
+      },
+      "market_outcome": {
+        "outcome": "LOSS",
+        "final_price": 1.08891,
+        "hours_to_close": 8.7,
+        "pnl_r_multiple": -1.0,
+        "win_probability_used": 0.51
+      },
+      "backtest_metadata": {
+        "backtest_time": "2025-07-21T03:40:22.937591",
+        "simulation_method": "TCS-weighted probability model"
+      }
+    },
+    {
+      "signal_data": {
+        "signal_id": "APEX5_EURUSD_164953",
+        "symbol": "EURUSD",
+        "direction": "BUY",
+        "tcs_score": 85,
+        "entry_price": 1.09,
+        "stop_loss": 1.08891,
+        "take_profit": 1.09164,
+        "risk_reward_ratio": 1.5,
+        "signal_time": "2025-07-16T16:50:18.227018",
+        "signal_type": "RAPID_ASSAULT",
+        "source": "fired_trades"
+      },
+      "market_outcome": {
+        "outcome": "WIN",
+        "final_price": 1.09164,
+        "hours_to_close": 15.8,
+        "pnl_r_multiple": 1.5,
+        "win_probability_used": 0.51
+      },
+      "backtest_metadata": {
+        "backtest_time": "2025-07-21T03:40:22.937597",
+        "simulation_method": "TCS-weighted probability model"
+      }
+    },
+    {
+      "signal_data": {
+        "signal_id": "APEX5_EURUSD_165529",
+        "symbol": "EURUSD",
+        "direction": "BUY",
+        "tcs_score": 85,
+        "entry_price": 1.09,
+        "stop_loss": 1.08891,
+        "take_profit": 1.09164,
+        "risk_reward_ratio": 1.5,
+        "signal_time": "2025-07-16T16:55:41.953922",
+        "signal_type": "RAPID_ASSAULT",
+        "source": "fired_trades"
+      },
+      "market_outcome": {
+        "outcome": "WIN",
+        "final_price": 1.09164,
+        "hours_to_close": 11.1,
+        "pnl_r_multiple": 1.5,
+        "win_probability_used": 0.51
+      },
+      "backtest_metadata": {
+        "backtest_time": "2025-07-21T03:40:22.937606",
+        "simulation_method": "TCS-weighted probability model"
+      }
+    },
+    {
+      "signal_data": {
+        "signal_id": "APEX5_EURUSD_034017",
+        "symbol": "EURUSD",
+        "direction": "BUY",
+        "tcs_score": 85,
+        "entry_price": 1.09,
+        "stop_loss": 1.08891,
+        "take_profit": 1.09164,
+        "risk_reward_ratio": 1.5,
+        "signal_time": "2025-07-17T03:40:23.512748",
+        "signal_type": "RAPID_ASSAULT",
+        "source": "fired_trades"
+      },
+      "market_outcome": {
+        "outcome": "LOSS",
+        "final_price": 1.08891,
+        "hours_to_close": 8.3,
+        "pnl_r_multiple": -1.0,
+        "win_probability_used": 0.51
+      },
+      "backtest_metadata": {
+        "backtest_time": "2025-07-21T03:40:22.937611",
+        "simulation_method": "TCS-weighted probability model"
+      }
+    },
+    {
+      "signal_data": {
+        "signal_id": "RAPID_ASSAULT_EURUSD_20250717_151540_cc5076ba",
+        "symbol": "EURUSD",
+        "direction": "BUY",
+        "tcs_score": 85,
+        "entry_price": 1.0895,
+        "stop_loss": 1.088,
+        "take_profit": 1.0925,
+        "risk_reward_ratio": 2.0,
+        "signal_time": "2025-07-17T15:15:40.930364",
+        "signal_type": "RAPID_ASSAULT",
+        "source": "uuid_tracking"
+      },
+      "market_outcome": {
+        "outcome": "LOSS",
+        "final_price": 1.088,
+        "hours_to_close": 7.2,
+        "pnl_r_multiple": -1.0,
+        "win_probability_used": 0.51
+      },
+      "backtest_metadata": {
+        "backtest_time": "2025-07-21T03:40:22.937616",
+        "simulation_method": "TCS-weighted probability model"
+      }
+    },
+    {
+      "signal_data": {
+        "signal_id": "RAPID_ASSAULT_EURUSD_20250717_151656_56a0f412",
+        "symbol": "EURUSD",
+        "direction": "BUY",
+        "tcs_score": 85,
+        "entry_price": 1.0895,
+        "stop_loss": 1.088,
+        "take_profit": 1.0925,
+        "risk_reward_ratio": 2.0,
+        "signal_time": "2025-07-17T15:16:56.128695",
+        "signal_type": "RAPID_ASSAULT",
+        "source": "uuid_tracking"
+      },
+      "market_outcome": {
+        "outcome": "LOSS",
+        "final_price": 1.088,
+        "hours_to_close": 6.3,
+        "pnl_r_multiple": -1.0,
+        "win_probability_used": 0.51
+      },
+      "backtest_metadata": {
+        "backtest_time": "2025-07-21T03:40:22.937621",
+        "simulation_method": "TCS-weighted probability model"
+      }
+    },
+    {
+      "signal_data": {
+        "signal_id": "SNIPER_OPS_GBPUSD_20250717_151726_3a07a889",
+        "symbol": "GBPUSD",
+        "direction": "SELL",
+        "tcs_score": 88,
+        "entry_price": 1.25,
+        "stop_loss": 1.2515,
+        "take_profit": 1.247,
+        "risk_reward_ratio": 2.0,
+        "signal_time": "2025-07-17T15:17:26.928698",
+        "signal_type": "SNIPER_OPS",
+        "source": "uuid_tracking"
+      },
+      "market_outcome": {
+        "outcome": "WIN",
+        "final_price": 1.247,
+        "hours_to_close": 14.3,
+        "pnl_r_multiple": 2.0,
+        "win_probability_used": 0.522
+      },
+      "backtest_metadata": {
+        "backtest_time": "2025-07-21T03:40:22.937627",
+        "simulation_method": "TCS-weighted probability model"
+      }
+    },
+    {
+      "signal_data": {
+        "signal_id": "RAPID_ASSAULT_EURUSD_20250717_160209_c5da6cba",
+        "symbol": "EURUSD",
+        "direction": "BUY",
+        "tcs_score": 85,
+        "entry_price": 1.0895,
+        "stop_loss": 1.088,
+        "take_profit": 1.0925,
+        "risk_reward_ratio": 2.0,
+        "signal_time": "2025-07-17T16:02:09.845962",
+        "signal_type": "RAPID_ASSAULT",
+        "source": "uuid_tracking"
+      },
+      "market_outcome": {
+        "outcome": "WIN",
+        "final_price": 1.0925,
+        "hours_to_close": 16.1,
+        "pnl_r_multiple": 2.0,
+        "win_probability_used": 0.51
+      },
+      "backtest_metadata": {
+        "backtest_time": "2025-07-21T03:40:22.937632",
+        "simulation_method": "TCS-weighted probability model"
+      }
+    },
+    {
+      "signal_data": {
+        "signal_id": "APEX5_EURUSD_160209",
+        "symbol": "EURUSD",
+        "direction": "BUY",
+        "tcs_score": 85,
+        "entry_price": 1.0895,
+        "stop_loss": 1.08841,
+        "take_profit": 1.09113,
+        "risk_reward_ratio": 1.5,
+        "signal_time": "2025-07-17T16:02:27.469752",
+        "signal_type": "RAPID_ASSAULT",
+        "source": "fired_trades"
+      },
+      "market_outcome": {
+        "outcome": "LOSS",
+        "final_price": 1.08841,
+        "hours_to_close": 1.5,
+        "pnl_r_multiple": -1.0,
+        "win_probability_used": 0.51
+      },
+      "backtest_metadata": {
+        "backtest_time": "2025-07-21T03:40:22.937637",
+        "simulation_method": "TCS-weighted probability model"
+      }
+    },
+    {
+      "signal_data": {
+        "signal_id": "RAPID_ASSAULT_GBPUSD_20250717_160302_07b3befb",
+        "symbol": "GBPUSD",
+        "direction": "SELL",
+        "tcs_score": 87,
+        "entry_price": 1.25,
+        "stop_loss": 1.2515,
+        "take_profit": 1.247,
+        "risk_reward_ratio": 2.0,
+        "signal_time": "2025-07-17T16:03:02.151500",
+        "signal_type": "RAPID_ASSAULT",
+        "source": "uuid_tracking"
+      },
+      "market_outcome": {
+        "outcome": "LOSS",
+        "final_price": 1.2515,
+        "hours_to_close": 11.5,
+        "pnl_r_multiple": -1.0,
+        "win_probability_used": 0.518
+      },
+      "backtest_metadata": {
+        "backtest_time": "2025-07-21T03:40:22.937643",
+        "simulation_method": "TCS-weighted probability model"
+      }
+    },
+    {
+      "signal_data": {
+        "signal_id": "APEX5_GBPUSD_160302",
+        "symbol": "GBPUSD",
+        "direction": "SELL",
+        "tcs_score": 87,
+        "entry_price": 1.25,
+        "stop_loss": 1.25125,
+        "take_profit": 1.24813,
+        "risk_reward_ratio": 1.5,
+        "signal_time": "2025-07-17T16:03:15.862741",
+        "signal_type": "RAPID_ASSAULT",
+        "source": "fired_trades"
+      },
+      "market_outcome": {
+        "outcome": "LOSS",
+        "final_price": 1.25125,
+        "hours_to_close": 11.4,
+        "pnl_r_multiple": -1.0,
+        "win_probability_used": 0.518
+      },
+      "backtest_metadata": {
+        "backtest_time": "2025-07-21T03:40:22.937648",
+        "simulation_method": "TCS-weighted probability model"
+      }
+    },
+    {
+      "signal_data": {
+        "signal_id": "RAPID_ASSAULT_EURUSD_20250717_160653_07e6d03e",
+        "symbol": "EURUSD",
+        "direction": "BUY",
+        "tcs_score": 90,
+        "entry_price": 1.0895,
+        "stop_loss": 1.088,
+        "take_profit": 1.0925,
+        "risk_reward_ratio": 2.0,
+        "signal_time": "2025-07-17T16:06:53.683956",
+        "signal_type": "RAPID_ASSAULT",
+        "source": "uuid_tracking"
+      },
+      "market_outcome": {
+        "outcome": "WIN",
+        "final_price": 1.0925,
+        "hours_to_close": 43.2,
+        "pnl_r_multiple": 2.0,
+        "win_probability_used": 0.53
+      },
+      "backtest_metadata": {
+        "backtest_time": "2025-07-21T03:40:22.937653",
+        "simulation_method": "TCS-weighted probability model"
+      }
+    }
+  ]
+}

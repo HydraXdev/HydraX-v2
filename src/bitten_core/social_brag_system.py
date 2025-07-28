@@ -31,14 +31,12 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
-
 class BragType(Enum):
     """Types of brag-worthy achievements"""
     TACTICAL_STRATEGY_UNLOCK = "tactical_strategy_unlock"
     RANK_PROMOTION = "rank_promotion"
     PRESTIGE_ACHIEVEMENT = "prestige_achievement"
     MILESTONE_REACHED = "milestone_reached"
-
 
 @dataclass
 class BragNotification:
@@ -53,7 +51,6 @@ class BragNotification:
     squad_members: List[str]
     timestamp: datetime
     metadata: Dict[str, Any]
-
 
 class SocialBragSystem:
     """Military-themed social brag notification system for squad achievements"""
@@ -494,10 +491,8 @@ class SocialBragSystem:
             logger.error(f"Error formatting brag for WebApp: {e}")
             return {}
 
-
 # Global instance (will be initialized by the main application)
 social_brag_system: Optional[SocialBragSystem] = None
-
 
 def initialize_social_brag_system(
     referral_system: Optional[Any] = None,
@@ -516,11 +511,9 @@ def initialize_social_brag_system(
     logger.info("Global social brag system initialized")
     return social_brag_system
 
-
 def get_social_brag_system() -> Optional[SocialBragSystem]:
     """Get the global social brag system instance"""
     return social_brag_system
-
 
 # Helper functions for easy integration
 def notify_tactical_strategy_unlock(
@@ -538,7 +531,6 @@ def notify_tactical_strategy_unlock(
         )
     return None
 
-
 def notify_rank_promotion(
     user_id: str, 
     username: str, 
@@ -550,7 +542,6 @@ def notify_rank_promotion(
         return social_brag_system.notify_rank_promotion(user_id, username, new_rank, old_rank)
     return None
 
-
 def notify_prestige_achievement(
     user_id: str, 
     username: str, 
@@ -560,7 +551,6 @@ def notify_prestige_achievement(
     if social_brag_system:
         return social_brag_system.notify_prestige_achievement(user_id, username, prestige_level)
     return None
-
 
 # Example usage
 if __name__ == "__main__":

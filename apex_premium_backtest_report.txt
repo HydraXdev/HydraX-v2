@@ -1,0 +1,42 @@
+
+🌟⚡ **APEX v6.0 PREMIUM vs STANDARD COMPARISON**
+📅 Generated: 2025-07-21 00:04:32
+🎯 TEST: Premium Filtering Strategy
+
+═══════════════════════════════════════════════════════════════════
+
+📊 **QUALITY vs QUANTITY COMPARISON:**
+                    APEX Standard |    APEX Premium
+Win Rate:               56.1%    |        62.5%
+Signals per Day:        76.2     |         0.1
+Total Signals:        16,236     |           8
+Avg per Signal:        +90.8     |       +22.5
+
+🎯 **PREMIUM FILTERING RESULTS:**
+✅ Win Rate IMPROVED: +6.4% (62.5% vs 56.1%)
+📉 Volume REDUCED: -76.1 signals/day (0.1 vs 76.2)
+
+🎯 **PREMIUM PERFORMANCE DETAILS:**
+• Total Signals: 8
+• Signals Tested: 8
+• Wins: 5
+• Losses: 3
+• Total P&L: $+1,800.00
+
+📊 **TCS PERFORMANCE BREAKDOWN:**
+• TCS 65-70: 3W/2L (60.0%) - +100.8 pips
+• TCS 70-75: 2W/1L (66.7%) - +79.2 pips
+
+🏁 **FINAL VERDICT:**
+⚠️ TOO RESTRICTIVE - Volume too low for production
+
+🎯 **PRODUCTION RECOMMENDATION:**
+🔄 ADJUST THRESHOLDS - Need more signals per day
+
+📊 **FILTERING ANALYSIS:**
+Premium Threshold: TCS 65+ (vs standard 60+)
+Quality Gain: +6.4% win rate
+Volume Cost: 76.1 fewer signals/day
+Trade-off: NOT JUSTIFIED
+
+💡 **INSIGHT:** Premium filtering is either too restrictive or does not improve performance sufficiently.

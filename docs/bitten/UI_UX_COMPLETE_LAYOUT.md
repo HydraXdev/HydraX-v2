@@ -384,7 +384,7 @@ As users evolve, the UI should reflect their transformation:
 - Bots speak with user's voice
 - Other nodes' pain visible
 
-**APEX (Full Transformation)**
+**(Full Transformation)**
 - UI is alive and responsive
 - No separation between user/system
 - Reality is negotiable

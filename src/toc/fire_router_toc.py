@@ -25,7 +25,6 @@ from terminal_assignment import TerminalAssignment, TerminalType, TerminalStatus
 # Configure logging
 logger = logging.getLogger(__name__)
 
-
 class SignalType(Enum):
     """Types of trading signals"""
     OPEN_POSITION = "open_position"
@@ -33,13 +32,11 @@ class SignalType(Enum):
     MODIFY_POSITION = "modify_position"
     CLOSE_ALL = "close_all"
 
-
 class DeliveryMethod(Enum):
     """Signal delivery methods"""
     HTTP_POST = "http_post"
     FILE_WRITE = "file_write"
     HYBRID = "hybrid"  # Try HTTP first, fallback to file
-
 
 @dataclass
 class TradeSignal:
@@ -56,7 +53,6 @@ class TradeSignal:
     ticket: Optional[int] = None  # For close/modify operations
     metadata: Optional[Dict] = None
 
-
 @dataclass
 class SignalResponse:
     """Response from signal routing"""
@@ -68,7 +64,6 @@ class SignalResponse:
     response_data: Optional[Dict] = None
     error_code: Optional[str] = None
     retry_count: int = 0
-
 
 class FireRouterTOC:
     """Terminal-aware signal router with retry and failover"""
@@ -566,7 +561,6 @@ class FireRouterTOC:
                 'terminal_id': terminal_id
             }
 
-
 # Flask endpoint handler
 def create_fire_endpoint(router: FireRouterTOC):
     """
@@ -637,7 +631,6 @@ def create_fire_endpoint(router: FireRouterTOC):
             }), 500
     
     return fire_endpoint
-
 
 # Example usage
 if __name__ == "__main__":

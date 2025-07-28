@@ -252,8 +252,6 @@ else:
     referral_system = None
     referral_handler = None
 
-
-
 # Initialize SocketIO
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
 
@@ -3429,8 +3427,8 @@ def hud():
         
         # Sanitize inputs
         import re
-        # Allow both numeric IDs and APEX mission IDs (APEX5_SYMBOL_XXXXXX)
-        if signal_id and not re.match(r'^(APEX[0-9]+_[A-Z]+_[0-9]+|[0-9]+)$', signal_id):
+        # Allow both numeric IDs and mission IDs (5_SYMBOL_XXXXXX)
+        if signal_id and not re.match(r'^([0-9]+_[A-Z]+_[0-9]+|[0-9]+)$', signal_id):
             return f"<h1>Invalid Signal ID</h1><p>Signal ID format not recognized.</p>", 400
         
         if user_id and not re.match(r'^[0-9]+$', user_id):
@@ -5004,7 +5002,7 @@ def report_download_page():
                 <h3>🛡️ Validation Results</h3>
                 <ul>
                     <li><strong>344 trades blocked</strong> out of 496 attempts - user protection working</li>
-                    <li><strong>All tier restrictions enforced</strong> - NIBBLER, FANG, COMMANDER, APEX</li>
+                    <li><strong>All tier restrictions enforced</strong> - NIBBLER, FANG, COMMANDER</li>
                     <li><strong>TCS thresholds validated</strong> - 70%/85%/91%/91% by tier</li>
                     <li><strong>Daily shot limits working</strong> - 6/10/12/unlimited per tier</li>
                     <li><strong>30-minute cooldowns enforced</strong> - preventing overtrading</li>
@@ -5657,8 +5655,7 @@ def create_checkout_session():
                                     },
                                     'unit_amount': 100,  # $1 setup fee only
                                 },
-                                'quantity': 1,
-                            }],
+                                'quantity': 1}],
                             mode='payment',
                             success_url=request.host_url + f'payment-success?session_id={{CHECKOUT_SESSION_ID}}&tier={tier}&ally_code={ally_code}',
                             cancel_url=request.host_url + f'upgrade?tier={tier}&cancelled=true',
@@ -5672,7 +5669,7 @@ def create_checkout_session():
                             }
                         )
                     else:
-                        # Discounted subscription (COMMANDER/APEX with founder discount)
+                        # Discounted subscription (COMMANDER/with founder discount)
                         session = stripe.checkout.Session.create(
                             payment_method_types=['card'],
                             line_items=[{
@@ -5685,8 +5682,7 @@ def create_checkout_session():
                                     'unit_amount': final_price,
                                     'recurring': {'interval': 'month'}
                                 },
-                                'quantity': 1,
-                            }],
+                                'quantity': 1}],
                             mode='subscription',
                             success_url=request.host_url + f'payment-success?session_id={{CHECKOUT_SESSION_ID}}&tier={tier}&ally_code={ally_code}',
                             cancel_url=request.host_url + f'upgrade?tier={tier}&cancelled=true',
@@ -5715,8 +5711,7 @@ def create_checkout_session():
             'payment_method_types': ['card'],
             'line_items': [{
                 'price': price_id,
-                'quantity': 1,
-            }],
+                'quantity': 1}],
             'mode': 'subscription',
             'success_url': request.host_url + f'payment-success?session_id={{CHECKOUT_SESSION_ID}}&tier={tier}',
             'cancel_url': request.host_url + f'upgrade?tier={tier}&cancelled=true',
@@ -6150,8 +6145,7 @@ def upgrade_page():
                     const response = await fetch('/api/validate-ally-code', {{
                         method: 'POST',
                         headers: {{
-                            'Content-Type': 'application/json',
-                        }},
+                            'Content-Type': 'application/json'}},
                         body: JSON.stringify({{ code: code }})
                     }});
                     
@@ -6199,8 +6193,7 @@ def upgrade_page():
                     const response = await fetch('/api/create-checkout-session', {{
                         method: 'POST',
                         headers: {{
-                            'Content-Type': 'application/json',
-                        }},
+                            'Content-Type': 'application/json'}},
                         body: JSON.stringify(requestData)
                     }});
                     

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-APEX Realistic Flow Engine v1.0
+Realistic Flow Engine v1.0
 Calibrated for BITTEN's actual game mechanics
 
 Real Constraints:
@@ -84,7 +84,7 @@ class RealisticSignal:
     xp_potential: int
     user_appeal_score: float
 
-class APEXRealisticFlowEngine:
+class RealisticFlowEngine:
     """Realistic signal engine for BITTEN's actual constraints"""
     
     def __init__(self):
@@ -511,12 +511,12 @@ class APEXRealisticFlowEngine:
 def main():
     """Run Realistic Flow Engine demonstration"""
     
-    print("🎯 APEX Realistic Flow Engine v1.0")
+    print("🎯 Realistic Flow Engine v1.0")
     print("🎮 Calibrated for BITTEN's Actual Game Mechanics")
     print("⚡ 48 signals/day, 6 trades max, short-duration scalps")
     print("=" * 70)
     
-    engine = APEXRealisticFlowEngine()
+    engine = RealisticFlowEngine()
     
     # Run 24-hour simulation
     results = engine.run_realistic_simulation(hours=24)

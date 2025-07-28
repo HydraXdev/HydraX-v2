@@ -14,7 +14,6 @@ import statistics
 
 logger = logging.getLogger(__name__)
 
-
 class HeatLevel(Enum):
     """Heat levels for pairs"""
     FROZEN = "frozen"      # TCS < 50%
@@ -23,7 +22,6 @@ class HeatLevel(Enum):
     WARM = "warm"          # TCS 70-80%
     HOT = "hot"            # TCS 80-90%
     BLAZING = "blazing"    # TCS > 90%
-
 
 @dataclass
 class PairHeatData:
@@ -40,7 +38,6 @@ class PairHeatData:
     last_updated: datetime
     historical_data: List[Tuple[datetime, float]] = field(default_factory=list)
 
-
 @dataclass
 class HeatMapSnapshot:
     """Complete heat map snapshot"""
@@ -52,7 +49,6 @@ class HeatMapSnapshot:
     trending_down: List[str]
     pair_data: Dict[str, PairHeatData]
     market_sentiment: str  # "bullish", "bearish", "neutral"
-
 
 class HeatMapAnalytics:
     """Analyzes and visualizes TCS trends across currency pairs"""
@@ -511,7 +507,6 @@ class HeatMapAnalytics:
                 
             except Exception as e:
                 logger.error(f"Error loading heat data from {pair_file}: {e}")
-
 
 # Example usage
 if __name__ == "__main__":

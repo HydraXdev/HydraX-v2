@@ -1020,9 +1020,7 @@ The dominant feeling was {dominant_mood}. """
 
 **Why This Trade:**
 
-
 **Market Context:**
-
 
 **Notes:**
 
@@ -1067,15 +1065,11 @@ The dominant feeling was {dominant_mood}. """
 
 **What Happened:**
 
-
 **What I Learned:**
-
 
 **How to Apply This:**
 
-
 **Reminder to Future Self:**
-
 
 **Related Symbols/Situations:**
 
@@ -1106,12 +1100,9 @@ The dominant feeling was {dominant_mood}. """
 
 **Best Market Conditions:**
 
-
 **Avoid When:**
 
-
 **Backtest Results:**
-
 
 **Real Trading Notes:**
 
@@ -1135,15 +1126,11 @@ The dominant feeling was {dominant_mood}. """
 
 **Fundamental Factors:**
 
-
 **Sentiment:**
-
 
 **News/Events:**
 
-
 **Trading Opportunities:**
-
 
 **Risk Factors:**
 
@@ -1162,7 +1149,6 @@ The dominant feeling was {dominant_mood}. """
 
 **Current Progress:**
 
-
 **Action Steps:**
 1. 
 2. 
@@ -1174,9 +1160,7 @@ The dominant feeling was {dominant_mood}. """
 
 **Challenges Expected:**
 
-
 **Success Criteria:**
-
 
 **Progress Updates:**
 
@@ -1191,10 +1175,8 @@ The dominant feeling was {dominant_mood}. """
 
 **What's on my mind:**
 
-
 **Action Items:**
 - 
-
 
 **Follow up:**
 
@@ -1313,7 +1295,6 @@ The dominant feeling was {dominant_mood}. """
             'newest_note': max(active_notes, key=lambda x: x['updated_at'])['updated_at'] if active_notes else None
         }
 
-
 class TradingLessonExtractor:
     """Extract and summarize lessons from journal entries"""
     
@@ -1405,7 +1386,6 @@ class TradingLessonExtractor:
         
         return summary
 
-
 # Integration functions for the broader system
 def create_journal_entry_from_trade(trade_data: Dict, notebook: NormansNotebook):
     """Automatically create journal entries from trade data"""
@@ -1432,7 +1412,6 @@ def create_journal_entry_from_trade(trade_data: Dict, notebook: NormansNotebook)
                  f"P&L: ${pnl:.2f}. "
                  f"{'Profit' if pnl > 0 else 'Loss'} of {abs(pnl/trade_data.get('entry_price', 1)*100):.1f}%"
         )
-
 
 def get_journal_insights_for_symbol(symbol: str, notebook: NormansNotebook) -> Dict:
     """Get historical insights for a symbol from journal"""

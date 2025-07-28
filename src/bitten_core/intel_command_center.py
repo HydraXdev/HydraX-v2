@@ -177,7 +177,7 @@ class IntelCommandCenter:
             ('nibbler_tier', '🐭 NIBBLER ($39)', 'Entry tier features'),
             ('fang_tier', '🦷 FANG ($89)', 'Advanced features'),
             ('commander_tier', '⭐ COMMANDER ($189)', 'Elite access'),
-            ('apex_tier', '👑 APEX ($188)', 'Maximum power'),
+            ('apex_tier', '👑 ()', 'Maximum power'),
             ('compare_tiers', '📊 COMPARE TIERS', 'Side-by-side comparison'),
             ('upgrade_now', '⬆️ UPGRADE NOW', 'Instant tier upgrade'),
             ('downgrade_info', '⬇️ DOWNGRADE INFO', 'How downgrades work'),
@@ -616,7 +616,7 @@ Use: `/analyze` for full report"""
             'NIBBLER': '🔰 Entry tier - $39/month\n• Manual fire mode\n• Basic signals\n• 6 trades/day',
             'FANG': '🦷 Advanced tier - $89/month\n• Manual + Chaingun\n• All signals\n• 10 trades/day',
             'COMMANDER': '⭐ Elite tier - $189/month\n• Auto + Semi modes\n• Advanced features\n• Unlimited trades\n• STEALTH mode',
-            'APEX': '🏔️ Ultimate tier - $188/month\n• All features unlocked\n• Unlimited trades\n• Exclusive signals'
+            '': '🏔️ Ultimate tier - /month\n• All features unlocked\n• Unlimited trades\n• Exclusive signals'
         }
         return f"""💰 **{tier_name} TIER**
 
@@ -975,8 +975,7 @@ $1,000 start
 12 months
 = $3,138 (213% gain)
 
-[OPEN CALCULATOR] - Tap to use webapp tool""",
-        }
+[OPEN CALCULATOR] - Tap to use webapp tool"""}
         
         # Add more comprehensive info mappings
         if menu_id not in info_map:
@@ -1089,8 +1088,7 @@ $1,000 start
 
 *Remember: Every elite trader has been here*""",
                 'action': 'activate_recovery_mode'
-            },
-        }
+            }}
         
         response = emergency_responses.get(menu_id, {
             'message': 'Emergency assistance requested',
@@ -1221,16 +1219,13 @@ $1,000 start
         
         return current_menu
 
-
 # Global instance
 intel_center = IntelCommandCenter()
-
 
 # Helper functions for integration
 def handle_intel_command(user_id: int, user_rank: UserRank) -> CommandResult:
     """Handle /intel command"""
     return intel_center.handle_intel_command(user_id, user_rank)
-
 
 def handle_intel_callback(callback_data: str, user_id: int, user_rank: UserRank) -> Dict[str, Any]:
     """Handle intel menu callbacks"""

@@ -25,8 +25,7 @@ DB_CONFIG = {
     'port': os.getenv('DB_PORT', 5432),
     'database': os.getenv('DB_NAME', 'bitten_db'),
     'user': os.getenv('DB_USER', 'bitten_app'),
-    'password': os.getenv('DB_PASSWORD', 'bitten_pass'),
-}
+    'password': os.getenv('DB_PASSWORD', 'bitten_pass')}
 
 @dataclass
 class XPBalance:
@@ -80,7 +79,6 @@ class PressPassReset:
         if self.reset_at:
             data['reset_at'] = self.reset_at.isoformat()
         return data
-
 
 class XPDatabase:
     """
@@ -657,7 +655,6 @@ class XPDatabase:
             
             return [row['user_id'] for row in rows]
 
-
 # Helper functions for easy access
 
 async def init_xp_database() -> XPDatabase:
@@ -702,7 +699,6 @@ async def reset_all_press_pass_xp() -> List[PressPassReset]:
     finally:
         await db.close()
 
-
 # Main execution for testing
 if __name__ == "__main__":
     async def test_xp_database():
@@ -740,7 +736,7 @@ if __name__ == "__main__":
             # Test XP statistics
             print(f"\nGetting XP statistics...")
             stats = await db.get_xp_statistics()
-            print(f"✓ Total XP in circulation: {stats['total_circulation']:,}")
+            print(f"✓ Total XP in circulation: {stats['total_circulation']:}")
             print(f"  Total users: {stats['total_users']}")
             
             print("\n✅ XP database is ready for use!")

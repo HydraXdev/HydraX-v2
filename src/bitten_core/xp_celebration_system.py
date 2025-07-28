@@ -31,7 +31,6 @@ class NPCResponse:
 
 logger = logging.getLogger(__name__)
 
-
 class CelebrationTier(Enum):
     """Tiers of celebration intensity"""
     MICRO = "micro"          # 1-50 XP
@@ -40,7 +39,6 @@ class CelebrationTier(Enum):
     LARGE = "large"          # 501-1000 XP
     EPIC = "epic"            # 1001-5000 XP
     LEGENDARY = "legendary"  # 5000+ XP
-
 
 class EventType(Enum):
     """Types of XP earning events"""
@@ -53,7 +51,6 @@ class EventType(Enum):
     PURCHASE = "purchase"
     STREAK = "streak"
     RECRUIT_MILESTONE = "recruit_milestone"
-
 
 @dataclass
 class CelebrationEvent:
@@ -68,7 +65,6 @@ class CelebrationEvent:
     visual_effect: str
     duration_ms: int
     metadata: Dict[str, Any]
-
 
 class XPCelebrationSystem:
     """Manages immersive celebrations for XP gains"""
@@ -337,7 +333,7 @@ class XPCelebrationSystem:
         
         if event_type == EventType.TRADE_WIN:
             profit = event_metadata.get("profit", 0) if event_metadata else 0
-            return f"{rank}, you've earned {xp_amount} XP from a ${profit:.2f} victory! Total: {total_xp + xp_amount:,} XP"
+            return f"{rank}, you've earned {xp_amount} XP from a ${profit:.2f} victory! Total: {total_xp + xp_amount:} XP"
         
         elif event_type == EventType.TRADE_TP_HIT:
             accuracy = event_metadata.get("accuracy_percent", 100) if event_metadata else 100
@@ -456,7 +452,6 @@ class XPCelebrationSystem:
             {"milestone": milestone_type, "special": True}
         )
 
-
 # Audio generation functions for web integration
 def generate_cash_register_sound_config() -> Dict[str, Any]:
     """Generate configuration for cash register sound effect"""
@@ -496,7 +491,6 @@ def generate_cash_register_sound_config() -> Dict[str, Any]:
         }
     }
 
-
 def generate_tp_hit_celebration_sound() -> Dict[str, Any]:
     """Generate special sound for TP hits"""
     return {
@@ -526,7 +520,6 @@ def generate_tp_hit_celebration_sound() -> Dict[str, Any]:
             }
         ]
     }
-
 
 # Example usage
 if __name__ == "__main__":

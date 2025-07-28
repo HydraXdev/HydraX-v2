@@ -12,7 +12,6 @@ import json
 
 from src.database.models import Trade, TradeStatus as DBTradeStatus, OrderType as DBOrderType
 
-
 @dataclass
 class TradeResult:
     """
@@ -275,7 +274,6 @@ class TradeResult:
             return f"⚠️ Trade Error: {self.error_message} (Code: {self.error_code})"
         else:
             return f"Trade {self.ticket}: {self.status}"
-
 
 class TradeResultBatch:
     """

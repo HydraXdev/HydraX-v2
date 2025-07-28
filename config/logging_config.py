@@ -14,7 +14,6 @@ from pathlib import Path
 LOGS_DIR = Path(__file__).parent.parent / "logs"
 LOGS_DIR.mkdir(exist_ok=True)
 
-
 class ColoredFormatter(logging.Formatter):
     """Custom formatter with color support for console output"""
     
@@ -42,7 +41,6 @@ class ColoredFormatter(logging.Formatter):
         
         return super().format(record)
 
-
 class StructuredFormatter(logging.Formatter):
     """Structured formatter for log files"""
     
@@ -62,7 +60,6 @@ class StructuredFormatter(logging.Formatter):
         record.thread_name = record.threadName
         
         return super().format(record)
-
 
 def setup_logging(
     level: str = "INFO",
@@ -180,7 +177,6 @@ def setup_logging(
     
     return config
 
-
 def setup_component_loggers(base_level: int) -> Dict[str, logging.Logger]:
     """Setup loggers for specific components"""
     
@@ -213,8 +209,7 @@ def setup_component_loggers(base_level: int) -> Dict[str, logging.Logger]:
         
         # Test components
         "test_engagement": logging.DEBUG,
-        "test_fusion": logging.DEBUG,
-    }
+        "test_fusion": logging.DEBUG}
     
     loggers = {}
     
@@ -224,7 +219,6 @@ def setup_component_loggers(base_level: int) -> Dict[str, logging.Logger]:
         loggers[component] = logger
     
     return loggers
-
 
 def setup_component_files(
     base_level: int,
@@ -240,8 +234,7 @@ def setup_component_files(
         "trading_engine": LOGS_DIR / "trading.log",
         "webapp": LOGS_DIR / "webapp.log",
         "telegram_bot": LOGS_DIR / "telegram.log",
-        "errors": LOGS_DIR / "errors.log",
-    }
+        "errors": LOGS_DIR / "errors.log"}
     
     handlers = {}
     
@@ -279,7 +272,6 @@ def setup_component_files(
     
     return handlers
 
-
 def get_logger(name: str, component: Optional[str] = None) -> logging.Logger:
     """
     Get a logger with optional component tagging
@@ -303,7 +295,6 @@ def get_logger(name: str, component: Optional[str] = None) -> logging.Logger:
         logger.addFilter(ComponentFilter())
     
     return logger
-
 
 def log_system_info():
     """Log system information for debugging"""
@@ -335,7 +326,6 @@ def log_system_info():
     
     logger.info("=== End System Information ===")
 
-
 def setup_error_reporting():
     """Setup error reporting and monitoring"""
     logger = get_logger("error_reporting", "monitoring")
@@ -358,7 +348,6 @@ def setup_error_reporting():
     
     logger.info("Error reporting configured")
 
-
 def configure_third_party_logging():
     """Configure logging for third-party libraries"""
     
@@ -368,8 +357,7 @@ def configure_third_party_logging():
         'requests.packages.urllib3.connectionpool',
         'werkzeug',
         'socketio.client',
-        'engineio.client',
-    ]
+        'engineio.client']
     
     for logger_name in noisy_loggers:
         logger = logging.getLogger(logger_name)
@@ -383,7 +371,6 @@ def configure_third_party_logging():
     if os.getenv('ENGAGEMENT_DEBUG', 'false').lower() == 'true':
         sqlalchemy_logger.setLevel(logging.INFO)
 
-
 # Convenience functions for common logging patterns
 def log_function_call(func_name: str, args: tuple = (), kwargs: dict = None):
     """Log function call with arguments"""
@@ -395,7 +382,6 @@ def log_function_call(func_name: str, args: tuple = (), kwargs: dict = None):
     all_args = ", ".join(filter(None, [args_str, kwargs_str]))
     logger.debug(f"Calling {func_name}({all_args})")
 
-
 def log_performance(operation: str, duration: float, **context):
     """Log performance metrics"""
     logger = get_logger("performance", "metrics")
@@ -403,14 +389,12 @@ def log_performance(operation: str, duration: float, **context):
     context_str = ", ".join(f"{k}={v}" for k, v in context.items())
     logger.info(f"Performance: {operation} took {duration:.3f}s | {context_str}")
 
-
 def log_user_action(user_id: str, action: str, **details):
     """Log user actions for analytics"""
     logger = get_logger("user_actions", "analytics")
     
     details_str = ", ".join(f"{k}={v}" for k, v in details.items())
     logger.info(f"User {user_id} performed {action} | {details_str}")
-
 
 # Default configuration
 def setup_default_logging():
@@ -435,7 +419,6 @@ def setup_default_logging():
     
     return config
 
-
 # Export public interface
 __all__ = [
     'setup_logging',
@@ -448,7 +431,6 @@ __all__ = [
     'ColoredFormatter',
     'StructuredFormatter'
 ]
-
 
 # Auto-setup if this module is imported
 if __name__ != "__main__":

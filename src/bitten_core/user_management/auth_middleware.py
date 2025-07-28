@@ -13,16 +13,13 @@ from .user_manager import user_manager
 
 logger = logging.getLogger(__name__)
 
-
 class AuthenticationError(Exception):
     """Authentication error exception"""
     pass
 
-
 class AuthorizationError(Exception):
     """Authorization error exception"""
     pass
-
 
 def require_auth(min_tier: Optional[str] = None):
     """
@@ -64,7 +61,7 @@ def require_auth(min_tier: Optional[str] = None):
                     'NIBBLER': 1,
                     'FANG': 2,
                     'COMMANDER': 3,
-                    'APEX': 4
+                    '': 4
                 }
                 
                 user_tier = session['data'].get('tier', 'NIBBLER')
@@ -81,7 +78,6 @@ def require_auth(min_tier: Optional[str] = None):
         
         return wrapper
     return decorator
-
 
 def require_telegram_auth(func: Callable) -> Callable:
     """
@@ -133,7 +129,6 @@ def require_telegram_auth(func: Callable) -> Callable:
             await update.message.reply_text("Authentication error. Please try again later.")
     
     return wrapper
-
 
 class SessionManager:
     """
@@ -227,7 +222,6 @@ class SessionManager:
         
         return {'session': session}
 
-
 class TierGuard:
     """
     Tier-based access control utilities
@@ -247,18 +241,18 @@ class TierGuard:
         """
         feature_requirements = {
             # Basic features
-            'basic_signals': ['PRESS_PASS', 'NIBBLER', 'FANG', 'COMMANDER', 'APEX'],
-            'market_news': ['PRESS_PASS', 'NIBBLER', 'FANG', 'COMMANDER', 'APEX'],
+            'basic_signals': ['PRESS_PASS', 'NIBBLER', 'FANG', 'COMMANDER', ''],
+            'market_news': ['PRESS_PASS', 'NIBBLER', 'FANG', 'COMMANDER', ''],
             
             # Advanced features
-            'advanced_signals': ['FANG', 'COMMANDER', 'APEX'],
-            'custom_strategies': ['COMMANDER', 'APEX'],
-            'api_access': ['COMMANDER', 'APEX'],
+            'advanced_signals': ['FANG', 'COMMANDER', ''],
+            'custom_strategies': ['COMMANDER', ''],
+            'api_access': ['COMMANDER', ''],
             
             # Premium features
-            'vip_support': ['APEX'],
-            'white_label': ['APEX'],
-            'unlimited_trades': ['APEX']
+            'vip_support': [''],
+            'white_label': [''],
+            'unlimited_trades': ['']
         }
         
         allowed_tiers = feature_requirements.get(feature, [])
@@ -305,7 +299,7 @@ class TierGuard:
                 'xp_multiplier': 2.0,
                 'demo_only': False
             },
-            'APEX': {
+            '': {
                 'daily_trades': -1,  # Unlimited
                 'max_lot_size': -1,  # Unlimited
                 'signal_delay_minutes': 0,
@@ -315,7 +309,6 @@ class TierGuard:
         }
         
         return tier_limits.get(tier, tier_limits['NIBBLER'])
-
 
 # Export middleware components
 __all__ = [

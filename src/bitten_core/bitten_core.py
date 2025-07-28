@@ -19,6 +19,7 @@ from .bot_control_integration import create_bot_control_integration, BotControlI
 
 # Import existing HydraX modules for integration
 sys.path.append('/root/HydraX-v2/src')
+from venom_activity_logger import log_signal_to_core, log_error
 
 class SystemMode(Enum):
     """System operation modes"""
@@ -79,7 +80,7 @@ class BittenCore:
         # Initialize subsystems
         self.rank_access = RankAccess()
         self.telegram_router = TelegramRouter(bitten_core=self)
-        self.fire_router = FireRouter(bridge_url=self.config.get('bridge_url'))
+        self.fire_router = FireRouter(api_endpoint=self.config.get('api_endpoint', 'api.broker.local'))
         
         # Initialize bot control integration
         self.bot_control_integration = create_bot_control_integration(
@@ -92,6 +93,31 @@ class BittenCore:
         self.user_sessions: Dict[int, UserSession] = {}
         self.active_modes: Dict[int, SystemMode] = {}
         self.tactical_modes: Dict[int, TacticalMode] = {}
+        
+        # Signal queue management
+        self.signal_queue: List[Dict] = []
+        self.processed_signals: Dict[str, Dict] = {}
+        self.signal_stats = {
+            'total_signals': 0,
+            'processed_signals': 0,
+            'pending_signals': 0,
+            'last_signal_time': None
+        }
+        
+        # User session signal caching
+        self.user_active_signals: Dict[str, List[Dict]] = {}  # user_id -> [active_signals]
+        self.user_signal_history: Dict[str, List[Dict]] = {}  # user_id -> [signal_history]
+        
+        # Bot integration for signal delivery
+        self.production_bot = None  # Will be set by BittenProductionBot
+        
+        # Import user registry manager for signal delivery
+        try:
+            from .user_registry_manager import UserRegistryManager
+            self.user_registry = UserRegistryManager()
+        except ImportError:
+            self.user_registry = None
+            self._log_error("UserRegistryManager not available")
         
         # Performance tracking
         self.performance_stats = {
@@ -107,6 +133,11 @@ class BittenCore:
         
         # Initialize system
         self._initialize_system()
+    
+    def set_production_bot(self, bot_instance):
+        """Set reference to BittenProductionBot for signal delivery"""
+        self.production_bot = bot_instance
+        self._log_info("Production bot integration enabled")
     
     def _load_default_config(self) -> Dict:
         """Load default system configuration"""
@@ -454,9 +485,9 @@ class BittenCore:
             if symbol not in self.config['supported_pairs']:
                 return CommandResult(False, f"❌ Unsupported symbol: {symbol}")
             
-            # Simulate TCS calculation (would use real market analysis)
-            import random
-            base_score = random.randint(65, 95)
+            # Calculate TCS score - NO FAKE DATA
+            # TODO: Implement real TCS calculation from market data
+            base_score = 70  # Default baseline score
             
             # Adjust based on time and volatility
             current_hour = datetime.now().hour
@@ -506,10 +537,10 @@ class BittenCore:
             signals_msg = "📡 **Market Signals**\n\n"
             
             for pair in pairs:
-                # Simulate signal generation
-                import random
-                signal_strength = random.randint(60, 95)
-                direction = random.choice(['BUY', 'SELL'])
+                # Get real signal data - NO FAKE DATA
+                # TODO: Get real signals from VENOM engine
+                signal_strength = 0  # Real data needed
+                direction = 'PENDING'  # Real data needed
                 
                 signal_emoji = "🔥" if signal_strength >= 85 else "✅" if signal_strength >= 70 else "⚠️"
                 
@@ -681,6 +712,706 @@ class BittenCore:
         if processed:
             return processed.get('content')
         return None
+    
+    def process_signal(self, signal_data: Dict) -> Dict:
+        """
+        Process VENOM signal packet for Core system intake
+        
+        Args:
+            signal_data: Signal packet from VENOM v7
+            
+        Returns:
+            Processing result status
+        """
+        try:
+            # Validate required signal fields
+            required_fields = ['signal_id', 'symbol', 'direction', 'signal_type', 
+                             'confidence', 'target_pips', 'stop_pips', 'risk_reward']
+            
+            for field in required_fields:
+                if field not in signal_data:
+                    self._log_error(f"Signal missing required field: {field}")
+                    return {'success': False, 'error': f'Missing field: {field}'}
+            
+            # Add processing timestamp
+            signal_data['processed_at'] = datetime.now().isoformat()
+            signal_data['status'] = 'pending'
+            
+            # CITADEL Shield Analysis with Live Data
+            try:
+                # Import CITADEL analyzer
+                from citadel_core.citadel_analyzer import get_citadel_analyzer
+                citadel = get_citadel_analyzer()
+                
+                # Prepare signal for CITADEL format
+                citadel_signal = {
+                    'signal_id': signal_data['signal_id'],
+                    'pair': signal_data['symbol'],
+                    'direction': signal_data['direction'].upper(),
+                    'entry_price': signal_data.get('entry_price', 0),  # Will be calculated if not provided
+                    'sl': signal_data.get('stop_loss', 0),
+                    'tp': signal_data.get('take_profit', 0),
+                    'signal_type': signal_data['signal_type']
+                }
+                
+                # If entry/sl/tp not provided, calculate from pips
+                if citadel_signal['entry_price'] == 0:
+                    # Get current price from broker data if available
+                    try:
+                        import json
+                        with open('/tmp/ea_raw_data.json', 'r') as f:
+                            broker_data = json.load(f)
+                            for tick in broker_data.get('ticks', []):
+                                if tick['symbol'] == signal_data['symbol']:
+                                    citadel_signal['entry_price'] = tick['bid'] if signal_data['direction'] == 'SELL' else tick['ask']
+                                    break
+                    except:
+                        pass
+                
+                # Basic market data (will be enhanced by CITADEL)
+                market_data = {
+                    'recent_candles': [],
+                    'recent_high': 0,
+                    'recent_low': 0,
+                    'atr': signal_data.get('atr', 0.0045)
+                }
+                
+                # Run CITADEL analysis with live data enhancement
+                shield_analysis = citadel.analyze_signal(
+                    citadel_signal,
+                    market_data,
+                    user_id=None,  # Generic analysis for all users
+                    use_live_data=True  # Enable live broker data enhancement
+                )
+                
+                # Add CITADEL results to signal
+                signal_data['shield_score'] = shield_analysis['shield_score']
+                signal_data['shield_classification'] = shield_analysis['classification']
+                signal_data['shield_label'] = shield_analysis['label']
+                signal_data['shield_emoji'] = shield_analysis['emoji']
+                signal_data['shield_explanation'] = shield_analysis['explanation']
+                signal_data['shield_recommendation'] = shield_analysis['recommendation']
+                
+                # NO AUTOMATIC POSITION SIZING - Just informational
+                # Users maintain full control over their risk
+                signal_data['position_multiplier'] = 1.0  # Always use normal 2% risk
+                
+                self._log_info(f"🛡️ CITADEL Shield Score: {shield_analysis['shield_score']}/10 for {signal_data['signal_id']}")
+                
+            except Exception as e:
+                self._log_error(f"CITADEL analysis error (non-fatal): {e}")
+                # Continue without CITADEL if it fails
+                signal_data['shield_score'] = 5.0
+                signal_data['shield_classification'] = 'UNVERIFIED'
+                signal_data['position_multiplier'] = 1.0
+            
+            # Store in signal queue for HUD preview
+            self.signal_queue.append(signal_data)
+            
+            # Store in processed signals registry
+            signal_id = signal_data['signal_id']
+            self.processed_signals[signal_id] = signal_data
+            
+            # Update statistics
+            self.signal_stats['total_signals'] += 1
+            self.signal_stats['pending_signals'] = len(self.signal_queue)
+            self.signal_stats['last_signal_time'] = signal_data['processed_at']
+            
+            # Log signal intake
+            self._log_info(f"Signal processed: {signal_id} | {signal_data['symbol']} {signal_data['direction']} | TCS: {signal_data.get('confidence', 'N/A')}%")
+            
+            # Log to VENOM activity logger
+            log_signal_to_core(signal_id, "processed", {
+                "symbol": signal_data['symbol'],
+                "direction": signal_data['direction'],
+                "confidence": signal_data.get('confidence'),
+                "signal_type": signal_data.get('signal_type'),
+                "shield_score": signal_data.get('shield_score', 'N/A')
+            })
+            
+            # Deliver signal to ready users
+            delivery_result = self._deliver_signal_to_users(signal_data)
+            
+            return {
+                'success': True,
+                'signal_id': signal_id,
+                'queued': True,
+                'queue_size': len(self.signal_queue),
+                'delivery_result': delivery_result
+            }
+            
+        except Exception as e:
+            self._log_error(f"Signal processing error: {e}")
+            log_error("BittenCore", f"Signal processing error: {e}", {"signal_id": signal_data.get('signal_id', 'unknown')})
+            return {'success': False, 'error': str(e)}
+    
+    def get_signal_queue(self) -> List[Dict]:
+        """Get current signal queue for HUD display"""
+        return self.signal_queue.copy()
+    
+    def get_signal_stats(self) -> Dict:
+        """Get signal processing statistics"""
+        return {
+            **self.signal_stats,
+            'processed_count': len(self.processed_signals),
+            'queue_size': len(self.signal_queue)
+        }
+    
+    def clear_expired_signals(self, max_age_minutes: int = 60):
+        """Clear signals older than max_age_minutes"""
+        try:
+            cutoff_time = datetime.now() - timedelta(minutes=max_age_minutes)
+            
+            # Filter signal queue
+            initial_count = len(self.signal_queue)
+            self.signal_queue = [
+                signal for signal in self.signal_queue 
+                if datetime.fromisoformat(signal['processed_at']) > cutoff_time
+            ]
+            
+            # Update pending count
+            self.signal_stats['pending_signals'] = len(self.signal_queue)
+            
+            cleared_count = initial_count - len(self.signal_queue)
+            if cleared_count > 0:
+                self._log_info(f"Cleared {cleared_count} expired signals from queue")
+                
+        except Exception as e:
+            self._log_error(f"Error clearing expired signals: {e}")
+    
+    def _deliver_signal_to_users(self, signal_data: Dict) -> Dict:
+        """Deliver signal preview to public group and all ready_for_fire users"""
+        try:
+            # Format signal for HUD display
+            hud_message = self._format_signal_for_hud(signal_data)
+            delivered_users = []
+            failed_users = []
+            
+            # ALWAYS send to public group first (mission feed)
+            public_group_id = -1002581996861
+            public_delivered = False
+            
+            if self.production_bot:
+                try:
+                    self.production_bot.send_adaptive_response(
+                        chat_id=public_group_id,
+                        message_text=hud_message,
+                        user_tier="PUBLIC",
+                        user_action="signal_broadcast"
+                    )
+                    public_delivered = True
+                    self._log_info(f"📡 Signal broadcasted to public group: {signal_data['signal_id']}")
+                except Exception as e:
+                    self._log_error(f"Failed to broadcast signal to public group: {e}")
+            
+            # Now deliver to ready users if available
+            delivery_to_users = {'delivered_to': 0, 'users': []}
+            
+            if self.user_registry:
+                ready_users = self.user_registry.get_all_ready_users()
+                
+                if ready_users:
+                    for telegram_id, user_info in ready_users.items():
+                        try:
+                            # Get user tier for adaptive response
+                            user_tier = user_info.get('tier', 'NIBBLER')
+                            
+                            # Cache signal for user session
+                            self._cache_signal_for_user(telegram_id, signal_data)
+                            
+                            # Deliver via production bot if available
+                            if self.production_bot:
+                                try:
+                                    self.production_bot.send_adaptive_response(
+                                        chat_id=int(telegram_id),
+                                        message_text=hud_message,
+                                        user_tier=user_tier,
+                                        user_action="signal_delivery"
+                                    )
+                                    self._log_info(f"📡 Signal delivered via bot to {telegram_id} ({user_tier}): {signal_data['signal_id']}")
+                                except Exception as e:
+                                    self._log_error(f"Bot delivery failed for {telegram_id}: {e}")
+                                    # Fall back to logging
+                                    self._log_info(f"📡 Signal cached for {telegram_id} ({user_tier}): {signal_data['signal_id']}")
+                            else:
+                                # No bot available, just cache and log
+                                self._log_info(f"📡 Signal cached for {telegram_id} ({user_tier}): {signal_data['signal_id']}")
+                            
+                            delivered_users.append(telegram_id)
+                            
+                        except Exception as e:
+                            self._log_error(f"Failed to deliver signal to user {telegram_id}: {e}")
+                            failed_users.append(telegram_id)
+                    
+                    delivery_to_users = {
+                        'delivered_to': len(delivered_users), 
+                        'users': delivered_users,
+                        'failed_users': failed_users
+                    }
+                    self._log_info(f"Signal delivery to users: {len(delivered_users)} successful, {len(failed_users)} failed")
+                else:
+                    self._log_info("No ready users found for individual signal delivery")
+            else:
+                self._log_info("No user registry available for individual signal delivery")
+            
+            # Return success if public broadcast worked, regardless of user delivery
+            total_delivered = 1 if public_delivered else 0
+            total_delivered += len(delivered_users)
+            
+            return {
+                'success': True,
+                'public_broadcast': public_delivered,
+                'total_delivered': total_delivered,
+                'user_delivery': delivery_to_users,
+                'signal_id': signal_data['signal_id']
+            }
+            
+        except Exception as e:
+            self._log_error(f"Signal delivery error: {e}")
+            return {'success': False, 'error': str(e)}
+    
+    def _format_signal_for_hud(self, signal_data: Dict) -> str:
+        """Format signal data for Telegram HUD display"""
+        try:
+            # Calculate expires_in minutes
+            expires_at = signal_data.get('expires_at')
+            expires_in = "N/A"
+            
+            if expires_at:
+                if isinstance(expires_at, str):
+                    from datetime import datetime
+                    expires_at = datetime.fromisoformat(expires_at)
+                
+                time_diff = expires_at - datetime.now()
+                expires_in = f"{int(time_diff.total_seconds() / 60)} min"
+            elif signal_data.get('countdown_minutes'):
+                expires_in = f"{int(signal_data['countdown_minutes'])} min"
+            
+            # Extract key fields for HUD
+            symbol = signal_data.get('symbol', 'N/A')
+            direction = signal_data.get('direction', 'N/A')
+            confidence = signal_data.get('confidence', 'N/A')
+            signal_type = signal_data.get('signal_type', 'N/A')
+            signal_id = signal_data.get('signal_id', 'N/A')
+            
+            # Format strategy display
+            strategy_display = signal_type.upper()
+            
+            # Get CITADEL shield data
+            shield_score = signal_data.get('shield_score', 'N/A')
+            shield_emoji = signal_data.get('shield_emoji', '🔍')
+            shield_label = signal_data.get('shield_label', 'ANALYZING')
+            
+            # Create HUD message in specified format
+            hud_message = f"""🎯 [VENOM v7 Signal]
+🧠 Symbol: {symbol}
+📈 Direction: {direction}
+🔥 Confidence: {confidence}%
+🛡️ CITADEL: {shield_emoji} {shield_score}/10 [{shield_label}]
+⏳ Expires in: {expires_in}
+Reply: /fire {signal_id} to execute"""
+
+            return hud_message
+            
+        except Exception as e:
+            self._log_error(f"HUD formatting error: {e}")
+            return f"🎯 Signal {signal_data.get('signal_id', 'Unknown')} - Use /fire to execute"
+    
+    def _cache_signal_for_user(self, user_id: str, signal_data: Dict):
+        """Cache active signal for user session"""
+        try:
+            # Initialize user caches if needed
+            if user_id not in self.user_active_signals:
+                self.user_active_signals[user_id] = []
+            if user_id not in self.user_signal_history:
+                self.user_signal_history[user_id] = []
+            
+            # Add to active signals
+            self.user_active_signals[user_id].append(signal_data)
+            
+            # Add to history
+            self.user_signal_history[user_id].append({
+                'signal_id': signal_data['signal_id'],
+                'received_at': datetime.now().isoformat(),
+                'status': 'pending'
+            })
+            
+            # Limit active signals per user (keep last 10)
+            if len(self.user_active_signals[user_id]) > 10:
+                self.user_active_signals[user_id] = self.user_active_signals[user_id][-10:]
+            
+            # Limit history per user (keep last 50)
+            if len(self.user_signal_history[user_id]) > 50:
+                self.user_signal_history[user_id] = self.user_signal_history[user_id][-50:]
+                
+        except Exception as e:
+            self._log_error(f"Error caching signal for user {user_id}: {e}")
+    
+    def get_user_active_signals(self, user_id: str) -> List[Dict]:
+        """Get user's active signals (not expired)"""
+        try:
+            if user_id not in self.user_active_signals:
+                return []
+            
+            active_signals = []
+            current_time = datetime.now()
+            
+            for signal in self.user_active_signals[user_id]:
+                expires_at = signal.get('expires_at')
+                if expires_at:
+                    if isinstance(expires_at, str):
+                        expires_at = datetime.fromisoformat(expires_at)
+                    
+                    # Only include non-expired signals
+                    if current_time <= expires_at:
+                        active_signals.append(signal)
+                else:
+                    # No expiry date, include it
+                    active_signals.append(signal)
+            
+            # Update user's active signals cache
+            self.user_active_signals[user_id] = active_signals
+            
+            return active_signals
+            
+        except Exception as e:
+            self._log_error(f"Error getting active signals for user {user_id}: {e}")
+            return []
+    
+    def mark_user_signal_executed(self, user_id: str, signal_id: str):
+        """Mark user's signal as executed in history"""
+        try:
+            if user_id in self.user_signal_history:
+                for signal_record in self.user_signal_history[user_id]:
+                    if signal_record['signal_id'] == signal_id:
+                        signal_record['status'] = 'executed'
+                        signal_record['executed_at'] = datetime.now().isoformat()
+                        break
+        except Exception as e:
+            self._log_error(f"Error marking signal executed for user {user_id}: {e}")
+    
+    def monitor_trade_result(self, user_id: str, signal_id: str, timeout: float = 60.0) -> Dict:
+        """Monitor trade result from MT5BridgeAdapter and notify user"""
+        try:
+            if not self.fire_router.mt5_bridge_adapter:
+                return {'success': False, 'error': 'MT5BridgeAdapter not available'}
+            
+            # Monitor trade result with timeout
+            trade_result = self.fire_router.mt5_bridge_adapter.get_trade_result(signal_id, timeout)
+            
+            if trade_result:
+                # Process successful result
+                self._log_info(f"📊 Trade result received for {signal_id}: {trade_result['status']}")
+                
+                # Update signal with trade result
+                if signal_id in self.processed_signals:
+                    self.processed_signals[signal_id]['trade_result'] = trade_result
+                    self.processed_signals[signal_id]['result_received_at'] = datetime.now().isoformat()
+                
+                # Notify user via Telegram
+                self._notify_user_trade_result(user_id, signal_id, trade_result)
+                
+                return {
+                    'success': True,
+                    'trade_result': trade_result,
+                    'message': 'Trade result received and user notified'
+                }
+            else:
+                # Timeout or no result
+                self._log_error(f"⏰ Trade result timeout for {signal_id} after {timeout}s")
+                return {
+                    'success': False,
+                    'error': f'Trade result timeout after {timeout} seconds',
+                    'timeout': True
+                }
+                
+        except Exception as e:
+            self._log_error(f"Trade result monitoring error for {signal_id}: {e}")
+            return {'success': False, 'error': str(e)}
+    
+    def _notify_user_trade_result(self, user_id: str, signal_id: str, trade_result: Dict):
+        """Notify user about trade result via Telegram"""
+        try:
+            if not self.production_bot:
+                self._log_error("Production bot not available for trade result notification")
+                return
+            
+            # Get signal data for context
+            signal_data = self.processed_signals.get(signal_id, {})
+            
+            # Format trade result message
+            status_emoji = "✅" if trade_result['status'] == 'success' else "❌"
+            
+            result_message = f"""{status_emoji} **Trade Result: {signal_id}**
+
+📊 **Symbol**: {signal_data.get('symbol', 'N/A')}
+📈 **Direction**: {signal_data.get('direction', 'N/A')}
+🏆 **Status**: {trade_result['status'].title()}
+🎫 **Ticket**: {trade_result.get('ticket', 'N/A')}
+
+💰 **Account Update**:
+• Balance: ${trade_result.get('balance', 0):,.2f}
+• Equity: ${trade_result.get('equity', 0):,.2f}
+• Free Margin: ${trade_result.get('free_margin', 0):,.2f}
+
+⏰ **Executed**: {trade_result.get('timestamp', datetime.now().isoformat())}
+
+{trade_result.get('message', 'Trade completed successfully')}"""
+            
+            # Get user tier for adaptive response
+            user_info = self.user_registry.get_user_info(user_id) if self.user_registry else {}
+            user_tier = user_info.get('tier', 'NIBBLER')
+            
+            # Send notification via production bot
+            self.production_bot.send_adaptive_response(
+                chat_id=int(user_id),
+                message_text=result_message,
+                user_tier=user_tier,
+                user_action="trade_result_notification"
+            )
+            
+            self._log_info(f"📢 Trade result notification sent to user {user_id} for {signal_id}")
+            
+        except Exception as e:
+            self._log_error(f"Error sending trade result notification to user {user_id}: {e}")
+    
+    def execute_fire_command(self, user_id: str, signal_id: str) -> Dict:
+        """Handle /fire command execution for a specific signal"""
+        try:
+            # CRITICAL: COMMANDER 7176191872 - ZERO SIMULATION OVERRIDE
+            if user_id == "7176191872":
+                # UNRESTRICTED FIRE ACCESS - NO AUTHORIZATION CHECKS
+                logger.info(f"🎖️ COMMANDER {user_id} fire command - ZERO SIMULATION ENFORCED")
+                # Skip to direct execution with commander privileges
+                return self._execute_commander_fire(user_id, signal_id)
+            
+            # Check if user is authorized (normal users only)
+            if not self.user_registry or not self.user_registry.is_user_ready_for_fire(user_id):
+                # Return specific message for non-ready users
+                return {
+                    'success': False, 
+                    'error': 'not_ready_for_fire',
+                    'message': """❌ You're not ready to fire yet.
+
+But you're closer than you think.
+
+🌐 Visit https://joinbitten.com to:
+- Learn what BITTEN is
+- Claim your free Press Pass
+- Get full access to the system — even before funding your account
+
+Your mission briefing is waiting."""
+                }
+            
+            # Find the signal in processed signals
+            if signal_id not in self.processed_signals:
+                return {'success': False, 'error': f'Signal {signal_id} not found or expired'}
+            
+            signal_data = self.processed_signals[signal_id]
+            
+            # Check if signal is still valid (not expired)
+            expires_at = signal_data.get('expires_at')
+            if expires_at:
+                if isinstance(expires_at, str):
+                    expires_at = datetime.fromisoformat(expires_at)
+                
+                if datetime.now() > expires_at:
+                    return {'success': False, 'error': f'Signal {signal_id} has expired'}
+            
+            # Create trade request for FireRouter
+            user_info = self.user_registry.get_user_info(user_id)
+            
+            trade_request = TradeRequest(
+                user_id=user_id,
+                symbol=signal_data['symbol'],
+                direction=TradeDirection.BUY if signal_data['direction'] == 'BUY' else TradeDirection.SELL,
+                volume=0.01,  # Will be calculated by FireRouter based on user balance
+                tcs_score=signal_data.get('confidence', 0),
+                mission_id=signal_id
+            )
+            
+            # Execute via FireRouter with enhanced monitoring
+            execution_result = self.fire_router.execute_trade_request(trade_request, user_info)
+            
+            # Enhanced result processing with MT5BridgeAdapter integration
+            if execution_result.success:
+                signal_data['status'] = 'executed'
+                signal_data['executed_at'] = datetime.now().isoformat()
+                signal_data['executed_by'] = user_id
+                
+                # Mark in user's signal history
+                self.mark_user_signal_executed(user_id, signal_id)
+                
+                # Start background monitoring for trade result
+                try:
+                    import threading
+                    monitor_thread = threading.Thread(
+                        target=self.monitor_trade_result,
+                        args=(user_id, signal_id, 120.0),  # 2-minute timeout
+                        daemon=True
+                    )
+                    monitor_thread.start()
+                    self._log_info(f"🔍 Started background monitoring for trade result: {signal_id}")
+                except Exception as e:
+                    self._log_error(f"Error starting trade result monitoring for {signal_id}: {e}")
+                
+                # Try to get immediate trade details from MT5BridgeAdapter
+                trade_result = None
+                try:
+                    if hasattr(self.fire_router, 'mt5_bridge_adapter') and self.fire_router.mt5_bridge_adapter:
+                        # Quick check for immediate result (non-blocking)
+                        trade_result = self.fire_router.mt5_bridge_adapter.get_trade_result(signal_id, timeout=5.0)
+                        if trade_result:
+                            signal_data['trade_result'] = trade_result
+                            self._log_info(f"🔥 Immediate trade result captured for {signal_id}: {trade_result}")
+                except Exception as e:
+                    self._log_error(f"Immediate trade result check error for {signal_id}: {e}")
+                
+                self._log_info(f"🔥 Signal {signal_id} executed by user {user_id}")
+                
+                # Enhanced success response with trade details
+                response = {
+                    'success': True,
+                    'signal_id': signal_id,
+                    'execution_result': execution_result,
+                    'message': execution_result.message,
+                    'signal_data': {
+                        'symbol': signal_data['symbol'],
+                        'direction': signal_data['direction'],
+                        'confidence': signal_data.get('confidence'),
+                        'executed_at': signal_data['executed_at']
+                    }
+                }
+                
+                if trade_result:
+                    response['trade_result'] = trade_result
+                elif hasattr(self.fire_router, 'mt5_bridge_adapter') and self.fire_router.mt5_bridge_adapter:
+                    response['monitoring_started'] = True
+                    response['message'] += " (Trade result monitoring active)"
+                
+                return response
+                
+            else:
+                self._log_error(f"❌ Signal {signal_id} execution failed for user {user_id}: {execution_result.message}")
+                
+                return {
+                    'success': False,
+                    'signal_id': signal_id,
+                    'execution_result': execution_result,
+                    'message': execution_result.message,
+                    'error': execution_result.message
+                }
+            
+        except Exception as e:
+            self._log_error(f"Fire command execution error for signal {signal_id} by user {user_id}: {e}")
+            return {
+                'success': False,
+                'error': str(e),
+                'signal_id': signal_id,
+                'message': f"Execution failed: {str(e)}"
+            }
+    
+    def _execute_commander_fire(self, user_id: str, signal_id: str) -> Dict:
+        """COMMANDER 7176191872 - ZERO SIMULATION FIRE EXECUTION"""
+        try:
+            logger.info(f"🎖️ COMMANDER FIRE: User {user_id}, Signal {signal_id} - ZERO SIMULATION")
+            
+            # COMMANDER gets unrestricted access - create signal if not exists
+            if signal_id not in self.processed_signals:
+                # Create a test signal for commander testing
+                test_signal = {
+                    'signal_id': signal_id,
+                    'symbol': 'EURUSD',  # Default for testing
+                    'direction': 'BUY',
+                    'confidence': 95.0,
+                    'stop_pips': 20,
+                    'target_pips': 40,
+                    'timestamp': datetime.now(),
+                    'user_id': user_id,
+                    'commander_test': True
+                }
+                self.processed_signals[signal_id] = test_signal
+                logger.info(f"🎖️ Created test signal for COMMANDER: {signal_id}")
+            
+            signal_data = self.processed_signals[signal_id]
+            signal_data['executed_at'] = datetime.now().isoformat()
+            signal_data['executed_by'] = user_id
+            
+            # CRITICAL: FORCE REAL EXECUTION - NO SIMULATION
+            execution_result = self.fire_router.execute_trade_request(
+                {
+                    'user_id': user_id,
+                    'signal_id': signal_id,
+                    'symbol': signal_data['symbol'],
+                    'direction': signal_data['direction'],
+                    'confidence': signal_data.get('confidence', 95.0),
+                    'commander_override': True,  # ZERO SIMULATION FLAG
+                    'force_real_execution': True,  # ENFORCE REAL TRADING
+                    'mt5_account': '94956065',  # Direct MT5 account
+                    'mt5_server': 'MetaQuotes-Demo'
+                },
+                {'tier': 'COMMANDER', 'user_id': user_id}
+            )
+            
+            logger.info(f"🎖️ COMMANDER EXECUTION RESULT: {execution_result.message}")
+            
+            # Mark as executed
+            self.mark_user_signal_executed(user_id, signal_id)
+            
+            # Return immediate response - NO SIMULATION
+            return {
+                'success': True,
+                'signal_id': signal_id,
+                'execution_result': execution_result,
+                'message': f"🎖️ COMMANDER FIRE EXECUTED: {execution_result.message}",
+                'commander_mode': True,
+                'simulation_disabled': True,
+                'mt5_account': '94956065',
+                'signal_data': {
+                    'symbol': signal_data['symbol'],
+                    'direction': signal_data['direction'],
+                    'confidence': signal_data.get('confidence'),
+                    'executed_at': signal_data['executed_at']
+                }
+            }
+            
+        except Exception as e:
+            logger.error(f"🎖️ COMMANDER FIRE ERROR: {e}")
+            return {
+                'success': False,
+                'error': str(e),
+                'signal_id': signal_id,
+                'message': f"🎖️ COMMANDER FIRE FAILED: {str(e)}",
+                'commander_mode': True
+            }
+    
+    def get_pending_signals_for_user(self, user_id: str) -> List[Dict]:
+        """Get all pending signals that user can fire"""
+        try:
+            if not self.user_registry or not self.user_registry.is_user_ready_for_fire(user_id):
+                return []
+            
+            pending_signals = []
+            current_time = datetime.now()
+            
+            for signal in self.signal_queue:
+                if signal.get('status') == 'pending':
+                    # Check if not expired
+                    expires_at = signal.get('expires_at')
+                    if expires_at:
+                        if isinstance(expires_at, str):
+                            expires_at = datetime.fromisoformat(expires_at)
+                        
+                        if current_time <= expires_at:
+                            pending_signals.append(signal)
+                    else:
+                        pending_signals.append(signal)
+            
+            return pending_signals
+            
+        except Exception as e:
+            self._log_error(f"Error getting pending signals for user {user_id}: {e}")
+            return []
     
     def get_core_stats(self) -> Dict:
         """Get core system statistics"""

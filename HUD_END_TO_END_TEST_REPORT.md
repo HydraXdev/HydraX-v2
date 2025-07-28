@@ -4,7 +4,7 @@
 **Date:** July 17, 2025  
 **Status:** ✅ ALL CORE TESTS PASSED  
 **Success Rate:** 100% (13/13 tests)  
-**Mission ID:** APEX5_EURUSD_034017  
+**Mission ID:** 5_EURUSD_034017  
 
 ## Test Parameters Used
 - **Symbol:** EURUSD
@@ -18,7 +18,7 @@
 **Status:** PASSED  
 **Details:**
 - Successfully generated mission using `process_apex_signal_direct`
-- Mission ID: `APEX5_EURUSD_034017`
+- Mission ID: `5_EURUSD_034017`
 - Signal Type: RAPID_ASSAULT
 - Risk/Reward Ratio: 1:1.5
 - Telegram alert sent successfully
@@ -27,7 +27,7 @@
 ### 2. ✅ Mission File Creation
 **Status:** PASSED  
 **Details:**
-- Mission file created at: `/root/HydraX-v2/missions/APEX5_EURUSD_034017.json`
+- Mission file created at: `/root/HydraX-v2/missions/5_EURUSD_034017.json`
 - File size: 2,009 bytes
 - Contains all required fields: mission_id, signal, mission, user, timing
 - Proper JSON structure with enhanced signal data
@@ -36,7 +36,7 @@
 ### 3. ✅ HUD Mission Loading
 **Status:** PASSED  
 **Details:**
-- HUD URL: `http://localhost:8888/hud?mission_id=APEX5_EURUSD_034017`
+- HUD URL: `http://localhost:8888/hud?mission_id=5_EURUSD_034017`
 - Successfully loads mission data
 - Displays correct EURUSD BUY signal with TCS: 85%
 - HTML content: 19,819 bytes
@@ -81,7 +81,7 @@
 - ✅ Response: User statistics with 58 total trades, 66% win rate
 
 #### 5.4 Signal Stats API
-- ✅ URL: `/api/stats/APEX5_EURUSD_034017`
+- ✅ URL: `/api/stats/5_EURUSD_034017`
 - ✅ Response: Signal engagement data with 10 fires, 42% engagement rate
 
 ### 6. ✅ Fire Mission API Testing
@@ -159,7 +159,7 @@ All buttons present in HUD interface:
 ## Integration Flow Verification
 
 ### Complete End-to-End Flow ✅
-1. **APEX Signal Generation** → Mission created with TCS 85%
+1. **Signal Generation** → Mission created with TCS 85%
 2. **Mission Builder** → Proper RR calculations (1:1.5 for RAPID_ASSAULT)
 3. **File Storage** → Mission saved to `/missions/` directory
 4. **Telegram Integration** → Alert sent to group chat

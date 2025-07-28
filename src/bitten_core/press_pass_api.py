@@ -29,7 +29,7 @@ except Exception as e:
 
 def validate_email(email: str) -> bool:
     """Validate email format"""
-    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2}$'
     return re.match(pattern, email) is not None
 
 def get_client_ip() -> str:
@@ -217,7 +217,7 @@ def convert_press_pass():
                 'NIBBLER': 39,
                 'FANG': 89,
                 'COMMANDER': 139,
-                'APEX': 188
+                '': 188
             }.get(new_tier, 0)
         })
         

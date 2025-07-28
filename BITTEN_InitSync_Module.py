@@ -58,7 +58,7 @@ class UserTier(Enum):
     NIBBLER = "nibbler"
     FANG = "fang"
     COMMANDER = "commander"
-    APEX = "apex"
+    = "apex"
 
 class Platform(Enum):
     TELEGRAM = "telegram"
@@ -394,7 +394,7 @@ class BITTENInitSync:
             UserTier.NIBBLER: range(6, 11),      # bridges 006-010
             UserTier.FANG: range(11, 16),        # bridges 011-015
             UserTier.COMMANDER: range(16, 21),   # bridges 016-020
-            UserTier.APEX: range(21, 26)         # bridges 021-025
+            UserTier.: range(21, 26)         # bridges 021-025
         }
         
         bridge_range = tier_bridge_ranges.get(tier, range(1, 6))
@@ -446,7 +446,7 @@ class BITTENInitSync:
                     "fire_modes": ["manual", "semi_auto", "full_auto"],
                     "session_duration": 86400
                 },
-                UserTier.APEX: {
+                UserTier.: {
                     "max_lot_size": 2.0,
                     "max_daily_loss": 2000.0,
                     "fire_modes": ["manual", "semi_auto", "full_auto"],
@@ -796,7 +796,7 @@ class BITTENInitSync:
             UserTier.NIBBLER: 60,       # 60 requests per minute
             UserTier.FANG: 120,         # 120 requests per minute
             UserTier.COMMANDER: 300,    # 300 requests per minute
-            UserTier.APEX: 600          # 600 requests per minute
+            UserTier.: 600          # 600 requests per minute
         }
         return limits.get(tier, 10)
         

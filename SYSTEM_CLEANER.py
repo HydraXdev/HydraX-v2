@@ -62,8 +62,7 @@ class SystemCleaner:
             '/root/HydraX-v2/scripts/webapp-watchdog.py',
             '/root/HydraX-v2/intelligent_controller.py',
             '/root/HydraX-v2/scripts/webapp-monitor.sh',
-            '/root/HydraX-v2/bulletproof_agents/',
-        ]
+            '/root/HydraX-v2/bulletproof_agents/']
         
         quarantine_dir = '/root/HydraX-v2/QUARANTINE'
         os.makedirs(quarantine_dir, exist_ok=True)
@@ -89,8 +88,7 @@ class SystemCleaner:
             (r'(\s*)(while\s+True\s*:)', r'\1# SECURITY: Disabled infinite loop\n\1if False:  # \2'),
             (r'(\s*)(while\s+self\.running\s*:)', r'\1# SECURITY: Disabled monitoring loop\n\1if False:  # \2'),
             (r'(\s*)(autorestart:\s*true)', r'\1# SECURITY: Disabled auto-restart\n\1autorestart: false  # \2'),
-            (r'(\s*)(Restart=always)', r'\1# SECURITY: Disabled SystemD restart\n\1Restart=no  # \2'),
-        ]
+            (r'(\s*)(Restart=always)', r'\1# SECURITY: Disabled SystemD restart\n\1Restart=no  # \2')]
         
         for root, dirs, files in os.walk('/root/HydraX-v2'):
             dirs[:] = [d for d in dirs if not d.startswith('.') and d != 'QUARANTINE']

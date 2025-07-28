@@ -65,9 +65,8 @@ class WeekendSafetyBriefing:
                 "• Thin liquidity = Wide spreads\n"
                 "• Make smart choices out there\n\n"
                 "_Liberty granted. Stay sharp, Commander._"
-            ),
-            "APEX": (
-                "⚫ **APEX LIBERTY PROTOCOL:**\n"
+            ): (
+                "⚫ **LIBERTY PROTOCOL:**\n"
                 "• No restrictions - You know the game\n"
                 "• Weekend chaos is your playground\n"
                 "• Brief complete - Make your choice\n"
@@ -120,9 +119,8 @@ class WeekendSafetyBriefing:
                 "• Worst case: ±200+ pips\n\n"
                 "You have command authority.\n\n"
                 "_Liberty approved. Brief complete._"
-            ),
-            "APEX": (
-                "⚫ **APEX ACKNOWLEDGMENT ONLY:**\n"
+            ): (
+                "⚫ **ACKNOWLEDGMENT ONLY:**\n"
                 "\nPositions detected. Brief noted.\n\n"
                 "The weekend market takes no prisoners.\n"
                 "But you already know that.\n\n"
@@ -168,7 +166,6 @@ class WeekendSafetyBriefing:
             return f"\n📊 Your weekend record: {weekend_wins}W-{weekend_losses}L ({weekend_wr:.0f}% WR) ⚖️"
         else:
             return f"\n📊 Your weekend record: {weekend_wins}W-{weekend_losses}L ({weekend_wr:.0f}% WR) ⚠️"
-
 
 # Integration function for telegram_router.py
 async def send_weekend_warnings(telegram_router, active_users: List[Dict]):

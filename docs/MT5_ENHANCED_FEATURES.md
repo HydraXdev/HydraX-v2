@@ -241,7 +241,7 @@ All communication happens through secure files:
 
 ## Tier-Based Features
 
-| Feature | Nibbler | Fang | Commander | APEX |
+| Feature | Nibbler | Fang | Commander | |
 |---------|---------|------|-----------|------|
 | Basic Trading | ✅ | ✅ | ✅ | ✅ |
 | Risk-Based Sizing | ✅ | ✅ | ✅ | ✅ |

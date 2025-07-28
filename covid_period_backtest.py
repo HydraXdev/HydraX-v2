@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 COVID Period Backtest - March 2020 to August 2020
-Testing APEX Realistic Flow Engine during extreme market volatility
+Testing Realistic Flow Engine during extreme market volatility
 
 Historical Context:
 - March 2020: COVID crash, VIX hit 82, massive volatility
@@ -19,7 +19,7 @@ from dataclasses import dataclass
 import statistics
 
 # Import our realistic engine
-from apex_realistic_flow_engine import APEXRealisticFlowEngine, RealisticSignal, TradeType, FlowRegime, SignalQuality
+from apex_realistic_flow_engine import RealisticFlowEngine, RealisticSignal, TradeType, FlowRegime, SignalQuality
 
 class MarketRegime(object):
     """Market regime definitions for COVID period"""
@@ -44,7 +44,7 @@ class COVIDPeriodBacktester:
     """Specialized backtest engine for COVID period"""
     
     def __init__(self):
-        self.engine = APEXRealisticFlowEngine()
+        self.engine = RealisticFlowEngine()
         
         # COVID period timeline
         self.start_date = datetime(2020, 3, 1)
@@ -440,7 +440,7 @@ class COVIDPeriodBacktester:
 def main():
     """Run COVID period backtest"""
     
-    print("🦠 APEX COVID PERIOD BACKTEST")
+    print("🦠 COVID PERIOD BACKTEST")
     print("📅 March 2020 - August 2020")
     print("🎯 Testing Adaptive Flow Engine under extreme conditions")
     print("=" * 70)

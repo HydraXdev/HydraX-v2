@@ -22,7 +22,6 @@ from .reward_types import RewardType, Reward
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-
 class MissionType(Enum):
     """Types of daily missions"""
     BATTLE_COUNT = "battle_count"
@@ -34,7 +33,6 @@ class MissionType(Enum):
     EXPLORE_AREA = "explore_area"
     UPGRADE_BOT = "upgrade_bot"
 
-
 class MysteryBoxRarity(Enum):
     """Mystery box rarity tiers"""
     COMMON = "common"
@@ -43,14 +41,12 @@ class MysteryBoxRarity(Enum):
     EPIC = "epic"
     LEGENDARY = "legendary"
 
-
 class CampaignStatus(Enum):
     """Seasonal campaign status"""
     NOT_STARTED = "not_started"
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
     CLAIMED = "claimed"
-
 
 @dataclass
 class LoginStreak:
@@ -62,7 +58,6 @@ class LoginStreak:
     total_logins: int = 0
     streak_rewards_claimed: List[int] = field(default_factory=list)
 
-
 @dataclass
 class PersonalRecord:
     """Stores personal best records"""
@@ -70,7 +65,6 @@ class PersonalRecord:
     value: float
     achieved_at: datetime
     details: Dict[str, Any] = field(default_factory=dict)
-
 
 @dataclass
 class DailyMission:
@@ -86,7 +80,6 @@ class DailyMission:
     is_claimed: bool = False
     expires_at: datetime = field(default_factory=lambda: datetime.now() + timedelta(days=1))
 
-
 @dataclass
 class MysteryBox:
     """Mystery box reward structure"""
@@ -95,7 +88,6 @@ class MysteryBox:
     contents: List[Reward] = field(default_factory=list)
     opened_at: Optional[datetime] = None
     source: str = ""  # How it was earned
-
 
 @dataclass
 class SeasonalCampaign:
@@ -109,7 +101,6 @@ class SeasonalCampaign:
     current_progress: int = 0
     completed_milestones: List[int] = field(default_factory=list)
     total_rewards_claimed: int = 0
-
 
 class EngagementSystem:
     """Main engagement system managing all user engagement features"""
@@ -193,8 +184,7 @@ class EngagementSystem:
                 {"level": 2, "xp_required": 250, "rewards": [Reward(RewardType.XP, 50)]},
                 {"level": 3, "xp_required": 500, "rewards": [Reward(RewardType.MYSTERY_BOX, 1)]},
                 {"level": 4, "xp_required": 1000, "rewards": [Reward(RewardType.RARE_ITEM, 1)]},
-                {"level": 5, "xp_required": 2000, "rewards": [Reward(RewardType.EXCLUSIVE_BOT, 1)]},
-            ]
+                {"level": 5, "xp_required": 2000, "rewards": [Reward(RewardType.EXCLUSIVE_BOT, 1)]}]
         )
     
     async def record_login(self, user_id: str) -> Dict[str, Any]:
@@ -734,7 +724,6 @@ class EngagementSystem:
             "next_milestone": 3
         }
 
-
 # Reward types that need to be defined
 class RewardType(Enum):
     """Types of rewards in the system"""
@@ -749,7 +738,6 @@ class RewardType(Enum):
     EXCLUSIVE_BOT = "exclusive_bot"
     BOT_SKIN = "bot_skin"
     TITLE = "title"
-
 
 @dataclass
 class Reward:

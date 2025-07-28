@@ -16,7 +16,6 @@ from src.bitten_core.tactical_strategies import tactical_strategy_manager
 
 logger = logging.getLogger(__name__)
 
-
 class DrillReportDeployment:
     """Complete drill report system deployment"""
     
@@ -217,7 +216,6 @@ Users can now use:
             print(report)
             print()
 
-
 def main():
     """Main deployment function"""
     
@@ -254,7 +252,6 @@ def main():
         print("Check logs for details.")
     
     return success
-
 
 if __name__ == "__main__":
     success = main()

@@ -338,16 +338,16 @@ def sanitize_log_output(message: str, sensitive_fields: Optional[List[str]] = No
         patterns = [
             rf'{field}\s*:\s*"[^"]*"',
             rf'{field}\s*:\s*\'[^\']*\'',
-            rf'{field}\s*:\s*[^\s,}}]+',
+            rf'{field}\s*:\s*[^\s}}]+',
             rf'"{field}"\s*:\s*"[^"]*"',
-            rf'"{field}"\s*:\s*[^\s,}}]+'
+            rf'"{field}"\s*:\s*[^\s}}]+'
         ]
         
         for pattern in patterns:
             sanitized = re.sub(pattern, f'{field}:***REDACTED***', sanitized, flags=re.IGNORECASE)
     
     # Redact numbers that look like balances (4+ digits)
-    sanitized = re.sub(r'\b\d{4,}\.\d{2}\b', '***REDACTED***', sanitized)
+    sanitized = re.sub(r'\b\d{4}\.\d{2}\b', '***REDACTED***', sanitized)
     
     return sanitized
 

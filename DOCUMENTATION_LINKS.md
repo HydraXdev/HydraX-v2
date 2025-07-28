@@ -15,6 +15,11 @@
 - **Bot Overview**: [docs/bitten/README.md](docs/bitten/README.md)
 - **Webhook Success Story**: [docs/bitten/webhook-setup-victory.md](docs/bitten/webhook-setup-victory.md)
 
+### **🎖️ War Room**
+- **War Room Documentation**: [WAR_ROOM_DOCUMENTATION.md](WAR_ROOM_DOCUMENTATION.md)
+- **Implementation**: See webapp_server_optimized.py `/me` route
+- **Access**: https://joinbitten.com/me
+
 ### **💻 Code Structure**
 - **Source Code**: [src/](src/)
 - **Core Logic**: [src/core/](src/core/)

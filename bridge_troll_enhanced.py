@@ -69,7 +69,7 @@ class RiskTier(Enum):
     NIBBLER = "nibbler"
     FANG = "fang"
     COMMANDER = "commander"
-    APEX = "apex"
+    = "apex"
 
 @dataclass
 class BridgeEvent:

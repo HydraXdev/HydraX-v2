@@ -19,7 +19,6 @@ from .user_settings import get_user_settings
 
 logger = logging.getLogger(__name__)
 
-
 @dataclass
 class AudioNotificationMapping:
     """Maps notification types to audio responses"""
@@ -29,7 +28,6 @@ class AudioNotificationMapping:
     enable_feedback: bool = False
     enable_ambient: bool = False
     priority_modifier: int = 0
-
 
 class AudioNotificationIntegrator:
     """Integrates audio system with existing notifications"""
@@ -549,10 +547,8 @@ class AudioNotificationIntegrator:
             'integration_active': True
         }
 
-
 # Global instance
 audio_notification_integrator = AudioNotificationIntegrator()
-
 
 # Convenience functions for external use
 async def trigger_audio_notification(user_id: str, notification_type: NotificationType, 
@@ -576,7 +572,6 @@ async def trigger_audio_notification(user_id: str, notification_type: Notificati
     
     return []  # Event IDs would be tracked internally
 
-
 async def start_user_audio_session(user_id: str) -> bool:
     """Start audio session for user"""
     
@@ -587,7 +582,6 @@ async def start_user_audio_session(user_id: str) -> bool:
         logger.error(f"Failed to start audio session for {user_id}: {e}")
         return False
 
-
 async def stop_user_audio_session(user_id: str) -> bool:
     """Stop audio session for user"""
     
@@ -597,7 +591,6 @@ async def stop_user_audio_session(user_id: str) -> bool:
     except Exception as e:
         logger.error(f"Failed to stop audio session for {user_id}: {e}")
         return False
-
 
 def get_user_audio_status(user_id: str) -> Dict[str, Any]:
     """Get user's audio status"""

@@ -12,8 +12,7 @@ def test_webapp():
     
     endpoints = [
         ("Health Check", "http://localhost:5000/health"),
-        ("Root Endpoint", "http://localhost:5000/"),
-    ]
+        ("Root Endpoint", "http://localhost:5000/")]
     
     for name, url in endpoints:
         try:

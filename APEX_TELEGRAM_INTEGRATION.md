@@ -1,13 +1,13 @@
-# 🔗 APEX v5.0 Telegram Integration
+# 🔗 v5.0 Telegram Integration
 
 ## ✅ Corrected Signal Flow Implementation
 
 ### Overview
-APEX v5.0 signals are now properly integrated with BITTEN's user-initiated trading flow via Telegram alerts and WebApp buttons.
+v5.0 signals are now properly integrated with BITTEN's user-initiated trading flow via Telegram alerts and WebApp buttons.
 
 ### Signal Flow:
-1. **APEX v5.0 Engine** generates signals (35-95% TCS range)
-2. **apex_telegram_connector.py** monitors APEX logs
+1. **v5.0 Engine** generates signals (35-95% TCS range)
+2. **apex_telegram_connector.py** monitors logs
 3. **Brief Telegram alerts** sent with WebApp button (2-3 lines)
 4. **User clicks** "🎯 VIEW INTEL" to open WebApp
 5. **WebApp displays** full mission briefing
@@ -15,11 +15,11 @@ APEX v5.0 signals are now properly integrated with BITTEN's user-initiated tradi
 7. **Only approved trades** sent to MT5
 
 ### Files Created:
-- `apex_telegram_connector.py` - Monitors APEX logs and sends Telegram alerts
+- `apex_telegram_connector.py` - Monitors logs and sends Telegram alerts
 
 ### How It Works:
 ```python
-# Signal appears in APEX log:
+# Signal appears in log:
 # 🎯 SIGNAL #1: EURUSD SELL TCS:76%
 
 # Telegram alert sent:
@@ -31,15 +31,15 @@ EURUSD | SELL | 76% confidence
 
 ### Running the Integration:
 ```bash
-# 1. Start APEX v5.0 (if not already running)
+# 1. Start v5.0 (if not already running)
 python3 apex_v5_integration.py
-# Enter: APEX_V5_LIVE
+# Enter: _V5_LIVE
 
 # 2. Start Telegram connector
 python3 apex_telegram_connector.py
 
 # The connector will:
-# - Monitor APEX logs for new signals
+# - Monitor logs for new signals
 # - Send brief alerts to Telegram
 # - Include WebApp buttons for full intel
 ```

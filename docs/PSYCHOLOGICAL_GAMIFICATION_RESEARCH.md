@@ -69,8 +69,7 @@ Three basic psychological needs:
 
 ### 2. **Tier/Level System**
 **Psychological Basis:** Zone of Proximal Development (Vygotsky, 1978)
-- Nibbler → Fang → Commander → APEX
-- Each tier introduces manageable complexity
+- Nibbler → Fang → Commander → - Each tier introduces manageable complexity
 - Prevents cognitive overload for beginners
 
 ### 3. **Cooldown Timers**

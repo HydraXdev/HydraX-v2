@@ -12,7 +12,6 @@ from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
 
-
 class VolatilityLevel(Enum):
     """Market volatility conditions"""
     NORMAL = "NORMAL"
@@ -44,7 +43,6 @@ class VolatilityLevel(Enum):
         """Check if user confirmation required"""
         return self in [VolatilityLevel.HIGH, VolatilityLevel.EXTREME]
 
-
 @dataclass
 class VolatilityData:
     """Current volatility metrics"""
@@ -66,7 +64,6 @@ class VolatilityData:
     def spread_ratio(self) -> float:
         """Current spread as ratio of normal"""
         return self.spread_current / self.spread_normal if self.spread_normal > 0 else 1.0
-
 
 class VolatilityManager:
     """
@@ -226,7 +223,7 @@ Type "ABORT" to stand down.
             'NIBBLER': 72,
             'FANG': 85,
             'COMMANDER': 91,
-            'APEX': 91
+            '': 91
         }
         base_tcs = base_tcs_requirements.get(tier, 72)
         
@@ -315,10 +312,8 @@ Type "ABORT" to stand down.
             recent_gaps=gaps
         )
 
-
 # Global instance
 _volatility_manager: Optional[VolatilityManager] = None
-
 
 def get_volatility_manager() -> VolatilityManager:
     """Get or create volatility manager instance"""

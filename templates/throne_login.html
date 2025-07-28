@@ -138,7 +138,7 @@
         <form class="login-form" id="loginForm">
             <div class="input-group">
                 <label for="username">Commander ID</label>
-                <input type="text" id="username" name="username" placeholder="APEX_COMMANDER" required>
+                <input type="text" id="username" name="username" placeholder="_COMMANDER" required>
             </div>
             
             <div class="input-group">
@@ -175,8 +175,7 @@
                 const response = await fetch('/throne/auth', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                    },
+                        'Content-Type': 'application/json'},
                     body: JSON.stringify({
                         username: document.getElementById('username').value,
                         password: document.getElementById('password').value

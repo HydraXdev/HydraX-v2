@@ -1,16 +1,28 @@
-import os
 #!/usr/bin/env python3
 """
 Deploy Persistent Intel Command Center Menu
 Creates always-accessible menu button at top of Telegram chat
 """
 
+import os
+import sys
 import asyncio
+from pathlib import Path
 from telegram import Bot, MenuButtonWebApp, WebAppInfo, InlineKeyboardButton, InlineKeyboardMarkup, KeyboardButton, ReplyKeyboardMarkup
 from telegram.constants import ParseMode
+from dotenv import load_dotenv
 
-BOT_TOKEN = "os.getenv("BOT_TOKEN", "DISABLED_FOR_SECURITY")"
-CHAT_ID = "int(os.getenv("CHAT_ID", "-1002581996861"))"
+# Add the src directory to path for imports
+sys.path.append(str(Path(__file__).parent / 'src'))
+
+# Load environment variables
+load_dotenv()
+
+# Import config loader
+from config_loader import get_bot_token
+
+BOT_TOKEN = get_bot_token()  # Use main trading bot for persistent menu
+CHAT_ID = int(os.getenv('CHAT_ID', '-1002581996861'))
 
 async def deploy_persistent_menu():
     """Deploy persistent menu accessible at all times"""

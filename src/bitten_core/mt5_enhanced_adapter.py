@@ -163,8 +163,7 @@ class MT5EnhancedAdapter:
             # Advanced features
             'break_even': kwargs.get('break_even', True),
             'trailing': kwargs.get('trailing', False),
-            'partial_close': kwargs.get('partial_close', 0),
-        }
+            'partial_close': kwargs.get('partial_close', 0)}
         
         return self._send_instruction(instruction)
     
@@ -359,7 +358,6 @@ class MT5EnhancedAdapter:
             logger.error(f"Error reading status: {e}")
             return None
 
-
 class MT5AccountMonitor:
     """Monitor MT5 account and provide insights"""
     
@@ -426,7 +424,6 @@ class MT5AccountMonitor:
             return "CAUTION"
         else:
             return "NORMAL"
-
 
 # Example usage
 if __name__ == "__main__":

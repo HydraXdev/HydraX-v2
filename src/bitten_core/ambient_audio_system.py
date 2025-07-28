@@ -18,7 +18,6 @@ from .norman_story_integration import norman_story_engine, StoryPhase
 
 logger = logging.getLogger(__name__)
 
-
 class AudioType(Enum):
     """Types of ambient audio"""
     CHIRP = "chirp"
@@ -27,7 +26,6 @@ class AudioType(Enum):
     ENVIRONMENTAL = "environmental"
     TRADING_FEEDBACK = "trading_feedback"
     AMBIENT = "ambient"
-
 
 class AudioMood(Enum):
     """Audio moods reflecting market/user states"""
@@ -39,7 +37,6 @@ class AudioMood(Enum):
     EXCITED = "excited"
     CONTENT = "content"
     SLEEPY = "sleepy"
-
 
 class TradingContext(Enum):
     """Trading contexts for audio triggers"""
@@ -57,7 +54,6 @@ class TradingContext(Enum):
     NEWS_EVENT = "news_event"
     WEEKEND_BREAK = "weekend_break"
 
-
 @dataclass
 class AudioClip:
     """Represents an audio clip with metadata"""
@@ -73,7 +69,6 @@ class AudioClip:
     fade_in: float = 0.0
     fade_out: float = 0.0
 
-
 @dataclass
 class AudioEvent:
     """Represents an audio event to be played"""
@@ -86,7 +81,6 @@ class AudioEvent:
     mood_context: Optional[AudioMood] = None
     metadata: Dict[str, Any] = None
 
-
 @dataclass
 class BitCompanionState:
     """Tracks Bit's emotional and behavioral state"""
@@ -98,7 +92,6 @@ class BitCompanionState:
     mood_history: List[Tuple[AudioMood, datetime]]
     active_sessions: int
     comfort_level: int  # How comfortable Bit is with user's trading
-
 
 class AmbientAudioEngine:
     """Main engine for Bit's ambient audio system"""
@@ -700,10 +693,8 @@ class AmbientAudioEngine:
             "last_interaction": bit_state.last_interaction.isoformat() if bit_state.last_interaction else None
         }
 
-
 # Global instance
 ambient_audio_engine = AmbientAudioEngine()
-
 
 # Convenience functions for integration
 async def play_trading_audio(user_id: str, context: TradingContext, 
@@ -716,7 +707,6 @@ async def play_trading_audio(user_id: str, context: TradingContext,
         mood = ambient_audio_engine.analyze_trading_context(user_id, market_data)
     
     return await ambient_audio_engine.play_contextual_audio(user_id, context, mood)
-
 
 async def bit_react_to_trade(user_id: str, trade_result: Dict[str, Any]) -> Optional[str]:
     """Make Bit react to trade results"""
@@ -736,11 +726,9 @@ async def bit_react_to_trade(user_id: str, trade_result: Dict[str, Any]) -> Opti
         user_id, context, mood, metadata=trade_result
     )
 
-
 def start_ambient_audio():
     """Start the ambient audio system"""
     ambient_audio_engine.start_ambient_system()
-
 
 def stop_ambient_audio():
     """Stop the ambient audio system"""

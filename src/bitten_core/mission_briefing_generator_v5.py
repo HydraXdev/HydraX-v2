@@ -1,5 +1,5 @@
 # INTEGRATED MISSION BRIEFING GENERATOR v5.0
-# Combines simple file persistence with comprehensive APEXv5MissionBriefing system
+# Combines simple file persistence with comprehensive v5MissionBriefing system
 # Generates rich mission briefing objects AND saves them to files for WebApp retrieval
 
 import json
@@ -17,26 +17,22 @@ logger = logging.getLogger(__name__)
 # Mission storage directory
 MISSION_DIR = "./missions/"
 
-# Import the APEXv5 classes from the active generator
+# Import the v5 classes from the active generator
 from .mission_briefing_generator_active import (
-    APEXv5MissionType,
-    APEXv5UrgencyLevel,
-    APEXv5SignalClass,
-    APEXv5MissionBriefing,
-    APEXv5MissionBriefingGenerator
+    v5MissionTypev5UrgencyLevelv5SignalClassv5MissionBriefingv5MissionBriefingGenerator
 )
 
 class IntegratedMissionBriefingGenerator:
     """
     Integrated Mission Briefing Generator that combines:
     1. Simple file-based persistence from the deployment version
-    2. Rich APEXv5MissionBriefing data structures from the complex version
+    2. Rich v5MissionBriefing data structures from the complex version
     3. Proper expiry timestamp management
     4. WebApp-ready file storage
     """
     
     def __init__(self):
-        self.apex_generator = APEXv5MissionBriefingGenerator()
+        self.apex_generator = v5MissionBriefingGenerator()
         # Ensure missions directory exists
         os.makedirs(MISSION_DIR, exist_ok=True)
         logger.info("Integrated Mission Briefing Generator initialized")
@@ -45,7 +41,7 @@ class IntegratedMissionBriefingGenerator:
                         account_data: Dict = None) -> Dict:
         """
         Generate a mission combining simple format for backward compatibility
-        and comprehensive APEXv5MissionBriefing for rich data.
+        and comprehensive v5MissionBriefing for rich data.
         
         Args:
             signal: Signal data from trading engine
@@ -79,10 +75,10 @@ class IntegratedMissionBriefingGenerator:
         # Create mission ID
         mission_id = f"{user_id}_{int(time.time())}"
         
-        # Prepare signal data for APEXv5 generator
+        # Prepare signal data for v5 generator
         apex_signal_data = self._prepare_apex_signal_data(signal, mission_id)
         
-        # Generate comprehensive APEXv5 mission briefing
+        # Generate comprehensive v5 mission briefing
         try:
             apex_briefing = self.apex_generator.generate_v5_mission_briefing(
                 apex_signal_data, user_data, account_data
@@ -92,7 +88,7 @@ class IntegratedMissionBriefingGenerator:
             webapp_briefing = self.apex_generator.format_for_webapp(apex_briefing)
             
         except Exception as e:
-            logger.error(f"Error generating APEX briefing: {e}")
+            logger.error(f"Error generating briefing: {e}")
             # Fallback to basic briefing
             apex_briefing = None
             webapp_briefing = {}
@@ -144,7 +140,7 @@ class IntegratedMissionBriefingGenerator:
             "created_timestamp": int(time.time()),
             "expires_timestamp": int(expires_at.timestamp()),
             
-            # APEX v5.0 briefing data (if available)
+            # v5.0 briefing data (if available)
             "apex_briefing": webapp_briefing if apex_briefing else None,
             "has_apex_briefing": apex_briefing is not None,
             
@@ -167,7 +163,7 @@ class IntegratedMissionBriefingGenerator:
         return comprehensive_mission
     
     def _prepare_apex_signal_data(self, signal: Dict, mission_id: str) -> Dict:
-        """Prepare signal data for APEXv5 generator"""
+        """Prepare signal data for v5 generator"""
         return {
             'symbol': signal.get("symbol", "EURUSD"),
             'direction': signal.get("direction", "BUY"),
@@ -212,7 +208,7 @@ class IntegratedMissionBriefingGenerator:
             'NIBBLER': 0.9,
             'FANG': 1.0,
             'COMMANDER': 1.2,
-            'APEX': 1.5,  # More time for premium users
+            '': 1.5,  # More time for premium users
             'AUTHORIZED': 1.0,
             'ELITE': 1.3,
             'ADMIN': 2.0
@@ -425,7 +421,7 @@ if __name__ == "__main__":
     print(f"Type: {mission['type']}")
     print(f"User Tier: {mission['user_tier']}")
     print(f"Expires At: {mission['expires_at']}")
-    print(f"Has APEX Briefing: {mission['has_apex_briefing']}")
+    print(f"Has Briefing: {mission['has_apex_briefing']}")
     
     # Test retrieval
     print("\n=== TESTING RETRIEVAL ===")

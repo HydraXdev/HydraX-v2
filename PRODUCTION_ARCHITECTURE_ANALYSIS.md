@@ -20,7 +20,7 @@ Based on the running processes and code analysis, here's what's actually running
   - Handles actual trading commands and mission execution
   
 - **SIGNAL RELAY**: `apex_telegram_connector.py` (PID 424397)
-  - Monitors APEX log file for signals
+  - Monitors log file for signals
   - Generates mission files in `/root/HydraX-v2/missions/`
   - Sends alerts to Telegram with WebApp links
 
@@ -48,9 +48,9 @@ Based on the running processes and code analysis, here's what's actually running
 ```
 1. MT5 Bridge (3.145.84.187:5555)
    ↓
-2. APEX v5 Lean (apex_v5_lean.py)
+2. v5 Lean (apex_v5_lean.py)
    ↓ (writes to apex_v5_live_real.log)
-3. APEX Telegram Connector (apex_telegram_connector.py)
+3. Telegram Connector (apex_telegram_connector.py)
    ↓ (generates mission files + sends Telegram alerts)
 4. Telegram Bot (bitten_production_bot.py)
    ↓ (handles /fire commands)

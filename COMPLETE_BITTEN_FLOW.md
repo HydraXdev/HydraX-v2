@@ -27,8 +27,8 @@ Bot: 🎖️ **WELCOME TO B.I.T.T.E.N.**
 1. **Tier Selection**
    - Nibbler ($39) - Basic scalping
    - Fang ($89) - Advanced filters
-   - Commander ($139) - Auto trading
-   - APEX ($188) - Full automation
+   - Commander ($189) - Auto trading
+   - () - Full automation
 
 2. **MT5 Setup**
    - Guided MT5 installation
@@ -99,7 +99,7 @@ EUR/USD | BUY | 87% confidence
 - + Multi-timeframe analysis
 - + Auto-trade options
 
-**APEX View:**
+**View:**
 - + Full market depth
 - + Algorithmic insights
 - + Custom parameters
@@ -119,7 +119,7 @@ EUR/USD | BUY | 87% confidence
 2. One-click execution
 3. Automatic position management
 
-#### C. Full Auto (APEX)
+#### C. Full Auto ()
 1. Signals auto-execute
 2. Dynamic position sizing
 3. Advanced risk management
@@ -213,7 +213,7 @@ Database (user data, trades, XP)
 - Nibbler: 30 min between trades
 - Fang: 15 min cooldown
 - Commander: 5 min cooldown
-- APEX: No cooldown
+- : No cooldown
 
 ---
 

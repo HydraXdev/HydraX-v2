@@ -98,7 +98,7 @@ At its core, BITTEN is about helping traders trade better—bit by bit.
   - NIBBLER: 0.01 lots ($0.10/pip)
   - FANG: 0.05 lots ($0.50/pip)
   - COMMANDER: 0.10 lots ($1.00/pip)
-  - APEX: 0.20 lots ($2.00/pip)
+  - : 0.20 lots ($2.00/pip)
 - **Real account balance integration**: Pulls from MT5 `bitten_account_secure.txt` when available
 - **Consistent RR ratios**: Same risk/reward ratio per signal across all tiers
 - **Variable dollar amounts**: Users see actual dollar risk/reward based on their tier and account
@@ -114,7 +114,7 @@ For a 25 pip risk, 45 pip reward signal (1:1.8 RR):
 - **NIBBLER**: Risk $2.50, Reward $4.50 (1:1.8 RR)
 - **FANG**: Risk $12.50, Reward $22.50 (1:1.8 RR)
 - **COMMANDER**: Risk $25.00, Reward $45.00 (1:1.8 RR)
-- **APEX**: Risk $50.00, Reward $90.00 (1:1.8 RR)
+- ****: Risk $50.00, Reward $90.00 (1:1.8 RR)
 
 **Higher tiers can execute lower tier signals with same RR but appropriate dollar amounts for their tier.**
 
@@ -397,7 +397,7 @@ Based on the comprehensive BITTEN Game Rules Backtesting Report, critical improv
 - **Database integration** for persistent performance analytics
 
 #### **✅ ENHANCED GHOST MODE TRACKING - ACTIVE**
-- **Tier-based stealth intensity**: 60% (Nibbler) → 100% (APEX)
+- **Tier-based stealth intensity**: 60% (Nibbler) → 100% ()
 - **Advanced randomization**: Entry delays, lot variance, TP/SL offsets
 - **Strategic pattern breaking**: 8-12% signal skipping
 - **Live performance: 73.7% average stealth effectiveness**
@@ -415,7 +415,7 @@ Blocking:    69.4% → 45.6% → Better signal flow ✅
 - **5 real signals analyzed** from production system
 - **Average TCS**: 82.8% (high quality)
 - **Ghost Mode**: ✅ EFFECTIVE (73.7% stealth score)
-- **Tier Performance**: COMMANDER > APEX > FANG > NIBBLER (as designed)
+- **Tier Performance**: COMMANDER > > FANG > NIBBLER (as designed)
 
 ### **🚀 DEPLOYMENT STATUS - COMPLETED**
 - ✅ **TCS Calibration**: **DEPLOYED** to production signal engines
@@ -536,8 +536,8 @@ Duration Estimation = Base_Time + (100 - TCS) * Market_Factor
 **4. Tier Access Logic Clarification**
 - 🔰 NIBBLER ($39/month): View all, execute 🔫 ARCADE only
 - 🦷 FANG+ ($89/month): View all, execute any signal manually
-- ⭐ COMMANDER ($139/month): Auto-execution with 92%+ TCS safety filter
-- 🏔️ APEX ($188/month): Premium tier features
+- ⭐ COMMANDER ($189/month): Auto-execution with 92%+ TCS safety filter
+- 🏔️ (/month): Premium tier features
 
 **5. PRESS PASS Trial System Definition**
 - FREE 7-day trial, one-time per email
@@ -937,7 +937,7 @@ minimum_factors_required: 2
 - **Nibbler (70% TCS)**: 6 best signals from ~35 daily candidates
 - **Fang (85% TCS)**: 10 best signals from ~20 daily candidates  
 - **Commander (90% TCS)**: 20 signals from ~12 daily candidates
-- **APEX (91% TCS)**: Unlimited from ~8 daily premium signals
+- **(91% TCS)**: Unlimited from ~8 daily premium signals
 
 ### **Session-Based Signal Allocation:**
 - **Asian (7pm-3am EST)**: 15-20 signals (4 optimal pairs)
@@ -1215,7 +1215,7 @@ System Metrics → Alert System → Emergency Protocols
 
 **C. User Management System**
 - **File**: `docs/USER_MANAGEMENT_TIER_SYSTEM_SPECIFICATIONS.md`
-- **Covers**: Tier system (Press Pass → APEX), authentication/authorization, subscription management, user progression, achievements, social features
+- **Covers**: Tier system (Press Pass → ), authentication/authorization, subscription management, user progression, achievements, social features
 - **Size**: ~20KB
 
 **D. Integration Specifications**
@@ -1256,8 +1256,8 @@ System Metrics → Alert System → Emergency Protocols
 1. **Press Pass** (Tier 0): Free 7-day trial, 1 shot/day, 60% TCS, nightly XP reset, 200/week limit, real names only
 2. **NIBBLER** (Tier 1): $39/month, 6 shots/day, 70% TCS
 3. **FANG** (Tier 2): $89/month, 10 shots/day, 85% TCS, Chaingun mode
-4. **COMMANDER** (Tier 3): $139/month, 20 shots/day, 90% TCS, Auto-fire mode
-5. **APEX** (Tier 4): $188/month, unlimited shots, 91% TCS, all features
+4. **COMMANDER** (Tier 3): $189/month, 20 shots/day, 90% TCS, Auto-fire mode
+5. **** (Tier 4): /month, unlimited shots, 91% TCS, all features
 
 ### **🎯 FOR FUTURE AI ASSISTANCE**
 
@@ -1287,7 +1287,7 @@ System Metrics → Alert System → Emergency Protocols
 #### **✅ PRODUCTION READY**
 - ✅ 10-pair self-optimizing trading system
 - ✅ Predictive movement detection engine
-- ✅ Complete tier system (Press Pass → APEX)
+- ✅ Complete tier system (Press Pass → )
 - ✅ Database schemas and user management
 - ✅ WebApp integration and military HUD
 - ✅ Comprehensive technical documentation
@@ -1632,7 +1632,7 @@ BITTEN is a forex trading system with Telegram integration, implementing tiered 
 
 ## Important Rules
 1. **Always follow RULES_OF_ENGAGEMENT.md** - It's THE LAW
-2. Tier pricing: Nibbler $39, Fang $89, Commander $139, APEX $188
+2. Tier pricing: Nibbler $39, Fang $89, Commander $189 
 3. TCS requirements: 70%/85%/91%/91% by tier
 4. Risk is always 2% except Chaingun/Midnight Hammer
 5. Never execute trades below tier TCS minimums
@@ -1915,7 +1915,7 @@ BITTEN implements defense-in-depth security architecture with multiple layers of
 - Telegram OAuth integration for user identity
 - JWT tokens with 24-hour expiration
 - Session management with Redis backend
-- Multi-factor authentication for APEX tier
+- Multi-factor authentication for tier
 - API key rotation every 30 days
 - Role-based access control (RBAC)
 
@@ -1973,8 +1973,7 @@ BITTEN implements defense-in-depth security architecture with multiple layers of
 
 #### Tier Authorization Matrix
 ```
-Feature          | Nibbler | Fang | Commander | APEX
------------------|---------|------|-----------|-----
+Feature          | Nibbler | Fang | Commander | -----------------|---------|------|-----------|-----
 Basic Trading    |    ✓    |  ✓   |     ✓     |  ✓
 Advanced Filters |    ✗    |  ✓   |     ✓     |  ✓  
 Auto Trading     |    ✗    |  ✗   |     ✓     |  ✓
@@ -2566,7 +2565,7 @@ Expected improvement: 2-3 pip better entries through smart execution
 
 ## 🎯 Overview
 
-The Universal Stealth Shield protects ALL BITTEN traders from broker detection and manipulation. Previously only APEX tier had stealth - now EVERY tier is protected.
+The Universal Stealth Shield protects ALL BITTEN traders from broker detection and manipulation. Previously only tier had stealth - now EVERY tier is protected.
 
 ## 🔒 Protection Features
 
@@ -2576,13 +2575,13 @@ The Universal Stealth Shield protects ALL BITTEN traders from broker detection a
    - Nibbler: 0.5-3 seconds
    - Fang: 1-5 seconds
    - Commander: 1-8 seconds
-   - APEX: 2-12 seconds
+   - : 2-12 seconds
 
 2. **Lot Size Variance**
    - Nibbler: 2-5% variation
    - Fang: 3-7% variation
    - Commander: 4-8% variation
-   - APEX: 5-12% variation
+   - : 5-12% variation
 
 3. **TP/SL Randomization**
    - 0-5 pip random offset
@@ -2628,7 +2627,7 @@ The Universal Stealth Shield protects ALL BITTEN traders from broker detection a
 ## 🎮 User Commands
 
 - `/shield` - View shield status
-- `/shield on/off` - Toggle (APEX only, always ON for others)
+- `/shield on/off` - Toggle (only, always ON for others)
 
 ## 📊 Protection Statistics
 
@@ -2668,7 +2667,7 @@ protected_params = await apply_universal_protection(
 
 ## 🚀 The Bottom Line
 
-**"They control the market, the spreads, the execution. But they can't control traders who refuse to be detected. The Universal Stealth Shield ensures every BITTEN trader - from Nibbler to APEX - trades free from broker manipulation."**
+**"They control the market, the spreads, the execution. But they can't control traders who refuse to be detected. The Universal Stealth Shield ensures every BITTEN trader - from Nibbler to - trades free from broker manipulation."**
 
 **The revolution isn't coming. It's here. And it's protected.** 🛡️
 
@@ -3413,8 +3412,7 @@ Real Prices         Auto-Healing         No Simulation
 ### **4. Battle Pass Seasonal Progression** ✅ COMPLETE - XP ECONOMY
 **Files**: `battle_pass.py`, `battle_pass_integration.py`, `battle_pass_hub.html`
 - ✅ **XP-Based Economy**: No additional charges beyond subscriptions
-- ✅ **Tier Integration**: Press Pass → NIBBLER → FANG → COMMANDER → APEX
-- ✅ **100-Level Progression**: 1000 XP per level, 12-week seasons
+- ✅ **Tier Integration**: Press Pass → NIBBLER → FANG → COMMANDER → - ✅ **100-Level Progression**: 1000 XP per level, 12-week seasons
 - ✅ **Weekly Challenges**: Additional XP earning through trading activities
 - ✅ **Military Themes**: "Operation: Market Domination" seasonal content
 - ✅ **XP Spending System**: Rewards cost XP, not money
@@ -3435,14 +3433,14 @@ XP Spending Costs:
 - Basic rewards: 0 XP (free for everyone)
 - Premium rewards: 50 XP (NIBBLER+ access)
 - Elite rewards: 200 XP (FANG+ access)
-- Legendary rewards: 500 XP (APEX exclusives)
+- Legendary rewards: 500 XP (exclusives)
 
 Tier Access:
 - Press Pass: Basic rewards only
 - NIBBLER: 0-50 XP rewards
 - FANG: 0-200 XP rewards  
 - COMMANDER: 0-500 XP rewards
-- APEX: All rewards + exclusives
+- : All rewards + exclusives
 ```
 
 ## 🎮 AR/VR INTEGRATION ROADMAP
@@ -3822,8 +3820,7 @@ Monitoring: 100.0/100 (Perfect)
 2. **`bitten_alerts_corrected.py`** - Documentation: "80%+ TCS" (was "85%+ TCS")
 3. **`src/bitten_core/upgrade_router.py`** - User descriptions: "80% TCS for sniper"
 4. **`config/trading_pairs.yml`** - Extra pairs maintained at `tcs_requirement: 85`
-5. **`bitten_signals_live.py`** - SNIPER requirements: 80% for FANG/COMMANDER/APEX
-6. **`mt5_live_tiered.py`** - Signal tier logging: "FANG (80-92%)" 
+5. **`bitten_signals_live.py`** - SNIPER requirements: 80% for FANG/COMMANDER/6. **`mt5_live_tiered.py`** - Signal tier logging: "FANG (80-92%)" 
 7. **`run_backtest.py`** - Backtest configs: `min_tcs: 80` for FANG/COMMANDER_MANUAL
 
 ### **Final Configuration**:

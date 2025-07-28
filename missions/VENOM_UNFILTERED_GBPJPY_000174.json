@@ -1,0 +1,14 @@
+{
+  "signal_id": "VENOM_UNFILTERED_GBPJPY_000174",
+  "symbol": "GBPJPY",
+  "direction": "BUY",
+  "confidence": 87.4,
+  "shield_score": 6.0,
+  "shield_class": "SHIELD_ACTIVE",
+  "signal_type": "RAPID_ASSAULT",
+  "target_pips": 24,
+  "stop_pips": 12,
+  "risk_reward": 2.0,
+  "timestamp": 1753674594.4694347,
+  "source": "VENOM_CITADEL_LIVE"
+}

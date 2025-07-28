@@ -1,5 +1,5 @@
 # mission_briefing_generator_v5.py
-# APEX v5.0 Mission Briefing Generator - Optimized for ultra-aggressive trading
+# v5.0 Mission Briefing Generator - Optimized for ultra-aggressive trading
 # 40+ signals/day @ 89% win rate with enhanced mission briefings
 
 import json
@@ -23,8 +23,8 @@ except ImportError:
     timer_expiry_integration = None
     TIMER_INTEGRATION_AVAILABLE = False
 
-class APEXv5MissionType(Enum):
-    """APEX v5.0 Mission types optimized for ultra-aggressive trading"""
+class v5MissionType(Enum):
+    """v5.0 Mission types optimized for ultra-aggressive trading"""
     # Original mission types
     RAPID_ASSAULT_SCALP = "arcade_scalp"
     SNIPER_SHOT = "sniper_shot"
@@ -32,24 +32,24 @@ class APEXv5MissionType(Enum):
     CHAINGUN_SEQUENCE = "chaingun_sequence"
     TACTICAL_RETREAT = "tactical_retreat"
     
-    # APEX v5.0 New mission types
+    # v5.0 New mission types
     ULTRA_VOLUME_ASSAULT = "ultra_volume_assault"      # 40+ signals/day mode
     M3_LIGHTNING_RAID = "m3_lightning_raid"           # M3 timeframe focus
     CONFLUENCE_HUNTER = "confluence_hunter"           # 2+ pattern hunting
     SESSION_BOOST_STRIKE = "session_boost_strike"     # OVERLAP 3x boost
     VOLATILITY_MONSTER_HUNT = "volatility_monster"    # Monster pair targeting
-    APEX_BEAST_UNLEASHED = "apex_beast_unleashed"     # Maximum extraction
+    _BEAST_UNLEASHED = "apex_beast_unleashed"     # Maximum extraction
 
-class APEXv5UrgencyLevel(Enum):
-    """APEX v5.0 Enhanced urgency levels"""
+class v5UrgencyLevel(Enum):
+    """v5.0 Enhanced urgency levels"""
     CRITICAL = "CRITICAL"      # < 1 minute (ultra-fast)
     ULTRA_HIGH = "ULTRA_HIGH"  # 1-2 minutes (v5.0 speed)
     HIGH = "HIGH"              # 2-5 minutes  
     MEDIUM = "MEDIUM"          # 5-10 minutes
     LOW = "LOW"                # > 10 minutes
 
-class APEXv5SignalClass(Enum):
-    """APEX v5.0 Signal classifications - Updated for RAPID/SNIPER"""
+class v5SignalClass(Enum):
+    """v5.0 Signal classifications - Updated for RAPID/SNIPER"""
     RAPID_ASSAULT = "RAPID_ASSAULT"       # Quick scalp trades (5-45 min)
     SNIPER_OPS = "SNIPER_OPS"             # Precision trades (30-90 min)
     M1_INSTANT = "M1_INSTANT"             # M1 hair-trigger signals
@@ -61,13 +61,13 @@ class APEXv5SignalClass(Enum):
     MONSTER_SIGNAL = "MONSTER_SIGNAL"     # Volatility monster signals
 
 @dataclass
-class APEXv5MissionBriefing:
-    """APEX v5.0 Enhanced mission briefing data structure"""
+class v5MissionBriefing:
+    """v5.0 Enhanced mission briefing data structure"""
     # Core mission data
     mission_id: str
-    mission_type: APEXv5MissionType
-    urgency_level: APEXv5UrgencyLevel
-    signal_class: APEXv5SignalClass
+    mission_type: v5MissionType
+    urgency_level: v5UrgencyLevel
+    signal_class: v5SignalClass
     
     # Signal data (enhanced for v5.0)
     symbol: str
@@ -120,8 +120,8 @@ class APEXv5MissionBriefing:
     current_session_signals: int = 0
     total_pairs_active: int = 15
 
-class APEXv5MissionBriefingGenerator:
-    """APEX v5.0 Mission Briefing Generator with ultra-aggressive optimizations"""
+class v5MissionBriefingGenerator:
+    """v5.0 Mission Briefing Generator with ultra-aggressive optimizations"""
     
     def __init__(self):
         self.v5_session_names = {
@@ -168,11 +168,11 @@ class APEXv5MissionBriefingGenerator:
             'EURAUD': {'type': 'monster', 'volatility': 'EXTREME', 'icon': '🇪🇺🇦🇺⚡'}
         }
         
-        logger.info("APEX v5.0 Mission Briefing Generator initialized")
+        logger.info("v5.0 Mission Briefing Generator initialized")
     
     def generate_v5_mission_briefing(self, signal_data: Dict, user_data: Dict, 
-                                   account_data: Dict) -> APEXv5MissionBriefing:
-        """Generate APEX v5.0 enhanced mission briefing"""
+                                   account_data: Dict) -> v5MissionBriefing:
+        """Generate v5.0 enhanced mission briefing"""
         
         # Extract signal data
         symbol = signal_data.get('symbol', 'EURUSD')
@@ -186,7 +186,7 @@ class APEXv5MissionBriefingGenerator:
         
         # Generate mission ID
         timestamp = datetime.now()
-        mission_id = f"APEX5_{symbol}_{timestamp.strftime('%H%M%S')}"
+        mission_id = f"5_{symbol}_{timestamp.strftime('%H%M%S')}"
         
         # Determine signal class based on pattern and timeframe
         signal_class = self._determine_v5_signal_class(pattern_name, timeframe, confluence_count, signal_data.get('signal_type'))
@@ -205,7 +205,7 @@ class APEXv5MissionBriefingGenerator:
         # Calculate position sizing (v5.0 enhanced)
         account_balance = account_data.get('balance', 10000)
         position_size, risk_amount, dollar_amount = self._calculate_v5_position_sizing(
-            signal_data, account_balance, user_data.get('tier', 'APEX')
+            signal_data, account_balance, user_data.get('tier', '')
         )
         
         # Session boost detection
@@ -228,7 +228,7 @@ class APEXv5MissionBriefingGenerator:
         )
         
         # Create briefing
-        briefing = APEXv5MissionBriefing(
+        briefing = v5MissionBriefing(
             mission_id=mission_id,
             mission_type=mission_type,
             urgency_level=urgency_level,
@@ -256,7 +256,7 @@ class APEXv5MissionBriefingGenerator:
             # Risk management
             position_size=position_size,
             risk_amount=risk_amount,
-            risk_percentage=self._get_v5_risk_percentage(user_data.get('tier', 'APEX')),
+            risk_percentage=self._get_v5_risk_percentage(user_data.get('tier', '')),
             reward_risk_ratio=signal_data.get('take_profit', 20) / max(signal_data.get('stop_loss', 10), 1),
             
             # Timing
@@ -266,7 +266,7 @@ class APEXv5MissionBriefingGenerator:
             execution_window=execution_window,
             
             # User data
-            user_tier=user_data.get('tier', 'APEX'),
+            user_tier=user_data.get('tier', ''),
             account_balance=account_balance,
             daily_signals_count=user_data.get('daily_signals', 0),
             daily_pips=user_data.get('daily_pips', 0.0),
@@ -282,72 +282,72 @@ class APEXv5MissionBriefingGenerator:
             current_session_signals=user_data.get(f'{session.lower()}_signals', 0)
         )
         
-        logger.info(f"Generated APEX v5.0 mission briefing: {mission_id} - "
+        logger.info(f"Generated v5.0 mission briefing: {mission_id} - "
                    f"{signal_class.value} - TCS {tcs_score}")
         
         return briefing
     
     def _determine_v5_signal_class(self, pattern_name: str, timeframe: str, 
-                                 confluence_count: int, signal_type: str = None) -> APEXv5SignalClass:
-        """Determine v5.0 signal class - prioritizes APEX signal_type"""
+                                 confluence_count: int, signal_type: str = None) -> v5SignalClass:
+        """Determine v5.0 signal class - prioritizes signal_type"""
         
-        # New: Use signal_type from APEX if available
+        # New: Use signal_type from if available
         if signal_type:
             if signal_type == "RAPID ASSAULT" or signal_type == "RAPID_ASSAULT":
-                return APEXv5SignalClass.RAPID_ASSAULT
+                return v5SignalClass.RAPID_ASSAULT
             elif signal_type == "SNIPER OPS" or signal_type == "SNIPER_OPS":
-                return APEXv5SignalClass.SNIPER_OPS
+                return v5SignalClass.SNIPER_OPS
         
         # Legacy: Confluence count determines class
         if confluence_count >= 4:
-            return APEXv5SignalClass.ULTRA_CONFLUENCE
+            return v5SignalClass.ULTRA_CONFLUENCE
         elif confluence_count >= 2:
-            return APEXv5SignalClass.MEGA_CONFLUENCE
+            return v5SignalClass.MEGA_CONFLUENCE
         elif 'Monster' in pattern_name or 'GBPNZD' in pattern_name or 'GBPAUD' in pattern_name:
-            return APEXv5SignalClass.MONSTER_SIGNAL
+            return v5SignalClass.MONSTER_SIGNAL
         elif timeframe == 'M1':
-            return APEXv5SignalClass.M1_INSTANT
+            return v5SignalClass.M1_INSTANT
         elif timeframe == 'M3':
-            return APEXv5SignalClass.M3_PRIMARY
+            return v5SignalClass.M3_PRIMARY
         elif timeframe == 'M5':
-            return APEXv5SignalClass.M5_ENHANCED
+            return v5SignalClass.M5_ENHANCED
         elif timeframe == 'M15':
-            return APEXv5SignalClass.M15_SNIPER
+            return v5SignalClass.M15_SNIPER
         else:
-            return APEXv5SignalClass.M3_PRIMARY  # Default to M3
+            return v5SignalClass.M3_PRIMARY  # Default to M3
     
-    def _determine_v5_mission_type(self, signal_class: APEXv5SignalClass, 
-                                 session: str, tcs_score: float) -> APEXv5MissionType:
+    def _determine_v5_mission_type(self, signal_class: v5SignalClass, 
+                                 session: str, tcs_score: float) -> v5MissionType:
         """Determine v5.0 mission type"""
         
         if session == 'OVERLAP':
-            return APEXv5MissionType.SESSION_BOOST_STRIKE
-        elif signal_class == APEXv5SignalClass.ULTRA_CONFLUENCE:
-            return APEXv5MissionType.CONFLUENCE_HUNTER
-        elif signal_class == APEXv5SignalClass.MONSTER_SIGNAL:
-            return APEXv5MissionType.VOLATILITY_MONSTER_HUNT
-        elif signal_class == APEXv5SignalClass.M3_PRIMARY:
-            return APEXv5MissionType.M3_LIGHTNING_RAID
+            return v5MissionType.SESSION_BOOST_STRIKE
+        elif signal_class == v5SignalClass.ULTRA_CONFLUENCE:
+            return v5MissionType.CONFLUENCE_HUNTER
+        elif signal_class == v5SignalClass.MONSTER_SIGNAL:
+            return v5MissionType.VOLATILITY_MONSTER_HUNT
+        elif signal_class == v5SignalClass.M3_PRIMARY:
+            return v5MissionType.M3_LIGHTNING_RAID
         elif tcs_score >= 85:
-            return APEXv5MissionType.APEX_BEAST_UNLEASHED
-        elif signal_class == APEXv5SignalClass.M1_INSTANT:
-            return APEXv5MissionType.ULTRA_VOLUME_ASSAULT
+            return v5MissionType._BEAST_UNLEASHED
+        elif signal_class == v5SignalClass.M1_INSTANT:
+            return v5MissionType.ULTRA_VOLUME_ASSAULT
         else:
-            return APEXv5MissionType.RAPID_ASSAULT_SCALP
+            return v5MissionType.RAPID_ASSAULT_SCALP
     
-    def _determine_v5_urgency(self, timeframe: str, tcs_score: float, session: str) -> APEXv5UrgencyLevel:
+    def _determine_v5_urgency(self, timeframe: str, tcs_score: float, session: str) -> v5UrgencyLevel:
         """Determine v5.0 urgency level"""
         
         if timeframe == 'M1' or session == 'OVERLAP':
-            return APEXv5UrgencyLevel.CRITICAL
+            return v5UrgencyLevel.CRITICAL
         elif timeframe == 'M3' or tcs_score >= 85:
-            return APEXv5UrgencyLevel.ULTRA_HIGH
+            return v5UrgencyLevel.ULTRA_HIGH
         elif timeframe == 'M5' or tcs_score >= 70:
-            return APEXv5UrgencyLevel.HIGH
+            return v5UrgencyLevel.HIGH
         elif timeframe == 'M15':
-            return APEXv5UrgencyLevel.MEDIUM
+            return v5UrgencyLevel.MEDIUM
         else:
-            return APEXv5UrgencyLevel.LOW
+            return v5UrgencyLevel.LOW
     
     def _calculate_v5_position_sizing(self, signal_data: Dict, account_balance: float, 
                                     tier: str) -> Tuple[float, float, float]:
@@ -359,7 +359,7 @@ class APEXv5MissionBriefingGenerator:
             'NIBBLER': 0.7,
             'FANG': 1.0,
             'COMMANDER': 1.2,
-            'APEX': 1.5  # Higher for APEX
+            'APEX': 1.5  # Higher for apex tier
         }
         
         base_risk_percent = tier_risk.get(tier, 1.0)
@@ -415,7 +415,7 @@ class APEXv5MissionBriefingGenerator:
         
         return position_size, risk_amount, dollar_amount
     
-    def _get_v5_execution_window(self, timeframe: str, signal_class: APEXv5SignalClass) -> int:
+    def _get_v5_execution_window(self, timeframe: str, signal_class: v5SignalClass) -> int:
         """Get v5.0 execution window in seconds"""
         
         base_windows = {
@@ -428,14 +428,14 @@ class APEXv5MissionBriefingGenerator:
         base_window = base_windows.get(timeframe, 300)
         
         # Adjust for signal class
-        if signal_class in [APEXv5SignalClass.ULTRA_CONFLUENCE, APEXv5SignalClass.MONSTER_SIGNAL]:
+        if signal_class in [v5SignalClass.ULTRA_CONFLUENCEv5SignalClass.MONSTER_SIGNAL]:
             base_window *= 1.5  # Longer window for special signals
-        elif signal_class == APEXv5SignalClass.M1_INSTANT:
+        elif signal_class == v5SignalClass.M1_INSTANT:
             base_window *= 0.5  # Shorter for instant signals
         
         return int(base_window)
     
-    def _generate_v5_mission_content(self, signal_class: APEXv5SignalClass, symbol: str,
+    def _generate_v5_mission_content(self, signal_class: v5SignalClass, symbol: str,
                                    direction: str, tcs_score: float, session: str,
                                    confluence_count: int) -> Tuple[str, str]:
         """Generate v5.0 mission title and description"""
@@ -444,19 +444,19 @@ class APEXv5MissionBriefingGenerator:
         session_info = self.v5_session_names.get(session, {'icon': '🎯'})
         
         # Generate title based on signal class - prioritize new signal types
-        if signal_class == APEXv5SignalClass.RAPID_ASSAULT:
+        if signal_class == v5SignalClass.RAPID_ASSAULT:
             title = f"🔫 RAPID ASSAULT - {symbol}"
-        elif signal_class == APEXv5SignalClass.SNIPER_OPS:
+        elif signal_class == v5SignalClass.SNIPER_OPS:
             title = f"⚡ SNIPER OPS - {symbol}"
-        elif signal_class == APEXv5SignalClass.ULTRA_CONFLUENCE:
+        elif signal_class == v5SignalClass.ULTRA_CONFLUENCE:
             title = f"🔥 ULTRA CONFLUENCE x{confluence_count} - {symbol}"
-        elif signal_class == APEXv5SignalClass.MEGA_CONFLUENCE:
+        elif signal_class == v5SignalClass.MEGA_CONFLUENCE:
             title = f"⚡ MEGA CONFLUENCE x{confluence_count} - {symbol}"
-        elif signal_class == APEXv5SignalClass.MONSTER_SIGNAL:
+        elif signal_class == v5SignalClass.MONSTER_SIGNAL:
             title = f"👹 MONSTER HUNT - {symbol}"
-        elif signal_class == APEXv5SignalClass.M1_INSTANT:
+        elif signal_class == v5SignalClass.M1_INSTANT:
             title = f"⚡ M1 INSTANT STRIKE - {symbol}"
-        elif signal_class == APEXv5SignalClass.M3_PRIMARY:
+        elif signal_class == v5SignalClass.M3_PRIMARY:
             title = f"🎯 M3 PRIMARY ASSAULT - {symbol}"
         else:
             title = f"{session_info['icon']} {signal_class.value} - {symbol}"
@@ -482,7 +482,7 @@ class APEXv5MissionBriefingGenerator:
         notes = []
         
         # v5.0 Base notes
-        notes.append("🚀 APEX v5.0 Engine: Ultra-aggressive signal generation active")
+        notes.append("🚀 v5.0 Engine: Ultra-aggressive signal generation active")
         notes.append(f"📊 Target: 40+ signals/day @ 89% win rate")
         
         # TCS notes (v5.0 optimized)
@@ -546,11 +546,11 @@ class APEXv5MissionBriefingGenerator:
             'NIBBLER': 0.7,
             'FANG': 1.0,
             'COMMANDER': 1.2,
-            'APEX': 1.5
+            '': 1.5
         }
         return tier_risk.get(tier, 1.0)
     
-    def format_for_webapp(self, briefing: APEXv5MissionBriefing) -> Dict[str, Any]:
+    def format_for_webapp(self, briefing: v5MissionBriefing) -> Dict[str, Any]:
         """Format v5.0 briefing for webapp display"""
         
         pair_info = self.v5_pair_classifications.get(briefing.symbol, {'icon': '📊'})
@@ -613,13 +613,13 @@ class APEXv5MissionBriefingGenerator:
             
             # v5.0 Status indicators
             'ultra_mode_active': True,
-            'max_extraction_mode': briefing.mission_type == APEXv5MissionType.APEX_BEAST_UNLEASHED,
-            'confluence_hunter_mode': briefing.signal_class in [APEXv5SignalClass.MEGA_CONFLUENCE, APEXv5SignalClass.ULTRA_CONFLUENCE]
+            'max_extraction_mode': briefing.mission_type == v5MissionType._BEAST_UNLEASHED,
+            'confluence_hunter_mode': briefing.signal_class in [v5SignalClass.MEGA_CONFLUENCEv5SignalClass.ULTRA_CONFLUENCE]
         }
         
         return formatted
     
-    def update_countdown(self, briefing: APEXv5MissionBriefing) -> APEXv5MissionBriefing:
+    def update_countdown(self, briefing: v5MissionBriefing) -> v5MissionBriefing:
         """Update countdown timer for v5.0 briefing"""
         current_time = datetime.now()
         remaining_seconds = max(0, int((briefing.expiry_timestamp - current_time).total_seconds()))
@@ -628,17 +628,17 @@ class APEXv5MissionBriefingGenerator:
         
         # Update urgency based on remaining time
         if remaining_seconds <= 60:
-            briefing.urgency_level = APEXv5UrgencyLevel.CRITICAL
+            briefing.urgency_level = v5UrgencyLevel.CRITICAL
         elif remaining_seconds <= 120:
-            briefing.urgency_level = APEXv5UrgencyLevel.ULTRA_HIGH
+            briefing.urgency_level = v5UrgencyLevel.ULTRA_HIGH
         elif remaining_seconds <= 300:
-            briefing.urgency_level = APEXv5UrgencyLevel.HIGH
+            briefing.urgency_level = v5UrgencyLevel.HIGH
         
         return briefing
 
 # Factory function for backward compatibility
 def generate_apex_v5_mission_briefing(signal_data: Dict, user_data: Dict, 
-                                     account_data: Dict) -> APEXv5MissionBriefing:
-    """Factory function to generate APEX v5.0 mission briefing"""
-    generator = APEXv5MissionBriefingGenerator()
+                                     account_data: Dict) -> v5MissionBriefing:
+    """Factory function to generate v5.0 mission briefing"""
+    generator = v5MissionBriefingGenerator()
     return generator.generate_v5_mission_briefing(signal_data, user_data, account_data)

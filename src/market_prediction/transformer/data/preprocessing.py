@@ -16,7 +16,6 @@ from datetime import datetime, timedelta
 import warnings
 warnings.filterwarnings('ignore')
 
-
 class MarketDataPreprocessor:
     """
     Comprehensive preprocessing pipeline for market data.
@@ -293,7 +292,6 @@ class MarketDataPreprocessor:
         
         return sequences, None
 
-
 class MarketDataset(Dataset):
     """PyTorch dataset for market time series data."""
     
@@ -324,7 +322,6 @@ class MarketDataset(Dataset):
             return sequence, self.targets[idx]
         
         return sequence
-
 
 class DataPipeline:
     """Complete data pipeline for market prediction."""

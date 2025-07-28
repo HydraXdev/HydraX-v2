@@ -439,7 +439,7 @@ class PressPassManager:
         return {
             'features': {
                 'full_access': 'All BITTEN features and tools unlocked',
-                'demo_account': f'${self.default_demo_balance:,} MetaQuotes practice account',
+                'demo_account': f'${self.default_demo_balance:} MetaQuotes practice account',
                 'duration': '7 days from activation',
                 'trading_signals': 'All premium signals and strategies included',
                 'education': 'Complete access to BITTEN Academy',
@@ -510,7 +510,7 @@ class PressPassManager:
         
         Args:
             user_id: User identifier
-            new_tier: Target tier (NIBBLER, FANG, COMMANDER, APEX)
+            new_tier: Target tier (NIBBLER, FANG, COMMANDER)
             
         Returns:
             Upgrade status and current XP preserved

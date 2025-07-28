@@ -26,7 +26,7 @@
 ```
 Component          Status    Details
 ---------          ------    -------
-APEX Engine        ✅ RUNNING  Generating signals (TCS >= 65%)
+Engine        ✅ RUNNING  Generating signals (TCS >= 65%)
 Bridge Detection   ✅ WORKING  All symbols detected
 Telegram Alerts    ✅ SENDING   Correct format to group
 WebApp             ✅ ONLINE   Port 8888, systemd active
@@ -35,7 +35,7 @@ Nuclear WebApp     ❌ STOPPED  No longer needed
 
 ### 🔥 Signal Flow:
 1. MT5 Bridge → JSON files ✅
-2. APEX reads files → Generates signals ✅  
+2. reads files → Generates signals ✅  
 3. Telegram connector → Sends alerts ✅
 4. Format: "⚡ SNIPER OPS - GBPUSD BUY - TCS 73" ✅
 
@@ -47,7 +47,7 @@ Nuclear WebApp     ❌ STOPPED  No longer needed
 
 ### Check Status:
 ```bash
-# APEX Engine
+# Engine
 ps aux | grep apex_v5_live_real
 
 # Telegram Connector  

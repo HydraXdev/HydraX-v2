@@ -790,7 +790,6 @@ class TCSEducation:
             
         return practices
 
-
 def format_education_response(education_data: Dict) -> str:
     """
     Format education data for display in the UI
@@ -817,7 +816,6 @@ def format_education_response(education_data: Dict) -> str:
             response += f"_{education_data['mystery_element']}_\n\n"
             
     return response
-
 
 # Example usage
 if __name__ == "__main__":

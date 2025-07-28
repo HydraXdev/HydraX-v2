@@ -60,7 +60,6 @@ from .norman_story_integration import norman_story_engine, StoryPhase
 
 logger = logging.getLogger(__name__)
 
-
 class BitAmbientSystem:
     """
     Master class for Bit's Ambient Audio System
@@ -527,21 +526,17 @@ class BitAmbientSystem:
                 user_id, TradingContext.MARKET_CLOSE, AudioMood.CONTENT
             )
 
-
 # Global instance - the main interface to Bit's ambient system
 bit_ambient_system = BitAmbientSystem()
-
 
 # Convenience functions for easy integration
 async def start_bit_for_user(user_id: str, context: Optional[Dict] = None) -> bool:
     """Start Bit's companionship for a user"""
     return await bit_ambient_system.start_user_session(user_id, context)
 
-
 async def stop_bit_for_user(user_id: str) -> bool:
     """Stop Bit's companionship for a user"""
     return await bit_ambient_system.stop_user_session(user_id)
-
 
 async def bit_reacts_to_trade(user_id: str, trade_event: str, data: Dict[str, Any]) -> Optional[str]:
     """Make Bit react to trading events"""
@@ -560,21 +555,17 @@ async def bit_reacts_to_trade(user_id: str, trade_event: str, data: Dict[str, An
     
     return None
 
-
 def get_bit_status_for_user(user_id: str) -> Dict[str, Any]:
     """Get Bit's status and preferences for user"""
     return bit_ambient_system.get_user_audio_preferences(user_id)
-
 
 def configure_bit_for_user(user_id: str, preferences: Dict[str, Any]) -> Dict[str, Any]:
     """Configure Bit's behavior for user"""
     return bit_ambient_system.update_user_audio_preferences(user_id, preferences)
 
-
 async def initialize_bit_system() -> bool:
     """Initialize the complete Bit ambient system"""
     return await bit_ambient_system.initialize()
-
 
 async def shutdown_bit_system():
     """Shutdown the Bit ambient system"""

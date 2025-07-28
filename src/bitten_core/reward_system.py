@@ -12,19 +12,17 @@ from enum import Enum
 class RiskTier(Enum):
     """Risk tier definitions"""
     STANDARD = "STANDARD"
-    APEX = "APEX"
-    
-    @property
+    = @property
     def base_reward_rate(self) -> float:
         """Get base reward rate for tier"""
-        return 0.03 if self == RiskTier.APEX else 0.02
+        return 0.03 if self == RiskTier.else 0.02
     
     @property
     def xp_bonus(self) -> float:
         """Get XP bonus multiplier for tier"""
         tier_bonuses = {
             RiskTier.STANDARD: 0.0,   # 0% bonus
-            RiskTier.APEX: 0.15        # 15% bonus
+            RiskTier.: 0.15        # 15% bonus
         }
         return tier_bonuses.get(self, 0.0)
 
@@ -512,14 +510,13 @@ class RewardSystem:
     
     def calculate_tier_upgrade_benefit(self, user_id: int, 
                                      current_profit: float) -> Dict:
-        """Calculate benefit of upgrading to APEX tier"""
+        """Calculate benefit of upgrading to tier"""
         # Calculate rewards for both tiers
         standard_reward = self.calculate_reward(
             user_id, current_profit, RiskTier.STANDARD
         )
         apex_reward = self.calculate_reward(
-            user_id, current_profit, RiskTier.APEX
-        )
+            user_id, current_profit, RiskTier.)
         
         # Calculate difference
         additional_reward = apex_reward.total_amount - standard_reward.total_amount
@@ -617,7 +614,7 @@ class RewardSystem:
     def simulate_reward(self, user_id: int, profit: float,
                        risk_tier: str = "STANDARD") -> Dict:
         """Simulate reward calculation for planning"""
-        tier = RiskTier.APEX if risk_tier == "APEX" else RiskTier.STANDARD
+        tier = RiskTier.if risk_tier == else RiskTier.STANDARD
         calculation = self.calculate_reward(user_id, profit, tier)
         
         return {

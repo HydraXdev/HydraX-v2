@@ -20,7 +20,6 @@ import json
 
 logger = logging.getLogger(__name__)
 
-
 class DatabaseConfig:
     """Database configuration management"""
     
@@ -44,7 +43,6 @@ class DatabaseConfig:
     def async_connection_string(self) -> str:
         """Get async PostgreSQL connection string"""
         return f"postgresql://{self.user}:{self.password}@{self.host}:{self.port}/{self.database}"
-
 
 class DatabaseConnection:
     """Manages database connections with pooling and error handling"""
@@ -138,10 +136,8 @@ class DatabaseConnection:
                 logger.error(f"Command execution failed: {e}")
                 raise
 
-
 # Global database connection instance
 _db_connection: Optional[DatabaseConnection] = None
-
 
 def get_db_connection() -> DatabaseConnection:
     """Get or create database connection instance"""
@@ -150,7 +146,6 @@ def get_db_connection() -> DatabaseConnection:
         _db_connection = DatabaseConnection()
     return _db_connection
 
-
 @asynccontextmanager
 async def get_async_db() -> AsyncGenerator[asyncpg.Connection, None]:
     """Get async database connection for use in async contexts"""
@@ -158,17 +153,14 @@ async def get_async_db() -> AsyncGenerator[asyncpg.Connection, None]:
     async with db.acquire_async() as conn:
         yield conn
 
-
 def get_sync_db() -> Session:
     """Get sync database session for use in sync contexts"""
     db = get_db_connection()
     return db.get_sync_session()
 
-
 def get_db_session() -> Session:
     """Alias for get_sync_db for backward compatibility"""
     return get_sync_db()
-
 
 class DatabaseSession:
     """Context manager for sync database sessions with automatic commit/rollback"""
@@ -194,7 +186,6 @@ class DatabaseSession:
         
         if self._should_close:
             self.session.close()
-
 
 async def test_connection() -> bool:
     """Test database connectivity"""

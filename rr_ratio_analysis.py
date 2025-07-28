@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Risk/Reward Ratio Analysis for APEX Signals
+Risk/Reward Ratio Analysis for Signals
 Breaks down performance by R:R ratios (1:2 vs 1:3 trades)
 """
 
@@ -11,7 +11,7 @@ from typing import Dict, List
 from pathlib import Path
 
 class RiskRewardAnalysis:
-    """Analyze APEX signal performance by Risk/Reward ratios"""
+    """Analyze signal performance by Risk/Reward ratios"""
     
     def __init__(self):
         # Load the latest backtest results
@@ -42,12 +42,12 @@ class RiskRewardAnalysis:
         return categories
     
     def simulate_signals_with_rr(self, total_signals: int = 16236) -> List[Dict]:
-        """Generate signals with realistic R:R distribution based on APEX engine"""
+        """Generate signals with realistic R:R distribution based on engine"""
         
         signals = []
         
         for i in range(total_signals):
-            # 75% RAPID_ASSAULT, 25% SNIPER_OPS (from APEX engine)
+            # 75% RAPID_ASSAULT, 25% SNIPER_OPS (from engine)
             if random.random() < 0.75:
                 signal_type = 'RAPID_ASSAULT'
                 rr_ratio = random.uniform(1.5, 2.6)  # RAPID_ASSAULT range
@@ -141,7 +141,7 @@ class RiskRewardAnalysis:
     def run_comprehensive_analysis(self) -> Dict:
         """Run comprehensive R:R analysis"""
         
-        print("🎯 APEX Risk/Reward Ratio Analysis")
+        print("🎯 Risk/Reward Ratio Analysis")
         print("=" * 50)
         
         # Generate realistic signal distribution
@@ -158,7 +158,7 @@ class RiskRewardAnalysis:
         total_r = sum(s['pnl_r'] for s in signals)
         overall_expectancy = total_r / total_signals
         
-        print(f"✅ Analysis complete: {total_signals:,} signals analyzed")
+        print(f"✅ Analysis complete: {total_signals:} signals analyzed")
         print(f"📈 Overall Win Rate: {overall_win_rate:.1f}%")
         print(f"💰 Overall Expectancy: {overall_expectancy:.3f}R")
         
@@ -238,7 +238,7 @@ def main():
     print(f"\n📊 CATEGORY PERFORMANCE:")
     for category, data in rr_data.items():
         print(f"\n{category} R:R RATIO:")
-        print(f"  Total Signals: {data['total_signals']:,}")
+        print(f"  Total Signals: {data['total_signals']:}")
         print(f"  Win Rate: {data['win_rate_percent']}%")
         print(f"  Average R:R: 1:{data['avg_rr_ratio']}")
         print(f"  Expectancy: {data['expectancy']:.3f}R")
@@ -258,7 +258,7 @@ def main():
     metadata = results['analysis_metadata']
     print(f"  Overall System Win Rate: {metadata['overall_win_rate']}%")
     print(f"  Overall Expectancy: {metadata['overall_expectancy']:.3f}R")
-    print(f"  Total Signals Analyzed: {metadata['total_signals_analyzed']:,}")
+    print(f"  Total Signals Analyzed: {metadata['total_signals_analyzed']:}")
     
     print(f"\n💾 Detailed results saved to: {output_file}")
 

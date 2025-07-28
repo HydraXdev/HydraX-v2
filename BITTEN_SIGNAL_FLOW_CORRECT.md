@@ -7,23 +7,23 @@
 
 ### 1️⃣ **Signal Generation**
 ```
-MT5 EA → Bridge Files → APEX Engine → TCS Scoring
+MT5 EA → Bridge Files → Engine → TCS Scoring
 ```
-- APEX reads market data from bridge files
+- reads market data from bridge files
 - Calculates TCS score (now minimum 65%)
 - Logs signals: `🎯 SIGNAL #X: SYMBOL DIRECTION TCS:XX%`
 
 ### 2️⃣ **User Notification** (Alert Only!)
 ```
-APEX Log → Telegram Connector → Bot Message
+Log → Telegram Connector → Bot Message
 ```
-- Telegram connector monitors APEX logs
+- Telegram connector monitors logs
 - Sends **ALERT ONLY** to users
 - **NO AUTOMATIC EXECUTION**
 
 Example Telegram Alert:
 ```
-🟢 MODERATE APEX SIGNAL
+🟢 MODERATE SIGNAL
 
 📊 EURAUD BUY
 🎯 TCS: 66%
@@ -58,7 +58,7 @@ User Clicks FIRE → /api/fire → MT5 Bridge → Trade
 
 1. **NOT** automatically executing trades when signals appear
 2. **NOT** bypassing user decision making
-3. **NOT** sending trades directly from APEX to MT5
+3. **NOT** sending trades directly from to MT5
 4. **NOT** auto-trading without user consent
 
 ## ✅ What We ARE Doing
@@ -71,7 +71,7 @@ User Clicks FIRE → /api/fire → MT5 Bridge → Trade
 ## 🔧 Components
 
 ### Required Running Services:
-1. **APEX Engine** - Generates and scores signals
+1. **Engine** - Generates and scores signals
 2. **Telegram Connector** - Sends alerts to users
 3. **WebApp** - Serves mission briefings and fire endpoint
 4. **Fire Execution Handler** - Executes user-initiated trades
@@ -89,7 +89,7 @@ User Clicks FIRE → /api/fire → MT5 Bridge → Trade
 - **NIBBLER**: RAPID ASSAULT only (manual)
 - **FANG**: All signals (manual)
 - **COMMANDER**: All signals + auto modes
-- **APEX**: All features
+- ****: All features
 
 ### Fire Validation:
 - User can only fire once per signal
@@ -99,7 +99,7 @@ User Clicks FIRE → /api/fire → MT5 Bridge → Trade
 ## 📊 Data Flow
 
 ```
-Market Data → APEX → Signal
+Market Data → → Signal
                 ↓
          Telegram Alert
                 ↓

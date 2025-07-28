@@ -25,7 +25,7 @@ def download_report():
                 f.write(chunk)
         
         print(f"✅ Downloaded successfully: {local_filename}")
-        print(f"📄 File size: {os.path.getsize(local_filename):,} bytes")
+        print(f"📄 File size: {os.path.getsize(local_filename):} bytes")
         return local_filename
         
     except Exception as e:

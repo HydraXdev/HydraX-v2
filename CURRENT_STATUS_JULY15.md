@@ -4,7 +4,7 @@
 ## ✅ COMPLETED WORK
 
 ### MT5 Bridge Connection Fixed
-- **Issue**: Double backslash escaping in Windows paths prevented APEX from detecting bridge files
+- **Issue**: Double backslash escaping in Windows paths prevented from detecting bridge files
 - **Solution**: Fixed path escaping in `/root/HydraX-v2/apex_v5_live_real.py`
 - **Result**: All symbols now detected, signals generating at TCS >= 65%
 
@@ -15,7 +15,7 @@
 ## 📊 CURRENT SYSTEM STATUS
 
 ### ✅ Working Components
-1. **APEX Engine**: Running and generating signals
+1. **Engine**: Running and generating signals
    - Recent signals: GBPAUD BUY TCS:66%, EURAUD BUY TCS:66%
    - Bridge file detection: WORKING
    - TCS threshold: 65% (reduced from 5%)
@@ -33,7 +33,7 @@
    - Process ID: 399892
 
 5. **Signal Flow**: CONFIRMED WORKING
-   - Bridge Files → APEX → Telegram → Users
+   - Bridge Files → → Telegram → Users
    - User-driven execution model preserved
 
 ### ⚠️ Issues Requiring Attention
@@ -68,7 +68,7 @@ The main webapp needs attention:
    - Verify correct port configuration
 
 2. **System Monitoring**:
-   - Continue monitoring APEX logs for signals
+   - Continue monitoring logs for signals
    - Verify telegram delivery to actual users
    - Test fire button functionality once webapp is accessible
 
@@ -81,4 +81,4 @@ The main webapp needs attention:
 
 ---
 
-*Summary: MT5 bridge connection issue has been successfully resolved. APEX is generating signals and Telegram connector is sending alerts. Main focus should now be on webapp accessibility and end-to-end flow verification.*
+*Summary: MT5 bridge connection issue has been successfully resolved. is generating signals and Telegram connector is sending alerts. Main focus should now be on webapp accessibility and end-to-end flow verification.*

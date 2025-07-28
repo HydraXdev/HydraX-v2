@@ -98,7 +98,7 @@ class OnboardingValidators:
             email = email.strip()
             
             # Use simple regex validation for now
-            email_pattern = re.compile(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
+            email_pattern = re.compile(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2}$')
             if email_pattern.match(email):
                 return True, ""
             else:

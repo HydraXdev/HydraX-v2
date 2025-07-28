@@ -16,7 +16,6 @@ from .order_book_reader import OrderBookSnapshot
 
 logger = logging.getLogger(__name__)
 
-
 @dataclass
 class LiquidityVoid:
     """Represents a liquidity void in the order book"""
@@ -49,7 +48,6 @@ class LiquidityVoid:
             'potential_slippage': self.potential_slippage
         }
 
-
 @dataclass
 class LiquidityProfile:
     """Overall liquidity profile of an order book"""
@@ -81,7 +79,6 @@ class LiquidityProfile:
             'has_critical_voids': (self.largest_bid_void and self.largest_bid_void.severity == 'critical') or
                                  (self.largest_ask_void and self.largest_ask_void.severity == 'critical')
         }
-
 
 class LiquidityVoidDetector:
     """Detects and analyzes liquidity voids in order books"""
@@ -400,7 +397,6 @@ class LiquidityVoidDetector:
             )
         }
 
-
 # Example usage
 async def main():
     from order_book_reader import OrderBookSnapshot, OrderBookLevel
@@ -419,16 +415,14 @@ async def main():
             OrderBookLevel(49988, 2.0),
             # Another void
             OrderBookLevel(49980, 0.3),  # Another gap
-            OrderBookLevel(49979, 1.5),
-        ],
+            OrderBookLevel(49979, 1.5)],
         asks=[
             OrderBookLevel(50001, 0.8),
             OrderBookLevel(50002, 0.5),
             # Liquidity void here
             OrderBookLevel(50010, 0.3),  # Big gap
             OrderBookLevel(50011, 0.4),
-            OrderBookLevel(50012, 0.2),
-        ],
+            OrderBookLevel(50012, 0.2)],
         timestamp=datetime.now().timestamp()
     )
     
@@ -457,7 +451,6 @@ async def main():
     # Get statistics
     stats = detector.get_statistics('BTC/USDT', 'binance')
     print(f"\nStatistics: {stats}")
-
 
 if __name__ == "__main__":
     import asyncio

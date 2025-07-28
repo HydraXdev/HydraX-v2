@@ -18,7 +18,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-
 class StreakStatus(Enum):
     """Streak status types"""
     ACTIVE = "active"
@@ -27,13 +26,11 @@ class StreakStatus(Enum):
     COMEBACK = "comeback"
     PROTECTED = "protected"
 
-
 class StreakProtectionType(Enum):
     """Types of streak protection"""
     FREE_MONTHLY = "free_monthly"  # 1 free miss per month
     PREMIUM = "premium"           # Premium protection items
     WEEKEND_PASS = "weekend_pass" # Special weekend protection
-
 
 @dataclass
 class StreakData:
@@ -53,7 +50,6 @@ class StreakData:
     streak_freeze_available: bool
     monthly_protection_used: bool
 
-
 @dataclass
 class LoginReward:
     """Login reward information"""
@@ -64,7 +60,6 @@ class LoginReward:
     total_xp: int
     badges_unlocked: List[str]
     special_rewards: List[Dict[str, Any]]
-
 
 class DailyStreakSystem:
     """Comprehensive daily login streak tracking system"""
@@ -755,7 +750,6 @@ class DailyStreakSystem:
                 })
             
             return leaderboard
-
 
 # Example usage and testing
 if __name__ == "__main__":

@@ -17,11 +17,9 @@ from dataclasses import dataclass, asdict
 import time
 from functools import wraps
 
-
 # Context variables for request tracking
 request_id_var: ContextVar[Optional[str]] = ContextVar('request_id', default=None)
 component_var: ContextVar[Optional[str]] = ContextVar('component', default=None)
-
 
 @dataclass
 class LogContext:
@@ -35,7 +33,6 @@ class LogContext:
     def __post_init__(self):
         if self.metadata is None:
             self.metadata = {}
-
 
 class StructuredFormatter(logging.Formatter):
     """JSON formatter for structured logging"""
@@ -77,7 +74,6 @@ class StructuredFormatter(logging.Formatter):
             }
             
         return json.dumps(log_data)
-
 
 class PerformanceLogger:
     """Logger for performance metrics"""
@@ -127,7 +123,6 @@ class PerformanceLogger:
                         'max_ms': max(metrics) * 1000
                     }
             return summary
-
 
 class IntelligenceLogger:
     """Main logger for intelligence system"""
@@ -227,7 +222,6 @@ class IntelligenceLogger:
         }
         self.logger.info(f"Metric: {metric_name}={value}", extra={'extra_fields': metric_data})
 
-
 def timed_operation(operation_name: Optional[str] = None):
     """Decorator to time function execution"""
     def decorator(func):
@@ -259,7 +253,6 @@ def timed_operation(operation_name: Optional[str] = None):
                     
         return async_wrapper if asyncio.iscoroutinefunction(func) else sync_wrapper
     return decorator
-
 
 class LoggerManager:
     """Manages loggers for different components"""

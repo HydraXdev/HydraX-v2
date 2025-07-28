@@ -17,7 +17,6 @@ from collections import defaultdict
 
 logger = logging.getLogger(__name__)
 
-
 class GearRarity(Enum):
     """Gear rarity tiers with Call of Duty style colors"""
     COMMON = ("Common", "gray", 1.0)  # Gray
@@ -45,7 +44,6 @@ class GearRarity(Enum):
         }
         return weights.get(self, 0)
 
-
 class GearType(Enum):
     """Types of tactical gear"""
     INDICATOR = "Indicator"  # Technical analysis tools
@@ -54,7 +52,6 @@ class GearType(Enum):
     CONSUMABLE = "Consumable"  # One-time use items
     ATTACHMENT = "Attachment"  # Gear modifications
     CAMO = "Camo"  # Visual customization
-
 
 class GearSlot(Enum):
     """Equipment slots in loadout"""
@@ -67,7 +64,6 @@ class GearSlot(Enum):
     PERK_1 = "Perk 1"
     PERK_2 = "Perk 2"
     PERK_3 = "Perk 3"
-
 
 @dataclass
 class GearStats:
@@ -99,7 +95,6 @@ class GearStats:
             cooldown_reduction=min(0.75, self.cooldown_reduction + other.cooldown_reduction),
             critical_chance=min(0.5, self.critical_chance + other.critical_chance)
         )
-
 
 @dataclass
 class GearItem:
@@ -167,7 +162,6 @@ class GearItem:
         
         return int(stat_sum + multiplier_bonus + rarity_bonus + level_bonus)
 
-
 @dataclass
 class Loadout:
     """Player's equipped gear loadout"""
@@ -198,7 +192,6 @@ class Loadout:
         
         return total_score
 
-
 @dataclass
 class CraftingRecipe:
     """Recipe for crafting gear"""
@@ -220,7 +213,6 @@ class CraftingRecipe:
         
         return True, "Ready to craft"
 
-
 @dataclass
 class TradeOffer:
     """Gear trading offer between players"""
@@ -238,7 +230,6 @@ class TradeOffer:
     def is_expired(self) -> bool:
         """Check if trade offer has expired"""
         return time.time() > self.expires_at
-
 
 class GearSystem:
     """Main gear system manager"""
@@ -1169,7 +1160,6 @@ class GearSystem:
             duration_seconds=data.get('duration_seconds')
         )
 
-
 # Achievement integration hooks
 def award_gear_for_achievement(
     gear_system: GearSystem,
@@ -1208,7 +1198,6 @@ def award_gear_for_achievement(
     )
     
     return item
-
 
 # Milestone integration
 def award_gear_for_milestone(

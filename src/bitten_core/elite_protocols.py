@@ -13,14 +13,12 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-
 class ProtocolType(Enum):
     """Types of elite protocols"""
     TRAILING_GUARD = "trailing_guard"
     SPLIT_COMMAND = "split_command"  
     STEALTH_ENTRY = "stealth_entry"
     FORTRESS_MODE = "fortress_mode"
-
 
 class ProtocolStatus(Enum):
     """Protocol activation status"""
@@ -29,14 +27,12 @@ class ProtocolStatus(Enum):
     TRIGGERED = "triggered"
     COMPLETED = "completed"
 
-
 @dataclass
 class TrailingGuardConfig:
     """Configuration for Trailing Guard protocol"""
     activation_profit_pips: int = 20  # Activate after +20 pips
     trail_distance_pips: int = 10    # Trail by 10 pips
     enabled: bool = True
-
 
 @dataclass
 class SplitCommandConfig:
@@ -46,7 +42,6 @@ class SplitCommandConfig:
     second_target_extra_pips: int = 10  # TP2 is TP1 + 10 pips
     enabled: bool = True
 
-
 @dataclass
 class StealthEntryConfig:
     """Configuration for Stealth Entry protocol"""
@@ -55,7 +50,6 @@ class StealthEntryConfig:
     expiration_minutes: int = 30      # Pending order expiration
     enabled: bool = True
 
-
 @dataclass
 class FortressModeConfig:
     """Configuration for Fortress Mode protocol"""
@@ -63,7 +57,6 @@ class FortressModeConfig:
     reduced_risk_percent: float = 1.0  # Reduce to 1% risk
     reset_on_loss: bool = True        # Reset counter on loss
     enabled: bool = True
-
 
 @dataclass
 class ActiveProtocol:
@@ -75,7 +68,6 @@ class ActiveProtocol:
     activated_at: datetime
     config: Dict[str, Any]
     metadata: Dict[str, Any] = field(default_factory=dict)
-
 
 class EliteProtocolManager:
     """Manages elite trading protocols for users"""
@@ -424,7 +416,6 @@ class EliteProtocolManager:
                     self.user_streaks = json.load(f)
             except Exception as e:
                 logger.error(f"Error loading streaks: {e}")
-
 
 # Example usage
 if __name__ == "__main__":

@@ -15,6 +15,23 @@ class UserRank(Enum):
     AUTHORIZED = 2  
     ELITE = 3
     ADMIN = 4
+    
+    @classmethod
+    def from_tier_string(cls, tier_str: str) -> 'UserRank':
+        """Convert tier string to UserRank enum"""
+        tier_mapping = {
+            'PRESS_PASS': cls.USER,
+            'NIBBLER': cls.AUTHORIZED,
+            'FANG': cls.ELITE,
+            'COMMANDER': cls.ELITE,
+            'APEX': cls.ADMIN,
+            # Fallback mappings
+            'USER': cls.USER,
+            'AUTHORIZED': cls.AUTHORIZED,
+            'ELITE': cls.ELITE,
+            'ADMIN': cls.ADMIN
+        }
+        return tier_mapping.get(tier_str.upper(), cls.USER)
 
 @dataclass
 class UserInfo:

@@ -14,7 +14,6 @@ import hashlib
 
 logger = logging.getLogger(__name__)
 
-
 class PrivacyLevel(Enum):
     """Privacy settings for squad members"""
     PUBLIC = "public"          # Full visibility
@@ -22,14 +21,12 @@ class PrivacyLevel(Enum):
     ANONYMOUS = "anonymous"    # Hide identity, show trades
     PRIVATE = "private"        # Completely hidden
 
-
 class TradeVisibility(Enum):
     """What parts of trade are visible"""
     FULL = "full"              # All details
     PARTIAL = "partial"        # Pair and direction only
     RESULTS_ONLY = "results"   # Win/loss only
     HIDDEN = "hidden"          # Not visible
-
 
 @dataclass
 class SquadMemberProfile:
@@ -43,7 +40,6 @@ class SquadMemberProfile:
     anonymous_id: Optional[str] = None  # For anonymous members
     last_active: Optional[datetime] = None
     trust_score: float = 0.0  # 0-100, based on performance
-
 
 @dataclass
 class SquadTrade:
@@ -61,7 +57,6 @@ class SquadTrade:
     is_following_signal: bool = True
     metadata: Dict[str, Any] = field(default_factory=dict)
 
-
 @dataclass
 class SquadRadarData:
     """Squad radar snapshot"""
@@ -73,7 +68,6 @@ class SquadRadarData:
     squad_performance: Dict[str, Any]
     trending_pairs: List[Tuple[str, int]]  # (pair, count)
     squad_sentiment: str  # "bullish", "bearish", "mixed"
-
 
 class SquadRadar:
     """Manages squad visibility and trade sharing"""
@@ -584,7 +578,6 @@ class SquadRadar:
                 
             except Exception as e:
                 logger.error(f"Error loading privacy settings: {e}")
-
 
 # Example usage
 if __name__ == "__main__":

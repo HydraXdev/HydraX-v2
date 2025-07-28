@@ -24,8 +24,7 @@ def assign_instance_to_user(user_id, tier):
         "PRESS_PASS": "Generic_Demo",
         "NIBBLER": "Forex_Demo",
         "FANG": "Forex_Demo",
-        "COMMANDER": "Forex_Live",
-        "APEX": "Coinexx_Live"
+        "COMMANDER": "Forex_Live": "Coinexx_Live"
     }
     
     master_type = instance_map.get(tier, "Forex_Demo")

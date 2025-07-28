@@ -21,7 +21,7 @@ class TierLevel(Enum):
     NIBBLER = "nibbler"
     FANG = "fang"
     COMMANDER = "commander"
-    APEX = "apex"
+    = "apex"
 
 @dataclass
 class TierConfig:
@@ -75,9 +75,8 @@ TIER_CONFIGS = {
         has_stealth=False,
         auto_mode_min_tcs=80  # AUTO mode requires 80% TCS (lowered from 91)
     ),
-    TierLevel.APEX: TierConfig(
-        name="APEX",
-        price=188,
+    TierLevel.: TierConfig(
+        name=price=188,
         daily_shots=9999,  # Unlimited
         min_tcs=50,  # Lowered from 91 to 50
         has_chaingun=True,
@@ -273,7 +272,7 @@ from .stealth_protocol import get_stealth_protocol, StealthLevel
 
 # Legacy Stealth Mode Implementation (kept for backward compatibility)
 class StealthMode:
-    """APEX-exclusive anti-detection system (Legacy - use stealth_protocol.py instead)"""
+    """-exclusive anti-detection system (Legacy - use stealth_protocol.py instead)"""
     
     def __init__(self):
         # Now uses the new stealth protocol

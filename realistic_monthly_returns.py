@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Realistic Monthly Returns Calculator
-Conservative calculation for APEX trading performance
+Conservative calculation for trading performance
 """
 
 def calculate_realistic_monthly_performance():
@@ -13,7 +13,7 @@ def calculate_realistic_monthly_performance():
     trading_days_per_month = 22  # M-F only
     max_concurrent_trades = 1
     
-    # APEX system performance (proven)
+    # system performance (proven)
     win_rate = 0.56  # 56% win rate
     avg_rr_ratio = 2.24  # Average R:R from analysis
     
@@ -23,7 +23,7 @@ def calculate_realistic_monthly_performance():
     realistic_trades_per_day = 1.5  # Conservative average
     total_trades_per_month = realistic_trades_per_day * trading_days_per_month
     
-    print("💰 REALISTIC APEX MONTHLY PERFORMANCE")
+    print("💰 REALISTIC MONTHLY PERFORMANCE")
     print("=" * 50)
     print(f"📊 User Profile:")
     print(f"  Risk per trade: {risk_per_trade*100}%")
@@ -32,7 +32,7 @@ def calculate_realistic_monthly_performance():
     print(f"  Realistic trades/day: {realistic_trades_per_day}")
     print(f"  Total trades/month: {total_trades_per_month:.0f}")
     
-    print(f"\n📈 APEX System Stats:")
+    print(f"\n📈 System Stats:")
     print(f"  Win rate: {win_rate*100}%")
     print(f"  Average R:R ratio: 1:{avg_rr_ratio}")
     

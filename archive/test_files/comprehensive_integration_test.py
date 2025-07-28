@@ -3,7 +3,7 @@
 Comprehensive Integration Test for HydraX-v2 Signal-to-Mission-to-Execution Pipeline
 
 This test validates the complete flow:
-1. Generate test signal in APEX log format
+1. Generate test signal in log format
 2. Verify apex_telegram_connector picks it up
 3. Check mission file creation
 4. Test mission_endpoints API
@@ -853,7 +853,6 @@ class IntegrationTestRunner:
         # Return overall success
         return self.failed_tests_count == 0
 
-
 def main():
     """Main test runner"""
     
@@ -877,7 +876,6 @@ def main():
     except Exception as e:
         logger.error(f"Test runner failed: {e}")
         sys.exit(1)
-
 
 if __name__ == "__main__":
     main()

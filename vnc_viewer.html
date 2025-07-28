@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MT5 VNC Viewer</title>
+    <meta charset="utf-8">
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #4CAF50;
+        }
+        .info {
+            background: #333;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .connection-info {
+            background: #2a2a2a;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+        .instructions {
+            margin-top: 20px;
+            padding: 20px;
+            background: #2a2a2a;
+            border-radius: 8px;
+        }
+        .instructions h3 {
+            color: #4CAF50;
+            margin-top: 0;
+        }
+        .instructions ol {
+            line-height: 1.8;
+        }
+        code {
+            background: #444;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🖥️ MT5 Container VNC Access</h1>
+        
+        <div class="info">
+            <h2>Connection Details</h2>
+            <div class="connection-info">
+                <strong>VNC Server:</strong> localhost:10090<br>
+                <strong>Password:</strong> None (passwordless)<br>
+                <strong>Container:</strong> hydrax-mt5-ea_test<br>
+                <strong>Display:</strong> :99 (Xvfb)
+            </div>
+        </div>
+
+        <div class="instructions">
+            <h3>📋 How to Connect</h3>
+            <ol>
+                <li><strong>Using VNC Viewer (Recommended):</strong>
+                    <ul>
+                        <li>Download RealVNC Viewer, TightVNC, or TigerVNC</li>
+                        <li>Connect to: <code>localhost:10090</code> or <code>YOUR_SERVER_IP:10090</code></li>
+                        <li>No password required</li>
+                    </ul>
+                </li>
+                
+                <li><strong>Using Web-based VNC (noVNC):</strong>
+                    <ul>
+                        <li>Currently not set up - would need to install noVNC proxy</li>
+                    </ul>
+                </li>
+                
+                <li><strong>Using SSH Tunnel (Secure Remote Access):</strong>
+                    <ul>
+                        <li>Run: <code>ssh -L 5900:localhost:10090 user@your-server</code></li>
+                        <li>Then connect VNC to: <code>localhost:5900</code></li>
+                    </ul>
+                </li>
+            </ol>
+        </div>
+
+        <div class="instructions">
+            <h3>🔧 What to Do Once Connected</h3>
+            <ol>
+                <li><strong>Open MetaTrader 5</strong> - Should already be running</li>
+                <li><strong>Login with test credentials</strong> if not already logged in</li>
+                <li><strong>Open 15 charts</strong> for your trading pairs:
+                    <ul>
+                        <li>Right-click in Market Watch → Chart Window</li>
+                        <li>Suggested pairs: EURUSD, GBPUSD, USDJPY, AUDUSD, etc.</li>
+                    </ul>
+                </li>
+                <li><strong>Attach BITTENBridge EA to each chart:</strong>
+                    <ul>
+                        <li>Navigator → Expert Advisors → BITTENBridge_TradeExecutor</li>
+                        <li>Drag onto each chart</li>
+                        <li>Enable Auto Trading (top toolbar)</li>
+                        <li>Check EA is active (smiley face on chart)</li>
+                    </ul>
+                </li>
+                <li><strong>Save as Profile:</strong>
+                    <ul>
+                        <li>File → Profiles → Save As...</li>
+                        <li>Name it: <code>BITTENProfile</code></li>
+                    </ul>
+                </li>
+                <li><strong>Test Profile:</strong>
+                    <ul>
+                        <li>Close MT5 completely</li>
+                        <li>Restart and verify profile loads with all EAs attached</li>
+                    </ul>
+                </li>
+            </ol>
+        </div>
+
+        <div class="instructions" style="background: #3a3a2a; border: 2px solid #4CAF50;">
+            <h3>⚡ Quick Command Reference</h3>
+            <pre style="background: #1a1a1a; padding: 15px; border-radius: 5px;">
+# Check if VNC is accessible
+curl -I http://localhost:10090
+
+# View container logs
+docker logs hydrax-mt5-ea_test
+
+# Access container shell
+docker exec -it hydrax-mt5-ea_test bash
+
+# Check MT5 process
+docker exec hydrax-mt5-ea_test ps aux | grep terminal64.exe
+
+# Check EA file
+docker exec hydrax-mt5-ea_test ls -la "/wine/drive_c/Program Files/MetaTrader 5/MQL5/Experts/"
+            </pre>
+        </div>
+    </div>
+</body>
+</html>

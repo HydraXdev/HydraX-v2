@@ -199,7 +199,7 @@ class BITTENMenu:
             "main": f"""🎯 **BITTEN Command Center**
             
 Tier: {user_data.get('tier', 'Nibbler').upper()}
-XP: {user_data.get('xp', 0):,} | Level {user_data.get('level', 1)}
+XP: {user_data.get('xp', 0):} | Level {user_data.get('level', 1)}
 Today: {user_data.get('trades_today', 0)} trades | {user_data.get('pnl_today', 0):+.2f}%
 
 What's your mission, soldier?""",

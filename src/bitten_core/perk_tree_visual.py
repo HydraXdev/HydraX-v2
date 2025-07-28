@@ -7,7 +7,6 @@ from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass
 import math
 
-
 @dataclass
 class PerkNode:
     """Visual representation of a perk in the tree"""
@@ -15,7 +14,6 @@ class PerkNode:
     x: float
     y: float
     connections: List[str]  # Connected perk IDs
-
 
 class PerkTreeVisual:
     """Generates visual perk tree layouts"""

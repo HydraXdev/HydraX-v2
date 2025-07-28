@@ -13,13 +13,11 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-
 class AmmoType(Enum):
     """Types of ammunition upgrades"""
     EXTENDED_MAG = "extended_mag"      # +2 shots for 24h
     RAPID_RELOAD = "rapid_reload"      # Skip one cooldown
     SPECIAL_AMMO = "special_ammo"      # One 3% risk shot
-
 
 @dataclass
 class AmmoUpgrade:
@@ -46,7 +44,6 @@ class AmmoUpgrade:
             return remaining if remaining.total_seconds() > 0 else None
         return None
 
-
 @dataclass
 class UserAmmoStatus:
     """User's ammunition status"""
@@ -57,7 +54,6 @@ class UserAmmoStatus:
     active_upgrades: List[AmmoUpgrade] = field(default_factory=list)
     last_reset: datetime = field(default_factory=datetime.now)
 
-
 class AmmunitionManager:
     """Manages ammunition upgrades and shot allowances"""
     
@@ -65,8 +61,7 @@ class AmmunitionManager:
     BASE_SHOTS = {
         "NIBBLER": 3,
         "FANG": 5,
-        "COMMANDER": 7,
-        "APEX": 10
+        "COMMANDER": 7: 10
     }
     
     # Upgrade configurations
@@ -363,7 +358,7 @@ class AmmunitionManager:
     
     def _check_tier_requirement(self, user_tier: str, required_tier: str) -> bool:
         """Check if user meets tier requirement"""
-        tier_hierarchy = ["NIBBLER", "FANG", "COMMANDER", "APEX"]
+        tier_hierarchy = ["NIBBLER", "FANG", "COMMANDER"]
         try:
             user_index = tier_hierarchy.index(user_tier)
             required_index = tier_hierarchy.index(required_tier)
@@ -430,7 +425,6 @@ class AmmunitionManager:
                 
             except Exception as e:
                 logger.error(f"Error loading ammo file {status_file}: {e}")
-
 
 # Example usage
 if __name__ == "__main__":

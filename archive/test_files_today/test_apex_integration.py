@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Test script to verify APEX integration with mission flow
-This simulates what happens when APEX generates a real signal
+Test script to verify integration with mission flow
+This simulates what happens when generates a real signal
 """
 
 import asyncio
@@ -15,15 +15,15 @@ sys.path.append('/root/HydraX-v2')
 
 # Test the integration
 async def test_apex_integration():
-    """Test that APEX signals properly trigger the integrated flow"""
+    """Test that signals properly trigger the integrated flow"""
     
-    print("🧪 Testing APEX Integration with Mission Flow")
+    print("🧪 Testing Integration with Mission Flow")
     print("=" * 50)
     
     # Import the integrated flow
     from apex_mission_integrated_flow import process_apex_signal_direct
     
-    # Create a realistic APEX signal (matching apex_v5_lean.py format)
+    # Create a realistic signal (matching apex_v5_lean.py format)
     apex_signal = {
         'symbol': 'EURUSD',
         'direction': 'BUY',
@@ -73,7 +73,7 @@ async def test_apex_integration():
             print(f"👤 User Tier: {mission_data['user']['tier']}")
             
             print("\n🚀 FLOW VERIFICATION COMPLETE!")
-            print("APEX → Mission → TOC → Telegram → WebApp ✅")
+            print("→ Mission → TOC → Telegram → WebApp ✅")
             
         else:
             print("❌ Mission file not found")

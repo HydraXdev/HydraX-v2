@@ -72,7 +72,6 @@ def create_signal_alerts() -> SignalAlerts:
     """Create signal alerts instance"""
     return SignalAlerts()
 
-
 def send_signal_alert(alert_type: str, message: str, data: Dict[str, Any] = None) -> bool:
     """Send a signal alert"""
     alert_data = {
@@ -84,7 +83,6 @@ def send_signal_alert(alert_type: str, message: str, data: Dict[str, Any] = None
     
     logger.info(f"Mock signal alert sent: {alert_type} - {message}")
     return True
-
 
 def format_alert_message(alert_type: str, signal_data: Dict[str, Any]) -> str:
     """Format alert message"""

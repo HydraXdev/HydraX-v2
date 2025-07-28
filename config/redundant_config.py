@@ -50,8 +50,7 @@ class RedundantConfig:
             'FLASK_SECRET_KEY': 'dev-key-change-in-production',
             'DATABASE_URL': 'sqlite:///data/bitten.db',
             'WEBAPP_PORT': '8888',
-            'WEBAPP_HOST': '0.0.0.0',
-        }
+            'WEBAPP_HOST': '0.0.0.0'}
         
         for key, default_value in defaults.items():
             if not os.getenv(key):

@@ -40,7 +40,7 @@ mv CLAUDE_CLEAN.md CLAUDE.md
 - Exposed credentials
 
 ### 5. What Was Updated:
-- Pricing: APEX as $188 standalone
+- Pricing: as  standalone
 - Tier names: Using actual names only
 - TCS thresholds: Both at 87%
 - Fire modes: Clear explanation

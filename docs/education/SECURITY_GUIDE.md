@@ -101,15 +101,15 @@ class AuthenticationManager:
 
 ### Authorization Matrix
 
-| Feature | Nibbler | Fang | Commander | APEX | Required Checks |
+| Feature | Nibbler | Fang | Commander | | Required Checks |
 |---------|---------|------|-----------|------|-----------------|
 | Basic Trading | ✓ | ✓ | ✓ | ✓ | Valid subscription |
 | Master Filter | ✗ | ✓ | ✓ | ✓ | Tier >= Fang |
 | Arcade Filter | ✗ | ✓ | ✓ | ✓ | Tier >= Fang |
 | Sniper Filter | ✗ | ✗ | ✓ | ✓ | Tier >= Commander |
 | Auto Trading | ✗ | ✗ | ✓ | ✓ | Tier >= Commander |
-| API Access | ✗ | ✗ | ✗ | ✓ | Tier == APEX |
-| Custom Strategies | ✗ | ✗ | ✗ | ✓ | Tier == APEX |
+| API Access | ✗ | ✗ | ✗ | ✓ | Tier == |
+| Custom Strategies | ✗ | ✗ | ✗ | ✓ | Tier == |
 
 ### Implementation Example
 
@@ -133,10 +133,10 @@ def execute_auto_trade(self, user_id, trade_params):
     pass
 ```
 
-### Multi-Factor Authentication (APEX Tier)
+### Multi-Factor Authentication (Tier)
 
 ```python
-# MFA implementation for APEX users
+# MFA implementation for users
 class MFAManager:
     def setup_mfa(self, user_id):
         """Generate TOTP secret for user"""
@@ -216,8 +216,7 @@ SECURITY_CONFIG = {
     'encryption_key': os.environ.get('ENCRYPTION_KEY'),
     'telegram_bot_token': os.environ.get('TELEGRAM_BOT_TOKEN'),
     'mt5_api_key': os.environ.get('MT5_API_KEY'),
-    'database_encryption_key': os.environ.get('DB_ENCRYPTION_KEY'),
-}
+    'database_encryption_key': os.environ.get('DB_ENCRYPTION_KEY')}
 
 # Validate all required secrets exist
 for key, value in SECURITY_CONFIG.items():

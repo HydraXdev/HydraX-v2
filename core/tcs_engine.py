@@ -19,7 +19,6 @@ def score_tcs(signal_data):
 
     return min(score, 100)
 
-
 def classify_trade(score, rr):
     if score >= 94 and rr >= 3.5:
         return "hammer"

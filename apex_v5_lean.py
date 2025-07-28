@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-APEX v5 LEAN - Streamlined Signal Generator
+v5 LEAN - Streamlined Signal Generator
 A clean, efficient pip-grabbing machine with easy tuning
 """
 
@@ -72,7 +72,7 @@ CONFIG = load_config()
 # Logging setup
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - APEX LEAN - %(levelname)s - %(message)s',
+    format='%(asctime)s - LEAN - %(levelname)s - %(message)s',
     handlers=[
         logging.FileHandler('apex_lean.log'),
         logging.StreamHandler()
@@ -80,8 +80,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-
-class APEXLeanEngine:
+class LeanEngine:
     """Lean and efficient signal generator"""
     
     def __init__(self):
@@ -263,7 +262,7 @@ class APEXLeanEngine:
         # Log in format for Telegram connector with signal type
         logger.info(f"{emoji} {signal_type} #{self.signal_count}: {symbol} BUY TCS:{tcs:.0f}%")
         
-        # Process through integrated flow: APEX → Mission → TOC → Telegram → WebApp
+        # Process through integrated flow: → Mission → TOC → Telegram → WebApp
         if INTEGRATED_FLOW_AVAILABLE:
             try:
                 # Run the integrated flow asynchronously
@@ -346,7 +345,7 @@ class APEXLeanEngine:
     
     def run(self):
         """Main loop"""
-        logger.info("🚀 APEX LEAN ENGINE STARTED")
+        logger.info("🚀 LEAN ENGINE STARTED")
         logger.info(f"📊 Config: {self.config['SIGNALS_PER_HOUR_TARGET']} signals/hour target")
         logger.info(f"🎯 TCS Threshold: {self.config['MIN_TCS_THRESHOLD']}%")
         logger.info(f"⏱️ Scan Interval: {self.config['SCAN_INTERVAL_SECONDS']}s")
@@ -382,10 +381,9 @@ class APEXLeanEngine:
         singleton_manager.cleanup()
         logger.info(f"✅ Shutdown complete. Generated {self.signal_count} signals")
 
-
 def main():
     """Entry point"""
-    print("🎯 APEX v5 LEAN - Streamlined Signal Generator")
+    print("🎯 v5 LEAN - Streamlined Signal Generator")
     print("=" * 50)
     
     # Show current configuration
@@ -405,9 +403,8 @@ def main():
             return
     
     # Run engine
-    engine = APEXLeanEngine()
+    engine = LeanEngine()
     engine.run()
-
 
 if __name__ == "__main__":
     try:

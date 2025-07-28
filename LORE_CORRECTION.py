@@ -3,12 +3,25 @@
 Send lore correction message
 """
 
+import os
+import sys
 import asyncio
+from pathlib import Path
 from telegram import Bot
 from telegram.constants import ParseMode
+from dotenv import load_dotenv
 
-BOT_TOKEN = '7854827710:AAGsO-vgMpsTOVNu6zoo_-GGJkYQd97Mc5w'
-CHAT_ID = -1002581996861
+# Add the src directory to path for imports
+sys.path.append(str(Path(__file__).parent / 'src'))
+
+# Load environment variables
+load_dotenv()
+
+# Import config loader
+from config_loader import get_voice_bot_token
+
+BOT_TOKEN = get_voice_bot_token()  # Use voice bot for personality/lore messages
+CHAT_ID = int(os.getenv('CHAT_ID', '-1002581996861'))
 
 async def send_lore_correction():
     """Send corrected lore information"""

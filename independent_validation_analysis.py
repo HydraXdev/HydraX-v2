@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Independent Validation Analysis
-What happens when APEX engine faces real-world testing?
+What happens when engine faces real-world testing?
 
 This analysis shows the gaps between backtest results and live performance,
 and what independent testers would discover.
@@ -54,7 +54,7 @@ class RealWorldFactors:
         }
 
 class IndependentValidator:
-    """Simulates independent testing of APEX engine"""
+    """Simulates independent testing of engine"""
     
     def __init__(self):
         self.real_world = RealWorldFactors()
@@ -85,7 +85,7 @@ class IndependentValidator:
         """Simulate what an independent tester would find"""
         
         print("🔍 INDEPENDENT VALIDATION SIMULATION")
-        print("📊 Testing APEX engine under real market conditions")
+        print("📊 Testing engine under real market conditions")
         print("=" * 60)
         
         # Original backtest results
@@ -291,7 +291,7 @@ def main():
     """Run independent validation analysis"""
     
     print("🎯 INDEPENDENT VALIDATION ANALYSIS")
-    print("📊 APEX Engine - Real World Testing")
+    print("📊 Engine - Real World Testing")
     print("=" * 60)
     
     # Create sample backtest signals

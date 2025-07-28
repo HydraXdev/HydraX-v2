@@ -26,7 +26,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-
 class BITTENSupervisor:
     """Supervises all BITTEN components to ensure 24/7 operation"""
     
@@ -346,7 +345,6 @@ class BITTENSupervisor:
         uptime = datetime.now() - boot_time
         return str(uptime).split('.')[0]
 
-
 def main():
     """Main entry point"""
     print("""
@@ -367,7 +365,6 @@ def main():
     except Exception as e:
         logger.error(f"Supervisor crashed: {e}")
         sys.exit(1)
-
 
 if __name__ == '__main__':
     main()

@@ -341,7 +341,6 @@ class ObserverIntegration:
         self.is_active = False
         logger.info("Observer Integration stopped")
 
-
 # Singleton instance
 _observer_integration = None
 
@@ -351,7 +350,6 @@ def get_observer_integration() -> ObserverIntegration:
     if _observer_integration is None:
         _observer_integration = ObserverIntegration()
     return _observer_integration
-
 
 # Convenience functions for easy integration
 
@@ -379,7 +377,6 @@ def register_observer_callback(callback: Callable):
     """Register callback for observer events"""
     integration = get_observer_integration()
     integration.register_callback(callback)
-
 
 # Example usage
 if __name__ == "__main__":

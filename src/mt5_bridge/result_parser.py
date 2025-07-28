@@ -398,7 +398,6 @@ class MT5ResultParser:
         
         return True, None
 
-
 class MT5ResultAggregator:
     """
     Aggregates multiple MT5 results for summary reporting
@@ -451,7 +450,6 @@ class MT5ResultAggregator:
     def clear(self):
         """Clear all results"""
         self.results = []
-
 
 # Convenience function
 def parse_mt5_result(result_string: str) -> Dict[str, any]:

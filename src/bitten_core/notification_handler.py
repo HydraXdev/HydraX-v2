@@ -13,7 +13,6 @@ from .user_settings import should_play_sound
 
 logger = logging.getLogger(__name__)
 
-
 class NotificationType(Enum):
     """Types of notifications"""
     SIGNAL = "signal"
@@ -25,7 +24,6 @@ class NotificationType(Enum):
     XP_GAIN = "xp_gain"
     WARNING = "warning"
     SYSTEM = "system"
-
 
 @dataclass
 class Notification:
@@ -39,7 +37,6 @@ class Notification:
     sound_type: Optional[str] = None
     priority: int = 5  # 1-10, higher = more important
     icon: Optional[str] = None
-
 
 class NotificationHandler:
     """Handles notifications and sound triggers"""
@@ -303,10 +300,8 @@ class NotificationHandler:
             "data": notification.data
         }
 
-
 # Global instance
 notification_handler = NotificationHandler()
-
 
 # Helper functions
 def notify_tp_hit(user_id: str, symbol: str, profit_pips: float, profit_currency: Optional[float] = None):
@@ -315,20 +310,17 @@ def notify_tp_hit(user_id: str, symbol: str, profit_pips: float, profit_currency
         user_id, symbol, profit_pips, profit_currency
     )
 
-
 def notify_achievement(user_id: str, achievement: str, xp: int, description: Optional[str] = None):
     """Quick helper to notify achievement"""
     return notification_handler.send_achievement_notification(
         user_id, achievement, xp, description
     )
 
-
 def notify_xp_gain(user_id: str, xp: int, reason: str, combo: bool = False):
     """Quick helper to notify XP gain"""
     return notification_handler.send_xp_gain_notification(
         user_id, xp, reason, combo
     )
-
 
 # Example usage
 if __name__ == "__main__":

@@ -50,8 +50,7 @@ class MarketAnalyzer:
             'london_breakout': deque(maxlen=20),
             'support_resistance': deque(maxlen=20),
             'momentum_continuation': deque(maxlen=20),
-            'mean_reversion': deque(maxlen=20),
-        }
+            'mean_reversion': deque(maxlen=20)}
         
     def update_market_data(self, market_data: MarketData) -> None:
         """Update market analysis with new data"""
@@ -61,8 +60,7 @@ class MarketAnalyzer:
             'open': market_data.open,
             'high': market_data.high,
             'low': market_data.low,
-            'close': market_data.close,
-        })
+            'close': market_data.close})
         
         self.volume_history.append(market_data.volume)
         self.spread_history.append(market_data.spread)
@@ -199,8 +197,7 @@ class MarketAnalyzer:
             'volume_ratio': current_volume / volume_avg if volume_avg > 0 else 1.0,
             'trend_direction': trend_direction,
             'near_key_level': near_key_level,
-            'session': self._get_current_session(),
-        }
+            'session': self._get_current_session()}
     
     def _analyze_trend(self) -> Tuple[str, float]:
         """Analyze current trend direction and strength"""
@@ -331,8 +328,7 @@ class MarketAnalyzer:
             MarketSession.OVERLAP: 1.0,
             MarketSession.TOKYO: 0.7,
             MarketSession.SYDNEY: 0.6,
-            MarketSession.DEAD_ZONE: 0.3,
-        }
+            MarketSession.DEAD_ZONE: 0.3}
         
         score = base_scores.get(session, 0.5)
         
@@ -462,5 +458,4 @@ class MarketAnalyzer:
             'volume_ratio': 1.0,
             'trend_direction': 'neutral',
             'near_key_level': False,
-            'session': MarketSession.DEAD_ZONE,
-        }
+            'session': MarketSession.DEAD_ZONE}

@@ -32,7 +32,7 @@ class FireModeValidator:
             TierLevel.NIBBLER: self._validate_nibbler,
             TierLevel.FANG: self._validate_fang,
             TierLevel.COMMANDER: self._validate_commander,
-            TierLevel.APEX: self._validate_apex
+            TierLevel.: self._validate_apex
         }
         
         # Mode-specific validators
@@ -197,7 +197,7 @@ class FireModeValidator:
         """Apex tier: No limits, full access"""
         return ValidationResult(
             valid=True, 
-            reason="APEX PREDATOR - NO RESTRICTIONS",
+            reason="PREDATOR - NO RESTRICTIONS",
             bot_responses={
                 "drillbot": "YOU ARE THE WEAPON.",
                 "bit": "*proud purr*"
@@ -217,7 +217,7 @@ class FireModeValidator:
         if profile.get('tier') != 'apex':
             return ValidationResult(
                 valid=False,
-                reason="STEALTH MODE: APEX ONLY",
+                reason="STEALTH MODE: ONLY",
                 bot_responses={
                     "stealthbot": "YOU'RE NOT READY TO DISAPPEAR.",
                     "drillbot": "EARN YOUR GHOST STATUS FIRST."
@@ -267,7 +267,7 @@ class FireModeValidator:
         """AUTO-FIRE: Commander+ only, autonomous trading"""
         
         user_tier = TierLevel(profile.get('tier', 'nibbler'))
-        if user_tier not in [TierLevel.COMMANDER, TierLevel.APEX]:
+        if user_tier not in [TierLevel.COMMANDER, TierLevel.]:
             return ValidationResult(
                 valid=False,
                 reason="AUTO-FIRE: COMMANDER+ ONLY",
@@ -306,7 +306,7 @@ class FireModeValidator:
                         "medicbot": "70% confidence required for Nibbler tier."
                     }
                 )
-        elif user_tier not in [TierLevel.COMMANDER, TierLevel.APEX]:
+        elif user_tier not in [TierLevel.COMMANDER, TierLevel.]:
             return ValidationResult(
                 valid=False,
                 reason="SEMI-AUTO: COMMANDER+ ONLY",
@@ -317,7 +317,7 @@ class FireModeValidator:
             )
         
         # SEMI-AUTO requires 75%+ TCS for Commander+ (same as Fang arcade)
-        if user_tier in [TierLevel.COMMANDER, TierLevel.APEX] and payload.get('tcs', 0) < 75:
+        if user_tier in [TierLevel.COMMANDER, TierLevel.] and payload.get('tcs', 0) < 75:
             return ValidationResult(
                 valid=False,
                 reason="SEMI-AUTO REQUIRES 75%+ TCS",

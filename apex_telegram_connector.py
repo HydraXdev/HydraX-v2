@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-APEX v5.0 Telegram Connector
+v5.0 Telegram Connector
 
-Monitors APEX v5.0 log file for trading signals and sends Telegram alerts
+Monitors v5.0 log file for trading signals and sends Telegram alerts
 with WebApp integration for mission briefings.
 
 Features:
@@ -101,10 +101,10 @@ logging.basicConfig(
         logging.StreamHandler()
     ]
 )
-logger = logging.getLogger('APEX-Telegram-Connector')
+logger = logging.getLogger('-Telegram-Connector')
 
 class ApexTelegramConnector:
-    """Main connector class for APEX-Telegram integration"""
+    """Main connector class for -Telegram integration"""
     
     def __init__(self):
         self.bot = None
@@ -122,7 +122,7 @@ class ApexTelegramConnector:
         self.missions_dir = Path("./missions")
         self.missions_dir.mkdir(exist_ok=True)
         
-        logger.info(f"Initialized APEX Telegram Connector")
+        logger.info(f"Initialized Telegram Connector")
         logger.info(f"Bot token: {Config.BOT_TOKEN[:10]}...")
         logger.info(f"Chat ID: {Config.CHAT_ID}")
         logger.info(f"Log file: {Config.LOG_FILE}")
@@ -295,7 +295,7 @@ class ApexTelegramConnector:
             return False
     
     async def monitor_log_file(self, log_file: str) -> None:
-        """Monitor APEX log file for signals"""
+        """Monitor log file for signals"""
         logger.info(f"Starting log monitoring: {log_file}")
         
         try:
@@ -337,7 +337,7 @@ class ApexTelegramConnector:
             logger.error(f"Log file not found: {log_file}")
             await self.bot.send_message(
                 chat_id=Config.CHAT_ID,
-                text=f"❌ APEX log file not found: {log_file}"
+                text=f"❌ log file not found: {log_file}"
             )
         except Exception as e:
             logger.error(f"Error monitoring log file: {e}")
@@ -348,13 +348,13 @@ class ApexTelegramConnector:
     
     async def start_monitoring(self) -> None:
         """Start the monitoring process"""
-        logger.info("Starting APEX Telegram Connector")
+        logger.info("Starting Telegram Connector")
         
         # Send startup message
         try:
             await self.bot.send_message(
                 chat_id=Config.CHAT_ID,
-                text="🚀 APEX Telegram Connector Online\n📊 Monitoring for trading signals..."
+                text="🚀 Telegram Connector Online\n📊 Monitoring for trading signals..."
             )
         except Exception as e:
             logger.error(f"Error sending startup message: {e}")
@@ -368,7 +368,7 @@ async def main():
         connector = ApexTelegramConnector()
         await connector.start_monitoring()
     except KeyboardInterrupt:
-        logger.info("Shutting down APEX Telegram Connector...")
+        logger.info("Shutting down Telegram Connector...")
     except Exception as e:
         logger.error(f"Fatal error: {e}")
         raise

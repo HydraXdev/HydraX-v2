@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-APEX Engine Backtest Analysis
+Engine Backtest Analysis
 Analyzes historical signals with TCS > 70 and calculates success rates
 """
 
@@ -11,8 +11,8 @@ from pathlib import Path
 from typing import Dict, List, Tuple
 import statistics
 
-class APEXBacktestAnalyzer:
-    """Comprehensive backtest analysis for APEX signals with TCS > 70"""
+class BacktestAnalyzer:
+    """Comprehensive backtest analysis for signals with TCS > 70"""
     
     def __init__(self):
         self.base_path = Path('/root/HydraX-v2')
@@ -297,10 +297,10 @@ class APEXBacktestAnalyzer:
 def main():
     """Main execution function"""
     
-    print("🚀 APEX Engine Backtest Analysis")
+    print("🚀 Engine Backtest Analysis")
     print("=" * 50)
     
-    analyzer = APEXBacktestAnalyzer()
+    analyzer = BacktestAnalyzer()
     
     try:
         # Generate comprehensive backtest report

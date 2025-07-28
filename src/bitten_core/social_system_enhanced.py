@@ -18,7 +18,6 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-
 class SocialEventType(Enum):
     """Types of social events that can occur"""
     TRADE_WIN = "trade_win"
@@ -33,7 +32,6 @@ class SocialEventType(Enum):
     MENTORSHIP_STARTED = "mentorship_started"
     CUSTOM_POST = "custom_post"
 
-
 class RelationshipType(Enum):
     """Types of social relationships"""
     FOLLOWER = "follower"
@@ -44,14 +42,12 @@ class RelationshipType(Enum):
     MENTEE = "mentee"
     GUILD_MEMBER = "guild_member"
 
-
 class PostVisibility(Enum):
     """Post visibility levels"""
     PUBLIC = "public"
     FRIENDS = "friends"
     GUILD = "guild"
     PRIVATE = "private"
-
 
 @dataclass
 class SocialProfile:
@@ -79,7 +75,6 @@ class SocialProfile:
     created_at: datetime = field(default_factory=datetime.now)
     last_active: datetime = field(default_factory=datetime.now)
 
-
 @dataclass
 class SocialPost:
     """Social media style post"""
@@ -99,7 +94,6 @@ class SocialPost:
     created_at: datetime = field(default_factory=datetime.now)
     updated_at: Optional[datetime] = None
 
-
 @dataclass
 class SocialInteraction:
     """User interaction with posts"""
@@ -109,7 +103,6 @@ class SocialInteraction:
     interaction_type: str  # like, comment, share, view
     content: Optional[str] = None  # For comments
     created_at: datetime = field(default_factory=datetime.now)
-
 
 @dataclass
 class MentorshipMatch:
@@ -127,7 +120,6 @@ class MentorshipMatch:
     started_at: Optional[datetime] = None
     completed_at: Optional[datetime] = None
 
-
 @dataclass
 class Guild:
     """Trading guild/team"""
@@ -144,7 +136,6 @@ class Guild:
     requirements: Dict[str, Any] = field(default_factory=dict)
     perks: List[str] = field(default_factory=list)
     created_at: datetime = field(default_factory=datetime.now)
-
 
 class SocialSystemEnhanced:
     """Enhanced social system for BITTEN platform"""
@@ -1363,7 +1354,7 @@ class SocialSystemEnhanced:
             score += 10
         
         # Rank compatibility
-        rank_weights = {'APEX': 5, 'COMMANDER': 4, 'FANG': 3, 'SNIPER': 2, 'NIBBLER': 1}
+        rank_weights = {'': 5, 'COMMANDER': 4, 'FANG': 3, 'SNIPER': 2, 'NIBBLER': 1}
         mentor_rank_weight = rank_weights.get(mentor['rank'], 1)
         mentee_rank_weight = rank_weights.get(mentee.rank, 1)
         
@@ -1390,7 +1381,7 @@ class SocialSystemEnhanced:
         if requirements.get('min_profit', 0) > profile.total_profit:
             return False
         
-        required_rank_weights = {'APEX': 5, 'COMMANDER': 4, 'FANG': 3, 'SNIPER': 2, 'NIBBLER': 1}
+        required_rank_weights = {'': 5, 'COMMANDER': 4, 'FANG': 3, 'SNIPER': 2, 'NIBBLER': 1}
         user_rank_weight = required_rank_weights.get(profile.rank, 1)
         min_rank_weight = required_rank_weights.get(requirements.get('min_rank', 'NIBBLER'), 1)
         
@@ -1434,7 +1425,6 @@ class SocialSystemEnhanced:
         finally:
             conn.close()
 
-
 # Integration with existing systems
 class SocialIntegration:
     """Integration hooks for social system"""
@@ -1462,7 +1452,6 @@ class SocialIntegration:
             f"🎖️ Promoted to {new_rank} rank! Moving up in the BITTEN elite!",
             post_type="milestone"
         )
-
 
 # Example usage and testing
 if __name__ == "__main__":

@@ -30,8 +30,8 @@ BITTEN implements a comprehensive multi-layered fire control framework with tier
 | **CHAINGUN** | FANG+ | 85-91% | Progressive | 2%→4%→8%→16% sequence |
 | **SEMI_AUTO** | COMMANDER+ | 75% | Medium | Confirmation popup |
 | **AUTO_FIRE** | COMMANDER+ | 91%+ | High | Autonomous trading |
-| **STEALTH** | APEX Only | 91%+ | Variable | Randomized parameters |
-| **MIDNIGHT_HAMMER** | APEX Only | 95%+ | Maximum | Community events |
+| **STEALTH** | Only | 91%+ | Variable | Randomized parameters |
+| **MIDNIGHT_HAMMER** | Only | 95%+ | Maximum | Community events |
 
 ### **🎯 Fire Mode Validation System**
 - ✅ **Pre-flight checks**: Tier validation, risk limits, emergency status
@@ -74,7 +74,7 @@ BITTEN implements a comprehensive multi-layered fire control framework with tier
 - **Risk Limit**: 5% per trade, 8.5% daily
 - **Features**: Selector switch, auto-fire, advanced analytics
 
-#### **🏔️ APEX ($188/month)**
+#### **🏔️ (/month)**
 - **Daily Limits**: Unlimited (999 cap)
 - **TCS Requirement**: 91% standard
 - **Fire Modes**: ALL modes including STEALTH
@@ -99,7 +99,7 @@ RISK_LIMITS = {
     'NIBBLER': {'per_trade': 3.0, 'daily': 6.0},
     'FANG': {'per_trade': 4.0, 'daily': 8.0},
     'COMMANDER': {'per_trade': 5.0, 'daily': 8.5},
-    'APEX': {'per_trade': 6.0, 'daily': 10.0}
+    '': {'per_trade': 6.0, 'daily': 10.0}
 }
 ```
 
@@ -234,7 +234,7 @@ def validate_trade_request(user, signal, fire_mode):
 
 ---
 
-## 🔄 **COMPATIBILITY WITH APEX v5.0**
+## 🔄 **COMPATIBILITY WITH v5.0**
 
 ### **✅ Integration Status**
 - **Signal Engine**: ✅ Compatible with 40+ signals/day

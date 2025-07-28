@@ -19,7 +19,6 @@ from .signal_alerts import SignalAlertSystem
 
 logger = logging.getLogger(__name__)
 
-
 class PerkIntegration:
     """Integrates perk effects across all BITTEN systems"""
     

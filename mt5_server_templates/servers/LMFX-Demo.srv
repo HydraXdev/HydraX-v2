@@ -1,0 +1,8 @@
+[Common]
+Name=LMFX-Demo
+Address=demo.lmfx.com:443
+Environment=Demo
+DataServer=demo.lmfx.com:443
+Ping=demo.lmfx.com:443
+Company=Little Monster FX
+AccountServer=demo.lmfx.com:443

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-APEX Control - Simple management script
+Control - Simple management script
 """
 
 import os
@@ -11,8 +11,8 @@ import subprocess
 from pathlib import Path
 
 def show_status():
-    """Show current APEX status"""
-    print("\n📊 APEX Status")
+    """Show current status"""
+    print("\n📊 Status")
     print("=" * 40)
     
     # Check if running
@@ -38,16 +38,16 @@ def show_status():
     print(f"   Trading pairs: {len(config['trading_pairs']['pairs'])}")
 
 def start_apex():
-    """Start APEX engine"""
-    print("\n🚀 Starting APEX...")
+    """Start engine"""
+    print("\n🚀 Starting ...")
     subprocess.Popen(['python3', 'apex_v5_lean.py'], 
                      stdout=open('apex_lean.log', 'a'),
                      stderr=subprocess.STDOUT)
     print("✅ Started! Check apex_lean.log for output")
 
 def stop_apex():
-    """Stop APEX engine"""
-    print("\n🛑 Stopping APEX...")
+    """Stop engine"""
+    print("\n🛑 Stopping ...")
     pid_file = Path('.apex_engine.pid')
     if pid_file.exists():
         try:
@@ -92,7 +92,7 @@ def tune_config():
     # Save config
     with open('apex_config.json', 'w') as f:
         json.dump(config, f, indent=4)
-    print("✅ Configuration saved! Restart APEX to apply changes.")
+    print("✅ Configuration saved! Restart to apply changes.")
 
 def view_logs():
     """Show recent log entries"""
@@ -115,11 +115,11 @@ def view_logs():
 def main():
     """Main menu"""
     while True:
-        print("\n🎯 APEX Control Center")
+        print("\n🎯 Control Center")
         print("=" * 40)
         print("1. Show Status")
-        print("2. Start APEX")
-        print("3. Stop APEX")
+        print("2. Start ")
+        print("3. Stop ")
         print("4. Tune Configuration")
         print("5. View Recent Signals")
         print("6. Exit")

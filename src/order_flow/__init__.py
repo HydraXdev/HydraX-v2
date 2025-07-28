@@ -62,8 +62,7 @@ __all__ = [
     'ExecutionAnomaly',
     'MarketMakerAnalyzer',
     'MarketMakerProfile',
-    'MarketMakerAction',
-]
+    'MarketMakerAction']
 
 # Version info
 __version__ = '1.0.0'

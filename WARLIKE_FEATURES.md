@@ -6,7 +6,7 @@
 - 🚨 **NIBBLER**: Flashing lights emoji, basic info
 - ⚡ **FANG**: Lightning strikes, mid-tier distinction  
 - 🎯 **SNIPER**: Bullseye targeting, elite feel
-- 🌌 **APEX**: Quantum/void aesthetics
+- 🌌 ****: Quantum/void aesthetics
 
 ### 2. **Haptic Feedback Patterns**
 - **Confirmation**: Quick double-tap (50ms pulses)

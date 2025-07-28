@@ -51,13 +51,13 @@ def create_realistic_farm_distribution():
         },
         "Forex_Live": {
             "count": 5,
-            "purpose": "Commander/APEX regulated",
+            "purpose": "Commander/regulated",
             "expected_active": 5,
             "notes": "Conservative traders"
         },
         "Coinexx_Live": {
             "count": 10,
-            "purpose": "Commander/APEX offshore",
+            "purpose": "Commander/offshore",
             "expected_active": 10,
             "notes": "Higher leverage preference"
         }

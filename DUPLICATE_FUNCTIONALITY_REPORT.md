@@ -9,7 +9,7 @@ This report documents all duplicate functionality found in the BITTEN project, c
 
 ---
 
-## 1. APEX Signal Engine Implementations
+## 1. Signal Engine Implementations
 
 ### Production Files (KEEP)
 - **`apex_v5_lean.py`** - Main production signal generator
@@ -18,11 +18,11 @@ This report documents all duplicate functionality found in the BITTEN project, c
   - Status: ACTIVE IN PRODUCTION
 
 - **`apex_singleton_manager.py`** - Process management
-  - Purpose: Ensures only one APEX instance runs
+  - Purpose: Ensures only one instance runs
   - Status: CRITICAL INFRASTRUCTURE
 
 - **`apex_telegram_connector.py`** - Telegram integration
-  - Purpose: Connects APEX signals to Telegram bot
+  - Purpose: Connects signals to Telegram bot
   - Status: ACTIVE INTEGRATION
 
 ### Archive/Test Files (ARCHIVE)

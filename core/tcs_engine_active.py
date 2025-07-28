@@ -1,5 +1,5 @@
 """
-APEX v5.0 TCS++ Engine - Ultra-Aggressive Scoring System
+v5.0 TCS++ Engine - Ultra-Aggressive Scoring System
 Optimized for 40+ signals/day @ 89% win rate with TCS 35-95 range
 Enhanced multi-factor scoring with v5.0 aggressive thresholds
 """
@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 def score_apex_v5_tcs(signal_data: Dict) -> Tuple[float, Dict]:
     """
-    APEX v5.0 TCS++ Engine - Ultra-aggressive multi-factor scoring (35-95 points)
+    v5.0 TCS++ Engine - Ultra-aggressive multi-factor scoring (35-95 points)
     Optimized for maximum signal extraction with maintained quality
     """
     score = 0
@@ -71,13 +71,13 @@ def score_apex_v5_tcs(signal_data: Dict) -> Tuple[float, Dict]:
     final_score = apply_v5_multipliers(score, signal_data)
     final_score = max(35, min(95, final_score))  # v5.0 range: 35-95
     
-    logger.debug(f"APEX v5.0 TCS calculated: {final_score:.1f} - Pattern: {signal_data.get('pattern', 'Unknown')}")
+    logger.debug(f"v5.0 TCS calculated: {final_score:.1f} - Pattern: {signal_data.get('pattern', 'Unknown')}")
     
     return final_score, breakdown
 
 def analyze_v5_market_structure(signal_data: Dict) -> float:
     """
-    APEX v5.0 Market Structure Analysis - More aggressive scoring
+    v5.0 Market Structure Analysis - More aggressive scoring
     20 points max (enhanced from standard 15)
     """
     score = 0
@@ -115,7 +115,7 @@ def analyze_v5_market_structure(signal_data: Dict) -> float:
 
 def check_v5_timeframe_alignment(signal_data: Dict) -> float:
     """
-    APEX v5.0 Timeframe Alignment - M3 focus with enhanced scoring
+    v5.0 Timeframe Alignment - M3 focus with enhanced scoring
     15 points max
     """
     score = 0
@@ -148,7 +148,7 @@ def check_v5_timeframe_alignment(signal_data: Dict) -> float:
 
 def assess_v5_momentum_strength(signal_data: Dict) -> float:
     """
-    APEX v5.0 Momentum Assessment - Hair-trigger sensitivity
+    v5.0 Momentum Assessment - Hair-trigger sensitivity
     15 points max
     """
     score = 0
@@ -196,7 +196,7 @@ def assess_v5_momentum_strength(signal_data: Dict) -> float:
 
 def analyze_v5_volatility_conditions(signal_data: Dict) -> float:
     """
-    APEX v5.0 Volatility Analysis - Monster pair bonuses
+    v5.0 Volatility Analysis - Monster pair bonuses
     10 points max
     """
     score = 0
@@ -226,7 +226,7 @@ def analyze_v5_volatility_conditions(signal_data: Dict) -> float:
 
 def calculate_v5_session_weight(signal_data: Dict) -> float:
     """
-    APEX v5.0 Session Weighting - Enhanced OVERLAP boost
+    v5.0 Session Weighting - Enhanced OVERLAP boost
     15 points max (increased from 10)
     """
     score = 0
@@ -265,7 +265,7 @@ def calculate_v5_session_weight(signal_data: Dict) -> float:
 
 def analyze_v5_confluence_patterns(signal_data: Dict) -> float:
     """
-    APEX v5.0 Confluence Analysis - NEW major scoring factor
+    v5.0 Confluence Analysis - NEW major scoring factor
     20 points max (NEW major component)
     """
     score = 0
@@ -296,7 +296,7 @@ def analyze_v5_confluence_patterns(signal_data: Dict) -> float:
 
 def calculate_v5_pattern_velocity(signal_data: Dict) -> float:
     """
-    APEX v5.0 Pattern Velocity - NEW speed factor
+    v5.0 Pattern Velocity - NEW speed factor
     10 points max (NEW component)
     """
     score = 0
@@ -328,7 +328,7 @@ def calculate_v5_pattern_velocity(signal_data: Dict) -> float:
 
 def evaluate_v5_risk_reward(signal_data: Dict) -> float:
     """
-    APEX v5.0 Risk/Reward Quality - Reduced weight for volume focus
+    v5.0 Risk/Reward Quality - Reduced weight for volume focus
     5 points max (reduced from 10 for v5.0 volume priority)
     """
     score = 0
@@ -356,7 +356,7 @@ def evaluate_v5_risk_reward(signal_data: Dict) -> float:
 
 def apply_v5_multipliers(base_score: float, signal_data: Dict) -> float:
     """
-    Apply APEX v5.0 multipliers and bonuses
+    Apply v5.0 multipliers and bonuses
     """
     score = base_score
     
@@ -388,9 +388,9 @@ def apply_v5_multipliers(base_score: float, signal_data: Dict) -> float:
     
     return score
 
-def get_v5_tcs_threshold(timeframe: str, session: str, tier: str = "APEX") -> float:
+def get_v5_tcs_threshold(timeframe: str, session: str, tier: str = ) -> float:
     """
-    Get APEX v5.0 dynamic TCS threshold
+    Get v5.0 dynamic TCS threshold
     """
     # Base thresholds (ultra-aggressive)
     base_thresholds = {
@@ -414,7 +414,7 @@ def get_v5_tcs_threshold(timeframe: str, session: str, tier: str = "APEX") -> fl
     
     # Tier adjustments
     tier_adjustments = {
-        'APEX': -3,      # APEX gets lowest thresholds
+        '': -3,      # gets lowest thresholds
         'COMMANDER': -1,
         'FANG': 0,
         'NIBBLER': 2,
@@ -426,9 +426,9 @@ def get_v5_tcs_threshold(timeframe: str, session: str, tier: str = "APEX") -> fl
     final_threshold = base + adjustment + tier_adj
     return max(30, final_threshold)  # Absolute minimum: 30
 
-def validate_v5_signal(signal_data: Dict, tcs_score: float, tier: str = "APEX") -> Tuple[bool, str]:
+def validate_v5_signal(signal_data: Dict, tcs_score: float, tier: str = ) -> Tuple[bool, str]:
     """
-    Validate APEX v5.0 signal against ultra-aggressive criteria
+    Validate v5.0 signal against ultra-aggressive criteria
     """
     timeframe = signal_data.get('timeframe', 'M5')
     session = signal_data.get('session', 'NORMAL')
@@ -460,7 +460,7 @@ def score_tcs_v5(signal_data: Dict) -> float:
     score, _ = score_apex_v5_tcs(signal_data)
     return score
 
-def is_signal_valid_v5(signal_data: Dict, tier: str = "APEX") -> bool:
+def is_signal_valid_v5(signal_data: Dict, tier: str = ) -> bool:
     """Check if signal is valid for v5.0"""
     tcs_score, _ = score_apex_v5_tcs(signal_data)
     valid, _ = validate_v5_signal(signal_data, tcs_score, tier)

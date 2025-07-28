@@ -333,6 +333,5 @@ class FireModeDatabase:
             conn.close()
             return False
 
-
 # Create singleton instance
 fire_mode_db = FireModeDatabase()

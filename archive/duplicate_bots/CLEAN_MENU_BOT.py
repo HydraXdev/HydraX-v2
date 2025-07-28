@@ -116,8 +116,8 @@ CONTENT = {
 • 🆓 PRESS PASS: 7-day trial, 6 trades/day
 • 🔰 NIBBLER: $39/month, RAPID ASSAULT only
 • 🦷 FANG: $89/month, All signals manual
-• ⭐ COMMANDER: $139/month, Full automation
-• 🏔️ APEX: $188/month, Exclusive features
+• ⭐ COMMANDER: $189/month, Full automation
+• 🏔️ : /month, Exclusive features
 
 **UPGRADE BENEFITS**
 • 🎯 Autonomous trading slots
@@ -269,7 +269,7 @@ Progress: 34/50 (68% complete)
 Reward: +500 XP + Premium Badge
 
 **TOP SQUAD MEMBERS**
-🥇 APEX_Sniper_001: 94.7% WR
+🥇 _Sniper_001: 94.7% WR
 🥈 CMDR_Alpha_Strike: 91.2% WR  
 🥉 Your Position: 89.4% WR
 
@@ -380,7 +380,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 *Elite Tactical Trading System*
 
 **OPERATIONAL STATUS**: ✅ ONLINE
-**SIGNAL ENGINE**: ✅ APEX v5.0 ACTIVE
+**SIGNAL ENGINE**: ✅ v5.0 ACTIVE
 **MARKET CONDITIONS**: 📈 FAVORABLE
 
 Select your mission objective:""",
@@ -447,7 +447,7 @@ Select your analytics:""",
 *Elite Tactical Trading System*
 
 **OPERATIONAL STATUS**: ✅ ONLINE
-**SIGNAL ENGINE**: ✅ APEX v5.0 ACTIVE
+**SIGNAL ENGINE**: ✅ v5.0 ACTIVE
 **MARKET CONDITIONS**: 📈 FAVORABLE
 
 Select your mission objective:""",

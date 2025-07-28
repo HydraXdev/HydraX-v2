@@ -17,7 +17,6 @@ from src.database.models import User, Trade
 
 logger = logging.getLogger(__name__)
 
-
 class VolatilityIntegration:
     """
     Integrates volatility management into BITTEN's trading flow
@@ -74,7 +73,7 @@ class VolatilityIntegration:
             'NIBBLER': 72,
             'FANG': 85,
             'COMMANDER': 91,
-            'APEX': 91
+            '': 91
         }.get(tier, 72)
         
         adjusted_tcs = level.get_tcs_requirement(base_tcs)
@@ -278,10 +277,8 @@ class VolatilityIntegration:
         
         return briefing
 
-
 # Global instance
 _volatility_integration: Optional[VolatilityIntegration] = None
-
 
 def get_volatility_integration() -> VolatilityIntegration:
     """Get or create volatility integration instance"""
@@ -289,7 +286,6 @@ def get_volatility_integration() -> VolatilityIntegration:
     if _volatility_integration is None:
         _volatility_integration = VolatilityIntegration()
     return _volatility_integration
-
 
 # Convenience functions
 async def check_trade_volatility(symbol: str, tcs: float, tier: str, 
@@ -299,7 +295,6 @@ async def check_trade_volatility(symbol: str, tcs: float, tier: str,
     return await integration.check_volatility_requirements(
         symbol, tcs, tier, fire_mode
     )
-
 
 async def get_market_briefing(symbols: List[str]) -> str:
     """Get market volatility briefing"""

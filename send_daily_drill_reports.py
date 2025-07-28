@@ -33,7 +33,6 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-
 class DrillReportScheduler:
     """Automated drill report scheduler system"""
     
@@ -56,9 +55,17 @@ class DrillReportScheduler:
             
             # Import and initialize telegram bot
             import telebot
+            from dotenv import load_dotenv
             
-            # Use BITTEN production bot token (from CLAUDE.md)
-            BOT_TOKEN = '8103700393:AAEK3RjTGHHYyy_X1Uc9FUuUoRcLuzYZe4k'
+            # Load environment variables
+            load_dotenv()
+            
+            # Import config loader
+            sys.path.append('/root/HydraX-v2/src')
+            from config_loader import get_voice_bot_token
+            
+            # Use voice bot for drill reports (personality feature)
+            BOT_TOKEN = get_voice_bot_token()
             
             self.telegram_bot = telebot.TeleBot(BOT_TOKEN)
             logger.info("✅ Telegram bot initialized")
@@ -275,7 +282,6 @@ class DrillReportScheduler:
         except Exception as e:
             logger.error(f"❌ Error writing summary file: {e}")
 
-
 def main():
     """Main entry point for scheduled execution"""
     
@@ -295,7 +301,6 @@ def main():
         print(f"📊 Reports sent: {scheduler.reports_sent}")
         print(f"❌ Errors: {scheduler.errors_encountered}")
         sys.exit(1)
-
 
 # Health check function
 def health_check():
@@ -323,7 +328,6 @@ def health_check():
         
     except Exception as e:
         return False, f"Health check failed: {e}"
-
 
 if __name__ == "__main__":
     # Check for health check argument

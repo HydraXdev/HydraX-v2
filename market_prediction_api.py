@@ -25,7 +25,6 @@ CORS(app)  # Enable CORS for frontend access
 predictor = None
 loop = None
 
-
 def async_route(f):
     """Decorator to run async functions in Flask routes"""
     @wraps(f)
@@ -35,7 +34,6 @@ def async_route(f):
         ).result()
     return wrapper
 
-
 @app.route('/health', methods=['GET'])
 def health_check():
     """Health check endpoint"""
@@ -44,7 +42,6 @@ def health_check():
         'timestamp': datetime.now().isoformat(),
         'service': 'AI Market Prediction API'
     })
-
 
 @app.route('/predict/<symbol>', methods=['GET'])
 @async_route
@@ -110,7 +107,6 @@ async def predict_symbol(symbol):
             'success': False,
             'error': str(e)
         }), 500
-
 
 @app.route('/predict/batch', methods=['POST'])
 @async_route
@@ -183,7 +179,6 @@ async def predict_batch():
             'error': str(e)
         }), 500
 
-
 @app.route('/personalities', methods=['GET'])
 def get_personalities():
     """Get available trading personalities"""
@@ -201,7 +196,6 @@ def get_personalities():
         'data': personalities
     })
 
-
 @app.route('/sentiments', methods=['GET'])
 def get_sentiments():
     """Get possible sentiment values"""
@@ -218,7 +212,6 @@ def get_sentiments():
         'success': True,
         'data': sentiments
     })
-
 
 @app.route('/report/<symbol>', methods=['GET'])
 @async_route
@@ -249,7 +242,6 @@ async def get_report(symbol):
             'error': str(e)
         }), 500
 
-
 def get_personality_description(personality: TradingPersonality) -> str:
     """Get description for a trading personality"""
     descriptions = {
@@ -266,7 +258,6 @@ def get_personality_description(personality: TradingPersonality) -> str:
     }
     return descriptions.get(personality, "Trading personality")
 
-
 def get_sentiment_description(sentiment: MarketSentiment) -> str:
     """Get description for a market sentiment"""
     descriptions = {
@@ -277,7 +268,6 @@ def get_sentiment_description(sentiment: MarketSentiment) -> str:
         MarketSentiment.VERY_BEARISH: "Extremely negative market outlook"
     }
     return descriptions.get(sentiment, "Market sentiment")
-
 
 async def init_predictor():
     """Initialize the predictor with configuration"""
@@ -295,7 +285,6 @@ async def init_predictor():
     await predictor.__aenter__()
     logger.info("Predictor initialized")
 
-
 def create_app():
     """Create and configure the Flask app"""
     global loop
@@ -308,7 +297,6 @@ def create_app():
     loop.run_until_complete(init_predictor())
     
     return app
-
 
 # Example HTML frontend
 @app.route('/')
@@ -391,7 +379,6 @@ curl http://localhost:5000/predict/TSLA?personality=aggressive_bull
 </body>
 </html>
     '''
-
 
 if __name__ == '__main__':
     app = create_app()

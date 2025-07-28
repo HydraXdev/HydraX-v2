@@ -11,7 +11,7 @@ The **BITTEN Live File-Based Bridge** provides real-time trade execution through
 
 ### **Signal → Fire → Bridge → File → EA → MT5**
 ```
-1. APEX Engine (TCS 75+ threshold)
+1. Engine (TCS 75+ threshold)
    ├── Generates high-probability signals
    ├── Creates mission files with trade parameters
    └── Sends Telegram alerts with HUD links
@@ -145,7 +145,7 @@ def __init__(self, bridge_host: str = "3.145.84.187", bridge_port: int = 5556,
     "tp": 1.09214,
     "sl": 1.08941,
     "comment": "RAPID_ASSAULT TCS:85%",
-    "mission_id": "APEX5_EURUSD_001235",
+    "mission_id": "5_EURUSD_001235",
     "user_id": "7176191872",
     "timestamp": "2025-07-18T00:12:35.603636",
     "command": "fire"
@@ -155,7 +155,7 @@ def __init__(self, bridge_host: str = "3.145.84.187", bridge_port: int = 5556,
 ## 📊 Current Status (July 18, 2025)
 
 ### **✅ FULLY OPERATIONAL COMPONENTS**
-- **Signal Generation**: APEX engine with TCS 75%+ threshold
+- **Signal Generation**: engine with TCS 75%+ threshold
 - **Mission Creation**: Tactical briefings with real dollar calculations
 - **Fire API**: `/api/fire` endpoint with real bridge integration
 - **Socket Bridge**: Live bridge at 3.145.84.187:5556 operational
@@ -246,7 +246,7 @@ The live file-based bridge system is completely operational and handling real tr
 python3 -c "from apex_mission_integrated_flow import process_apex_signal_direct; import asyncio; print(asyncio.run(process_apex_signal_direct({'symbol':'EURUSD','direction':'BUY','tcs':85}, '7176191872')))"
 
 # Fire test trade (✅ Working)
-curl -X POST http://127.0.0.1:8888/api/fire -H "Content-Type: application/json" -H "X-User-ID: 7176191872" -d '{"mission_id": "APEX5_EURUSD_001235"}'
+curl -X POST http://127.0.0.1:8888/api/fire -H "Content-Type: application/json" -H "X-User-ID: 7176191872" -d '{"mission_id": "5_EURUSD_001235"}'
 
 # Expected result: "✅ LIVE TRADE EXECUTED!" with ATHENA response
 ```

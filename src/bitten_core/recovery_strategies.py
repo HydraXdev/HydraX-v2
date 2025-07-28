@@ -19,7 +19,6 @@ import signal
 
 logger = logging.getLogger("bitten_recovery")
 
-
 @dataclass
 class RecoveryAction:
     """Represents a recovery action that can be taken"""
@@ -29,7 +28,6 @@ class RecoveryAction:
     priority: int = 1  # Lower number = higher priority
     max_attempts: int = 3
     cooldown_seconds: int = 60
-
 
 class DatabaseRecoveryManager:
     """Handles database-related recovery operations"""
@@ -127,7 +125,6 @@ class DatabaseRecoveryManager:
             logger.error(f"Schema recreation failed: {e}")
             return False
 
-
 class NetworkRecoveryManager:
     """Handles network-related recovery operations"""
     
@@ -183,7 +180,6 @@ class NetworkRecoveryManager:
         except Exception as e:
             logger.error(f"Network interface restart failed: {e}")
             return False
-
 
 class TelegramRecoveryManager:
     """Handles Telegram API recovery operations"""
@@ -260,7 +256,6 @@ class TelegramRecoveryManager:
         except Exception as e:
             logger.error(f"Telegram connection reset failed: {e}")
             return False
-
 
 class ProcessRecoveryManager:
     """Handles process and service recovery operations"""
@@ -339,7 +334,6 @@ class ProcessRecoveryManager:
         except Exception as e:
             logger.error(f"Webapp restart failed: {e}")
             return False
-
 
 class SystemRecoveryManager:
     """Handles system-level recovery operations"""
@@ -433,7 +427,6 @@ class SystemRecoveryManager:
         except Exception as e:
             logger.error(f"Memory check failed: {e}")
             return False
-
 
 class AdvancedRecoveryManager:
     """Manages advanced recovery strategies and coordination"""
@@ -618,10 +611,8 @@ class AdvancedRecoveryManager:
             }
         }
 
-
 # Global recovery manager instance
 recovery_manager = AdvancedRecoveryManager()
-
 
 # Convenience functions for common recovery scenarios
 def recover_database_issues(db_path: str) -> Dict[str, Any]:
@@ -631,11 +622,9 @@ def recover_database_issues(db_path: str) -> Dict[str, Any]:
         {"db_path": db_path}
     )
 
-
 def recover_network_issues() -> Dict[str, Any]:
     """Quick function to recover network issues"""
     return recovery_manager.execute_recovery_sequence("network", {})
-
 
 def recover_telegram_issues(bot_token: str) -> Dict[str, Any]:
     """Quick function to recover Telegram issues"""
@@ -644,16 +633,13 @@ def recover_telegram_issues(bot_token: str) -> Dict[str, Any]:
         {"bot_token": bot_token}
     )
 
-
 def recover_webapp_issues() -> Dict[str, Any]:
     """Quick function to recover webapp issues"""
     return recovery_manager.execute_recovery_sequence("webapp", {})
 
-
 def recover_system_issues() -> Dict[str, Any]:
     """Quick function to recover system issues"""
     return recovery_manager.execute_recovery_sequence("system", {})
-
 
 if __name__ == "__main__":
     # Test recovery system

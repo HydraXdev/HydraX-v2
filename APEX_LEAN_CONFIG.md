@@ -1,4 +1,4 @@
-# 🎯 APEX v5.0 LEAN Configuration
+# 🎯 v5.0 LEAN Configuration
 
 ## Changes Made:
 

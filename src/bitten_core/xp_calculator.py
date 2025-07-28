@@ -14,7 +14,6 @@ from dataclasses import dataclass
 from enum import Enum
 import math
 
-
 class ExitType(Enum):
     """Types of trade exits"""
     NORMAL = "normal"
@@ -22,7 +21,6 @@ class ExitType(Enum):
     PARACHUTE = "parachute"
     PANIC = "panic"
     TIMEOUT = "timeout"
-
 
 class TradingMilestone(Enum):
     """Trading milestones with XP requirements"""
@@ -32,7 +30,6 @@ class TradingMilestone(Enum):
     EXPERT = 15000
     MASTER = 30000
     ELITE = 50000
-
 
 class EducationActivity(Enum):
     """Types of educational activities"""
@@ -62,7 +59,6 @@ class EducationActivity(Enum):
     TEACH_OTHERS = "teach_others"
     CONTENT_CREATION = "content_creation"
 
-
 @dataclass
 class XPCalculation:
     """Result of XP calculation"""
@@ -73,7 +69,6 @@ class XPCalculation:
     penalties: Dict[str, int]
     net_xp: int
     milestone_progress: Dict[str, any]
-
 
 class XPCalculator:
     """Centralized XP calculation system"""
@@ -113,8 +108,7 @@ class XPCalculator:
         EducationActivity.CREATE_STRATEGY: {"base": 50, "cooldown_hours": 24, "daily_cap": 100},
         EducationActivity.MENTOR_SESSION: {"base": 40, "cooldown_hours": 24, "daily_cap": 80},
         EducationActivity.TEACH_OTHERS: {"base": 35, "cooldown_hours": 4, "daily_cap": 140},
-        EducationActivity.CONTENT_CREATION: {"base": 75, "cooldown_hours": 48, "daily_cap": 150},
-    }
+        EducationActivity.CONTENT_CREATION: {"base": 75, "cooldown_hours": 48, "daily_cap": 150}}
     
     # Education multipliers
     EDUCATION_MULTIPLIERS = {
@@ -195,8 +189,7 @@ class XPCalculator:
     PENALTIES = {
         "panic_exit": -50,
         "overtrading": -25,
-        "revenge_trading": -30,
-    }
+        "revenge_trading": -30}
     
     # Approved exit protocols (no penalty)
     APPROVED_EXITS = {ExitType.STOP_LOSS, ExitType.PARACHUTE, ExitType.TIMEOUT}
@@ -747,7 +740,6 @@ class XPCalculator:
         keys_to_remove = [k for k in self.daily_education_xp.keys() if str(yesterday) in k]
         for key in keys_to_remove:
             del self.daily_education_xp[key]
-
 
 # Example usage
 if __name__ == "__main__":

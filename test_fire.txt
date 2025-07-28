@@ -1,0 +1,1 @@
+{"signal_id": "PYTHON_TEST_1753653390", "symbol": "EURUSD", "type": "buy", "lot": 0.01, "sl": 50, "tp": 100, "comment": "Test from Python"}

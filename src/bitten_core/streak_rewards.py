@@ -13,7 +13,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-
 class RewardTier(Enum):
     """Reward tier classifications"""
     COMMON = "common"
@@ -23,7 +22,6 @@ class RewardTier(Enum):
     LEGENDARY = "legendary"
     MYTHIC = "mythic"
 
-
 class BadgeType(Enum):
     """Types of badges"""
     STREAK = "streak"
@@ -31,7 +29,6 @@ class BadgeType(Enum):
     SPECIAL = "special"
     SEASONAL = "seasonal"
     ACHIEVEMENT = "achievement"
-
 
 class TitleRank(Enum):
     """Title rankings"""
@@ -41,7 +38,6 @@ class TitleRank(Enum):
     ELITE = "elite"
     LEGEND = "legend"
     MYTHIC = "mythic"
-
 
 @dataclass
 class RewardItem:
@@ -56,7 +52,6 @@ class RewardItem:
     expires_at: Optional[str] = None
     metadata: Dict[str, Any] = None
 
-
 @dataclass
 class Badge:
     """Badge information"""
@@ -70,7 +65,6 @@ class Badge:
     xp_bonus: float = 0.0  # Permanent XP bonus
     trading_bonus: float = 0.0  # Trading reward bonus
 
-
 @dataclass
 class Title:
     """Title information"""
@@ -83,7 +77,6 @@ class Title:
     effects: Dict[str, float]  # Various bonuses
     display_color: str
 
-
 @dataclass
 class StreakRewardBundle:
     """Complete reward bundle for streak milestone"""
@@ -95,7 +88,6 @@ class StreakRewardBundle:
     titles: List[Title]
     special_privileges: List[str]
     celebration_message: str
-
 
 class StreakRewardSystem:
     """Advanced streak reward system with escalating benefits"""
@@ -720,7 +712,6 @@ class StreakRewardSystem:
         
         return progression
 
-
 # Example usage and testing
 if __name__ == "__main__":
     # Initialize reward system
@@ -747,7 +738,7 @@ if __name__ == "__main__":
     # Test streak progression simulation
     print("--- Progression Simulation (90 days) ---")
     progression = reward_system.simulate_reward_progression(90)
-    print(f"Total XP: {progression['total_xp_earned']:,}")
+    print(f"Total XP: {progression['total_xp_earned']:}")
     print(f"Milestones: {progression['total_milestones']}")
     print(f"Items: {progression['total_items']}")
     print(f"Badges: {progression['total_badges']}")

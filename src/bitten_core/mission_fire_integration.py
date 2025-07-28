@@ -23,11 +23,11 @@ class MissionFireIntegration:
         """
         Fire a mission through the TOC system
         
-        This converts a mission briefing back to APEX signal format
+        This converts a mission briefing back to signal format
         and sends it to TOC for RR calculation and execution
         """
         try:
-            # Convert mission briefing back to APEX signal format
+            # Convert mission briefing back to signal format
             apex_signal = self._convert_mission_to_apex_signal(mission_briefing)
             
             # Prepare TOC fire request
@@ -86,7 +86,7 @@ class MissionFireIntegration:
             }
     
     def _convert_mission_to_apex_signal(self, mission_briefing) -> Dict:
-        """Convert mission briefing back to APEX signal format for TOC"""
+        """Convert mission briefing back to signal format for TOC"""
         
         # Extract the core signal data from mission briefing
         signal = {
@@ -169,10 +169,10 @@ def create_mission_fire_integration(toc_url: str = "http://localhost:5000") -> M
 # Example usage function
 def fire_mission_example():
     """Example of how to fire a mission"""
-    from mission_briefing_generator_active import APEXv5MissionBriefingGenerator
+    from mission_briefing_generator_active import v5MissionBriefingGenerator
     
     # Generate a sample mission
-    generator = APEXv5MissionBriefingGenerator()
+    generator = v5MissionBriefingGenerator()
     
     signal_data = {
         'symbol': 'EURUSD',
@@ -180,7 +180,7 @@ def fire_mission_example():
         'entry_price': 1.0900,
         'signal_type': 'RAPID_ASSAULT',
         'tcs': 75,
-        'pattern': 'APEX Pattern',
+        'pattern': 'Pattern',
         'timeframe': 'M5',
         'session': 'LONDON'
     }

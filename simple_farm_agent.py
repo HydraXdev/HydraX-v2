@@ -94,8 +94,7 @@ class SimpleFarmAgent:
                 status['masters'][broker_type] = {
                     'installed': master_path.exists(),
                     'mt5_executable': (master_path / 'terminal64.exe').exists(),
-                    'ea_deployed': (master_path / 'MQL5/Experts/BITTENBridge_v3_ENHANCED.mq5').exists(),
-                }
+                    'ea_deployed': (master_path / 'MQL5/Experts/BITTENBridge_v3_ENHANCED.mq5').exists()}
             
             # Check clone instances
             clone_count = 0

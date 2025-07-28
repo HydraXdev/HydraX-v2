@@ -19,13 +19,11 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-
 class ReferralTier(Enum):
     """Referral tier levels"""
     DIRECT = 1      # Direct referral
     SECONDARY = 2   # Referral of referral
     TERTIARY = 3    # Third level referral
-
 
 class SquadRank(Enum):
     """Squad leader ranks based on recruits"""
@@ -36,7 +34,6 @@ class SquadRank(Enum):
     COMPANY_CDR = "Company Commander"  # 25-49 recruits
     BATTALION_CDR = "Battalion Commander"  # 50-99 recruits
     BRIGADE_GENERAL = "Brigade General"    # 100+ recruits
-
 
 @dataclass
 class ReferralCode:
@@ -51,7 +48,6 @@ class ReferralCode:
     promo_multiplier: float = 1.0
     metadata: Dict[str, Any] = field(default_factory=dict)
 
-
 @dataclass
 class ReferralReward:
     """Reward structure for referrals"""
@@ -59,7 +55,6 @@ class ReferralReward:
     reason: str
     multiplier: float = 1.0
     bonus_type: Optional[str] = None
-
 
 @dataclass
 class Recruit:
@@ -77,7 +72,6 @@ class Recruit:
     is_active: bool = True
     last_activity: Optional[datetime] = None
 
-
 @dataclass
 class SquadStats:
     """Squad statistics"""
@@ -88,7 +82,6 @@ class SquadStats:
     squad_rank: SquadRank = SquadRank.LONE_WOLF
     referral_code: Optional[str] = None
     last_recruit_at: Optional[datetime] = None
-
 
 class StandaloneReferralSystem:
     """Standalone referral system with no external dependencies"""
@@ -632,7 +625,6 @@ class StandaloneReferralSystem:
         self.blocked_ips.add(ip_address)
         logger.warning(f"Blocked IP {ip_address}: {reason}")
 
-
 class StandaloneReferralCommandHandler:
     """Command handler for Telegram bot integration"""
     
@@ -783,7 +775,6 @@ WhatsApp: "Hey! I'm using this AI trading system that's been crushing it. You ge
             if recruits >= threshold:
                 return StandaloneReferralSystem.SQUAD_MULTIPLIERS[threshold]
         return 1.0
-
 
 # Test the system
 if __name__ == "__main__":

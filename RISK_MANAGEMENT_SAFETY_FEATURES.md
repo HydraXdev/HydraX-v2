@@ -7,7 +7,7 @@ The enhanced risk management system now includes comprehensive safety features t
 
 ### 1. Daily Loss Limits by Tier
 - **NIBBLER**: -7% daily loss limit
-- **FANG/COMMANDER/APEX**: -10% daily loss limit
+- **FANG/COMMANDER/**: -10% daily loss limit
 - Automatic position closure when limit is reached
 - Trading disabled for remainder of the day
 

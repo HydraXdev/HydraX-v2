@@ -12,7 +12,6 @@ import numpy as np
 from typing import Tuple, Optional
 import math
 
-
 class PositionalEncoding(nn.Module):
     """Positional encoding for transformer architecture."""
     
@@ -32,7 +31,6 @@ class PositionalEncoding(nn.Module):
     
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return x + self.pe[:x.size(0), :]
-
 
 class MultiHeadAttentionWithScore(nn.Module):
     """Multi-head attention mechanism with attention score output for interpretability."""
@@ -85,7 +83,6 @@ class MultiHeadAttentionWithScore(nn.Module):
         
         return output, attention_weights
 
-
 class TransformerBlock(nn.Module):
     """Transformer encoder block with multi-head attention and feed-forward network."""
     
@@ -116,7 +113,6 @@ class TransformerBlock(nn.Module):
         x = self.norm2(x + ff_output)
         
         return x, attn_weights
-
 
 class MarketTransformer(nn.Module):
     """
@@ -261,7 +257,6 @@ class MarketTransformer(nn.Module):
             outputs['attention_weights'] = attention_weights
         
         return outputs
-
 
 class TemporalTransformer(MarketTransformer):
     """

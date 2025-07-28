@@ -18,13 +18,11 @@ from contextlib import contextmanager
 # Configure logging
 logger = logging.getLogger(__name__)
 
-
 class TerminalType(Enum):
     """Enumeration of MT5 terminal types"""
     PRESS_PASS = "press_pass"
     DEMO = "demo"
     LIVE = "live"
-
 
 class TerminalStatus(Enum):
     """Enumeration of terminal assignment statuses"""
@@ -32,7 +30,6 @@ class TerminalStatus(Enum):
     ASSIGNED = "assigned"
     MAINTENANCE = "maintenance"
     ERROR = "error"
-
 
 class TerminalAssignment:
     """Manages user-to-bridge assignments for MT5 terminals"""
@@ -573,7 +570,6 @@ class TerminalAssignment:
             stats['utilization'] = dict(utilization)
             
             return stats
-
 
 # Example usage
 if __name__ == "__main__":

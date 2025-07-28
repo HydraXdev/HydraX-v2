@@ -125,16 +125,15 @@ class VoiceEnabledPersonalityBot:
             
             response = f"""📊 **Voice Usage Statistics**
             
-Characters Used: {stats['characters_used']:,} / {self.voice_synth.monthly_limit:,}
+Characters Used: {stats['characters_used']:} / {self.voice_synth.monthly_limit:}
 Percentage Used: {stats['percentage_used']:.1f}%
 Requests Made: {stats['requests_made']}
-Characters Remaining: {stats['characters_remaining']:,}
+Characters Remaining: {stats['characters_remaining']:}
 Current Month: {stats['current_month']}
 
 💡 Voice synthesis resets monthly on the free tier."""
             
             self.bot.send_message(message.chat.id, response, parse_mode='Markdown')
-
 
 def integrate_voice_with_personality_bot(original_send_function):
     """Decorator to add voice capability to send_personality_message"""
@@ -171,7 +170,6 @@ def integrate_voice_with_personality_bot(original_send_function):
     
     return enhanced_send_personality_message
 
-
 # Patch the personality bot
 def apply_voice_patch():
     """Apply voice capabilities to existing personality bot"""
@@ -191,7 +189,6 @@ def apply_voice_patch():
     except Exception as e:
         logger.error(f"Failed to apply voice patch: {e}")
         return False
-
 
 # Configuration helper
 def setup_elevenlabs_api():
@@ -222,7 +219,6 @@ def setup_elevenlabs_api():
     print("/voice - Toggle voice messages on/off")
     print("/voicestats - Check usage statistics")
     print("=" * 50)
-
 
 if __name__ == "__main__":
     # Show setup instructions

@@ -433,6 +433,5 @@ class PersonalityEngine:
         
         return stats
 
-
 # Global personality engine instance
 personality_engine = PersonalityEngine()

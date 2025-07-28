@@ -39,7 +39,7 @@ class BittenMenuIntegration:
 
 **Operative**: {update.effective_user.first_name}
 **Tier**: {user_data.get('tier', 'NIBBLER').upper()}
-**Level**: {user_data.get('level', 1)} | **XP**: {user_data.get('xp', 0):,}
+**Level**: {user_data.get('level', 1)} | **XP**: {user_data.get('xp', 0):}
 **Today**: {user_data.get('trades_today', 0)} trades | {user_data.get('pnl_today', 0):+.2f}%
 
 *"Everything you need on the battlefield, Operative. No stone unturned."*
@@ -296,7 +296,7 @@ class BittenMenuIntegration:
 
 **Operative**: {query.from_user.first_name}
 **Tier**: {user_data.get('tier', 'NIBBLER').upper()}
-**Level**: {user_data.get('level', 1)} | **XP**: {user_data.get('xp', 0):,}
+**Level**: {user_data.get('level', 1)} | **XP**: {user_data.get('xp', 0):}
 
 *"Everything you need on the battlefield, Operative."*
 
@@ -364,7 +364,7 @@ class BittenMenuIntegration:
 • 90%+ TCS signals
 • Elite features
 
-**👑 APEX MODE:**
+**👑 MODE:**
 • Unlimited shots
 • 91%+ TCS signals
 • All features unlocked
@@ -714,12 +714,11 @@ Type your question or concern, and {bot_type.upper()} will assist you with speci
         
         return self.app
 
-
 async def deploy_menu_system():
     """Deploy the Intel Command Center menu system"""
     
     # Use the bot token from config
-    BOT_TOKEN = "os.getenv("BOT_TOKEN", "DISABLED_FOR_SECURITY")"
+    BOT_TOKEN = os.getenv("BOT_TOKEN", "DISABLED_FOR_SECURITY")
     WEBAPP_URL = "https://joinbitten.com"
     
     print("🎯 Deploying BITTEN Intel Command Center...")
@@ -756,7 +755,6 @@ async def deploy_menu_system():
     # Start the bot
     print("Starting bot polling...")
     await app.run_polling()
-
 
 if __name__ == "__main__":
     asyncio.run(deploy_menu_system())

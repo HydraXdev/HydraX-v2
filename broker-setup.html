@@ -832,8 +832,7 @@
             fetch('/api/track-conversation', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                },
+                    'Content-Type': 'application/json'},
                 body: JSON.stringify({
                     message: message,
                     isBot: isBot,
@@ -857,8 +856,7 @@
             fetch('/api/track-page-visit', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                },
+                    'Content-Type': 'application/json'},
                 body: JSON.stringify({
                     page: 'broker-setup',
                     timestamp: new Date().toISOString(),

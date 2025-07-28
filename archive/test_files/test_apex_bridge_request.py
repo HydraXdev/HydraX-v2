@@ -2,8 +2,8 @@
 import requests
 import json
 
-# Test 1: Exact APEX format
-print("Test 1: APEX exact format")
+# Test 1: Exact format
+print("Test 1: exact format")
 apex_cmd = r'dir /B "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\BITTEN\\XAUUSD.json" 2>nul'
 apex_request = {
     "command": apex_cmd,

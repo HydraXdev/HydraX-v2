@@ -231,7 +231,6 @@ class BITTENVoiceSynthesis:
         logger.info(f"Cleaned {cleaned} old cache files")
         return cleaned
 
-
 # Example usage and testing
 async def test_voice_synthesis():
     """Test the voice synthesis system"""
@@ -257,7 +256,6 @@ async def test_voice_synthesis():
     # Show usage stats
     stats = voice_synth.get_usage_stats()
     logger.info(f"\nUsage Stats: {json.dumps(stats, indent=2)}")
-
 
 if __name__ == "__main__":
     # Run test if executed directly

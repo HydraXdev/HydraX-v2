@@ -56,7 +56,7 @@
 ### **3. ENHANCED GHOST MODE - ✅ ACTIVE**
 
 **Ghost Mode Integration:**
-- ✅ **Tier-based stealth intensity**: 60% (Nibbler) → 100% (APEX)
+- ✅ **Tier-based stealth intensity**: 60% (Nibbler) → 100% ()
 - ✅ **Advanced randomization**: Entry delays, lot variance, TP/SL offsets
 - ✅ **Strategic pattern breaking**: Signal skipping and execution timing
 - ✅ **Live effectiveness tracking**: Real-time stealth score monitoring
@@ -75,7 +75,7 @@ Tier        | Avg Stealth Score | Status
 NIBBLER     | 48.3%            | ✅ ACTIVE
 FANG        | 69.5%            | ✅ ACTIVE
 COMMANDER   | 89.2%            | ✅ ACTIVE
-APEX        | 88.0%            | ✅ ACTIVE
+| 88.0%            | ✅ ACTIVE
 Overall     | 73.7%            | ✅ EXCELLENT
 ```
 

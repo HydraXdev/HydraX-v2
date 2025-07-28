@@ -826,7 +826,6 @@ class TradeManager:
                            sound_type="cash_register", event_type="tp_hit")
                 self.remove_trade(trade.trade_id)
 
-
 # Example usage
 async def example_usage():
     """Example of using the trade manager"""
@@ -839,8 +838,7 @@ async def example_usage():
     profile = RiskProfile(
         user_id=123456,
         current_xp=20000,  # Unlocks Leroy Jenkins
-        tier_level="APEX"
-    )
+        tier_level=)
     
     # Get management plans
     plans = []

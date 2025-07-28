@@ -161,7 +161,7 @@ def main():
     create_parser.add_argument('name', help='Event name')
     create_parser.add_argument('--start-days', type=int, default=0, help='Days from now to start')
     create_parser.add_argument('--duration-days', type=int, default=1, help='Duration in days')
-    create_parser.add_argument('--tiers', default='NIBBLER,FANG,COMMANDER,APEX', help='Eligible tiers (comma-separated)')
+    create_parser.add_argument('--tiers', default='NIBBLER,FANG,COMMANDER', help='Eligible tiers (comma-separated)')
     create_parser.add_argument('--risk', type=float, help='Bonus risk percent')
     create_parser.add_argument('--shots', type=int, help='Bonus daily shots')
     create_parser.add_argument('--positions', type=int, help='Bonus positions')

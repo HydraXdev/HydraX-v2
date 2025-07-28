@@ -11,6 +11,7 @@ from .stripe_payment_processor import get_stripe_processor
 from .database.connection import get_db_session
 from .database.models import User, UserSubscription, SubscriptionStatus
 from .risk_controller import get_risk_controller
+from .stripe_credit_manager import get_stripe_credit_manager
 
 logger = logging.getLogger(__name__)
 
@@ -37,8 +38,18 @@ def handle_stripe_webhook():
     
     # Handle specific events
     event_type = result.get('event_type')
+    event_data = result.get('data', {})
     
-    if event_type == 'subscription_created':
+    # Initialize credit manager
+    credit_manager = get_stripe_credit_manager()
+    
+    if event_type == 'invoice.created':
+        # Apply credits before payment attempt
+        credit_result = credit_manager.handle_subscription_invoice_created(event_data)
+        if credit_result.get('credit_applied', 0) > 0:
+            logger.info(f"Auto-applied ${credit_result['credit_applied']:.2f} credit to invoice")
+    
+    elif event_type == 'subscription_created':
         handle_subscription_created(result)
     
     elif event_type == 'subscription_updated':
@@ -52,6 +63,10 @@ def handle_stripe_webhook():
     
     elif event_type == 'payment_succeeded':
         handle_payment_succeeded(result)
+        # Check for referral credit application
+        credit_result = credit_manager.handle_payment_succeeded(event_data)
+        if credit_result.get('referrer_credited'):
+            logger.info(f"Applied referral credit to {credit_result['referrer_credited']}")
     
     elif event_type == 'payment_failed':
         handle_payment_failed(result)
@@ -263,13 +278,13 @@ def setup_stripe_products():
         'COMMANDER': {
             'name': 'BITTEN Commander',
             'description': 'Professional tier with full automation and 20 daily trades',
-            'monthly_price': 13900,
+            'monthly_price': 18900,
             'annual_price': 111200
         },
-        'APEX': {
+        '': {
             'name': 'BITTEN Apex',
             'description': 'Elite tier with unlimited trades and priority support',
-            'monthly_price': 18800,
+            'monthly_price': ,
             'annual_price': 150400
         }
     }

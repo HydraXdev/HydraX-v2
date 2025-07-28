@@ -30,13 +30,11 @@ from config.news_api import (
 
 logger = logging.getLogger(__name__)
 
-
 class NewsImpact(Enum):
     """News event impact levels"""
     HIGH = "high"
     MEDIUM = "medium"  
     LOW = "low"
-
 
 @dataclass
 class EconomicEvent:
@@ -74,7 +72,6 @@ class EconomicEvent:
         data['event_time'] = datetime.fromisoformat(data['event_time'])
         data['impact'] = NewsImpact(data['impact'])
         return cls(**data)
-
 
 class NewsAPIClient:
     """Client for fetching economic calendar events"""
@@ -353,8 +350,7 @@ class NewsAPIClient:
             {"hours": 2, "currency": "USD", "name": "Non-Farm Payrolls"},
             {"hours": 6, "currency": "EUR", "name": "ECB Rate Decision"},
             {"hours": 24, "currency": "GBP", "name": "UK GDP"},
-            {"hours": 48, "currency": "JPY", "name": "BoJ Policy Rate"},
-        ]
+            {"hours": 48, "currency": "JPY", "name": "BoJ Policy Rate"}]
         
         for mock_data in mock_events_data:
             event_time = now + timedelta(hours=mock_data["hours"])

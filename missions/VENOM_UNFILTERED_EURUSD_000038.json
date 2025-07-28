@@ -1,0 +1,14 @@
+{
+  "signal_id": "VENOM_UNFILTERED_EURUSD_000038",
+  "symbol": "EURUSD",
+  "direction": "SELL",
+  "confidence": 99,
+  "shield_score": 6.0,
+  "shield_class": "SHIELD_ACTIVE",
+  "signal_type": "RAPID_ASSAULT",
+  "target_pips": 28,
+  "stop_pips": 14,
+  "risk_reward": 2.0,
+  "timestamp": 1753674481.2080646,
+  "source": "VENOM_CITADEL_LIVE"
+}

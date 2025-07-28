@@ -1,15 +1,15 @@
-# 🔥 APEX v5.0 + BITTEN Integration Status Report
+# 🔥 v5.0 + BITTEN Integration Status Report
 
 **Date**: July 13, 2025  
 **Status**: ✅ **FULLY OPERATIONAL AND INTEGRATED**  
-**Engine**: APEX v5.0 Simplified System  
+**Engine**: v5.0 Simplified System  
 **Compatibility**: 100% BITTEN Compatible
 
 ---
 
 ## 🚀 **INTEGRATION CONFIRMATION**
 
-### **✅ APEX v5.0 System Status**
+### **✅ v5.0 System Status**
 - **Engine File**: `/root/HydraX-v2/apex_v5_simplified.py`
 - **MT5 Farm Connection**: ✅ LIVE (3.145.84.187:5555)
 - **Signal Generation**: ✅ OPERATIONAL (15 signals/scan)
@@ -29,27 +29,27 @@
 
 ## 🎯 **USER ACCOUNT SETUP PROCESS**
 
-### **For New APEX Tier Users:**
+### **For New Tier Users:**
 
 #### **Method 1: Telegram Onboarding (Recommended)**
 ```
 1. Start Telegram bot: @bitten_trading_bot
 2. Send: /start
 3. Auto-registration → Default NIBBLER tier
-4. Optional: /presspass (7-day APEX trial)
+4. Optional: /presspass (7-day trial)
 5. Provide MT5 broker credentials
 6. System connects to MT5 farm
-7. Begin receiving APEX v5.0 signals
+7. Begin receiving v5.0 signals
 ```
 
 #### **Method 2: Direct WebApp Registration**
 ```
 1. Visit: https://joinbitten.com
 2. Create account via webapp interface
-3. Choose APEX tier subscription ($188/month)
+3. Choose tier subscription (/month)
 4. Complete MT5 broker setup
 5. Connect to BITTEN MT5 farm
-6. Access full APEX v5.0 signal stream
+6. Access full v5.0 signal stream
 ```
 
 ### **Broker Setup Requirements**
@@ -61,7 +61,7 @@
 
 ---
 
-## 📊 **APEX TIER BENEFITS WITH v5.0**
+## 📊 **TIER BENEFITS WITH v5.0**
 
 ### **Signal Access**
 - **Volume**: 40+ signals/day (vs 14 for v4.0)
@@ -82,7 +82,7 @@
 - **Monster Pairs**: GBPNZD, GBPAUD, EURAUD access
 - **Mission Briefings**: Enhanced v5.0 display format
 - **XP System**: Maximum progression rates
-- **Achievement Unlocks**: APEX-exclusive achievements
+- **Achievement Unlocks**: -exclusive achievements
 
 ---
 
@@ -115,9 +115,9 @@
 @bitten_trading_bot
 /start
 
-# 2. Activate APEX tier
+# 2. Activate tier
 /presspass  # 7-day trial with full features
-# OR upgrade to paid APEX ($188/month)
+# OR upgrade to paid (/month)
 
 # 3. Provide MT5 credentials when prompted
 # 4. System auto-connects to farm
@@ -129,7 +129,7 @@
 # Add admin account directly to user database
 user_data = {
     'telegram_id': your_telegram_id,
-    'tier': 'APEX',
+    'tier': '',
     'subscription_status': 'active',
     'mt5_connected': True,
     'daily_signal_limit': 999,
@@ -155,11 +155,11 @@ user_data = {
 - **Emergency Stops**: Multiple layers of protection against excessive losses
 
 ### **Tier-Based Controls**
-- **APEX Users**: 999 daily signals, unlimited positions (with correlation limits)
+- **Users**: 999 daily signals, unlimited positions (with correlation limits)
 - **COMMANDER**: 20 daily signals, semi-auto + full auto modes
 - **FANG**: 10 daily signals, manual execution only
 - **NIBBLER**: 6 daily signals, basic features
-- **PRESS PASS**: Full APEX access for 7 days (XP resets nightly)
+- **PRESS PASS**: Full access for 7 days (XP resets nightly)
 
 ---
 
@@ -182,7 +182,7 @@ user_data = {
 
 ## ✅ **FINAL INTEGRATION STATUS**
 
-**APEX v5.0 is fully integrated with BITTEN and operational for immediate user onboarding.**
+**v5.0 is fully integrated with BITTEN and operational for immediate user onboarding.**
 
 ### **Ready Components:**
 ✅ Signal generation (40+ signals/day)  
@@ -197,7 +197,7 @@ user_data = {
 ### **User Onboarding Available:**
 - **Telegram**: @bitten_trading_bot (/start command)
 - **WebApp**: https://joinbitten.com
-- **Trial Option**: 7-day Press Pass with full APEX features
+- **Trial Option**: 7-day Press Pass with full features
 - **Live Trading**: Immediate connection to v5.0 signal stream
 
 **The system is ready for user accounts and live trading operations.**

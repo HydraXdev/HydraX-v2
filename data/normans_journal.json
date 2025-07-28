@@ -1,0 +1,45 @@
+{
+  "entries": [
+    {
+      "timestamp": "2025-07-22T21:35:26.604679",
+      "trade_id": "TEST_001",
+      "phase": "before",
+      "note": "Testing the notebook system. Feeling confident about this trade.",
+      "symbol": "EURUSD",
+      "pnl": null,
+      "mood": {
+        "confident": 1.0
+      },
+      "patterns": []
+    }
+  ],
+  "scars": [],
+  "breakthroughs": [],
+  "norman_entries": [],
+  "family_moments": [],
+  "bit_observations": [],
+  "user_trading_notes": [
+    {
+      "id": "note_1753220126_0",
+      "title": "Test Trading Strategy",
+      "content": "This is a test note to verify the user note system works properly.",
+      "category": "strategy",
+      "tags": [
+        "test",
+        "strategy"
+      ],
+      "symbol": "EURUSD",
+      "trade_id": null,
+      "created_at": "2025-07-22T21:35:26.605146",
+      "updated_at": "2025-07-22T21:35:26.605153",
+      "pinned": false,
+      "archived": false
+    }
+  ],
+  "story_progression": {
+    "user_phases": {},
+    "unlocked_entries": {},
+    "family_wisdom_heard": {},
+    "bit_encounters": {}
+  }
+}

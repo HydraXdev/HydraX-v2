@@ -3,10 +3,15 @@
 Clear webhook and check bot info to troubleshoot command issues
 """
 
+import sys
 import asyncio
 from telegram import Bot
 
-BOT_TOKEN = '7854827710:AAGsO-vgMpsTOVNu6zoo_-GGJkYQd97Mc5w'
+# Add paths for imports
+sys.path.append('/root/HydraX-v2/src')
+from config_loader import get_bot_token
+
+BOT_TOKEN = get_bot_token()
 
 async def clear_webhook_and_check():
     """Clear webhook and check bot status"""

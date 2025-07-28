@@ -16,7 +16,6 @@ from .order_book_reader import OrderBookSnapshot
 
 logger = logging.getLogger(__name__)
 
-
 @dataclass
 class AbsorptionEvent:
     """Represents an absorption event"""
@@ -44,7 +43,6 @@ class AbsorptionEvent:
             'absorption_rate': self.absorption_rate,
             'strength': self.strength
         }
-
 
 @dataclass
 class AbsorptionPattern:
@@ -77,7 +75,6 @@ class AbsorptionPattern:
             'duration': self.duration(),
             'confidence': self.confidence
         }
-
 
 class AbsorptionPatternDetector:
     """Detects absorption patterns in order flow"""
@@ -377,7 +374,6 @@ class AbsorptionPatternDetector:
             'recent_pattern': patterns[-1].pattern_type if patterns else None
         }
 
-
 # Example usage
 async def main():
     from order_book_reader import OrderBookSnapshot, OrderBookLevel
@@ -400,13 +396,11 @@ async def main():
             bids=[
                 OrderBookLevel(base_price - 1, 100),
                 OrderBookLevel(base_price - 2, 80),
-                OrderBookLevel(base_price - 3, 60),
-            ],
+                OrderBookLevel(base_price - 3, 60)],
             asks=[
                 OrderBookLevel(base_price + 1, 100 - i * 5),  # Decreasing volume
                 OrderBookLevel(base_price + 2, 80),
-                OrderBookLevel(base_price + 3, 60),
-            ],
+                OrderBookLevel(base_price + 3, 60)],
             timestamp=time.time() + i * 2
         )
         
@@ -424,7 +418,6 @@ async def main():
     # Get statistics
     stats = detector.get_statistics('BTC/USDT', 'binance')
     print(f"\nStatistics: {stats}")
-
 
 if __name__ == "__main__":
     import asyncio

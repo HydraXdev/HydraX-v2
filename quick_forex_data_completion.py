@@ -102,7 +102,7 @@ def generate_realistic_data(pair: str, start_date: datetime, end_date: datetime)
         current_price = close_price
         current_time += timedelta(minutes=1)
     
-    logger.info(f"Generated {len(data):,} records for {pair}")
+    logger.info(f"Generated {len(data):} records for {pair}")
     return data
 
 def fill_missing_data():
@@ -132,7 +132,7 @@ def fill_missing_data():
         expected_records = 60 * 5 * 24 * 60  # Rough estimate
         coverage = (count / expected_records) * 100 if count else 0
         
-        logger.info(f"{pair}: {count:,} records ({coverage:.1f}% coverage)")
+        logger.info(f"{pair}: {count:} records ({coverage:.1f}% coverage)")
         
         if coverage < 90:  # Need to fill data
             logger.info(f"📊 Generating missing data for {pair}...")
@@ -149,7 +149,7 @@ def fill_missing_data():
             ''', data)
             
             conn.commit()
-            logger.info(f"✅ Completed {pair} - inserted {len(data):,} records")
+            logger.info(f"✅ Completed {pair} - inserted {len(data):} records")
         else:
             logger.info(f"✅ {pair} already has sufficient data")
     
@@ -224,7 +224,7 @@ def export_all_data():
         export_summary['total_records'] += len(df)
         export_summary['pairs_exported'] += 1
         
-        logger.info(f"✅ {pair}: {len(df):,} records exported")
+        logger.info(f"✅ {pair}: {len(df):} records exported")
     
     conn.close()
     
@@ -235,7 +235,7 @@ def export_all_data():
         f.write("=" * 60 + "\n\n")
         f.write(f"📅 Period: {start_date} to {end_date} (60 days)\n")
         f.write(f"💱 Pairs: {', '.join(required_pairs)}\n")
-        f.write(f"📊 Total Records: {export_summary['total_records']:,}\n")
+        f.write(f"📊 Total Records: {export_summary['total_records']:}\n")
         f.write(f"✅ Pairs Exported: {export_summary['pairs_exported']}/{len(required_pairs)}\n\n")
         
         f.write("📁 EXPORTED FILES:\n")
@@ -247,7 +247,7 @@ def export_all_data():
         f.write("💡 USAGE: Import CSV files into your backtesting framework\n")
     
     logger.info(f"📋 Summary report: {summary_path}")
-    logger.info(f"🎉 Export complete: {export_summary['pairs_exported']} pairs, {export_summary['total_records']:,} total records")
+    logger.info(f"🎉 Export complete: {export_summary['pairs_exported']} pairs, {export_summary['total_records']:} total records")
     
     return export_summary
 
@@ -263,6 +263,6 @@ if __name__ == "__main__":
     
     print(f"\n🎉 COMPLETION SUCCESSFUL!")
     print(f"✅ Pairs: {summary['pairs_exported']}/6")
-    print(f"✅ Records: {summary['total_records']:,}")
+    print(f"✅ Records: {summary['total_records']:}")
     print(f"📁 Files: /root/HydraX-v2/data/historical/backtest_data/")
     print(f"🚀 READY FOR 2-MONTH BACKTEST ANALYSIS!")

@@ -83,7 +83,7 @@ class PressPassMetricsDashboard:
                 SUM(CASE WHEN new_tier = 'NIBBLER' THEN 1 ELSE 0 END) as to_nibbler,
                 SUM(CASE WHEN new_tier = 'FANG' THEN 1 ELSE 0 END) as to_fang,
                 SUM(CASE WHEN new_tier = 'COMMANDER' THEN 1 ELSE 0 END) as to_commander,
-                SUM(CASE WHEN new_tier = 'APEX' THEN 1 ELSE 0 END) as to_apex
+                SUM(CASE WHEN new_tier = '' THEN 1 ELSE 0 END) as to_apex
             FROM (
                 SELECT 
                     user_id,
@@ -420,7 +420,7 @@ class PressPassMetricsDashboard:
             SUM(CASE WHEN upgrade_tier = 'NIBBLER' THEN total_revenue ELSE 0 END) as nibbler_revenue,
             SUM(CASE WHEN upgrade_tier = 'FANG' THEN total_revenue ELSE 0 END) as fang_revenue,
             SUM(CASE WHEN upgrade_tier = 'COMMANDER' THEN total_revenue ELSE 0 END) as commander_revenue,
-            SUM(CASE WHEN upgrade_tier = 'APEX' THEN total_revenue ELSE 0 END) as apex_revenue,
+            SUM(CASE WHEN upgrade_tier = '' THEN total_revenue ELSE 0 END) as apex_revenue,
             -- Time to upgrade
             AVG(EXTRACT(EPOCH FROM (upgrade_date - press_pass_start))/86400) as avg_days_to_upgrade,
             PERCENTILE_CONT(0.5) WITHIN GROUP (

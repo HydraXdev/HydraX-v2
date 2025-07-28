@@ -17,7 +17,6 @@ from .mississippi_ambient import WeatherPattern
 
 logger = logging.getLogger(__name__)
 
-
 class AudioQuality(Enum):
     """Audio quality settings"""
     LOW = "low"           # Minimal audio, basic chirps only
@@ -25,14 +24,12 @@ class AudioQuality(Enum):
     HIGH = "high"         # Full audio experience
     ULTRA = "ultra"       # Maximum immersion
 
-
 class FocusMode(Enum):
     """Focus modes that adjust audio behavior"""
     DISTRACTION_FREE = "distraction_free"  # Minimal audio only
     FOCUSED = "focused"                     # Reduced ambient, key events only
     BALANCED = "balanced"                   # Standard experience
     IMMERSIVE = "immersive"                # Full ambient experience
-
 
 @dataclass
 class BitAudioSettings:
@@ -86,7 +83,6 @@ class BitAudioSettings:
     favorite_audio_types: List[str] = None
     disabled_audio_types: List[str] = None
     custom_volume_levels: Dict[str, float] = None
-
 
 class BitAudioConfigurationManager:
     """Manages Bit's audio configuration and settings"""
@@ -517,31 +513,25 @@ class BitAudioConfigurationManager:
             'adaptive_volume_multiplier': self._get_adaptive_volume_multiplier() if settings.adaptive_volume else 1.0
         }
 
-
 # Global instance
 bit_audio_config_manager = BitAudioConfigurationManager()
-
 
 # Convenience functions
 def get_user_audio_config(user_id: str) -> BitAudioSettings:
     """Get user's audio configuration"""
     return bit_audio_config_manager.get_user_audio_settings(user_id)
 
-
 def update_audio_config(user_id: str, updates: Dict[str, Any]) -> BitAudioSettings:
     """Update user's audio configuration"""
     return bit_audio_config_manager.update_user_audio_settings(user_id, updates)
-
 
 def apply_audio_preset(user_id: str, preset_name: str) -> BitAudioSettings:
     """Apply audio preset to user"""
     return bit_audio_config_manager.apply_preset_configuration(user_id, preset_name)
 
-
 def get_audio_volume(user_id: str, audio_type: AudioType) -> float:
     """Get effective volume for audio type"""
     return bit_audio_config_manager.get_volume_for_audio_type(user_id, audio_type)
-
 
 def should_play_audio(user_id: str, audio_type: AudioType) -> bool:
     """Check if audio should be played"""

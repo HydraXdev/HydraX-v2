@@ -43,7 +43,7 @@ Interactive menu with 6 different backtesting scenarios.
 - **FANG**: 85%+ TCS, 10 shots/day
 - **COMMANDER Manual**: 85%+ TCS, 12 shots/day
 - **COMMANDER Auto**: 91%+ TCS, 12 shots/day
-- **APEX**: 91%+ TCS, unlimited shots
+- ****: 91%+ TCS, unlimited shots
 
 ---
 
@@ -72,7 +72,7 @@ Interactive menu with 6 different backtesting scenarios.
 NIBBLER:    75-80% win rate, 6 trades/day max
 FANG:       80-85% win rate, 10 trades/day max
 COMMANDER:  85-90% win rate, varies by mode
-APEX:       85-90% win rate, unlimited
+:       85-90% win rate, unlimited
 ```
 
 ### **3. Stress Test**

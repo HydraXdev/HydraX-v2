@@ -18,7 +18,7 @@ The Farmer Agent is the central orchestration system for the BITTEN clone farm, 
 
 ### Architecture Position
 ```
-APEX Engine → CORE Calculator → FARMER AGENT → Clone Farm → Broker Execution
+Engine → CORE Calculator → FARMER AGENT → Clone Farm → Broker Execution
                                       ↓
                               Master Clone Management
                               User Clone Orchestration  
@@ -179,7 +179,7 @@ graph TD
 ### Blueprint 2: Trade Execution Flow
 ```mermaid
 graph TD
-    A[APEX Signal Generated] --> B[CORE Calculates User Packets]
+    A[Signal Generated] --> B[CORE Calculates User Packets]
     B --> C[Farmer Agent Receives Trade Request]
     C --> D[Validate User Clone Status]
     D --> E[Check Clone Health]

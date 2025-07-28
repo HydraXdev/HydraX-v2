@@ -28,14 +28,14 @@ TCS accuracy needs calibration - 85%+ TCS signals achieving 77.9% win rate vs 85
 - **NIBBLER**: 70%+ TCS requirement enforced
 - **FANG**: 85%+ TCS requirement enforced  
 - **COMMANDER**: 85%+ manual, 91%+ auto-fire enforced
-- **APEX**: 91%+ TCS requirement enforced
+- ****: 91%+ TCS requirement enforced
 - **Result**: 259 TCS violations blocked during test
 
 #### **2. Daily Shot Limits** ✅
 - **NIBBLER**: 6 shots/day limit enforced
 - **FANG**: 10 shots/day limit enforced
 - **COMMANDER**: 12 shots/day limit enforced
-- **APEX**: Unlimited shots (as designed)
+- ****: Unlimited shots (as designed)
 - **Result**: 30 daily limit violations blocked
 
 #### **3. Cooldown Periods** ✅
@@ -101,8 +101,8 @@ Total Protected:       344 blocked (69.4%)
 |------|-------|-------------|-----------------|----------|-----------|---------------|
 | **NIBBLER** | $39 | 6/day | 60 | **85.0%** | $135 | $2.25 |
 | **FANG** | $89 | 10/day | 44 | 68.2% | $62 | $1.41 |
-| **COMMANDER** | $139 | 12/day | 44 | 77.3% | $82 | $1.86 |
-| **APEX** | $188 | Unlimited | 4 | 50.0% | $2 | $0.50 |
+| **COMMANDER** | $189 | 12/day | 44 | 77.3% | $82 | $1.86 |
+| **** |  | Unlimited | 4 | 50.0% | $2 | $0.50 |
 
 ### **Key Insights:**
 
@@ -122,7 +122,7 @@ Total Protected:       344 blocked (69.4%)
 ✅ Dual-threshold system working (85% manual, 91% auto)  
 ✅ Daily limit working correctly (12 shots/day)  
 
-#### **APEX Performance (50.0% win rate):**
+#### **Performance (50.0% win rate):**
 ⚠️ **Low volume** - only 4 trades executed  
 ⚠️ 91% TCS requirement very restrictive  
 ℹ️ Expected behavior for premium tier with highest standards  
@@ -162,14 +162,14 @@ Increase signal generation threshold from **83% to 87%**:
 - NIBBLER blocked from <70% TCS signals
 - FANG blocked from <85% TCS signals
 - COMMANDER blocked from <85%/91% TCS signals
-- APEX blocked from <91% TCS signals
+- blocked from <91% TCS signals
 
 #### **Daily Limit Protection (30 violations blocked):**
 - Prevents overtrading beyond tier allowances
 - NIBBLER limited to 6 trades/day
 - FANG limited to 10 trades/day
 - COMMANDER limited to 12 trades/day
-- APEX unlimited (as designed)
+- unlimited (as designed)
 
 #### **Cooldown Enforcement (55 violations blocked):**
 - Mandatory 30-minute wait between trades
@@ -377,8 +377,7 @@ Add: TCS education by tier level
 #### **3. Advanced Features**
 - Implement CHAINGUN mode fully
 - Deploy AUTO-FIRE for COMMANDER+
-- Activate STEALTH mode for APEX
-- Schedule MIDNIGHT HAMMER events
+- Activate STEALTH mode for - Schedule MIDNIGHT HAMMER events
 
 ### **Long-term Enhancement (Month 2-3):**
 
@@ -479,13 +478,13 @@ TCS Violations: 259 (75.3% of blocks)
 - NIBBLER vs 85%+ signals: 89 blocks
 - FANG vs 70-84% signals: 78 blocks  
 - COMMANDER vs sub-threshold: 56 blocks
-- APEX vs sub-91% signals: 36 blocks
+- vs sub-91% signals: 36 blocks
 
 Daily Limit Violations: 30 (8.7% of blocks)
 - NIBBLER 6-shot limit: 12 blocks
 - FANG 10-shot limit: 9 blocks
 - COMMANDER 12-shot limit: 9 blocks
-- APEX unlimited: 0 blocks
+- unlimited: 0 blocks
 
 Cooldown Violations: 55 (16.0% of blocks)
 - All tiers affected equally

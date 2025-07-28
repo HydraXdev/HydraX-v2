@@ -104,7 +104,6 @@ class User(Base):
     def __repr__(self):
         return f"<User(user_id={self.user_id}, username={self.username}, tier={self.tier})>"
 
-
 class UserProfile(Base):
     __tablename__ = 'user_profiles'
     
@@ -227,7 +226,6 @@ class Trade(Base):
     def __repr__(self):
         return f"<Trade(trade_id={self.trade_id}, symbol={self.symbol}, profit={self.profit_usd})>"
 
-
 class TradeModification(Base):
     __tablename__ = 'trade_modifications'
     
@@ -330,7 +328,6 @@ class XPTransaction(Base):
     def __repr__(self):
         return f"<XPTransaction(user_id={self.user_id}, amount={self.amount}, source={self.source_type})>"
 
-
 class Achievement(Base):
     __tablename__ = 'achievements'
     
@@ -363,7 +360,6 @@ class Achievement(Base):
     
     def __repr__(self):
         return f"<Achievement(code={self.code}, name={self.name}, tier={self.tier})>"
-
 
 class UserAchievement(Base):
     __tablename__ = 'user_achievements'
@@ -452,7 +448,6 @@ class SubscriptionPlan(Base):
     def __repr__(self):
         return f"<SubscriptionPlan(tier={self.tier}, price={self.price_usd})>"
 
-
 class UserSubscription(Base):
     __tablename__ = 'user_subscriptions'
     
@@ -487,7 +482,6 @@ class UserSubscription(Base):
     
     def __repr__(self):
         return f"<UserSubscription(user_id={self.user_id}, plan={self.plan_id}, status={self.status})>"
-
 
 class PaymentTransaction(Base):
     __tablename__ = 'payment_transactions'

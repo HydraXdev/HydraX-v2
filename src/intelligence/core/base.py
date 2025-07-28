@@ -12,7 +12,6 @@ import asyncio
 from concurrent.futures import ThreadPoolExecutor
 import logging
 
-
 class SignalType(Enum):
     """Types of trading signals"""
     BUY = auto()
@@ -26,7 +25,6 @@ class SignalType(Enum):
     VOLUME = auto()
     PATTERN = auto()
 
-
 class SignalStrength(Enum):
     """Signal strength levels"""
     VERY_WEAK = 1
@@ -34,7 +32,6 @@ class SignalStrength(Enum):
     NEUTRAL = 3
     STRONG = 4
     VERY_STRONG = 5
-
 
 class DataSourceType(Enum):
     """Types of data sources"""
@@ -46,7 +43,6 @@ class DataSourceType(Enum):
     SENTIMENT_ANALYSIS = auto()
     BLOCKCHAIN_DATA = auto()
     CUSTOM = auto()
-
 
 @dataclass
 class Signal:
@@ -81,7 +77,6 @@ class Signal:
             'expiry': self.expiry.isoformat() if self.expiry else None
         }
 
-
 @dataclass
 class DataSource:
     """Represents a data source"""
@@ -96,7 +91,6 @@ class DataSource:
     def should_retry(self) -> bool:
         """Check if source should be retried after errors"""
         return self.error_count < self.max_errors
-
 
 class IntelligenceComponent(ABC):
     """Abstract base class for all intelligence components"""
@@ -137,7 +131,6 @@ class IntelligenceComponent(ABC):
             'timestamp': datetime.utcnow().isoformat()
         }
 
-
 class DataIngestionComponent(IntelligenceComponent):
     """Base class for data ingestion components"""
     
@@ -166,7 +159,6 @@ class DataIngestionComponent(IntelligenceComponent):
             except Exception as e:
                 self.logger.error(f"Error in callback: {e}")
 
-
 class DataProcessor(IntelligenceComponent):
     """Base class for data processing components"""
     
@@ -184,7 +176,6 @@ class DataProcessor(IntelligenceComponent):
     async def enrich(self, data: Any) -> Any:
         """Enrich data with additional information"""
         pass
-
 
 class SignalGenerator(IntelligenceComponent):
     """Base class for signal generation components"""
@@ -204,21 +195,17 @@ class SignalGenerator(IntelligenceComponent):
         """Rank signals by importance"""
         pass
 
-
 class IntelligenceError(Exception):
     """Base exception for intelligence system"""
     pass
-
 
 class DataIngestionError(IntelligenceError):
     """Error during data ingestion"""
     pass
 
-
 class ProcessingError(IntelligenceError):
     """Error during data processing"""
     pass
-
 
 class ConfigurationError(IntelligenceError):
     """Configuration related error"""

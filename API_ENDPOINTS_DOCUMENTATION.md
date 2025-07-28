@@ -191,8 +191,7 @@ curl http://localhost:8888/api/signals/active
 fetch('/api/fire', {
   method: 'POST',
   headers: {
-    'Content-Type': 'application/json',
-  },
+    'Content-Type': 'application/json'},
   body: JSON.stringify({
     user_id: 'user123',
     signal_id: 'EURUSD_LONDON_RAID_001'

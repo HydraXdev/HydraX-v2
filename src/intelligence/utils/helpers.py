@@ -11,19 +11,15 @@ from functools import wraps
 import time
 from contextlib import asynccontextmanager
 
-
 T = TypeVar('T')
-
 
 def get_timestamp() -> datetime:
     """Get current UTC timestamp"""
     return datetime.utcnow()
 
-
 def format_timestamp(dt: datetime) -> str:
     """Format datetime to ISO string"""
     return dt.isoformat() + 'Z'
-
 
 def parse_timestamp(timestamp_str: str) -> datetime:
     """Parse ISO timestamp string"""
@@ -31,7 +27,6 @@ def parse_timestamp(timestamp_str: str) -> datetime:
     if timestamp_str.endswith('Z'):
         timestamp_str = timestamp_str[:-1]
     return datetime.fromisoformat(timestamp_str)
-
 
 def calculate_hash(data: Any) -> str:
     """Calculate SHA256 hash of data"""
@@ -45,14 +40,12 @@ def calculate_hash(data: Any) -> str:
         
     return hashlib.sha256(data).hexdigest()
 
-
 def batch_items(items: List[T], batch_size: int) -> List[List[T]]:
     """Split items into batches"""
     batches = []
     for i in range(0, len(items), batch_size):
         batches.append(items[i:i + batch_size])
     return batches
-
 
 async def retry_async(
     func: Callable,
@@ -79,7 +72,6 @@ async def retry_async(
             actual_delay = delay + (asyncio.get_event_loop().time() % jitter)
             
             await asyncio.sleep(actual_delay)
-
 
 def rate_limit(calls_per_second: float):
     """Decorator for rate limiting function calls"""
@@ -121,7 +113,6 @@ def rate_limit(calls_per_second: float):
         
     return decorator
 
-
 class AsyncThrottle:
     """Async throttle for limiting concurrent operations"""
     
@@ -133,7 +124,6 @@ class AsyncThrottle:
         """Acquire throttle slot"""
         async with self._semaphore:
             yield
-
 
 class CircuitBreaker:
     """Circuit breaker pattern implementation"""
@@ -188,7 +178,6 @@ class CircuitBreaker:
         if self.failure_count >= self.failure_threshold:
             self.state = 'open'
 
-
 def merge_dicts(dict1: Dict[str, Any], dict2: Dict[str, Any]) -> Dict[str, Any]:
     """Deep merge two dictionaries"""
     result = dict1.copy()
@@ -201,20 +190,17 @@ def merge_dicts(dict1: Dict[str, Any], dict2: Dict[str, Any]) -> Dict[str, Any]:
             
     return result
 
-
 def truncate_string(s: str, max_length: int, suffix: str = '...') -> str:
     """Truncate string to max length"""
     if len(s) <= max_length:
         return s
     return s[:max_length - len(suffix)] + suffix
 
-
 def format_number(num: Union[int, float], decimals: int = 2) -> str:
     """Format number with thousand separators"""
     if isinstance(num, float):
         return f"{num:,.{decimals}f}"
-    return f"{num:,}"
-
+    return f"{num:}"
 
 def time_window_key(timestamp: datetime, window_minutes: int) -> str:
     """Generate time window key for grouping"""
@@ -224,7 +210,6 @@ def time_window_key(timestamp: datetime, window_minutes: int) -> str:
         microsecond=0
     )
     return window_start.isoformat()
-
 
 async def parallel_map(
     func: Callable[[T], Any],
@@ -240,7 +225,6 @@ async def parallel_map(
             
     tasks = [process_item(item) for item in items]
     return await asyncio.gather(*tasks)
-
 
 def sanitize_filename(filename: str) -> str:
     """Sanitize filename for safe file system usage"""
@@ -259,7 +243,6 @@ def sanitize_filename(filename: str) -> str:
         filename = name[:max_length - len(ext) - 1] + '.' + ext if ext else name[:max_length]
         
     return filename
-
 
 class ExpiringDict:
     """Dictionary with expiring entries"""

@@ -8,7 +8,6 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
 from .behavioral_strategies import BehavioralStrategy, behavioral_strategy_manager
 from .xp_economy import XPEconomy
 
-
 class StrategySelectionInterface:
     """Interface for behavioral strategy selection and management"""
     
@@ -36,7 +35,7 @@ class StrategySelectionInterface:
         # Build message
         message = f"""🎮 **BEHAVIORAL STRATEGY CENTER**
         
-🏆 **Current XP**: {user_xp:,}
+🏆 **Current XP**: {user_xp:}
 🎯 **Active Strategy**: {current_config.display_name}
 📝 *{current_config.description}*
 
@@ -51,8 +50,8 @@ class StrategySelectionInterface:
         # Add next unlock info
         if next_unlock:
             message += f"\n\n🔓 **NEXT UNLOCK**: {next_unlock['display_name']}"
-            message += f"\n📊 **Progress**: {user_xp:,} / {next_unlock['required_xp']:,} XP"
-            message += f"\n⚡ **Need**: {next_unlock['xp_needed']:,} more XP"
+            message += f"\n📊 **Progress**: {user_xp:} / {next_unlock['required_xp']:} XP"
+            message += f"\n⚡ **Need**: {next_unlock['xp_needed']:} more XP"
         else:
             message += f"\n\n🏆 **ALL STRATEGIES UNLOCKED!**"
         
@@ -95,7 +94,7 @@ class StrategySelectionInterface:
 
 📋 **Description**: {config.description}
 
-🔓 **Unlock Requirement**: {config.unlock_xp:,} XP
+🔓 **Unlock Requirement**: {config.unlock_xp:} XP
 
 ⚙️ **Strategy Mechanics**:
 • **TCS Filter**: {config.tcs_modifier:.1%} modifier
@@ -132,7 +131,7 @@ class StrategySelectionInterface:
         if not self.strategy_manager.can_unlock_strategy(user_xp, strategy):
             config = self.strategy_manager.STRATEGY_CONFIGS[strategy]
             needed_xp = config.unlock_xp - user_xp
-            return False, f"❌ Insufficient XP for {config.display_name}\nNeed {needed_xp:,} more XP (have {user_xp:,}, need {config.unlock_xp:,})"
+            return False, f"❌ Insufficient XP for {config.display_name}\nNeed {needed_xp:} more XP (have {user_xp:}, need {config.unlock_xp:})"
         
         # Set the strategy
         success = self.strategy_manager.set_user_strategy(user_id, strategy, user_xp)
@@ -206,13 +205,13 @@ Behavioral strategies modify how signals are filtered and executed based on diff
 
 🎯 **Current Strategy**: {stats['display_name']}
 📝 **Description**: {stats['description']}
-🔓 **Unlock XP**: {stats['unlock_xp']:,}
+🔓 **Unlock XP**: {stats['unlock_xp']:}
 📅 **Active Since**: {stats['active_since'][:10]}
 
 💰 **XP Progress**:
-• **Current Balance**: {user_balance.current_balance:,} XP
-• **Lifetime Earned**: {user_balance.lifetime_earned:,} XP
-• **Lifetime Spent**: {user_balance.lifetime_spent:,} XP
+• **Current Balance**: {user_balance.current_balance:} XP
+• **Lifetime Earned**: {user_balance.lifetime_earned:} XP
+• **Lifetime Spent**: {user_balance.lifetime_spent:} XP
 
 🎮 **Strategy Mechanics**:"""
         
@@ -228,7 +227,6 @@ Behavioral strategies modify how signals are filtered and executed based on diff
         message += f"\n\n🏆 **Progress**: {unlocked_count}/6 strategies unlocked"
         
         return message
-
 
 # Telegram bot command handlers
 def register_strategy_commands(bot_instance):

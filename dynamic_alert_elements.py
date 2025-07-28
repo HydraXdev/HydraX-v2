@@ -47,9 +47,9 @@ arcade_with_wins = [
 # 4. TIER ACTIVITY (who's playing)
 mixed_with_tiers = [
     "🔫 RAID ACTIVE [81%]\n👥 5 FANG • 12 NIBBLER",
-    "⚡ PRECISION [93%]\n👥 3 APEX • 2 COMMANDER",
+    "⚡ PRECISION [93%]\n👥 3 • 2 COMMANDER",
     "🔫 FIREFIGHT [77%]\n👥 18 ACTIVE • 4 FANG+",
-    "⚡ OVERWATCH [88%]\n🎖️ 2 APEX ENGAGED"
+    "⚡ OVERWATCH [88%]\n🎖️ 2 ENGAGED"
 ]
 
 # 5. MOMENTUM indicators

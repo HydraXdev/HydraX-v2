@@ -30,8 +30,8 @@ class SelectorIntegration:
     def get_user_selector(self, user_id: int, tier: TierLevel) -> Optional[CommanderSelector]:
         """Get or create selector for user"""
         
-        # Only COMMANDER and APEX get selectors
-        if tier not in [TierLevel.COMMANDER, TierLevel.APEX]:
+        # Only COMMANDER and get selectors
+        if tier not in [TierLevel.COMMANDER, TierLevel.]:
             return None
         
         if user_id not in self.user_selectors:
@@ -77,7 +77,7 @@ class SelectorIntegration:
                 }
                 
                 if selector:
-                    # Commander/APEX with selector
+                    # Commander/with selector
                     action = selector.process_signal(signal_dict, can_execute)
                     action['signal'] = signal
                     action['execution_params'] = params
@@ -193,7 +193,7 @@ class SelectorIntegration:
         
         selector = self.get_user_selector(user_id, tier)
         if not selector:
-            return "⚠️ Selector switch requires COMMANDER or APEX tier"
+            return "⚠️ Selector switch requires COMMANDER or tier"
         
         if command == '/selector':
             # Show current status

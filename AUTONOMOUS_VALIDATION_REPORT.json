@@ -1,0 +1,43 @@
+{
+  "timestamp": "2025-07-20T19:40:49.550321",
+  "overall_status": "MOSTLY_READY",
+  "critical_systems": {
+    "signal_generation": {
+      "status": "OPERATIONAL",
+      "engine": "APEX v6.0 Enhanced",
+      "file": "/root/HydraX-v2/apex_production_v6.py"
+    },
+    "pricing": {
+      "status": "CONSISTENT",
+      "tiers": {
+        "NIBBLER": 39,
+        "FANG": 89,
+        "COMMANDER": 189
+      }
+    },
+    "drill_reports": {
+      "status": "READY",
+      "scheduler": "/root/HydraX-v2/send_daily_drill_reports.py",
+      "system": "/root/HydraX-v2/src/bitten_core/daily_drill_report.py"
+    },
+    "tier_system": {
+      "status": "CLEAN",
+      "tiers": [
+        "PRESS_PASS",
+        "NIBBLER",
+        "FANG",
+        "COMMANDER"
+      ],
+      "apex_removed": true
+    }
+  },
+  "warnings": [
+    "CLAUDE.md may have inconsistencies"
+  ],
+  "errors": [
+    "Webapp responded with status 404"
+  ],
+  "recommendations": [
+    "System mostly ready - minor issues need attention"
+  ]
+}

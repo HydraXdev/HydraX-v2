@@ -158,7 +158,7 @@ BITTEN uses an ultra-advanced AI ensemble with 15+ models including:
 1. **NIBBLER**: Sees 70%+ TCS RAPID_ASSAULT only
 2. **FANG**: Sees 80%+ TCS all signals  
 3. **COMMANDER**: Sees 85%+ TCS with auto-execution
-4. **APEX**: Premium 90%+ TCS signals
+4. ****: Premium 90%+ TCS signals
 
 ---
 

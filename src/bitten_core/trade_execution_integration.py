@@ -12,7 +12,6 @@ from .daily_drill_report import DailyDrillReportSystem
 
 logger = logging.getLogger(__name__)
 
-
 class TradeExecutionIntegration:
     """Integration manager for connecting all trade execution systems"""
     
@@ -55,10 +54,8 @@ class TradeExecutionIntegration:
         """Get the tactical strategy manager"""
         return self.tactical_manager
 
-
 # Global integration instance
 _integration_instance = None
-
 
 def get_trade_execution_integration() -> TradeExecutionIntegration:
     """Get or create the global trade execution integration instance"""
@@ -69,7 +66,6 @@ def get_trade_execution_integration() -> TradeExecutionIntegration:
         _integration_instance.initialize()
     
     return _integration_instance
-
 
 def initialize_trade_execution_systems():
     """Initialize all trade execution systems and their integrations"""
@@ -85,7 +81,6 @@ def initialize_trade_execution_systems():
     else:
         logger.error("❌ Failed to initialize trade execution systems")
         return False
-
 
 # Example usage for testing the integration
 if __name__ == "__main__":

@@ -41,7 +41,7 @@ async def test_user_specific_missions():
         }
     ]
     
-    # Create a realistic APEX signal
+    # Create a realistic signal
     apex_signal = {
         'symbol': 'EURUSD',
         'direction': 'BUY',

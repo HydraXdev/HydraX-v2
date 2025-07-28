@@ -533,7 +533,7 @@ PERSONALITY_ASSIGNMENT_RULES = {
     "ATHENA": {
         "keywords": ["command", "leadership", "strategy", "tactical", "mission", "protect", "guide", "authority", "precision", "control"],
         "behaviors": ["strategic_thinking", "leadership_seeking", "command_preference", "tactical_focus", "protective_instinct", "mission_oriented"],
-        "tier_preference": ["COMMANDER", "APEX"],
+        "tier_preference": ["COMMANDER"],
         "base_weight": 0.25,
         "trigger_phrases": ["take command", "strategic guidance", "mission briefing", "tactical assessment", "protect my position", "lead the way"]
     }

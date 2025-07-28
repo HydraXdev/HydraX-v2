@@ -281,7 +281,7 @@
                     </span>
                 </div>
                 <div class="stat-item">
-                    <span>APEX:</span>
+                    <span>:</span>
                     <span class="stat-value" id="apexQuickStatus">
                         <span class="status-indicator status-offline"></span>OFFLINE
                     </span>
@@ -355,9 +355,9 @@
             </table>
         </div>
         
-        <!-- APEX Control Panel -->
+        <!-- Control Panel -->
         <div class="dashboard-panel full-width">
-            <div class="panel-title">🎯 APEX ENGINE CONTROL</div>
+            <div class="panel-title">🎯 ENGINE CONTROL</div>
             <div class="apex-control-grid" style="display: grid; grid-template-columns: 1fr 1.5fr 1fr 1.5fr; gap: 20px;">
                 <!-- Status Section -->
                 <div class="apex-status">
@@ -377,9 +377,9 @@
                         <span class="stat-value" id="apexSignalCount">0</span>
                     </div>
                     <div style="margin-top: 15px;">
-                        <button class="command-btn" id="apexStartBtn" onclick="controlAPEX('start')" style="width: 100%; margin-bottom: 5px;">START</button>
-                        <button class="command-btn danger" id="apexStopBtn" onclick="controlAPEX('stop')" style="width: 100%; margin-bottom: 5px;">STOP</button>
-                        <button class="command-btn" onclick="controlAPEX('restart')" style="width: 100%;">RESTART</button>
+                        <button class="command-btn" id="apexStartBtn" onclick="control('start')" style="width: 100%; margin-bottom: 5px;">START</button>
+                        <button class="command-btn danger" id="apexStopBtn" onclick="control('stop')" style="width: 100%; margin-bottom: 5px;">STOP</button>
+                        <button class="command-btn" onclick="control('restart')" style="width: 100%;">RESTART</button>
                     </div>
                 </div>
                 
@@ -389,27 +389,27 @@
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                         <div>
                             <label style="font-size: 11px; color: #888;">Signals/Hour Target</label>
-                            <input type="range" id="apexSignalsPerHour" min="10" max="100" value="40" onchange="updateAPEXConfig()" style="width: 100%;">
+                            <input type="range" id="apexSignalsPerHour" min="10" max="100" value="40" onchange="updateConfig()" style="width: 100%;">
                             <span id="apexSignalsPerHourValue" style="font-size: 12px;">40</span>
                         </div>
                         <div>
                             <label style="font-size: 11px; color: #888;">TCS Threshold (%)</label>
-                            <input type="range" id="apexTcsThreshold" min="50" max="90" value="65" onchange="updateAPEXConfig()" style="width: 100%;">
+                            <input type="range" id="apexTcsThreshold" min="50" max="90" value="65" onchange="updateConfig()" style="width: 100%;">
                             <span id="apexTcsThresholdValue" style="font-size: 12px;">65%</span>
                         </div>
                         <div>
                             <label style="font-size: 11px; color: #888;">Scan Interval (sec)</label>
-                            <input type="range" id="apexScanInterval" min="15" max="120" value="45" onchange="updateAPEXConfig()" style="width: 100%;">
+                            <input type="range" id="apexScanInterval" min="15" max="120" value="45" onchange="updateConfig()" style="width: 100%;">
                             <span id="apexScanIntervalValue" style="font-size: 12px;">45s</span>
                         </div>
                         <div>
                             <label style="font-size: 11px; color: #888;">Max Spread</label>
-                            <input type="range" id="apexMaxSpread" min="20" max="100" value="50" onchange="updateAPEXConfig()" style="width: 100%;">
+                            <input type="range" id="apexMaxSpread" min="20" max="100" value="50" onchange="updateConfig()" style="width: 100%;">
                             <span id="apexMaxSpreadValue" style="font-size: 12px;">50</span>
                         </div>
                     </div>
                     <div style="margin-top: 10px;">
-                        <button class="command-btn" onclick="saveAPEXConfig()" style="width: 100%;">APPLY CONFIGURATION</button>
+                        <button class="command-btn" onclick="saveConfig()" style="width: 100%;">APPLY CONFIGURATION</button>
                     </div>
                 </div>
                 
@@ -557,12 +557,12 @@
                 const tierBreakdown = document.getElementById('tierBreakdown');
                 tierBreakdown.innerHTML = '';
                 
-                const tiers = ['NIBBLER', 'FANG', 'COMMANDER', 'APEX'];
+                const tiers = ['NIBBLER', 'FANG', 'COMMANDER', ''];
                 const tierColors = {
                     'NIBBLER': '#00ff41',
                     'FANG': '#ffaa00',
                     'COMMANDER': '#ff6b00',
-                    'APEX': '#ff0040'
+                    '': '#ff0040'
                 };
                 
                 tiers.forEach(tier => {
@@ -891,10 +891,10 @@
             document.getElementById('winRate').textContent = data.win_rate + '%';
         });
         
-        // APEX Control Functions
+        // Control Functions
         let apexConfig = {};
         
-        async function loadAPEXStatus() {
+        async function loadStatus() {
             try {
                 const response = await fetch('/throne/api/apex/status');
                 const data = await response.json();
@@ -926,7 +926,7 @@
                 document.getElementById('apexStopBtn').disabled = !data.running;
                 
             } catch (error) {
-                console.error('Error loading APEX status:', error);
+                console.error('Error loading status:', error);
             }
         }
         
@@ -968,14 +968,14 @@
                 const toggle = document.createElement('label');
                 toggle.style.cssText = 'display: flex; align-items: center; gap: 5px; font-size: 11px; padding: 5px; background: rgba(0,255,65,0.1); border-radius: 3px; cursor: pointer;';
                 toggle.innerHTML = `
-                    <input type="checkbox" id="pair_${pair}" value="${pair}" ${isActive ? 'checked' : ''} onchange="updateAPEXConfig()">
+                    <input type="checkbox" id="pair_${pair}" value="${pair}" ${isActive ? 'checked' : ''} onchange="updateConfig()">
                     <span>${pair}</span>
                 `;
                 container.appendChild(toggle);
             });
         }
         
-        function updateAPEXConfig() {
+        function updateConfig() {
             // Update display values in real-time
             document.getElementById('apexSignalsPerHourValue').textContent = document.getElementById('apexSignalsPerHour').value;
             document.getElementById('apexTcsThresholdValue').textContent = document.getElementById('apexTcsThreshold').value + '%';
@@ -983,7 +983,7 @@
             document.getElementById('apexMaxSpreadValue').textContent = document.getElementById('apexMaxSpread').value;
         }
         
-        async function saveAPEXConfig() {
+        async function saveConfig() {
             try {
                 // Gather all selected pairs
                 const pairs = [];
@@ -1008,14 +1008,14 @@
                 alert(result.success ? '✅ Configuration updated!' : '❌ ' + result.message);
                 
                 if (result.success) {
-                    loadAPEXStatus(); // Reload to confirm changes
+                    loadStatus(); // Reload to confirm changes
                 }
             } catch (error) {
                 alert('❌ Failed to update configuration: ' + error.message);
             }
         }
         
-        async function controlAPEX(action) {
+        async function control(action) {
             try {
                 const response = await fetch('/throne/api/apex/control', {
                     method: 'POST',
@@ -1027,14 +1027,14 @@
                 alert(result.success ? '✅ ' + result.message : '❌ ' + result.message);
                 
                 // Reload status after a moment
-                setTimeout(loadAPEXStatus, 2000);
+                setTimeout(loadStatus, 2000);
                 
             } catch (error) {
-                alert('❌ Failed to control APEX: ' + error.message);
+                alert('❌ Failed to control : ' + error.message);
             }
         }
         
-        async function loadAPEXSignals() {
+        async function loadSignals() {
             try {
                 const response = await fetch('/throne/api/apex/signals');
                 const data = await response.json();
@@ -1061,7 +1061,7 @@
                     container.innerHTML = '<div style="padding: 10px; color: #888;">No signals yet</div>';
                 }
             } catch (error) {
-                console.error('Error loading APEX signals:', error);
+                console.error('Error loading signals:', error);
             }
         }
         
@@ -1155,7 +1155,7 @@
         // Simulate some initial activities
         function initializeActivityFeed() {
             addActivity('SYSTEM', 'Commander Throne initialized', '#ff6b00');
-            addActivity('APEX', 'Signal engine monitoring active', '#00ff41');
+            addActivity('', 'Signal engine monitoring active', '#00ff41');
             addActivity('REVENUE', 'Subscription analytics loaded', '#ffaa00');
         }
         
@@ -1163,8 +1163,8 @@
         loadMissionStats();
         loadSoldierRoster();
         loadTradeLog();
-        loadAPEXStatus();
-        loadAPEXSignals();
+        loadStatus();
+        loadSignals();
         loadGhostTrades();
         loadSubscriptionAnalytics();
         initializeActivityFeed();
@@ -1173,8 +1173,8 @@
         setInterval(() => {
             loadMissionStats();
             loadTradeLog();
-            loadAPEXStatus();
-            loadAPEXSignals();
+            loadStatus();
+            loadSignals();
             loadGhostTrades();
             loadSubscriptionAnalytics();
             addActivity('REFRESH', 'Dashboard data updated', '#888');

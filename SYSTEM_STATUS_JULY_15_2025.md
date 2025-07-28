@@ -18,7 +18,7 @@
 
 ### 3. ✅ Tier System Simplification
 - Reduced from 5 tiers to 3 paid tiers + trial
-- APEX features merged into COMMANDER tier
+- features merged into COMMANDER tier
 - COMMANDER now has AUTO mode exclusively
 - Updated pricing and access controls
 

@@ -24,7 +24,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-
 class EmailScheduler:
     """Manages scheduled email tasks"""
     
@@ -248,7 +247,6 @@ class EmailScheduler:
                 logger.error(f"Scheduler error: {str(e)}")
                 time.sleep(60)  # Wait a minute before retrying
 
-
 def main():
     """Main entry point"""
     scheduler = EmailScheduler()
@@ -260,7 +258,6 @@ def main():
     except Exception as e:
         logger.error(f"Fatal error: {str(e)}")
         sys.exit(1)
-
 
 if __name__ == "__main__":
     main()

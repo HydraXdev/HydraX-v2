@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-APEX Adaptive Flow Engine v1.0
+Adaptive Flow Engine v1.0
 Dynamic thresholding system for consistent signal flow
 
 Target: 48 signals/day (2 per hour) with 70%+ win rate
@@ -50,7 +50,7 @@ class FlowMetrics:
     threshold_adjustment: float
     time_since_last_signal: float
 
-class APEXAdaptiveFlowEngine:
+class AdaptiveFlowEngine:
     """Adaptive signal generation with dynamic thresholding"""
     
     def __init__(self):
@@ -498,12 +498,12 @@ class APEXAdaptiveFlowEngine:
 def main():
     """Run Adaptive Flow Engine demonstration"""
     
-    print("🚀 APEX Adaptive Flow Engine v1.0")
+    print("🚀 Adaptive Flow Engine v1.0")
     print("🎯 Target: 48 signals/day (2 per hour) with 70%+ win rate")
     print("⚡ Dynamic thresholding for consistent flow")
     print("=" * 60)
     
-    engine = APEXAdaptiveFlowEngine()
+    engine = AdaptiveFlowEngine()
     
     # Run 24-hour simulation
     results = engine.run_adaptive_backtest(hours=24)

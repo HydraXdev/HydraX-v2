@@ -19,7 +19,6 @@ import backoff
 from ..core.base import DataIngestionComponent, DataSource, DataSourceType, IntelligenceError
 from ..monitoring.logger import LoggerManager, timed_operation
 
-
 class ConnectionStatus(Enum):
     """Connection status for data sources"""
     DISCONNECTED = auto()
@@ -27,7 +26,6 @@ class ConnectionStatus(Enum):
     CONNECTED = auto()
     ERROR = auto()
     RECONNECTING = auto()
-
 
 @dataclass
 class IngestionStats:
@@ -48,7 +46,6 @@ class IngestionStats:
             return 0.0
         return (self.messages_processed / total) * 100
 
-
 class RateLimiter:
     """Rate limiter for API calls"""
     
@@ -66,7 +63,6 @@ class RateLimiter:
             if time_since_last < self.min_interval:
                 await asyncio.sleep(self.min_interval - time_since_last)
             self.last_call = time.time()
-
 
 class BaseDataIngester(DataIngestionComponent):
     """Base class for all data ingesters"""
@@ -265,7 +261,6 @@ class BaseDataIngester(DataIngestionComponent):
         })
         return health
 
-
 class HTTPDataIngester(BaseDataIngester):
     """Data ingester for HTTP/REST APIs"""
     
@@ -305,7 +300,6 @@ class HTTPDataIngester(BaseDataIngester):
                 
                 # Wait before retry
                 await asyncio.sleep(min(poll_interval, 10))
-
 
 class WebSocketDataIngester(BaseDataIngester):
     """Data ingester for WebSocket connections"""
@@ -366,7 +360,6 @@ class WebSocketDataIngester(BaseDataIngester):
         """Send message through WebSocket"""
         if self._ws_connection and not self._ws_connection.closed:
             await self._ws_connection.send_json(message)
-
 
 class StreamDataIngester(BaseDataIngester):
     """Data ingester for streaming data sources"""

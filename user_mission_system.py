@@ -66,7 +66,7 @@ class UserMissionSystem:
         engagement_count = 0
         
         # Generate base mission data
-        signal_id = f"APEX5_{base_signal['symbol']}_{int(time.time())}"
+        signal_id = f"5_{base_signal['symbol']}_{int(time.time())}"
         expiry_time = datetime.now() + timedelta(hours=4)  # 4-hour self-destruct for data efficiency
         
         for user_id, user_data in self.users.items():
@@ -168,7 +168,7 @@ class UserMissionSystem:
         current_time = datetime.now()
         cleaned_count = 0
         
-        for mission_file in self.missions_dir.glob("APEX5_*.json"):
+        for mission_file in self.missions_dir.glob("5_*.json"):
             try:
                 with open(mission_file, 'r') as f:
                     mission = json.load(f)
@@ -267,8 +267,7 @@ class UserMissionSystem:
 # Example usage and testing
 if __name__ == "__main__":
     
-    # Sample signal from APEX
-    sample_signal = {
+    # Sample signal from sample_signal = {
         'symbol': 'EURUSD',
         'direction': 'BUY',
         'tcs_score': 87,
@@ -290,7 +289,7 @@ if __name__ == "__main__":
         print(f"  {user_tier} User {user_id}: {url}")
     
     # Show engagement stats
-    base_id = f"APEX5_{sample_signal['symbol']}_{int(time.time())}"
+    base_id = f"5_{sample_signal['symbol']}_{int(time.time())}"
     stats = mission_system.get_engagement_stats(base_id)
     print(f"\n📊 Engagement Stats: {stats['total_engaged']} engaged, {stats['fired_count']} fired")
     

@@ -345,7 +345,6 @@ class ResultTracker:
         """Get currently active trades"""
         return self.active_trades.copy()
 
-
 class PerformanceMetrics:
     """Performance metrics and analytics"""
     
@@ -422,7 +421,6 @@ class PerformanceMetrics:
             'signals_per_day': (signal_count or 0) / days if days > 0 else 0
         }
 
-
 class CallbackManager:
     """Manages callback registration and execution"""
     
@@ -466,7 +464,6 @@ class CallbackManager:
         if result_data.result == TradeResult.LOSS and result_data.profit_pips and result_data.profit_pips < -50:
             logger.warning(f"Large loss detected: {result_data.symbol} - {result_data.profit_pips} pips")
 
-
 # Global result tracker instance
 _result_tracker = None
 
@@ -477,7 +474,6 @@ def get_result_tracker() -> ResultTracker:
         _result_tracker = ResultTracker()
         CallbackManager(_result_tracker)  # Set up default callbacks
     return _result_tracker
-
 
 # Example usage functions
 async def example_usage():
@@ -521,7 +517,6 @@ async def example_usage():
     summary = tracker.get_performance_summary(7)
     print(f"Win rate: {summary['win_rate']:.2%}")
     print(f"Signals per day: {summary['signals_per_day']:.1f}")
-
 
 if __name__ == "__main__":
     asyncio.run(example_usage())

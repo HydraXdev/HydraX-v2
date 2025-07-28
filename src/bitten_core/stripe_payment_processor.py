@@ -162,8 +162,7 @@ class StripePaymentProcessor:
                 subscription_id,
                 items=[{
                     'id': subscription.items.data[0].id,
-                    'price': new_price_id,
-                }],
+                    'price': new_price_id}],
                 proration_behavior='always_invoice',  # Charge/credit immediately
                 metadata={
                     'tier': new_tier,
@@ -262,8 +261,7 @@ class StripePaymentProcessor:
                 payment_method_types=['card'],
                 line_items=[{
                     'price': price_id,
-                    'quantity': 1,
-                }],
+                    'quantity': 1}],
                 mode='subscription',
                 success_url=success_url,
                 cancel_url=cancel_url,

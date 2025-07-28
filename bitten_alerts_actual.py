@@ -28,8 +28,7 @@ TIER_ACCESS = {
         "has_sniper_access": True,
         "min_tcs": 90,
         "has_autofire": True
-    },
-    "APEX": {
+    }: {
         "has_sniper_access": True,
         "min_tcs": 91,
         "has_autofire": True
@@ -97,8 +96,7 @@ EXAMPLE_ALERTS = [
     
     # FANG+ only SNIPER signals  
     {"symbol": "USDJPY", "direction": "BUY", "entry_price": 149.234, "confidence": 0.87, "tier_access": "FANG+"},
-    {"symbol": "AUDUSD", "direction": "SELL", "entry_price": 0.65432, "confidence": 0.92, "tier_access": "FANG+"},
-]
+    {"symbol": "AUDUSD", "direction": "SELL", "entry_price": 0.65432, "confidence": 0.92, "tier_access": "FANG+"}]
 
 if __name__ == "__main__":
     print("=== BITTEN ALERTS (ACTUAL SYSTEM) ===\n")
@@ -113,7 +111,7 @@ if __name__ == "__main__":
     print("\nACTUAL TIER RULES:")
     print("• NIBBLER: RAPID_ASSAULT only (no SNIPER access)")
     print("• FANG: Both RAPID_ASSAULT (75%+) and SNIPER (85%+)")
-    print("• COMMANDER/APEX: All signals with higher TCS minimums")
+    print("• COMMANDER/: All signals with higher TCS minimums")
     
     print("\nVISUAL TCS GRADES:")
     print("💎 85%+ SNIPER GRADE")

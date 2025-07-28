@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-APEX PRODUCTION v6.0 ENHANCED - With Smart Timer System
+PRODUCTION v6.0 ENHANCED - With Smart Timer System
 Real-world calibrated engine + Dynamic timer adjustments + Market intelligence
 
 DEPLOYMENT: July 18, 2025 - Enhanced Edition
@@ -399,7 +399,7 @@ class SmartTimerEngine:
             'emergency_mode': False
         }
 
-class APEXProductionV6Enhanced:
+class ProductionV6Enhanced:
     """Enhanced production engine with smart timer integration"""
     
     def __init__(self):
@@ -519,14 +519,14 @@ class APEXProductionV6Enhanced:
         """Setup production logging"""
         logging.basicConfig(
             level=logging.INFO,
-            format='%(asctime)s - APEX-ENHANCED-v6 - %(levelname)s - %(message)s',
+            format='%(asctime)s - -ENHANCED-v6 - %(levelname)s - %(message)s',
             handlers=[
                 logging.FileHandler('apex_production_v6_enhanced.log'),
                 logging.StreamHandler()
             ]
         )
         self.logger = logging.getLogger(__name__)
-        self.logger.info("🚀 APEX Production v6.0 Enhanced Engine Started")
+        self.logger.info("🚀 Production v6.0 Enhanced Engine Started")
         self.logger.info(f"🎯 Target: {self.daily_targets['min_signals']}-{self.daily_targets['max_signals']} signals/day")
         self.logger.info(f"📊 Expected Win Rate: {self.performance_targets['target_win_rate']}%")
         self.logger.info("⏰ Smart Timer System: ENABLED")
@@ -753,7 +753,7 @@ class APEXProductionV6Enhanced:
         
         # Create base signal
         base_signal = {
-            'signal_id': f'APEX6E_{symbol}_{self.signal_count:06d}',
+            'signal_id': f'6E_{symbol}_{self.signal_count:06d}',
             'symbol': symbol,
             'direction': 'BUY',  # Simplified for production
             'signal_type': signal_type,
@@ -863,7 +863,7 @@ class APEXProductionV6Enhanced:
                 }
         
         return {
-            'engine_version': 'APEX Production v6.0 Enhanced',
+            'engine_version': 'Production v6.0 Enhanced',
             'status': 'OPERATIONAL',
             'uptime_hours': round(uptime, 2),
             'signals_today': signals_today,
@@ -883,7 +883,7 @@ class APEXProductionV6Enhanced:
     
     def run_production_loop(self):
         """Main production loop with enhanced features"""
-        self.logger.info("🚀 APEX Production v6.0 Enhanced - LIVE TRADING MODE")
+        self.logger.info("🚀 Production v6.0 Enhanced - LIVE TRADING MODE")
         self.logger.info(f"🎯 Target: {self.daily_targets['min_signals']}-{self.daily_targets['max_signals']} signals/day")
         self.logger.info(f"📊 Expected Win Rate: {self.performance_targets['target_win_rate']}%")
         self.logger.info(f"🔄 Scan Interval: {self.config['scan_interval_seconds']} seconds")
@@ -915,10 +915,10 @@ class APEXProductionV6Enhanced:
 
 def main():
     """Main entry point for enhanced production deployment"""
-    print("🚀 APEX PRODUCTION v6.0 ENHANCED - WITH SMART TIMERS")
+    print("🚀 PRODUCTION v6.0 ENHANCED - WITH SMART TIMERS")
     print("=" * 70)
     
-    engine = APEXProductionV6Enhanced()
+    engine = ProductionV6Enhanced()
     
     # Show deployment summary
     status = engine.get_production_status()

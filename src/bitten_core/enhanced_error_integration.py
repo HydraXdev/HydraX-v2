@@ -31,7 +31,6 @@ from .webapp_error_handlers import setup_webapp_error_handling
 
 logger = logging.getLogger("bitten_integration")
 
-
 class IntegratedErrorSystem:
     """Integrated error handling, recovery, and monitoring system"""
     
@@ -348,35 +347,28 @@ class IntegratedErrorSystem:
         except Exception as e:
             return {"success": False, "error": f"Error rate check failed: {e}"}
 
-
 # Global integrated system instance
 integrated_system = IntegratedErrorSystem()
-
 
 def initialize_error_system():
     """Initialize the complete error handling system"""
     return integrated_system.initialize_system()
 
-
 def shutdown_error_system():
     """Shutdown the error handling system"""
     integrated_system.shutdown_system()
-
 
 def get_system_status() -> Dict[str, Any]:
     """Get comprehensive system status"""
     return integrated_system.get_comprehensive_status()
 
-
 def run_diagnostics() -> Dict[str, Any]:
     """Run system diagnostics"""
     return integrated_system.run_system_diagnostics()
 
-
 def handle_critical_error(error: Exception, context: Dict[str, Any]) -> Dict[str, Any]:
     """Handle critical errors with full recovery"""
     return integrated_system.handle_critical_error(error, context)
-
 
 def setup_flask_error_handling(app):
     """Setup Flask error handling integration"""
@@ -398,7 +390,6 @@ def setup_flask_error_handling(app):
     
     return webapp_handler
 
-
 # Auto-start monitoring when module is imported
 if __name__ != "__main__":
     try:
@@ -406,7 +397,6 @@ if __name__ != "__main__":
         initialize_error_system()
     except Exception as e:
         print(f"Failed to auto-initialize error system: {e}")
-
 
 if __name__ == "__main__":
     # Test the integrated system

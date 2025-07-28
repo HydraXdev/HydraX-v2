@@ -14,7 +14,6 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-
 class AchievementTier(Enum):
     """Achievement tier levels"""
     BRONZE = "bronze"
@@ -23,7 +22,6 @@ class AchievementTier(Enum):
     PLATINUM = "platinum"
     DIAMOND = "diamond"
     MASTER = "master"
-
 
 class AchievementCategory(Enum):
     """Achievement categories"""
@@ -34,7 +32,6 @@ class AchievementCategory(Enum):
     PROGRESSION = "progression"
     MASTERY = "mastery"
     SPECIAL = "special"
-
 
 @dataclass
 class AchievementDefinition:
@@ -55,7 +52,6 @@ class AchievementDefinition:
         if self.xp_reward < 0:
             raise ValueError(f"XP reward must be non-negative: {self.xp_reward}")
 
-
 @dataclass
 class AchievementProgress:
     """Tracks progress towards an achievement"""
@@ -69,7 +65,6 @@ class AchievementProgress:
     def update_progress(self, key: str, value: Any) -> None:
         """Update progress for a specific requirement"""
         self.current_progress[key] = value
-        
 
 @dataclass
 class Badge:
@@ -84,7 +79,6 @@ class Badge:
         """Generate unique badge ID"""
         badge_string = f"{self.achievement_id}_{self.tier.value}"
         return hashlib.md5(badge_string.encode()).hexdigest()[:12]
-
 
 class AchievementSystem:
     """Main achievement system manager"""
@@ -787,7 +781,6 @@ class AchievementSystem:
             
         except Exception as e:
             logger.error(f"Failed to load achievement progress: {e}")
-
 
 # Example usage
 if __name__ == "__main__":

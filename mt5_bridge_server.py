@@ -207,8 +207,7 @@ class MT5BridgeServer:
                 "magic": 234000,
                 "comment": "BITTEN_BRIDGE_TRADE",
                 "type_time": mt5.ORDER_TIME_GTC,
-                "type_filling": mt5.ORDER_FILLING_IOC,
-            }
+                "type_filling": mt5.ORDER_FILLING_IOC}
             
             # Add SL/TP if provided
             if 'stop_loss' in trade_data and trade_data['stop_loss'] > 0:

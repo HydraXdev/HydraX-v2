@@ -55,31 +55,25 @@ async def sunday_ops_command(update: Update, context: ContextTypes.DEFAULT_TYPE)
         logger.error(f"Error in sunday_ops_command: {e}")
         await update.message.reply_text("❌ Error loading training missions.")
 
-
 async def sunday_gap_hunter_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Start Gap Hunter training mission"""
     await start_mission(update, context, "gap_hunter")
-
 
 async def sunday_liquidity_recon_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Start Liquidity Recon mission"""
     await start_mission(update, context, "liquidity_recon")
 
-
 async def sunday_spread_analysis_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Start Spread Analysis mission"""
     await start_mission(update, context, "spread_analysis")
-
 
 async def sunday_chaos_navigation_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Start Chaos Navigation mission"""
     await start_mission(update, context, "chaos_navigation")
 
-
 async def sunday_paper_assault_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Start Paper Assault mission"""
     await start_mission(update, context, "paper_assault")
-
 
 async def start_mission(update: Update, context: ContextTypes.DEFAULT_TYPE, mission_id: str):
     """Generic mission start handler"""
@@ -135,7 +129,6 @@ async def start_mission(update: Update, context: ContextTypes.DEFAULT_TYPE, miss
         logger.error(f"Error starting mission {mission_id}: {e}")
         await update.message.reply_text("❌ Error starting mission.")
 
-
 async def mission_status_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     /mission_status - Check current mission progress
@@ -181,7 +174,6 @@ async def mission_status_command(update: Update, context: ContextTypes.DEFAULT_T
         logger.error(f"Error in mission_status: {e}")
         await update.message.reply_text("❌ Error checking mission status.")
 
-
 async def abort_mission_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     /abort_mission - Abort current mission
@@ -202,14 +194,12 @@ async def abort_mission_command(update: Update, context: ContextTypes.DEFAULT_TY
         reply_markup=reply_markup
     )
 
-
 async def sunday_leaderboard_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     /sunday_leaderboard - Show Sunday training leaderboard
     """
     leaderboard = training_ops.get_sunday_leaderboard()
     await update.message.reply_text(leaderboard, parse_mode='Markdown')
-
 
 async def handle_mission_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle mission-related callbacks"""
@@ -245,7 +235,6 @@ async def handle_mission_callback(update: Update, context: ContextTypes.DEFAULT_
             "_Never give up, soldier._"
         )
 
-
 # Mission progress update handlers (called from trade results)
 async def update_live_fire_progress(user_id: int, won: bool, tcs: float):
     """Update progress for live fire missions"""
@@ -270,7 +259,6 @@ async def update_live_fire_progress(user_id: int, won: bool, tcs: float):
     if tcs >= mission.requirements.get('min_tcs', 0):
         valid_trades = progress['progress'].get('valid_tcs_trades', 0)
         training_ops.update_mission_progress(user_id, 'valid_tcs_trades', valid_trades + 1)
-
 
 def register_sunday_commands(application):
     """Register all Sunday training commands"""

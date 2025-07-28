@@ -14,7 +14,6 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-
 class ChallengeType(Enum):
     """Types of daily challenges"""
     PERFECT_EXIT = "perfect_exit"          # Exit within 2 pips of TP
@@ -28,14 +27,12 @@ class ChallengeType(Enum):
     PROFIT_TARGET = "profit_target"        # Hit daily profit goal
     MULTI_PAIR = "multi_pair"              # Trade 3 different pairs
 
-
 class EventType(Enum):
     """Types of weekly events"""
     ELITE_HOURS = "elite_hours"            # 2x XP during specific hours
     SQUAD_WARS = "squad_wars"              # Squad competition
     PERFECT_WEEK = "perfect_week"          # No losing trades all week
     RECRUITMENT_DRIVE = "recruitment_drive" # Bonus XP for recruiting
-
 
 @dataclass
 class Challenge:
@@ -54,7 +51,6 @@ class Challenge:
         if self.expires_at:
             return datetime.now() > self.expires_at
         return False
-
 
 @dataclass
 class ChallengeProgress:
@@ -76,7 +72,6 @@ class ChallengeProgress:
             return 100.0
         return min(100.0, (self.progress / self.target) * 100)
 
-
 @dataclass
 class WeeklyEvent:
     """Weekly event definition"""
@@ -88,7 +83,6 @@ class WeeklyEvent:
     end_time: datetime
     config: Dict[str, Any]
     active: bool = True
-
 
 class DailyChallengeManager:
     """Manages daily challenges and weekly events"""
@@ -457,7 +451,7 @@ class DailyChallengeManager:
     
     def _meets_tier_requirement(self, user_tier: str, required_tier: str) -> bool:
         """Check if user meets tier requirement"""
-        tier_hierarchy = ["NIBBLER", "FANG", "COMMANDER", "APEX"]
+        tier_hierarchy = ["NIBBLER", "FANG", "COMMANDER"]
         try:
             user_index = tier_hierarchy.index(user_tier)
             required_index = tier_hierarchy.index(required_tier)
@@ -624,7 +618,6 @@ class DailyChallengeManager:
                     
             except Exception as e:
                 logger.error(f"Error loading events: {e}")
-
 
 # Example usage
 if __name__ == "__main__":

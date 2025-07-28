@@ -119,7 +119,7 @@ class HistoricalForexExtractor:
                 'needs_extraction': completeness < 80 or total_records == 0
             }
             
-            self.logger.info(f"{pair}: {range_records:,} records in range ({completeness:.1f}% complete)")
+            self.logger.info(f"{pair}: {range_records:} records in range ({completeness:.1f}% complete)")
         
         conn.close()
         return analysis
@@ -359,7 +359,7 @@ class HistoricalForexExtractor:
             current_price = close_price
             current_time += timedelta(minutes=1)
         
-        self.logger.info(f"✅ Generated {len(data):,} realistic data points for {pair}")
+        self.logger.info(f"✅ Generated {len(data):} realistic data points for {pair}")
         return data
     
     def store_historical_data(self, pair: str, data: List[Dict]):
@@ -368,7 +368,7 @@ class HistoricalForexExtractor:
             self.logger.warning(f"⚠️ No data to store for {pair}")
             return
         
-        self.logger.info(f"💾 Storing {len(data):,} records for {pair}...")
+        self.logger.info(f"💾 Storing {len(data):} records for {pair}...")
         
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
@@ -400,7 +400,7 @@ class HistoricalForexExtractor:
         conn.commit()
         conn.close()
         
-        self.logger.info(f"✅ Stored {len(records):,} records for {pair}")
+        self.logger.info(f"✅ Stored {len(records):} records for {pair}")
     
     def validate_data_quality(self, pair: str) -> Dict[str, any]:
         """Validate data quality and completeness"""
@@ -471,7 +471,7 @@ class HistoricalForexExtractor:
             len(validation['data_anomalies']) > 0):
             validation['valid'] = False
         
-        self.logger.info(f"📊 {pair} validation: {validation['total_records']:,} records, "
+        self.logger.info(f"📊 {pair} validation: {validation['total_records']:} records, "
                         f"{len(validation['gaps'])} gaps, "
                         f"{validation['avg_records_per_day']:.0f} records/day")
         
@@ -507,7 +507,7 @@ class HistoricalForexExtractor:
         csv_path = self.output_dir / f"{pair}_historical_data.csv"
         df.to_csv(csv_path, index=False)
         
-        self.logger.info(f"✅ Exported {len(df):,} records to {csv_path}")
+        self.logger.info(f"✅ Exported {len(df):} records to {csv_path}")
         return str(csv_path)
     
     def export_to_json(self, pair: str) -> str:
@@ -543,7 +543,7 @@ class HistoricalForexExtractor:
         with open(json_path, 'w') as f:
             json.dump(data, f, indent=2)
         
-        self.logger.info(f"✅ Exported {len(df):,} records to {json_path}")
+        self.logger.info(f"✅ Exported {len(df):} records to {json_path}")
         return str(json_path)
     
     async def run_full_extraction(self) -> Dict[str, any]:
@@ -642,7 +642,7 @@ class HistoricalForexExtractor:
                 status = "✅ SUCCESS" if summary['success'] else "❌ FAILED"
                 records = summary.get('records_extracted', 0)
                 source = summary.get('source', 'UNKNOWN')
-                f.write(f"{pair}: {status} | {records:,} records | Source: {source}\n")
+                f.write(f"{pair}: {status} | {records:} records | Source: {source}\n")
                 if not summary['success']:
                     f.write(f"    Error: {summary.get('error', 'Unknown error')}\n")
             f.write("\n")
@@ -656,7 +656,7 @@ class HistoricalForexExtractor:
                 avg_per_day = validation.get('avg_records_per_day', 0)
                 
                 f.write(f"{pair}: {status}\n")
-                f.write(f"  Records: {records:,} | Avg/Day: {avg_per_day:.0f} | Gaps: {gaps}\n")
+                f.write(f"  Records: {records:} | Avg/Day: {avg_per_day:.0f} | Gaps: {gaps}\n")
                 
                 if validation.get('spread_analysis'):
                     spread = validation['spread_analysis'].get('avg_spread_pips', 0)

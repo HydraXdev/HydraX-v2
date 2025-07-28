@@ -1,0 +1,45 @@
+
+🏆🚀 **HYPER ENGINE v1.0 vs APEX v6.0 COMPARISON**
+📅 Generated: 2025-07-20 23:18:35
+🎯 BATTLE: Six-Layer Intelligence vs Proven Baseline
+
+═══════════════════════════════════════════════════════════════════
+
+📊 **HEAD-TO-HEAD PERFORMANCE:**
+                    APEX v6.0    |    HYPER v1.0
+Win Rate:               56.1%    |         0.0%
+Signals Tested:       16,236     |           0
+Signals per Day:        76.2     |         0.0
+Total Pips:         +1473465     |        +0.0
+Avg per Signal:        +90.8     |        +0.0
+
+🎯 **PERFORMANCE IMPROVEMENT:**
+❌ Win Rate Decline: -56.1% (0.0% vs 56.1%)
+📈 Quality vs Quantity: HYPER focuses on fewer, higher-quality signals
+🧠 Intelligence Layers: Six-layer filtering system operational
+
+🔍 **HYPER LAYER ANALYSIS:**
+• Volume Filter: 88 signals (100.0%)
+• Timeframe Filter: 0 signals (0.0%)
+• Regime Filter: 0 signals (0.0%)
+• News Filter: 0 signals (0.0%)
+• Confidence Filter: 0 signals (0.0%)
+
+🎯 **SIGNAL STRENGTH PERFORMANCE:**
+
+🌍 **MARKET REGIME PERFORMANCE:**
+
+🏁 **FINAL VERDICT:**
+❌ HYPER FAILS - 0.0% vs 56.1%
+
+🎯 **PRODUCTION RECOMMENDATION:**
+❌ REVERT TO APEX v6.0 - HYPER needs rebuild
+
+📊 **ANALYSIS:**
+HYPER's six-layer intelligence system failed to improve upon APEX v6.0's baseline.
+Additional tuning needed to realize the full potential of the intelligence layers.
+
+Intelligence layers operational: ✅ Volume Analysis ✅ Timeframe Alignment ✅ Regime Detection
+✅ Dynamic Sizing ✅ Smart Exits ✅ News Filtering
+
+Target achieved: NO (Target: 65%+, Achieved: 0.0%)

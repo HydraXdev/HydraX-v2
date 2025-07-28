@@ -395,7 +395,6 @@ Use `/layers` to see how Norman's story is woven through all personality layers.
         
         return enhanced_handler
 
-
 async def test_unified_system():
     """Test the unified personality system"""
     logger.info("🧪 Testing Unified Personality System...")
@@ -423,7 +422,6 @@ async def test_unified_system():
     
     return True
 
-
 def main():
     """Main deployment function"""
     logger.info("🚀 Deploying Unified Personality System...")
@@ -440,7 +438,6 @@ def main():
         logger.info("4. Use: await unified_bot.send_unified_message(chat_id, message, user_tier)")
     else:
         logger.error("❌ Unified system test failed")
-
 
 if __name__ == "__main__":
     main()

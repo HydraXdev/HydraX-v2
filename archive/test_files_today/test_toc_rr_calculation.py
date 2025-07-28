@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Test script to demonstrate TOC RR ratio calculation functionality
-This shows how the TOC server calculates RR ratios from APEX signals
+This shows how the TOC server calculates RR ratios from signals
 """
 
 import json
@@ -10,7 +10,7 @@ from datetime import datetime
 def calculate_rr_ratios(signal_data):
     """
     Calculate RR ratios based on signal type and TCS - THIS IS THE TOC'S JOB
-    (NOT the APEX engine's job)
+    (NOT the engine's job)
     """
     try:
         entry_price = signal_data['entry_price']
@@ -60,7 +60,7 @@ def test_rr_calculations():
     print("=" * 50)
     print()
     
-    # Test signals matching what APEX would generate
+    # Test signals matching what would generate
     test_signals = [
         {
             'symbol': 'EURUSD',
@@ -69,7 +69,7 @@ def test_rr_calculations():
             'signal_type': 'RAPID_ASSAULT',
             'tcs': 75,
             'volume': 0.01,
-            'comment': 'APEX Signal'
+            'comment': 'Signal'
         },
         {
             'symbol': 'GBPUSD',
@@ -78,7 +78,7 @@ def test_rr_calculations():
             'signal_type': 'SNIPER_OPS',
             'tcs': 85,
             'volume': 0.02,
-            'comment': 'APEX Signal'
+            'comment': 'Signal'
         },
         {
             'symbol': 'USDJPY',
@@ -87,7 +87,7 @@ def test_rr_calculations():
             'signal_type': 'RAPID_ASSAULT',
             'tcs': 99,  # Above 90 TCS cap - should get max 1:2.6
             'volume': 0.01,
-            'comment': 'APEX Signal'
+            'comment': 'Signal'
         },
         {
             'symbol': 'EURJPY',
@@ -96,7 +96,7 @@ def test_rr_calculations():
             'signal_type': 'SNIPER_OPS',
             'tcs': 95,  # Above 92 TCS cap - should get max 1:3.25
             'volume': 0.01,
-            'comment': 'APEX Signal'
+            'comment': 'Signal'
         },
         {
             'symbol': 'GBPJPY',
@@ -105,7 +105,7 @@ def test_rr_calculations():
             'signal_type': 'RAPID_ASSAULT',
             'tcs': 90,  # At 90 TCS cap - should get max 1:2.6
             'volume': 0.01,
-            'comment': 'APEX Signal'
+            'comment': 'Signal'
         },
         {
             'symbol': 'AUDUSD',
@@ -114,7 +114,7 @@ def test_rr_calculations():
             'signal_type': 'SNIPER_OPS',
             'tcs': 92,  # At 92 TCS cap - should get max 1:3.25
             'volume': 0.01,
-            'comment': 'APEX Signal'
+            'comment': 'Signal'
         }
     ]
     
@@ -163,14 +163,14 @@ def show_architecture_summary():
     print("🏗️  CORRECTED BITTEN ARCHITECTURE")
     print("=" * 50)
     print()
-    print("✅ APEX ENGINE (Signal Generation Only):")
+    print("✅ ENGINE (Signal Generation Only):")
     print("   ├── Generates TCS scores")
     print("   ├── Identifies signal types (RAPID_ASSAULT, SNIPER_OPS)")
     print("   ├── Provides entry prices and directions")
     print("   └── NO RR ratio calculations")
     print()
     print("✅ TOC SERVER (Trade Logic & RR Calculations):")
-    print("   ├── Receives clean signals from APEX")
+    print("   ├── Receives clean signals from ")
     print("   ├── Calculates RR ratios based on signal type & TCS")
     print("   ├── Determines stop loss and take profit levels")
     print("   ├── Manages BITTEN_MASTER clone assignments")
@@ -188,7 +188,7 @@ if __name__ == "__main__":
     test_rr_calculations()
     
     print("🎯 Summary:")
-    print("- APEX generates clean signals with TCS scores")
+    print("- generates clean signals with TCS scores")
     print("- TOC calculates RR ratios dynamically based on signal type and TCS")  
     print("- BITTEN_MASTER clones handle individual user execution")
     print("- Architecture separation is now properly maintained")

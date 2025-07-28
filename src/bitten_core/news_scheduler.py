@@ -18,7 +18,6 @@ from config.news_api import NEWS_UPDATE_INTERVAL
 
 logger = logging.getLogger(__name__)
 
-
 class NewsScheduler:
     """Handles scheduled updates of economic news events"""
     

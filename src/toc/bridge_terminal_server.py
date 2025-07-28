@@ -46,7 +46,6 @@ CONFIG = {
 active_terminals = {}
 terminal_lock = threading.Lock()
 
-
 class TradeResultWatcher(FileSystemEventHandler):
     """Watches for trade result files from MT5 EA"""
     
@@ -118,7 +117,6 @@ class TradeResultWatcher(FileSystemEventHandler):
         except Exception as e:
             logger.error(f"Error sending result to TOC: {e}")
 
-
 @app.route('/health', methods=['GET'])
 def health_check():
     """Health check endpoint"""
@@ -128,7 +126,6 @@ def health_check():
         'active_terminals': len(active_terminals),
         'timestamp': datetime.now().isoformat()
     })
-
 
 @app.route('/launch-terminal', methods=['POST'])
 def launch_terminal():
@@ -199,7 +196,6 @@ def launch_terminal():
     except Exception as e:
         logger.error(f"Terminal launch error: {e}")
         return jsonify({'error': str(e)}), 500
-
 
 @app.route('/fire', methods=['POST'])
 def receive_fire_signal():
@@ -273,7 +269,6 @@ def receive_fire_signal():
         logger.error(f"Fire signal error: {e}")
         return jsonify({'error': str(e)}), 500
 
-
 @app.route('/terminals', methods=['GET'])
 def list_terminals():
     """List all active terminals"""
@@ -295,7 +290,6 @@ def list_terminals():
             })
     
     return jsonify({'terminals': terminals})
-
 
 @app.route('/terminal/<terminal_id>/stop', methods=['POST'])
 def stop_terminal(terminal_id):
@@ -327,7 +321,6 @@ def stop_terminal(terminal_id):
     except Exception as e:
         logger.error(f"Terminal stop error: {e}")
         return jsonify({'error': str(e)}), 500
-
 
 def _launch_mt5_terminal(terminal_id: str, terminal_path: Path) -> Optional[int]:
     """Launch MT5 terminal and return process ID"""
@@ -378,7 +371,6 @@ def _launch_mt5_terminal(terminal_id: str, terminal_path: Path) -> Optional[int]
         logger.error(f"Failed to launch MT5: {e}")
         return None
 
-
 def start_result_watchers():
     """Start watching for trade results in all active terminals"""
     observer = Observer()
@@ -411,7 +403,6 @@ def start_result_watchers():
         time.sleep(30)
         # Could add logic to watch new terminals here
 
-
 def cleanup_stale_terminals():
     """Clean up terminals that are no longer running"""
     while True:
@@ -434,7 +425,6 @@ def cleanup_stale_terminals():
                     
         except Exception as e:
             logger.error(f"Cleanup error: {e}")
-
 
 if __name__ == '__main__':
     # Start background threads

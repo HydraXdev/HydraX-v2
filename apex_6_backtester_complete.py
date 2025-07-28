@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-APEX 6.0 ENHANCED COMPLETE BACKTESTER
-Comprehensive testing framework with actual APEX 6.0 Enhanced engine integration
+6.0 ENHANCED COMPLETE BACKTESTER
+Comprehensive testing framework with actual 6.0 Enhanced engine integration
 PROVEN RESULTS: 76.2% win rate, 7.34 profit factor, 4257% return
 
 DEPLOYMENT: July 20, 2025
@@ -20,17 +20,17 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple
 from pathlib import Path
 
-# Import the actual APEX 6.0 Enhanced engine
+# Import the actual 6.0 Enhanced engine
 try:
-    from apex_production_v6 import APEXProductionV6Enhanced, FlowPressure
-    APEX_ENGINE_AVAILABLE = True
+    from apex_production_v6 import ProductionV6Enhanced, FlowPressure
+    _ENGINE_AVAILABLE = True
 except ImportError as e:
-    print(f"⚠️ APEX Engine not available: {e}")
-    APEX_ENGINE_AVAILABLE = False
+    print(f"⚠️ Engine not available: {e}")
+    _ENGINE_AVAILABLE = False
 
-class APEXBacktester:
+class Backtester:
     """
-    PROVEN BACKTESTER - APEX 6.0 Enhanced Integration
+    PROVEN BACKTESTER - 6.0 Enhanced Integration
     
     VALIDATED RESULTS:
     - 2,250 trades over 90 days (25/day target met)
@@ -43,7 +43,7 @@ class APEXBacktester:
     
     def __init__(self, config: Dict):
         self.config = config
-        self.apex_engine = APEXProductionV6Enhanced() if APEX_ENGINE_AVAILABLE else None
+        self.apex_engine = ProductionV6Enhanced() if _ENGINE_AVAILABLE else None
         self.setup_logging()
         
         # Base prices for currency pairs (realistic current levels)
@@ -66,7 +66,7 @@ class APEXBacktester:
         """Setup logging for backtester"""
         logging.basicConfig(level=logging.INFO)
         self.logger = logging.getLogger(__name__)
-        self.logger.info("🧪 APEX 6.0 Enhanced Backtester - PROVEN VERSION")
+        self.logger.info("🧪 6.0 Enhanced Backtester - PROVEN VERSION")
     
     def generate_market_data(self, pair: str, days: int = 180) -> List[Dict]:
         """Generate realistic market data for backtesting"""
@@ -147,7 +147,7 @@ class APEXBacktester:
     
     def generate_signal_with_apex(self, market_data: List[Dict], index: int, pair: str) -> Optional[Dict]:
         """
-        Generate trading signal using actual APEX 6.0 Enhanced logic
+        Generate trading signal using actual 6.0 Enhanced logic
         This integrates with the real production engine
         """
         
@@ -156,7 +156,7 @@ class APEXBacktester:
         
         current_candle = market_data[index]
         
-        # Prepare market context for APEX engine
+        # Prepare market context for engine
         market_context = {
             'symbol': pair,
             'timestamp': current_candle['timestamp'],
@@ -167,13 +167,13 @@ class APEXBacktester:
             'sentiment': current_candle['sentiment']
         }
         
-        # Use APEX engine's signal generation logic
+        # Use engine's signal generation logic
         try:
             # Generate base signal using production logic
             signal = self._apex_signal_generation(market_context, market_data[index-10:index+1])
             
             if signal:
-                # Apply APEX 6.0 Enhanced quality filters
+                # Apply 6.0 Enhanced quality filters
                 signal = self._apply_apex_filters(signal, market_context)
                 
                 if signal:
@@ -193,12 +193,12 @@ class APEXBacktester:
                     return signal
         
         except Exception as e:
-            self.logger.error(f"Error generating APEX signal: {e}")
+            self.logger.error(f"Error generating signal: {e}")
         
         return None
     
     def _apex_signal_generation(self, market_context: Dict, price_history: List[Dict]) -> Optional[Dict]:
-        """Core APEX signal generation logic - PROVEN ALGORITHM"""
+        """Core signal generation logic - PROVEN ALGORITHM"""
         
         prices = [candle['close'] for candle in price_history]
         volumes = [candle['volume'] for candle in price_history[-5:]]
@@ -232,11 +232,11 @@ class APEXBacktester:
         avg_volume = sum(volumes[:-1]) / len(volumes[:-1]) if len(volumes) > 1 else volumes[0]
         volume_surge = market_context['volume'] > avg_volume * 1.2
         
-        # APEX scoring system - PROVEN TO GENERATE 76.2% WIN RATE
+        # scoring system - PROVEN TO GENERATE 76.2% WIN RATE
         apex_score = 50  # Base score
         direction = 'BUY'
         
-        # RSI signals (APEX style)
+        # RSI signals (style)
         if rsi > 70:
             apex_score += 15
             direction = 'SELL'
@@ -258,7 +258,7 @@ class APEXBacktester:
         if volume_surge:
             apex_score += 8
         
-        # Session boost (APEX enhanced feature)
+        # Session boost (enhanced feature)
         hour = market_context['timestamp'].hour
         if 7 <= hour < 12:  # London
             apex_score += 6
@@ -281,7 +281,7 @@ class APEXBacktester:
         if (sentiment_factor > 0.3 and direction == 'BUY') or (sentiment_factor < -0.3 and direction == 'SELL'):
             apex_score += 8
         
-        # APEX threshold (adaptive based on flow pressure) - PROVEN SETTINGS
+        # threshold (adaptive based on flow pressure) - PROVEN SETTINGS
         min_threshold = 45  # Proven optimal for backtesting
         
         # Flow pressure simulation
@@ -317,7 +317,7 @@ class APEXBacktester:
         return None
     
     def _apply_apex_filters(self, signal: Dict, market_context: Dict) -> Optional[Dict]:
-        """Apply APEX 6.0 Enhanced quality filters"""
+        """Apply 6.0 Enhanced quality filters"""
         
         # Spread filter
         if signal['spread'] > 3.0:
@@ -351,7 +351,7 @@ class APEXBacktester:
     def calculate_win_rate(self, signal: Dict) -> float:
         """Calculate realistic win rate based on signal characteristics - PROVEN ACCURATE"""
         
-        base_win_rate = 0.58  # Realistic base for APEX system
+        base_win_rate = 0.58  # Realistic base for system
         
         # Confidence boost
         confidence = signal['confidence']
@@ -395,7 +395,7 @@ class APEXBacktester:
     
     def run_backtest(self) -> Dict:
         """
-        Run comprehensive backtest using APEX 6.0 Enhanced engine
+        Run comprehensive backtest using 6.0 Enhanced engine
         
         PROVEN TO DELIVER:
         - 76.2% win rate
@@ -404,7 +404,7 @@ class APEXBacktester:
         - 6.4% max drawdown
         """
         
-        self.logger.info("🚀 Starting APEX 6.0 Enhanced Backtest - PROVEN VERSION")
+        self.logger.info("🚀 Starting 6.0 Enhanced Backtest - PROVEN VERSION")
         
         all_trades = []
         daily_stats = []
@@ -451,7 +451,7 @@ class APEXBacktester:
                     if hour >= len(day_data):
                         continue
                     
-                    # Generate signal using APEX engine
+                    # Generate signal using engine
                     signal = self.generate_signal_with_apex(day_data, hour, pair)
                     
                     if signal:
@@ -633,17 +633,15 @@ class APEXBacktester:
         # Annualized Sharpe ratio
         return (avg_return / std_dev) * (252 ** 0.5)
 
-
 def run_apex_backtest(config: Dict) -> Dict:
-    """Main function to run APEX backtest - PROVEN RESULTS"""
+    """Main function to run backtest - PROVEN RESULTS"""
     try:
-        backtester = APEXBacktester(config)
+        backtester = Backtester(config)
         results = backtester.run_backtest()
         return {'success': True, 'results': results}
     except Exception as e:
         logging.error(f"Backtest failed: {e}")
         return {'success': False, 'error': str(e)}
-
 
 if __name__ == "__main__":
     # PROVEN CONFIGURATION - 76.2% WIN RATE
@@ -664,7 +662,7 @@ if __name__ == "__main__":
         'dollarPerPip': 12
     }
     
-    print("🧪 APEX 6.0 Enhanced Backtester - PROVEN VERSION")
+    print("🧪 6.0 Enhanced Backtester - PROVEN VERSION")
     print("=" * 60)
     print("VALIDATED RESULTS:")
     print("📊 76.2% win rate")

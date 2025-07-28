@@ -1,0 +1,8 @@
+[Common]
+Name=OANDA-Demo-1
+Address=mt5demo.oanda.com:443
+Environment=Demo
+DataServer=mt5demo.oanda.com:443
+Ping=mt5demo.oanda.com:443
+Company=OANDA Corporation
+AccountServer=mt5demo.oanda.com:443

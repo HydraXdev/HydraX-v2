@@ -164,8 +164,7 @@ def test_position_sizing():
         (10000, 1.0900, 1.0850, "EURUSD", "FANG"), 
         (10000, 1.0900, 1.0850, "EURUSD", "COMMANDER"),
         (5000, 150.50, 149.50, "USDJPY", "NIBBLER"),
-        (25000, 1.2600, 1.2550, "GBPUSD", "COMMANDER"),
-    ]
+        (25000, 1.2600, 1.2550, "GBPUSD", "COMMANDER")]
     
     print("🎯 DYNAMIC POSITION SIZING TEST")
     print("=" * 50)

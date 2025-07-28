@@ -61,7 +61,6 @@ async def weekend_brief_command(update: Update, context: ContextTypes.DEFAULT_TY
             "❌ Error generating briefing. Try again later."
         )
 
-
 async def force_weekend_briefing_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     /force_weekend_briefing - Admin command to trigger briefing for all users
@@ -94,7 +93,6 @@ async def force_weekend_briefing_command(update: Update, context: ContextTypes.D
         await update.message.reply_text(
             f"❌ Briefing failed: {str(e)}"
         )
-
 
 async def weekend_stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
@@ -159,7 +157,6 @@ async def weekend_stats_command(update: Update, context: ContextTypes.DEFAULT_TY
         await update.message.reply_text(
             "❌ Error retrieving stats. Try again later."
         )
-
 
 # Register commands with the bot
 def register_weekend_commands(application):

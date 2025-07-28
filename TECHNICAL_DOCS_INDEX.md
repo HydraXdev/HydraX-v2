@@ -27,7 +27,7 @@
 ### **3. User Management System**
 - **File**: `docs/USER_MANAGEMENT_TIER_SYSTEM_SPECIFICATIONS.md`
 - **Size**: ~20KB
-- **Covers**: Tier system (Press Pass → APEX), authentication/authorization, subscription management, user progression, achievements, social features
+- **Covers**: Tier system (Press Pass → ), authentication/authorization, subscription management, user progression, achievements, social features
 
 ### **4. Integration Specifications**
 - **File**: `BITTEN_INTEGRATION_SPECIFICATIONS.md`
@@ -69,7 +69,7 @@
 ### **Key Features**
 - ✅ 10-pair self-optimizing trading system
 - ✅ Predictive movement detection
-- ✅ Complete tier system (Press Pass → APEX)
+- ✅ Complete tier system (Press Pass → )
 - ✅ Military-themed gamification
 - ✅ Real-time MT5 integration
 - ✅ Enterprise-grade security

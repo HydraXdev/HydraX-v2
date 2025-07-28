@@ -195,7 +195,7 @@ class FireModeExecutor:
         status = f"🎮 Fire Mode: **{current_mode}**"
         
         if current_mode == 'AUTO':
-            if user_tier in ["COMMANDER", "APEX"]:
+            if user_tier in ["COMMANDER"]:
                 status += f"\n🎰 Slots: {mode_info['slots_in_use']}/{mode_info['max_slots']}"
                 status += "\n🎯 Auto-firing 87%+ TCS signals"
             else:
@@ -206,7 +206,6 @@ class FireModeExecutor:
             status += "\n🔫 SELECT FIRE mode active"
         
         return status
-
 
 # Singleton instance
 fire_mode_executor = FireModeExecutor()

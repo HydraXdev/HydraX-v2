@@ -12,7 +12,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-
 class GracePeriodType(Enum):
     """Types of grace periods"""
     STANDARD = "standard"          # 6-hour grace period
@@ -21,13 +20,11 @@ class GracePeriodType(Enum):
     HOLIDAY = "holiday"            # Holiday grace period
     MAINTENANCE = "maintenance"    # System maintenance grace period
 
-
 class TimezoneBehavior(Enum):
     """How to handle timezone changes"""
     STRICT = "strict"              # Must login in user's timezone
     FLEXIBLE = "flexible"          # Allow login in any timezone
     SMART = "smart"               # Smart detection of travel/timezone changes
-
 
 @dataclass
 class GracePeriodConfig:
@@ -42,7 +39,6 @@ class GracePeriodConfig:
     extended_grace_threshold: int = 30    # 30+ day streaks get extended grace
     maximum_grace_uses: int = 3           # Max grace uses per month
 
-
 @dataclass
 class TimezoneInfo:
     """User timezone information"""
@@ -53,7 +49,6 @@ class TimezoneInfo:
     timezone_changes_count: int
     auto_detect_enabled: bool
     manual_override: bool
-
 
 @dataclass
 class GracePeriodStatus:
@@ -66,7 +61,6 @@ class GracePeriodStatus:
     uses_this_month: int
     can_extend: bool
     reason: str
-
 
 class TimezoneGraceHandler:
     """Advanced timezone and grace period management for streak retention"""
@@ -81,8 +75,7 @@ class TimezoneGraceHandler:
         'AEST': 'Australia/Sydney',
         'IST': 'Asia/Kolkata',
         'MST': 'America/Denver',
-        'CST': 'America/Chicago',
-    }
+        'CST': 'America/Chicago'}
     
     # Major trading market timezones
     TRADING_MARKET_TIMEZONES = {
@@ -93,8 +86,7 @@ class TimezoneGraceHandler:
         'hong_kong': 'Asia/Hong_Kong',
         'singapore': 'Asia/Singapore',
         'zurich': 'Europe/Zurich',
-        'frankfurt': 'Europe/Berlin',
-    }
+        'frankfurt': 'Europe/Berlin'}
     
     # Holiday periods that trigger extended grace
     HOLIDAY_PERIODS = {
@@ -613,7 +605,6 @@ class TimezoneGraceHandler:
     def _detect_timezone_from_ip(self, ip_address: str) -> Optional[str]:
         """Detect timezone from IP address using geolocation service"""
         return None  # Would use geolocation API
-
 
 # Example usage and testing
 if __name__ == "__main__":

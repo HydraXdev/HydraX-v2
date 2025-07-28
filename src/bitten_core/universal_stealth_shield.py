@@ -17,7 +17,6 @@ import os
 from .fire_modes import TierLevel
 from .stealth_protocol import StealthLevel, StealthConfig, get_stealth_protocol
 
-
 class BrokerProfile(Enum):
     """Known broker detection profiles"""
     UNKNOWN = "unknown"
@@ -29,7 +28,6 @@ class BrokerProfile(Enum):
     FXCM = "fxcm"
     AVATRADE = "avatrade"
 
-
 @dataclass
 class BrokerLimits:
     """Broker-specific limits to avoid detection"""
@@ -40,7 +38,6 @@ class BrokerLimits:
     suspicious_win_rate: float
     max_concurrent_trades: int
     requires_losses: bool  # Some brokers flag 100% win rates
-
 
 # Broker-specific detection thresholds
 BROKER_PROFILES = {
@@ -90,7 +87,6 @@ BROKER_PROFILES = {
         requires_losses=True
     )
 }
-
 
 class UniversalStealthShield:
     """
@@ -173,7 +169,7 @@ class UniversalStealthShield:
                 shuffle_queue=True
             ),
             
-            TierLevel.APEX: StealthConfig(
+            TierLevel.: StealthConfig(
                 enabled=True,
                 level=StealthLevel.HIGH,
                 entry_delay_min=2.0,
@@ -526,10 +522,8 @@ class UniversalStealthShield:
             ]
         }
 
-
 # Global instance
 universal_shield = UniversalStealthShield()
-
 
 # Integration functions
 async def apply_universal_protection(user_id: int, tier: TierLevel, 
@@ -539,11 +533,9 @@ async def apply_universal_protection(user_id: int, tier: TierLevel,
         user_id, tier, trade_params, account_info
     )
 
-
 def get_shield_status() -> Dict[str, Any]:
     """Get current shield status"""
     return universal_shield.get_stealth_report()
-
 
 # Telegram command handlers
 async def handle_shield_command(user_id: int) -> str:

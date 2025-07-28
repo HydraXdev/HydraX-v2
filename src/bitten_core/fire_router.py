@@ -391,6 +391,16 @@ class FireRouter:
         # Advanced validator
         self.validator = AdvancedValidator()
         
+        # MT5 Bridge Adapter for file-based communication
+        self.mt5_bridge_adapter = None
+        try:
+            from src.mt5_bridge.mt5_bridge_adapter import get_bridge_adapter
+            self.mt5_bridge_adapter = get_bridge_adapter()
+            self.mt5_bridge_adapter.start()
+            logger.info("✅ MT5BridgeAdapter integrated successfully")
+        except Exception as e:
+            logger.warning(f"⚠️ MT5BridgeAdapter not available: {e}")
+        
         # Execution mode
         self.execution_mode = execution_mode
         
@@ -546,9 +556,39 @@ class FireRouter:
             return result
     
     def _execute_direct_api(self, request: TradeRequest) -> Dict[str, Any]:
-        """Execute trade through direct broker API"""
+        """Execute trade through direct broker API with MT5BridgeAdapter routing"""
         
         try:
+            # Primary execution route: MT5BridgeAdapter (file-based)
+            if self.mt5_bridge_adapter and self.mt5_bridge_adapter.is_connected():
+                logger.info(f"🌉 Routing trade via MT5BridgeAdapter: {request.symbol} {request.direction.value}")
+                
+                # Execute via bridge adapter
+                bridge_result = self.mt5_bridge_adapter.execute_trade(
+                    trade_id=request.mission_id,
+                    symbol=request.symbol,
+                    direction=request.direction.value,
+                    lot=request.volume,
+                    price=0,  # Market order
+                    take_profit=request.take_profit or 0,
+                    stop_loss=request.stop_loss or 0
+                )
+                
+                if bridge_result:
+                    logger.info(f"✅ Trade submitted to MT5 via bridge adapter: {request.mission_id}")
+                    return {
+                        "success": True,
+                        "message": "Trade submitted to MT5 via bridge adapter",
+                        "trade_id": request.mission_id,
+                        "execution_method": "mt5_bridge_adapter",
+                        "bridge_result": bridge_result
+                    }
+                else:
+                    logger.warning(f"⚠️ MT5BridgeAdapter execution failed, falling back to direct API")
+            
+            # Fallback execution route: Direct API
+            logger.info(f"🔗 Routing trade via Direct API: {request.symbol} {request.direction.value}")
+            
             # Prepare API payload for direct execution
             payload = request.to_api_payload()
             payload["command"] = "execute_trade"  # Direct API command
@@ -603,9 +643,7 @@ class FireRouter:
                 "error_code": "API_CONNECTION_ERROR",
                 "primary_error": str(e)
             }
-    
-    
-    
+
     def _convert_legacy_mission(self, mission: Dict[str, Any]) -> TradeRequest:
         """Convert legacy mission format to TradeRequest"""
         
@@ -720,14 +758,10 @@ class FireRouter:
         }
         
         base_pips = symbol_pip_values.get(request.symbol, 15)
-        # Simulate win/loss based on TCS score
-        win_probability = min(0.85, max(0.35, (request.tcs_score - 30) / 100))
-        
-        import random
-        if random.random() < win_probability:
-            return random.uniform(base_pips * 0.8, base_pips * 1.5)  # Winning trade
-        else:
-            return -random.uniform(base_pips * 0.6, base_pips * 1.2)  # Losing trade
+        # CRITICAL: NO FAKE TRADE RESULTS
+        # This method should NEVER be used in production
+        # All trades must be executed via real broker API
+        raise NotImplementedError("FAKE TRADE RESULTS FORBIDDEN - Use real broker execution only")
     
     def ping_api(self, user_id: str = None) -> Dict[str, Any]:
         """Ping API and capture account info"""

@@ -21,7 +21,7 @@ class TrueSignalBacktest:
     
     def __init__(self):
         self.base_path = Path('/root/HydraX-v2')
-        # All 15 pairs that APEX trades
+        # All 15 pairs that trades
         self.all_trading_pairs = [
             # Major Pairs (4)
             'EURUSD', 'GBPUSD', 'USDJPY', 'USDCAD',

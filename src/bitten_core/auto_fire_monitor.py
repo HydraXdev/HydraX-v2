@@ -159,7 +159,6 @@ class AutoFireMonitor:
         self.processed_missions.clear()
         logger.info("Cleared processed missions set")
 
-
 # Create singleton instance
 auto_fire_monitor = AutoFireMonitor()
 

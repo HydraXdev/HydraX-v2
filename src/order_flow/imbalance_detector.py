@@ -15,7 +15,6 @@ from .order_book_reader import OrderBookSnapshot
 
 logger = logging.getLogger(__name__)
 
-
 @dataclass
 class ImbalanceSignal:
     """Represents an order book imbalance signal"""
@@ -45,7 +44,6 @@ class ImbalanceSignal:
             'weighted_imbalance': self.weighted_imbalance,
             'price_level': self.price_level
         }
-
 
 class ImbalanceDetector:
     """Detects and analyzes order book imbalances"""
@@ -333,7 +331,6 @@ class ImbalanceDetector:
             'recent_direction': signals[-1].direction if signals else 'neutral'
         }
 
-
 # Example usage
 async def main():
     from order_book_reader import OrderBookSnapshot, OrderBookLevel
@@ -347,15 +344,13 @@ async def main():
             OrderBookLevel(49999, 1.8),
             OrderBookLevel(49998, 3.2),
             OrderBookLevel(49997, 0.5),
-            OrderBookLevel(49996, 1.2),
-        ],
+            OrderBookLevel(49996, 1.2)],
         asks=[
             OrderBookLevel(50001, 0.8),
             OrderBookLevel(50002, 0.5),
             OrderBookLevel(50003, 0.3),
             OrderBookLevel(50004, 0.4),
-            OrderBookLevel(50005, 0.2),
-        ],
+            OrderBookLevel(50005, 0.2)],
         timestamp=datetime.now().timestamp()
     )
     
@@ -372,7 +367,6 @@ async def main():
     # Get statistics
     stats = detector.get_statistics('BTC/USDT', 'binance')
     print(f"Statistics: {stats}")
-
 
 if __name__ == "__main__":
     import asyncio

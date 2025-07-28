@@ -1,4 +1,4 @@
-# 🔥 APEX-FX v5.0 FINAL ALL-IN ENGINE - COMPLETE BLUEPRINT
+# 🔥 -FX v5.0 FINAL ALL-IN ENGINE - COMPLETE BLUEPRINT
 ## The Ultimate 150-200 Signals/Day Trading Engine
 ### Built on v4.0's 68.8% Foundation → Achieved 89% Win Rate in Testing
 
@@ -24,7 +24,7 @@
 
 ### Version Comparison
 ```python
-APEX_EVOLUTION = {
+_EVOLUTION = {
     'v4.0_ULTRA_TURBO': {
         'signals_per_day': 14,
         'win_rate': 68.8%,
@@ -60,7 +60,7 @@ Transform 12 original + 3 volatility pairs into a signal-generating monster that
 
 ### System Components
 ```python
-class APEXv5FinalAllIn:
+class v5FinalAllIn:
     """
     The most aggressive signal generation engine possible
     while maintaining functional trading logic
@@ -694,7 +694,7 @@ def calculate_stochastic(df, period=14, smooth=3):
 ```python
 BITTEN_INTEGRATION = {
     'signal_format': {
-        'id': 'APEX5_GBPUSD_20250713_143025',
+        'id': '5_GBPUSD_20250713_143025',
         'symbol': 'GBPUSD',
         'type': 'RAID/SNIPER',
         'direction': 'BUY/SELL',
@@ -1007,7 +1007,7 @@ PLANNED FEATURES:
 ## 🏁 FINAL NOTES
 
 ### The Design Philosophy
-The APEX-FX v5.0 FINAL ALL-IN engine represents the absolute limit of aggressive signal generation while maintaining trading logic. It's not designed to be safe - it's designed to extract every possible opportunity from the market.
+The -FX v5.0 FINAL ALL-IN engine represents the absolute limit of aggressive signal generation while maintaining trading logic. It's not designed to be safe - it's designed to extract every possible opportunity from the market.
 
 ### The BITTEN Synergy
 This engine only makes sense within the BITTEN ecosystem where:

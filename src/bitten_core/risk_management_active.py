@@ -1,6 +1,6 @@
 """
-BITTEN Risk Management System v5.0 - APEX Engine Optimized
-Ultra-aggressive risk parameters for APEX v5.0 (40+ signals/day @ 89% WR)
+BITTEN Risk Management System v5.0 - Engine Optimized
+Ultra-aggressive risk parameters for v5.0 (40+ signals/day @ 89% WR)
 Enhanced position sizing and advanced trade management for maximum extraction
 """
 
@@ -17,16 +17,16 @@ from .risk_controller import get_risk_controller, TierLevel as RiskTierLevel, Ri
 
 logger = logging.getLogger(__name__)
 
-class APEXv5RiskMode(Enum):
-    """APEX v5.0 Risk calculation modes"""
+class v5RiskMode(Enum):
+    """v5.0 Risk calculation modes"""
     CONSERVATIVE = "conservative"    # 0.5% risk per trade
     STANDARD = "standard"           # 1.0% risk per trade (v5.0 default)
     AGGRESSIVE = "aggressive"       # 1.5% risk per trade
     ULTRA = "ultra"                # 2.0% risk per trade
-    APEX_BEAST = "apex_beast"      # 3.0% risk per trade (APEX tier only)
+    _BEAST = "apex_beast"      # 3.0% risk per trade (tier only)
 
-class APEXv5SignalType(Enum):
-    """APEX v5.0 Signal types with optimized risk"""
+class v5SignalType(Enum):
+    """v5.0 Signal types with optimized risk"""
     M1_RAID = "m1_raid"            # M1 ultra-fast, lower risk
     M3_RAID = "m3_raid"            # M3 primary signal type
     M5_ENHANCED = "m5_enhanced"     # M5 enhanced patterns
@@ -34,8 +34,8 @@ class APEXv5SignalType(Enum):
     MEGA_CONFLUENCE = "mega_confluence"  # 2+ pattern confluence
     ULTRA_CONFLUENCE = "ultra_confluence" # 4+ pattern confluence
 
-class APEXv5TradeManagement(Enum):
-    """APEX v5.0 Enhanced trade management features"""
+class v5TradeManagement(Enum):
+    """v5.0 Enhanced trade management features"""
     # Standard features (all tiers)
     BASIC_SL_TP = "basic_sl_tp"                    # XP: 0
     BREAKEVEN = "breakeven"                        # XP: 100
@@ -47,14 +47,14 @@ class APEXv5TradeManagement(Enum):
     RUNNER_MODE = "runner_mode"                    # XP: 5000
     DYNAMIC_TRAIL = "dynamic_trail"                # XP: 10000
     
-    # APEX v5.0 exclusive features (APEX only)
+    # v5.0 exclusive features (only)
     CONFLUENCE_SCALING = "confluence_scaling"      # XP: 15000
     SESSION_BOOST_MANAGEMENT = "session_boost"     # XP: 20000
     ULTRA_VOLUME_MODE = "ultra_volume"            # XP: 30000
-    APEX_BEAST_MODE = "apex_beast_mode"           # XP: 50000
+    _BEAST_MODE = "apex_beast_mode"           # XP: 50000
 
-class APEXv5TradingState(Enum):
-    """APEX v5.0 Enhanced trading states"""
+class v5TradingState(Enum):
+    """v5.0 Enhanced trading states"""
     NORMAL = "normal"
     TILT_WARNING = "tilt_warning"
     TILT_LOCKOUT = "tilt_lockout"
@@ -64,15 +64,15 @@ class APEXv5TradingState(Enum):
     ULTRA_VOLUME_ACTIVE = "ultra_volume_active"   # 40+ signals/day mode
     SESSION_BOOST_ACTIVE = "session_boost"        # OVERLAP 3x boost active
     CONFLUENCE_HUNTER = "confluence_hunter"       # Hunting for confluence signals
-    APEX_BEAST_UNLEASHED = "apex_beast"          # Maximum extraction mode
+    _BEAST_UNLEASHED = "apex_beast"          # Maximum extraction mode
 
 @dataclass
-class APEXv5RiskParameters:
-    """APEX v5.0 Risk parameters optimized for ultra-aggressive trading"""
+class v5RiskParameters:
+    """v5.0 Risk parameters optimized for ultra-aggressive trading"""
     
     # Base risk settings (optimized for v5.0 performance)
     base_risk_percent: float = 1.0         # 1% base risk (up from 0.5%)
-    max_risk_percent: float = 3.0          # 3% max risk for APEX BEAST mode
+    max_risk_percent: float = 3.0          # 3% max risk for BEAST mode
     min_risk_percent: float = 0.3          # 0.3% minimum risk
     
     # v5.0 Signal volume management
@@ -120,14 +120,14 @@ class APEXv5RiskParameters:
         '35+': 0.8     # 80% for TCS 35-39 (M3 minimum)
     })
 
-class APEXv5RiskManager:
-    """APEX v5.0 Risk Manager - Optimized for ultra-aggressive trading"""
+class v5RiskManager:
+    """v5.0 Risk Manager - Optimized for ultra-aggressive trading"""
     
-    def __init__(self, tier: str = "APEX", risk_mode: APEXv5RiskMode = APEXv5RiskMode.STANDARD):
+    def __init__(self, tier: str = risk_mode: v5RiskMode = v5RiskMode.STANDARD):
         self.tier = tier
         self.risk_mode = risk_mode
-        self.params = APEXv5RiskParameters()
-        self.current_state = APEXv5TradingState.NORMAL
+        self.params = v5RiskParameters()
+        self.current_state = v5TradingState.NORMAL
         
         # v5.0 Enhanced tracking
         self.daily_signals = 0
@@ -142,11 +142,11 @@ class APEXv5RiskManager:
         self.total_trades = 0
         self.winning_trades = 0
         
-        logger.info(f"APEX v5.0 Risk Manager initialized - Tier: {tier}, Mode: {risk_mode.value}")
+        logger.info(f"v5.0 Risk Manager initialized - Tier: {tier}, Mode: {risk_mode.value}")
     
     def calculate_position_size(self, signal: Dict, account_balance: float, 
                               current_session: str = "NORMAL") -> float:
-        """Calculate optimal position size for APEX v5.0 signals"""
+        """Calculate optimal position size for v5.0 signals"""
         try:
             # Get base risk percentage
             base_risk = self._get_base_risk_percent()
@@ -178,18 +178,14 @@ class APEXv5RiskManager:
                 adjusted_risk *= 1.4  # MEGA confluence
             
             # Tier-based adjustments
-            if self.tier == "APEX":
-                adjusted_risk *= 1.2  # 20% APEX bonus
+            if self.tier == :
+                adjusted_risk *= 1.2  # 20% bonus
             elif self.tier == "COMMANDER":
                 adjusted_risk *= 1.1  # 10% COMMANDER bonus
             
             # Apply risk mode multiplier
             mode_multipliers = {
-                APEXv5RiskMode.CONSERVATIVE: 0.5,
-                APEXv5RiskMode.STANDARD: 1.0,
-                APEXv5RiskMode.AGGRESSIVE: 1.5,
-                APEXv5RiskMode.ULTRA: 2.0,
-                APEXv5RiskMode.APEX_BEAST: 3.0
+                v5RiskMode.CONSERVATIVE: 0.5v5RiskMode.STANDARD: 1.0v5RiskMode.AGGRESSIVE: 1.5v5RiskMode.ULTRA: 2.0v5RiskMode._BEAST: 3.0
             }
             adjusted_risk *= mode_multipliers.get(self.risk_mode, 1.0)
             
@@ -272,10 +268,10 @@ class APEXv5RiskManager:
         
         # Update trading state based on volume
         if self.daily_signals >= 150:
-            self.current_state = APEXv5TradingState.ULTRA_VOLUME_ACTIVE
+            self.current_state = v5TradingState.ULTRA_VOLUME_ACTIVE
         
         if current_session == 'OVERLAP':
-            self.current_state = APEXv5TradingState.SESSION_BOOST_ACTIVE
+            self.current_state = v5TradingState.SESSION_BOOST_ACTIVE
         
         logger.info(f"Signal counters updated - Daily: {self.daily_signals}, "
                    f"Hourly: {self.hourly_signals}, Session {current_session}: {self.session_signals[current_session]}")
@@ -349,7 +345,7 @@ class APEXv5RiskManager:
             'NIBBLER': 0.7,
             'FANG': 1.0,
             'COMMANDER': 1.2,
-            'APEX': 1.5
+            '': 1.5
         }
         
         base = tier_risk.get(self.tier, 1.0)
@@ -462,15 +458,15 @@ class APEXv5RiskManager:
         }
 
 # Factory function for backward compatibility
-def get_apex_v5_risk_manager(tier: str, risk_mode: str = "standard") -> APEXv5RiskManager:
-    """Factory function to create APEX v5.0 risk manager"""
+def get_apex_v5_risk_manager(tier: str, risk_mode: str = "standard") -> v5RiskManager:
+    """Factory function to create v5.0 risk manager"""
     mode_mapping = {
-        'conservative': APEXv5RiskMode.CONSERVATIVE,
-        'standard': APEXv5RiskMode.STANDARD,
-        'aggressive': APEXv5RiskMode.AGGRESSIVE,
-        'ultra': APEXv5RiskMode.ULTRA,
-        'apex_beast': APEXv5RiskMode.APEX_BEAST
+        'conservative': v5RiskMode.CONSERVATIVE,
+        'standard': v5RiskMode.STANDARD,
+        'aggressive': v5RiskMode.AGGRESSIVE,
+        'ultra': v5RiskMode.ULTRA,
+        'apex_beast': v5RiskMode._BEAST
     }
     
-    risk_mode_enum = mode_mapping.get(risk_mode.lower(), APEXv5RiskMode.STANDARD)
-    return APEXv5RiskManager(tier=tier, risk_mode=risk_mode_enum)
+    risk_mode_enum = mode_mapping.get(risk_mode.lower()v5RiskMode.STANDARD)
+    return v5RiskManager(tier=tier, risk_mode=risk_mode_enum)

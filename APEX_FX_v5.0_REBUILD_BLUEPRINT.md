@@ -1,8 +1,8 @@
-# 🎯 APEX v5.0 ENGINE REBUILD BLUEPRINT
+# 🎯 v5.0 ENGINE REBUILD BLUEPRINT
 
 **Created**: July 14, 2025  
 **Status**: PRODUCTION TESTED - Bridge Integration Complete  
-**Purpose**: Complete rebuild guide for APEX v5.0 signal engine
+**Purpose**: Complete rebuild guide for v5.0 signal engine
 
 ---
 
@@ -10,7 +10,7 @@
 
 **NEVER ATTEMPT DIRECT MT5 CONNECTION FROM LINUX**
 
-The APEX engine must ONLY read market data from bridge files. Any attempt to connect directly to MT5 from Linux will fail.
+The engine must ONLY read market data from bridge files. Any attempt to connect directly to MT5 from Linux will fail.
 
 ---
 
@@ -18,7 +18,7 @@ The APEX engine must ONLY read market data from bridge files. Any attempt to con
 
 ### Data Flow (MANDATORY):
 ```
-MT5 Terminals → Bridge Files → APEX Engine → Telegram Connector → Users
+MT5 Terminals → Bridge Files → Engine → Telegram Connector → Users
 ```
 
 ### Bridge Integration:
@@ -35,7 +35,7 @@ MT5 Terminals → Bridge Files → APEX Engine → Telegram Connector → Users
 ```python
 #!/usr/bin/env python3
 """
-APEX v5.0 LIVE SIGNAL SYSTEM
+v5.0 LIVE SIGNAL SYSTEM
 Bridge-integrated market analysis engine
 NO DIRECT MT5 CONNECTION - BRIDGE FILES ONLY
 """
@@ -52,7 +52,7 @@ from typing import Dict, List, Optional
 # Critical: NO MetaTrader5 import on Linux
 # All market data comes from bridge files
 
-class APEXv5LiveSystem:
+class v5LiveSystem:
     def __init__(self):
         self.is_running = False
         self.bridge_connected = False
@@ -61,7 +61,7 @@ class APEXv5LiveSystem:
         self.bridge_agent_url = "http://3.145.84.187:5555"
         self.bridge_path = "C:\\\\MT5_Farm\\\\Bridge\\\\Incoming\\\\"
         
-        # APEX v5.0 pairs (15 total)
+        # v5.0 pairs (15 total)
         self.v5_pairs = [
             'EURUSD', 'GBPUSD', 'USDJPY', 'USDCAD', 'GBPJPY',
             'EURJPY', 'AUDJPY', 'GBPCHF', 'AUDUSD', 'NZDUSD', 
@@ -204,7 +204,7 @@ def generate_live_signal(self, symbol: str) -> Optional[Dict]:
             'bid_price': market_data['bid'], 
             'spread': market_data['spread'],
             'tcs': tcs_score,
-            'pattern': f'APEX_v5_LIVE_{self.get_current_session()}',
+            'pattern': f'_v5_LIVE_{self.get_current_session()}',
             'timeframe': 'M3',
             'session': self.get_current_session(),
             'timestamp': datetime.now()
@@ -233,7 +233,7 @@ def generate_live_signal(self, symbol: str) -> Optional[Dict]:
 ```python
 def run_live_trading(self) -> None:
     """Main signal generation loop"""
-    logging.info("🎯 STARTING LIVE TRADING - APEX v5.0")
+    logging.info("🎯 STARTING LIVE TRADING - v5.0")
     logging.info("📊 BRIDGE DATA SOURCE - NO DIRECT MT5")
     logging.info("=" * 50)
     
@@ -293,8 +293,8 @@ def get_current_session(self) -> str:
 ```python
 # apex_telegram_connector.py
 """
-APEX v5.0 to Telegram Connector
-Monitors APEX logs and sends to BIT COMMANDER bot
+v5.0 to Telegram Connector
+Monitors logs and sends to BIT COMMANDER bot
 """
 
 BOT_TOKEN = "7854827710:AAGsO-vgMpsTOVNu6zoo_-GGJkYQd97Mc5w"  # BIT COMMANDER
@@ -352,7 +352,7 @@ export CHAT_ID=-1002581996861
 
 ## 🚀 Deployment Steps
 
-### 1. Start APEX Engine:
+### 1. Start Engine:
 ```bash
 cd /root/HydraX-v2
 python3 apex_v5_live_real.py > apex_v5_live_real.log 2>&1 &
@@ -417,8 +417,8 @@ curl -X POST http://3.145.84.187:5555/execute \\
 # Test signal parsing
 python3 -c "
 import json
-from apex_v5_live_real import APEXv5LiveSystem
-system = APEXv5LiveSystem()
+from apex_v5_live_real import v5LiveSystem
+system = v5LiveSystem()
 data = system.get_market_data_from_bridge_files('EURUSD')
 print(json.dumps(data, indent=2, default=str))
 "
@@ -430,7 +430,7 @@ print(json.dumps(data, indent=2, default=str))
 
 ### Pre-Deployment:
 - [ ] Bridge files accessible via bulletproof agents
-- [ ] APEX engine reads bridge data successfully
+- [ ] engine reads bridge data successfully
 - [ ] TCS calculation produces 35-95% range
 - [ ] Signal format exactly matches Telegram expectation
 - [ ] Telegram connector parses signals correctly
@@ -468,5 +468,5 @@ print(json.dumps(data, indent=2, default=str))
 
 ---
 
-**APEX v5.0 Bridge Integration - Complete Rebuild Blueprint**  
+**v5.0 Bridge Integration - Complete Rebuild Blueprint**  
 *Production tested July 14, 2025*

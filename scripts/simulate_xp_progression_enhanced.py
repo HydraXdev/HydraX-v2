@@ -622,7 +622,7 @@ class EnhancedXPSimulator:
         for profile, summary in analysis['player_summaries'].items():
             auth_days = str(summary['days_to_authorized'])[:12]
             elite_days = str(summary['days_to_elite'])[:12]
-            print(f"{profile:<20} {summary['final_rank']:<12} {summary['final_xp']:<10,} {auth_days:<15} {elite_days:<15} {summary['total_trades']:<10} {summary['active_days']:<12}")
+            print(f"{profile:<20} {summary['final_rank']:<12} {summary['final_xp']:<10} {auth_days:<15} {elite_days:<15} {summary['total_trades']:<10} {summary['active_days']:<12}")
         
         # Rank achievement rates
         print("\n🏆 Rank Achievement Rates:")
@@ -675,7 +675,7 @@ class EnhancedXPSimulator:
             active_days = active_data.get(f'days_to_{rank.name.lower()}', 'Not reached')
             casual_days = casual_data.get(f'days_to_{rank.name.lower()}', 'Not reached')
             
-            print(f"{rank.name:<15} {xp_req:<15,} {theoretical_days:<20.0f} {str(active_days):<25} {str(casual_days):<25}")
+            print(f"{rank.name:<15} {xp_req:<15} {theoretical_days:<20.0f} {str(active_days):<25} {str(casual_days):<25}")
     
     def save_enhanced_report(self, results: List[Dict], analysis: Dict):
         """Save enhanced report with all data"""
@@ -723,7 +723,7 @@ class EnhancedXPSimulator:
             # Quick summary
             profile = self.player_profiles[profile_type]
             print(f"  Description: {profile.description}")
-            print(f"  Final: {result['final_xp']:,} XP ({result['final_rank']})")
+            print(f"  Final: {result['final_xp']:} XP ({result['final_rank']})")
             print(f"  Performance: {result['total_trades']} trades, {result['win_rate']:.1f}% win rate")
             print(f"  Achievements: {result['achievement_count']} unlocked")
             print(f"  Retention: {'Active' if result['retention'] else 'Quit'}")

@@ -1,0 +1,21 @@
+{
+  "README": "CRITICAL: This file must contain REAL broker credentials only",
+  "WARNING": "NO FAKE passwords allowed - use actual MT5 account details",
+  "INSTRUCTIONS": "Update with real account credentials before system use",
+  
+  "user_7176191872": {
+    "broker": "Coinexx",
+    "server": "REAL_SERVER_NAME_REQUIRED",
+    "account_number": "REAL_ACCOUNT_NUMBER_REQUIRED",
+    "api_credentials": {
+      "login": "REAL_LOGIN_REQUIRED",
+      "password": "REAL_PASSWORD_REQUIRED",
+      "server": "REAL_SERVER_REQUIRED"
+    },
+    "connection_verified": false,
+    "account_type": "REAL_OR_DEMO_REQUIRED",
+    "currency": "USD",
+    "leverage": "REAL_LEVERAGE_REQUIRED",
+    "status": "REQUIRES_REAL_CREDENTIALS"
+  }
+}

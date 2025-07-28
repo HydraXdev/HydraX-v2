@@ -1,0 +1,166 @@
+{
+  "market_profiles": {
+    "EURUSD": {
+      "pair_type": "major",
+      "typical_daily_range": 80,
+      "trap_frequency": "medium",
+      "news_sensitivity": "high",
+      "optimal_sessions": ["london", "overlap_london_ny"],
+      "key_levels": {
+        "psychological": [1.0000, 1.0500, 1.1000, 1.1500],
+        "historical_pivots": [1.0800, 1.0850, 1.0900, 1.0950]
+      },
+      "typical_sl_distances": [15, 20, 25, 30, 40],
+      "sweep_reliability": 0.75,
+      "reversal_zones": {
+        "daily_atr_multiple": 1.2,
+        "key_time_reversals": ["09:00", "14:00", "16:00"]
+      }
+    },
+    "GBPUSD": {
+      "pair_type": "major",
+      "typical_daily_range": 100,
+      "trap_frequency": "high",
+      "news_sensitivity": "very_high",
+      "optimal_sessions": ["london", "overlap_london_ny"],
+      "key_levels": {
+        "psychological": [1.2000, 1.2500, 1.3000, 1.3500],
+        "historical_pivots": [1.2700, 1.2750, 1.2800, 1.2850]
+      },
+      "typical_sl_distances": [20, 25, 30, 40, 50],
+      "sweep_reliability": 0.70,
+      "reversal_zones": {
+        "daily_atr_multiple": 1.3,
+        "key_time_reversals": ["08:00", "13:00", "16:30"]
+      }
+    },
+    "USDJPY": {
+      "pair_type": "jpy_pair",
+      "typical_daily_range": 80,
+      "trap_frequency": "medium",
+      "news_sensitivity": "high",
+      "optimal_sessions": ["asian", "overlap_london_ny"],
+      "key_levels": {
+        "psychological": [140.00, 145.00, 150.00, 155.00],
+        "historical_pivots": [148.00, 148.50, 149.00, 149.50]
+      },
+      "typical_sl_distances": [20, 30, 40, 50, 60],
+      "sweep_reliability": 0.80,
+      "reversal_zones": {
+        "daily_atr_multiple": 1.1,
+        "key_time_reversals": ["01:00", "09:00", "14:00"]
+      }
+    },
+    "GBPJPY": {
+      "pair_type": "jpy_cross",
+      "typical_daily_range": 150,
+      "trap_frequency": "extreme",
+      "news_sensitivity": "extreme",
+      "optimal_sessions": ["london", "overlap_london_ny"],
+      "key_levels": {
+        "psychological": [180.00, 185.00, 190.00, 195.00],
+        "historical_pivots": [183.00, 184.00, 185.00, 186.00]
+      },
+      "typical_sl_distances": [30, 40, 50, 75, 100],
+      "sweep_reliability": 0.65,
+      "volatility_factor": 2.0,
+      "reversal_zones": {
+        "daily_atr_multiple": 1.5,
+        "key_time_reversals": ["08:00", "13:00", "21:00"]
+      }
+    },
+    "XAUUSD": {
+      "pair_type": "metal",
+      "typical_daily_range": 25,
+      "trap_frequency": "very_high",
+      "news_sensitivity": "extreme",
+      "optimal_sessions": ["london", "new_york", "overlap_london_ny"],
+      "key_levels": {
+        "psychological": [2000, 2050, 2100, 2150, 2200],
+        "historical_pivots": [2030, 2040, 2050, 2060, 2070]
+      },
+      "typical_sl_distances": [100, 150, 200, 300, 500],
+      "sweep_reliability": 0.85,
+      "volatility_factor": 1.8,
+      "reversal_zones": {
+        "daily_atr_multiple": 1.4,
+        "key_time_reversals": ["08:30", "14:00", "19:30"]
+      }
+    },
+    "AUDUSD": {
+      "pair_type": "commodity",
+      "typical_daily_range": 70,
+      "trap_frequency": "medium",
+      "news_sensitivity": "medium",
+      "optimal_sessions": ["asian", "overlap_london_ny"],
+      "key_levels": {
+        "psychological": [0.6000, 0.6500, 0.7000, 0.7500],
+        "historical_pivots": [0.6650, 0.6700, 0.6750, 0.6800]
+      },
+      "typical_sl_distances": [15, 20, 25, 30, 35],
+      "sweep_reliability": 0.72,
+      "reversal_zones": {
+        "daily_atr_multiple": 1.15,
+        "key_time_reversals": ["00:30", "09:00", "14:00"]
+      }
+    }
+  },
+  "session_characteristics": {
+    "asian": {
+      "volatility_multiplier": 0.7,
+      "trap_probability": 0.3,
+      "trend_probability": 0.4,
+      "range_probability": 0.6,
+      "optimal_pairs": ["USDJPY", "AUDUSD", "NZDUSD"]
+    },
+    "london": {
+      "volatility_multiplier": 1.3,
+      "trap_probability": 0.6,
+      "trend_probability": 0.7,
+      "range_probability": 0.3,
+      "optimal_pairs": ["EURUSD", "GBPUSD", "EURGBP", "XAUUSD"]
+    },
+    "new_york": {
+      "volatility_multiplier": 1.2,
+      "trap_probability": 0.5,
+      "trend_probability": 0.6,
+      "range_probability": 0.4,
+      "optimal_pairs": ["EURUSD", "GBPUSD", "USDCAD", "XAUUSD"]
+    },
+    "overlap_london_ny": {
+      "volatility_multiplier": 1.5,
+      "trap_probability": 0.7,
+      "trend_probability": 0.8,
+      "range_probability": 0.2,
+      "optimal_pairs": ["EURUSD", "GBPUSD", "XAUUSD", "GBPJPY"]
+    }
+  },
+  "liquidity_patterns": {
+    "stop_hunt_times": ["00:00", "08:00", "13:00", "16:00", "21:00"],
+    "high_liquidity_hours": [8, 9, 13, 14, 15, 16],
+    "low_liquidity_hours": [22, 23, 0, 1, 2, 3, 4, 5],
+    "weekend_gap_pairs": ["USDJPY", "EURJPY", "GBPJPY"]
+  },
+  "news_impact_matrix": {
+    "NFP": {
+      "affected_pairs": ["EURUSD", "GBPUSD", "USDJPY", "XAUUSD"],
+      "impact_duration_minutes": 120,
+      "volatility_spike": 2.5
+    },
+    "FOMC": {
+      "affected_pairs": ["EURUSD", "GBPUSD", "USDJPY", "XAUUSD", "AUDUSD"],
+      "impact_duration_minutes": 180,
+      "volatility_spike": 3.0
+    },
+    "ECB": {
+      "affected_pairs": ["EURUSD", "EURGBP", "EURJPY"],
+      "impact_duration_minutes": 120,
+      "volatility_spike": 2.0
+    },
+    "BOE": {
+      "affected_pairs": ["GBPUSD", "EURGBP", "GBPJPY"],
+      "impact_duration_minutes": 120,
+      "volatility_spike": 2.2
+    }
+  }
+}

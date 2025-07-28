@@ -32,7 +32,6 @@ logger = logging.getLogger(__name__)
 # Database setup
 Base = declarative_base()
 
-
 @dataclass
 class ModelVersion:
     """Model version metadata."""
@@ -46,7 +45,6 @@ class ModelVersion:
     notes: Optional[str] = None
     parent_version: Optional[str] = None
 
-
 @dataclass
 class UpdatePolicy:
     """Policy for automated model updates."""
@@ -57,7 +55,6 @@ class UpdatePolicy:
     update_frequency: timedelta = timedelta(days=7)
     a_b_test_duration: timedelta = timedelta(days=3)
     a_b_test_traffic_split: float = 0.1  # Traffic percentage for new model
-
 
 class ModelVersionTable(Base):
     """SQLAlchemy model for version tracking."""
@@ -78,7 +75,6 @@ class ModelVersionTable(Base):
     production_rmse = Column(Float)
     production_samples = Column(Integer, default=0)
     last_evaluated = Column(DateTime)
-
 
 class ModelVersionManager:
     """
@@ -620,7 +616,6 @@ class ModelVersionManager:
         finally:
             session.close()
 
-
 class AutomatedModelUpdater:
     """
     Automated model update system with continuous learning.
@@ -735,7 +730,6 @@ class AutomatedModelUpdater:
         model.load_state_dict(checkpoint['model_state_dict'])
         
         return model
-
 
 def create_versioning_config() -> Dict:
     """Create default versioning configuration."""

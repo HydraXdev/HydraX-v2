@@ -286,7 +286,7 @@ class FunnelVisualizer:
             ax2.add_patch(rect)
             
             # Add text
-            ax2.text(0.5, i + 0.4, f"{stage}\n{value:,}", 
+            ax2.text(0.5, i + 0.4, f"{stage}\n{value:}", 
                     ha='center', va='center', fontsize=10, weight='bold')
             
             # Add conversion rate

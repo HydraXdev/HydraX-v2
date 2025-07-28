@@ -22,20 +22,18 @@ class TierNames:
         COMMANDER: 3  # Highest level with all premium features
     }
 
-
 # Legacy mapping (for migration only)
 LEGACY_TO_NEW = {
     "tier_1": TierNames.NIBBLER,
     "tier_2": TierNames.FANG,
     "tier_3": TierNames.COMMANDER,
-    "tier_4": TierNames.COMMANDER,  # APEX migrates to COMMANDER
-    "APEX": TierNames.COMMANDER,   # APEX tier becomes COMMANDER
+    "tier_4": TierNames.COMMANDER,  # migrates to COMMANDER
+    : TierNames.COMMANDER,   # tier becomes COMMANDER
     "tier_general": None,  # Maps to no specific tier
     "TRIAL": TierNames.PRESS_PASS,
     "PRESS PASS": TierNames.PRESS_PASS,
     "FREE_TRIAL": TierNames.PRESS_PASS
 }
-
 
 def get_tier_name(legacy_name: str) -> str:
     """Convert legacy tier name to new standard name"""
@@ -44,12 +42,10 @@ def get_tier_name(legacy_name: str) -> str:
     
     return LEGACY_TO_NEW.get(legacy_name, legacy_name)
 
-
 def get_tier_level(tier_name: str) -> int:
     """Get numeric level for tier comparison"""
     tier_name = get_tier_name(tier_name)
     return TierNames.TIER_HIERARCHY.get(tier_name, -1)
-
 
 def has_tier_access(user_tier: str, required_tier: str) -> bool:
     """Check if user tier has access to required tier features"""

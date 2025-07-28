@@ -99,8 +99,7 @@ class SniperHUDIntegration:
         users = [
             {'user_id': 123456, 'tier': 'ELITE'},
             {'user_id': 789012, 'tier': 'AUTHORIZED'},
-            {'user_id': 345678, 'tier': 'USER'},
-        ]
+            {'user_id': 345678, 'tier': 'USER'}]
         
         return [u for u in users if u['tier'] in eligible_tiers]
     

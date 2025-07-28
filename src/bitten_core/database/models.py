@@ -16,7 +16,6 @@ logger = logging.getLogger(__name__)
 
 Base = declarative_base()
 
-
 class User(Base):
     """Basic user model"""
     __tablename__ = 'users'
@@ -34,7 +33,6 @@ class User(Base):
     def __repr__(self):
         return f"<User(id='{self.id}', username='{self.username}')>"
 
-
 class UserProfile(Base):
     """User profile information"""
     __tablename__ = 'user_profiles'
@@ -51,7 +49,6 @@ class UserProfile(Base):
     def __repr__(self):
         return f"<UserProfile(user_id='{self.user_id}', tier='{self.tier}')>"
 
-
 class SubscriptionStatus(Base):
     """Subscription status types"""
     __tablename__ = 'subscription_statuses'
@@ -62,7 +59,6 @@ class SubscriptionStatus(Base):
     
     def __repr__(self):
         return f"<SubscriptionStatus(name='{self.name}')>"
-
 
 class UserSubscription(Base):
     """User subscription information"""
@@ -80,7 +76,6 @@ class UserSubscription(Base):
     
     def __repr__(self):
         return f"<UserSubscription(user_id='{self.user_id}', tier='{self.tier}')>"
-
 
 class UserLoginStreak(Base):
     """User login streak tracking"""
@@ -145,7 +140,6 @@ class UserLoginStreak(Base):
             claimed.append(day)
             self.set_claimed_rewards(claimed)
 
-
 class PersonalRecord(Base):
     """Personal best records for users"""
     __tablename__ = 'personal_records'
@@ -191,7 +185,6 @@ class PersonalRecord(Base):
     def set_details(self, details: Dict[str, Any]):
         """Set details from dictionary"""
         self.details = json.dumps(details)
-
 
 class DailyMission(Base):
     """Daily missions for users"""
@@ -259,7 +252,6 @@ class DailyMission(Base):
         """Check if mission is expired"""
         return datetime.utcnow() > self.expires_at
 
-
 class MysteryBox(Base):
     """Mystery boxes for users"""
     __tablename__ = 'mystery_boxes'
@@ -318,7 +310,6 @@ class MysteryBox(Base):
         if not self.is_opened:
             self.opened_at = datetime.utcnow()
 
-
 class SeasonalCampaign(Base):
     """Seasonal campaigns"""
     __tablename__ = 'seasonal_campaigns'
@@ -373,7 +364,6 @@ class SeasonalCampaign(Base):
         if not self.is_current:
             return 0
         return max(0, (self.end_date - datetime.utcnow()).days)
-
 
 class UserCampaignProgress(Base):
     """User progress in seasonal campaigns"""
@@ -430,7 +420,6 @@ class UserCampaignProgress(Base):
             self.set_completed_milestones(completed)
             self.total_rewards_claimed += 1
 
-
 class EngagementEvent(Base):
     """Log of engagement events"""
     __tablename__ = 'engagement_events'
@@ -475,7 +464,6 @@ class EngagementEvent(Base):
     def set_event_data(self, data: Dict[str, Any]):
         """Set event data from dictionary"""
         self.event_data = json.dumps(data)
-
 
 class RewardClaim(Base):
     """Record of reward claims"""
@@ -525,7 +513,6 @@ class RewardClaim(Base):
         """Set reward metadata from dictionary"""
         self.reward_metadata = json.dumps(metadata)
 
-
 # Additional utility functions for database operations
 def create_all_tables(engine):
     """Create all tables in the database"""
@@ -536,7 +523,6 @@ def create_all_tables(engine):
         logger.error(f"Error creating tables: {e}")
         raise
 
-
 def drop_all_tables(engine):
     """Drop all tables in the database"""
     try:
@@ -545,7 +531,6 @@ def drop_all_tables(engine):
     except Exception as e:
         logger.error(f"Error dropping tables: {e}")
         raise
-
 
 class StreakProtection(Base):
     """Streak protection usage tracking"""
@@ -571,7 +556,6 @@ class StreakProtection(Base):
     
     def __repr__(self):
         return f"<StreakProtection(user_id='{self.user_id}', type='{self.protection_type}', streak_saved={self.streak_saved})>"
-
 
 class DailyLoginRecord(Base):
     """Daily login history tracking"""
@@ -647,7 +631,6 @@ class DailyLoginRecord(Base):
         """Set device info from dictionary"""
         self.device_info = json.dumps(info)
 
-
 class StreakMilestone(Base):
     """Streak milestone achievements"""
     __tablename__ = 'streak_milestones'
@@ -711,7 +694,6 @@ class StreakMilestone(Base):
         """Set unlocked badges from list"""
         self.badges_unlocked = json.dumps(badges)
 
-
 class ComebackBonus(Base):
     """Comeback bonus tracking for returning users"""
     __tablename__ = 'comeback_bonuses'
@@ -763,7 +745,6 @@ class ComebackBonus(Base):
         """Set special items from list of dictionaries"""
         self.special_items_received = json.dumps(items)
 
-
 class StreakCalendar(Base):
     """Visual streak calendar data for UI"""
     __tablename__ = 'streak_calendar'
@@ -791,7 +772,6 @@ class StreakCalendar(Base):
     def __repr__(self):
         return f"<StreakCalendar(user_id='{self.user_id}', date='{self.calendar_date}', status='{self.status}')>"
 
-
 class UserBadge(Base):
     """User-owned badges from streak achievements"""
     __tablename__ = 'user_badges'
@@ -818,7 +798,6 @@ class UserBadge(Base):
     
     def __repr__(self):
         return f"<UserBadge(user_id='{self.user_id}', badge_id='{self.badge_id}', tier='{self.badge_tier}')>"
-
 
 class UserTitle(Base):
     """User-owned titles from streak achievements"""
@@ -868,7 +847,6 @@ class UserTitle(Base):
     def set_effects(self, effects: Dict[str, Any]):
         """Set effects from dictionary"""
         self.effects = json.dumps(effects)
-
 
 # Export all models for easy importing
 __all__ = [

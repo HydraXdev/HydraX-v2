@@ -157,7 +157,7 @@ tiers:
       min_balance: 2000
       max_concurrent_positions: 5
       
-  APEX:
+  :
     pricing:
       monthly_price: 188
       
@@ -198,13 +198,13 @@ special_modes:
     tcs_requirements: [70, 72, 74, 76]    # TCS needed for each shot (lowered from 85,87,89,91)
     max_sequences_per_day: 2              # Max 2 chaingun sequences daily
     rapid_fire: true
-    available_tiers: ["FANG", "COMMANDER", "APEX"]  # Not available for PRESS_PASS or NIBBLER
+    available_tiers: ["FANG", "COMMANDER"]  # Not available for PRESS_PASS or NIBBLER
     description: "Progressive risk sequence - 4 shots with lowered TCS requirements"
     
   midnight_hammer:
     unity_multiplier: 10.0       # 10x bonus for unity
     time_window: "00:00-01:00"   # GMT
-    description: "APEX exclusive unity bonus window"
+    description: "exclusive unity bonus window"
     
   stealth:
     randomize_sl: true
@@ -276,7 +276,7 @@ special_events:
     active: false
     start_datetime: "2024-07-04 00:00:00"
     end_datetime: "2024-07-04 23:59:59"
-    eligible_tiers: ["NIBBLER", "FANG", "COMMANDER", "APEX"]
+    eligible_tiers: ["NIBBLER", "FANG", "COMMANDER"]
     bonuses:
       risk_percent: 0.5        # +0.5% extra risk allowed
       daily_shots: 2           # +2 extra trades
@@ -300,13 +300,13 @@ special_events:
     active: false
     start_datetime: "2025-01-01 00:00:00"
     end_datetime: "2025-01-01 23:59:59"
-    eligible_tiers: ["APEX"]  # APEX exclusive
+    eligible_tiers: []  # exclusive
     bonuses:
       risk_percent: 1.0        # +1% risk for the elite
       daily_shots: 10          # +10 shots
       positions: 2             # +2 positions
       tcs_reduction: 0
-    message: "🎊 APEX New Year Special: 1% bonus risk + 10 shots!"
+    message: "🎊 New Year Special: 1% bonus risk + 10 shots!"
 
 # User-specific temporary bonuses
 # Can be granted for achievements, milestones, good behavior, etc.
@@ -354,7 +354,7 @@ bonus_rules:
     NIBBLER: 1.0               # 100% of bonus
     FANG: 1.2                  # 120% of bonus
     COMMANDER: 1.5             # 150% of bonus
-    APEX: 2.0                  # 200% of bonus (double all bonuses)
+    : 2.0                  # 200% of bonus (double all bonuses)
 
 # Achievement bonus templates
 # Can be awarded programmatically

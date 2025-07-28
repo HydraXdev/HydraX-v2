@@ -50,7 +50,7 @@ ACCESS_LEVELS = {
 
 # Authentication credentials (in production, use proper auth system)
 THRONE_USERS = {
-    "APEX_COMMANDER": {
+    "_COMMANDER": {
         "password_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",  # empty for demo
         "access_level": "COMMANDER",
         "user_id": "7176191872"
@@ -169,6 +169,44 @@ class CommanderThroneDB:
 
 # Initialize database
 throne_db = CommanderThroneDB(THRONE_CONFIG["database_path"])
+
+# CREDIT REFERRAL HELPER FUNCTIONS
+def get_credit_referral_stats():
+    """Get credit referral system statistics for throne dashboard"""
+    try:
+        from src.bitten_core.credit_referral_system import get_credit_referral_system
+        referral_system = get_credit_referral_system()
+        
+        # Get admin stats
+        admin_stats = referral_system.get_admin_stats()
+        
+        # Get top referrers
+        top_referrers = referral_system.get_top_referrers(limit=5)
+        
+        # Add additional metrics for throne dashboard
+        stats = {
+            "total_credits_issued": admin_stats.get('total_credits_issued', 0),
+            "total_referrals": admin_stats.get('total_referrals', 0), 
+            "pending_credits": admin_stats.get('pending_credits', 0),
+            "active_referrers": len(top_referrers),
+            "top_referrers": top_referrers,
+            "credits_this_month": admin_stats.get('total_credits_issued', 0),  # Would be filtered by month in production
+            "conversion_rate": round((admin_stats.get('total_referrals', 0) / max(1, admin_stats.get('total_codes_generated', 1))) * 100, 1)
+        }
+        
+        return stats
+        
+    except Exception as e:
+        logger.error(f"Error getting credit referral stats: {e}")
+        return {
+            "total_credits_issued": 0,
+            "total_referrals": 0,
+            "pending_credits": 0,
+            "active_referrers": 0,
+            "top_referrers": [],
+            "credits_this_month": 0,
+            "conversion_rate": 0
+        }
 
 def require_auth(access_level: str = "OBSERVER"):
     """Authentication decorator"""
@@ -303,9 +341,8 @@ def api_soldier_roster():
     # Mock data for now - would integrate with user database
     soldiers = [
         {
-            "username": "APEX_OPERATIVE_001",
-            "tier": "APEX",
-            "xp": 12750,
+            "username": "_OPERATIVE_001",
+            "tier": "xp": 12750,
             "telegram_linked": True,
             "last_seen": "5m ago",
             "trade_count": 127
@@ -338,7 +375,7 @@ def api_trade_log():
     trades = [
         {
             "time": datetime.now().strftime("%H:%M:%S"),
-            "user": "APEX_001",
+            "user": "_001",
             "pair": "EURUSD",
             "direction": "BUY",
             "result": "WIN",
@@ -383,7 +420,7 @@ def api_sitrep():
             "referrals_vs_enlistments": "3:1",
             "overdue_telegram_links": 4,
             "badge_unlock_velocity": "2.3/hour",
-            "most_profitable_user": "APEX_OPERATIVE_001",
+            "most_profitable_user": "_OPERATIVE_001",
             "win_rate_trend": "↗️ +2.1% (24h)"
         }
         
@@ -479,15 +516,15 @@ def api_command_log():
     return jsonify({"logs": logs})
 
 # ============================================
-# APEX CONTROL ENDPOINTS
+# CONTROL ENDPOINTS
 # ============================================
 
 @app.route('/throne/api/apex/status')
 @require_auth("OBSERVER")
 def apex_status():
-    """Get APEX engine status and configuration"""
+    """Get engine status and configuration"""
     try:
-        # Check if APEX is running
+        # Check if is running
         apex_running = False
         apex_pid = None
         
@@ -526,13 +563,13 @@ def apex_status():
             "signal_count": signal_count
         })
     except Exception as e:
-        logger.error(f"Error getting APEX status: {e}")
+        logger.error(f"Error getting status: {e}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/throne/api/apex/config', methods=['POST'])
 @require_auth("LIEUTENANT")
 def update_apex_config():
-    """Update APEX configuration"""
+    """Update configuration"""
     try:
         data = request.json
         config_file = "/root/HydraX-v2/apex_config.json"
@@ -572,40 +609,38 @@ def update_apex_config():
         
         return jsonify({"success": True, "message": "Configuration updated"})
     except Exception as e:
-        logger.error(f"Error updating APEX config: {e}")
+        logger.error(f"Error updating config: {e}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/throne/api/apex/control', methods=['POST'])
 @require_auth("LIEUTENANT")
 def control_apex():
-    """Start/Stop/Restart APEX engine"""
+    """Start/Stop/Restart engine"""
     try:
         action = request.json.get('action')
         
         if action == 'start':
-            # Start APEX
-            subprocess.Popen(['python3', '/root/HydraX-v2/apex_v5_lean.py'],
+            # Start subprocess.Popen(['python3', '/root/HydraX-v2/apex_v5_lean.py'],
                            stdout=open('/root/HydraX-v2/apex_lean.log', 'a'),
                            stderr=subprocess.STDOUT)
-            message = "APEX engine started"
+            message = "engine started"
             
         elif action == 'stop':
-            # Stop APEX
-            pid_file = "/root/HydraX-v2/.apex_engine.pid"
+            # Stop pid_file = "/root/HydraX-v2/.apex_engine.pid"
             if os.path.exists(pid_file):
                 with open(pid_file, 'r') as f:
                     pid = int(f.read().strip())
                 os.kill(pid, 15)  # SIGTERM
-                message = "APEX engine stopped"
+                message = "engine stopped"
             else:
-                message = "APEX not running"
+                message = "not running"
                 
         elif action == 'restart':
             # Stop then start
             control_apex_internal('stop')
             time.sleep(2)
             control_apex_internal('start')
-            message = "APEX engine restarted"
+            message = "engine restarted"
             
         else:
             return jsonify({"error": "Invalid action"}), 400
@@ -622,11 +657,11 @@ def control_apex():
         
         return jsonify({"success": True, "message": message})
     except Exception as e:
-        logger.error(f"Error controlling APEX: {e}")
+        logger.error(f"Error controlling : {e}")
         return jsonify({"error": str(e)}), 500
 
 def control_apex_internal(action):
-    """Internal helper for APEX control"""
+    """Internal helper for control"""
     if action == 'stop':
         pid_file = "/root/HydraX-v2/.apex_engine.pid"
         if os.path.exists(pid_file):
@@ -644,7 +679,7 @@ def control_apex_internal(action):
 @app.route('/throne/api/apex/signals')
 @require_auth("OBSERVER")
 def apex_recent_signals():
-    """Get recent APEX signals and current rate"""
+    """Get recent signals and current rate"""
     try:
         log_file = "/root/HydraX-v2/apex_lean.log"
         signals = []
@@ -868,7 +903,9 @@ def api_subscription_analytics():
                 {"day": "Fri", "revenue": 1698},
                 {"day": "Sat", "revenue": 1420},
                 {"day": "Sun", "revenue": 1000}
-            ]
+            ],
+            # CREDIT REFERRAL DATA INTEGRATION
+            "credit_referrals": get_credit_referral_stats()
         }
         
         return jsonify(analytics)
@@ -879,8 +916,76 @@ def api_subscription_analytics():
             "mrr": {"total": 0, "growth_percentage": 0, "by_tier": {}},
             "users": {"total_active": 0, "press_pass": 0, "total_all": 0},
             "conversion": {"press_to_paid": 0},
-            "revenue_chart": []
+            "revenue_chart": [],
+            "credit_referrals": {"total_credits_issued": 0, "total_referrals": 0, "pending_credits": 0}
         })
+
+@app.route('/throne/api/credit_referrals')
+@require_auth("OBSERVER") 
+def api_credit_referrals():
+    """Get credit referral system statistics and management data"""
+    try:
+        return jsonify(get_credit_referral_stats())
+    except Exception as e:
+        logger.error(f"Error getting credit referral stats: {e}")
+        return jsonify({"error": "Failed to get credit referral stats"})
+
+@app.route('/throne/api/credit_referrals/top_referrers')
+@require_auth("OBSERVER")
+def api_top_referrers():
+    """Get top referrers leaderboard"""
+    try:
+        from src.bitten_core.credit_referral_system import get_credit_referral_system
+        referral_system = get_credit_referral_system()
+        
+        top_referrers = referral_system.get_top_referrers(limit=10)
+        return jsonify({"top_referrers": top_referrers})
+    except Exception as e:
+        logger.error(f"Error getting top referrers: {e}")
+        return jsonify({"top_referrers": []})
+
+@app.route('/throne/api/credit_referrals/apply', methods=['POST'])
+@require_auth("COMMANDER")
+def api_apply_credit():
+    """Apply credit manually to a user (COMMANDER only)"""
+    try:
+        data = request.get_json()
+        user_id = data.get('user_id')
+        amount = data.get('amount', 10.0)
+        reason = data.get('reason', 'Manual admin credit')
+        
+        if not user_id:
+            return jsonify({"error": "user_id required"}), 400
+        
+        from src.bitten_core.credit_referral_system import get_credit_referral_system
+        referral_system = get_credit_referral_system()
+        
+        # Apply manual credit
+        result = referral_system.apply_manual_credit(user_id, amount, reason)
+        
+        # Log the action
+        logger.info(f"Commander {session.get('commander_id')} applied ${amount} credit to user {user_id}: {reason}")
+        
+        return jsonify({"success": True, "result": result})
+        
+    except Exception as e:
+        logger.error(f"Error applying credit: {e}")
+        return jsonify({"error": "Failed to apply credit"}), 500
+
+@app.route('/throne/api/credit_referrals/user/<user_id>')
+@require_auth("OBSERVER")
+def api_user_credit_details(user_id):
+    """Get detailed credit information for a specific user"""
+    try:
+        from src.bitten_core.credit_referral_system import get_credit_referral_system
+        referral_system = get_credit_referral_system()
+        
+        stats = referral_system.get_referral_stats(user_id)
+        return jsonify({"user_id": user_id, "stats": stats})
+        
+    except Exception as e:
+        logger.error(f"Error getting user credit details: {e}")
+        return jsonify({"error": "Failed to get user details"}), 500
 
 @app.route('/health')
 def health_check():

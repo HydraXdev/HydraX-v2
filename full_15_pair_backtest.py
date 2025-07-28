@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Full 15-Pair APEX Backtest
+Full 15-Pair Backtest
 Generates and tests signals across all 15 trading pairs for true volume analysis
 """
 
@@ -17,12 +17,12 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class Full15PairBacktest:
-    """Complete backtest across all 15 APEX trading pairs"""
+    """Complete backtest across all 15 trading pairs"""
     
     def __init__(self):
         self.base_path = Path('/root/HydraX-v2')
         
-        # All 15 pairs that APEX trades
+        # All 15 pairs that trades
         self.all_trading_pairs = [
             # Major Pairs (4)
             'EURUSD', 'GBPUSD', 'USDJPY', 'USDCAD',
@@ -34,7 +34,7 @@ class Full15PairBacktest:
             'GBPNZD', 'GBPAUD', 'EURAUD'
         ]
         
-        # APEX v5 Configuration
+        # v5 Configuration
         self.config = {
             'SIGNALS_PER_HOUR_TARGET': {
                 'LONDON': 2.5,
@@ -100,7 +100,7 @@ class Full15PairBacktest:
     
     def calculate_tcs_score(self, symbol: str, direction: str, 
                            timestamp: datetime, session: str) -> int:
-        """Calculate TCS score using APEX v5 methodology"""
+        """Calculate TCS score using v5 methodology"""
         
         base_tcs = 0
         pair_info = self.pair_characteristics[symbol]
@@ -202,7 +202,7 @@ class Full15PairBacktest:
             take_profit = entry_price - (sl_distance * rr_ratio)
         
         return {
-            'signal_id': f"APEX5_{symbol}_{timestamp.strftime('%H%M%S')}",
+            'signal_id': f"5_{symbol}_{timestamp.strftime('%H%M%S')}",
             'symbol': symbol,
             'direction': direction,
             'signal_type': signal_type,
@@ -260,7 +260,7 @@ class Full15PairBacktest:
     def run_3_month_backtest(self) -> Dict:
         """Run complete 3-month backtest across all 15 pairs"""
         
-        print("🚀 Full 15-Pair APEX Backtest - 2023 Historical Analysis")
+        print("🚀 Full 15-Pair Backtest - 2023 Historical Analysis")
         print("=" * 60)
         
         # 6 month period from 2023 (June-December 2023)
@@ -420,8 +420,8 @@ def main():
     performance = results['overall_performance_50_plus']
     
     print(f"📊 SIGNAL VOLUME:")
-    print(f"  Total Signals (All TCS): {metadata['total_signals_generated']:,}")
-    print(f"  Signals with 50+ TCS: {metadata['signals_50_plus_tcs']:,}")
+    print(f"  Total Signals (All TCS): {metadata['total_signals_generated']:}")
+    print(f"  Signals with 50+ TCS: {metadata['signals_50_plus_tcs']:}")
     print(f"  Daily Rate (50+ TCS): {performance['daily_signal_rate']} signals/day")
     print(f"  Period Total: {performance['total_signals']} signals")
     

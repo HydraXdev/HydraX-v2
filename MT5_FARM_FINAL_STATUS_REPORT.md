@@ -99,7 +99,7 @@ C:\MT5_Farm\
 #### **User Distribution (Actual Implementation)**
 - **Press Pass (200 users)**: Cloned from BITTEN_MASTER with demo credentials
 - **NIBBLER+ (150 users)**: Same BITTEN_MASTER + injected live credentials
-- **APEX Users**: Same BITTEN_MASTER + premium broker credentials
+- **Users**: Same BITTEN_MASTER + premium broker credentials
 - **Scaling**: Unlimited - each user gets identical master clone with their specific credentials
 
 ### **Critical Success Factors**

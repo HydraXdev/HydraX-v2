@@ -8,7 +8,6 @@ import os
 import sys
 from pathlib import Path
 
-
 def check_file_exists(file_path: str, description: str) -> bool:
     """Check if a file exists"""
     if os.path.exists(file_path):
@@ -17,7 +16,6 @@ def check_file_exists(file_path: str, description: str) -> bool:
     else:
         print(f"❌ {description}: {file_path} (NOT FOUND)")
         return False
-
 
 def check_file_content(file_path: str, expected_content: list, description: str) -> bool:
     """Check if file contains expected content"""
@@ -45,7 +43,6 @@ def check_file_content(file_path: str, expected_content: list, description: str)
         print(f"❌ {description}: Error reading file: {e}")
         return False
 
-
 def check_database_initialization():
     """Check database initialization"""
     db_path = "data/engagement.db"
@@ -65,7 +62,6 @@ def check_database_initialization():
     else:
         print(f"❌ Database file not found: {db_path}")
         return False
-
 
 def main():
     """Main verification function"""
@@ -176,7 +172,6 @@ def main():
         print(f"\n🔧 {total - passed} verification checks failed.")
         print("Please review the failed items above and ensure all components are properly implemented.")
         return False
-
 
 if __name__ == "__main__":
     success = main()

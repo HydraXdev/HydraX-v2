@@ -18,12 +18,10 @@ logger = logging.getLogger(__name__)
 # Create router
 router = APIRouter(prefix="/api/auth", tags=["authentication"])
 
-
 # Request/Response models
 class LoginRequest(BaseModel):
     telegram_id: int
     api_key: Optional[str] = None
-
 
 class LoginResponse(BaseModel):
     success: bool
@@ -31,10 +29,8 @@ class LoginResponse(BaseModel):
     user_data: Optional[Dict[str, Any]] = None
     message: str
 
-
 class SessionValidateRequest(BaseModel):
     session_token: str
-
 
 class SessionResponse(BaseModel):
     valid: bool
@@ -42,17 +38,14 @@ class SessionResponse(BaseModel):
     tier: Optional[str] = None
     expires_at: Optional[datetime] = None
 
-
 class TierUpgradeRequest(BaseModel):
     session_token: str
     new_tier: str
     payment_method: Optional[str] = None
 
-
 class ProfileUpdateRequest(BaseModel):
     session_token: str
     updates: Dict[str, Any]
-
 
 async def get_current_user(authorization: str = Header(...)):
     """Dependency to get current user from auth header"""
@@ -66,7 +59,6 @@ async def get_current_user(authorization: str = Header(...)):
         return session
     except AuthenticationError:
         raise HTTPException(status_code=401, detail="Invalid or expired session")
-
 
 @router.post("/login", response_model=LoginResponse)
 async def login(request: LoginRequest):
@@ -96,7 +88,6 @@ async def login(request: LoginRequest):
         logger.error(f"Login error: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
-
 @router.post("/logout")
 async def logout(session: Dict = Depends(get_current_user)):
     """
@@ -115,7 +106,6 @@ async def logout(session: Dict = Depends(get_current_user)):
         logger.error(f"Logout error: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
-
 @router.get("/session/validate", response_model=SessionResponse)
 async def validate_session(session: Dict = Depends(get_current_user)):
     """
@@ -127,7 +117,6 @@ async def validate_session(session: Dict = Depends(get_current_user)):
         tier=session['data'].get('tier'),
         expires_at=session['expires_at']
     )
-
 
 @router.post("/session/refresh")
 async def refresh_session(session: Dict = Depends(get_current_user)):
@@ -148,7 +137,6 @@ async def refresh_session(session: Dict = Depends(get_current_user)):
         logger.error(f"Session refresh error: {e}")
         raise HTTPException(status_code=500, detail="Failed to refresh session")
 
-
 @router.get("/user/profile")
 async def get_user_profile(session: Dict = Depends(get_current_user)):
     """
@@ -167,7 +155,6 @@ async def get_user_profile(session: Dict = Depends(get_current_user)):
     except Exception as e:
         logger.error(f"Get profile error: {e}")
         raise HTTPException(status_code=500, detail="Failed to get user profile")
-
 
 @router.post("/user/upgrade-tier")
 async def upgrade_tier(request: TierUpgradeRequest, session: Dict = Depends(get_current_user)):
@@ -190,7 +177,6 @@ async def upgrade_tier(request: TierUpgradeRequest, session: Dict = Depends(get_
         logger.error(f"Tier upgrade error: {e}")
         raise HTTPException(status_code=500, detail="Tier upgrade failed")
 
-
 @router.put("/user/profile")
 async def update_profile(request: ProfileUpdateRequest, session: Dict = Depends(get_current_user)):
     """
@@ -211,7 +197,6 @@ async def update_profile(request: ProfileUpdateRequest, session: Dict = Depends(
         logger.error(f"Profile update error: {e}")
         raise HTTPException(status_code=500, detail="Profile update failed")
 
-
 @router.get("/tiers/features/{tier}")
 async def get_tier_features(tier: str):
     """
@@ -219,7 +204,7 @@ async def get_tier_features(tier: str):
     """
     from ..user_management.auth_middleware import TierGuard
     
-    valid_tiers = ['PRESS_PASS', 'NIBBLER', 'FANG', 'COMMANDER', 'APEX']
+    valid_tiers = ['PRESS_PASS', 'NIBBLER', 'FANG', 'COMMANDER', '']
     
     if tier not in valid_tiers:
         raise HTTPException(status_code=400, detail="Invalid tier")
@@ -242,7 +227,6 @@ async def get_tier_features(tier: str):
         'features': features,
         'limits': limits
     }
-
 
 @router.get("/press-pass/status")
 async def get_press_pass_status(session: Dict = Depends(get_current_user)):
@@ -294,7 +278,6 @@ async def get_press_pass_status(session: Dict = Depends(get_current_user)):
     except Exception as e:
         logger.error(f"Press Pass status error: {e}")
         raise HTTPException(status_code=500, detail="Failed to get Press Pass status")
-
 
 # Export router
 __all__ = ['router']

@@ -62,7 +62,6 @@ except ImportError as e:
 
 logger = logging.getLogger(__name__)
 
-
 class OrderFlowIntelligence:
     """Order flow and microstructure analysis intelligence source"""
     
@@ -150,7 +149,6 @@ class OrderFlowIntelligence:
             logger.error(f"Order flow intelligence error: {e}")
             return None
 
-
 class MLPredictionIntelligence:
     """Machine learning transformer model intelligence source"""
     
@@ -228,7 +226,6 @@ class MLPredictionIntelligence:
         except Exception as e:
             logger.error(f"Feature preparation error: {e}")
             return None
-
 
 class AdvancedSentimentIntelligence:
     """Advanced multi-source sentiment analysis"""
@@ -343,7 +340,6 @@ class AdvancedSentimentIntelligence:
             logger.error(f"Options sentiment error: {e}")
             return {'direction': 'neutral', 'confidence': 50}
 
-
 class CrossAssetIntelligence:
     """Cross-asset correlation intelligence"""
     
@@ -385,7 +381,6 @@ class CrossAssetIntelligence:
         except Exception as e:
             logger.error(f"Cross-asset intelligence error: {e}")
             return None
-
 
 class AdvancedIntelligenceAggregator:
     """
@@ -508,7 +503,6 @@ class AdvancedIntelligenceAggregator:
             'tier_stats': tier_stats,
             'active_signals': total_signals - completed_signals
         }
-
 
 # Create global instance
 advanced_aggregator = AdvancedIntelligenceAggregator()

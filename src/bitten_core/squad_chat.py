@@ -24,7 +24,6 @@ from cryptography.fernet import Fernet
 
 logger = logging.getLogger(__name__)
 
-
 class MessageType(Enum):
     """Types of chat messages"""
     TEXT = "text"
@@ -36,7 +35,6 @@ class MessageType(Enum):
     SYSTEM = "system"
     TRADE_SIGNAL = "trade_signal"
 
-
 class UserRole(Enum):
     """User roles in squad chat"""
     COMMANDER = "commander"
@@ -45,7 +43,6 @@ class UserRole(Enum):
     RECRUIT = "recruit"
     OBSERVER = "observer"
 
-
 class ModerationAction(Enum):
     """Moderation actions available"""
     MUTE = "mute"
@@ -53,7 +50,6 @@ class ModerationAction(Enum):
     BAN = "ban"
     REPORT = "report"
     WARN = "warn"
-
 
 @dataclass
 class ChatUser:
@@ -70,7 +66,6 @@ class ChatUser:
     typing_timeout: Optional[datetime] = None
     muted_until: Optional[datetime] = None
     permissions: Set[str] = field(default_factory=set)
-
 
 @dataclass
 class ChatMessage:
@@ -91,7 +86,6 @@ class ChatMessage:
     metadata: Dict[str, Any] = field(default_factory=dict)
     encrypted: bool = False
 
-
 @dataclass
 class ChatRoom:
     """Chat room configuration"""
@@ -106,7 +100,6 @@ class ChatRoom:
     members: Set[str] = field(default_factory=set)
     moderators: Set[str] = field(default_factory=set)
     archived: bool = False
-
 
 class SquadChatSystem:
     """Main squad chat system using Flask-SocketIO"""
@@ -817,7 +810,6 @@ class SquadChatSystem:
                 
         except Exception as e:
             logger.error(f"Failed to save rooms: {e}")
-
 
 # Example integration with Flask app
 if __name__ == "__main__":

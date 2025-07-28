@@ -8,7 +8,7 @@ The BITTEN signal-to-mission-to-execution pipeline has been **successfully repai
 
 | Component | Status | Location | Description |
 |-----------|--------|----------|-------------|
-| **APEX Signal Engine** | ✅ **FIXED** | `apex_v5_live_real.py` | Generates signals from bridge data |
+| **Signal Engine** | ✅ **FIXED** | `apex_v5_live_real.py` | Generates signals from bridge data |
 | **Telegram Connector** | ✅ **FIXED** | `apex_telegram_connector.py` | Monitors signals → Creates missions → Sends alerts |
 | **Mission Generator** | ✅ **FIXED** | `src/bitten_core/mission_briefing_generator_v5.py` | Creates persistent mission objects |
 | **Mission Endpoints** | ✅ **FIXED** | `src/api/mission_endpoints.py` | WebApp API for mission data |
@@ -35,9 +35,9 @@ The BITTEN signal-to-mission-to-execution pipeline has been **successfully repai
 ### 🎯 **Signal-to-Mission-to-Execution Flow**
 
 ```
-1. 📊 APEX Engine reads bridge files → Generates signals
+1. 📊 Engine reads bridge files → Generates signals
                 ↓
-2. 📡 Telegram Connector monitors APEX logs → Parses signals
+2. 📡 Telegram Connector monitors logs → Parses signals
                 ↓  
 3. 💾 Mission Generator creates persistent mission files
                 ↓
@@ -62,7 +62,7 @@ python3 start_bitten_production.py
 
 #### **Manual Component Startup:**
 ```bash
-# 1. Start APEX Engine
+# 1. Start Engine
 python3 apex_v5_live_real.py &
 
 # 2. Start Telegram Connector  
@@ -152,7 +152,7 @@ Success Rate: 100.0%
 ### ⚙️ **System Requirements Met**
 
 - ✅ **Persistent Mission Storage**: JSON files in missions/ directory
-- ✅ **Real-time Signal Processing**: APEX log monitoring with cooldown protection  
+- ✅ **Real-time Signal Processing**: log monitoring with cooldown protection  
 - ✅ **WebApp Integration**: Live mission data via REST API
 - ✅ **Trade Execution**: Socket-based MT5 bridge communication
 - ✅ **User Authentication**: Bearer token validation for API access

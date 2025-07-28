@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-🎯 APEX ENGINE SUPERVISOR AGENT
-Monitors, diagnoses, and optimizes the APEX v5.0 engine in real-time
+🎯 ENGINE SUPERVISOR AGENT
+Monitors, diagnoses, and optimizes the v5.0 engine in real-time
 Knows everything about engine performance, signals, and troubleshooting
 """
 
@@ -17,7 +17,7 @@ from typing import Dict, List, Optional
 from pathlib import Path
 import psutil
 
-class APEXEngineSupervisor:
+class EngineSupervisor:
     def __init__(self):
         self.logger = self.setup_logging()
         self.engine_pid = None
@@ -32,11 +32,11 @@ class APEXEngineSupervisor:
         self.min_signals_per_hour = 2
         self.max_memory_mb = 200
         
-        self.logger.info("🎯 APEX ENGINE SUPERVISOR INITIALIZED")
+        self.logger.info("🎯 ENGINE SUPERVISOR INITIALIZED")
     
     def setup_logging(self) -> logging.Logger:
         """Setup supervisor logging"""
-        logger = logging.getLogger("APEX_SUPERVISOR")
+        logger = logging.getLogger("_SUPERVISOR")
         logger.setLevel(logging.INFO)
         
         handler = logging.FileHandler('/root/HydraX-v2/apex_supervisor.log')
@@ -47,7 +47,7 @@ class APEXEngineSupervisor:
         return logger
     
     def check_engine_process(self) -> Dict:
-        """Check if APEX engine process is running"""
+        """Check if engine process is running"""
         try:
             processes = []
             for proc in psutil.process_iter(['pid', 'name', 'cmdline', 'memory_info', 'cpu_percent']):
@@ -100,7 +100,7 @@ class APEXEngineSupervisor:
             return {'status': 'ERROR', 'bridge_health': 'DEAD', 'error': str(e)}
     
     def analyze_engine_logs(self) -> Dict:
-        """Analyze APEX engine logs for performance and issues"""
+        """Analyze engine logs for performance and issues"""
         try:
             if not os.path.exists('/root/HydraX-v2/apex_v5_live_real.log'):
                 return {'status': 'NO_LOGS', 'signals_found': 0}
@@ -194,8 +194,8 @@ class APEXEngineSupervisor:
         # Check engine health
         engine_status = self.check_engine_process()
         if engine_status['status'] != 'RUNNING':
-            diagnosis['issues'].append("APEX engine not running")
-            diagnosis['recommendations'].append("Restart APEX engine immediately")
+            diagnosis['issues'].append("engine not running")
+            diagnosis['recommendations'].append("Restart engine immediately")
             diagnosis['severity'] = 'CRITICAL'
         
         return diagnosis
@@ -218,7 +218,7 @@ class APEXEngineSupervisor:
         # Determine overall status
         if report['components']['engine']['status'] != 'RUNNING':
             report['overall_status'] = 'CRITICAL'
-            report['recommendations'].append("🚨 RESTART APEX ENGINE IMMEDIATELY")
+            report['recommendations'].append("🚨 RESTART ENGINE IMMEDIATELY")
         elif report['components']['bridge']['status'] != 'CONNECTED':
             report['overall_status'] = 'DEGRADED'
             report['recommendations'].append("🔧 Check bridge connection")
@@ -232,9 +232,9 @@ class APEXEngineSupervisor:
         return report
     
     def auto_restart_engine(self) -> bool:
-        """Automatically restart APEX engine if needed"""
+        """Automatically restart engine if needed"""
         try:
-            self.logger.info("🔄 Auto-restarting APEX engine")
+            self.logger.info("🔄 Auto-restarting engine")
             
             # Check if singleton lock exists
             lock_file = Path('/root/HydraX-v2/.apex_engine.lock')
@@ -244,7 +244,7 @@ class APEXEngineSupervisor:
             if pid_file.exists():
                 try:
                     old_pid = int(pid_file.read_text().strip())
-                    self.logger.info(f"🔫 Killing old APEX process PID={old_pid}")
+                    self.logger.info(f"🔫 Killing old process PID={old_pid}")
                     os.kill(old_pid, signal.SIGTERM)
                     time.sleep(2)
                 except:
@@ -267,10 +267,10 @@ class APEXEngineSupervisor:
             # Verify restart
             engine_status = self.check_engine_process()
             if engine_status['status'] == 'RUNNING':
-                self.logger.info("✅ APEX engine restarted successfully")
+                self.logger.info("✅ engine restarted successfully")
                 return True
             else:
-                self.logger.error("❌ APEX engine restart failed")
+                self.logger.error("❌ engine restart failed")
                 return False
                 
         except Exception as e:
@@ -279,7 +279,7 @@ class APEXEngineSupervisor:
     
     def monitor_loop(self):
         """Main monitoring loop"""
-        self.logger.info("🎯 Starting APEX Engine Supervision")
+        self.logger.info("🎯 Starting Engine Supervision")
         
         while True:
             try:
@@ -312,7 +312,7 @@ class APEXEngineSupervisor:
                 time.sleep(30)
 
 def main():
-    supervisor = APEXEngineSupervisor()
+    supervisor = EngineSupervisor()
     supervisor.monitor_loop()
 
 if __name__ == "__main__":

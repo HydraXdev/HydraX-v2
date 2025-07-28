@@ -265,7 +265,7 @@ Ready for more? Consider FANG tier for advanced features!
 
 💳 **Subscribe**: /upgrade fang""",
 
-            'tier_commander': """⭐ **COMMANDER TIER - $139/month**
+            'tier_commander': """⭐ **COMMANDER TIER - $189/month**
 
 ✅ **FEATURES INCLUDED:**
 • Auto + Semi-auto modes
@@ -283,7 +283,7 @@ Ready for more? Consider FANG tier for advanced features!
 
 💳 **Subscribe**: /upgrade commander""",
 
-            'tier_apex': """🏔️ **APEX TIER - $188/month**
+            'tier_apex': """🏔️ **TIER - /month**
 
 ✅ **FEATURES INCLUDED:**
 • All features unlocked
@@ -341,8 +341,8 @@ Ready for more? Consider FANG tier for advanced features!
         keyboard = [
             [InlineKeyboardButton("🔰 NIBBLER ($39)", callback_data="menu_action_tier_nibbler")],
             [InlineKeyboardButton("🦷 FANG ($89)", callback_data="menu_action_tier_fang")],
-            [InlineKeyboardButton("⭐ COMMANDER ($139)", callback_data="menu_action_tier_commander")],
-            [InlineKeyboardButton("🏔️ APEX ($188)", callback_data="menu_action_tier_apex")],
+            [InlineKeyboardButton("⭐ COMMANDER ($189)", callback_data="menu_action_tier_commander")],
+            [InlineKeyboardButton("🏔️ ()", callback_data="menu_action_tier_apex")],
             [InlineKeyboardButton("⬅️ Back to Main", callback_data="menu_nav_main")]
         ]
         return InlineKeyboardMarkup(keyboard)

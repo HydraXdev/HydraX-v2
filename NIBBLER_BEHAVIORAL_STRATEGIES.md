@@ -136,7 +136,7 @@
 ## 🚀 INTEGRATION STATUS
 
 ### ✅ Complete Integrations:
-1. **APEX 6.0 Enhanced Engine** - Signals get behavioral modifications
+1. **6.0 Enhanced Engine** - Signals get behavioral modifications
 2. **XP Economy System** - Tracks unlocks and progression  
 3. **Strategy Orchestrator** - Applies modifications in real-time
 4. **Fire Mode Configuration** - Adjusted TCS thresholds

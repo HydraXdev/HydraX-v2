@@ -361,7 +361,6 @@ class BasicSystemTest:
         
         return passed == total
 
-
 def main():
     """Main test function"""
     test_runner = BasicSystemTest()
@@ -382,7 +381,6 @@ def main():
     except Exception as e:
         print(f"Test runner failed: {e}")
         return 1
-
 
 if __name__ == "__main__":
     sys.exit(main())

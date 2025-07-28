@@ -15,7 +15,6 @@ from ..metaquotes.credential_delivery import SecureCredentialDelivery, DeliveryM
 
 logger = logging.getLogger(__name__)
 
-
 class PressPassManagerV2:
     """Enhanced Press Pass functionality with MetaQuotes integration"""
     
@@ -538,10 +537,8 @@ class PressPassManagerV2:
                 'conversion': {}
             }
 
-
 # Singleton instance
 _press_pass_manager_v2 = None
-
 
 async def get_press_pass_manager() -> PressPassManagerV2:
     """Get or create the Press Pass manager singleton"""

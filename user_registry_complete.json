@@ -1,0 +1,30 @@
+{
+  "integration_test_456": {
+    "user_id": "integration_test",
+    "container": "mt5_user_integration_test_456",
+    "login": null,
+    "broker": null,
+    "status": "unassigned",
+    "created_at": "2025-07-22T20:02:54.302498+00:00",
+    "updated_at": "2025-07-22T20:02:54.302498+00:00",
+    "wine_environment": "/root/.wine_user_integration_test_456",
+    "fire_eligible": false,
+    "last_activity": "2025-07-22T20:02:54.302498+00:00",
+    "connection_attempts": 0,
+    "successful_connections": 0
+  },
+  "7176191872": {
+    "user_id": "7176191872",
+    "container": "mt5_user_7176191872",
+    "login": "843859",
+    "broker": "Coinexx-Demo",
+    "status": "unassigned",
+    "created_at": "2025-07-22T21:58:08.868466+00:00",
+    "updated_at": "2025-07-22T21:58:08.868466+00:00",
+    "wine_environment": "/root/.wine_user_7176191872",
+    "fire_eligible": false,
+    "last_activity": "2025-07-22T21:58:08.868466+00:00",
+    "connection_attempts": 0,
+    "successful_connections": 0
+  }
+}

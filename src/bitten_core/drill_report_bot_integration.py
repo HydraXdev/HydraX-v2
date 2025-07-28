@@ -18,7 +18,6 @@ from .xp_economy import XPEconomy
 
 logger = logging.getLogger(__name__)
 
-
 class DrillReportBotIntegration:
     """Telegram bot integration for drill reports"""
     
@@ -329,7 +328,6 @@ Best Streak: {weekly_stats['best_streak']}"""
         scheduler_thread.start()
         logger.info("Drill report scheduler started")
 
-
 # Integration with main bot
 def register_drill_report_handlers(bot_app, drill_system):
     """Register drill report handlers with main bot application"""
@@ -348,7 +346,6 @@ def register_drill_report_handlers(bot_app, drill_system):
     logger.info("Drill report handlers registered with main bot")
     
     return drill_integration
-
 
 # Enhanced tactical system integration with XP economy
 def create_drill_system_integration(tactical_manager, xp_economy: XPEconomy = None):
@@ -444,7 +441,6 @@ def create_drill_system_integration(tactical_manager, xp_economy: XPEconomy = No
         return enhanced_result
     
     return drill_system, record_trade_completion
-
 
 # Example usage
 if __name__ == "__main__":

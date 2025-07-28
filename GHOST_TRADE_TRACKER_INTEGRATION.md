@@ -6,7 +6,7 @@ Successfully integrated the existing ghost trade tracking system into the Comman
 ## What Was Added
 
 ### 1. Ghost Trade Tracker Panel
-Located in the APEX Engine Control section, the Ghost Trade Tracker displays:
+Located in the Engine Control section, the Ghost Trade Tracker displays:
 
 #### Summary Statistics:
 - **Total Missions**: All trading signals generated
@@ -40,7 +40,7 @@ Located in the APEX Engine Control section, the Ghost Trade Tracker displays:
 
 ## How It Works
 
-1. **Mission Generation**: APEX generates trading signals (missions)
+1. **Mission Generation**: generates trading signals (missions)
 2. **User Decision Window**: Users have time to execute trades
 3. **Expiration Analysis**: When missions expire unfired, the system analyzes:
    - Would the trade have hit take profit? → Ghost Win
@@ -67,7 +67,7 @@ Located in the APEX Engine Control section, the Ghost Trade Tracker displays:
 ## Usage
 
 1. Login to Commander Throne: http://134.199.204.67:8899/throne
-2. The Ghost Trade Tracker appears in the APEX control section
+2. The Ghost Trade Tracker appears in the control section
 3. Monitor in real-time to see:
    - How many trades are being missed
    - What the true system win rate would be

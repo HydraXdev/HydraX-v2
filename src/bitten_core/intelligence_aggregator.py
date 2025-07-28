@@ -20,7 +20,6 @@ from .strategies.mean_reversion import MeanReversionStrategy
 
 logger = logging.getLogger(__name__)
 
-
 class TechnicalAnalyzer:
     """Technical analysis intelligence source"""
     
@@ -89,7 +88,6 @@ class TechnicalAnalyzer:
         except Exception as e:
             logger.error(f"Technical analyzer error: {e}")
             return None
-
 
 class SentimentAnalyzer:
     """Market sentiment intelligence source"""
@@ -184,7 +182,6 @@ class SentimentAnalyzer:
             logger.error(f"Sentiment analyzer error: {e}")
             return None
 
-
 class FundamentalAnalyzer:
     """Fundamental analysis intelligence source"""
     
@@ -271,7 +268,6 @@ class FundamentalAnalyzer:
         except Exception as e:
             logger.error(f"Fundamental analyzer error: {e}")
             return None
-
 
 class AIBotAnalyzer:
     """AI bot personality intelligence source"""
@@ -381,7 +377,6 @@ class AIBotAnalyzer:
             logger.error(f"AI bot analyzer error: {e}")
             return None
 
-
 class IntelligenceAggregator:
     """
     Main aggregator that collects from all intelligence sources
@@ -489,7 +484,6 @@ class IntelligenceAggregator:
         # This would connect to the signal distribution system
         # For now, just log
         logger.info(f"Signal ready for distribution: {signal.signal_id}")
-
 
 # Global instance
 intelligence_aggregator = None

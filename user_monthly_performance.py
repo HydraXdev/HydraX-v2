@@ -19,11 +19,11 @@ class UserMonthlyPerformance:
         self.max_trades_per_day = 6  # Max 6 trades per day
         self.trading_days_per_month = 22  # M-F only (4.4 weeks * 5 days)
         
-        # APEX system performance (from our analysis)
+        # system performance (from our analysis)
         self.system_win_rate = 0.56  # 56% win rate
         self.system_expectancy = 0.853  # Average R per trade
         
-        # R:R distribution from APEX (from our analysis)
+        # R:R distribution from (from our analysis)
         self.rr_distribution = {
             '1:1.5-1:2': {'probability': 0.34, 'avg_rr': 1.75, 'expectancy': 0.540},
             '1:2-1:2.5': {'probability': 0.34, 'avg_rr': 2.24, 'expectancy': 0.809},
@@ -32,7 +32,7 @@ class UserMonthlyPerformance:
         }
         
         # Signal availability (from our analysis)
-        self.signals_per_day = 76  # APEX generates 76 signals/day
+        self.signals_per_day = 76  # generates 76 signals/day
         self.high_quality_signals_per_day = 45  # Assuming 60% are 75+ TCS
         
     def calculate_trade_outcome(self, risk_percent: float, rr_ratio: float, outcome: str) -> float:
@@ -64,7 +64,7 @@ class UserMonthlyPerformance:
         realistic_trades_per_day = min(2, self.max_trades_per_day)
         
         for trade_num in range(realistic_trades_per_day):
-            # Select R:R ratio based on APEX distribution
+            # Select R:R ratio based on distribution
             rr_category = random.choices(
                 list(self.rr_distribution.keys()),
                 weights=[data['probability'] for data in self.rr_distribution.values()]
@@ -164,7 +164,7 @@ class UserMonthlyPerformance:
     def run_comprehensive_analysis(self) -> Dict:
         """Run comprehensive monthly performance analysis"""
         
-        print("💰 APEX Monthly Performance Analysis")
+        print("💰 Monthly Performance Analysis")
         print("🎯 User Profile: 2% risk, 1 concurrent trade, 6 trades/day max")
         print("=" * 60)
         

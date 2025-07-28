@@ -357,7 +357,37 @@ class MT5BridgeAdapter:
     def is_connected(self) -> bool:
         """Check if EA is connected"""
         return self.last_status.connected if self.last_status else False
-
+    
+    def get_trade_result(self, trade_id: str, timeout: float = 30.0) -> Optional[Dict[str, Any]]:
+        """Get trade result for a specific trade ID with timeout"""
+        start_time = time.time()
+        
+        while time.time() - start_time < timeout:
+            try:
+                # Check if result is in queue
+                while not self.result_queue.empty():
+                    result = self.result_queue.get()
+                    if result.trade_id == trade_id:
+                        return {
+                            'trade_id': result.trade_id,
+                            'status': result.status,
+                            'ticket': result.ticket,
+                            'message': result.message,
+                            'timestamp': result.timestamp,
+                            'balance': result.balance,
+                            'equity': result.equity,
+                            'margin': result.margin,
+                            'free_margin': result.free_margin
+                        }
+                
+                # Brief sleep to avoid busy waiting
+                time.sleep(0.1)
+                
+            except Exception as e:
+                logger.error(f"Error checking trade result for {trade_id}: {e}")
+                break
+        
+        return None  # Timeout or error
 
 # Singleton instance
 _adapter_instance = None
@@ -369,7 +399,6 @@ def get_bridge_adapter(mt5_files_path: Optional[str] = None) -> MT5BridgeAdapter
         _adapter_instance = MT5BridgeAdapter(mt5_files_path)
         _adapter_instance.start()
     return _adapter_instance
-
 
 # Example usage
 if __name__ == "__main__":

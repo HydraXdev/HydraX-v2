@@ -42,7 +42,7 @@ Create an addictive trading game that satisfies FOUR player types:
   - Priority support channel
   - Mentor status and rewards
 
-### APEX ($188/month)
+### (/month)
 - **Signals**: ARCADE + SNIPER
 - **Risk**: 3% allowed + 50% XP bonus  
 - **Theme**: Blood red, transcended warrior
@@ -77,7 +77,7 @@ Create an addictive trading game that satisfies FOUR player types:
 
 ### **RANDOM EVENTS**
 - **Happy Hour** (2x XP for 1 hour)
-- **Blood Moon** (APEX reality events)
+- **Blood Moon** (reality events)
 - **Supply Drop** (Free signal for all)
 - **Double Down** (Risk increase allowed)
 
@@ -105,7 +105,7 @@ Create an addictive trading game that satisfies FOUR player types:
 - **Squad General** - Lead winning squad
 - **Mentor Badge** - Help 10 newbies
 
-### APEX Exclusive
+### Exclusive
 - **Reality Bender** - Profit in chaos
 - **Quantum Trader** - 95%+ win week
 - **Market Whisperer** - Call 10 reversals
@@ -193,9 +193,7 @@ Morning → Check mission → See ARCADE signal → Trade carefully → Get tip 
 Morning → Check both signals → AI analysis → Execute best → Share win → Help newbie → Join event → Progress toward COMMANDER
 
 ### COMMANDER Loop
-Morning → Enable AUTO-FIRE → Check squad → Mentor chat → Passive gains → Lead competition → Enjoy status → Eye APEX
-
-### APEX Loop
+Morning → Enable AUTO-FIRE → Check squad → Mentor chat → Passive gains → Lead competition → Enjoy status → Eye ### Loop
 Morning → Reality mode → Everything automated → Check quantum → Transcend limits → Inspire others → Become legend
 
 ## 🚀 IMPLEMENTATION PHASES

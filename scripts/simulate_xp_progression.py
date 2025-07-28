@@ -459,7 +459,7 @@ class XPProgressionSimulator:
             # Print summary
             profile = self.player_profiles[profile_type]
             print(f"  Profile: {profile.description}")
-            print(f"  Final XP: {result['final_xp']:,}")
+            print(f"  Final XP: {result['final_xp']:}")
             print(f"  Final Rank: {result['final_rank']}")
             print(f"  Total Trades: {result['total_trades']}")
             print(f"  Win Rate: {result['win_rate']:.1f}%")

@@ -17,7 +17,6 @@ from .press_pass_reset import PressPassResetManager, ShadowStats
 
 logger = logging.getLogger(__name__)
 
-
 class XPIntegrationManager:
     """Central manager for all XP-related systems"""
     
@@ -162,10 +161,7 @@ class XPIntegrationManager:
             "LIEUTENANT": "FANG",
             "CAPTAIN": "COMMANDER",
             "MAJOR": "COMMANDER",
-            "COLONEL": "APEX",
-            "GENERAL": "APEX",
-            "COMMANDER": "APEX"
-        }
+            "COLONEL": "GENERAL": "COMMANDER": }
         user_tier = rank_to_tier.get(profile["rank"], "NIBBLER")
         
         # Get user stats for requirements checking
@@ -253,10 +249,7 @@ class XPIntegrationManager:
             "LIEUTENANT": "FANG",
             "CAPTAIN": "COMMANDER",
             "MAJOR": "COMMANDER",
-            "COLONEL": "APEX",
-            "GENERAL": "APEX",
-            "COMMANDER": "APEX"
-        }
+            "COLONEL": "GENERAL": "COMMANDER": }
         user_tier = rank_to_tier.get(profile["rank"], "NIBBLER")
         
         # Get shop display
@@ -414,7 +407,6 @@ class XPIntegrationManager:
         if self.press_pass_manager:
             self.press_pass_manager.stop_scheduler()
             logger.info("Press Pass scheduler stopped")
-
 
 # Example usage
 if __name__ == "__main__":

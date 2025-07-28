@@ -28,7 +28,6 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 # Global flow instance
 signal_flow = None
 
-
 class FusionDashboard:
     """Dashboard for monitoring signal fusion system"""
     
@@ -148,12 +147,10 @@ class FusionDashboard:
                 logger.error(traceback.format_exc())
                 await asyncio.sleep(self.update_interval)
 
-
 @app.route('/')
 def index():
     """Main dashboard page"""
     return render_template('fusion_dashboard.html')
-
 
 @app.route('/api/stats')
 def get_stats():
@@ -169,7 +166,6 @@ def get_stats():
     except Exception as e:
         logger.error(f"Error getting stats: {e}")
         return jsonify({'error': 'Failed to retrieve stats'})
-
 
 @app.route('/api/signals/active')
 def get_active_signals():
@@ -200,7 +196,6 @@ def get_active_signals():
         logger.error(f"Error getting active signals: {e}")
         return jsonify({'error': 'Failed to retrieve active signals'})
 
-
 @app.route('/api/performance/<tier>')
 def get_tier_performance(tier):
     """Get performance for specific tier"""
@@ -221,7 +216,6 @@ def get_tier_performance(tier):
         logger.error(f"Error getting tier performance for {tier}: {e}")
         return jsonify({'error': 'Failed to retrieve tier performance'})
 
-
 @socketio.on('connect')
 def handle_connect():
     """Handle client connection"""
@@ -230,7 +224,6 @@ def handle_connect():
         emit('connected', {'status': 'Connected to Fusion Dashboard'})
     except Exception as e:
         logger.error(f"Error handling client connection: {e}")
-
 
 @socketio.on('request_update')
 def handle_update_request():
@@ -246,7 +239,6 @@ def handle_update_request():
     except Exception as e:
         logger.error(f"Error handling update request: {e}")
         emit('error', {'message': 'Failed to get update'})
-
 
 # HTML Template
 DASHBOARD_HTML = """
@@ -585,7 +577,6 @@ DASHBOARD_HTML = """
 </html>
 """
 
-
 def create_dashboard_app(flow: FusionEnhancedSignalFlow):
     """Create and configure dashboard app"""
     try:
@@ -625,7 +616,6 @@ def create_dashboard_app(flow: FusionEnhancedSignalFlow):
         logger.error(f"Error creating dashboard app: {e}")
         logger.error(traceback.format_exc())
         raise
-
 
 if __name__ == '__main__':
     # Example standalone run

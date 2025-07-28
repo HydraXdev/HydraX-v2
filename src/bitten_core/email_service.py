@@ -32,11 +32,9 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
-
 class EmailServiceError(Exception):
     """Custom exception for email service errors"""
     pass
-
 
 class EmailService:
     """Base email service class"""
@@ -265,7 +263,6 @@ class EmailService:
         
         return results
 
-
 class EmailQueueManager:
     """Manages email queue for scheduled sending"""
     
@@ -316,7 +313,6 @@ class EmailQueueManager:
                 failed += 1
         
         return {'sent': sent, 'failed': failed}
-
 
 # Factory function
 def create_email_service(provider: Optional[str] = None) -> EmailService:

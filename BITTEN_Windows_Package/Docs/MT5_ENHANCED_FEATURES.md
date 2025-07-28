@@ -142,7 +142,7 @@ if can_trade:
 ### 2. Advanced Multi-TP Setup
 
 ```python
-# Commander/APEX tier feature
+# Commander/tier feature
 result = adapter.execute_trade_with_risk(
     symbol="XAUUSD",
     direction="SELL",
@@ -241,7 +241,7 @@ All communication happens through secure files:
 
 ## Tier-Based Features
 
-| Feature | Nibbler | Fang | Commander | APEX |
+| Feature | Nibbler | Fang | Commander | |
 |---------|---------|------|-----------|------|
 | Basic Trading | ✅ | ✅ | ✅ | ✅ |
 | Risk-Based Sizing | ✅ | ✅ | ✅ | ✅ |

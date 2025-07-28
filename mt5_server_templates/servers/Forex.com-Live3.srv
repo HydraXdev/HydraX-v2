@@ -1,0 +1,8 @@
+[Common]
+Name=Forex.com-Live3
+Address=mt5-live3.forex.com:443
+Environment=Live
+DataServer=mt5-live3.forex.com:443
+Ping=mt5-live3.forex.com:443
+Company=FOREX.com
+AccountServer=mt5-live3.forex.com:443

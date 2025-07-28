@@ -15,7 +15,6 @@ import random
 
 logger = logging.getLogger(__name__)
 
-
 class ExecutionStrategy(Enum):
     """Execution strategies based on market conditions"""
     IMMEDIATE = "immediate"          # Execute now
@@ -25,7 +24,6 @@ class ExecutionStrategy(Enum):
     ICEBERG = "iceberg"            # Hidden size execution
     TWAP = "twap"                  # Time-weighted average price
     VWAP = "vwap"                  # Volume-weighted average price
-
 
 @dataclass
 class ExecutionPlan:
@@ -48,7 +46,6 @@ class ExecutionPlan:
             return 0
         return sum(e * s for e, s in zip(self.entry_levels, self.sizes)) / self.total_size
 
-
 @dataclass
 class ExecutionResult:
     """Result of trade execution"""
@@ -60,7 +57,6 @@ class ExecutionResult:
     execution_time: timedelta
     fills: List[Dict]  # Individual fills
     metadata: Dict = field(default_factory=dict)
-
 
 class MarketMicrostructureAnalyzer:
     """Analyzes market microstructure for optimal execution"""
@@ -136,7 +132,6 @@ class MarketMicrostructureAnalyzer:
             return "WAIT_FOR_TIGHTER_SPREAD"
         else:
             return "EXECUTE_WITH_LIMITS"
-
 
 class SmartExecutionEngine:
     """
@@ -455,7 +450,6 @@ class SmartExecutionEngine:
                 for e in list(self.execution_history)[-10:]
             ])
         }
-
 
 # Global instance
 smart_execution = SmartExecutionEngine()

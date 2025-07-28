@@ -4,13 +4,13 @@
 
 ## 🔍 Executive Summary
 
-SHEPHERD audit reveals system is operational with recent APEX v5.0 deployment introducing new aggressive trading parameters that may conflict with existing conservative settings.
+SHEPHERD audit reveals system is operational with recent v5.0 deployment introducing new aggressive trading parameters that may conflict with existing conservative settings.
 
 ## ⚠️ Critical Findings
 
 ### 1. **TCS Threshold Conflict**
 - **Old System**: Fixed 87% TCS threshold (conservative)
-- **APEX v5.0**: 35-95% TCS range (ultra-aggressive)
+- **v5.0**: 35-95% TCS range (ultra-aggressive)
 - **Impact**: Conflicting signal generation criteria
 - **Files Affected**: 
   - AUTHORIZED_SIGNAL_ENGINE.py (uses 87%)
@@ -19,13 +19,13 @@ SHEPHERD audit reveals system is operational with recent APEX v5.0 deployment in
 ### 2. **Signal Engine Duplication**
 - Multiple signal engines found:
   - AuthorizedSignalEngine (87% TCS)
-  - APEX v5.0 Engine (35-95% TCS)
+  - v5.0 Engine (35-95% TCS)
   - Ultimate Engine v4
 - **Risk**: Conflicting signals being generated
 
 ### 3. **Trading Pairs Expansion**
 - **Old System**: 10 standard pairs
-- **APEX v5.0**: 15 pairs including volatility monsters (GBPNZD, GBPAUD, EURAUD)
+- **v5.0**: 15 pairs including volatility monsters (GBPNZD, GBPAUD, EURAUD)
 - **Impact**: Risk management needs recalibration
 
 ## ✅ Working Components
@@ -38,7 +38,7 @@ SHEPHERD audit reveals system is operational with recent APEX v5.0 deployment in
 
 ## 🔧 Integration Status
 
-### APEX v5.0 Components:
+### v5.0 Components:
 - ✅ apex_v5_integration.py - Main integration script
 - ✅ apex_v5_simplified.py - Simplified version
 - ✅ risk_management_v5.py - Enhanced risk system
@@ -81,11 +81,11 @@ SHEPHERD audit reveals system is operational with recent APEX v5.0 deployment in
 
 ### CLAUDE.md States:
 - "Currently using 87% TCS for both signal types"
-- But APEX v5.0 deployed with 35-95% range
+- But v5.0 deployed with 35-95% range
 
 ### Risk Profile Mismatch:
 - Original: Conservative approach
-- APEX v5.0: Ultra-aggressive "ALL-IN" mode
+- v5.0: Ultra-aggressive "ALL-IN" mode
 
 ### User Expectations:
 - Documentation says 87% quality signals

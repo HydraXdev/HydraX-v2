@@ -24,7 +24,6 @@ from .demo_account_service import CredentialEncryption
 
 logger = logging.getLogger(__name__)
 
-
 class DeliveryMethod(Enum):
     """Supported credential delivery methods"""
     TELEGRAM = "telegram"
@@ -32,7 +31,6 @@ class DeliveryMethod(Enum):
     API = "api"
     QR_CODE = "qr_code"
     SECURE_LINK = "secure_link"
-
 
 class DeliveryStatus(Enum):
     """Credential delivery status"""
@@ -42,7 +40,6 @@ class DeliveryStatus(Enum):
     VIEWED = "viewed"
     EXPIRED = "expired"
     FAILED = "failed"
-
 
 @dataclass
 class CredentialPackage:
@@ -54,8 +51,7 @@ class CredentialPackage:
     delivery_method: DeliveryMethod
     expires_at: datetime
     one_time_token: str
-    
-    
+
 class SecureCredentialDelivery:
     """Manages secure delivery of demo account credentials"""
     
@@ -524,7 +520,6 @@ Need help? Visit support.bitten.com
             count = int(result.split()[-1])
             logger.info(f"Cleaned up {count} expired credential deliveries")
             return count
-
 
 # Create required tables if they don't exist
 async def create_delivery_tables():

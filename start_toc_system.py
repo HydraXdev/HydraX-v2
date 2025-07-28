@@ -41,12 +41,10 @@ logger = logging.getLogger(__name__)
 # Global flag for graceful shutdown
 shutdown_flag = threading.Event()
 
-
 def signal_handler(signum, frame):
     """Handle shutdown signals gracefully"""
     logger.info("Shutdown signal received, stopping TOC system...")
     shutdown_flag.set()
-
 
 def initialize_databases():
     """Initialize all required databases"""
@@ -65,7 +63,6 @@ def initialize_databases():
     
     logger.info("Databases initialized successfully")
     return terminal_manager, db_manager
-
 
 def setup_default_terminals(terminal_manager):
     """Setup default terminal configurations"""
@@ -135,7 +132,6 @@ def setup_default_terminals(terminal_manager):
     
     logger.info("Default terminals configured")
 
-
 def start_toc_server():
     """Start the unified TOC server"""
     logger.info("Starting TOC server...")
@@ -164,7 +160,6 @@ def start_toc_server():
         logger.error(f"Failed to start TOC server: {e}")
         return None
 
-
 def check_dependencies():
     """Check if all required services are available"""
     logger.info("Checking dependencies...")
@@ -192,7 +187,6 @@ def check_dependencies():
     
     return len(failed) == 0
 
-
 def monitor_system(process):
     """Monitor system health"""
     logger.info("Starting system monitoring...")
@@ -215,7 +209,6 @@ def monitor_system(process):
         except Exception as e:
             logger.error(f"Monitoring error: {e}")
             time.sleep(30)
-
 
 def create_systemd_service():
     """Create systemd service file for production deployment"""
@@ -240,7 +233,6 @@ WantedBy=multi-user.target
     service_path = Path("/etc/systemd/system/bitten-toc.service")
     logger.info(f"Systemd service file content:\n{service_content}")
     logger.info(f"To install as service, save above to: {service_path}")
-
 
 def main():
     """Main startup sequence"""
@@ -296,7 +288,6 @@ def main():
     
     logger.info("TOC system stopped")
     return 0
-
 
 if __name__ == '__main__':
     sys.exit(main())

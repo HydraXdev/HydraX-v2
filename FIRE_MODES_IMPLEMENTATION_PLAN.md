@@ -12,7 +12,7 @@
 - Full conscious decision for each signal
 - Available to all tiers
 
-### 2. SEMI_AUTO Mode (COMMANDER/APEX)
+### 2. SEMI_AUTO Mode (COMMANDER/)
 **Concept**: Assisted execution with safety confirmation
 - System prepares complete trade setup
 - Shows all calculations (risk is fixed, not adjustable)
@@ -35,7 +35,7 @@
 5. If timeout, signal expires
 ```
 
-### 3. FULL_AUTO Mode (COMMANDER/APEX)
+### 3. FULL_AUTO Mode (COMMANDER/)
 **Concept**: Autonomous slot-based execution
 - User sets ONLY max concurrent positions (slots)
 - System handles everything else
@@ -124,7 +124,7 @@ def validate_fire_mode(user_tier, requested_mode):
         'NIBBLER': ['MANUAL'],
         'FANG': ['MANUAL'],
         'COMMANDER': ['MANUAL', 'SEMI_AUTO', 'FULL_AUTO'],
-        'APEX': ['MANUAL', 'SEMI_AUTO', 'FULL_AUTO']
+        '': ['MANUAL', 'SEMI_AUTO', 'FULL_AUTO']
     }
     return requested_mode in allowed_modes.get(user_tier, ['MANUAL'])
 ```

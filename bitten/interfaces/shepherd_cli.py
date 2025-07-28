@@ -14,7 +14,6 @@ import os
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-
 class ShepherdCLI:
     """Command-line interface for the Shepherd system."""
     
@@ -337,7 +336,6 @@ print(result)  # {"action": "BUY", "confidence": 0.85, "metadata": {...}}
         with open(index_file, 'w') as f:
             json.dump(index, f, indent=2)
 
-
 def main():
     """Main entry point for the CLI."""
     parser = argparse.ArgumentParser(
@@ -397,7 +395,6 @@ Examples:
     except Exception as e:
         print(f"\n❌ Error: {str(e)}", file=sys.stderr)
         sys.exit(1)
-
 
 if __name__ == "__main__":
     main()

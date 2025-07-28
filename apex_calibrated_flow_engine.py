@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-APEX Calibrated Flow Engine v1.0
+Calibrated Flow Engine v1.0
 Target: 30-50 signals/day with adaptive quality control
 
 Smart thresholding:
@@ -17,7 +17,7 @@ from dataclasses import dataclass
 import statistics
 
 # Import our realistic engine
-from apex_realistic_flow_engine import APEXRealisticFlowEngine, RealisticSignal, TradeType, FlowRegime, SignalQuality
+from apex_realistic_flow_engine import RealisticFlowEngine, RealisticSignal, TradeType, FlowRegime, SignalQuality
 
 class FlowTarget:
     """Dynamic flow targets based on market conditions"""
@@ -39,7 +39,7 @@ class CalibratedFlowEngine:
     """Calibrated engine for consistent 30-50 signals/day"""
     
     def __init__(self):
-        self.engine = APEXRealisticFlowEngine()
+        self.engine = RealisticFlowEngine()
         
         # Flow targets
         self.targets = FlowTarget()
@@ -376,7 +376,7 @@ class CalibratedFlowEngine:
 def main():
     """Run calibrated flow engine test"""
     
-    print("🎯 APEX CALIBRATED FLOW ENGINE v1.0")
+    print("🎯 CALIBRATED FLOW ENGINE v1.0")
     print("📊 Target: 30-50 signals/day with adaptive quality")
     print("⚡ Smart thresholding based on daily flow pressure")
     print("=" * 70)

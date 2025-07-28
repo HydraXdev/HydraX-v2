@@ -22,7 +22,6 @@ app = Flask(__name__)
 MISSIONS_DIR = "./missions"
 DEFAULT_MISSION_EXPIRY_MINUTES = 5
 
-
 def require_auth(f):
     """Authentication decorator for mission endpoints"""
     @wraps(f)
@@ -55,7 +54,6 @@ def require_auth(f):
         return f(*args, **kwargs)
     return decorated
 
-
 def validate_mission_access(user_id: str, mission_id: str) -> bool:
     """Validate if user has access to a specific mission"""
     try:
@@ -70,7 +68,6 @@ def validate_mission_access(user_id: str, mission_id: str) -> bool:
     except Exception as e:
         logger.error(f"Error validating mission access: {e}")
         return False
-
 
 def load_mission_data(mission_id: str) -> Optional[Dict[str, Any]]:
     """Load mission data from file with proper error handling"""
@@ -108,7 +105,6 @@ def load_mission_data(mission_id: str) -> Optional[Dict[str, Any]]:
         logger.error(f"Error loading mission {mission_id}: {e}")
         return None
 
-
 def save_mission_data(mission_id: str, mission_data: Dict[str, Any]) -> bool:
     """Save mission data to file with proper error handling"""
     try:
@@ -125,7 +121,6 @@ def save_mission_data(mission_id: str, mission_data: Dict[str, Any]) -> bool:
         logger.error(f"Error saving mission {mission_id}: {e}")
         return False
 
-
 def calculate_time_remaining(expires_at: str) -> int:
     """Calculate remaining time in seconds until mission expires"""
     try:
@@ -135,7 +130,6 @@ def calculate_time_remaining(expires_at: str) -> int:
     except Exception as e:
         logger.error(f"Error calculating time remaining: {e}")
         return 0
-
 
 @app.route("/api/mission-status/<mission_id>", methods=["GET"])
 @require_auth
@@ -185,7 +179,6 @@ def mission_status(mission_id: str):
             "reason": "internal_error",
             "message": "Internal server error"
         }), 500
-
 
 @app.route("/api/missions", methods=["GET"])
 @require_auth
@@ -246,7 +239,6 @@ def list_missions():
             "reason": "internal_error",
             "message": "Failed to retrieve missions"
         }), 500
-
 
 @app.route("/api/fire", methods=["POST"])
 @require_auth
@@ -420,7 +412,6 @@ def handle_fire():
             "message": "Internal server error"
         }), 500
 
-
 @app.route("/api/missions/<mission_id>/cancel", methods=["POST"])
 @require_auth
 def cancel_mission(mission_id: str):
@@ -480,7 +471,6 @@ def cancel_mission(mission_id: str):
             "message": "Internal server error"
         }), 500
 
-
 @app.route("/api/mission-health", methods=["GET"])
 def mission_health_check():
     """Mission API health check endpoint"""
@@ -491,7 +481,6 @@ def mission_health_check():
         "missions_dir": MISSIONS_DIR,
         "missions_dir_exists": os.path.exists(MISSIONS_DIR)
     })
-
 
 def register_mission_api(flask_app):
     """Register mission API endpoints with the given Flask app"""
@@ -508,7 +497,6 @@ def register_mission_api(flask_app):
     except Exception as e:
         logger.error(f"Failed to register mission API endpoints: {e}")
         return False
-
 
 if __name__ == "__main__":
     # Create missions directory if it doesn't exist

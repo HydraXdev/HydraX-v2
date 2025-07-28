@@ -208,9 +208,9 @@ class AdaptivePersonalityBot:
             response = f"""📊 **Voice System Statistics**
             
 **Monthly Usage:**
-- Characters Used: {usage_stats['characters_used']:,} / {self.voice_driver.monthly_limit:,}
+- Characters Used: {usage_stats['characters_used']:} / {self.voice_driver.monthly_limit:}
 - Usage: {usage_stats['percentage_used']:.1f}%
-- Characters Remaining: {usage_stats['characters_remaining']:,}
+- Characters Remaining: {usage_stats['characters_remaining']:}
 
 **Performance:**
 - Total Requests: {performance_stats['total_requests']}
@@ -261,7 +261,6 @@ class AdaptivePersonalityBot:
         
         return enhanced_handler
 
-
 async def test_personality_system():
     """Test the personality system without full bot integration"""
     logger.info("🧪 Testing Personality System...")
@@ -300,7 +299,6 @@ async def test_personality_system():
     stats = personality_engine.get_personality_stats(test_user)
     logger.info(f"Final stats: {json.dumps(stats, indent=2)}")
 
-
 def apply_to_existing_bot():
     """Apply personality system to existing bot"""
     logger.info("🔧 Applying personality system to existing bot...")
@@ -323,7 +321,6 @@ def apply_to_existing_bot():
         logger.error("❌ Could not import existing bot")
         return False
 
-
 def main():
     """Main deployment function"""
     logger.info("🚀 Deploying Adaptive Personality System...")
@@ -342,7 +339,6 @@ def main():
     logger.info("2. Initialize: adaptive_bot = AdaptivePersonalityBot(your_bot_instance)")
     logger.info("3. Setup commands: adaptive_bot.setup_personality_commands()")
     logger.info("4. Use: await adaptive_bot.send_adaptive_message(chat_id, message, user_tier)")
-
 
 if __name__ == "__main__":
     main()

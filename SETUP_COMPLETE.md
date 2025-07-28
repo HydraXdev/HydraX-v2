@@ -41,7 +41,7 @@ STRIPE_WEBHOOK_SECRET=whsec_YOUR_SECRET
 STRIPE_PRICE_NIBBLER=price_xxxxx
 STRIPE_PRICE_FANG=price_xxxxx
 STRIPE_PRICE_COMMANDER=price_xxxxx
-STRIPE_PRICE_APEX=price_xxxxx
+STRIPE_PRICE_=price_xxxxx
 ```
 
 ### 3. Set Up Stripe Webhook

@@ -98,7 +98,7 @@ Your COMMANDER is working 24/7! 🎖️
 2. Disable arcade for sniper-only focus
 3. Adjust min_tcs for higher quality
 
-### For APEX Warriors:
+### For Warriors:
 1. Full AUTO with STEALTH enabled
 2. Let the system work 24/7
 3. Monitor performance weekly

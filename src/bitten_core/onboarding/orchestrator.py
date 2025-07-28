@@ -117,8 +117,7 @@ class OnboardingOrchestrator:
             OnboardingState.OPERATIONAL_INTERFACE: OnboardingState.CORE_MANEUVERS,
             OnboardingState.CORE_MANEUVERS: OnboardingState.FIELD_MANUAL,
             OnboardingState.FIELD_MANUAL: OnboardingState.PERSONAL_RECORD,
-            OnboardingState.PERSONAL_RECORD: OnboardingState.COMPLETE,
-        }
+            OnboardingState.PERSONAL_RECORD: OnboardingState.COMPLETE}
         
         # Load dialogue content
         self.dialogue = self.dialogue_loader.load_dialogue()
@@ -563,8 +562,7 @@ class OnboardingOrchestrator:
             '{CALLSIGN}': session.callsign or 'Soldier',
             '{THEATER}': session.selected_theater or 'Training',
             '{EXPERIENCE}': 'veteran' if session.has_experience else 'recruit',
-            '{USER_ID}': str(session.telegram_id),
-        }
+            '{USER_ID}': str(session.telegram_id)}
         
         # Replace all variables
         for var, value in replacements.items():

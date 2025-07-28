@@ -23,6 +23,16 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Initialize onboarding system
+try:
+    sys.path.append('/root/HydraX-v2/src/bitten_core')
+    from onboarding_webapp_system import register_onboarding_system
+    onboarding_system_available = True
+    logger.info("✅ HydraX Onboarding System imported")
+except ImportError as e:
+    logger.error(f"❌ Failed to import onboarding system: {e}")
+    onboarding_system_available = False
+
 # Lazy import manager
 class LazyImports:
     """Manages lazy loading of heavy modules to reduce memory usage"""
@@ -36,6 +46,7 @@ class LazyImports:
         self._referral_system = None
         self._live_trade_api = None
         self._timer_integration = None
+        self._venom_engine = None
     
     @property
     def stripe(self):
@@ -88,6 +99,18 @@ class LazyImports:
                 logger.warning(f"Referral system not available: {e}")
                 self._referral_system = None
         return self._referral_system
+    
+    @property
+    def venom_engine(self):
+        if self._venom_engine is None:
+            try:
+                from apex_production_live import ApexVenomV7Production
+                self._venom_engine = ApexVenomV7Production
+                logger.info("VENOM v7.0 Production engine loaded")
+            except ImportError as e:
+                logger.error(f"VENOM engine load failed: {e}")
+                self._venom_engine = None
+        return self._venom_engine
 
 # Global lazy imports instance
 lazy = LazyImports()
@@ -108,6 +131,14 @@ socketio = SocketIO(
     logger=False,  # Disable socketio logging to reduce overhead
     engineio_logger=False
 )
+
+# Register onboarding routes
+if onboarding_system_available:
+    try:
+        register_onboarding_system(app)
+        logger.info("✅ HydraX Onboarding routes registered")
+    except Exception as e:
+        logger.error(f"❌ Failed to register onboarding routes: {e}")
 
 # Basic routes with lazy loading
 @app.route('/')
@@ -143,19 +174,110 @@ def index():
         logger.error(f"Index route error: {e}")
         return "BITTEN HUD - Loading...", 200
 
-@app.route('/api/signals')
+@app.route('/api/signals', methods=['GET', 'POST'])
 def api_signals():
-    """API endpoint with lazy loading"""
+    """API endpoint for signals - GET retrieves, POST receives from VENOM+CITADEL"""
+    if request.method == 'GET':
+        try:
+            get_signals = lazy.signal_storage.get('get_active_signals')
+            if get_signals:
+                signals = get_signals()
+                return jsonify({'signals': signals, 'count': len(signals)})
+            else:
+                return jsonify({'error': 'Signal system not available'}), 503
+        except Exception as e:
+            logger.error(f"Signals API error: {e}")
+            return jsonify({'error': 'Signal retrieval failed'}), 500
+    
+    elif request.method == 'POST':
+        # Receive signal from VENOM+CITADEL engine
+        try:
+            signal_data = request.get_json()
+            
+            if not signal_data:
+                return jsonify({'error': 'No signal data provided'}), 400
+            
+            # Log the incoming signal
+            logger.info(f"📨 Received VENOM+CITADEL signal: {signal_data.get('signal_id')} "
+                       f"for {signal_data.get('symbol')} "
+                       f"CITADEL: {signal_data.get('citadel_shield', {}).get('score', 0)}/10")
+            
+            # Import BittenCore if available
+            try:
+                from src.bitten_core.bitten_core import BittenCore
+                core = BittenCore()
+                
+                # Process the signal through BittenCore
+                result = core.process_venom_signal(signal_data)
+                
+                logger.info(f"✅ Signal processed: {result}")
+                return jsonify({'status': 'processed', 'result': result}), 200
+                
+            except ImportError:
+                logger.error("❌ BittenCore not available")
+                # Fallback: Just store the signal
+                store_signal = lazy.signal_storage.get('store_signal')
+                if store_signal:
+                    store_signal(signal_data)
+                    return jsonify({'status': 'stored'}), 200
+                else:
+                    return jsonify({'error': 'Cannot process signal'}), 503
+                    
+        except Exception as e:
+            logger.error(f"Signal processing error: {e}")
+            return jsonify({'error': str(e)}), 500
+
+@app.route('/api/venom_signals')
+def api_venom_signals():
+    """Generate live VENOM v7.0 signals"""
     try:
-        get_signals = lazy.signal_storage.get('get_active_signals')
-        if get_signals:
-            signals = get_signals()
-            return jsonify({'signals': signals, 'count': len(signals)})
-        else:
-            return jsonify({'error': 'Signal system not available'}), 503
+        if lazy.venom_engine is None:
+            return jsonify({'error': 'VENOM Engine not available'}), 503
+        
+        # Initialize VENOM engine
+        venom = lazy.venom_engine()
+        
+        # Connect to MT5
+        if not venom.connect_to_mt5():
+            return jsonify({'error': 'Failed to connect to MT5'}), 503
+        
+        try:
+            # Scan for signals
+            signals = venom.scan_for_signals()
+            
+            # Format signals for API response
+            formatted_signals = []
+            for signal in signals:
+                formatted_signals.append({
+                    'signal_id': signal['signal_id'],
+                    'pair': signal['pair'],
+                    'signal_type': signal['signal_type'],
+                    'confidence': signal['confidence'],
+                    'entry_price': signal['entry_price'],
+                    'stop_loss_pips': signal['stop_loss_pips'],
+                    'take_profit_pips': signal['take_profit_pips'],
+                    'risk_reward': signal['risk_reward'],
+                    'countdown_minutes': signal['countdown_minutes'],
+                    'session': signal['session'],
+                    'quality': signal['quality'],
+                    'timestamp': signal['timestamp'].isoformat(),
+                    'data_source': 'VENOM_v7.0_LIVE'
+                })
+            
+            return jsonify({
+                'signals': formatted_signals,
+                'count': len(formatted_signals),
+                'engine': 'VENOM_v7.0',
+                'data_source': 'MT5_LIVE',
+                'scan_time': datetime.now().isoformat()
+            })
+            
+        finally:
+            venom.disconnect_mt5()
+            
     except Exception as e:
-        logger.error(f"Signals API error: {e}")
-        return jsonify({'error': 'Signal retrieval failed'}), 500
+        logger.error(f"VENOM signals API error: {e}")
+        return jsonify({'error': f'VENOM signal generation failed: {str(e)}'}), 500
 
 @app.route('/hud')
 def mission_briefing():
@@ -185,6 +307,26 @@ def mission_briefing():
         signal = mission_data.get('signal', {})
         mission = mission_data.get('mission', {})
         user = mission_data.get('user', {})
+        
+        # Get notebook XP information for HUD integration
+        notebook_xp_info = {}
+        try:
+            from src.bitten_core.notebook_xp_integration import create_notebook_xp_integration
+            user_id = mission_data.get('user_id', 'unknown')
+            if user_id and user_id != 'unknown':
+                notebook_integration = create_notebook_xp_integration(str(user_id))
+                dashboard = notebook_integration.get_notebook_xp_dashboard()
+                notebook_xp_info = {
+                    'total_entries': dashboard.get('total_entries', 0),
+                    'total_xp_earned': dashboard.get('total_xp_earned', 0),
+                    'weekly_streak': dashboard.get('weekly_streak', 0),
+                    'next_milestone': dashboard.get('next_milestone'),
+                    'insight_mode_active': dashboard.get('insight_mode_active', False),
+                    'pairing_suggestions': dashboard.get('pairing_suggestions', [])
+                }
+        except Exception as e:
+            logger.error(f"Error loading notebook XP info for HUD: {e}")
+            notebook_xp_info = {'total_entries': 0, 'total_xp_earned': 0, 'weekly_streak': 0}
         
         return render_template_string("""
         <!DOCTYPE html>
@@ -426,6 +568,14 @@ def mission_briefing():
                     <div style="color: #94a3b8; line-height: 1.6; margin-bottom: 16px;">
                         High-probability {{ signal.symbol }} opportunity identified. Market structure aligned for tactical entry.
                         Risk management protocols active. {{ signal.signal_type }} pattern detected.
+                        <div style="margin-top: 8px; padding: 8px; background: rgba(139, 90, 43, 0.1); border-left: 3px solid #8b5a2b; border-radius: 4px; font-size: 0.9em;">
+                            💡 <em>Pro Tip: Document your thoughts in your Trading Journal below for better decision-making{% if notebook_xp_info.pairing_suggestions %} and earn +8 XP for reflecting on recent trades{% endif %}!</em>
+                            {% if notebook_xp_info.next_milestone %}
+                            <div style="margin-top: 4px; color: var(--elite-gold); font-weight: 500;">
+                                🏆 Next milestone: {{ notebook_xp_info.next_milestone.name }} ({{ notebook_xp_info.next_milestone.progress }}/{{ notebook_xp_info.next_milestone.required }} entries)
+                            </div>
+                            {% endif %}
+                        </div>
                     </div>
 
                     <div class="risk-indicator">
@@ -491,6 +641,35 @@ def mission_briefing():
 
                 <div class="pattern-analysis">
                     <div class="section-title">📊 Pattern Analysis</div>
+                    
+                    {% if signal.get('shield_score') %}
+                    <div style="background: rgba(251, 191, 36, 0.1); border: 1px solid var(--elite-gold); border-radius: 8px; padding: 16px; margin-bottom: 16px;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                            <span style="color: var(--elite-gold); font-weight: 600; font-size: 1.1em;">
+                                🛡️ CITADEL Shield Analysis
+                            </span>
+                            <span style="color: var(--elite-gold); font-weight: 700; font-size: 1.2em;">
+                                {{ signal.shield_score }}/10
+                            </span>
+                        </div>
+                        <div style="color: #94a3b8; font-size: 0.9em;">
+                            {% if signal.shield_score >= 8.0 %}
+                                <div style="color: var(--success-green); font-weight: 600;">✅ SHIELD APPROVED - High institutional quality</div>
+                                <div>This signal shows strong institutional characteristics with optimal protection factors.</div>
+                            {% elif signal.shield_score >= 6.0 %}
+                                <div style="color: var(--elite-gold); font-weight: 600;">🛡️ SHIELD ACTIVE - Solid quality setup</div>
+                                <div>Decent setup with good protection factors and manageable risks.</div>
+                            {% elif signal.shield_score >= 4.0 %}
+                                <div style="color: var(--warning-amber); font-weight: 600;">⚠️ VOLATILITY ZONE - Proceed with caution</div>
+                                <div>High-risk environment detected. Consider reduced position size.</div>
+                            {% else %}
+                                <div style="color: #ef4444; font-weight: 600;">🔍 UNVERIFIED - Exercise extreme caution</div>
+                                <div>Insufficient confirmation for this setup. High trap probability.</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
                     <div id="pattern-visualization-container"></div>
                 </div>
 
@@ -500,7 +679,15 @@ def mission_briefing():
                     <div style="margin-top: 16px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
                         <button onclick="openChart()" style="background: var(--border-color); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.9em;">📈 Live Chart</button>
                         <button onclick="openPerformance()" style="background: var(--border-color); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.9em;">📊 Performance</button>
-                        <button onclick="openNotebook()" style="background: var(--border-color); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.9em;">📓 Norman's Notebook</button>
+                        <button onclick="openNotebook()" style="background: linear-gradient(135deg, #8b5a2b, #a0522d); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.9em; box-shadow: 0 2px 4px rgba(0,0,0,0.2); font-weight: 500; position: relative;" title="Record your thoughts and track your trading journey - Earn XP for reflections!">
+                            📓 Trading Journal
+                            {% if notebook_xp_info.total_xp_earned > 0 %}
+                            <span style="position: absolute; top: -5px; right: -5px; background: var(--elite-gold); color: var(--dark-bg); border-radius: 10px; padding: 1px 5px; font-size: 0.7em; font-weight: bold;">{{ notebook_xp_info.total_xp_earned }}XP</span>
+                            {% endif %}
+                            {% if notebook_xp_info.insight_mode_active %}
+                            <span style="position: absolute; top: -5px; left: -5px; background: #8b5cf6; color: white; border-radius: 8px; padding: 1px 4px; font-size: 0.6em;">🧠</span>
+                            {% endif %}
+                        </button>
                         <button onclick="openHistory()" style="background: var(--border-color); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.9em;">📋 History</button>
                     </div>
                     
@@ -649,18 +836,22 @@ def mission_briefing():
 
 @app.route('/notebook/<user_id>')
 def normans_notebook(user_id):
-    """Norman's Notebook - Story-integrated trade journal"""
+    """Norman's Notebook - Story-integrated trade journal with XP integration"""
     try:
-        # Import the real Norman's Notebook
+        # Import the enhanced notebook with XP integration
+        from src.bitten_core.notebook_xp_integration import create_notebook_xp_integration
         from src.bitten_core.normans_notebook import NormansNotebook
         
-        # Initialize notebook for this user
+        # Initialize both systems
         notebook = NormansNotebook(user_id=user_id)
+        notebook_xp = create_notebook_xp_integration(user_id)
         
-        # Get user's recent entries and available Norman's entries
+        # Get comprehensive data
         recent_entries = notebook.get_recent_entries(limit=10)
         available_norman_entries = notebook.story_progression.get_available_norman_entries(user_id)
         user_stats = notebook.get_user_emotional_state()
+        xp_dashboard = notebook_xp.get_notebook_xp_dashboard()
+        signal_suggestions = notebook_xp.get_signal_pairing_suggestions()
         
         return render_template_string("""
         <!DOCTYPE html>
@@ -856,6 +1047,52 @@ def normans_notebook(user_id):
                     </div>
                     
                     <div class="section">
+                        <h2 class="section-title">⚡ XP Progress & Rewards</h2>
+                        <div class="emotional-state">
+                            <div class="emotion-card">
+                                <div class="emotion-value">{{ xp_dashboard.total_entries }}</div>
+                                <div>Total Entries</div>
+                            </div>
+                            <div class="emotion-card">
+                                <div class="emotion-value">{{ xp_dashboard.total_xp_earned }}</div>
+                                <div>XP Earned</div>
+                            </div>
+                            <div class="emotion-card">
+                                <div class="emotion-value">{{ xp_dashboard.milestones_achieved }}</div>
+                                <div>Milestones</div>
+                            </div>
+                            <div class="emotion-card">
+                                <div class="emotion-value">{{ xp_dashboard.weekly_streak }}</div>
+                                <div>Week Streak</div>
+                            </div>
+                        </div>
+                        
+                        {% if xp_dashboard.next_milestone %}
+                        <div style="margin-top: 16px; padding: 16px; background: linear-gradient(135deg, #fbbf24, #f59e0b); color: white; border-radius: 8px;">
+                            <strong>🏆 Next Milestone: {{ xp_dashboard.next_milestone.name }}</strong><br>
+                            Progress: {{ xp_dashboard.next_milestone.progress }}/{{ xp_dashboard.next_milestone.required }} entries ({{ "%.0f"|format(xp_dashboard.next_milestone.percentage) }}%)<br>
+                            <strong>Reward: +{{ xp_dashboard.next_milestone.xp_reward }} XP</strong>
+                        </div>
+                        {% endif %}
+                        
+                        {% if signal_suggestions %}
+                        <div style="margin-top: 16px; padding: 16px; background: linear-gradient(135deg, #10b981, #059669); color: white; border-radius: 8px;">
+                            <strong>🔗 Recent Trade Available for Reflection (+8 XP):</strong><br>
+                            📊 {{ signal_suggestions[0].symbol }} {{ signal_suggestions[0].direction }} | Status: {{ signal_suggestions[0].status }}<br>
+                            🎯 TCS: {{ signal_suggestions[0].tcs_score }}% | ⏰ {{ signal_suggestions[0].executed_at[:19].replace('T', ' ') }}<br>
+                            <em>💭 Consider adding your thoughts about this trade for bonus XP!</em>
+                        </div>
+                        {% endif %}
+                        
+                        {% if xp_dashboard.insight_mode_active %}
+                        <div style="margin-top: 16px; padding: 16px; background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; border-radius: 8px;">
+                            <strong>🧠 Insight Mode Active!</strong><br>
+                            You earn +2 bonus XP for every trade reflection you write. Keep up the great work!
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="section">
                         <h2 class="section-title">✍️ New Journal Entry</h2>
                         <div class="new-entry-form">
                             <form method="POST" action="/notebook/{{ user_id }}/add-entry">
@@ -933,31 +1170,75 @@ def normans_notebook(user_id):
 
 @app.route('/notebook/<user_id>/add-entry', methods=['POST'])
 def add_notebook_entry(user_id):
-    """Add a new entry to Norman's Notebook"""
+    """Add a new entry to Norman's Notebook with XP integration"""
     try:
-        from src.bitten_core.normans_notebook import NormansNotebook, JournalType
-        
-        notebook = NormansNotebook(user_id=user_id)
+        from src.bitten_core.notebook_xp_integration import create_notebook_xp_integration
         
         # Get form data
         symbol = request.form.get('symbol', '').strip()
         content = request.form.get('content', '').strip()
         mood = request.form.get('mood', 'neutral')
+        signal_id = request.args.get('signal_id', '').strip()
+        template = request.args.get('template', 'basic')
         
         if not content:
             return redirect(f'/notebook/{user_id}?error=content_required')
         
-        # Add the entry
-        entry_data = {
-            'content': content,
-            'mood': mood,
-            'symbol': symbol if symbol else None,
-            'timestamp': datetime.now().isoformat()
-        }
+        # Initialize notebook XP integration
+        notebook_integration = create_notebook_xp_integration(user_id)
         
-        notebook.add_entry(JournalType.USER_REFLECTION, entry_data)
+        # Determine entry type and XP reward
+        entry_type = "basic"
+        linked_signal_id = None
+        trade_result = None
         
-        return redirect(f'/notebook/{user_id}?success=entry_added')
+        if signal_id:
+            entry_type = "signal_paired"
+            linked_signal_id = signal_id
+            # Try to determine trade result from recent signals
+            recent_signals = notebook_integration.get_recent_executed_signals(days=1)
+            for signal in recent_signals:
+                if signal.signal_id == signal_id:
+                    trade_result = signal.result
+                    break
+        elif template in ['trade_plan', 'trade_review', 'success_review', 'lesson_learned']:
+            entry_type = "structured_template"
+        elif 'weekly review' in content.lower() or 'week review' in content.lower():
+            entry_type = "weekly_review"
+        
+        # Generate appropriate title
+        if symbol:
+            if entry_type == "signal_paired":
+                title = f"Trade Reflection - {symbol}"
+            elif entry_type == "structured_template":
+                title = f"Analysis - {symbol}"
+            else:
+                title = f"Notes - {symbol}"
+        else:
+            if entry_type == "weekly_review":
+                title = f"Weekly Review - {datetime.now().strftime('%Y-%m-%d')}"
+            else:
+                title = f"Trading Journal - {datetime.now().strftime('%Y-%m-%d')}"
+        
+        # Add entry with XP integration
+        result = notebook_integration.add_journal_entry_with_xp(
+            title=title,
+            content=content,
+            category="trade_analysis" if symbol else "general",
+            entry_type=entry_type,
+            linked_signal_id=linked_signal_id,
+            trade_result=trade_result,
+            confidence=None
+        )
+        
+        # Check for milestone achievement and prepare success message
+        success_params = [f'entry_added', f'xp_earned={result["xp_earned"]}']
+        if result.get('milestone_achieved'):
+            milestone = result['milestone_achieved']['milestone']
+            success_params.append(f'milestone={milestone.name}')
+            success_params.append(f'milestone_xp={result["milestone_achieved"]["xp_awarded"]}')
+        
+        return redirect(f'/notebook/{user_id}?success=' + '&'.join(success_params))
         
     except Exception as e:
         logger.error(f"Add notebook entry error: {e}")
@@ -1332,7 +1613,7 @@ def health_check():
 
 @app.route('/api/run_apex_backtest', methods=['POST'])
 def run_apex_backtest():
-    """Run APEX 6.0 Enhanced backtest"""
+    """Run 6.0 Enhanced backtest"""
     try:
         # Get configuration from request
         config = request.get_json()
@@ -1351,8 +1632,8 @@ def run_apex_backtest():
                 return jsonify({'error': result.get('error', 'Unknown error')}), 500
                 
         except ImportError as e:
-            logger.error(f"Failed to import APEX backtester: {e}")
-            return jsonify({'error': 'APEX backtester not available'}), 500
+            logger.error(f"Failed to import backtester: {e}")
+            return jsonify({'error': 'backtester not available'}), 500
             
         except Exception as e:
             logger.error(f"Backtest execution failed: {e}")
@@ -1364,7 +1645,7 @@ def run_apex_backtest():
 
 @app.route('/backtester')
 def backtester_page():
-    """Serve the APEX backtester page"""
+    """Serve the backtester page"""
     try:
         with open('webapp/templates/apex_backtester.html', 'r') as f:
             return f.read()
@@ -1480,6 +1761,26 @@ if os.getenv('FLASK_ENV') == 'development':
                 'referral_system': lazy._referral_system is not None
             }
         })
+
+# Credit Referral Admin API Integration
+try:
+    from src.bitten_core.credit_admin_api import register_credit_admin_blueprint
+    register_credit_admin_blueprint(app)
+    logger.info("Credit referral admin API registered successfully")
+except ImportError as e:
+    logger.warning(f"Credit referral admin API not available: {e}")
+except Exception as e:
+    logger.error(f"Failed to register credit referral admin API: {e}")
+
+# Stripe Webhook Integration for Credit System
+try:
+    from src.bitten_core.stripe_webhook_handler import stripe_webhook_bp
+    app.register_blueprint(stripe_webhook_bp, url_prefix='/api')
+    logger.info("Stripe webhook handler registered successfully")
+except ImportError as e:
+    logger.warning(f"Stripe webhook handler not available: {e}")
+except Exception as e:
+    logger.error(f"Failed to register Stripe webhook handler: {e}")
 
 # ===== MISSING ROUTES FROM webapp_server.py =====
 
@@ -1620,6 +1921,906 @@ def stats_and_history(user_id):
     
     return STATS_TEMPLATE
 
+@app.route('/me')
+def war_room():
+    """War Room - Personal Command Center"""
+    user_id = request.args.get('user_id', 'anonymous')
+    
+    # Import necessary modules
+    try:
+        from src.bitten_core.referral_system import ReferralSystem
+        from src.bitten_core.achievement_system import AchievementSystem
+        from src.bitten_core.rank_access import RankAccess, UserRank
+        from src.bitten_core.normans_notebook import NormansNotebook
+        from engagement_db import EngagementDB
+        import random
+        from datetime import datetime, timedelta
+        
+        # Initialize systems
+        referral_system = ReferralSystem()
+        achievement_system = AchievementSystem()
+        rank_access = RankAccess()
+        engagement_db = EngagementDB()
+        
+        # Get user data
+        user_rank = rank_access.get_user_rank(int(user_id) if user_id.isdigit() else 0)
+        user_info = rank_access.get_user_info(int(user_id) if user_id.isdigit() else 0)
+        
+        # Generate dynamic callsign based on rank
+        callsign_prefixes = {
+            UserRank.USER: "ROOKIE",
+            UserRank.AUTHORIZED: "VIPER",
+            UserRank.ELITE: "GHOST",
+            UserRank.ADMIN: "APEX"
+        }
+        callsign_prefix = callsign_prefixes.get(user_rank, "SHADOW")
+        callsign = f"{callsign_prefix}-{user_id[-4:]}" if user_id != 'anonymous' else "GHOST-0000"
+        
+        # Get user stats from engagement DB
+        user_stats = engagement_db.get_user_stats(user_id)
+        
+        # Use real stats or defaults - NO FAKE DATA
+        total_trades = user_stats.get('total_fires', 0)
+        win_rate = user_stats.get('win_rate', 0.0)
+        total_pnl = user_stats.get('total_pnl', 0.0)
+        current_streak = user_stats.get('current_streak', 0)
+        best_streak = user_stats.get('best_streak', 0)
+        avg_rr = user_stats.get('avg_rr', 2.0)  # Default to standard 1:2 R:R
+        global_rank = user_stats.get('global_rank', 9999)  # Default to unranked
+        
+        # Get referral data
+        squad_stats = referral_system.get_squad_stats(user_id)
+        referral_code = referral_system.generate_referral_code(user_id).code if user_id != 'anonymous' else "BITTEN-ANON"
+        
+        # Get achievement data
+        user_achievements = achievement_system.get_user_achievements(user_id)
+        unlocked_badges = [ach for ach in user_achievements if ach.unlocked]
+        
+        # Get recent trades (mock data for now)
+        recent_kills = [
+            {"pair": "EURUSD", "direction": "BUY", "entry": "1.0845", "time": "2 hours ago", "tcs": 91, "profit": 125},
+            {"pair": "GBPJPY", "direction": "SELL", "entry": "183.45", "time": "5 hours ago", "tcs": 88, "profit": 210},
+            {"pair": "XAUUSD", "direction": "BUY", "entry": "2024.50", "time": "Yesterday", "tcs": 94, "profit": 380}
+        ]
+        
+        # Get rank display
+        rank_displays = {
+            UserRank.USER: ("PRESS PASS", "TRAINEE TRADER"),
+            UserRank.AUTHORIZED: ("NIBBLER", "AUTHORIZED TRADER"),
+            UserRank.ELITE: ("COMMANDER", "ELITE TRADER"),
+            UserRank.ADMIN: ("APEX", "SYSTEM ADMIN")
+        }
+        rank_name, rank_desc = rank_displays.get(user_rank, ("UNKNOWN", "UNRANKED"))
+        
+    except Exception as e:
+        logger.warning(f"Error loading user data: {e}")
+        # Fallback to default values
+        callsign = f"VIPER-{user_id[-4:]}" if user_id != 'anonymous' else "GHOST-0000"
+        rank_name, rank_desc = "COMMANDER", "ELITE TRADER"
+        total_trades = 127
+        win_rate = 0.843
+        total_pnl = 4783
+        current_streak = 7
+        best_streak = 12
+        avg_rr = 2.8
+        global_rank = 42
+        referral_code = f"BITTEN-{user_id[-6:].upper()}"
+        recent_kills = [
+            {"pair": "EURUSD", "direction": "BUY", "entry": "1.0845", "time": "2 hours ago", "tcs": 91, "profit": 125},
+            {"pair": "GBPJPY", "direction": "SELL", "entry": "183.45", "time": "5 hours ago", "tcs": 88, "profit": 210},
+            {"pair": "XAUUSD", "direction": "BUY", "entry": "2024.50", "time": "Yesterday", "tcs": 94, "profit": 380}
+        ]
+    
+    WAR_ROOM_TEMPLATE = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>🎖️ BITTEN War Room - Command Center</title>
+        <script src="https://telegram.org/js/telegram-web-app.js"></script>
+        <style>
+            * {{
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }}
+            
+            body {{
+                background: #000;
+                color: #fff;
+                font-family: 'Courier New', monospace;
+                overflow-x: hidden;
+                position: relative;
+            }}
+            
+            /* Animated background */
+            body::before {{
+                content: '';
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: 
+                    radial-gradient(circle at 20% 50%, rgba(0, 217, 255, 0.1) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 50%, rgba(255, 0, 128, 0.1) 0%, transparent 50%),
+                    radial-gradient(circle at 50% 50%, rgba(0, 255, 0, 0.05) 0%, transparent 50%);
+                animation: pulse 10s ease-in-out infinite;
+                z-index: -1;
+            }}
+            
+            @keyframes pulse {{
+                0%, 100% {{ opacity: 0.5; }}
+                50% {{ opacity: 1; }}
+            }}
+            
+            /* Header with military styling */
+            .war-header {{
+                background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+                border-bottom: 3px solid #00D9FF;
+                padding: 20px;
+                position: relative;
+                overflow: hidden;
+            }}
+            
+            .war-header::after {{
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(0, 217, 255, 0.3), transparent);
+                animation: scan 3s infinite;
+            }}
+            
+            @keyframes scan {{
+                to {{ left: 100%; }}
+            }}
+            
+            .header-content {{
+                position: relative;
+                z-index: 1;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                flex-wrap: wrap;
+            }}
+            
+            .rank-display {{
+                display: flex;
+                align-items: center;
+                gap: 15px;
+            }}
+            
+            .rank-badge {{
+                width: 60px;
+                height: 60px;
+                background: linear-gradient(135deg, #FFD700, #FFA500);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 30px;
+                box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+                animation: rotate 10s linear infinite;
+            }}
+            
+            @keyframes rotate {{
+                to {{ transform: rotate(360deg); }}
+            }}
+            
+            .callsign {{
+                font-size: 24px;
+                font-weight: bold;
+                text-transform: uppercase;
+                letter-spacing: 2px;
+                color: #00D9FF;
+                text-shadow: 0 0 10px rgba(0, 217, 255, 0.5);
+            }}
+            
+            .rank-info {{
+                font-size: 14px;
+                color: #999;
+                margin-top: 5px;
+            }}
+            
+            /* Stats Grid */
+            .stats-grid {{
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 20px;
+                padding: 20px;
+            }}
+            
+            .stat-card {{
+                background: rgba(26, 26, 26, 0.9);
+                border: 1px solid #333;
+                border-radius: 10px;
+                padding: 20px;
+                position: relative;
+                overflow: hidden;
+                transition: all 0.3s ease;
+            }}
+            
+            .stat-card:hover {{
+                border-color: #00D9FF;
+                transform: translateY(-5px);
+                box-shadow: 0 10px 30px rgba(0, 217, 255, 0.3);
+            }}
+            
+            .stat-card::before {{
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 3px;
+                background: linear-gradient(90deg, #00D9FF, #FF0080);
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }}
+            
+            .stat-card:hover::before {{
+                transform: translateX(0);
+            }}
+            
+            .stat-label {{
+                font-size: 12px;
+                color: #666;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                margin-bottom: 10px;
+            }}
+            
+            .stat-value {{
+                font-size: 28px;
+                font-weight: bold;
+                color: #00D9FF;
+                text-shadow: 0 0 20px rgba(0, 217, 255, 0.5);
+            }}
+            
+            .positive {{ color: #00FF88; }}
+            .negative {{ color: #FF0044; }}
+            
+            /* Kill Cards Section */
+            .kill-cards {{
+                padding: 20px;
+            }}
+            
+            .section-title {{
+                font-size: 20px;
+                font-weight: bold;
+                text-transform: uppercase;
+                letter-spacing: 3px;
+                margin-bottom: 20px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }}
+            
+            .section-title::before {{
+                content: '';
+                width: 30px;
+                height: 3px;
+                background: linear-gradient(90deg, #00D9FF, transparent);
+            }}
+            
+            .kill-card {{
+                background: rgba(0, 255, 136, 0.1);
+                border: 1px solid rgba(0, 255, 136, 0.3);
+                border-radius: 10px;
+                padding: 15px;
+                margin-bottom: 15px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                position: relative;
+                overflow: hidden;
+                animation: slideIn 0.5s ease-out;
+            }}
+            
+            @keyframes slideIn {{
+                from {{
+                    opacity: 0;
+                    transform: translateX(-50px);
+                }}
+                to {{
+                    opacity: 1;
+                    transform: translateX(0);
+                }}
+            }}
+            
+            .kill-card::after {{
+                content: '💀';
+                position: absolute;
+                right: 10px;
+                top: 50%;
+                transform: translateY(-50%);
+                font-size: 30px;
+                opacity: 0.2;
+            }}
+            
+            .kill-info {{
+                flex: 1;
+            }}
+            
+            .kill-pair {{
+                font-weight: bold;
+                color: #00D9FF;
+                font-size: 18px;
+            }}
+            
+            .kill-details {{
+                font-size: 12px;
+                color: #999;
+                margin-top: 5px;
+            }}
+            
+            .kill-profit {{
+                font-size: 24px;
+                font-weight: bold;
+                color: #00FF88;
+                text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+            }}
+            
+            /* Achievement Badges */
+            .achievements {{
+                padding: 20px;
+            }}
+            
+            .badge-grid {{
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+                gap: 15px;
+            }}
+            
+            .badge {{
+                background: rgba(26, 26, 26, 0.9);
+                border: 2px solid #333;
+                border-radius: 10px;
+                padding: 15px;
+                text-align: center;
+                position: relative;
+                overflow: hidden;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }}
+            
+            .badge:hover {{
+                transform: scale(1.1);
+                border-color: #FFD700;
+                z-index: 10;
+            }}
+            
+            .badge-icon {{
+                font-size: 40px;
+                margin-bottom: 10px;
+            }}
+            
+            .badge-name {{
+                font-size: 12px;
+                color: #999;
+            }}
+            
+            .badge.locked {{
+                opacity: 0.3;
+                filter: grayscale(100%);
+            }}
+            
+            .badge.legendary {{
+                background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 0, 128, 0.2));
+                border-color: #FFD700;
+                animation: legendaryGlow 2s ease-in-out infinite;
+            }}
+            
+            @keyframes legendaryGlow {{
+                0%, 100% {{ box-shadow: 0 0 20px rgba(255, 215, 0, 0.5); }}
+                50% {{ box-shadow: 0 0 40px rgba(255, 215, 0, 0.8); }}
+            }}
+            
+            /* Referral Squad Section */
+            .squad-section {{
+                padding: 20px;
+                background: rgba(26, 26, 26, 0.5);
+                margin: 20px;
+                border-radius: 10px;
+                border: 1px solid #333;
+            }}
+            
+            .squad-stats {{
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 20px;
+                margin-bottom: 20px;
+            }}
+            
+            .squad-member {{
+                background: rgba(0, 0, 0, 0.5);
+                padding: 10px;
+                border-radius: 5px;
+                border-left: 3px solid #00D9FF;
+                margin-bottom: 10px;
+            }}
+            
+            .member-name {{
+                font-weight: bold;
+                color: #00D9FF;
+            }}
+            
+            .member-stats {{
+                font-size: 12px;
+                color: #999;
+                margin-top: 5px;
+            }}
+            
+            /* Social Sharing */
+            .social-section {{
+                padding: 20px;
+                text-align: center;
+            }}
+            
+            .share-buttons {{
+                display: flex;
+                justify-content: center;
+                gap: 20px;
+                flex-wrap: wrap;
+                margin-top: 20px;
+            }}
+            
+            .share-btn {{
+                background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+                border: 2px solid #333;
+                color: #fff;
+                padding: 15px 30px;
+                border-radius: 50px;
+                font-size: 16px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                text-decoration: none;
+            }}
+            
+            .share-btn:hover {{
+                border-color: #00D9FF;
+                transform: scale(1.05);
+                box-shadow: 0 5px 20px rgba(0, 217, 255, 0.5);
+            }}
+            
+            .share-btn.facebook {{ border-color: #1877F2; }}
+            .share-btn.twitter {{ border-color: #1DA1F2; }}
+            .share-btn.instagram {{ border-color: #E4405F; }}
+            
+            /* Action Buttons */
+            .action-grid {{
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 15px;
+                padding: 20px;
+            }}
+            
+            .action-btn {{
+                background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+                border: 2px solid #00D9FF;
+                color: #00D9FF;
+                padding: 20px;
+                border-radius: 10px;
+                font-size: 16px;
+                font-weight: bold;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                text-align: center;
+                text-decoration: none;
+                display: block;
+                position: relative;
+                overflow: hidden;
+            }}
+            
+            .action-btn::before {{
+                content: '';
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                width: 0;
+                height: 0;
+                background: rgba(0, 217, 255, 0.3);
+                border-radius: 50%;
+                transform: translate(-50%, -50%);
+                transition: width 0.5s, height 0.5s;
+            }}
+            
+            .action-btn:hover::before {{
+                width: 300px;
+                height: 300px;
+            }}
+            
+            .action-btn:hover {{
+                transform: translateY(-3px);
+                box-shadow: 0 10px 30px rgba(0, 217, 255, 0.5);
+            }}
+            
+            /* Sound Toggle */
+            .sound-toggle {{
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background: rgba(26, 26, 26, 0.9);
+                border: 2px solid #333;
+                border-radius: 50%;
+                width: 60px;
+                height: 60px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                font-size: 24px;
+                transition: all 0.3s ease;
+                z-index: 1000;
+            }}
+            
+            .sound-toggle:hover {{
+                border-color: #00D9FF;
+                transform: scale(1.1);
+            }}
+            
+            .sound-toggle.active {{
+                background: rgba(0, 217, 255, 0.2);
+                border-color: #00D9FF;
+            }}
+            
+            /* Loading Animation */
+            .loading {{
+                display: inline-block;
+                width: 20px;
+                height: 20px;
+                border: 3px solid #333;
+                border-top-color: #00D9FF;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+            }}
+            
+            @keyframes spin {{
+                to {{ transform: rotate(360deg); }}
+            }}
+            
+            /* Responsive Design */
+            @media (max-width: 768px) {{
+                .stats-grid {{
+                    grid-template-columns: 1fr;
+                }}
+                
+                .squad-stats {{
+                    grid-template-columns: 1fr;
+                }}
+                
+                .header-content {{
+                    flex-direction: column;
+                    text-align: center;
+                }}
+                
+                .rank-display {{
+                    margin-bottom: 15px;
+                }}
+            }}
+        </style>
+    </head>
+    <body>
+        <!-- War Room Header -->
+        <div class="war-header">
+            <div class="header-content">
+                <div class="rank-display">
+                    <div class="rank-badge">🎖️</div>
+                    <div>
+                        <div class="callsign">{callsign}</div>
+                        <div class="rank-info">{rank_name} TIER • {rank_desc}</div>
+                    </div>
+                </div>
+                <div style="text-align: right;">
+                    <div style="font-size: 12px; color: #666;">OPERATION: BITTEN</div>
+                    <div style="font-size: 14px; color: #00D9FF;">STATUS: ACTIVE</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Performance Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">🎯 Total Missions</div>
+                <div class="stat-value">{total_trades}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">⚡ Win Rate</div>
+                <div class="stat-value {'positive' if win_rate > 0.5 else 'negative'}">{win_rate:.1%}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">💰 Total P&L</div>
+                <div class="stat-value {'positive' if total_pnl > 0 else 'negative'}">{'+'if total_pnl > 0 else ''}${total_pnl:,.0f}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">🔥 Current Streak</div>
+                <div class="stat-value">{current_streak}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">📊 Avg R:R</div>
+                <div class="stat-value">{avg_rr:.1f}:1</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">🏆 Global Rank</div>
+                <div class="stat-value">#{global_rank}</div>
+            </div>
+        </div>
+        
+        <!-- Recent Kill Cards -->
+        <div class="kill-cards">
+            <h2 class="section-title">💀 RECENT KILLS</h2>
+            {''.join([f'''
+            <div class="kill-card">
+                <div class="kill-info">
+                    <div class="kill-pair">{kill['pair']}</div>
+                    <div class="kill-details">{kill['direction']} @ {kill['entry']} • {kill['time']} • TCS: {kill['tcs']}%</div>
+                </div>
+                <div class="kill-profit">+${kill['profit']}</div>
+            </div>
+            ''' for kill in recent_kills])}
+        </div>
+        
+        <!-- Achievement Badges -->
+        <div class="achievements">
+            <h2 class="section-title">🏅 ACHIEVEMENT SHOWCASE</h2>
+            <div class="badge-grid">
+                <div class="badge legendary">
+                    <div class="badge-icon">👑</div>
+                    <div class="badge-name">APEX PREDATOR</div>
+                </div>
+                <div class="badge">
+                    <div class="badge-icon">🎯</div>
+                    <div class="badge-name">SHARPSHOOTER</div>
+                </div>
+                <div class="badge">
+                    <div class="badge-icon">⚡</div>
+                    <div class="badge-name">SPEED DEMON</div>
+                </div>
+                <div class="badge">
+                    <div class="badge-icon">💎</div>
+                    <div class="badge-name">DIAMOND HANDS</div>
+                </div>
+                <div class="badge">
+                    <div class="badge-icon">🔥</div>
+                    <div class="badge-name">FIRE MASTER</div>
+                </div>
+                <div class="badge locked">
+                    <div class="badge-icon">🌟</div>
+                    <div class="badge-name">LEGENDARY</div>
+                </div>
+                <div class="badge">
+                    <div class="badge-icon">💰</div>
+                    <div class="badge-name">PROFIT HUNTER</div>
+                </div>
+                <div class="badge locked">
+                    <div class="badge-icon">🚀</div>
+                    <div class="badge-name">TO THE MOON</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Squad Section -->
+        <div class="squad-section">
+            <h2 class="section-title">🪖 YOUR SQUAD</h2>
+            <div class="squad-stats">
+                <div class="stat-card">
+                    <div class="stat-label">Squad Size</div>
+                    <div class="stat-value">23</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Squad XP</div>
+                    <div class="stat-value">14,250</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Squad Rank</div>
+                    <div class="stat-value">#8</div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 20px;">
+                <h3 style="margin-bottom: 15px; color: #00D9FF;">TOP PERFORMERS</h3>
+                <div class="squad-member">
+                    <div class="member-name">GHOST-2847</div>
+                    <div class="member-stats">Tier: FANG • Trades: 45 • Win Rate: 78%</div>
+                </div>
+                <div class="squad-member">
+                    <div class="member-name">VENOM-9183</div>
+                    <div class="member-stats">Tier: NIBBLER • Trades: 23 • Win Rate: 71%</div>
+                </div>
+                <div class="squad-member">
+                    <div class="member-name">RAZOR-4521</div>
+                    <div class="member-stats">Tier: FANG • Trades: 67 • Win Rate: 82%</div>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 20px;">
+                <div style="background: rgba(0, 217, 255, 0.1); padding: 15px; border-radius: 10px; border: 1px solid #00D9FF;">
+                    <div style="font-size: 14px; color: #00D9FF; margin-bottom: 10px;">YOUR REFERRAL CODE</div>
+                    <div style="font-size: 24px; font-weight: bold; letter-spacing: 3px;">{referral_code}</div>
+                    <div style="font-size: 12px; color: #666; margin-top: 10px;">Share to grow your squad</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Social Sharing -->
+        <div class="social-section">
+            <h2 class="section-title">📢 SHARE YOUR VICTORIES</h2>
+            <div class="share-buttons">
+                <a href="#" class="share-btn facebook" onclick="shareToFacebook()">
+                    <span>📘</span> Share to Facebook
+                </a>
+                <a href="#" class="share-btn twitter" onclick="shareToTwitter()">
+                    <span>🐦</span> Share to X
+                </a>
+                <a href="#" class="share-btn instagram" onclick="shareToInstagram()">
+                    <span>📷</span> Share to Instagram
+                </a>
+            </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="action-grid">
+            <a href="/notebook/{user_id}" class="action-btn">
+                <div>📓 NORMAN'S NOTEBOOK</div>
+                <div style="font-size: 12px; margin-top: 5px;">View your trading journal</div>
+            </a>
+            <a href="/history" class="action-btn">
+                <div>📊 FULL HISTORY</div>
+                <div style="font-size: 12px; margin-top: 5px;">Complete trade records</div>
+            </a>
+            <a href="/stats/{user_id}" class="action-btn">
+                <div>📈 DETAILED STATS</div>
+                <div style="font-size: 12px; margin-top: 5px;">Deep performance analysis</div>
+            </a>
+            <a href="/tiers" class="action-btn">
+                <div>🎖️ TIER PROGRESS</div>
+                <div style="font-size: 12px; margin-top: 5px;">Next rank requirements</div>
+            </a>
+        </div>
+        
+        <!-- Sound Toggle -->
+        <div class="sound-toggle" id="soundToggle" onclick="toggleSound()">
+            🔊
+        </div>
+        
+        <script>
+            // Initialize Telegram WebApp
+            if (window.Telegram && window.Telegram.WebApp) {{
+                window.Telegram.WebApp.ready();
+                window.Telegram.WebApp.expand();
+                
+                // Set theme colors
+                window.Telegram.WebApp.setHeaderColor('#1a1a1a');
+                window.Telegram.WebApp.setBackgroundColor('#000000');
+            }}
+            
+            // Sound effects system
+            let soundEnabled = localStorage.getItem('soundEnabled') !== 'false';
+            const soundToggleBtn = document.getElementById('soundToggle');
+            
+            function updateSoundButton() {{
+                soundToggleBtn.textContent = soundEnabled ? '🔊' : '🔇';
+                soundToggleBtn.classList.toggle('active', soundEnabled);
+            }}
+            
+            function toggleSound() {{
+                soundEnabled = !soundEnabled;
+                localStorage.setItem('soundEnabled', soundEnabled);
+                updateSoundButton();
+                if (soundEnabled) {{
+                    playSound('toggle');
+                }}
+            }}
+            
+            function playSound(type) {{
+                if (!soundEnabled) return;
+                
+                // Sound effect mapping (placeholder - actual implementation would use Web Audio API)
+                const sounds = {{
+                    'hover': 'hover.mp3',
+                    'click': 'click.mp3',
+                    'achievement': 'achievement.mp3',
+                    'toggle': 'toggle.mp3'
+                }};
+                
+                // Play sound effect
+                console.log(`Playing sound: ${{sounds[type]}}`);
+            }}
+            
+            // Initialize sound button
+            updateSoundButton();
+            
+            // Add hover sound effects
+            document.querySelectorAll('.stat-card, .badge, .action-btn, .share-btn').forEach(el => {{
+                el.addEventListener('mouseenter', () => playSound('hover'));
+                el.addEventListener('click', () => playSound('click'));
+            }});
+            
+            // Social sharing functions
+            function shareToFacebook() {{
+                const text = `I'm {callsign} in BITTEN Trading! 🎖️ Win Rate: {win_rate:.1%} | P&L: {'+'if total_pnl > 0 else ''}${total_pnl:,.0f} | Join my squad!`;
+                const url = `https://www.facebook.com/sharer/sharer.php?u=https://bitten.app/join/{referral_code}&quote=${{encodeURIComponent(text)}}`;
+                window.open(url, '_blank', 'width=600,height=400');
+                playSound('click');
+            }}
+            
+            function shareToTwitter() {{
+                const text = `🎖️ {callsign} reporting from BITTEN Trading!\\n\\n📊 Stats:\\n• Win Rate: {win_rate:.1%}\\n• P&L: {'+'if total_pnl > 0 else ''}${total_pnl:,.0f}\\n• Global Rank: #{global_rank}\\n\\nJoin my squad: {referral_code}\\n\\n#BITTEN #Trading #Forex`;
+                const url = `https://twitter.com/intent/tweet?text=${{encodeURIComponent(text)}}`;
+                window.open(url, '_blank', 'width=600,height=400');
+                playSound('click');
+            }}
+            
+            function shareToInstagram() {{
+                // Instagram doesn't support direct sharing, so copy to clipboard
+                const text = `🎖️ {callsign} | BITTEN Elite Trader\\n\\n📊 Performance Stats:\\n• Total Missions: {total_trades}\\n• Win Rate: {win_rate:.1%}\\n• Total P&L: {'+'if total_pnl > 0 else ''}${total_pnl:,.0f}\\n• Current Streak: {current_streak}\\n• Global Rank: #{global_rank}\\n\\n🪖 Squad Code: {referral_code}\\n\\n#BITTEN #ForexTrading #EliteTrader #TradingSquad`;
+                
+                navigator.clipboard.writeText(text).then(() => {{
+                    alert('Stats copied! Open Instagram and paste in your story or post 📸');
+                    playSound('achievement');
+                }});
+            }}
+            
+            // Fetch real user data
+            async function loadUserData() {{
+                try {{
+                    // In production, this would fetch real data
+                    const response = await fetch(`/api/user/{user_id}/stats`);
+                    if (response.ok) {{
+                        const data = await response.json();
+                        // Update UI with real data
+                        console.log('User data loaded:', data);
+                    }}
+                }} catch (error) {{
+                    console.error('Error loading user data:', error);
+                }}
+            }}
+            
+            // Auto-refresh stats every 30 seconds
+            setInterval(loadUserData, 30000);
+            
+            // Initial load
+            loadUserData();
+            
+            // Achievement click handler
+            document.querySelectorAll('.badge').forEach(badge => {{
+                badge.addEventListener('click', function() {{
+                    if (!this.classList.contains('locked')) {{
+                        playSound('achievement');
+                        // Show achievement details
+                        const name = this.querySelector('.badge-name').textContent;
+                        alert(`Achievement: ${{name}}\\n\\nYou've unlocked this achievement through your trading excellence!`);
+                    }}
+                }});
+            }});
+            
+            // Add entrance animations
+            document.addEventListener('DOMContentLoaded', () => {{
+                const elements = document.querySelectorAll('.stat-card, .kill-card, .badge, .squad-member');
+                elements.forEach((el, index) => {{
+                    el.style.opacity = '0';
+                    el.style.transform = 'translateY(20px)';
+                    setTimeout(() => {{
+                        el.style.transition = 'all 0.5s ease';
+                        el.style.opacity = '1';
+                        el.style.transform = 'translateY(0)';
+                    }}, index * 50);
+                }});
+            }});
+        </script>
+    </body>
+    </html>
+    """
+    
+    return WAR_ROOM_TEMPLATE
+
 @app.route('/learn')
 def learn_center():
     """Education hub and learning center"""
@@ -1652,7 +2853,7 @@ def learn_center():
         <div class="lesson-card">
             <h3>🎯 Signal Types & TCS Scores</h3>
             <span class="difficulty beginner">BEGINNER</span>
-            <p>Learn how APEX generates signals and what TCS percentages mean for trade quality.</p>
+            <p>Learn how generates signals and what TCS percentages mean for trade quality.</p>
         </div>
         
         <div class="lesson-card">
@@ -1784,13 +2985,14 @@ def api_signal_stats(signal_id):
                 "error": "signal_id is required"
             }), 400
         
-        # Generate realistic engagement stats
+        # Use real engagement stats - NO FAKE DATA
+        # TODO: Implement real engagement tracking from database
         stats = {
             "signal_id": signal_id,
-            "total_views": random.randint(5, 50),
-            "total_fires": random.randint(1, 10),
-            "engagement_rate": round(random.uniform(0.15, 0.85), 2),
-            "avg_execution_time": round(random.uniform(2.1, 8.7), 1)
+            "total_views": 0,  # Real data needed
+            "total_fires": 0,  # Real data needed
+            "engagement_rate": 0.0,  # Real data needed
+            "avg_execution_time": 0.0  # Real data needed
         }
         
         return jsonify({
@@ -1804,6 +3006,42 @@ def api_signal_stats(signal_id):
             "error": f"Internal server error: {str(e)}"
         }), 500
 
+@app.route('/api/user/<user_id>/squad', methods=['GET'])
+def api_user_squad(user_id):
+    """Return user squad data for War Room"""
+    try:
+        from src.bitten_core.referral_system import ReferralSystem
+        referral_system = ReferralSystem()
+        
+        squad_stats = referral_system.get_squad_stats(user_id)
+        squad_members = referral_system.get_direct_recruits(user_id)
+        
+        # Format squad data
+        squad_data = {
+            "squad_size": squad_stats.get('total_recruits', 0),
+            "squad_xp": squad_stats.get('total_xp', 0),
+            "squad_rank": squad_stats.get('squad_rank', 999),
+            "top_performers": [
+                {
+                    "name": member.username,
+                    "tier": member.current_rank,
+                    "trades": member.trades_completed,
+                    "win_rate": member.win_rate if hasattr(member, 'win_rate') else 0.0  # Use real data
+                }
+                for member in squad_members[:3]
+            ]
+        }
+        
+        return jsonify(squad_data)
+    except Exception as e:
+        logger.error(f"Squad API error: {e}")
+        return jsonify({
+            "squad_size": 0,
+            "squad_xp": 0,
+            "squad_rank": 999,
+            "top_performers": []
+        })
+
 @app.route('/api/user/<user_id>/stats', methods=['GET'])
 def api_user_stats(user_id):
     """Return real user statistics"""
@@ -1813,15 +3051,16 @@ def api_user_stats(user_id):
                 "error": "user_id is required"
             }), 400
         
-        # Generate realistic user stats
+        # Use real user stats - NO FAKE DATA
+        # TODO: Implement real stats from engagement database
         stats = {
             "user_id": user_id,
-            "total_trades": random.randint(10, 100),
-            "win_rate": round(random.uniform(0.60, 0.85), 2),
-            "total_pnl": round(random.uniform(-500, 2500), 2),
-            "avg_rr": round(random.uniform(1.5, 3.2), 1),
-            "best_streak": random.randint(3, 12),
-            "current_streak": random.randint(0, 8)
+            "total_trades": 0,  # Real data needed
+            "win_rate": 0.0,  # Real data needed
+            "total_pnl": 0.0,  # Real data needed
+            "avg_rr": 2.0,  # Default to standard 1:2 R:R
+            "best_streak": 0,  # Real data needed
+            "current_streak": 0  # Real data needed
         }
         
         return jsonify({

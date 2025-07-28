@@ -1,36 +1,35 @@
 #!/usr/bin/env python3
 """
-Test mission briefing generation with APEX signals
+Test mission briefing generation with signals
 """
 
 import sys
 import os
 sys.path.append('/root/HydraX-v2/src/bitten_core')
 
-from mission_briefing_generator_active import APEXv5MissionBriefingGenerator
+from mission_briefing_generator_active import v5MissionBriefingGenerator
 import json
 from datetime import datetime
 
 def test_mission_briefing():
-    """Test mission briefing generation with APEX signal format"""
+    """Test mission briefing generation with signal format"""
     
     print("🎯 TESTING MISSION BRIEFING GENERATION")
     print("=" * 50)
     print()
     
     # Initialize generator
-    generator = APEXv5MissionBriefingGenerator()
+    generator = v5MissionBriefingGenerator()
     
-    # Test signals matching APEX output format
+    # Test signals matching output format
     test_signals = [
         {
-            # RAPID_ASSAULT signal from APEX
-            'symbol': 'EURUSD',
+            # RAPID_ASSAULT signal from 'symbol': 'EURUSD',
             'direction': 'BUY',
             'entry_price': 1.0900,
             'signal_type': 'RAPID_ASSAULT',
             'tcs': 75,
-            'pattern': 'APEX Pattern',
+            'pattern': 'Pattern',
             'timeframe': 'M5',
             'session': 'LONDON',
             'confluence_count': 1,
@@ -39,13 +38,12 @@ def test_mission_briefing():
             'spread': 1.0
         },
         {
-            # SNIPER_OPS signal from APEX
-            'symbol': 'GBPUSD',
+            # SNIPER_OPS signal from 'symbol': 'GBPUSD',
             'direction': 'SELL',
             'entry_price': 1.2500,
             'signal_type': 'SNIPER_OPS',
             'tcs': 85,
-            'pattern': 'APEX Pattern',
+            'pattern': 'Pattern',
             'timeframe': 'M15',
             'session': 'OVERLAP',
             'confluence_count': 2,
@@ -115,7 +113,7 @@ def test_mission_briefing():
         print()
     
     print("🎯 Mission briefing generation test complete!")
-    print("✅ Missions can convert APEX signals to user-friendly format")
+    print("✅ Missions can convert signals to user-friendly format")
     print("🔥 Ready to connect to TOC firing system")
 
 if __name__ == "__main__":

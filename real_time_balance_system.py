@@ -111,53 +111,34 @@ class RealTimeBalanceSystem:
             """)
     
     def get_live_balance_from_mt5(self, user_id: str) -> Optional[AccountBalance]:
-        """Get real-time balance from MT5 via bridge"""
+        """Get real-time balance from local Wine MT5 installation - REAL DATA ONLY"""
         try:
-            from production_bridge_tunnel import get_production_tunnel
-            tunnel = get_production_tunnel()
+            # Use the real MT5 balance integration
+            from real_mt5_balance import get_real_balance_for_user
             
-            # Create ping command with balance request
-            balance_request = {
-                "command": "get_balance",
-                "user_id": user_id,
-                "timestamp": datetime.now().isoformat()
-            }
+            balance_data = get_real_balance_for_user(user_id)
             
-            # Execute via AWS bridge
-            result = tunnel.execute_live_trade(balance_request)
-            
-            if result.get("success"):
-                # Try to parse account info from bridge response
-                # This would need to be implemented in the bridge to return balance
-                # For now, use fallback method
-                pass
-            
-            # Fallback: Use FireRouter ping
-            from src.bitten_core.fire_router import FireRouter
-            router = FireRouter()
-            ping_result = router.ping_bridge(user_id)
-            
-            if ping_result.get("success"):
-                account_info = ping_result.get("account_info", {})
+            if balance_data:
+                self.logger.info(f"✅ Retrieved REAL balance from MT5 clone: ${balance_data['balance']}")
                 
-                if account_info:
-                    return AccountBalance(
-                        user_id=user_id,
-                        account_id=account_info.get("login", user_id),
-                        balance=float(account_info.get("balance", self.safety_default_balance)),
-                        equity=float(account_info.get("equity", account_info.get("balance", self.safety_default_balance))),
-                        margin=float(account_info.get("margin", 0)),
-                        free_margin=float(account_info.get("free_margin", account_info.get("balance", self.safety_default_balance))),
-                        currency=account_info.get("currency", "USD"),
-                        server=account_info.get("server", "Unknown"),
-                        timestamp=datetime.now(),
-                        is_live=True
-                    )
-            
-            return None
+                return AccountBalance(
+                    user_id=user_id,
+                    account_id=balance_data['account_id'],
+                    balance=balance_data['balance'],
+                    equity=balance_data['equity'],
+                    margin=balance_data['margin'],
+                    free_margin=balance_data['free_margin'],
+                    currency=balance_data['currency'],
+                    server=balance_data['server'],
+                    timestamp=datetime.now(),
+                    is_live=balance_data['is_live']
+                )
+            else:
+                self.logger.warning(f"⚠️ No real balance data available for user {user_id}")
+                return None
             
         except Exception as e:
-            self.logger.error(f"❌ Live balance retrieval failed for {user_id}: {e}")
+            self.logger.error(f"❌ Real MT5 balance retrieval failed for {user_id}: {e}")
             return None
     
     def get_cached_balance(self, user_id: str) -> Optional[AccountBalance]:

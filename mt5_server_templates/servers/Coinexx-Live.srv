@@ -1,0 +1,8 @@
+[Common]
+Name=Coinexx-Live
+Address=live.coinexx.com:443
+Environment=Live
+DataServer=live.coinexx.com:443
+Ping=live.coinexx.com:443
+Company=Coinexx
+AccountServer=live.coinexx.com:443

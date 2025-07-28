@@ -14,14 +14,12 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-
 class PerkBranch(Enum):
     """Perk tree branches"""
     TRADING = "TRADING"  # Trading perks (fees, spreads)
     ANALYSIS = "ANALYSIS"  # Analysis perks (signals, indicators)
     SOCIAL = "SOCIAL"  # Social perks (squad, mentor)
     ECONOMY = "ECONOMY"  # Economy perks (XP, rewards)
-
 
 class PerkTier(Enum):
     """Perk tiers"""
@@ -52,14 +50,12 @@ class PerkTier(Enum):
         }
         return tier_costs[self]
 
-
 class PerkType(Enum):
     """Perk activation types"""
     PASSIVE = "PASSIVE"  # Always active once unlocked
     ACTIVE = "ACTIVE"  # Must be equipped in loadout
     TRIGGERED = "TRIGGERED"  # Activates under conditions
     SEASONAL = "SEASONAL"  # Time-limited availability
-
 
 @dataclass
 class PerkEffect:
@@ -69,7 +65,6 @@ class PerkEffect:
     description: str  # Human-readable description
     stacks: bool = False  # Can stack with similar effects
     max_stack: int = 1  # Maximum stack count
-
 
 @dataclass
 class Perk:
@@ -91,7 +86,6 @@ class Perk:
     seasonal_end: Optional[datetime] = None  # For seasonal perks
     elite_only: bool = False  # Requires elite tier access
 
-
 @dataclass
 class PerkLoadout:
     """Player's active perk loadout"""
@@ -101,7 +95,6 @@ class PerkLoadout:
     created_at: datetime
     last_modified: datetime
     is_active: bool = True
-
 
 @dataclass
 class PlayerPerkData:
@@ -116,7 +109,6 @@ class PlayerPerkData:
     respec_count: int = 0
     last_respec: Optional[datetime] = None
     seasonal_perks: List[str] = field(default_factory=list)
-
 
 class PerkSystem:
     """Main perk system manager"""

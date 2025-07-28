@@ -21,14 +21,12 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-
 class TacticalStrategy(Enum):
     """4 Tactical strategies for NIBBLER signal execution"""
     LONE_WOLF = "LONE_WOLF"           # Training wheels - 4 shots, any 74+ TCS
     FIRST_BLOOD = "FIRST_BLOOD"       # Escalation - 4 shots, escalating requirements
     DOUBLE_TAP = "DOUBLE_TAP"         # Precision - 2 shots, 85+ TCS, same direction
     TACTICAL_COMMAND = "TACTICAL_COMMAND"  # Mastery - choice between sniper or volume
-
 
 @dataclass
 class ShotRequirement:
@@ -37,7 +35,6 @@ class ShotRequirement:
     min_tcs: int
     risk_reward_ratio: float
     description: str
-
 
 @dataclass
 class TacticalConfig:
@@ -53,7 +50,6 @@ class TacticalConfig:
     teaching_focus: str
     psychology: str
 
-
 @dataclass
 class DailyTacticalState:
     """User's daily tactical state"""
@@ -66,7 +62,6 @@ class DailyTacticalState:
     shots_taken: List[Dict] = field(default_factory=list)
     locked_until: Optional[datetime] = None
     last_reset: datetime = field(default_factory=datetime.now)
-
 
 class TacticalStrategyManager:
     """Manager for NIBBLER tactical strategies"""
@@ -485,7 +480,6 @@ class TacticalStrategyManager:
                 json.dump(data, f, indent=2)
         except Exception as e:
             logger.error(f"Error saving daily state: {e}")
-
 
 # Global instance
 tactical_strategy_manager = TacticalStrategyManager()

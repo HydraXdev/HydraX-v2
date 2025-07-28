@@ -35,7 +35,7 @@ class TradeManagementFeature(Enum):
     DYNAMIC_TRAIL = "dynamic_trail"                # XP: 10000
     ZERO_RISK_RUNNER = "zero_risk_runner"         # XP: 15000
     LEROY_JENKINS = "leroy_jenkins"               # XP: 20000
-    APEX_PREDATOR = "apex_predator"               # XP: 50000
+    _PREDATOR = "apex_predator"               # XP: 50000
 
 class TradingState(Enum):
     """Trading states for risk management"""
@@ -108,7 +108,7 @@ class RiskProfile:
             'NIBBLER': 6.0,     # NEW: -6% daily limit (was 7%)
             'FANG': 8.5,        # NEW: -8.5% daily limit (was 10%)
             'COMMANDER': 8.5,   # NEW: -8.5% daily limit (was 10%)
-            'APEX': 8.5         # NEW: -8.5% daily limit (was 10%)
+            '': 8.5         # NEW: -8.5% daily limit (was 10%)
         }
         return tier_limits.get(self.tier_level, 6.0)
     
@@ -125,7 +125,7 @@ class RiskProfile:
             TradeManagementFeature.DYNAMIC_TRAIL: 10000,
             TradeManagementFeature.ZERO_RISK_RUNNER: 15000,
             TradeManagementFeature.LEROY_JENKINS: 20000,
-            TradeManagementFeature.APEX_PREDATOR: 50000
+            TradeManagementFeature._PREDATOR: 50000
         }
         
         for feature, required_xp in xp_requirements.items():
@@ -381,7 +381,7 @@ class RiskCalculator:
             'NIBBLER': 1.0,      # Standard risk
             'FANG': 1.1,         # 10% more risk allowed
             'COMMANDER': 1.2,    # 20% more risk allowed
-            'APEX': 1.5          # 50% more risk allowed (elite)
+            '': 1.5          # 50% more risk allowed (elite)
         }
         
         # Risk manager for safety checks
@@ -792,7 +792,6 @@ class RiskCalculator:
             # On any error, reject the trade for safety
             return False, f"Validation error: {str(e)}. Trade rejected for safety.", 0
 
-
 # XP-based feature descriptions for UI
 FEATURE_DESCRIPTIONS = {
     TradeManagementFeature.BREAKEVEN: {
@@ -843,14 +842,13 @@ FEATURE_DESCRIPTIONS = {
         'xp_required': 20000,
         'icon': '🔥'
     },
-    TradeManagementFeature.APEX_PREDATOR: {
+    TradeManagementFeature._PREDATOR: {
         'name': 'Apex Predator',
         'description': 'Full suite of elite features with AI optimization',
         'xp_required': 50000,
         'icon': '👑'
     }
 }
-
 
 # Utility functions for safety system integration
 class SafetySystemIntegration:
@@ -912,7 +910,6 @@ class SafetySystemIntegration:
             return True, "Severe tilt detected - closing all positions for safety"
         
         return False, ""
-
 
 # Example usage
 def example_usage():

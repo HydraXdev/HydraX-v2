@@ -15,7 +15,6 @@ from dotenv import load_dotenv
 import asyncio
 from datetime import datetime
 
-
 @dataclass
 class APIConfig:
     """Configuration for external APIs"""
@@ -32,7 +31,6 @@ class APIConfig:
         if self.headers is None:
             self.headers = {}
 
-
 @dataclass
 class DataSourceConfig:
     """Configuration for data sources"""
@@ -47,7 +45,6 @@ class DataSourceConfig:
     def __post_init__(self):
         if self.connection_params is None:
             self.connection_params = {}
-
 
 @dataclass
 class CacheConfig:
@@ -64,7 +61,6 @@ class CacheConfig:
         if self.connection_params is None:
             self.connection_params = {}
 
-
 @dataclass
 class MonitoringConfig:
     """Configuration for monitoring and logging"""
@@ -78,7 +74,6 @@ class MonitoringConfig:
     def __post_init__(self):
         if self.alert_webhooks is None:
             self.alert_webhooks = []
-
 
 class ConfigManager:
     """Manages all configuration for the intelligence system"""

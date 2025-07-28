@@ -1,4 +1,4 @@
-# 🚨 URGENT BRIDGE ISSUE HANDOVER - BITTEN APEX v5.0
+# 🚨 URGENT BRIDGE ISSUE HANDOVER - BITTEN v5.0
 
 **Date**: July 14, 2025  
 **Time**: 11:19 AM UTC  
@@ -7,14 +7,14 @@
 
 ## 🎯 PROBLEM SUMMARY
 
-APEX v5.0 engine is running perfectly and scanning every 45 seconds, but **NO SIGNALS ARE BEING GENERATED** because the bridge connection is looking in the wrong location for signal files.
+v5.0 engine is running perfectly and scanning every 45 seconds, but **NO SIGNALS ARE BEING GENERATED** because the bridge connection is looking in the wrong location for signal files.
 
 ## 🔧 SYSTEMS STATUS - ALL OPERATIONAL
 
-### ✅ APEX Engine Status
+### ✅ Engine Status
 - **File**: `/root/HydraX-v2/apex_v5_live_real.py`
 - **Status**: RUNNING (scanning every 45s during LONDON session)
-- **Last Log**: `2025-07-14 11:19:00,427 - APEX v5.0 LIVE - INFO - 🔍 No signals found this cycle`
+- **Last Log**: `2025-07-14 11:19:00,427 - v5.0 LIVE - INFO - 🔍 No signals found this cycle`
 - **Bridge Connection**: HEALTHY (3.145.84.187:5555 responding)
 
 ### ✅ MT5 Infrastructure Status  
@@ -30,8 +30,8 @@ APEX v5.0 engine is running perfectly and scanning every 45 seconds, but **NO SI
 
 ## 🚨 THE CORE ISSUE
 
-### Current APEX Configuration (INCORRECT)
-The APEX engine is looking for signal files in:
+### Current Configuration (INCORRECT)
+The engine is looking for signal files in:
 ```
 C:\MT5_Farm\Bridge\Incoming\signal_{symbol}_*.json
 ```
@@ -69,7 +69,7 @@ C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\173477FF1060D99CE7929
 - `D0E8209F77C8CF37AD8BF550E51FF075` ← (config updated 11:14 AM today)
 - Plus 8 other historical instances
 
-### 4. APEX Engine Bridge Method
+### 4. Engine Bridge Method
 **Current implementation** (`apex_v5_live_real.py` lines 274-330):
 ```python
 def get_market_data_from_bridge_files(self, symbol: str) -> Optional[Dict]:
@@ -86,7 +86,7 @@ def get_market_data_from_bridge_files(self, symbol: str) -> Optional[Dict]:
 ## 🎯 REQUIRED SOLUTION
 
 ### Immediate Fix Needed
-Update the APEX engine `get_market_data_from_bridge_files()` method to look in the correct location:
+Update the engine `get_market_data_from_bridge_files()` method to look in the correct location:
 
 **FROM**: `C:\MT5_Farm\Bridge\Incoming\signal_{symbol}_*.json`  
 **TO**: `C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\173477FF1060D99CE79296FC73108719\MQL5\Files\BITTEN\{pattern}`
@@ -95,7 +95,7 @@ Update the APEX engine `get_market_data_from_bridge_files()` method to look in t
 1. **Determine exact file pattern** EAs are using in the BITTEN directory
 2. **Verify file naming convention** (may not be `signal_{symbol}_*.json`)
 3. **Test actual file generation** by checking what files appear in real-time
-4. **Update PowerShell command** in APEX engine to use correct path and pattern
+4. **Update PowerShell command** in engine to use correct path and pattern
 
 ### Files to Modify
 - **Primary**: `/root/HydraX-v2/apex_v5_live_real.py` (lines 274-330)
@@ -112,7 +112,7 @@ Update the APEX engine `get_market_data_from_bridge_files()` method to look in t
 
 ### Expected After Fix
 - **Target**: 40+ signals/day during active sessions
-- **TCS Range**: 35-95% (APEX v5.0 aggressive mode)
+- **TCS Range**: 35-95% (v5.0 aggressive mode)
 - **Immediate**: Signal flow should resume within 1 scan cycle (45s)
 
 ## 🚨 CRITICAL CONTEXT
@@ -125,7 +125,7 @@ Update the APEX engine `get_market_data_from_bridge_files()` method to look in t
 - "Last time you were troubleshooting wrong one"
 
 ### Previous Fixes Applied
-- ✅ Fixed APEX to read bridge files instead of direct MT5 connection
+- ✅ Fixed to read bridge files instead of direct MT5 connection
 - ✅ Corrected signal format for Telegram connector
 - ✅ Established bulletproof infrastructure communication
 - ✅ All authentication and logging systems operational
@@ -145,7 +145,7 @@ Update the APEX engine `get_market_data_from_bridge_files()` method to look in t
 
 ## 📁 KEY FILES & PATHS
 
-### Linux Side (APEX Engine)
+### Linux Side (Engine)
 - **Main Engine**: `/root/HydraX-v2/apex_v5_live_real.py`
 - **Log File**: `/root/HydraX-v2/apex_v5_live_real.log`
 - **Supervisor**: `/root/HydraX-v2/apex_engine_supervisor.py`
@@ -159,17 +159,17 @@ Update the APEX engine `get_market_data_from_bridge_files()` method to look in t
 ## 🔄 UPDATE - BRIDGE PATH CORRECTED
 
 ### ✅ FIX APPLIED (11:35 AM UTC)
-**Bridge path updated in APEX engine:**
+**Bridge path updated in engine:**
 - **FROM**: `C:\MT5_Farm\Bridge\Incoming\signal_{symbol}_*.json`
 - **TO**: `C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\173477FF1060D99CE79296FC73108719\MQL5\Files\BITTEN\*{symbol}*.json`
 
 ### 🔧 Changes Made
 1. **Updated** `apex_v5_live_real.py` lines 284-285
-2. **Restarted** APEX engine at 11:35:03 UTC
+2. **Restarted** engine at 11:35:03 UTC
 3. **Engine Status**: Running, scanning correct directory every 45s
 
 ### 📊 Current Status (11:36 AM UTC)
-- **APEX Engine**: ✅ OPERATIONAL (scanning new path)
+- **Engine**: ✅ OPERATIONAL (scanning new path)
 - **Bridge Connection**: ✅ HEALTHY 
 - **Signal Detection**: 🔍 MONITORING (testing new directory)
 - **Next Scan**: Every 45 seconds
@@ -178,9 +178,9 @@ Update the APEX engine `get_market_data_from_bridge_files()` method to look in t
 If EAs are generating signal files in the BITTEN directory, signals should be detected within 1-2 scan cycles (45-90 seconds).
 
 ### 📝 Notes
-- "Demo mode" warning is normal - Linux APEX uses bridge files, not direct MT5
+- "Demo mode" warning is normal - Linux uses bridge files, not direct MT5
 - Real MT5 terminals on Windows (3.145.84.187) handle actual trading
-- APEX processes signal files and generates TCS scores
+- processes signal files and generates TCS scores
 
 ---
 

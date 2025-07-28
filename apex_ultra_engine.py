@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-APEX ULTRA ENGINE v1.0 - THE ULTIMATE SIGNAL GENERATOR
+ULTRA ENGINE v1.0 - THE ULTIMATE SIGNAL GENERATOR
 Designed to achieve 76%+ win rate through advanced AI and multi-dimensional analysis
 
 PHILOSOPHY: "Quality over Quantity" - Generate fewer signals but with surgical precision
@@ -193,8 +193,8 @@ class FundamentalAnalysis:
         
         return (fundamental_score / total_weight) * 100
 
-class APEXUltraEngine:
-    """The Ultimate APEX Engine - Designed for 76%+ win rate"""
+class UltraEngine:
+    """The Ultimate Engine - Designed for 76%+ win rate"""
     
     def __init__(self):
         self.pattern_recognition = AdvancedPatternRecognition()
@@ -497,14 +497,14 @@ class APEXUltraEngine:
         }
 
 def main():
-    """Test the APEX Ultra Engine"""
+    """Test the Ultra Engine"""
     
-    print("🚀 APEX ULTRA ENGINE v1.0 - THE ULTIMATE SIGNAL GENERATOR")
+    print("🚀 ULTRA ENGINE v1.0 - THE ULTIMATE SIGNAL GENERATOR")
     print("🎯 Target: 76%+ Win Rate with Surgical Precision")
     print("=" * 80)
     
     # Initialize the ultra engine
-    ultra_engine = APEXUltraEngine()
+    ultra_engine = UltraEngine()
     
     # Generate signals for 24 hours
     print("⚡ Generating Ultra-Precision Signals...")
@@ -518,7 +518,7 @@ def main():
     
     # Display results
     print("\n" + "="*80)
-    print("🏆 APEX ULTRA ENGINE PERFORMANCE RESULTS")
+    print("🏆 ULTRA ENGINE PERFORMANCE RESULTS")
     print("="*80)
     
     print(f"\n📈 OVERALL PERFORMANCE:")

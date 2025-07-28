@@ -16,7 +16,6 @@ import ccxt.async_support as ccxt
 
 logger = logging.getLogger(__name__)
 
-
 @dataclass
 class RateLimitConfig:
     """Configuration for rate limiting"""
@@ -24,7 +23,6 @@ class RateLimitConfig:
     requests_per_minute: int
     weight_per_request: int = 1
     burst_capacity: int = 10
-
 
 @dataclass
 class ExchangeConfig:
@@ -36,7 +34,6 @@ class ExchangeConfig:
     testnet: bool = False
     rate_limits: Optional[RateLimitConfig] = None
     custom_options: Dict[str, Any] = None
-
 
 class RateLimiter:
     """Token bucket rate limiter implementation"""
@@ -85,7 +82,6 @@ class RateLimiter:
             
             self.tokens -= weight
 
-
 class ExchangeConnection:
     """Manages a single exchange connection with rate limiting"""
     
@@ -106,8 +102,7 @@ class ExchangeConnection:
             options = {
                 'apiKey': self.config.api_key,
                 'secret': self.config.api_secret,
-                'enableRateLimit': True,
-            }
+                'enableRateLimit': True}
             
             if self.config.passphrase:
                 options['password'] = self.config.passphrase
@@ -186,7 +181,6 @@ class ExchangeConnection:
                     raise
         
         raise Exception(f"Max retries exceeded for {self.config.name}")
-
 
 class ExchangeManager:
     """Manages multiple exchange connections with failover and load balancing"""
@@ -314,7 +308,6 @@ class ExchangeManager:
         self.active_exchanges.clear()
         self.primary_exchange = None
 
-
 # Example usage
 async def main():
     manager = ExchangeManager()
@@ -349,7 +342,6 @@ async def main():
             print(f"{exchange}: {len(book['bids'])} bids, {len(book['asks'])} asks")
     
     await manager.close_all()
-
 
 if __name__ == "__main__":
     asyncio.run(main())

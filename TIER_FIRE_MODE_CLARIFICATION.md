@@ -33,7 +33,7 @@
   - **SEMI-AUTO**: Manual selection if filters are too high
   - **MANUAL**: Traditional click-to-execute
 
-### 🏔️ APEX ($188/month)
+### 🏔️ (/month)
 - **View**: ALL signals (same as COMMANDER)
 - **Execute**: ALL signals (same as COMMANDER)  
 - **Fire Modes**: Same as COMMANDER (MANUAL + SEMI + FULL AUTO)

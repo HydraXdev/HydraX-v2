@@ -322,6 +322,5 @@ class ElevenLabsVoiceDriver:
         
         return results
 
-
 # Global voice driver instance
 voice_driver = ElevenLabsVoiceDriver()

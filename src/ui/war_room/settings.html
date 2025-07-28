@@ -561,8 +561,7 @@
             fetch('/api/toggle-voice', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                },
+                    'Content-Type': 'application/json'},
                 body: JSON.stringify({ enabled: isActive })
             })
             .then(response => response.json())

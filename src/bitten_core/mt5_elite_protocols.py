@@ -12,7 +12,6 @@ from enum import Enum
 
 logger = logging.getLogger(__name__)
 
-
 class ProtocolCommand(Enum):
     """Elite protocol MT5 commands"""
     TRAIL_STOP = "TRAIL_STOP"
@@ -21,7 +20,6 @@ class ProtocolCommand(Enum):
     PLACE_PENDING = "PLACE_PENDING"
     MODIFY_RISK = "MODIFY_RISK"
     CHECK_POSITION = "CHECK_POSITION"
-
 
 @dataclass
 class ProtocolInstruction:
@@ -40,7 +38,6 @@ class ProtocolInstruction:
             "protocol_id": self.protocol_id,
             "timestamp": datetime.now().isoformat()
         })
-
 
 class MT5EliteProtocolBridge:
     """Bridge for executing elite protocol commands in MT5"""
@@ -324,7 +321,6 @@ class MT5EliteProtocolBridge:
         logger.warning(f"Timeout waiting for protocol result: {protocol_id}")
         return None
 
-
 # Protocol execution wrapper for integration
 class ProtocolExecutor:
     """High-level protocol executor that integrates with XP system"""
@@ -429,7 +425,6 @@ class ProtocolExecutor:
         
         return False, base_volume
 
-
 # Example MT5 script additions needed in EA
 MT5_PROTOCOL_HANDLER = """
 // Add to BITTENBridge EA for protocol support
@@ -473,7 +468,6 @@ void ProcessProtocolInstruction() {
     FileDelete(filename);
 }
 """
-
 
 if __name__ == "__main__":
     # Example usage

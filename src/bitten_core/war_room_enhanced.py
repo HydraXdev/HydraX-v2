@@ -672,7 +672,6 @@ class WarRoomCommandCenter:
             "data": {"threat_level": self.threat_assessment.value}
         }
 
-
 # WebSocket server for real-time communication
 class WarRoomWebSocketServer:
     """WebSocket server for war room real-time communication"""
@@ -745,7 +744,6 @@ class WarRoomWebSocketServer:
         logger.info(f"Starting War Room WebSocket server on {self.host}:{self.port}")
         async with websockets.serve(self.handle_client, self.host, self.port):
             await asyncio.Future()  # Run forever
-
 
 # Example usage and testing
 if __name__ == "__main__":

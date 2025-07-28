@@ -39,11 +39,9 @@ class SignalDisplay:
         logger.info(f"Mock signal displayed: {formatted}")
         return formatted
 
-
 def create_signal_display() -> SignalDisplay:
     """Create signal display instance"""
     return SignalDisplay()
-
 
 def format_signal_for_display(signal: Dict[str, Any], format_type: str = "default") -> str:
     """Format signal for display"""

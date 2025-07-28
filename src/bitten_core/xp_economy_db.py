@@ -19,7 +19,6 @@ from database.xp_database import XPDatabase, XPBalance, XPTransaction
 
 logger = logging.getLogger(__name__)
 
-
 class PurchaseType(Enum):
     """Types of XP purchases"""
     # Tactical Intel
@@ -41,14 +40,12 @@ class PurchaseType(Enum):
     # Prestige
     PRESTIGE_RESET = "prestige_reset"
 
-
 class PurchaseStatus(Enum):
     """Status of XP purchase"""
     PENDING = "pending"
     COMPLETED = "completed"
     FAILED = "failed"
     REFUNDED = "refunded"
-
 
 @dataclass
 class XPItem:
@@ -58,7 +55,7 @@ class XPItem:
     description: str
     cost: int
     purchase_type: PurchaseType
-    tier_required: str  # NIBBLER, FANG, COMMANDER, APEX
+    tier_required: str  # NIBBLER, FANG, COMMANDER
     duration_hours: Optional[int] = None  # For temporary items
     max_uses: Optional[int] = None  # For consumables
     cooldown_hours: Optional[int] = None  # Between purchases
@@ -67,7 +64,6 @@ class XPItem:
     def is_permanent(self) -> bool:
         """Check if item is permanent unlock"""
         return self.duration_hours is None and self.max_uses is None
-
 
 @dataclass
 class UserXPBalanceDB:
@@ -92,7 +88,6 @@ class UserXPBalanceDB:
             active_purchases=[],  # Loaded separately
             last_purchase=balance.last_updated
         )
-
 
 class XPEconomyDB:
     """Main XP economy manager with database integration"""
@@ -190,8 +185,7 @@ class XPEconomyDB:
             description="Ultimate risk management suite",
             cost=15000,
             purchase_type=PurchaseType.FORTRESS_MODE,
-            tier_required="APEX"
-        )
+            tier_required=)
         
         # Ammunition (consumables)
         self.items["extended_mag"] = XPItem(
@@ -310,7 +304,7 @@ class XPEconomyDB:
         item = self.items[item_id]
         
         # Check tier requirement
-        tier_levels = ["NIBBLER", "FANG", "COMMANDER", "APEX"]
+        tier_levels = ["NIBBLER", "FANG", "COMMANDER"]
         if tier_levels.index(user_tier) < tier_levels.index(item.tier_required):
             return False, f"Requires {item.tier_required} tier or higher"
         
@@ -343,7 +337,7 @@ class XPEconomyDB:
     
     def get_shop_items(self, user_tier: str = "NIBBLER") -> List[Dict[str, Any]]:
         """Get available shop items for user's tier"""
-        tier_levels = ["NIBBLER", "FANG", "COMMANDER", "APEX"]
+        tier_levels = ["NIBBLER", "FANG", "COMMANDER"]
         user_tier_level = tier_levels.index(user_tier)
         
         available_items = []
@@ -422,7 +416,6 @@ class XPEconomyDB:
         if self.xp_db:
             await self.xp_db.close()
 
-
 # Helper functions for backward compatibility
 
 async def create_xp_economy_db() -> XPEconomyDB:
@@ -430,7 +423,6 @@ async def create_xp_economy_db() -> XPEconomyDB:
     economy = XPEconomyDB()
     await economy.initialize()
     return economy
-
 
 if __name__ == "__main__":
     async def test_xp_economy():

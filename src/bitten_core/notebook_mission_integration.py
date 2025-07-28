@@ -97,7 +97,6 @@ class NotebookMissionIntegration:
 
 **Why This Trade:**
 
-
 **Market Context:**
 - Trend: 
 - Key Levels: 
@@ -171,7 +170,6 @@ class NotebookMissionIntegration:
 - [ ] Update strategy if needed
 
 **Symbol-Specific Notes:**
-
 
 **Personal Reminders:**
 

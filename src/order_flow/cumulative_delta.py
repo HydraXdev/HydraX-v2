@@ -15,13 +15,11 @@ from enum import Enum
 
 logger = logging.getLogger(__name__)
 
-
 class TradeDirection(Enum):
     """Trade direction classification"""
     BUY = "buy"
     SELL = "sell"
     NEUTRAL = "neutral"
-
 
 @dataclass
 class DeltaBar:
@@ -60,7 +58,6 @@ class DeltaBar:
             'trade_count': self.trade_count
         }
 
-
 @dataclass
 class DeltaDivergence:
     """Represents a price/delta divergence"""
@@ -82,7 +79,6 @@ class DeltaDivergence:
             'strength': self.strength,
             'confirmed': self.confirmed
         }
-
 
 class CumulativeDeltaCalculator:
     """Calculates and analyzes cumulative delta from trade flow"""
@@ -418,7 +414,6 @@ class CumulativeDeltaCalculator:
             'delta_range': max(deltas) - min(deltas)
         }
 
-
 # Example usage
 async def main():
     calculator = CumulativeDeltaCalculator(
@@ -462,7 +457,6 @@ async def main():
     extremes = calculator.get_delta_extremes(symbol, exchange)
     print(f"\nDelta Extremes - Max: {extremes['max_delta']:.2f}, "
           f"Min: {extremes['min_delta']:.2f}, Current: {extremes['current_delta']:.2f}")
-
 
 if __name__ == "__main__":
     import asyncio

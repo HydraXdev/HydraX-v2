@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 🕒 BITTEN Session Scheduler
-Automatically updates APEX configuration based on trading sessions
+Automatically updates configuration based on trading sessions
 """
 
 import time
@@ -14,11 +14,11 @@ from session_based_pair_manager import SessionBasedPairManager
 
 class SessionScheduler:
     """
-    Automatic session-based configuration updates for APEX engine
+    Automatic session-based configuration updates for engine
     
     Features:
     - Monitors UTC time for session changes
-    - Updates APEX config automatically 
+    - Updates config automatically 
     - Restarts engine with new configuration
     - Logs all session transitions
     """
@@ -46,26 +46,26 @@ class SessionScheduler:
         sys.exit(0)
     
     def _restart_apex_engine(self):
-        """Restart APEX engine with new configuration"""
+        """Restart engine with new configuration"""
         try:
-            # Kill existing APEX process
+            # Kill existing process
             try:
                 with open('.apex_engine.pid', 'r') as f:
                     pid = int(f.read().strip())
                 subprocess.run(['kill', str(pid)], check=False)
                 time.sleep(3)  # Give time for cleanup
-                self.logger.info(f"🔄 Stopped APEX engine (PID: {pid})")
+                self.logger.info(f"🔄 Stopped engine (PID: {pid})")
             except (FileNotFoundError, ValueError):
-                self.logger.warning("⚠️ No existing APEX PID found")
+                self.logger.warning("⚠️ No existing PID found")
             
-            # Start new APEX process
+            # Start new process
             subprocess.Popen(['python3', 'apex_v5_lean.py'], 
                            stdout=subprocess.DEVNULL, 
                            stderr=subprocess.DEVNULL)
-            self.logger.info("🚀 Restarted APEX engine with new session config")
+            self.logger.info("🚀 Restarted engine with new session config")
             
         except Exception as e:
-            self.logger.error(f"❌ Failed to restart APEX engine: {e}")
+            self.logger.error(f"❌ Failed to restart engine: {e}")
     
     def check_session_change(self):
         """Check if trading session has changed"""
@@ -77,7 +77,7 @@ class SessionScheduler:
             # Apply new session optimization
             self.manager.apply_session_optimization()
             
-            # Restart APEX engine
+            # Restart engine
             self._restart_apex_engine()
             
             # Update current session

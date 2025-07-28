@@ -1,0 +1,102 @@
+{
+  "backtest_period": "3_months_premium_filtered",
+  "total_market_data": 23040,
+  "signals_generated": 8,
+  "signals_tested": 8,
+  "wins": 5,
+  "losses": 3,
+  "win_rate": 62.5,
+  "total_pips": 179.99999999999903,
+  "total_profit_loss": 1799.9999999999905,
+  "signal_details": [
+    {
+      "symbol": "USDJPY",
+      "direction": "BUY",
+      "tcs": 66.8,
+      "rr_ratio": 2.2,
+      "quality_tier": "PREMIUM",
+      "won": false,
+      "pips": 0
+    },
+    {
+      "symbol": "USDJPY",
+      "direction": "SELL",
+      "tcs": 73.2,
+      "rr_ratio": 2.2,
+      "quality_tier": "PREMIUM",
+      "won": false,
+      "pips": 0
+    },
+    {
+      "symbol": "AUDUSD",
+      "direction": "SELL",
+      "tcs": 66.0,
+      "rr_ratio": 2.2,
+      "quality_tier": "PREMIUM",
+      "won": false,
+      "pips": -18.000000000000238
+    },
+    {
+      "symbol": "AUDUSD",
+      "direction": "BUY",
+      "tcs": 65.9,
+      "rr_ratio": 2.2,
+      "quality_tier": "PREMIUM",
+      "won": true,
+      "pips": 39.59999999999964
+    },
+    {
+      "symbol": "AUDUSD",
+      "direction": "BUY",
+      "tcs": 71.4,
+      "rr_ratio": 2.2,
+      "quality_tier": "PREMIUM",
+      "won": true,
+      "pips": 39.59999999999964
+    },
+    {
+      "symbol": "EURGBP",
+      "direction": "BUY",
+      "tcs": 68.3,
+      "rr_ratio": 2.2,
+      "quality_tier": "PREMIUM",
+      "won": true,
+      "pips": 39.60000000000075
+    },
+    {
+      "symbol": "NZDUSD",
+      "direction": "BUY",
+      "tcs": 66.2,
+      "rr_ratio": 2.2,
+      "quality_tier": "PREMIUM",
+      "won": true,
+      "pips": 39.59999999999964
+    },
+    {
+      "symbol": "NZDUSD",
+      "direction": "BUY",
+      "tcs": 70.5,
+      "rr_ratio": 2.2,
+      "quality_tier": "PREMIUM",
+      "won": true,
+      "pips": 39.59999999999964
+    }
+  ],
+  "tcs_performance": {
+    "65-70": {
+      "wins": 3,
+      "losses": 2,
+      "pips": 100.79999999999978,
+      "win_rate": 60.0
+    },
+    "70-75": {
+      "wins": 2,
+      "losses": 1,
+      "pips": 79.19999999999928,
+      "win_rate": 66.66666666666666
+    }
+  },
+  "session_performance": {},
+  "average_pips": 22.49999999999988,
+  "signals_per_day": 0.08888888888888889
+}

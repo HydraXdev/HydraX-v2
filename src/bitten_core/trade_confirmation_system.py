@@ -664,13 +664,11 @@ class TradeConfirmationSystem:
             'processing': self.processing
         }
 
-
 # Helper function for integration with existing systems
 def create_confirmation_system(telegram_sender: Optional[Callable] = None) -> TradeConfirmationSystem:
     """Create and configure trade confirmation system"""
     system = TradeConfirmationSystem(telegram_sender)
     return system
-
 
 # Example usage and testing
 async def example_usage():
@@ -732,7 +730,6 @@ async def example_usage():
     # Show stats
     stats = confirmation_system.get_system_stats()
     print(f"System stats: {stats}")
-
 
 if __name__ == "__main__":
     asyncio.run(example_usage())

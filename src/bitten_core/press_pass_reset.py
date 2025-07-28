@@ -27,7 +27,6 @@ from database.xp_database import XPDatabase, PressPassReset
 
 logger = logging.getLogger(__name__)
 
-
 @dataclass
 class PressPassStats:
     """Simple Press Pass stats - no restoration, just current day tracking"""
@@ -36,7 +35,6 @@ class PressPassStats:
     trades_executed_today: int = 0
     total_resets: int = 0
     last_reset: Optional[str] = None
-
 
 class PressPassResetManager:
     """Manages nightly XP resets for Press Pass users with database integration"""
@@ -125,14 +123,14 @@ class PressPassResetManager:
                         message = (
                             f"⚠️ **PRESS PASS XP RESET WARNING** ⚠️\n\n"
                             f"🕐 **1 HOUR UNTIL RESET**\n\n"
-                            f"💀 Your {current_xp:,} XP will be **WIPED** at 00:00 UTC!\n\n"
+                            f"💀 Your {current_xp:} XP will be **WIPED** at 00:00 UTC!\n\n"
                             f"⏰ Time is running out! Use your XP NOW or lose it FOREVER!\n"
                             f"🛒 Visit /xpshop before it's too late!"
                         )
                     else:  # 15 minutes
                         message = (
                             f"🚨 **FINAL WARNING - 15 MINUTES** 🚨\n\n"
-                            f"💥 **{current_xp:,} XP DELETION IMMINENT** 💥\n\n"
+                            f"💥 **{current_xp:} XP DELETION IMMINENT** 💥\n\n"
                             f"⏱️ You have 15 MINUTES to spend your XP!\n"
                             f"🔥 This is your LAST CHANCE!\n"
                             f"💸 /xpshop - HURRY!"
@@ -177,7 +175,7 @@ class PressPassResetManager:
                     # Send dramatic notification
                     message = (
                         f"💀 **XP RESET EXECUTED** 💀\n\n"
-                        f"🔥 **{reset.xp_wiped:,} XP DESTROYED** 🔥\n\n"
+                        f"🔥 **{reset.xp_wiped:} XP DESTROYED** 🔥\n\n"
                         f"Your Press Pass XP has been reset to ZERO.\n"
                         f"**NO RECOVERY. NO RESTORATION.**\n\n"
                         f"⏰ Next reset: Tomorrow at 00:00 UTC\n"
@@ -224,7 +222,7 @@ class PressPassResetManager:
                     # Send dramatic notification
                     message = (
                         f"💀 **XP RESET EXECUTED** 💀\n\n"
-                        f"🔥 **{current_xp:,} XP DESTROYED** 🔥\n\n"
+                        f"🔥 **{current_xp:} XP DESTROYED** 🔥\n\n"
                         f"Your Press Pass XP has been reset to ZERO.\n"
                         f"**NO RECOVERY. NO RESTORATION.**\n\n"
                         f"⏰ Next reset: Tomorrow at 00:00 UTC\n"

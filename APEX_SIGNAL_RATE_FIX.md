@@ -1,7 +1,7 @@
-# APEX Signal Rate Fix - July 15, 2025
+# Signal Rate Fix - July 15, 2025
 
 ## Problem
-APEX engine was generating ~200-500 signals per hour, overwhelming the system.
+engine was generating ~200-500 signals per hour, overwhelming the system.
 
 ## Root Cause Analysis
 - **14 active trading pairs** × **Low TCS threshold (75%)** × **Fast scanning (45s)** = Signal overload

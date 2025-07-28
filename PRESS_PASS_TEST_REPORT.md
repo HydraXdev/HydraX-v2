@@ -102,7 +102,7 @@ This report documents the comprehensive testing of the BITTEN Press Pass system,
 
 **Test Steps**:
 1. Activate Press Pass for user
-2. Execute conversion to APEX tier
+2. Execute conversion to tier
 3. Verify lifetime discount applied
 4. Check Press Pass deactivated
 5. Verify XP persists after conversion

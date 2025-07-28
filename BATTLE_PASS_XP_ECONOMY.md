@@ -101,7 +101,7 @@ level_25, 50, 75, 100: Legendary exclusives (500 XP cost)
 - Creates engagement loop: Trade → Earn XP → Unlock Rewards → Trade More
 
 ### **No Payment Pressure:**
-- Users already paying $39-$188/month feel valued
+- Users already paying $39-/month feel valued
 - XP system feels like bonus value, not additional cost
 - Premium tiers get better access, justifying subscription upgrades
 
@@ -179,4 +179,4 @@ casual_user: 1,400 XP/week (can afford 2-3 premium rewards)
 
 ---
 
-**The XP economy transforms the battle pass from "another charge" into "added value" - exactly what users paying $39-$188/month deserve.**
+**The XP economy transforms the battle pass from "another charge" into "added value" - exactly what users paying $39-/month deserve.**

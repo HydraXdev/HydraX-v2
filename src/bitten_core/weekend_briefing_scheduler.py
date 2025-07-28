@@ -148,7 +148,6 @@ class WeekendBriefingScheduler:
         self.is_running = False
         logger.info("🛑 Weekend briefing scheduler stopped")
 
-
 # Integration with main bot
 async def setup_weekend_briefings(telegram_router: TelegramRouter, profile_manager: UserProfileManager):
     """
@@ -163,7 +162,6 @@ async def setup_weekend_briefings(telegram_router: TelegramRouter, profile_manag
     logger.info("✅ Weekend safety briefing system initialized")
     
     return scheduler
-
 
 # Manual trigger for testing
 async def trigger_test_briefing(telegram_router: TelegramRouter, profile_manager: UserProfileManager):

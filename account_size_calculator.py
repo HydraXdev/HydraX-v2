@@ -170,7 +170,7 @@ def main():
     print("• Upgrade tiers as account grows and experience increases")
     print("• FANG tier suitable for intermediate traders ($12,500 account)")
     print("• COMMANDER for experienced traders ($25,000 account)")
-    print("• APEX for professional/institutional level ($50,000+ account)")
+    print("• for professional/institutional level ($50,000+ account)")
     print()
     
     print("⚠️ IMPORTANT NOTES:")

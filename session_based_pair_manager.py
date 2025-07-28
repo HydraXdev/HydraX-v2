@@ -163,7 +163,7 @@ class SessionBasedPairManager:
         
         # Create optimized config
         config = {
-            "description": f"APEX Session-Optimized Configuration - {session_info['session_name']} Session",
+            "description": f"Session-Optimized Configuration - {session_info['session_name']} Session",
             "session_info": session_info,
             "signal_generation": {
                 "signals_per_hour_target": max(1, int(session_info["boost_multiplier"])),
@@ -188,7 +188,7 @@ class SessionBasedPairManager:
         return config
     
     def apply_session_optimization(self):
-        """Apply session-based optimization to APEX config"""
+        """Apply session-based optimization to config"""
         optimized_config = self.create_session_config()
         
         # Save to apex_config.json
@@ -198,7 +198,7 @@ class SessionBasedPairManager:
         return optimized_config
 
 def apply_session_optimization():
-    """Apply session-based optimization to APEX config"""
+    """Apply session-based optimization to config"""
     manager = SessionBasedPairManager()
     
     # Get optimized config

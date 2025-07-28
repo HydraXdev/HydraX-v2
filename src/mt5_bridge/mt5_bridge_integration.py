@@ -113,7 +113,6 @@ class MT5BridgeIntegration:
         """Check if bridge is ready for trading"""
         return self.adapter.running and self.adapter.is_connected()
 
-
 # Update fire_router.py to use the bridge
 def update_fire_router_for_mt5():
     """
@@ -160,7 +159,6 @@ class FireRouter:
     
     return code_snippet
 
-
 # Configuration helper
 def create_mt5_config():
     """Create configuration for MT5 bridge"""
@@ -188,7 +186,6 @@ def create_mt5_config():
         json.dump(config, f, indent=2)
     
     return config_path
-
 
 if __name__ == "__main__":
     # Setup logging

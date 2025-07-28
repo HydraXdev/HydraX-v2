@@ -28,7 +28,7 @@
 - start_webapp_emergency.py
 - webapp_watchdog_permanent.py
 
-### Old APEX Versions (archive/old_apex/)
+### Old Versions (archive/old_apex/)
 - apex_v5_live_real.py (replaced by apex_v5_lean.py)
 
 ### Development Scripts (archive/development/)

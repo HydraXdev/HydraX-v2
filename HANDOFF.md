@@ -19,7 +19,7 @@
 - Built military-themed landing page at `/root/HydraX-v2/landing/index.html`
 - Features:
   - Animated grid background with glitch effects
-  - 4-tier comparison table (Nibbler, Fang, Commander, APEX)
+  - 4-tier comparison table (Nibbler, Fang, Commander)
   - Call-to-action buttons linking to Telegram bot
   - Responsive design with mobile support
 - Updated bot link to: @Bitten_Commander_bot

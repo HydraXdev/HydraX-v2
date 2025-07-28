@@ -17,7 +17,6 @@ from .user_settings import get_user_settings
 
 logger = logging.getLogger(__name__)
 
-
 class WeatherPattern(Enum):
     """Mississippi weather patterns that reflect market conditions"""
     CLEAR_MORNING = "clear_morning"
@@ -29,14 +28,12 @@ class WeatherPattern(Enum):
     DAWN_CHORUS = "dawn_chorus"
     RIVER_FLOW = "river_flow"
 
-
 class SeasonalMood(Enum):
     """Seasonal moods reflecting trading phases"""
     SPRING_GROWTH = "spring_growth"      # New beginnings, learning
     SUMMER_ABUNDANCE = "summer_abundance" # Peak performance
     AUTUMN_HARVEST = "autumn_harvest"    # Reaping rewards
     WINTER_REFLECTION = "winter_reflection" # Rest and planning
-
 
 class CulturalElement(Enum):
     """Mississippi cultural elements for authentic atmosphere"""
@@ -45,7 +42,6 @@ class CulturalElement(Enum):
     COTTON_FIELD = "cotton_field"        # Patience and timing
     FRONT_PORCH = "front_porch"          # Comfort and wisdom
     DELTA_BLUES = "delta_blues"          # Emotional expression
-
 
 @dataclass
 class EnvironmentalCluster:
@@ -59,7 +55,6 @@ class EnvironmentalCluster:
     story_phase_affinity: List[StoryPhase]
     time_of_day: Optional[Tuple[int, int]] = None  # Hour range (start, end)
     cultural_context: Optional[CulturalElement] = None
-
 
 class MississippiAmbientEngine:
     """Engine for Mississippi Delta environmental audio"""
@@ -607,31 +602,25 @@ class MississippiAmbientEngine:
             'available_clusters': list(self.environmental_clusters.keys())
         }
 
-
 # Global instance
 mississippi_ambient_engine = MississippiAmbientEngine()
-
 
 # Convenience functions
 async def start_delta_ambience(user_id: str, market_context: Dict[str, Any] = None) -> Optional[str]:
     """Start Mississippi Delta ambient audio"""
     return await mississippi_ambient_engine.start_ambient_environment(user_id, market_context)
 
-
 async def stop_delta_ambience(user_id: str):
     """Stop Mississippi Delta ambient audio"""
     await mississippi_ambient_engine.stop_ambient_environment(user_id)
-
 
 async def trigger_storm_warning(user_id: str) -> Optional[str]:
     """Trigger storm warning audio for market volatility"""
     return await mississippi_ambient_engine.trigger_weather_event(user_id, WeatherPattern.APPROACHING_STORM)
 
-
 async def trigger_calm_after_storm(user_id: str) -> Optional[str]:
     """Trigger calming audio after market turbulence"""
     return await mississippi_ambient_engine.trigger_weather_event(user_id, WeatherPattern.SUMMER_RAIN)
-
 
 async def play_sunday_bells(user_id: str) -> Optional[str]:
     """Play Sunday church bells during trading breaks"""

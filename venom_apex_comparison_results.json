@@ -1,0 +1,390 @@
+{
+  "test_period": "6_months_real_data",
+  "total_samples": 7740,
+  "venom_results": {
+    "total_signals": 2202,
+    "valid_signals": 2061,
+    "high_confidence_signals": 1283,
+    "avg_confidence": 79.67842028355614,
+    "confidence_sum": 175451.8814643906,
+    "signals_by_pair": {
+      "EURUSD": 161,
+      "GBPUSD": 143,
+      "USDJPY": 138,
+      "USDCAD": 147,
+      "GBPJPY": 154,
+      "AUDUSD": 155,
+      "EURGBP": 139,
+      "USDCHF": 150,
+      "EURJPY": 154,
+      "NZDUSD": 145,
+      "AUDJPY": 140,
+      "GBPCHF": 143,
+      "GBPAUD": 151,
+      "EURAUD": 146,
+      "GBPNZD": 136
+    },
+    "signals_by_session": {
+      "LONDON": 709,
+      "SYDNEY_TOKYO": 853,
+      "NEW_YORK": 640
+    },
+    "signal_details": [
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 84.72320371046798,
+        "strength": "strong",
+        "risk_reward": 1.5000000000001812,
+        "regime": "ranging",
+        "reasoning": "Market regime: ranging | Structure break probability: 64.8% | Trend strength: 0.000 | Volatility percentile: 68% | Buy above support at 1.08490"
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 74.72091089639349,
+        "strength": "moderate",
+        "risk_reward": 1.5000000000001454,
+        "regime": "high_volatility",
+        "reasoning": "Market regime: high_volatility | Structure break probability: 71.4% | Trend strength: 0.000 | Volatility percentile: 84% | High probability structure break setup | Buy above support at 1.08491"
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "sell",
+        "confidence": 84.28102217308468,
+        "strength": "strong",
+        "risk_reward": 1.5,
+        "regime": "ranging",
+        "reasoning": "Market regime: ranging | Structure break probability: 61.8% | Trend strength: 0.000 | Volatility percentile: 37% | Sell below resistance at 1.08526"
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 84.98442036811603,
+        "strength": "strong",
+        "risk_reward": 1.5000000000001725,
+        "regime": "ranging",
+        "reasoning": "Market regime: ranging | Structure break probability: 66.5% | Trend strength: 0.000 | Volatility percentile: 63% | Buy above support at 1.08491"
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 84.63835194943778,
+        "strength": "strong",
+        "risk_reward": 1.5,
+        "regime": "ranging",
+        "reasoning": "Market regime: ranging | Structure break probability: 64.2% | Trend strength: 0.000 | Volatility percentile: 68% | Buy above support at 1.08491"
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "sell",
+        "confidence": 82.7091151397738,
+        "strength": "strong",
+        "risk_reward": 1.5,
+        "regime": "ranging",
+        "reasoning": "Market regime: ranging | Structure break probability: 51.3% | Trend strength: 0.000 | Volatility percentile: 47% | Sell below resistance at 1.08522"
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "sell",
+        "confidence": 83.90185193718543,
+        "strength": "strong",
+        "risk_reward": 1.5,
+        "regime": "ranging",
+        "reasoning": "Market regime: ranging | Structure break probability: 59.2% | Trend strength: 0.000 | Volatility percentile: 68% | Sell below resistance at 1.08525"
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "sell",
+        "confidence": 86.28014347828122,
+        "strength": "strong",
+        "risk_reward": 1.5000000000001905,
+        "regime": "ranging",
+        "reasoning": "Market regime: ranging | Structure break probability: 75.2% | Trend strength: 0.000 | Volatility percentile: 58% | High probability structure break setup | Sell below resistance at 1.08525"
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 74.50171922470221,
+        "strength": "moderate",
+        "risk_reward": 1.5,
+        "regime": "high_volatility",
+        "reasoning": "Market regime: high_volatility | Structure break probability: 70.0% | Trend strength: 0.000 | Volatility percentile: 84% | Buy above support at 1.08497"
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "sell",
+        "confidence": 85.01758064930226,
+        "strength": "strong",
+        "risk_reward": 1.5,
+        "regime": "ranging",
+        "reasoning": "Market regime: ranging | Structure break probability: 66.8% | Trend strength: 0.000 | Volatility percentile: 53% | Sell below resistance at 1.08525"
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "sell",
+        "confidence": 84.18890206481366,
+        "strength": "strong",
+        "risk_reward": 1.5,
+        "regime": "ranging",
+        "reasoning": "Market regime: ranging | Structure break probability: 61.2% | Trend strength: 0.000 | Volatility percentile: 58% | Sell below resistance at 1.08525"
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 83.48029836453934,
+        "strength": "strong",
+        "risk_reward": 1.5,
+        "regime": "ranging",
+        "reasoning": "Market regime: ranging | Structure break probability: 56.5% | Trend strength: 0.000 | Volatility percentile: 47% | Buy above support at 1.08497"
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 76.22272640772216,
+        "strength": "moderate",
+        "risk_reward": 1.4999999999998126,
+        "regime": "ranging",
+        "reasoning": "Market regime: ranging | Structure break probability: 64.5% | Trend strength: 0.000 | Volatility percentile: 42% | Buy above support at 1.08497"
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 84.39834941904138,
+        "strength": "strong",
+        "risk_reward": 1.5,
+        "regime": "ranging",
+        "reasoning": "Market regime: ranging | Structure break probability: 62.6% | Trend strength: 0.000 | Volatility percentile: 42% | Buy above support at 1.08497"
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 75.95612146017177,
+        "strength": "moderate",
+        "risk_reward": 1.4999999999998106,
+        "regime": "ranging",
+        "reasoning": "Market regime: ranging | Structure break probability: 62.6% | Trend strength: 0.000 | Volatility percentile: 68% | Buy above support at 1.08497"
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 83.75142992474382,
+        "strength": "strong",
+        "risk_reward": 1.5,
+        "regime": "ranging",
+        "reasoning": "Market regime: ranging | Structure break probability: 58.2% | Trend strength: 0.000 | Volatility percentile: 68% | Buy above support at 1.08497"
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 75.10477349178122,
+        "strength": "moderate",
+        "risk_reward": 1.4999999999998221,
+        "regime": "ranging",
+        "reasoning": "Market regime: ranging | Structure break probability: 56.2% | Trend strength: 0.000 | Volatility percentile: 26% | Buy above support at 1.08493"
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "sell",
+        "confidence": 83.97500140534099,
+        "strength": "strong",
+        "risk_reward": 1.5,
+        "regime": "ranging",
+        "reasoning": "Market regime: ranging | Structure break probability: 59.8% | Trend strength: 0.000 | Volatility percentile: 68% | Sell below resistance at 1.08526"
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 83.85564833749545,
+        "strength": "strong",
+        "risk_reward": 1.5,
+        "regime": "ranging",
+        "reasoning": "Market regime: ranging | Structure break probability: 59.0% | Trend strength: 0.000 | Volatility percentile: 47% | Buy above support at 1.08495"
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "sell",
+        "confidence": 76.93150938472552,
+        "strength": "moderate",
+        "risk_reward": 1.4999999999998161,
+        "regime": "ranging",
+        "reasoning": "Market regime: ranging | Structure break probability: 69.9% | Trend strength: 0.000 | Volatility percentile: 53% | Sell below resistance at 1.08522"
+      }
+    ],
+    "valid_signal_rate": 93.59673024523161,
+    "high_confidence_rate": 58.26521344232516
+  },
+  "apex_results": {
+    "total_signals": 2502,
+    "valid_signals": 299,
+    "high_confidence_signals": 8,
+    "avg_confidence": 64.89554326389289,
+    "confidence_sum": 162368.64924626,
+    "signals_by_pair": {
+      "EURUSD": 224,
+      "GBPUSD": 228,
+      "USDJPY": 75,
+      "USDCAD": 132,
+      "GBPJPY": 60,
+      "AUDUSD": 189,
+      "EURGBP": 186,
+      "USDCHF": 218,
+      "EURJPY": 59,
+      "NZDUSD": 209,
+      "AUDJPY": 61,
+      "GBPCHF": 218,
+      "GBPAUD": 224,
+      "EURAUD": 220,
+      "GBPNZD": 199
+    },
+    "signals_by_session": {
+      "LONDON": 982,
+      "NEW_YORK": 905,
+      "SYDNEY_TOKYO": 615
+    },
+    "signal_details": [
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 64.38301680811935,
+        "risk_pips": 15,
+        "reward_pips": 27.0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 67.31412530913309,
+        "risk_pips": 15,
+        "reward_pips": 27.0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 61.68509763804605,
+        "risk_pips": 15,
+        "reward_pips": 27.0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 67.71658374614604,
+        "risk_pips": 15,
+        "reward_pips": 27.0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 62.3019590713333,
+        "risk_pips": 15,
+        "reward_pips": 27.0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 73.2646580708552,
+        "risk_pips": 15,
+        "reward_pips": 27.0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 64.70352860945977,
+        "risk_pips": 15,
+        "reward_pips": 27.0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 72.50886398112587,
+        "risk_pips": 15,
+        "reward_pips": 27.0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 66.08659194336065,
+        "risk_pips": 15,
+        "reward_pips": 27.0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 69.33954430457875,
+        "risk_pips": 15,
+        "reward_pips": 27.0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 60.905113134338265,
+        "risk_pips": 15,
+        "reward_pips": 27.0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 67.31412530911417,
+        "risk_pips": 15,
+        "reward_pips": 27.0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 73.40118661929432,
+        "risk_pips": 15,
+        "reward_pips": 27.0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 70.45350103426426,
+        "risk_pips": 15,
+        "reward_pips": 27.0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 64.2219611095751,
+        "risk_pips": 15,
+        "reward_pips": 27.0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 61.8207286417444,
+        "risk_pips": 15,
+        "reward_pips": 27.0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 60.5,
+        "risk_pips": 15,
+        "reward_pips": 27.0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 63.464384332858515,
+        "risk_pips": 15,
+        "reward_pips": 27.0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 77.31411443793243,
+        "risk_pips": 15,
+        "reward_pips": 27.0
+      },
+      {
+        "symbol": "EURUSD",
+        "direction": "buy",
+        "confidence": 71.45579631649196,
+        "risk_pips": 15,
+        "reward_pips": 27.0
+      }
+    ],
+    "valid_signal_rate": 11.950439648281375,
+    "high_confidence_rate": 0.31974420463629094
+  }
+}

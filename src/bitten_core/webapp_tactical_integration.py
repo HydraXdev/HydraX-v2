@@ -8,7 +8,6 @@ from typing import Dict, Any
 from .tactical_strategies import tactical_strategy_manager, TacticalStrategy
 from .xp_economy import XPEconomy
 
-
 class WebAppTacticalIntegration:
     """WebApp integration for tactical strategies"""
     
@@ -137,7 +136,6 @@ class WebAppTacticalIntegration:
             "message": message,
             "dashboard_data": self.get_tactical_dashboard_data(user_id) if success else None
         }
-
 
 def get_tactical_dashboard_html() -> str:
     """Generate HTML for tactical dashboard component"""
@@ -383,7 +381,6 @@ def get_tactical_dashboard_html() -> str:
     }
     </style>
     """
-
 
 def register_webapp_tactical_routes(app, xp_economy):
     """Register tactical strategy routes with Flask app"""

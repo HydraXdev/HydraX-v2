@@ -91,7 +91,7 @@ Not just trading, but UNDERSTANDING:
 - NIBBLER: Why risk management matters
 - FANG: Reading market structure
 - COMMANDER: Advanced strategies
-- APEX: Teaching others
+- : Teaching others
 
 **Every feature has a lesson:**
 - Cooldowns → Why patience pays

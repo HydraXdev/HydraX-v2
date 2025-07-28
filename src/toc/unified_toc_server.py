@@ -110,7 +110,6 @@ CONFIG = {
 active_sessions = {}
 session_lock = threading.Lock()
 
-
 @app.route('/health', methods=['GET'])
 def health_check():
     """Health check endpoint"""
@@ -124,7 +123,6 @@ def health_check():
             'architecture': 'BITTEN_MASTER_CLONE_SYSTEM'
         }
     })
-
 
 @app.route('/assign-terminal', methods=['POST'])
 def assign_terminal():
@@ -210,7 +208,6 @@ def assign_terminal():
         logger.error(f"Terminal assignment error: {e}")
         return jsonify({'error': str(e)}), 500
 
-
 @app.route('/fire', methods=['POST'])
 def fire_signal():
     """
@@ -291,7 +288,6 @@ def fire_signal():
         logger.error(f"Fire signal error: {e}")
         return jsonify({'error': str(e)}), 500
 
-
 @app.route('/trade-result', methods=['POST'])
 def trade_result_callback():
     """
@@ -366,7 +362,6 @@ def trade_result_callback():
         logger.error(f"Trade result processing error: {e}")
         return jsonify({'error': str(e)}), 500
 
-
 @app.route('/status/<user_id>', methods=['GET'])
 def user_status(user_id):
     """Get user's current clone assignment and trading status"""
@@ -398,7 +393,6 @@ def user_status(user_id):
         logger.error(f"Status check error: {e}")
         return jsonify({'error': str(e)}), 500
 
-
 @app.route('/release-terminal/<user_id>', methods=['POST'])
 def release_terminal(user_id):
     """Stop user's clone and release resources"""
@@ -420,7 +414,6 @@ def release_terminal(user_id):
         logger.error(f"Clone release error: {e}")
         return jsonify({'error': str(e)}), 500
 
-
 @app.route('/clones', methods=['GET'])
 def list_clones():
     """List all user clones and their status"""
@@ -436,7 +429,6 @@ def list_clones():
     except Exception as e:
         logger.error(f"Clone listing error: {e}")
         return jsonify({'error': str(e)}), 500
-
 
 @app.route('/metrics', methods=['GET'])
 def system_metrics():
@@ -454,7 +446,6 @@ def system_metrics():
     except Exception as e:
         logger.error(f"Metrics error: {e}")
         return jsonify({'error': str(e)}), 500
-
 
 # Helper functions for BITTEN_MASTER clone system
 def _create_clone(user_id: str, credentials: Dict = None) -> Dict:
@@ -610,7 +601,6 @@ def _send_signal_to_clone(user_id: str, signal_data: Dict) -> Dict:
         logger.error(f"Failed to send signal to clone: {e}")
         return {'success': False, 'message': str(e)}
 
-
 def _get_initial_account_info(user_id: str) -> Dict:
     """Get initial account info from clone after startup"""
     try:
@@ -655,7 +645,6 @@ def _send_telegram_notification(user_id: str, message: str):
     except Exception as e:
         logger.error(f"Telegram notification error: {e}")
 
-
 # Background tasks
 def cleanup_stale_sessions():
     """Cleanup inactive sessions periodically"""
@@ -680,7 +669,6 @@ def cleanup_stale_sessions():
         except Exception as e:
             logger.error(f"Session cleanup error: {e}")
 
-
 # Initialize BITTEN Clone Manager connection
 def initialize_clone_manager():
     """Initialize connection to BITTEN Clone Manager"""
@@ -695,7 +683,6 @@ def initialize_clone_manager():
             
     except Exception as e:
         logger.error(f"Clone Manager initialization error: {e}")
-
 
 if __name__ == '__main__':
     # Initialize clone manager connection

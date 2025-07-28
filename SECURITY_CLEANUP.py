@@ -143,8 +143,7 @@ def clean_hardcoded_secrets():
         (r'int(os.getenv("ADMIN_USER_ID", "7176191872"))', 'int(os.getenv("ADMIN_USER_ID", "int(os.getenv("ADMIN_USER_ID", "7176191872"))"))'),
         
         # Flask secret key
-        (r'os.getenv("FLASK_SECRET_KEY", "dev-key-change-in-production")', 'os.getenv("FLASK_SECRET_KEY", "dev-key-change-in-production")'),
-    ]
+        (r'os.getenv("FLASK_SECRET_KEY", "dev-key-change-in-production")', 'os.getenv("FLASK_SECRET_KEY", "dev-key-change-in-production")')]
     
     cleaned_files = []
     
@@ -249,8 +248,7 @@ class RedundantConfig:
             'FLASK_SECRET_KEY': 'dev-key-change-in-production',
             'DATABASE_URL': 'sqlite:///data/bitten.db',
             'WEBAPP_PORT': '8888',
-            'WEBAPP_HOST': '0.0.0.0',
-        }
+            'WEBAPP_HOST': '0.0.0.0'}
         
         for key, default_value in defaults.items():
             if not os.getenv(key):

@@ -28,7 +28,7 @@ Success Rate: 100.0%
 | **Mission Generation** | ✅ **WORKING** | Creating persistent JSON files with full data |
 | **WebApp Mission API** | ✅ **WORKING** | Serving real mission data from files |
 | **Telegram Connector** | ✅ **WORKING** | Process running and monitoring logs |
-| **APEX Engine** | ✅ **WORKING** | Active signal generation, recent log updates |
+| **Engine** | ✅ **WORKING** | Active signal generation, recent log updates |
 
 ---
 
@@ -37,13 +37,13 @@ Success Rate: 100.0%
 ### **Current Working Flow:**
 
 ```
-1. 📊 APEX Engine (apex_v5_live_real.py)
+1. 📊 Engine (apex_v5_live_real.py)
    ├─ Reads bridge files from C:\MT5_Farm\Bridge\Incoming\
    ├─ Analyzes market data and calculates TCS scores
    └─ Logs signals: "🎯 SIGNAL #X: SYMBOL DIRECTION TCS:XX%"
 
 2. 📡 Telegram Connector (apex_telegram_connector.py)  
-   ├─ Monitors APEX log file in real-time
+   ├─ Monitors log file in real-time
    ├─ Parses signal data (symbol, direction, TCS)
    ├─ Calls mission generator to create persistent files
    └─ Sends Telegram alerts with WebApp buttons
@@ -52,7 +52,7 @@ Success Rate: 100.0%
    ├─ Creates comprehensive mission objects
    ├─ Saves to ./missions/ directory as JSON files
    ├─ Includes expiry timestamps and rich metadata
-   └─ Generates both simple and APEX briefing formats
+   └─ Generates both simple and briefing formats
 
 4. 🌐 WebApp API (mission_endpoints.py via webapp_server.py:8888)
    ├─ Serves mission data from files (not mock data)
@@ -85,7 +85,7 @@ Success Rate: 100.0%
   "tcs": 78,
   "expires_at": "2025-07-14T16:25:25.xxx",
   "status": "pending",
-  "apex_briefing": { /* Full APEX v5 briefing data */ },
+  "apex_briefing": { /* Full v5 briefing data */ },
   "has_apex_briefing": true
 }
 ```
@@ -167,7 +167,7 @@ BRIDGE_PORT=9000
 - ✅ Mission generation creates valid JSON files
 - ✅ WebApp API returns real mission data (not mocks)
 - ✅ Telegram connector detects and processes signals
-- ✅ APEX engine continues generating logs
+- ✅ engine continues generating logs
 - ✅ Fire router ready for trade execution
 
 ---
@@ -178,14 +178,14 @@ BRIDGE_PORT=9000
 1. **Fixed Mission Persistence:** Signals now create permanent mission files
 2. **Real WebApp Data:** API endpoints serve actual mission files
 3. **Socket Bridge Integration:** Fire router connects to real MT5 bridge
-4. **Comprehensive Mission Objects:** Rich metadata and APEX briefing integration
+4. **Comprehensive Mission Objects:** Rich metadata and briefing integration
 5. **Proper Error Handling:** Graceful fallbacks and validation throughout
 
 ### **Monitoring & Maintenance:**
 - Mission files auto-expire (5-26 minutes based on signal type)
 - Telegram connector has 60-second cooldown protection
 - WebApp serves cached mission data for performance
-- APEX engine continues generating signals from bridge data
+- engine continues generating signals from bridge data
 - System health monitoring via API endpoints
 
 ---
@@ -194,7 +194,7 @@ BRIDGE_PORT=9000
 
 **The BITTEN signal-to-mission-to-execution pipeline is now 100% operational with:**
 
-✅ **Real Signal Processing** - APEX engine reading bridge data  
+✅ **Real Signal Processing** - engine reading bridge data  
 ✅ **Persistent Mission Storage** - JSON files with expiry management  
 ✅ **Live WebApp Integration** - Real mission data via API  
 ✅ **Functional Telegram Alerts** - Brief alerts with WebApp buttons  

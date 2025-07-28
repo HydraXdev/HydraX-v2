@@ -10,13 +10,11 @@ from typing import Dict, List, Tuple, Optional
 from dataclasses import dataclass
 from enum import Enum
 
-
 class PlayerType(Enum):
     GRINDER = "GRINDER"
     HUNTER = "HUNTER"
     SNIPER = "SNIPER"
     WHALE = "WHALE"
-
 
 @dataclass
 class TradeSignal:
@@ -31,7 +29,6 @@ class TradeSignal:
     player_type: PlayerType
     confidence: float
     trade_duration_minutes: int
-
 
 class PlayerProfile:
     """Base class for all player types"""
@@ -49,7 +46,6 @@ class PlayerProfile:
     def generate_trade_outcome(self, tcs_accuracy: float) -> bool:
         """Determine if trade is winner based on TCS accuracy"""
         return random.random() < (tcs_accuracy / 100)
-
 
 class GrinderProfile(PlayerProfile):
     """
@@ -107,7 +103,6 @@ class GrinderProfile(PlayerProfile):
             trade_duration_minutes=duration
         )
 
-
 class HunterProfile(PlayerProfile):
     """
     HUNTER - Medium frequency, balanced R:R
@@ -161,7 +156,6 @@ class HunterProfile(PlayerProfile):
             confidence=confidence,
             trade_duration_minutes=duration
         )
-
 
 class SniperProfile(PlayerProfile):
     """
@@ -220,7 +214,6 @@ class SniperProfile(PlayerProfile):
             trade_duration_minutes=duration
         )
 
-
 class WhaleProfile(PlayerProfile):
     """
     WHALE - Very selective, highest R:R
@@ -278,7 +271,6 @@ class WhaleProfile(PlayerProfile):
             confidence=confidence,
             trade_duration_minutes=duration
         )
-
 
 class BittenPlayerTypesEngine:
     """Main engine managing all player types and signal generation"""
@@ -405,7 +397,6 @@ class BittenPlayerTypesEngine:
                 return False
                 
         return True
-
 
 # Example usage and testing
 if __name__ == "__main__":

@@ -31,41 +31,7 @@ telegram:
   webapp_url: "https://joinbitten.com"
   signal_cooldown_seconds: 60
   
-# APEX Engine Configuration
-apex:
-  enabled: true
-  tcs_range:
-    min: 35
-    max: 95
-  session_boost:
-    overlap: 20
-    london: 15
-    ny: 12
-    asian: 8
-  pairs:
-    - "EURUSD"
-    - "GBPUSD" 
-    - "USDJPY"
-    - "USDCAD"
-    - "GBPJPY"
-    - "EURJPY"
-    - "AUDJPY"
-    - "GBPCHF"
-    - "AUDUSD"
-    - "NZDUSD"
-    - "USDCHF"
-    - "EURGBP"
-    - "GBPNZD"
-    - "GBPAUD"
-    - "EURAUD"
-    
-# Tier System Configuration
-tiers:
-  press_pass:
-    price: 0
-    duration_days: 7
-    signals_per_day: 6
-    features: ["view_rapid_assault", "demo_account"]
+# Engine Configuration
   nibbler:
     price: 3900  # $39.00
     signals_per_day: 20

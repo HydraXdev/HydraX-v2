@@ -57,7 +57,7 @@
 
 ### **Authentication**:
 - **URL**: http://134.199.204.67:8899/throne
-- **Username**: APEX_COMMANDER
+- **Username**: _COMMANDER
 - **Password**: [Empty for demo - in production use secure credentials]
 
 ### **Access Levels**:
@@ -162,7 +162,7 @@
 
 ### **Ready to Use**:
 1. **Access Control**: http://134.199.204.67:8899/throne
-2. **Login**: APEX_COMMANDER (empty password for demo)
+2. **Login**: _COMMANDER (empty password for demo)
 3. **Full Command Authority**: All systems under direct control
 4. **Real-time Monitoring**: Live system oversight
 5. **Emergency Controls**: Instant system intervention

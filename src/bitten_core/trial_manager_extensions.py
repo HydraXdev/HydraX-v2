@@ -56,7 +56,7 @@ async def _process_subscription(self, user_id: int, tier: str) -> CommandResult:
         price = 89
     elif tier == 'COMMANDER':
         price = 139
-    elif tier == 'APEX':
+    elif tier == '':
         price = 188
     
     message = f"""💳 **COMPLETE YOUR SUBSCRIPTION**
@@ -104,7 +104,7 @@ async def _show_plan_help(self, user_id: int) -> CommandResult:
 • You need all strategies
 • Time is money
 
-**APEX is for you if:**
+**is for you if:**
 • You're a professional
 • You need unlimited trades
 • You want priority support

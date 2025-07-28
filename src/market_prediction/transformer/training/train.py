@@ -21,7 +21,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from pathlib import Path
 
-
 class ProbabilisticLoss(nn.Module):
     """Custom loss function for probabilistic predictions with uncertainty."""
     
@@ -53,7 +52,6 @@ class ProbabilisticLoss(nn.Module):
         reg_term = self.beta * torch.log(uncertainty)
         
         return (nll - reg_term).mean()
-
 
 class MarketPredictionTrainer:
     """Trainer class for market prediction transformer."""
@@ -500,7 +498,6 @@ class MarketPredictionTrainer:
         plt.tight_layout()
         plt.savefig(self.checkpoint_dir / 'training_history.png', dpi=300)
         plt.close()
-
 
 def create_training_config() -> Dict:
     """Create default training configuration."""

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-APEX Engine Reproduction for Backtesting
-Reproduces the core APEX signal generation logic for historical analysis
+Engine Reproduction for Backtesting
+Reproduces the core signal generation logic for historical analysis
 """
 
 import json
@@ -16,11 +16,11 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-class APEXEngineReproduction:
-    """Reproduction of APEX v5 signal generation logic for backtesting"""
+class EngineReproduction:
+    """Reproduction of v5 signal generation logic for backtesting"""
     
     def __init__(self):
-        # APEX v5 Configuration (from original engine)
+        # v5 Configuration (from original engine)
         self.config = {
             'SIGNALS_PER_HOUR_TARGET': {
                 'LONDON': 2.5,
@@ -84,7 +84,7 @@ class APEXEngineReproduction:
     
     def calculate_tcs_score(self, symbol: str, direction: str, 
                            timestamp: datetime, signal_type: str = 'RAPID_ASSAULT') -> int:
-        """Calculate TCS score using APEX v5 methodology"""
+        """Calculate TCS score using v5 methodology"""
         
         base_tcs = 0
         session = self.get_market_session(timestamp)
@@ -189,7 +189,7 @@ class APEXEngineReproduction:
     
     def reproduce_historical_signal(self, symbol: str, timestamp: datetime, 
                                    base_price: float = None) -> Optional[Dict]:
-        """Reproduce a single historical signal using APEX logic"""
+        """Reproduce a single historical signal using logic"""
         
         if symbol not in self.config['TRADING_PAIRS']:
             return None
@@ -225,7 +225,7 @@ class APEXEngineReproduction:
         stop_loss, take_profit = self.simulate_price_levels(symbol, direction, entry_price, rr_ratio)
         
         # Generate mission ID
-        mission_id = f"APEX5_{symbol}_{timestamp.strftime('%H%M%S')}"
+        mission_id = f"5_{symbol}_{timestamp.strftime('%H%M%S')}"
         
         signal = {
             'mission_id': mission_id,
@@ -252,7 +252,7 @@ class APEXEngineReproduction:
         current_time = start_time
         end_time = start_time + timedelta(hours=duration_hours)
         
-        # Scan every 5 minutes (like real APEX)
+        # Scan every 5 minutes (like real )
         scan_interval = timedelta(minutes=5)
         
         while current_time < end_time:
@@ -277,12 +277,12 @@ class APEXEngineReproduction:
         return signals
 
 def main():
-    """Main function to demonstrate APEX engine reproduction"""
+    """Main function to demonstrate engine reproduction"""
     
-    print("🔧 APEX Engine Reproduction for Backtesting")
+    print("🔧 Engine Reproduction for Backtesting")
     print("=" * 50)
     
-    reproducer = APEXEngineReproduction()
+    reproducer = EngineReproduction()
     
     # Reproduce signals for last 24 hours
     start_time = datetime.now() - timedelta(hours=24)
@@ -329,7 +329,7 @@ def main():
     with open(output_file, 'w') as f:
         json.dump({
             'reproduction_metadata': {
-                'engine_version': 'APEX v5 Reproduction',
+                'engine_version': 'v5 Reproduction',
                 'start_time': start_time.isoformat(),
                 'duration_hours': 24,
                 'total_signals': len(reproduced_signals),
@@ -339,7 +339,7 @@ def main():
         }, f, indent=2)
     
     print(f"\n💾 Reproduced signals saved to: {output_file}")
-    print("✅ APEX engine reproduction complete!")
+    print("✅ engine reproduction complete!")
 
 if __name__ == "__main__":
     main()

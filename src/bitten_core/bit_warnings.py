@@ -43,29 +43,25 @@ class BitWarningSystem:
                 "Dark clouds gather, they do. {tcs}% certainty, not enough it is.",
                 "Feel the fear in this trade, I do. {tcs}% confidence, leads to losses it does.",
                 "Much to learn you still have. {tcs}% TCS, ready you are not.",
-                "The dark side of trading, this is. {tcs}% confidence, pain it brings.",
-            ],
+                "The dark side of trading, this is. {tcs}% confidence, pain it brings."],
             WarningLevel.HIGH: [
                 "Clouded this future is. {tcs}% confidence, uncertain the outcome.",
                 "Patience you must have, young padawan. {tcs}% TCS, wait for clarity you should.",
                 "Feel disturbance in the markets, I do. {tcs}% confidence, careful you must be.",
                 "Risk leads to fear. Fear leads to losses. {tcs}% TCS, think twice you must.",
-                "Difficult to see. Always in motion the future is. {tcs}% confidence only.",
-            ],
+                "Difficult to see. Always in motion the future is. {tcs}% confidence only."],
             WarningLevel.MODERATE: [
                 "Cautious you must be. {tcs}% confidence, on the edge we are.",
                 "The Force is weak here. {tcs}% TCS, strengthen your position you must.",
                 "Hmm, {tcs}% certainty. Better setups await, if patient you are.",
                 "Trust your feelings, but {tcs}% confidence, enough it may not be.",
-                "A Jedi uses the Force for knowledge. {tcs}% TCS, seek more clarity you should.",
-            ],
+                "A Jedi uses the Force for knowledge. {tcs}% TCS, seek more clarity you should."],
             WarningLevel.LOW: [
                 "Close to the minimum, you are. {tcs}% confidence, proceed with caution.",
                 "Acceptable this may be, but {tcs}% TCS, vigilant you must remain.",
                 "The Force guides, but {tcs}% certainty, watch closely you must.",
                 "Borderline this setup is. {tcs}% confidence, your discipline will be tested.",
-                "Ready you may be, but {tcs}% TCS, remember your training you must.",
-            ]
+                "Ready you may be, but {tcs}% TCS, remember your training you must."]
         }
     
     def _initialize_warning_templates(self) -> Dict[WarningLevel, Dict]:
@@ -151,8 +147,7 @@ class BitWarningSystem:
                 'bit_emoji': template['bit_emoji'],
                 'stats': self._get_risk_stats(tcs, user_profile),
                 'discipline_reminder': discipline_reminder,
-                'patience_wisdom': self._get_patience_wisdom(),
-            },
+                'patience_wisdom': self._get_patience_wisdom()},
             'buttons': template['buttons'],
             'require_double_confirm': template['require_double_confirm'],
             'cooldown_seconds': template['cooldown_seconds'],

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Start REAL APEX Signal Engine
+Start REAL Signal Engine
 This uses the ACTUAL signal analysis, not random numbers!
 """
 

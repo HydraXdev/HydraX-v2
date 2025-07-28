@@ -102,7 +102,7 @@ Tier      | Stealth Intensity | Features
 NIBBLER   | 60%              | Basic protection
 FANG      | 75%              | Enhanced randomization  
 COMMANDER | 85%              | Advanced stealth
-APEX      | 100%             | Maximum protection
+| 100%             | Maximum protection
 ```
 
 #### **B. Ghost Mode Actions**
@@ -126,7 +126,7 @@ Tier        | Avg Stealth Score | Min Score | Max Score | Actions/Signal
 NIBBLER     | 48.3%            | 28.0%     | 68.3%     | 2-3
 FANG        | 69.5%            | 0%        | 94.3%     | 3-4
 COMMANDER   | 89.2%            | 45.8%     | 100%      | 4-5
-APEX        | 88.0%            | 64.9%     | 100%      | 5-6
+| 88.0%            | 64.9%     | 100%      | 5-6
 ```
 
 ### **Files Created**
@@ -149,7 +149,7 @@ Analyzed 5 real signals from the production system to validate improvements.
 - **Overall Effectiveness**: ✅ **73.7% stealth score**
 - **Most Used Actions**: Entry delay (18), TP/SL offset (11 each), Execution shuffle (6)
 - **Strategic Skip Rate**: 5% (within optimal 8-12% range)
-- **Tier Performance**: COMMANDER (89.2%) > APEX (88.0%) > FANG (69.5%) > NIBBLER (48.3%)
+- **Tier Performance**: COMMANDER (89.2%) > (88.0%) > FANG (69.5%) > NIBBLER (48.3%)
 
 ### **Trading Simulation**
 - **Predicted Win Rate**: 100% (needs real-world validation)

@@ -1,0 +1,8 @@
+[Common]
+Name=Eightcap-Real
+Address=live.eightcap.com:443
+Environment=Live
+DataServer=live.eightcap.com:443
+Ping=live.eightcap.com:443
+Company=Eightcap
+AccountServer=live.eightcap.com:443

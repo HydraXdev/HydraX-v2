@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Last 6 Months Backtest - January 2025 to July 2025
-Testing APEX Realistic Flow Engine on recent market conditions
+Testing Realistic Flow Engine on recent market conditions
 Detailed breakdown by trade type (RAID vs SNIPER)
 """
 
@@ -13,7 +13,7 @@ from dataclasses import dataclass
 import statistics
 
 # Import our realistic engine
-from apex_realistic_flow_engine import APEXRealisticFlowEngine, RealisticSignal, TradeType, FlowRegime, SignalQuality
+from apex_realistic_flow_engine import RealisticFlowEngine, RealisticSignal, TradeType, FlowRegime, SignalQuality
 
 class RecentMarketConditions:
     """Market conditions for last 6 months"""
@@ -36,7 +36,7 @@ class Last6MonthsBacktester:
     """Specialized backtest for last 6 months with trade type analysis"""
     
     def __init__(self):
-        self.engine = APEXRealisticFlowEngine()
+        self.engine = RealisticFlowEngine()
         
         # Last 6 months period (Jan 19 - July 18, 2025)
         self.start_date = datetime(2025, 1, 19)
@@ -478,7 +478,7 @@ class Last6MonthsBacktester:
 def main():
     """Run last 6 months backtest with detailed trade type analysis"""
     
-    print("📅 APEX LAST 6 MONTHS BACKTEST")
+    print("📅 LAST 6 MONTHS BACKTEST")
     print("🎯 January 2025 - July 2025")
     print("🔍 Detailed RAID vs SNIPER Performance Analysis")
     print("=" * 70)

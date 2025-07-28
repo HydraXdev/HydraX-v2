@@ -423,10 +423,8 @@ What can your loyal trading companion help with?
     def _news_response(self, query: str, context: Dict) -> BotResponse:
         return self._default_response(query, context)
 
-
 # Global instance
 bot_personalities = IntelBotPersonalities()
-
 
 def get_bot_response(personality: str, query: str, context: Dict = None) -> BotResponse:
     """Get response from specified bot personality"""

@@ -17,8 +17,7 @@ BITTEN (Bot-Integrated Tactical Trading Engine Network) is a comprehensive tradi
 - **Self-Optimizing Trading Engine** with 10-pair coverage
 - **Predictive Movement Detection** using advanced algorithms
 - **Gamified User Experience** with military-themed progression
-- **Multi-Tier Subscription System** from Press Pass to APEX
-- **Real-time MT5 Integration** with enterprise-grade reliability
+- **Multi-Tier Subscription System** from Press Pass to - **Real-time MT5 Integration** with enterprise-grade reliability
 
 ### **Key Statistics**
 - **Target Performance**: 65 signals/day, 85%+ win rate
@@ -49,7 +48,7 @@ This specification is organized into 5 core documents that can be updated indepe
 
 ### **3. User Management System**
 **File**: `USER_MANAGEMENT_TECHNICAL_SPECIFICATION.md`
-- Tier system architecture (Press Pass → APEX)
+- Tier system architecture (Press Pass → )
 - Authentication, authorization, and subscription management
 - User progression, achievements, and social features
 - Complete user lifecycle implementation
@@ -98,7 +97,7 @@ This specification is organized into 5 core documents that can be updated indepe
 ### ✅ **Completed (Production Ready)**
 - **10-Pair Self-Optimizing System**: Dynamic TCS adjustment (70-78%)
 - **Predictive Movement Detection**: Pre-movement signal capture
-- **Complete Tier System**: Press Pass through APEX implementation
+- **Complete Tier System**: Press Pass through implementation
 - **WebApp Integration**: Military-themed HUD interfaces
 - **Database Architecture**: All schemas implemented and tested
 - **Security Systems**: Multi-layer protection and stealth protocols

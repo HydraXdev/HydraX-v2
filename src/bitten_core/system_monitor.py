@@ -20,14 +20,12 @@ from collections import deque, defaultdict
 
 logger = logging.getLogger("bitten_monitor")
 
-
 class AlertLevel(Enum):
     """Alert severity levels"""
     INFO = "info"
     WARNING = "warning"
     CRITICAL = "critical"
     EMERGENCY = "emergency"
-
 
 @dataclass
 class MonitoringAlert:
@@ -41,7 +39,6 @@ class MonitoringAlert:
     message: str
     resolved: bool = False
     resolution_time: Optional[datetime] = None
-
 
 class MetricCollector:
     """Collects various system metrics"""
@@ -248,7 +245,6 @@ class MetricCollector:
                 if timestamp > cutoff_time
             ]
 
-
 class AlertManager:
     """Manages monitoring alerts and notifications"""
     
@@ -440,7 +436,6 @@ class AlertManager:
             'time_period_hours': hours
         }
 
-
 class SystemMonitor:
     """Main system monitoring class"""
     
@@ -557,30 +552,24 @@ class SystemMonitor:
             'alerts': [asdict(alert) for alert in alerts]
         }
 
-
 # Global monitor instance
 system_monitor = SystemMonitor()
-
 
 def start_system_monitoring():
     """Start system monitoring"""
     system_monitor.start_monitoring()
 
-
 def stop_system_monitoring():
     """Stop system monitoring"""
     system_monitor.stop_monitoring()
-
 
 def get_monitoring_status() -> Dict[str, Any]:
     """Get current monitoring status"""
     return system_monitor.get_system_status()
 
-
 def force_monitoring_check() -> Dict[str, Any]:
     """Force immediate monitoring check"""
     return system_monitor.force_check()
-
 
 if __name__ == "__main__":
     # Test the monitoring system

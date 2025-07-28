@@ -8,7 +8,6 @@ from typing import Optional, Callable
 
 logger = logging.getLogger(__name__)
 
-
 class SocialBragIntegration:
     """Integration manager for the social brag system"""
     
@@ -87,20 +86,16 @@ class SocialBragIntegration:
             logger.error(f"Error getting recent brags: {e}")
         return []
 
-
 # Global integration instance
 social_brag_integration = SocialBragIntegration()
-
 
 def initialize_social_brag_integration(**kwargs):
     """Initialize the global social brag integration"""
     return social_brag_integration.initialize(**kwargs)
 
-
 def get_social_brag_integration() -> SocialBragIntegration:
     """Get the global social brag integration instance"""
     return social_brag_integration
-
 
 # Example integration setup
 def setup_bitten_social_brags(
@@ -148,7 +143,6 @@ def setup_bitten_social_brags(
         logger.error(f"Error setting up BITTEN social brags: {e}")
         return False
 
-
 # Helper function for rank promotions in other systems
 def handle_user_rank_promotion(user_id: str, new_rank: str, old_rank: str, username: str = None):
     """Helper to handle rank promotions from other systems"""
@@ -163,7 +157,6 @@ def handle_user_rank_promotion(user_id: str, new_rank: str, old_rank: str, usern
         logger.error(f"Error handling rank promotion: {e}")
         return None
 
-
 # Helper function for prestige achievements
 def handle_user_prestige(user_id: str, prestige_level: int, username: str = None):
     """Helper to handle prestige achievements from other systems"""
@@ -177,7 +170,6 @@ def handle_user_prestige(user_id: str, prestige_level: int, username: str = None
     except Exception as e:
         logger.error(f"Error handling prestige achievement: {e}")
         return None
-
 
 # Example usage and testing
 if __name__ == "__main__":

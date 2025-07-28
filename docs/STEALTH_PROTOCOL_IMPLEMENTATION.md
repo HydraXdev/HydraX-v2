@@ -133,11 +133,10 @@ stealth_params = stealth.apply_full_stealth(trade_params)
 ### Tier-Based Stealth
 
 ```python
-# APEX user with STEALTH mode
+# user with STEALTH mode
 result = await apply_stealth_to_fire_command(
     user_id=12345,
-    tier=TierLevel.APEX,
-    fire_mode=FireMode.STEALTH,
+    tier=TierLevel.fire_mode=FireMode.STEALTH,
     trade_params=trade_params
 )
 ```

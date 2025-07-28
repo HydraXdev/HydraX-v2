@@ -94,7 +94,7 @@ def calculate_realistic_accounts():
     print("• NIBBLER: Start here with $11,500+ account")
     print("• FANG: Intermediate level with $131,000+ account") 
     print("• COMMANDER: Advanced level with $496,000+ account")
-    print("• APEX: Professional level with $1.24M+ account")
+    print("• : Professional level with $1.24M+ account")
     print()
     
     print("⚠️ REALITY CHECK:")

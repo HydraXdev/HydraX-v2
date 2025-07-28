@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-Test script to exactly replicate APEX engine signal detection
+Test script to exactly replicate engine signal detection
 """
 import requests
 import json
 import time
 
 def test_signal_detection():
-    """Test signal detection exactly like APEX engine"""
+    """Test signal detection exactly like engine"""
     
     symbol = 'EURUSD'
     
@@ -76,7 +76,7 @@ def test_signal_detection():
     return None
 
 if __name__ == "__main__":
-    print("Testing APEX signal detection...")
+    print("Testing signal detection...")
     result = test_signal_detection()
     if result:
         print(f"\n🎉 SUCCESS! Signal detected: {result}")

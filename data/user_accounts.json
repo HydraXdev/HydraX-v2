@@ -2,24 +2,27 @@
   "7176191872": {
     "accounts": [
       {
-        "account_number": 843859,
+        "account_number": 94956065,
         "balance": 10000.0,
         "equity": 10000.0,
         "leverage": 100,
-        "broker": "Coinexx",
-        "server": "Coinexx-Demo",
+        "broker": "MetaQuotes Ltd.",
+        "server": "MetaQuotes-Demo",
         "currency": "USD",
         "margin_free": 10000.0,
         "margin_level": 100.0,
-        "name": "Demo Account",
-        "company": "Coinexx Ltd.",
-        "last_updated": "2025-07-16T17:15:00.000000",
+        "name": "PRIMARY USER TEST TERMINAL",
+        "company": "MetaQuotes Ltd.",
+        "login": "94956065",
+        "password": "QeEaP_2p",
+        "role": "PRIMARY_USER_TEST_TERMINAL",
+        "last_updated": "2025-07-27T23:45:00.000000",
         "trade_mode": 0,
-        "timestamp": "2025-07-16T17:15:00.000000"
+        "timestamp": "2025-07-27T23:45:00.000000"
       }
     ],
     "created_at": "2025-07-16T16:40:37.700793",
-    "last_updated": "2025-07-16T17:15:00.000000"
+    "last_updated": "2025-07-27T23:45:00.000000"
   },
   "9876543210": {
     "accounts": [

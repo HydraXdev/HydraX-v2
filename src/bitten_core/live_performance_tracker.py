@@ -620,7 +620,7 @@ def get_performance_command_response(hours_back: int = 24) -> str:
 ⏰ **Period**: Last {hours_back} hours
 
 📊 **SIGNAL METRICS:**
-• Total Signals Generated: **{metrics.total_signals_generated:,}**
+• Total Signals Generated: **{metrics.total_signals_generated:}**
 • Signals Last {hours_back}h: **{metrics.signals_last_24h}**
 • Average TCS Score: **{metrics.avg_tcs_score:.1f}%**
 

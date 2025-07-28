@@ -148,7 +148,7 @@ class SimplifiedIntegratedMissionBriefingGenerator:
             'NIBBLER': 0.9,
             'FANG': 1.0,
             'COMMANDER': 1.2,
-            'APEX': 1.5,  # More time for premium users
+            '': 1.5,  # More time for premium users
             'AUTHORIZED': 1.0,
             'ELITE': 1.3,
             'ADMIN': 2.0
@@ -368,7 +368,7 @@ def main():
     }
     
     hammer_mission = generator.generate_mission(hammer_signal, "test_user_789", 
-                                               {"tier": "APEX"}, {"balance": 25000.00})
+                                               {"tier": }, {"balance": 25000.00})
     print(f"Hammer mission: {hammer_mission['mission_id']} - Expiry: {hammer_mission['expiry_minutes']} minutes")
     
     # Test all active missions

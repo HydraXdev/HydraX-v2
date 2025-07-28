@@ -157,7 +157,7 @@ def assign_mt5_instance(user_tier, user_id):
             instance = get_available_instance("Coinexx_Demo")
         return instance
     
-    elif user_tier in ["COMMANDER", "APEX"]:
+    elif user_tier in ["COMMANDER"]:
         # Assign from live pools
         if user_id % 2 == 0:
             return get_available_instance("Forex_Live")

@@ -335,5 +335,5 @@ def get_daily_signal_stats() -> Dict:
 if __name__ == "__main__":
     logger.info("MT5 Tiered Signal Processor initialized")
     logger.info(f"Monitoring pairs: {', '.join(TRADING_PAIRS)}")
-    logger.info("Signal tiers: NIBBLER (75-80%), FANG (80-92%), COMMANDER (92-96%), APEX (96%+)")
+    logger.info("Signal tiers: NIBBLER (75-80%), FANG (80-92%), COMMANDER (92-96%) (96%+)")
     logger.info("Waiting for live market data...")

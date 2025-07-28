@@ -1,8 +1,8 @@
-# APEX Telegram Connector - Integration Complete
+# Telegram Connector - Integration Complete
 
 ## Overview
 
-The APEX Telegram Connector has been successfully integrated, combining the best features from both the simple deployment version and the complex monitoring version. This implementation provides robust signal monitoring with proper error handling, cooldown mechanisms, and WebApp integration.
+The Telegram Connector has been successfully integrated, combining the best features from both the simple deployment version and the complex monitoring version. This implementation provides robust signal monitoring with proper error handling, cooldown mechanisms, and WebApp integration.
 
 ## Key Features
 
@@ -17,7 +17,7 @@ The APEX Telegram Connector has been successfully integrated, combining the best
 - Graceful shutdown on KeyboardInterrupt
 
 ### ✅ Signal Detection & Parsing
-- Monitors APEX v5.0 log file in real-time
+- Monitors v5.0 log file in real-time
 - Supports multiple signal patterns:
   - `🎯 SIGNAL`
   - `SIGNAL #`
@@ -57,7 +57,7 @@ The APEX Telegram Connector has been successfully integrated, combining the best
 ├── apex_telegram_connector.py          # Main connector implementation
 ├── missions/                           # Mission files directory
 ├── apex_telegram_connector.log         # Log file
-├── apex_v5_live_real.log              # APEX signals log
+├── apex_v5_live_real.log              # signals log
 ├── test_apex_telegram.py              # Test script
 └── .env                               # Environment configuration
 ```
@@ -101,7 +101,7 @@ tail -f apex_telegram_connector.log
 
 ## Signal Flow
 
-1. **APEX v5.0** writes signals to `apex_v5_live_real.log`
+1. **v5.0** writes signals to `apex_v5_live_real.log`
 2. **Connector** monitors log file for signal patterns
 3. **Parser** extracts symbol, direction, and TCS score
 4. **Cooldown** check prevents duplicate alerts
@@ -113,7 +113,7 @@ tail -f apex_telegram_connector.log
 
 ### Input Log Line
 ```
-2025-07-14 12:39:41,362 - APEX v5.0 LIVE - INFO - 🎯 SIGNAL #1: EURUSD SELL TCS:76%
+2025-07-14 12:39:41,362 - v5.0 LIVE - INFO - 🎯 SIGNAL #1: EURUSD SELL TCS:76%
 ```
 
 ### Generated Mission
@@ -168,7 +168,7 @@ All required dependencies are in `requirements.txt`:
 
 ## Integration Points
 
-### With APEX v5.0
+### With v5.0
 - Monitors log file: `/root/HydraX-v2/apex_v5_live_real.log`
 - Supports multiple signal formats
 - Real-time monitoring with async I/O
@@ -202,7 +202,7 @@ The `test_apex_telegram.py` script validates:
    - Check token format: `1234567890:ABC-DEF1234ghIkl-zyx57W2v1u123ew11`
 
 2. **Log File Not Found**
-   - Ensure APEX v5.0 is running
+   - Ensure v5.0 is running
    - Check log file path: `/root/HydraX-v2/apex_v5_live_real.log`
 
 3. **Import Errors**

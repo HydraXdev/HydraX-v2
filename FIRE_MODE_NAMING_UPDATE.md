@@ -59,7 +59,7 @@ These files contain references to manual/semi-auto in different contexts and wer
 - **NIBBLER**: SELECT FIRE only  
 - **FANG**: SELECT FIRE only
 - **COMMANDER**: SELECT FIRE + AUTO
-- **APEX**: SELECT FIRE + AUTO
+- ****: SELECT FIRE + AUTO
 
 ### Database Schema
 - Default mode: SELECT

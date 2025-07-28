@@ -24,7 +24,6 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-
 @dataclass
 class PredictionResult:
     """Container for prediction results."""
@@ -35,7 +34,6 @@ class PredictionResult:
     attention_weights: Optional[np.ndarray] = None
     processing_time: float = 0.0
     metadata: Dict = None
-
 
 class RealTimeBuffer:
     """
@@ -67,7 +65,6 @@ class RealTimeBuffer:
         """Clear the buffer."""
         with self.lock:
             self.buffer.clear()
-
 
 class InferenceEngine:
     """
@@ -395,7 +392,6 @@ class InferenceEngine:
         """Get model metadata."""
         return self.model_metadata.copy()
 
-
 class StreamingInferenceEngine(InferenceEngine):
     """
     Extended inference engine for streaming data sources.
@@ -445,7 +441,6 @@ class StreamingInferenceEngine(InferenceEngine):
     def clear_buffer(self):
         """Clear the streaming buffer."""
         self.buffer.clear()
-
 
 class ModelVersionManager:
     """
@@ -528,7 +523,6 @@ class ModelVersionManager:
         """Shutdown all engines."""
         for engine in self.engines.values():
             engine.stop()
-
 
 def create_inference_config() -> Dict:
     """Create default inference configuration."""

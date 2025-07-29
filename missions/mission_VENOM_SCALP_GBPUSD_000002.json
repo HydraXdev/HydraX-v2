@@ -1,0 +1,60 @@
+{
+  "signal_id": "VENOM_SCALP_GBPUSD_000002",
+  "pair": "GBPUSD",
+  "direction": "BUY",
+  "timestamp": 1753826407.148037,
+  "confidence": 74.3,
+  "quality": "bronze",
+  "session": "Asian",
+  "signal": {
+    "symbol": "GBPUSD",
+    "direction": "BUY",
+    "target_pips": 16,
+    "stop_pips": 11,
+    "risk_reward": 1.5,
+    "signal_type": "RAPID_ASSAULT",
+    "duration_minutes": 53
+  },
+  "enhanced_signal": {
+    "symbol": "GBPUSD",
+    "direction": "BUY",
+    "entry_price": 1.3429,
+    "stop_loss": 1.3418,
+    "take_profit": 1.3445,
+    "risk_reward_ratio": 1.5,
+    "signal_type": "RAPID_ASSAULT",
+    "confidence": 74.3
+  },
+  "venom_analysis": {
+    "volatility": 0.0001,
+    "momentum_alignment": {
+      "short": 0,
+      "medium": 0,
+      "long": 0
+    },
+    "session_power": 0.95,
+    "spread_quality": "acceptable"
+  },
+  "ml_filter": {
+    "ml_filter_enabled": true,
+    "filter_result": "prediction_failed",
+    "min_threshold": 0.65
+  },
+  "citadel_shield": {
+    "score": 6.0,
+    "classification": "SHIELD_ACTIVE",
+    "emoji": "\u2705",
+    "label": "SHIELD ACTIVE",
+    "explanation": "Strengths: moderate signal pattern | Cautions: 1:0.0 risk/reward ratio, 0/4 timeframes aligned | Risks: Low liquidity asian session",
+    "recommendation": "Decent setup but monitor risks - Consider 50% position",
+    "risk_factors": [
+      {
+        "factor": "low_liquidity_session",
+        "penalty": -0.5,
+        "description": "Low liquidity asian session"
+      }
+    ],
+    "quality_factors": []
+  },
+  "source": "venom_scalp_master"
+}

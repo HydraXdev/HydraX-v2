@@ -1,14 +1,40 @@
+<<<<<<< HEAD
 # Environment and secrets
 .env
 .env.*
 !.env.example
 
 # Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
+=======
+# HydraX MT5 Terminal Automation - .gitignore
+# ==============================================
+
+# Docker and Container Artifacts
+*.log
+docker-compose.override.yml
+.dockerignore
+
+# Wine and MT5 Runtime Files
+.wine/
+*.exe
+mt5setup.exe
+*.msi
+
+# MT5 Generated Files
+MQL5/Files/*.txt
+MQL5/Files/fire.txt
+MQL5/Logs/
+MQL5/Tester/
+*.ex5
+*.ex4
+
+# Configuration Files with Credentials
+config-*/
+**/login.ini
+**/account.ini
+
+# Python RuntimeO
+X
 env/
 venv/
 ENV/
@@ -32,12 +58,29 @@ logs/
 Thumbs.db
 
 # IDE
+=======
+venv/
+env/
+.env
+
+# Operating System Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE and Editor Files
+>>>>>>> d636c9c (Initial HydraX MT5 Terminal Automation System)
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
+<<<<<<< HEAD
 # MT5 Files
 *.ex5
 *.ex4
@@ -63,3 +106,30 @@ dist/
 # Local development
 .local/
 local/
+=======
+# Log Files
+*.log
+*.log.*
+logs/
+
+# Temporary Files
+tmp/
+temp/
+*.tmp
+*.bak
+*.backup
+
+# Archive Files (except required distributions)
+*.zip
+*.tar.gz
+*.tar
+*.rar
+!hydrax_mt5_autoterminal_starter.zip
+
+# VNC and Display Files
+*.vnc
+/tmp/.X*
+
+# MT5 Profile Backups
+Profiles/Backup/
+>>>>>>> d636c9c (Initial HydraX MT5 Terminal Automation System)

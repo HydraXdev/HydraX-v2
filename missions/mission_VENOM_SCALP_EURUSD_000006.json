@@ -1,0 +1,66 @@
+{
+  "signal_id": "VENOM_SCALP_EURUSD_000006",
+  "pair": "EURUSD",
+  "direction": "BUY",
+  "timestamp": 1753827134.713666,
+  "confidence": 79.6,
+  "quality": "silver",
+  "session": "Asian",
+  "signal": {
+    "symbol": "EURUSD",
+    "direction": "BUY",
+    "target_pips": 16,
+    "stop_pips": 11,
+    "risk_reward": 1.5,
+    "signal_type": "RAPID_ASSAULT",
+    "duration_minutes": 55
+  },
+  "enhanced_signal": {
+    "symbol": "EURUSD",
+    "direction": "BUY",
+    "entry_price": 1.16527,
+    "stop_loss": 1.16417,
+    "take_profit": 1.16687,
+    "risk_reward_ratio": 1.5,
+    "signal_type": "RAPID_ASSAULT",
+    "confidence": 79.6
+  },
+  "venom_analysis": {
+    "volatility": 0.0001,
+    "momentum_alignment": {
+      "short": 0,
+      "medium": 0,
+      "long": 0
+    },
+    "session_power": 0.95,
+    "spread_quality": "good"
+  },
+  "ml_filter": {
+    "ml_filter_enabled": true,
+    "filter_result": "prediction_failed",
+    "min_threshold": 0.65
+  },
+  "citadel_shield": {
+    "score": 8.8,
+    "classification": "SHIELD_APPROVED",
+    "emoji": "\ud83d\udee1\ufe0f",
+    "label": "SHIELD APPROVED",
+    "explanation": "Strengths: moderate signal pattern | Cautions: 1:0.0 risk/reward ratio, 4/4 timeframes aligned | Bonuses: Excellent multi-TF alignment | Risks: Low liquidity asian session",
+    "recommendation": "High-quality setup - Standard position size",
+    "risk_factors": [
+      {
+        "factor": "low_liquidity_session",
+        "penalty": -0.5,
+        "description": "Low liquidity asian session"
+      }
+    ],
+    "quality_factors": [
+      {
+        "factor": "strong_tf_alignment",
+        "bonus": 1.5,
+        "description": "Excellent multi-TF alignment"
+      }
+    ]
+  },
+  "source": "venom_scalp_master"
+}

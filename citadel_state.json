@@ -1,0 +1,19 @@
+{
+  "_metadata": {
+    "analysis_summary": {
+      "avg_runtime_minutes": 52.333333333333336,
+      "fast_failure_rate": 0.0,
+      "total_pairs_with_overrides": 0
+    },
+    "generated_at": "2025-07-29T22:39:18.289965+00:00",
+    "pairs_analyzed": 2,
+    "total_outcomes_analyzed": 3
+  },
+  "global": {
+    "pressure_reason": "Low signal volume: 1/12h, 1/24h",
+    "pressure_release": true,
+    "pressure_until": "2025-07-30T02:39:18.289094+00:00",
+    "restored_pair": "EURUSD",
+    "tcs_flex": 4.0
+  }
+}

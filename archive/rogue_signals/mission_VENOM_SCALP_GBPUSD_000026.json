@@ -1,0 +1,38 @@
+{
+  "signal_id": "VENOM_SCALP_GBPUSD_000026",
+  "pair": "GBPUSD",
+  "direction": "BUY",
+  "timestamp": 1753769944.370752,
+  "confidence": 70.3,
+  "quality": "bronze",
+  "session": "London",
+  "signal": {
+    "symbol": "GBPUSD",
+    "direction": "BUY",
+    "target_pips": 22,
+    "stop_pips": 11,
+    "risk_reward": 2.0,
+    "signal_type": "RAPID_ASSAULT",
+    "duration_minutes": 55
+  },
+  "enhanced_signal": {
+    "symbol": "GBPUSD",
+    "direction": "BUY",
+    "entry_price": 1.3429,
+    "stop_loss": 1.3418,
+    "take_profit": 1.3451,
+    "risk_reward_ratio": 2.0,
+    "signal_type": "RAPID_ASSAULT",
+    "confidence": 70.3
+  },
+  "venom_analysis": {
+    "volatility": 0.0,
+    "momentum_alignment": {
+      "short": 0.0,
+      "medium": 0.0,
+      "long": 0.0
+    },
+    "session_power": 1.15,
+    "spread_quality": "acceptable"
+  }
+}

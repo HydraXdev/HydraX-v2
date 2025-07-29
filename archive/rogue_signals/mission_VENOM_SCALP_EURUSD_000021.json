@@ -1,0 +1,38 @@
+{
+  "signal_id": "VENOM_SCALP_EURUSD_000021",
+  "pair": "EURUSD",
+  "direction": "BUY",
+  "timestamp": 1753768983.944346,
+  "confidence": 70.7,
+  "quality": "bronze",
+  "session": "London",
+  "signal": {
+    "symbol": "EURUSD",
+    "direction": "BUY",
+    "target_pips": 22,
+    "stop_pips": 11,
+    "risk_reward": 2.0,
+    "signal_type": "RAPID_ASSAULT",
+    "duration_minutes": 64
+  },
+  "enhanced_signal": {
+    "symbol": "EURUSD",
+    "direction": "BUY",
+    "entry_price": 1.16527,
+    "stop_loss": 1.16417,
+    "take_profit": 1.16747,
+    "risk_reward_ratio": 2.0,
+    "signal_type": "RAPID_ASSAULT",
+    "confidence": 70.7
+  },
+  "venom_analysis": {
+    "volatility": 0.0,
+    "momentum_alignment": {
+      "short": 0.0,
+      "medium": 0.0,
+      "long": 0.0
+    },
+    "session_power": 1.15,
+    "spread_quality": "good"
+  }
+}

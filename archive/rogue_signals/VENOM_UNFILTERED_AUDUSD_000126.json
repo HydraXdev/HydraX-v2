@@ -1,0 +1,14 @@
+{
+  "signal_id": "VENOM_UNFILTERED_AUDUSD_000126",
+  "symbol": "AUDUSD",
+  "direction": "BUY",
+  "confidence": 99,
+  "shield_score": 6.5,
+  "shield_class": "SHIELD_ACTIVE",
+  "signal_type": "RAPID_ASSAULT",
+  "target_pips": 22,
+  "stop_pips": 11,
+  "risk_reward": 2.0,
+  "timestamp": 1753674551.3027883,
+  "source": "VENOM_CITADEL_LIVE"
+}

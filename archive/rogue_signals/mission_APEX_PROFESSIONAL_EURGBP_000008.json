@@ -1,0 +1,33 @@
+{
+  "signal_id": "APEX_PROFESSIONAL_EURGBP_000008",
+  "pair": "EURGBP",
+  "direction": "BUY",
+  "timestamp": 1753722363.754903,
+  "confidence": 50.0,
+  "quality": "silver",
+  "session": "NY",
+  "signal": {
+    "symbol": "EURGBP",
+    "direction": "BUY",
+    "target_pips": 36,
+    "stop_pips": 18,
+    "risk_reward": 2.0,
+    "signal_type": "RAPID_ASSAULT",
+    "market_regime": "sideways_low"
+  },
+  "enhanced_signal": {
+    "symbol": "EURGBP",
+    "direction": "BUY",
+    "entry_price": 0.86786,
+    "stop_loss": 0.86606,
+    "take_profit": 0.87146,
+    "risk_reward_ratio": 2.0,
+    "signal_type": "RAPID_ASSAULT",
+    "confidence": 50.0
+  },
+  "market_analysis": {
+    "session": "NY",
+    "market_structure": "SIDEWAYS_LOW",
+    "timestamp": "2025-07-28T17:06:03.754903"
+  }
+}

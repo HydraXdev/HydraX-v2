@@ -1,0 +1,35 @@
+{
+  "signal_id": "APEX_ELITE_GBPUSD_000002",
+  "pair": "GBPUSD",
+  "direction": "BUY",
+  "timestamp": 1753724952.671437,
+  "confidence": 87.5,
+  "quality": "elite",
+  "session": "NY",
+  "signal": {
+    "symbol": "GBPUSD",
+    "direction": "BUY",
+    "target_pips": 23,
+    "stop_pips": 12,
+    "risk_reward": 2.0,
+    "signal_type": "RAPID_ASSAULT",
+    "market_regime": "support_bounce"
+  },
+  "enhanced_signal": {
+    "symbol": "GBPUSD",
+    "direction": "BUY",
+    "entry_price": 1.3429,
+    "stop_loss": 1.3417,
+    "take_profit": 1.3453,
+    "risk_reward_ratio": 2.0,
+    "signal_type": "RAPID_ASSAULT",
+    "confidence": 87.5
+  },
+  "elite_analysis": {
+    "pattern": "SUPPORT_BOUNCE",
+    "session": "NY",
+    "win_probability": 87.5,
+    "engine": "APEX_ELITE",
+    "timestamp": "2025-07-28T17:49:12.671437"
+  }
+}

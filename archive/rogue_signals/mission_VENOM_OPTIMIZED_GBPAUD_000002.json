@@ -1,0 +1,36 @@
+{
+  "signal_id": "VENOM_OPTIMIZED_GBPAUD_000002",
+  "pair": "GBPAUD",
+  "direction": "BUY",
+  "timestamp": 1753707762.1883767,
+  "confidence": 60.0,
+  "quality": "silver",
+  "session": "OVERLAP",
+  "signal": {
+    "symbol": "GBPAUD",
+    "direction": "BUY",
+    "target_pips": 20,
+    "stop_pips": 10,
+    "risk_reward": 2.0,
+    "signal_type": "RAPID_ASSAULT",
+    "market_regime": "calm_range"
+  },
+  "enhanced_signal": {
+    "symbol": "GBPAUD",
+    "direction": "BUY",
+    "entry_price": 2.05632,
+    "stop_loss": 2.05462,
+    "take_profit": 2.0576199999999996,
+    "risk_reward_ratio": 2.0,
+    "signal_type": "RAPID_ASSAULT",
+    "confidence": 60.0
+  },
+  "real_market_data": {
+    "bid": 2.05562,
+    "ask": 2.05632,
+    "spread": 70.0,
+    "volume": 0,
+    "broker": "MetaQuotes Ltd.",
+    "atr_pips": 1.0
+  }
+}

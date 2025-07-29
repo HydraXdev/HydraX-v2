@@ -1,0 +1,23 @@
+🚨 FAKE ENGINES DISABLED - DO NOT RE-ENABLE
+
+Date: July 28, 2025
+Action: Disabled fake signal generators with synthetic data
+
+FILES DISABLED:
+- apex_venom_v7_unfiltered.py.FAKE_DISABLED (was generating 100% fake signals)
+- working_signal_generator.py.FAKE_DISABLED (was using fake VENOM engine)
+
+ISSUES WITH FAKE ENGINES:
+- Random number generators for market regime detection  
+- Hardcoded fake spread/volume data
+- Artificial 99% confidence inflation
+- Fixed BUY direction with no real analysis
+- Completely ignored real MT5 tick data
+
+REPLACEMENT:
+✅ REAL ENGINE: real_data_signal_generator.py
+✅ USES: 100% authentic MT5 tick data
+✅ FEATURES: Real technical analysis, proper confidence scoring
+
+DO NOT rename these files back to .py - they contain synthetic data generation!
+Use only the real data engine: ./start_real_signal_generator.sh

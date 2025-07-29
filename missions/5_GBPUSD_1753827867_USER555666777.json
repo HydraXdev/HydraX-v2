@@ -29,5 +29,6 @@
   "self_destruct_hours": 4,
   "status": "active",
   "engagement_count": 4,
-  "fired_count": 0
+  "fired_count": 0,
+  "source": "venom_scalp_master"
 }

@@ -1,0 +1,38 @@
+{
+  "signal_id": "VENOM_SCALP_EURJPY_000032",
+  "pair": "EURJPY",
+  "direction": "BUY",
+  "timestamp": 1753771385.001648,
+  "confidence": 70.0,
+  "quality": "bronze",
+  "session": "London",
+  "signal": {
+    "symbol": "EURJPY",
+    "direction": "BUY",
+    "target_pips": 22,
+    "stop_pips": 11,
+    "risk_reward": 2.0,
+    "signal_type": "RAPID_ASSAULT",
+    "duration_minutes": 64
+  },
+  "enhanced_signal": {
+    "symbol": "EURJPY",
+    "direction": "BUY",
+    "entry_price": 172.618,
+    "stop_loss": 172.6169,
+    "take_profit": 172.6202,
+    "risk_reward_ratio": 2.0,
+    "signal_type": "RAPID_ASSAULT",
+    "confidence": 70.0
+  },
+  "venom_analysis": {
+    "volatility": 0.0,
+    "momentum_alignment": {
+      "short": 0.0,
+      "medium": 0.0,
+      "long": 0.0
+    },
+    "session_power": 1.15,
+    "spread_quality": "acceptable"
+  }
+}

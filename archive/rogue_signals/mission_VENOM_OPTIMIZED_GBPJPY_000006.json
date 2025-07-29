@@ -1,0 +1,36 @@
+{
+  "signal_id": "VENOM_OPTIMIZED_GBPJPY_000006",
+  "pair": "GBPJPY",
+  "direction": "SELL",
+  "timestamp": 1753716562.400585,
+  "confidence": 75.0,
+  "quality": "gold",
+  "session": "OVERLAP",
+  "signal": {
+    "symbol": "GBPJPY",
+    "direction": "SELL",
+    "target_pips": 20,
+    "stop_pips": 10,
+    "risk_reward": 2.0,
+    "signal_type": "RAPID_ASSAULT",
+    "market_regime": "calm_range"
+  },
+  "enhanced_signal": {
+    "symbol": "GBPJPY",
+    "direction": "SELL",
+    "entry_price": 198.963,
+    "stop_loss": 199.094,
+    "take_profit": 198.794,
+    "risk_reward_ratio": 2.0,
+    "signal_type": "RAPID_ASSAULT",
+    "confidence": 75.0
+  },
+  "real_market_data": {
+    "bid": 198.963,
+    "ask": 198.994,
+    "spread": 31.0,
+    "volume": 0,
+    "broker": "MetaQuotes Ltd.",
+    "atr_pips": 3.3
+  }
+}

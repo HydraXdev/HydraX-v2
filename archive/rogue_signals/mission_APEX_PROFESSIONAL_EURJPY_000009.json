@@ -1,0 +1,33 @@
+{
+  "signal_id": "APEX_PROFESSIONAL_EURJPY_000009",
+  "pair": "EURJPY",
+  "direction": "SELL",
+  "timestamp": 1753722363.763427,
+  "confidence": 53.0,
+  "quality": "silver",
+  "session": "NY",
+  "signal": {
+    "symbol": "EURJPY",
+    "direction": "SELL",
+    "target_pips": 112,
+    "stop_pips": 37,
+    "risk_reward": 3.0,
+    "signal_type": "PRECISION_STRIKE",
+    "market_regime": "sideways_medium"
+  },
+  "enhanced_signal": {
+    "symbol": "EURJPY",
+    "direction": "SELL",
+    "entry_price": 172.598,
+    "stop_loss": 172.973,
+    "take_profit": 171.473,
+    "risk_reward_ratio": 3.0,
+    "signal_type": "PRECISION_STRIKE",
+    "confidence": 53.0
+  },
+  "market_analysis": {
+    "session": "NY",
+    "market_structure": "SIDEWAYS_MEDIUM",
+    "timestamp": "2025-07-28T17:06:03.763427"
+  }
+}

@@ -1,0 +1,6 @@
+REAL ENGINE PROTECTION ACTIVE
+Activated: 2025-07-28 12:12:56.260554
+PID: 1596084
+System: LOCKED against fake engines
+Real engines: market_data_receiver_enhanced.py, venom_real_data_engine.py
+Fake engines: PERMANENTLY DISABLED

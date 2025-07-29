@@ -1,0 +1,70 @@
+{
+  "mission_id": "APEX5_USDJPY_223945",
+  "signal": {
+    "id": "APEX5_USDJPY_223945",
+    "symbol": "USDJPY",
+    "direction": "BUY",
+    "entry_price": 1.08859,
+    "stop_loss": 1.0875,
+    "take_profit": 1.09022,
+    "tcs_score": 73,
+    "signal_type": "RAPID_ASSAULT",
+    "risk_reward_ratio": 1.5
+  },
+  "mission": {
+    "title": "\ud83d\udd2b RAPID ASSAULT - USDJPY",
+    "description": "Quick scalp trade - 10-45 min execution window",
+    "urgency": "HIGH",
+    "tactical_notes": [
+      "\ud83d\ude80 APEX v5.0 Engine: Ultra-aggressive signal generation active",
+      "\ud83d\udcca Target: 40+ signals/day @ 89% win rate",
+      "\u2705 Strong TCS score - Good execution candidate"
+    ],
+    "athena_briefing": "Night operations active.\n\n\ud83c\udfaf **MISSION BRIEFING - RAPID ASSAULT_USDJPY_20250717_223945_4ad565b7**\n\ud83d\udcca **Target**: USDJPY BUY\n\ud83d\udccd **Strike Zone**: 1.08859\n\ud83c\udf96\ufe0f **Confidence**: 0% TCS\n\u2694\ufe0f **Objective**: Breach and exploit market momentum\n\n**TACTICAL PARAMETERS:**\n\u2022 Entry Vector: 1.08859\n\u2022 Primary Target: 0\n\u2022 Fallback Position: 0\n\u2022 Mission Classification: Training mission authorized.\n\n**RULES OF ENGAGEMENT:**\nYour position is tactical. Execute with precision.\nThis operation matters - fire when ready.\n\n*ATHENA Command*"
+  },
+  "user": {
+    "id": "demo_user",
+    "tier": "FANG",
+    "stats": {
+      "last_7d_pips": 0.0,
+      "win_rate": 0.0,
+      "trades_today": 0,
+      "total_fires": 0,
+      "streak_days": 0,
+      "rank": "RECRUIT",
+      "last_fire_time": "Never"
+    }
+  },
+  "account": {
+    "balance": 10000.0,
+    "equity": 0.0,
+    "margin_free": 0.0,
+    "currency": "USD"
+  },
+  "timing": {
+    "created_at": "2025-07-17T22:39:45.466141",
+    "expires_at": "2025-07-17T22:44:45.466141",
+    "time_remaining": 300
+  },
+  "enhanced_signal": {
+    "symbol": "USDJPY",
+    "direction": "BUY",
+    "entry_price": 1.08859,
+    "stop_loss": 1.0875,
+    "take_profit": 1.09022,
+    "risk_reward_ratio": 1.5,
+    "signal_type": "RAPID_ASSAULT",
+    "tcs_score": 73,
+    "volume": 1.7009999999999998,
+    "comment": "TEST_RR_1.5_RAPID_ASSAULT_APEX5_USDJPY_223945",
+    "rr_test_config": {
+      "test_type": "24_HOUR_LOGGING_TEST",
+      "rapid_assault_rr": 1.5,
+      "sniper_ops_rr": 2.25,
+      "fallback_rr": 2.0,
+      "volatility_factor": 0.001,
+      "timestamp": "2025-07-17T22:39:45.468441"
+    },
+    "trade_uuid": "RAPID ASSAULT_USDJPY_20250717_223945_4ad565b7"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "global": {
+    "auto_close_seconds": 7200,
+    "default_tcs_minimum": 70.0,
+    "ml_filter": {
+      "enabled": true,
+      "min_acceptable_probability": 0.65,
+      "log_suppressed": true,
+      "model_override": false
+    }
+  },
+  "_metadata": {
+    "generated_at": "2025-07-29T14:00:00+00:00",
+    "ml_filter_notes": "ML filter blocks signals with predicted win probability below 65%"
+  }
+}

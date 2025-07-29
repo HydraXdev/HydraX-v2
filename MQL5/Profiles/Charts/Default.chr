@@ -1,0 +1,41 @@
+# HydraX Default Chart Layout - 15 Core Pairs with BITTENBridge EA
+# This file defines which charts are automatically opened when MT5 starts
+
+# Major EUR pairs
+EURUSD H1 BITTEN.tpl
+EURGBP H1 BITTEN.tpl  
+EURJPY H1 BITTEN.tpl
+EURAUD H1 BITTEN.tpl
+
+# Major GBP pairs
+GBPUSD H1 BITTEN.tpl
+GBPJPY H1 BITTEN.tpl
+GBPAUD H1 BITTEN.tpl
+GBPNZD H1 BITTEN.tpl
+GBPCHF H1 BITTEN.tpl
+
+# Major USD pairs
+USDJPY H1 BITTEN.tpl
+USDCAD H1 BITTEN.tpl
+USDCHF H1 BITTEN.tpl
+AUDUSD H1 BITTEN.tpl
+NZDUSD H1 BITTEN.tpl
+
+# Gold (high-volume commodity)
+XAUUSD H1 BITTEN.tpl
+
+# Chart Layout Configuration
+[LAYOUT]
+template=BITTEN.tpl
+expert=BITTENBridge
+auto_attach=true
+timeframe=H1
+total_charts=15
+
+# Window positions (tile layout)
+[WINDOWS]
+columns=5
+rows=3
+tile_mode=auto
+show_askline=true
+one_click_trading=false

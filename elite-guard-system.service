@@ -1,0 +1,27 @@
+[Unit]
+Description=Elite Guard Trading System with Telemetry Bridge
+Documentation=file:///root/HydraX-v2/EA_DATA_FLOW_CONTRACT.md
+After=network.target
+
+[Service]
+Type=forking
+ExecStartPre=/bin/sleep 10
+ExecStart=/root/HydraX-v2/start_elite_guard_system.sh
+ExecStop=/usr/bin/pkill -f "zmq_telemetry_bridge_debug|elite_guard_with_citadel"
+Restart=on-failure
+RestartSec=30
+User=root
+WorkingDirectory=/root/HydraX-v2
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+
+# Installation instructions:
+# sudo cp elite-guard-system.service /etc/systemd/system/
+# sudo systemctl daemon-reload
+# sudo systemctl enable elite-guard-system
+# sudo systemctl start elite-guard-system

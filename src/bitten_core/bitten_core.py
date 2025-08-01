@@ -498,7 +498,10 @@ class BittenCore:
             
             tcs_score = min(base_score, 100)
             
-            confidence_level = "🔥 HIGH" if tcs_score >= 85 else "✅ GOOD" if tcs_score >= 70 else "⚠️ LOW"
+            # Use centralized threshold
+            from tcs_controller import get_current_threshold
+            threshold = get_current_threshold()
+            confidence_level = "🔥 HIGH" if tcs_score >= (threshold + 15) else "✅ GOOD" if tcs_score >= threshold else "⚠️ LOW"
             
             tcs_msg = f"""🎯 **Trade Confidence Score**
 
@@ -542,7 +545,10 @@ class BittenCore:
                 signal_strength = 0  # Real data needed
                 direction = 'PENDING'  # Real data needed
                 
-                signal_emoji = "🔥" if signal_strength >= 85 else "✅" if signal_strength >= 70 else "⚠️"
+                # Use centralized threshold
+                from tcs_controller import get_current_threshold
+                threshold = get_current_threshold()
+                signal_emoji = "🔥" if signal_strength >= (threshold + 15) else "✅" if signal_strength >= threshold else "⚠️"
                 
                 signals_msg += f"{signal_emoji} **{pair}** - {direction}\n"
                 signals_msg += f"   Strength: {signal_strength}/100\n"
@@ -632,12 +638,14 @@ class BittenCore:
         """Calculate XP earned from trade"""
         base_xp = 10  # Base XP per trade
         
-        # Bonus for TCS score
-        if trade_request.tcs_score >= 90:
+        # Bonus for TCS score using centralized threshold
+        from tcs_controller import get_current_threshold
+        threshold = get_current_threshold()
+        if trade_request.tcs_score >= (threshold + 20):
             base_xp += 15
-        elif trade_request.tcs_score >= 80:
+        elif trade_request.tcs_score >= (threshold + 10):
             base_xp += 10
-        elif trade_request.tcs_score >= 70:
+        elif trade_request.tcs_score >= threshold:
             base_xp += 5
         
         # Bonus for volume
@@ -712,6 +720,19 @@ class BittenCore:
         if processed:
             return processed.get('content')
         return None
+    
+    def process_venom_signal(self, signal_data: Dict) -> Dict:
+        """
+        Process VENOM signal for dispatch - wrapper for process_signal
+        
+        Args:
+            signal_data: Signal packet from VENOM stream
+            
+        Returns:
+            Processing result status
+        """
+        self._log_info(f"🐍 Processing VENOM signal: {signal_data.get('signal_id', 'UNKNOWN')}")
+        return self.process_signal(signal_data)
     
     def process_signal(self, signal_data: Dict) -> Dict:
         """
@@ -880,8 +901,55 @@ class BittenCore:
             self._log_error(f"Error clearing expired signals: {e}")
     
     def _deliver_signal_to_users(self, signal_data: Dict) -> Dict:
-        """Deliver signal preview to public group and all ready_for_fire users"""
+        """Deliver signal via ATHENA tactical mission briefings"""
         try:
+            # NEW: ATHENA Dual Dispatch System (Individual + Group)
+            try:
+                from athena_signal_dispatcher import athena_dispatcher
+                from athena_group_dispatcher import athena_group_dispatcher
+                
+                # GROUP ONLY - Skip individual tactical briefings
+                # athena_result = athena_dispatcher.dispatch_signal_via_athena(signal_data)
+                
+                # 2. Dispatch short tactical message to group ONLY
+                group_result = athena_group_dispatcher.dispatch_group_signal(signal_data)
+                
+                # Create fake success result for athena_result to maintain compatibility
+                athena_result = {'success': False, 'dispatch_results': []}
+                
+                if group_result['success']:
+                    delivered_users = [r['user_id'] for r in athena_result['dispatch_results'] if r['status'] == 'dispatched']
+                    failed_users = [r['user_id'] for r in athena_result['dispatch_results'] if r['status'] != 'dispatched']
+                    
+                    self._log_info(f"🏛️ ATHENA individual dispatch: {len(delivered_users)} delivered, {len(failed_users)} failed")
+                    self._log_info(f"📡 ATHENA group dispatch: {'✅ SUCCESS' if group_result['success'] else '❌ FAILED'}")
+                    
+                    return {
+                        'success': True,
+                        'public_broadcast': group_result['success'],
+                        'total_delivered': len(delivered_users),
+                        'user_delivery': {
+                            'delivered_to': len(delivered_users),
+                            'users': delivered_users,
+                            'failed_users': failed_users
+                        },
+                        'signal_id': signal_data['signal_id'],
+                        'athena_dispatch': True,
+                        'dispatch_details': athena_result,
+                        'group_details': group_result
+                    }
+                else:
+                    self._log_error(f"❌ ATHENA dispatch failed: {athena_result.get('error')}")
+                    # Still try group dispatch even if individual fails
+                    group_result = athena_group_dispatcher.dispatch_group_signal(signal_data)
+                    self._log_info(f"📡 ATHENA group dispatch (fallback): {'✅ SUCCESS' if group_result['success'] else '❌ FAILED'}")
+                    # Fallback to original system
+                    
+            except ImportError:
+                self._log_warning("⚠️ ATHENA Signal Dispatcher not available - using fallback")
+                # Fallback to original system
+            
+            # FALLBACK: Original signal delivery system
             # Format signal for HUD display
             hud_message = self._format_signal_for_hud(signal_data)
             delivered_users = []
@@ -904,9 +972,11 @@ class BittenCore:
                 except Exception as e:
                     self._log_error(f"Failed to broadcast signal to public group: {e}")
             
-            # Now deliver to ready users if available
+            # GROUP ONLY - Skip individual user delivery
             delivery_to_users = {'delivered_to': 0, 'users': []}
             
+            # Skip individual user delivery - GROUP ONLY mode
+            """
             if self.user_registry:
                 ready_users = self.user_registry.get_all_ready_users()
                 
@@ -953,6 +1023,7 @@ class BittenCore:
                     self._log_info("No ready users found for individual signal delivery")
             else:
                 self._log_info("No user registry available for individual signal delivery")
+            """
             
             # Return success if public broadcast worked, regardless of user delivery
             total_delivered = 1 if public_delivered else 0

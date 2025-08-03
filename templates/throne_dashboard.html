@@ -4,6 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🏆 BITTEN Commander Throne - Dashboard</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="application-name" content="Commander Throne">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Commander Throne">
+    <meta name="description" content="BITTEN Tactical Trading Command Center">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="msapplication-config" content="/static/browserconfig.xml">
+    <meta name="msapplication-TileColor" content="#00ff41">
+    <meta name="theme-color" content="#00ff41">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/static/manifest.json">
+    <link rel="apple-touch-icon" href="/static/icons/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/icons/icon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/icons/icon-16x16.png">
     <style>
         * {
             margin: 0;
@@ -17,6 +34,20 @@
             color: #00ff41;
             min-height: 100vh;
             padding: 20px;
+            overflow-x: hidden; /* Prevent horizontal scroll */
+        }
+        
+        /* Mobile-first responsive padding */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            body {
+                padding: 8px;
+            }
         }
         
         .throne-header {
@@ -29,6 +60,25 @@
             padding: 20px;
             margin-bottom: 20px;
             box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        /* Mobile throne header */
+        @media (max-width: 768px) {
+            .throne-header {
+                flex-direction: column;
+                text-align: center;
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .throne-header {
+                padding: 12px;
+                margin-bottom: 12px;
+            }
         }
         
         .throne-title {
@@ -38,8 +88,37 @@
             text-shadow: 0 0 10px #ff6b00;
         }
         
+        /* Mobile throne title */
+        @media (max-width: 768px) {
+            .throne-title {
+                font-size: 24px;
+                margin-bottom: 10px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .throne-title {
+                font-size: 20px;
+                margin-bottom: 8px;
+            }
+        }
+        
         .commander-info {
             text-align: right;
+        }
+        
+        /* Mobile commander info */
+        @media (max-width: 768px) {
+            .commander-info {
+                text-align: center;
+                font-size: 14px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .commander-info {
+                font-size: 12px;
+            }
         }
         
         .dashboard-grid {
@@ -49,12 +128,52 @@
             margin-bottom: 20px;
         }
         
+        /* Mobile dashboard grid - stack vertically */
+        @media (max-width: 1024px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 15px;
+                margin-bottom: 15px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+                margin-bottom: 15px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .dashboard-grid {
+                gap: 12px;
+                margin-bottom: 12px;
+            }
+        }
+        
         .dashboard-panel {
             background: rgba(0, 0, 0, 0.8);
             border: 2px solid #00ff41;
             border-radius: 10px;
             padding: 20px;
             box-shadow: 0 0 15px rgba(0, 255, 65, 0.2);
+        }
+        
+        /* Mobile dashboard panels */
+        @media (max-width: 768px) {
+            .dashboard-panel {
+                padding: 15px;
+                border-radius: 8px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .dashboard-panel {
+                padding: 12px;
+                border-radius: 6px;
+                border-width: 1px;
+            }
         }
         
         .panel-title {
@@ -66,10 +185,35 @@
             padding-bottom: 10px;
         }
         
+        /* Mobile panel titles */
+        @media (max-width: 768px) {
+            .panel-title {
+                font-size: 16px;
+                margin-bottom: 12px;
+                padding-bottom: 8px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .panel-title {
+                font-size: 14px;
+                margin-bottom: 10px;
+                padding-bottom: 6px;
+            }
+        }
+        
         .mission-stats {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 10px;
+        }
+        
+        /* Mobile mission stats */
+        @media (max-width: 768px) {
+            .mission-stats {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
         }
         
         .stat-item {
@@ -79,6 +223,22 @@
             background: rgba(0, 255, 65, 0.1);
             border-radius: 5px;
             margin-bottom: 5px;
+        }
+        
+        /* Mobile stat items */
+        @media (max-width: 768px) {
+            .stat-item {
+                padding: 10px;
+                font-size: 14px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .stat-item {
+                padding: 8px;
+                font-size: 12px;
+                border-radius: 4px;
+            }
         }
         
         .stat-value {
@@ -92,6 +252,21 @@
             gap: 10px;
         }
         
+        /* Mobile command grid */
+        @media (max-width: 768px) {
+            .command-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .command-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+        }
+        
         .command-btn {
             background: linear-gradient(45deg, #ff6b00, #ff8c00);
             color: white;
@@ -103,6 +278,26 @@
             cursor: pointer;
             transition: all 0.3s;
             text-transform: uppercase;
+            min-height: 48px; /* Touch-friendly minimum */
+        }
+        
+        /* Mobile command buttons - larger touch targets */
+        @media (max-width: 768px) {
+            .command-btn {
+                padding: 16px 20px;
+                font-size: 14px;
+                min-height: 52px;
+                border-radius: 8px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .command-btn {
+                padding: 18px 24px;
+                font-size: 16px;
+                min-height: 56px;
+                border-radius: 10px;
+            }
         }
         
         .command-btn:hover {
@@ -137,6 +332,65 @@
             background: rgba(255, 107, 0, 0.2);
             color: #ff6b00;
             font-weight: bold;
+        }
+        
+        /* Mobile soldier table */
+        @media (max-width: 768px) {
+            .soldier-table {
+                font-size: 11px;
+                overflow-x: auto;
+                display: block;
+                white-space: nowrap;
+            }
+            
+            .soldier-table thead,
+            .soldier-table tbody,
+            .soldier-table th,
+            .soldier-table td,
+            .soldier-table tr {
+                display: block;
+            }
+            
+            .soldier-table thead tr {
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+            
+            .soldier-table tr {
+                border: 1px solid #333;
+                border-radius: 8px;
+                margin-bottom: 10px;
+                padding: 10px;
+                background: rgba(0, 0, 0, 0.5);
+            }
+            
+            .soldier-table td {
+                border: none;
+                position: relative;
+                padding-left: 50%;
+                white-space: normal;
+                text-align: right;
+            }
+            
+            .soldier-table td:before {
+                content: attr(data-label) ": ";
+                position: absolute;
+                left: 6px;
+                width: 45%;
+                padding-right: 10px;
+                white-space: nowrap;
+                text-align: left;
+                font-weight: bold;
+                color: #ff6b00;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .soldier-table td {
+                font-size: 12px;
+                padding: 8px 6px 8px 50%;
+            }
         }
         
         .trade-log {
@@ -226,6 +480,350 @@
         .two-thirds {
             grid-column: span 2;
         }
+        
+        /* Black Box Truth Metrics Styles */
+        .truth-metrics {
+            background: linear-gradient(135deg, rgba(0,255,65,0.1) 0%, rgba(0,255,65,0.05) 100%);
+            border-left: 3px solid #00ff41;
+        }
+        
+        /* Trade Ticker Styles */
+        .trade-ticker-row {
+            display: grid;
+            grid-template-columns: 60px 80px 50px 60px 80px 60px 80px;
+            gap: 10px;
+            padding: 5px 8px;
+            border-bottom: 1px solid #333;
+            font-size: 11px;
+            transition: background 0.3s ease;
+        }
+        
+        /* Mobile trade ticker - make scrollable horizontally */
+        @media (max-width: 768px) {
+            .trade-ticker-row {
+                grid-template-columns: 80px 100px 60px 70px 90px 70px 90px;
+                gap: 8px;
+                padding: 8px;
+                font-size: 12px;
+                min-width: 580px; /* Forces horizontal scroll */
+            }
+            
+            .trade-ticker-container {
+                overflow-x: auto !important;
+                overflow-y: hidden;
+            }
+            
+            .trade-ticker-header {
+                font-size: 12px !important;
+                grid-template-columns: 80px 100px 60px 70px 90px 70px 90px !important;
+                gap: 8px !important;
+                padding: 10px !important;
+                min-width: 580px !important;
+            }
+            
+            .trade-ticker-scroll {
+                overflow-x: auto !important;
+                overflow-y: auto !important;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .trade-ticker-row {
+                padding: 10px;
+                font-size: 13px;
+                min-width: 600px;
+            }
+            
+            .trade-ticker-header {
+                font-size: 13px !important;
+                padding: 12px !important;
+                min-width: 600px !important;
+            }
+        }
+        
+        .trade-ticker-row:hover {
+            background: rgba(0,255,65,0.1);
+        }
+        
+        .trade-ticker-row.win {
+            border-left: 3px solid #00ff41;
+        }
+        
+        .trade-ticker-row.loss {
+            border-left: 3px solid #ff0040;
+        }
+        
+        .trade-ticker-row .result-win {
+            color: #00ff41;
+            font-weight: bold;
+        }
+        
+        .trade-ticker-row .result-loss {
+            color: #ff0040;
+            font-weight: bold;
+        }
+        
+        /* Active Signals Styles */
+        .active-signal-item {
+            background: rgba(255,165,0,0.1);
+            border: 1px solid rgba(255,165,0,0.3);
+            border-radius: 5px;
+            padding: 8px;
+            margin: 5px 0;
+            position: relative;
+        }
+        
+        .active-signal-item.expiring {
+            background: rgba(255,0,64,0.1);
+            border-color: rgba(255,0,64,0.3);
+            animation: pulse-warning 2s infinite;
+        }
+        
+        @keyframes pulse-warning {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        
+        .signal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        
+        .signal-symbol {
+            font-weight: bold;
+            color: #ff6b00;
+        }
+        
+        .signal-direction {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            background: rgba(0,255,65,0.2);
+            color: #00ff41;
+        }
+        
+        .signal-direction.sell {
+            background: rgba(255,0,64,0.2);
+            color: #ff0040;
+        }
+        
+        .signal-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+            font-size: 10px;
+            color: #888;
+        }
+        
+        .time-remaining {
+            position: absolute;
+            top: 5px;
+            right: 8px;
+            font-size: 9px;
+            color: #ffaa00;
+            font-weight: bold;
+        }
+        
+        .time-remaining.critical {
+            color: #ff0040;
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+        
+        /* VENOM Risk Control Panel Styles */
+        .venom-risk-control {
+            background: linear-gradient(135deg, rgba(255,0,64,0.1) 0%, rgba(255,0,64,0.05) 100%);
+            border-left: 3px solid #ff0040;
+            border-radius: 5px;
+            padding: 15px;
+        }
+        
+        .risk-status-display {
+            transition: all 0.3s ease;
+        }
+        
+        .risk-status-display.warning {
+            border-color: #ffaa00 !important;
+            background: rgba(255,170,0,0.1) !important;
+        }
+        
+        .risk-status-display.critical {
+            border-color: #ff0040 !important;
+            background: rgba(255,0,64,0.1) !important;
+            animation: pulse-critical 2s infinite;
+        }
+        
+        @keyframes pulse-critical {
+            0% { opacity: 1; box-shadow: 0 0 5px rgba(255,0,64,0.3); }
+            50% { opacity: 0.8; box-shadow: 0 0 15px rgba(255,0,64,0.6); }
+            100% { opacity: 1; box-shadow: 0 0 5px rgba(255,0,64,0.3); }
+        }
+        
+        .risk-status-display.halted {
+            border-color: #ff0040 !important;
+            background: rgba(255,0,64,0.2) !important;
+            animation: pulse-halted 1s infinite;
+        }
+        
+        @keyframes pulse-halted {
+            0% { background: rgba(255,0,64,0.2); }
+            50% { background: rgba(255,0,64,0.4); }
+            100% { background: rgba(255,0,64,0.2); }
+        }
+        
+        /* Risk control sliders */
+        .venom-risk-control input[type="range"] {
+            -webkit-appearance: none;
+            background: #333;
+            border-radius: 5px;
+            height: 8px;
+            outline: none;
+        }
+        
+        .venom-risk-control input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #ff0040;
+            cursor: pointer;
+            border: 2px solid #fff;
+        }
+        
+        .venom-risk-control input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #ff0040;
+            cursor: pointer;
+            border: 2px solid #fff;
+        }
+        
+        /* Risk control checkbox */
+        .venom-risk-control input[type="checkbox"] {
+            accent-color: #ff0040;
+        }
+        
+        /* Risk ratio indicators */
+        .risk-ratio-safe { color: #00ff41 !important; }
+        .risk-ratio-warning { color: #ffaa00 !important; }
+        .risk-ratio-critical { color: #ff0040 !important; font-weight: bold; }
+        
+        /* Command view grid responsive */
+        .command-view-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 1024px) {
+            .command-view-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 15px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .command-view-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .command-view-grid {
+                gap: 12px;
+            }
+        }
+        
+        /* Apex control grid responsive */
+        .apex-control-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr 1fr 1.5fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 1200px) {
+            .apex-control-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 15px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .apex-control-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .apex-control-grid {
+                gap: 12px;
+            }
+        }
+        
+        /* Mobile collapsible sections */
+        .mobile-collapsible {
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .mobile-collapsible {
+                display: block;
+            }
+            
+            .mobile-collapsible-header {
+                background: rgba(255, 107, 0, 0.1);
+                padding: 12px 15px;
+                border-radius: 8px;
+                margin-bottom: 10px;
+                cursor: pointer;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                transition: background 0.3s ease;
+                border: 1px solid rgba(255, 107, 0, 0.3);
+            }
+            
+            .mobile-collapsible-header:hover {
+                background: rgba(255, 107, 0, 0.2);
+            }
+            
+            .mobile-collapsible-content {
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.3s ease-out;
+            }
+            
+            .mobile-collapsible-content.expanded {
+                max-height: 1000px;
+                margin-bottom: 15px;
+            }
+            
+            .collapsible-toggle {
+                font-size: 18px;
+                color: #ff6b00;
+                transition: transform 0.3s ease;
+            }
+            
+            .collapsible-toggle.rotated {
+                transform: rotate(180deg);
+            }
+            
+            /* Hide original full-width panels on mobile */
+            .dashboard-panel.full-width.mobile-hide {
+                display: none;
+            }
+        }
     </style>
 </head>
 <body>
@@ -240,7 +838,7 @@
     
     <!-- Primary Command View - Full Width Top Section -->
     <div class="dashboard-panel full-width" style="margin-bottom: 20px;">
-        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 20px;">
+        <div class="command-view-grid" style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 20px;">
             <!-- Revenue & Subscriptions -->
             <div>
                 <div class="panel-title" style="font-size: 16px; margin-bottom: 10px;">💰 REVENUE COMMAND</div>
@@ -321,10 +919,90 @@
     
     <div class="dashboard-grid">
         
+        <!-- Black Box Truth Metrics -->
+        <div class="dashboard-panel">
+            <div class="panel-title">🔍 BLACK BOX TRUTH METRICS</div>
+            <div class="mission-stats">
+                <div class="stat-item">
+                    <span>Total Signals:</span>
+                    <span class="stat-value" id="truthTotalSignals">--</span>
+                </div>
+                <div class="stat-item">
+                    <span>Wins/Losses:</span>
+                    <span class="stat-value"><span id="truthWins" style="color: #00ff41;">--</span>/<span id="truthLosses" style="color: #ff0040;">--</span></span>
+                </div>
+                <div class="stat-item">
+                    <span>Win Rate:</span>
+                    <span class="stat-value" id="truthWinRate" style="color: #00ff41;">--%</span>
+                </div>
+                <div class="stat-item">
+                    <span>Avg Pips:</span>
+                    <span class="stat-value" id="truthAvgPips">--</span>
+                </div>
+                <div class="stat-item">
+                    <span>Avg Runtime:</span>
+                    <span class="stat-value" id="truthAvgRuntime">-- min</span>
+                </div>
+                <div class="stat-item">
+                    <span>Total Pips:</span>
+                    <span class="stat-value" id="truthTotalPips" style="color: #ff6b00;">--</span>
+                </div>
+            </div>
+            <div style="margin-top: 10px; font-size: 10px; color: #888; text-align: center;">
+                Last Updated: <span id="truthLastUpdated">--</span>
+            </div>
+        </div>
+
+        <!-- ML Brain Metrics -->
+        <div class="dashboard-panel">
+            <div class="panel-title">🧠 ML BRAIN METRICS</div>
+            <div class="mission-stats">
+                <div class="stat-item">
+                    <span>Model Accuracy:</span>
+                    <span class="stat-value" id="mlAccuracy" style="color: #00ff41;">--%</span>
+                </div>
+                <div class="stat-item">
+                    <span>Last Retrain:</span>
+                    <span class="stat-value" id="mlLastRetrain">--</span>
+                </div>
+                <div class="stat-item">
+                    <span>Total Cycles:</span>
+                    <span class="stat-value" id="mlTotalCycles">--</span>
+                </div>
+                <div class="stat-item">
+                    <span>Training Status:</span>
+                    <span class="stat-value" id="mlTrainingStatus">--</span>
+                </div>
+            </div>
+            <div style="margin-top: 10px; text-align: center;">
+                <button class="command-btn" onclick="viewRetrainLog()" style="font-size: 11px; padding: 8px 12px;">VIEW RETRAIN LOG</button>
+            </div>
+            <div style="margin-top: 10px; font-size: 10px; color: #888; text-align: center;">
+                Last Updated: <span id="mlLastUpdated">--</span>
+            </div>
+        </div>
+
         <!-- Live Activity Feed -->
         <div class="dashboard-panel">
             <div class="panel-title">📡 LIVE ACTIVITY</div>
-            <div class="trade-log" style="max-height: 250px;">
+            
+            <!-- Signal Timeline Heatmap -->
+            <div style="margin-bottom: 15px;">
+                <div style="font-size: 12px; color: #ff6b00; margin-bottom: 8px; font-weight: bold;">📡 24H SIGNAL TIMELINE</div>
+                <div style="position: relative; height: 80px; background: rgba(0,0,0,0.5); border: 1px solid #333; border-radius: 5px; overflow: hidden;">
+                    <canvas id="signalHeatmap" width="800" height="60" style="width: 100%; height: 60px; display: block; margin: 10px 0;"></canvas>
+                    <div id="heatmapHover" style="position: absolute; top: 0; left: 0; pointer-events: none; background: rgba(0,0,0,0.8); color: #00ff41; padding: 4px 8px; border-radius: 3px; font-size: 10px; display: none; z-index: 100;"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 9px; color: #888; margin-top: 5px;">
+                    <span>00:00</span>
+                    <span>06:00</span>
+                    <span>12:00</span>
+                    <span>18:00</span>
+                    <span>24:00</span>
+                </div>
+            </div>
+            
+            <div class="trade-log" style="max-height: 180px;">
                 <div id="liveActivityFeed" style="font-size: 11px;">
                     <!-- Live updates will appear here -->
                 </div>
@@ -335,6 +1013,94 @@
             </div>
         </div>
         
+        <!-- Live Trade Ticker Feed -->
+        <div class="dashboard-panel full-width" style="margin-bottom: 20px;">
+            <div class="panel-title">📊 LIVE TRADE TICKER</div>
+            <div class="trade-ticker-container" style="background: rgba(0,0,0,0.5); border: 1px solid #333; border-radius: 5px; height: 120px; overflow: hidden; position: relative;">
+                <div class="trade-ticker-header" style="display: grid; grid-template-columns: 60px 80px 50px 60px 80px 60px 80px; gap: 10px; padding: 8px; background: rgba(255,107,0,0.2); font-size: 11px; font-weight: bold; border-bottom: 1px solid #333;">
+                    <div>TIME</div>
+                    <div>SYMBOL</div>
+                    <div>RESULT</div>
+                    <div>PIPS</div>
+                    <div>RUNTIME</div>
+                    <div>TCS</div>
+                    <div>CITADEL</div>
+                </div>
+                <div class="trade-ticker-scroll" id="tradeTicker" style="height: 80px; overflow-y: auto; scrollbar-width: thin;">
+                    <div style="padding: 20px; text-align: center; color: #888; font-size: 12px;">
+                        Loading trade feed...
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; font-size: 11px;">
+                <div style="text-align: center; color: #888;">
+                    <span id="tickerUpdateTime">--:--</span> | Auto-refresh: 10s
+                </div>
+                <div style="text-align: center;">
+                    <button class="command-btn" onclick="loadTradeFeed()" style="font-size: 10px; padding: 5px 10px;">REFRESH FEED</button>
+                </div>
+                <div style="text-align: center; color: #888;">
+                    Last 15 completed trades
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Signal Progression Panel -->
+        <div class="dashboard-panel">
+            <div class="panel-title">⚡ ACTIVE SIGNALS</div>
+            <div class="active-signals-container" style="max-height: 200px; overflow-y: auto;">
+                <div id="activeSignalsList" style="font-size: 11px;">
+                    <div style="padding: 20px; text-align: center; color: #888;">
+                        Loading active signals...
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top: 10px; font-size: 10px; color: #888; text-align: center;">
+                Signals from venom_scalp_master only
+            </div>
+        </div>
+
+        <!-- Trade of the Day Panel -->
+        <div class="dashboard-panel">
+            <div class="panel-title">🎯 TRADE OF THE DAY</div>
+            <div id="tradeOfTheDay" style="background: linear-gradient(135deg, rgba(255,215,0,0.1) 0%, rgba(255,215,0,0.05) 100%); border: 1px solid rgba(255,215,0,0.3); border-radius: 8px; padding: 15px; margin-bottom: 10px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div>
+                        <div style="font-size: 24px; font-weight: bold; color: #ffd700; margin-bottom: 5px;" id="todSymbol">--</div>
+                        <div style="font-size: 12px; color: #888;">Symbol</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 24px; font-weight: bold; color: #00ff41; margin-bottom: 5px;" id="todPips">+-- pips</div>
+                        <div style="font-size: 12px; color: #888;">Profit</div>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; margin-top: 15px; font-size: 11px;">
+                    <div>
+                        <div style="color: #ff6b00; font-weight: bold;" id="todTCS">--%</div>
+                        <div style="color: #888;">TCS</div>
+                    </div>
+                    <div>
+                        <div style="color: #00ff41; font-weight: bold;" id="todMLPass">--</div>
+                        <div style="color: #888;">ML Pass</div>
+                    </div>
+                    <div>
+                        <div style="color: #ffaa00; font-weight: bold;" id="todCitadel">--</div>
+                        <div style="color: #888;">CITADEL</div>
+                    </div>
+                    <div>
+                        <div style="color: #888; font-weight: bold;" id="todRuntime">-- min</div>
+                        <div style="color: #888;">Runtime</div>
+                    </div>
+                </div>
+                <div style="margin-top: 10px; text-align: center; font-size: 10px; color: #888;">
+                    <span id="todTime">--:--</span> | Best WIN trade in last 24h
+                </div>
+            </div>
+            <div style="font-size: 10px; color: #888; text-align: center;">
+                Updates every 30s | Based on highest pips_result
+            </div>
+        </div>
+
         <!-- Soldier Roster -->
         <div class="dashboard-panel two-thirds">
             <div class="panel-title">🪖 SOLDIER ROSTER</div>
@@ -356,9 +1122,9 @@
         </div>
         
         <!-- Control Panel -->
-        <div class="dashboard-panel full-width">
+        <div class="dashboard-panel full-width mobile-hide">
             <div class="panel-title">🎯 ENGINE CONTROL</div>
-            <div class="apex-control-grid" style="display: grid; grid-template-columns: 1fr 1.5fr 1fr 1.5fr; gap: 20px;">
+            <div class="apex-control-grid">
                 <!-- Status Section -->
                 <div class="apex-status">
                     <h4 style="color: #ff6b00; margin-bottom: 10px;">ENGINE STATUS</h4>
@@ -413,6 +1179,24 @@
                     </div>
                 </div>
                 
+                <!-- HUD Access Logs -->
+                <div class="dashboard-panel">
+                    <div class="panel-title">🎥 HUD ACCESS LOGS</div>
+                    <div id="hudAccessLogs" style="max-height: 200px; overflow-y: auto; font-size: 11px;">
+                        <div class="trade-row" style="font-weight: bold; background: rgba(255,107,0,0.2); grid-template-columns: 100px 80px 120px; gap: 8px; padding: 8px; border-bottom: 1px solid #333;">
+                            <div>USERNAME</div>
+                            <div>MISSION</div>
+                            <div>TIMESTAMP</div>
+                        </div>
+                        <div id="hudAccessLogBody">
+                            <div style="padding: 20px; text-align: center; color: #888;">Loading HUD access logs...</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 10px; font-size: 10px; color: #888; text-align: center;">
+                        Last 50 HUD accesses | Auto-refresh: 30s
+                    </div>
+                </div>
+                
                 <!-- Ghost Trade Tracker -->
                 <div class="dashboard-panel">
                     <div class="panel-title">👻 GHOST TRADE TRACKER</div>
@@ -462,6 +1246,56 @@
                     </div>
                 </div>
                 
+                <!-- VENOM Risk Control Panel -->
+                <div class="venom-risk-control">
+                    <h4 style="color: #ff0040; margin-bottom: 10px;">🔥 VENOM RISK PARAMETERS</h4>
+                    
+                    <!-- Risk Status Display -->
+                    <div class="risk-status-display" style="background: rgba(0,0,0,0.8); border: 2px solid #333; border-radius: 5px; padding: 10px; margin-bottom: 15px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 12px; color: #888;">Risk Status:</span>
+                            <span id="venomRiskStatus" style="font-weight: bold; color: #00ff41;">SAFE</span>
+                        </div>
+                        <div style="font-size: 10px; color: #888; margin-top: 5px;" id="venomRiskMessage">
+                            ✅ Within safe limits
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; font-size: 10px;">
+                            <div>Loss: <span id="venomLossRatio" style="color: #00ff41;">0%</span></div>
+                            <div>Trades: <span id="venomTradesRatio" style="color: #00ff41;">0%</span></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Risk Configuration Controls -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div>
+                            <label style="font-size: 11px; color: #888;">Max Trades/Session</label>
+                            <input type="range" id="venomMaxTrades" min="1" max="15" value="8" onchange="updateVenomRiskConfig()" style="width: 100%;">
+                            <span id="venomMaxTradesValue" style="font-size: 12px;">8</span>
+                        </div>
+                        <div>
+                            <label style="font-size: 11px; color: #888;">Daily Loss Cap (%)</label>
+                            <input type="range" id="venomLossCap" min="1" max="50" value="10" onchange="updateVenomRiskConfig()" style="width: 100%;">
+                            <span id="venomLossCapValue" style="font-size: 12px;">10%</span>
+                        </div>
+                        <div>
+                            <label style="font-size: 11px; color: #888;">Risk/Trade (%)</label>
+                            <input type="range" id="venomRiskPerTrade" min="0.1" max="5.0" step="0.1" value="2.0" onchange="updateVenomRiskConfig()" style="width: 100%;">
+                            <span id="venomRiskPerTradeValue" style="font-size: 12px;">2.0%</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <label style="font-size: 11px; color: #888;">Auto Halt:</label>
+                            <input type="checkbox" id="venomAutoHalt" checked onchange="updateVenomRiskConfig()" style="transform: scale(1.2);">
+                            <span id="venomAutoHaltStatus" style="font-size: 10px; color: #00ff41;">ENABLED</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Control Buttons -->
+                    <div style="margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <button class="command-btn" onclick="saveVenomRiskConfig()" style="width: 100%; font-size: 11px;">APPLY RISK CONFIG</button>
+                        <button class="command-btn danger" onclick="executeVenomHalt()" style="width: 100%; font-size: 11px;">EMERGENCY HALT</button>
+                    </div>
+                </div>
+
                 <!-- Trading Pairs Section -->
                 <div class="apex-pairs">
                     <h4 style="color: #ff6b00; margin-bottom: 10px;">TRADING PAIRS</h4>
@@ -483,6 +1317,50 @@
                         <div>TCS</div>
                     </div>
                     <div id="apexSignalLog">Loading signals...</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Collapsible Engine Control -->
+        <div class="mobile-collapsible">
+            <div class="mobile-collapsible-header" id="mobileEngineHeader" onclick="toggleMobileSection('mobileEngineHeader')">
+                <span style="font-weight: bold; color: #ff6b00;">🎯 ENGINE CONTROL</span>
+                <span class="collapsible-toggle">▼</span>
+            </div>
+            <div class="mobile-collapsible-content">
+                <div class="apex-control-grid">
+                    <!-- Status Section -->
+                    <div class="apex-status">
+                        <h4 style="color: #ff6b00; margin-bottom: 10px;">ENGINE STATUS</h4>
+                        <div class="stat-item">
+                            <span>Status:</span>
+                            <span class="stat-value" id="apexStatusMobile">
+                                <span class="status-indicator status-offline"></span>OFFLINE
+                            </span>
+                        </div>
+                        <div class="stat-item">
+                            <span>PID:</span>
+                            <span class="stat-value" id="apexPidMobile">--</span>
+                        </div>
+                        <div style="margin-top: 15px;">
+                            <button class="command-btn" onclick="control('start')" style="width: 100%; margin-bottom: 5px;">START</button>
+                            <button class="command-btn danger" onclick="control('stop')" style="width: 100%;">STOP</button>
+                        </div>
+                    </div>
+                    
+                    <!-- VENOM Risk Control Panel (Mobile) -->
+                    <div class="venom-risk-control">
+                        <h4 style="color: #ff0040; margin-bottom: 10px;">🔥 VENOM RISK</h4>
+                        <div class="risk-status-display" style="background: rgba(0,0,0,0.8); border: 2px solid #333; border-radius: 5px; padding: 10px; margin-bottom: 15px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-size: 12px;">Status:</span>
+                                <span id="venomRiskStatusMobile" style="font-weight: bold; color: #00ff41;">SAFE</span>
+                            </div>
+                        </div>
+                        <div style="margin-top: 10px;">
+                            <button class="command-btn" onclick="saveVenomRiskConfig()" style="width: 100%; font-size: 12px;">APPLY CONFIG</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -517,6 +1395,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script>
         // Initialize Socket.IO
         const socket = io();
@@ -617,12 +1496,12 @@
                 data.soldiers.forEach(soldier => {
                     const row = tbody.insertRow();
                     row.innerHTML = `
-                        <td>${soldier.username}</td>
-                        <td>${soldier.tier}</td>
-                        <td>${soldier.xp.toLocaleString()}</td>
-                        <td>${soldier.telegram_linked ? '✅' : '❌'}</td>
-                        <td>${soldier.last_seen}</td>
-                        <td>${soldier.trade_count}</td>
+                        <td data-label="Username">${soldier.username}</td>
+                        <td data-label="Tier">${soldier.tier}</td>
+                        <td data-label="XP">${soldier.xp.toLocaleString()}</td>
+                        <td data-label="Telegram">${soldier.telegram_linked ? '✅' : '❌'}</td>
+                        <td data-label="Last Seen">${soldier.last_seen}</td>
+                        <td data-label="Trades">${soldier.trade_count}</td>
                     `;
                 });
             } catch (error) {
@@ -1115,6 +1994,468 @@
             }
         }
         
+        // Black Box Truth Metrics Functions
+        async function loadTruthStats() {
+            try {
+                const response = await fetch('/throne/api/truth_stats');
+                const data = await response.json();
+                
+                document.getElementById('truthTotalSignals').textContent = data.total_signals;
+                document.getElementById('truthWins').textContent = data.wins;
+                document.getElementById('truthLosses').textContent = data.losses;
+                document.getElementById('truthWinRate').textContent = data.win_rate + '%';
+                document.getElementById('truthAvgPips').textContent = data.avg_pips;
+                document.getElementById('truthAvgRuntime').textContent = data.avg_runtime + ' min';
+                document.getElementById('truthTotalPips').textContent = data.total_pips;
+                document.getElementById('truthLastUpdated').textContent = data.last_updated;
+                
+                // Update win rate color based on performance
+                const winRateEl = document.getElementById('truthWinRate');
+                if (data.win_rate >= 70) {
+                    winRateEl.style.color = '#00ff41';
+                } else if (data.win_rate >= 50) {
+                    winRateEl.style.color = '#ffaa00';
+                } else {
+                    winRateEl.style.color = '#ff0040';
+                }
+                
+            } catch (error) {
+                console.error('Error loading truth stats:', error);
+            }
+        }
+        
+        // Live Trade Feed Functions
+        async function loadTradeFeed() {
+            try {
+                const response = await fetch('/throne/api/live_trade_feed');
+                const data = await response.json();
+                
+                const container = document.getElementById('tradeTicker');
+                container.innerHTML = '';
+                
+                if (data.trades && data.trades.length > 0) {
+                    data.trades.forEach(trade => {
+                        const row = document.createElement('div');
+                        row.className = `trade-ticker-row ${trade.result.toLowerCase()}`;
+                        
+                        const resultClass = trade.result === 'WIN' ? 'result-win' : 'result-loss';
+                        const pipsColor = trade.pips >= 0 ? '#00ff41' : '#ff0040';
+                        const pipsSign = trade.pips >= 0 ? '+' : '';
+                        
+                        row.innerHTML = `
+                            <div>${trade.time}</div>
+                            <div>${trade.symbol}</div>
+                            <div class="${resultClass}">${trade.result}</div>
+                            <div style="color: ${pipsColor};">${pipsSign}${trade.pips}</div>
+                            <div>${trade.runtime}m</div>
+                            <div>${trade.tcs}%</div>
+                            <div>${trade.citadel}</div>
+                        `;
+                        container.appendChild(row);
+                    });
+                    
+                    // Auto-scroll to top (newest)
+                    container.scrollTop = 0;
+                } else {
+                    container.innerHTML = '<div style="padding: 20px; text-align: center; color: #888;">No completed trades yet</div>';
+                }
+                
+                // Update timestamp
+                document.getElementById('tickerUpdateTime').textContent = new Date().toLocaleTimeString().slice(0, 5);
+                
+            } catch (error) {
+                console.error('Error loading trade feed:', error);
+            }
+        }
+        
+        // Active Signals Functions
+        async function loadActiveSignals() {
+            try {
+                const response = await fetch('/throne/api/active_signals');
+                const data = await response.json();
+                
+                const container = document.getElementById('activeSignalsList');
+                container.innerHTML = '';
+                
+                if (data.signals && data.signals.length > 0) {
+                    data.signals.forEach(signal => {
+                        const signalDiv = document.createElement('div');
+                        
+                        // Determine if signal is expiring (< 30 minutes)
+                        const isExpiring = signal.time_remaining < 30;
+                        const isCritical = signal.time_remaining < 10;
+                        
+                        signalDiv.className = `active-signal-item ${isExpiring ? 'expiring' : ''}`;
+                        
+                        const directionClass = signal.direction.toLowerCase() === 'sell' ? 'sell' : '';
+                        const timeClass = isCritical ? 'critical' : '';
+                        
+                        signalDiv.innerHTML = `
+                            <div class="signal-header">
+                                <span class="signal-symbol">${signal.symbol}</span>
+                                <span class="signal-direction ${directionClass}">${signal.direction}</span>
+                            </div>
+                            <div class="time-remaining ${timeClass}">${signal.time_remaining}m</div>
+                            <div class="signal-details">
+                                <div>TCS: ${signal.tcs_score}%</div>
+                                <div>R:R: ${signal.risk_reward_ratio}</div>
+                                <div>Entry: ${signal.entry_price}</div>
+                                <div>Type: ${signal.signal_type}</div>
+                            </div>
+                        `;
+                        container.appendChild(signalDiv);
+                    });
+                } else {
+                    container.innerHTML = '<div style="padding: 20px; text-align: center; color: #888;">No active venom_scalp_master signals</div>';
+                }
+                
+            } catch (error) {
+                console.error('Error loading active signals:', error);
+            }
+        }
+
+        // VENOM Risk Control Functions
+        let venomRiskConfig = {};
+        
+        async function loadVenomRiskConfig() {
+            try {
+                const response = await fetch('/throne/api/venom/risk-config', {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                if (response.status === 403 || response.status === 401) {
+                    // User doesn't have COMMANDER access, hide risk controls
+                    const riskPanel = document.querySelector('.venom-risk-control');
+                    if (riskPanel) {
+                        riskPanel.style.display = 'none';
+                    }
+                    return;
+                }
+                
+                const data = await response.json();
+                venomRiskConfig = data;
+                
+                // Update UI controls
+                document.getElementById('venomMaxTrades').value = data.max_trades_per_session || 8;
+                document.getElementById('venomMaxTradesValue').textContent = data.max_trades_per_session || 8;
+                
+                document.getElementById('venomLossCap').value = data.max_daily_loss_cap_percent || 10;
+                document.getElementById('venomLossCapValue').textContent = (data.max_daily_loss_cap_percent || 10) + '%';
+                
+                document.getElementById('venomRiskPerTrade').value = data.risk_per_trade_percent || 2.0;
+                document.getElementById('venomRiskPerTradeValue').textContent = (data.risk_per_trade_percent || 2.0) + '%';
+                
+                document.getElementById('venomAutoHalt').checked = data.auto_halt_on_loss !== false;
+                document.getElementById('venomAutoHaltStatus').textContent = data.auto_halt_on_loss !== false ? 'ENABLED' : 'DISABLED';
+                document.getElementById('venomAutoHaltStatus').style.color = data.auto_halt_on_loss !== false ? '#00ff41' : '#ff0040';
+                
+                // Update risk status
+                updateVenomRiskStatus(data);
+                
+            } catch (error) {
+                console.error('Error loading VENOM risk config:', error);
+            }
+        }
+        
+        async function loadVenomRiskStatus() {
+            try {
+                const response = await fetch('/throne/api/venom/risk-status');
+                const data = await response.json();
+                
+                updateVenomRiskStatus(data);
+                
+            } catch (error) {
+                console.error('Error loading VENOM risk status:', error);
+            }
+        }
+        
+        function updateVenomRiskStatus(data) {
+            const statusEl = document.getElementById('venomRiskStatus');
+            const messageEl = document.getElementById('venomRiskMessage');
+            const lossRatioEl = document.getElementById('venomLossRatio');
+            const tradesRatioEl = document.getElementById('venomTradesRatio');
+            const displayEl = document.querySelector('.risk-status-display');
+            
+            // Update status text and color
+            statusEl.textContent = data.risk_status || 'UNKNOWN';
+            statusEl.style.color = data.risk_color || '#888';
+            messageEl.textContent = data.message || 'Status unknown';
+            
+            // Update ratios with color coding
+            const lossRatio = data.loss_ratio || 0;
+            const tradesRatio = data.trades_ratio || 0;
+            
+            lossRatioEl.textContent = lossRatio + '%';
+            tradesRatioEl.textContent = tradesRatio + '%';
+            
+            // Color code the ratios
+            const getLevelClass = (ratio) => {
+                if (ratio >= 90) return 'risk-ratio-critical';
+                if (ratio >= 70) return 'risk-ratio-warning';
+                return 'risk-ratio-safe';
+            };
+            
+            lossRatioEl.className = getLevelClass(lossRatio);
+            tradesRatioEl.className = getLevelClass(tradesRatio);
+            
+            // Update display styling based on status
+            displayEl.className = 'risk-status-display';
+            if (data.risk_status === 'HALTED') {
+                displayEl.classList.add('halted');
+            } else if (data.risk_status === 'CRITICAL') {
+                displayEl.classList.add('critical');
+            } else if (data.risk_status === 'WARNING') {
+                displayEl.classList.add('warning');
+            }
+        }
+        
+        function updateVenomRiskConfig() {
+            // Update display values in real-time
+            document.getElementById('venomMaxTradesValue').textContent = document.getElementById('venomMaxTrades').value;
+            document.getElementById('venomLossCapValue').textContent = document.getElementById('venomLossCap').value + '%';
+            document.getElementById('venomRiskPerTradeValue').textContent = document.getElementById('venomRiskPerTrade').value + '%';
+            
+            const autoHalt = document.getElementById('venomAutoHalt').checked;
+            document.getElementById('venomAutoHaltStatus').textContent = autoHalt ? 'ENABLED' : 'DISABLED';
+            document.getElementById('venomAutoHaltStatus').style.color = autoHalt ? '#00ff41' : '#ff0040';
+        }
+        
+        async function saveVenomRiskConfig() {
+            try {
+                const config = {
+                    max_trades_per_session: parseInt(document.getElementById('venomMaxTrades').value),
+                    max_daily_loss_cap_percent: parseFloat(document.getElementById('venomLossCap').value),
+                    risk_per_trade_percent: parseFloat(document.getElementById('venomRiskPerTrade').value),
+                    auto_halt_on_loss: document.getElementById('venomAutoHalt').checked
+                };
+                
+                const response = await fetch('/throne/api/venom/risk-config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(config)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    alert('✅ VENOM risk configuration updated successfully!');
+                    addActivity('VENOM', 'Risk parameters updated', '#ff0040');
+                    
+                    // Reload config to get updated status
+                    setTimeout(() => {
+                        loadVenomRiskConfig();
+                        loadVenomRiskStatus();
+                    }, 1000);
+                } else {
+                    alert('❌ Failed to update VENOM risk config: ' + (result.error || 'Unknown error'));
+                }
+                
+            } catch (error) {
+                alert('❌ Failed to update VENOM risk config: ' + error.message);
+                console.error('Error saving VENOM risk config:', error);
+            }
+        }
+        
+        async function executeVenomHalt() {
+            if (!confirm('⚠️ EMERGENCY HALT: This will immediately stop all VENOM trading. Continue?')) {
+                return;
+            }
+            
+            try {
+                // Set halt flag via config update
+                const response = await fetch('/throne/api/venom/risk-config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        halt_active: true,
+                        auto_halt_on_loss: true
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    alert('🚨 EMERGENCY HALT ACTIVATED - VENOM trading has been stopped!');
+                    addActivity('EMERGENCY', 'VENOM trading halted by operator', '#ff0040');
+                    
+                    // Reload status immediately
+                    loadVenomRiskStatus();
+                } else {
+                    alert('❌ Failed to activate emergency halt: ' + (result.error || 'Unknown error'));
+                }
+                
+            } catch (error) {
+                alert('❌ Failed to activate emergency halt: ' + error.message);
+                console.error('Error executing VENOM halt:', error);
+            }
+        }
+
+        // ML Brain Metrics Functions
+        async function loadMLMetrics() {
+            try {
+                const response = await fetch('/throne/api/ml_status');
+                const data = await response.json();
+                
+                document.getElementById('mlAccuracy').textContent = (data.accuracy || 0).toFixed(1) + '%';
+                document.getElementById('mlLastRetrain').textContent = data.last_retrain || '--';
+                document.getElementById('mlTotalCycles').textContent = data.total_cycles || '0';
+                document.getElementById('mlTrainingStatus').textContent = data.training_status || 'Idle';
+                document.getElementById('mlLastUpdated').textContent = new Date().toLocaleTimeString().slice(0, 5);
+                
+                // Color code accuracy
+                const accuracyEl = document.getElementById('mlAccuracy');
+                const accuracy = data.accuracy || 0;
+                if (accuracy >= 90) {
+                    accuracyEl.style.color = '#00ff41';
+                } else if (accuracy >= 80) {
+                    accuracyEl.style.color = '#ffaa00';
+                } else {
+                    accuracyEl.style.color = '#ff0040';
+                }
+                
+            } catch (error) {
+                console.error('Error loading ML metrics:', error);
+            }
+        }
+        
+        function viewRetrainLog() {
+            window.open('/throne/api/retrain_log', '_blank');
+        }
+        
+        // Signal Timeline Heatmap Functions
+        let signalHeatmapData = new Array(24).fill(0);
+        
+        async function loadSignalHeatmapData() {
+            try {
+                const response = await fetch('/throne/api/signal_timeline');
+                const data = await response.json();
+                signalHeatmapData = data.hourly_counts || new Array(24).fill(0);
+                drawSignalHeatmap();
+            } catch (error) {
+                console.error('Error loading signal heatmap:', error);
+                drawSignalHeatmap(); // Draw with empty data
+            }
+        }
+        
+        function drawSignalHeatmap() {
+            const canvas = document.getElementById('signalHeatmap');
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, width, height);
+            
+            // Calculate dimensions
+            const cellWidth = width / 24;
+            const maxSignals = Math.max(...signalHeatmapData, 1);
+            
+            // Draw heatmap cells
+            for (let hour = 0; hour < 24; hour++) {
+                const signals = signalHeatmapData[hour];
+                const intensity = signals / maxSignals;
+                
+                // Color based on intensity (green gradient)
+                const alpha = Math.max(0.1, intensity);
+                const red = Math.floor(255 * (1 - intensity));
+                const green = 255;
+                const blue = Math.floor(128 * (1 - intensity));
+                
+                ctx.fillStyle = `rgba(${red}, ${green}, ${blue}, ${alpha})`;
+                ctx.fillRect(hour * cellWidth, 0, cellWidth - 1, height);
+                
+                // Add text if signals > 0
+                if (signals > 0) {
+                    ctx.fillStyle = '#000';
+                    ctx.font = '10px monospace';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(signals.toString(), hour * cellWidth + cellWidth/2, height/2 + 3);
+                }
+            }
+            
+            // Add hover functionality
+            canvas.onmousemove = function(e) {
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const hour = Math.floor(x / cellWidth);
+                
+                if (hour >= 0 && hour < 24) {
+                    const hover = document.getElementById('heatmapHover');
+                    hover.style.display = 'block';
+                    hover.style.left = (e.clientX - rect.left + 10) + 'px';
+                    hover.style.top = (e.clientY - rect.top - 30) + 'px';
+                    hover.textContent = `${hour.toString().padStart(2, '0')}:00 - ${signalHeatmapData[hour]} signals`;
+                }
+            };
+            
+            canvas.onmouseleave = function() {
+                document.getElementById('heatmapHover').style.display = 'none';
+            };
+        }
+        
+        // HUD Access Logs Functions
+        async function loadHUDAccessLogs() {
+            try {
+                const response = await fetch('/throne/api/hud_access_logs');
+                const data = await response.json();
+                
+                const container = document.getElementById('hudAccessLogBody');
+                container.innerHTML = '';
+                
+                if (data.logs && data.logs.length > 0) {
+                    data.logs.forEach(log => {
+                        const row = document.createElement('div');
+                        row.className = 'trade-row';
+                        row.style.cssText = 'grid-template-columns: 100px 80px 120px; gap: 8px; padding: 5px 8px; border-bottom: 1px solid #333; font-size: 11px;';
+                        row.innerHTML = `
+                            <div style="color: #00ff41;">${log.username || log.user_id}</div>
+                            <div style="color: #ff6b00;">${log.mission_id || 'N/A'}</div>
+                            <div style="color: #888;">${log.timestamp}</div>
+                        `;
+                        container.appendChild(row);
+                    });
+                } else {
+                    container.innerHTML = '<div style="padding: 20px; text-align: center; color: #888;">No HUD access logs yet</div>';
+                }
+                
+            } catch (error) {
+                console.error('Error loading HUD access logs:', error);
+                document.getElementById('hudAccessLogBody').innerHTML = '<div style="padding: 20px; text-align: center; color: #ff0040;">Error loading logs</div>';
+            }
+        }
+        
+        // Trade of the Day Functions
+        async function loadTradeOfTheDay() {
+            try {
+                const response = await fetch('/throne/api/trade_of_the_day');
+                const data = await response.json();
+                
+                if (data.trade) {
+                    const trade = data.trade;
+                    document.getElementById('todSymbol').textContent = trade.symbol || '--';
+                    document.getElementById('todPips').textContent = '+' + (trade.pips_result || 0) + ' pips';
+                    document.getElementById('todTCS').textContent = (trade.tcs || 0) + '%';
+                    document.getElementById('todMLPass').textContent = trade.ml_pass || '--';
+                    document.getElementById('todCitadel').textContent = trade.citadel_score || '--';
+                    document.getElementById('todRuntime').textContent = (trade.runtime_minutes || 0) + ' min';
+                    document.getElementById('todTime').textContent = trade.time_of_day || '--:--';
+                } else {
+                    // No trade found
+                    document.getElementById('todSymbol').textContent = '--';
+                    document.getElementById('todPips').textContent = '+-- pips';
+                    document.getElementById('todTCS').textContent = '--%';
+                    document.getElementById('todMLPass').textContent = '--';
+                    document.getElementById('todCitadel').textContent = '--';
+                    document.getElementById('todRuntime').textContent = '-- min';
+                    document.getElementById('todTime').textContent = '--:--';
+                }
+                
+            } catch (error) {
+                console.error('Error loading trade of the day:', error);
+            }
+        }
+
         // Live Activity Feed
         let activityBuffer = [];
         const MAX_ACTIVITIES = 20;
@@ -1167,6 +2508,15 @@
         loadSignals();
         loadGhostTrades();
         loadSubscriptionAnalytics();
+        loadTruthStats();
+        loadTradeFeed();
+        loadActiveSignals();
+        loadVenomRiskConfig();
+        loadVenomRiskStatus();
+        loadMLMetrics();
+        loadSignalHeatmapData();
+        loadHUDAccessLogs();
+        loadTradeOfTheDay();
         initializeActivityFeed();
         
         // Refresh data every 30 seconds
@@ -1177,11 +2527,70 @@
             loadSignals();
             loadGhostTrades();
             loadSubscriptionAnalytics();
+            loadTruthStats();
+            loadActiveSignals();
+            loadVenomRiskConfig();
+            loadMLMetrics();
+            loadSignalHeatmapData();
+            loadHUDAccessLogs();
+            loadTradeOfTheDay();
             addActivity('REFRESH', 'Dashboard data updated', '#888');
         }, 30000);
         
+        // Refresh trade feed every 10 seconds (more frequent for live updates)
+        setInterval(() => {
+            loadTradeFeed();
+        }, 10000);
+        
+        // Refresh VENOM risk status every 60 seconds
+        setInterval(() => {
+            loadVenomRiskStatus();
+        }, 60000);
+        
         // Refresh soldier roster every 2 minutes
         setInterval(loadSoldierRoster, 120000);
+        
+        // Mobile collapsible functionality
+        function toggleMobileSection(headerId) {
+            const header = document.getElementById(headerId);
+            const content = header.nextElementSibling;
+            const toggle = header.querySelector('.collapsible-toggle');
+            
+            if (content.classList.contains('expanded')) {
+                content.classList.remove('expanded');
+                toggle.classList.remove('rotated');
+            } else {
+                content.classList.add('expanded');
+                toggle.classList.add('rotated');
+            }
+        }
+        
+        // Initialize mobile collapsibles - expand first section by default
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.innerWidth <= 768) {
+                const firstCollapsible = document.querySelector('.mobile-collapsible-content');
+                if (firstCollapsible) {
+                    firstCollapsible.classList.add('expanded');
+                    const firstToggle = document.querySelector('.collapsible-toggle');
+                    if (firstToggle) {
+                        firstToggle.classList.add('rotated');
+                    }
+                }
+            }
+        });
+        
+        // PWA Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/static/sw.js')
+                    .then(function(registration) {
+                        console.log('[PWA] Service Worker registered successfully:', registration.scope);
+                    })
+                    .catch(function(error) {
+                        console.log('[PWA] Service Worker registration failed:', error);
+                    });
+            });
+        }
     </script>
 </body>
 </html>

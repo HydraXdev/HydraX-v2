@@ -2,7 +2,10 @@
 # INTEGRATION MODULE FOR BOT CONTROLS WITH MAIN SYSTEM
 # Connects disclaimer management and bot controls to the trading system
 
+import logging
 from typing import Dict, Optional, Any
+
+logger = logging.getLogger(__name__)
 from .telegram_router import TelegramRouter, TelegramUpdate, CommandResult
 from .telegram_bot_controls import TelegramBotControls, should_show_bot_message, format_bot_message
 from .psyops.disclaimer_manager import DisclaimerManager
@@ -27,6 +30,11 @@ class BotControlIntegration:
         
         # Add new command handlers to the router's command routing
         router = self.telegram_router
+        
+        # Skip if router doesn't have _route_command method (mock router)
+        if not hasattr(router, '_route_command'):
+            logger.info("Mock router detected - skipping command registration")
+            return
         
         # Store original route command method
         original_route = router._route_command

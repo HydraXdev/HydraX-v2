@@ -4,7 +4,7 @@
 //+------------------------------------------------------------------+
 #property strict
 #property copyright "BITTEN Trading System"
-#property version   "5.0"
+#property version   "5.4"
 #property description "Production EA with robust HTTP streaming and file-based execution"
 
 #include <Trade/Trade.mqh>
@@ -14,7 +14,7 @@ CTrade trade;
 input string SignalFile = "fire.txt";                // Signal file to monitor
 input string ResultFile = "trade_result.txt";        // Result file for feedback
 input string UUIDFile = "uuid.txt";                  // UUID file for identification
-input string MarketDataURL = "http://127.0.0.1:8001/market-data"; // Market data endpoint
+input string MarketDataURL = "http://134.199.204.67:8001/market-data"; // Market data endpoint
 input int StreamInterval = 5;                        // Stream market data every 5 seconds
 input int CheckInterval = 1;                         // Check for signals every 1 second
 input int MaxHTTPRetries = 1000000;                 // Essentially unlimited retries
@@ -32,11 +32,11 @@ int http_consecutive_errors = 0;
 bool http_working = false;
 datetime last_http_success = 0;
 
-// 15 currency pairs (NO XAUUSD)
+// 16 pairs including XAUUSD/GOLD
 string symbols[] = {
     "EURUSD", "GBPUSD", "USDJPY", "USDCAD", "AUDUSD",
     "USDCHF", "NZDUSD", "EURGBP", "EURJPY", "GBPJPY",
-    "GBPNZD", "GBPAUD", "EURAUD", "GBPCHF", "AUDJPY"
+    "XAUUSD", "GBPNZD", "GBPAUD", "EURAUD", "GBPCHF", "AUDJPY"
 };
 
 //+------------------------------------------------------------------+
@@ -45,10 +45,30 @@ string symbols[] = {
 int OnInit()
 {
     Print("======================================================");
-    Print("🚀 BITTENBridge PRODUCTION v5.0");
+    Print("🚀 BITTENBridge PRODUCTION v5.4");
     Print("📡 3-Way Communication: HTTP→Engine | File→EA | File→Core");
     Print("✅ Robust streaming with unlimited retries");
     Print("======================================================");
+    
+    // HTTP Connection Test - Using correct Ultimate Receiver format
+    string body = "{\"source\":\"MT5_LIVE\",\"broker\":\"TEST_BROKER\",\"server\":\"TEST_SERVER\",\"uuid\":\"test_uuid\",\"ticks\":[{\"symbol\":\"EURUSD\",\"bid\":1.0,\"ask\":1.1,\"source\":\"MT5_LIVE\"}]}";
+    uchar post[];
+    StringToCharArray(body, post, 0, StringLen(body), CP_UTF8);
+    ArrayResize(post, ArraySize(post) - 1);  // Remove null terminator
+    char result[];
+    string headers = "Content-Type: application/json\r\n";
+    string response_headers = "";
+    int code = WebRequest(
+        "POST",
+        "http://134.199.204.67:8001/market-data",
+        headers,
+        0,
+        post,
+        result,
+        response_headers
+    );
+
+    Print("🔥 TEST: code=", code, " | result=", CharArrayToString(result), " | err=", GetLastError());
     
     // Load or generate UUID
     LoadUUID();
@@ -283,14 +303,7 @@ void ProcessSignal(string content, string filepath)
         return;
     }
     
-    // Block XAUUSD
-    if(StringFind(symbol, "XAU") >= 0 || StringFind(symbol, "GOLD") >= 0)
-    {
-        Print("🚫 XAUUSD blocked");
-        WriteResult(signal_id, "error", 0, "XAUUSD not supported");
-        ClearSignalFile(filepath);
-        return;
-    }
+    // XAUUSD now allowed - block removed per user request
     
     // Handle close action
     if(action == "close")
@@ -332,8 +345,13 @@ void ProcessSignal(string content, string filepath)
     
     // Execute trade
     Print("🎯 Executing ", type, " ", symbol, " ", lot > 0 ? lot : 0.01, " lots");
-    ExecuteTrade(signal_id, symbol, type, lot > 0 ? lot : 0.01, sl, tp, 
-                 comment != "" ? comment : "BITTEN_" + signal_id);
+    string final_comment;
+    if(comment != "")
+        final_comment = comment;
+    else
+        StringConcatenate(final_comment, "BITTEN_", signal_id);
+    
+    ExecuteTrade(signal_id, symbol, type, lot > 0 ? lot : 0.01, sl, tp, final_comment);
     
     last_signal_id = signal_id;
     ClearSignalFile(filepath);
@@ -356,7 +374,6 @@ void ExecuteTrade(string signal_id, string symbol, string type, double lot,
     
     // Setup trade
     trade.SetExpertMagicNumber(777001);
-    trade.SetComment(trade_comment);
     trade.SetDeviationInPoints(10);
     
     bool result = false;
@@ -386,11 +403,13 @@ void ExecuteTrade(string signal_id, string symbol, string type, double lot,
         ulong ticket = trade.ResultOrder();
         last_ticket = ticket;
         Print("✅ Trade executed! Ticket: ", ticket);
-        WriteResult(signal_id, "success", ticket, "Executed at " + DoubleToString(price, 5));
+        string exec_msg;
+        StringConcatenate(exec_msg, "Executed at ", DoubleToString(price, 5));
+        WriteResult(signal_id, "success", ticket, exec_msg);
     }
     else
     {
-        int error_code = trade.ResultRetcode();
+        uint error_code = trade.ResultRetcode();
         string error_msg = trade.ResultRetcodeDescription();
         Print("❌ Trade failed: ", error_msg, " (", error_code, ")");
         WriteResult(signal_id, "error", 0, error_msg);
@@ -421,7 +440,9 @@ void ClosePositionsBySymbol(string sym)
         }
     }
     
-    WriteResult("", "closed", 0, IntegerToString(closed) + " positions closed");
+    string close_msg;
+    StringConcatenate(close_msg, IntegerToString(closed), " positions closed");
+    WriteResult("", "closed", 0, close_msg);
 }
 
 //+------------------------------------------------------------------+
@@ -446,26 +467,59 @@ void WriteResult(string signal_id, string status, ulong ticket, string message)
     {
         // Build comprehensive result
         string json = "{";
-        json += "\"signal_id\":\"" + signal_id + "\",";
-        json += "\"status\":\"" + status + "\",";
-        json += "\"ticket\":" + IntegerToString(ticket) + ",";
-        json += "\"message\":\"" + message + "\",";
-        json += "\"timestamp\":\"" + TimeToString(TimeCurrent()) + "\",";
-        json += "\"uuid\":\"" + uuid + "\",";
+        json += "\"signal_id\":\"";
+        json += signal_id;
+        json += "\",";
+        json += "\"status\":\"";
+        json += status;
+        json += "\",";
+        json += "\"ticket\":";
+        json += IntegerToString(ticket);
+        json += ",";
+        json += "\"message\":\"";
+        json += message;
+        json += "\",";
+        json += "\"timestamp\":\"";
+        json += TimeToString(TimeCurrent());
+        json += "\",";
+        json += "\"uuid\":\"";
+        json += uuid;
+        json += "\",";
         
         // Full account data for Core
         json += "\"account\":{";
-        json += "\"balance\":" + DoubleToString(AccountInfoDouble(ACCOUNT_BALANCE), 2) + ",";
-        json += "\"equity\":" + DoubleToString(AccountInfoDouble(ACCOUNT_EQUITY), 2) + ",";
-        json += "\"margin\":" + DoubleToString(AccountInfoDouble(ACCOUNT_MARGIN), 2) + ",";
-        json += "\"free_margin\":" + DoubleToString(AccountInfoDouble(ACCOUNT_MARGIN_FREE), 2) + ",";
-        json += "\"profit\":" + DoubleToString(AccountInfoDouble(ACCOUNT_PROFIT), 2) + ",";
-        json += "\"margin_level\":" + DoubleToString(AccountInfoDouble(ACCOUNT_MARGIN_LEVEL), 2) + ",";
-        json += "\"leverage\":" + IntegerToString(AccountInfoInteger(ACCOUNT_LEVERAGE)) + ",";
-        json += "\"currency\":\"" + AccountInfoString(ACCOUNT_CURRENCY) + "\",";
-        json += "\"server\":\"" + AccountInfoString(ACCOUNT_SERVER) + "\",";
-        json += "\"company\":\"" + AccountInfoString(ACCOUNT_COMPANY) + "\",";
-        json += "\"positions\":" + IntegerToString(PositionsTotal());
+        json += "\"balance\":";
+        json += DoubleToString(AccountInfoDouble(ACCOUNT_BALANCE), 2);
+        json += ",";
+        json += "\"equity\":";
+        json += DoubleToString(AccountInfoDouble(ACCOUNT_EQUITY), 2);
+        json += ",";
+        json += "\"margin\":";
+        json += DoubleToString(AccountInfoDouble(ACCOUNT_MARGIN), 2);
+        json += ",";
+        json += "\"free_margin\":";
+        json += DoubleToString(AccountInfoDouble(ACCOUNT_MARGIN_FREE), 2);
+        json += ",";
+        json += "\"profit\":";
+        json += DoubleToString(AccountInfoDouble(ACCOUNT_PROFIT), 2);
+        json += ",";
+        json += "\"margin_level\":";
+        json += DoubleToString(AccountInfoDouble(ACCOUNT_MARGIN_LEVEL), 2);
+        json += ",";
+        json += "\"leverage\":";
+        json += IntegerToString(AccountInfoInteger(ACCOUNT_LEVERAGE));
+        json += ",";
+        json += "\"currency\":\"";
+        json += AccountInfoString(ACCOUNT_CURRENCY);
+        json += "\",";
+        json += "\"server\":\"";
+        json += AccountInfoString(ACCOUNT_SERVER);
+        json += "\",";
+        json += "\"company\":\"";
+        json += AccountInfoString(ACCOUNT_COMPANY);
+        json += "\",";
+        json += "\"positions\":";
+        json += IntegerToString(PositionsTotal());
         json += "}";
         
         json += "}";
@@ -487,11 +541,22 @@ void StreamMarketData()
 {
     // Build market data JSON
     string json = "{";
-    json += "\"uuid\":\"" + uuid + "\",";
-    json += "\"timestamp\":" + IntegerToString(TimeCurrent()) + ",";
-    json += "\"account_balance\":" + DoubleToString(AccountInfoDouble(ACCOUNT_BALANCE), 2) + ",";
-    json += "\"broker\":\"" + AccountInfoString(ACCOUNT_COMPANY) + "\",";
-    json += "\"server\":\"" + AccountInfoString(ACCOUNT_SERVER) + "\",";
+    json += "\"source\":\"MT5_LIVE\",";
+    json += "\"uuid\":\"";
+    json += uuid;
+    json += "\",";
+    json += "\"timestamp\":";
+    json += IntegerToString(TimeCurrent());
+    json += ",";
+    json += "\"account_balance\":";
+    json += DoubleToString(AccountInfoDouble(ACCOUNT_BALANCE), 2);
+    json += ",";
+    json += "\"broker\":\"";
+    json += AccountInfoString(ACCOUNT_COMPANY);
+    json += "\",";
+    json += "\"server\":\"";
+    json += AccountInfoString(ACCOUNT_SERVER);
+    json += "\",";
     json += "\"ticks\":[";
     
     bool first = true;
@@ -509,12 +574,25 @@ void StreamMarketData()
             double spread = (tick.ask - tick.bid) / SymbolInfoDouble(symbols[i], SYMBOL_POINT);
             
             json += "{";
-            json += "\"symbol\":\"" + symbols[i] + "\",";
-            json += "\"bid\":" + DoubleToString(tick.bid, (int)SymbolInfoInteger(symbols[i], SYMBOL_DIGITS)) + ",";
-            json += "\"ask\":" + DoubleToString(tick.ask, (int)SymbolInfoInteger(symbols[i], SYMBOL_DIGITS)) + ",";
-            json += "\"spread\":" + DoubleToString(spread, 1) + ",";
-            json += "\"volume\":" + IntegerToString(tick.volume) + ",";
-            json += "\"time\":" + IntegerToString(tick.time);
+            json += "\"symbol\":\"";
+            json += symbols[i];
+            json += "\",";
+            json += "\"bid\":";
+            json += DoubleToString(tick.bid, (int)SymbolInfoInteger(symbols[i], SYMBOL_DIGITS));
+            json += ",";
+            json += "\"ask\":";
+            json += DoubleToString(tick.ask, (int)SymbolInfoInteger(symbols[i], SYMBOL_DIGITS));
+            json += ",";
+            json += "\"spread\":";
+            json += DoubleToString(spread, 1);
+            json += ",";
+            json += "\"volume\":";
+            json += IntegerToString(tick.volume);
+            json += ",";
+            json += "\"time\":";
+            json += IntegerToString(tick.time);
+            json += ",";
+            json += "\"source\":\"MT5_LIVE\"";
             json += "}";
             
             validTicks++;
@@ -535,20 +613,21 @@ void StreamMarketData()
 //+------------------------------------------------------------------+
 void SendHTTPPost(string url, string json_data)
 {
-    char post[];
+    uchar post[];
     char result[];
     string headers;
+    string response_headers = "";
     
     // Prepare data
     StringToCharArray(json_data, post, 0, StringLen(json_data), CP_UTF8);
     ArrayResize(post, ArraySize(post) - 1);
     
     headers = "Content-Type: application/json\r\n";
-    headers += "User-Agent: BITTENBridge/5.0\r\n";
+    headers += "User-Agent: BITTENBridge/5.3\r\n";
     
     // Send with retry logic
     ResetLastError();
-    int res = WebRequest("POST", url, headers, 5000, post, result, headers);
+    int res = WebRequest("POST", url, headers, 5000, post, result, response_headers);
     
     if(res == 200)
     {
@@ -596,7 +675,9 @@ void SendHTTPPost(string url, string json_data)
 //+------------------------------------------------------------------+
 string GetJSONValue(string json, string key)
 {
-    int key_pos = StringFind(json, "\"" + key + "\"");
+    string search_key;
+    StringConcatenate(search_key, "\"", key, "\"");
+    int key_pos = StringFind(json, search_key);
     if(key_pos < 0) return "";
     
     int colon_pos = StringFind(json, ":", key_pos);

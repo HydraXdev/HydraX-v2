@@ -13,7 +13,7 @@ async def test_both_alert_types():
     """Send both SNIPER SHOT and RAPID ASSAULT alerts"""
     
     # Use the correct trading bot
-    bot = Bot("7854827710:AAGsO-vgMpsTOVNu6zoo_-GGJkYQd97Mc5w")
+    bot = Bot("7854827710:AAE6m_sNuMk2X6Z3yf2mYO6-6-Clqan-F2c")
     chat_id = "-1002581996861"
     
     print("🚀 Testing both alert types with correct bot...")

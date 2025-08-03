@@ -26,7 +26,7 @@ bridge:
   
 # Telegram Configuration
 telegram:
-  bot_token: "7854827710:AAGsO-vgMpsTOVNu6zoo_-GGJkYQd97Mc5w"  # BIT COMMANDER
+  bot_token: "7854827710:AAE6m_sNuMk2X6Z3yf2mYO6-6-Clqan-F2c"  # BIT COMMANDER
   chat_id: -1002581996861
   webapp_url: "https://joinbitten.com"
   signal_cooldown_seconds: 60

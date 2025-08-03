@@ -41,11 +41,14 @@ class UnifiedSignalFlow:
         symbol = signal.get('symbol', '')
         direction = signal.get('direction', '')
         
-        # Determine signal type and formatting
-        if tcs >= 90:
+        # Determine signal type and formatting using centralized threshold
+        from tcs_controller import get_current_threshold
+        threshold = get_current_threshold()
+        
+        if tcs >= (threshold + 20):
             header = "🔥🔥 **SNIPER SHOT** 🔥🔥"
             confidence = f"{tcs}%"
-        elif tcs >= 80:
+        elif tcs >= (threshold + 10):
             header = "⭐ **Precision Strike** ⭐"
             confidence = f"{tcs}%"
         else:
@@ -75,11 +78,14 @@ class UnifiedSignalFlow:
         encoded_data = urllib.parse.quote(json.dumps(webapp_data))
         url = f"{self.webapp_url}/hud?data={encoded_data}"
         
-        # Determine button text based on signal type
+        # Determine button text based on signal type using centralized threshold
+        from tcs_controller import get_current_threshold
+        threshold = get_current_threshold()
         tcs = signal.get('tcs_score', 0)
-        if tcs >= 90:
+        
+        if tcs >= (threshold + 20):
             button_text = "🎯 SNIPER MISSION BRIEF"
-        elif tcs >= 80:
+        elif tcs >= (threshold + 10):
             button_text = "⭐ PRECISION INTEL"
         else:
             button_text = "📊 VIEW DETAILS"
@@ -123,8 +129,10 @@ class UnifiedSignalFlow:
             # Add any tier-based filtering here
             tcs = signal.get('tcs_score', 0)
             
-            # For now, send all signals above 70 TCS
-            if tcs >= 70:
+            # Send signals above threshold using centralized value
+            from tcs_controller import get_current_threshold
+            threshold = get_current_threshold()
+            if tcs >= threshold:
                 success = await self.send_signal(signal)
                 if success:
                     results['sent'] += 1

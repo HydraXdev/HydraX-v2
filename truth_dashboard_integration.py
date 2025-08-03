@@ -64,24 +64,31 @@ class TruthDashboard:
             
         return signals
     
-    def get_black_box_summary(self, hours_back: int = 24) -> Dict[str, Any]:
-        """Get Black Box confirmed performance summary"""
+    def get_black_box_summary(self, hours_back: int = 24, verify_source: bool = False) -> Dict[str, Any]:
+        """Get Black Box confirmed performance summary - TRUTH LOG ONLY"""
         signals = self.load_truth_data(hours_back)
         
-        if not signals:
+        # STRICT: Filter only verified source signals if requested
+        if verify_source:
+            signals = [s for s in signals if s.get('source') == 'venom_scalp_master']
+        
+        # MANDATORY: Insufficient data check for <10 entries
+        if len(signals) < 10:
             return {
-                "total_tracked": 0,
-                "black_box_confirmed_win_rate": 0.0,
-                "signals_tracked_realtime": 0,
-                "wins": 0,
-                "losses": 0,
+                "total_tracked": len(signals),
+                "black_box_confirmed_win_rate": "Insufficient Data",
+                "signals_tracked_realtime": len(signals),
+                "wins": sum(1 for s in signals if s.get('result') == 'WIN'),
+                "losses": sum(1 for s in signals if s.get('result') == 'LOSS'),
                 "avg_runtime_wins": 0,
                 "avg_runtime_losses": 0,
                 "best_pairs": [],
                 "worst_pairs": [],
-                "last_update": "No data available",
-                "confidence_interval": "Insufficient data",
-                "sample_size_warning": True
+                "last_update": "Insufficient data (<10 entries)",
+                "confidence_interval": "Insufficient data (<10 entries)",
+                "sample_size_warning": True,
+                "data_source": "truth_log.jsonl ONLY",
+                "fallback_disabled": True
             }
         
         # Calculate basic stats
@@ -173,7 +180,9 @@ class TruthDashboard:
             "worst_pairs": worst_pairs,
             "last_update": last_update,
             "confidence_interval": confidence_interval,
-            "sample_size_warning": sample_size_warning
+            "sample_size_warning": sample_size_warning,
+            "data_source": "truth_log.jsonl ONLY",
+            "fallback_disabled": True
         }
     
     def get_time_series_data(self, hours_back: int = 168) -> List[Dict[str, Any]]:

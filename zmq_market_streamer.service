@@ -1,0 +1,26 @@
+[Unit]
+Description=ZMQ Market Data Streamer - BITTEN LIVE Data Pipeline
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/HydraX-v2
+ExecStart=/usr/bin/python3 /root/HydraX-v2/zmq_market_streamer.py --subscribe tcp://134.199.204.67:5555 --publish tcp://127.0.0.1:5556
+Restart=always
+RestartSec=10
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+
+# Environment
+Environment="PYTHONUNBUFFERED=1"
+
+# Resource limits
+LimitNOFILE=65536
+MemoryLimit=512M
+CPUQuota=25%
+
+[Install]
+WantedBy=multi-user.target

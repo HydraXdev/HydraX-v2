@@ -8,12 +8,22 @@ from typing import Dict, Any, Optional, List
 
 logger = logging.getLogger(__name__)
 
+class MockDisclaimerManager:
+    """Mock disclaimer manager for testing"""
+    def get_onboarding_disclaimer(self):
+        return "Mock disclaimer for testing"
+    
+    def accept_disclaimer(self, user_id):
+        logger.info(f"Mock disclaimer accepted for user {user_id}")
+        return True
+
 class TelegramBotControls:
     """Mock telegram bot controls for testing"""
     
     def __init__(self):
         self.active_bots = {}
         self.bot_status = {}
+        self.disclaimer_manager = MockDisclaimerManager()  # Add missing disclaimer_manager
         logger.info("Mock Telegram Bot Controls initialized")
     
     def start_bot(self, bot_id: str, config: Dict[str, Any]) -> bool:
@@ -43,6 +53,16 @@ class TelegramBotControls:
         """Mock send bot message"""
         logger.info(f"Mock bot message sent via {bot_id}: {message}")
         return True
+        
+    def handle_disclaimer_command(self, user_id: str) -> dict:
+        """Mock disclaimer command handler"""
+        logger.info(f"Mock disclaimer command for user {user_id}")
+        return {"status": "success", "message": "Mock disclaimer handled"}
+        
+    def handle_botcontrol_command(self, user_id: str, args: list = None) -> dict:
+        """Mock bot control command handler"""
+        logger.info(f"Mock bot control command for user {user_id}")
+        return {"status": "success", "message": "Mock bot control handled"}
 
 def should_show_bot_message(message: str, user_context: Dict[str, Any] = None) -> bool:
     """Mock function to determine if bot message should be shown"""

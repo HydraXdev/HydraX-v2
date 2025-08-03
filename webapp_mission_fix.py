@@ -91,11 +91,13 @@ def mission_briefing():
         template_content = template_content.replace('id="takeProfit">0.00000</div>', f'id="takeProfit">{signal_data.get("take_profit", "0.00000")}</div>')
         template_content = template_content.replace('id="riskRatio">1:0</div>', f'id="riskRatio">1:{signal_data.get("risk_reward_ratio", "0")}</div>')
         
-        # Update confidence text based on TCS score
+        # Update confidence text based on TCS score using centralized threshold
+        from tcs_controller import get_current_threshold
+        threshold = get_current_threshold()
         tcs_score = signal_data.get('tcs_score', 0)
-        if tcs_score >= 80:
+        if tcs_score >= (threshold + 10):
             confidence_text = 'High Confidence Signal'
-        elif tcs_score >= 70:
+        elif tcs_score >= threshold:
             confidence_text = 'Good Signal Quality'
         else:
             confidence_text = 'Moderate Confidence'

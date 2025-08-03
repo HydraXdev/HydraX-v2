@@ -1,0 +1,35 @@
+[Unit]
+Description=ZMQ Market Data Receiver for HydraX
+After=network.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/root/HydraX-v2
+
+# Environment configuration
+Environment="ZMQ_ENDPOINT=tcp://192.168.1.100:5555"
+Environment="PYTHONUNBUFFERED=1"
+
+# Start command
+ExecStart=/usr/bin/python3 /root/HydraX-v2/zmq_market_data_receiver.py
+
+# Restart policy
+Restart=always
+RestartSec=10
+StartLimitInterval=60
+StartLimitBurst=5
+
+# Resource limits
+LimitNOFILE=65536
+CPUQuota=50%
+MemoryMax=1G
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=zmq-market-receiver
+
+[Install]
+WantedBy=multi-user.target

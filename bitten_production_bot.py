@@ -22,6 +22,8 @@ import docker
 import base64
 import string
 from pathlib import Path
+import zmq
+import uuid
 
 # Add paths for imports
 sys.path.append('/root/HydraX-v2/src')
@@ -379,6 +381,11 @@ class BittenProductionBot:
         else:
             self.tactical_interface = None
         
+        # Initialize CORE crypto signal system
+        self.core_enabled = True
+        self.core_log_file = "/root/HydraX-v2/logs/core_dm_log.jsonl"
+        os.makedirs(os.path.dirname(self.core_log_file), exist_ok=True)
+        
         # Initialize credit referral system
         if CREDIT_REFERRAL_AVAILABLE:
             try:
@@ -391,6 +398,11 @@ class BittenProductionBot:
             self.credit_commands = None
         
         self.setup_handlers()
+        
+        # Start CORE signal listener in background thread
+        if self.core_enabled:
+            self.start_core_signal_listener()
+            
         logger.info("BITTEN Production Bot initialized")
     
     def _get_current_badge_display(self, referral_count: int) -> str:
@@ -447,6 +459,86 @@ class BittenProductionBot:
         # No personality system available, send regular message
         self.bot.send_message(chat_id, escape_markdown(message_text), parse_mode="MarkdownV2")
         return False
+    
+    def send_dm_signal(self, telegram_id: str, signal_text: str, parse_mode: str = "MarkdownV2") -> bool:
+        """Send private signal message to a specific user
+        
+        Args:
+            telegram_id: User's Telegram ID (as string)
+            signal_text: Signal message text (already formatted)
+            parse_mode: Telegram parse mode (default MarkdownV2)
+            
+        Returns:
+            bool: True if message sent successfully, False otherwise
+        """
+        try:
+            # Ensure telegram_id is a valid chat_id
+            chat_id = int(telegram_id) if isinstance(telegram_id, str) else telegram_id
+            
+            # For offshore/XAUUSD signals, we might want to add a disclaimer
+            if "XAUUSD" in signal_text or "GOLD" in signal_text.upper():
+                signal_text = f"🔒 *Private Signal (Offshore Only)*\n\n{signal_text}"
+            
+            # Send the message
+            self.bot.send_message(chat_id, signal_text, parse_mode=parse_mode)
+            logger.info(f"DM signal sent to {telegram_id}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Failed to send DM signal to {telegram_id}: {e}")
+            return False
+    
+    def lookup_telegram_id(self, user_id: str) -> Optional[str]:
+        """Map user_id to telegram_id using registry
+        
+        Args:
+            user_id: Internal user ID
+            
+        Returns:
+            telegram_id if found, None otherwise
+        """
+        try:
+            from src.bitten_core.user_registry_manager import get_user_registry_manager
+            registry = get_user_registry_manager()
+            
+            # Search through registry for matching user_id
+            for telegram_id, user_data in registry.registry_data.items():
+                if user_data.get("user_id") == user_id:
+                    return telegram_id
+                    
+            logger.warning(f"No telegram_id found for user_id: {user_id}")
+            return None
+            
+        except Exception as e:
+            logger.error(f"Error looking up telegram_id for {user_id}: {e}")
+            return None
+    
+    def is_offshore_eligible(self, telegram_id: str) -> bool:
+        """Check if user is eligible for offshore signals (XAUUSD)
+        
+        Args:
+            telegram_id: User's Telegram ID
+            
+        Returns:
+            bool: True if user is INTL region AND has opted in for offshore
+        """
+        try:
+            from src.bitten_core.user_registry_manager import get_user_registry_manager
+            registry = get_user_registry_manager()
+            
+            user_info = registry.get_user_info(telegram_id)
+            if not user_info:
+                return False
+                
+            # User must be INTL region AND have opted in
+            user_region = user_info.get("user_region", "US")
+            offshore_opt_in = user_info.get("offshore_opt_in", False)
+            
+            return user_region == "INTL" and offshore_opt_in
+            
+        except Exception as e:
+            logger.error(f"Error checking offshore eligibility for {telegram_id}: {e}")
+            return False
     
     def create_quick_keyboard(self):
         """Create persistent quick-access keyboard (always visible at bottom)"""
@@ -557,9 +649,45 @@ class BittenProductionBot:
                     self.send_adaptive_response(message.chat.id, help_msg, user_tier, "help_request")
                 
                 elif message.text.startswith("/start"):
-                    # Handle start command with optional referral code
+                    # Enhanced cinematic onboarding experience
                     parts = message.text.split()
                     
+                    # Check for new user onboarding
+                    try:
+                        from src.bitten_core.onboarding_cinematic import cinematic_onboarding
+                        from src.bitten_core.enhanced_personality_system import enhanced_personalities
+                        from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+                        
+                        # Check if user is truly new (no XP)
+                        user_stats = self.get_user_stats(uid)
+                        is_new_user = user_stats.get('total_xp', 0) == 0
+                        
+                        if is_new_user and len(parts) == 1:
+                            # New user with no referral code - cinematic experience
+                            welcome_msg, keyboard_data = cinematic_onboarding.get_onboarding_message(uid, "welcome")
+                            
+                            if keyboard_data:
+                                keyboard = InlineKeyboardMarkup()
+                                for row in keyboard_data.get('inline_keyboard', []):
+                                    buttons = [InlineKeyboardButton(text=btn['text'], callback_data=btn['callback_data']) for btn in row]
+                                    keyboard.row(*buttons)
+                                self.bot.send_message(
+                                    chat_id=message.chat.id,
+                                    text=welcome_msg,
+                                    parse_mode='Markdown',
+                                    reply_markup=keyboard
+                                )
+                            else:
+                                self.send_adaptive_response(message.chat.id, welcome_msg, user_tier, "cinematic_welcome")
+                                
+                            logger.info(f"New user {uid} started cinematic onboarding")
+                            return
+                        
+                    except Exception as e:
+                        logger.error(f"Cinematic onboarding error: {e}")
+                        # Continue with regular onboarding if cinematic fails
+                    
+                    # Handle referral codes and returning users
                     if len(parts) > 1:
                         # Referral code provided
                         referral_code = parts[1]
@@ -618,21 +746,21 @@ Ready to dominate the markets? 🚀"""
                             
                             self.send_adaptive_response(message.chat.id, fallback_welcome, user_tier, "fallback_welcome")
                     else:
-                        # No referral code - normal welcome
-                        normal_welcome = f"""🎯 **WELCOME TO BITTEN!**
+                        # No referral code - normal welcome for returning users
+                        normal_welcome = f"""🎯 **WELCOME BACK TO BITTEN!**
 
-Your tactical trading journey begins now!
+Your tactical trading journey continues!
 
-📋 **Get Started:**
-• Use `/presspass` for a 7-day free trial
+📋 **Quick Commands:**
+• Use `/status` to check your current stats
 • Use `/help` to see all commands
-• Use `/tactical` to learn trading strategies
+• Use `/tactical` to review trading strategies
 • Use `/recruit` to get your own referral link
 
 Ready to dominate the markets? 🚀"""
                         
                         self.send_adaptive_response(message.chat.id, normal_welcome, user_tier, "normal_welcome")
-                        logger.info(f"New user {uid} started without referral code")
+                        logger.info(f"Returning user {uid} used /start")
                 
                 elif message.text == "/api":
                     # Fire Loop Validation System - API Status Command
@@ -903,6 +1031,132 @@ Consider documenting your current thoughts:
                             logger.error(f"GHOSTED command error: {e}")
                     else:
                         self.send_adaptive_response(message.chat.id, "❌ GHOSTED report restricted to commanders.", user_tier, "unauthorized_access")
+                
+                elif message.text.startswith("/givegold"):
+                    # Admin-only command to grant gold access
+                    if int(uid) in COMMANDER_IDS:
+                        try:
+                            # Extract username from command
+                            parts = message.text.split()
+                            if len(parts) < 2:
+                                self.send_adaptive_response(message.chat.id, "❌ Usage: /givegold @username", user_tier, "usage_error")
+                                return
+                            
+                            username = parts[1].lstrip('@')  # Remove @ if present
+                            
+                            # Look up user by username
+                            target_telegram_id = self._lookup_telegram_id_by_username(username)
+                            
+                            if not target_telegram_id:
+                                self.send_adaptive_response(message.chat.id, f"❌ User @{username} not found in system.", user_tier, "user_not_found")
+                                return
+                            
+                            # Import user registry manager
+                            from src.bitten_core.user_registry_manager import get_user_registry_manager
+                            registry = get_user_registry_manager()
+                            
+                            # Get user info
+                            user_info = registry.get_user_info(target_telegram_id)
+                            if not user_info:
+                                self.send_adaptive_response(message.chat.id, f"❌ User @{username} not registered.", user_tier, "user_not_registered")
+                                return
+                            
+                            # Check if user is US-based
+                            user_region = user_info.get('user_region', 'US')
+                            if user_region == 'US':
+                                self.send_adaptive_response(message.chat.id, "❌ Cannot grant gold access to US-based accounts due to regulations.", user_tier, "regulatory_restriction")
+                                return
+                            
+                            # Check if already has access
+                            if user_info.get('offshore_opt_in', False):
+                                self.send_adaptive_response(message.chat.id, f"ℹ️ Gold access already active for @{username}.", user_tier, "already_active")
+                                return
+                            
+                            # Grant gold access
+                            success = registry.update_offshore_opt_in(target_telegram_id, True)
+                            
+                            if success:
+                                # Send welcome message to user
+                                gold_welcome = self._format_gold_welcome_message()
+                                try:
+                                    self.bot.send_message(int(target_telegram_id), gold_welcome, parse_mode="MarkdownV2")
+                                    logger.info(f"Gold access granted to {target_telegram_id} (@{username}) by {uid}")
+                                except Exception as e:
+                                    logger.error(f"Failed to send gold welcome message: {e}")
+                                
+                                # Confirm to admin
+                                self.send_adaptive_response(message.chat.id, f"✅ Gold access granted to @{username}.", user_tier, "gold_access_granted")
+                            else:
+                                self.send_adaptive_response(message.chat.id, "❌ Failed to update user profile.", user_tier, "update_failed")
+                                
+                        except Exception as e:
+                            logger.error(f"Error in /givegold command: {e}")
+                            self.send_adaptive_response(message.chat.id, f"❌ Error: {str(e)}", user_tier, "command_error")
+                    else:
+                        self.send_adaptive_response(message.chat.id, "❌ Unauthorized. This command is restricted to commanders.", user_tier, "unauthorized")
+                
+                elif message.text.startswith("/givecrypto"):
+                    # Admin-only command to grant crypto access
+                    if int(uid) in COMMANDER_IDS:
+                        try:
+                            # Extract username from command
+                            parts = message.text.split()
+                            if len(parts) < 2:
+                                self.send_adaptive_response(message.chat.id, "❌ Usage: /givecrypto @username", user_tier, "usage_error")
+                                return
+                            
+                            username = parts[1].lstrip('@')  # Remove @ if present
+                            
+                            # Look up user by username
+                            target_telegram_id = self._lookup_telegram_id_by_username(username)
+                            
+                            if not target_telegram_id:
+                                self.send_adaptive_response(message.chat.id, f"❌ User @{username} not found in system.", user_tier, "user_not_found")
+                                return
+                            
+                            # Import user registry manager
+                            from src.bitten_core.user_registry_manager import get_user_registry_manager
+                            registry = get_user_registry_manager()
+                            
+                            # Get user info
+                            user_info = registry.get_user_info(target_telegram_id)
+                            if not user_info:
+                                self.send_adaptive_response(message.chat.id, f"❌ User @{username} not registered.", user_tier, "user_not_registered")
+                                return
+                            
+                            # Check if user is US-based
+                            user_region = user_info.get('user_region', 'US')
+                            if user_region == 'US':
+                                self.send_adaptive_response(message.chat.id, "❌ Cannot grant C.O.R.E. access to US-based accounts for compliance reasons.", user_tier, "regulatory_restriction")
+                                return
+                            
+                            # Check if already has crypto access
+                            if user_info.get('crypto_opt_in', False):
+                                self.send_adaptive_response(message.chat.id, f"ℹ️ C.O.R.E. access already active for @{username}.", user_tier, "already_active")
+                                return
+                            
+                            # Grant crypto access
+                            success = registry.update_crypto_opt_in(target_telegram_id, True)
+                            
+                            if success:
+                                # Send welcome message to user
+                                crypto_welcome = self._format_crypto_welcome_message()
+                                try:
+                                    self.bot.send_message(int(target_telegram_id), crypto_welcome, parse_mode="MarkdownV2")
+                                    logger.info(f"C.O.R.E. access granted to {target_telegram_id} (@{username}) by {uid}")
+                                except Exception as e:
+                                    logger.error(f"Failed to send crypto welcome message: {e}")
+                                
+                                # Confirm to admin
+                                self.send_adaptive_response(message.chat.id, f"✅ C.O.R.E. access granted to @{username}.", user_tier, "crypto_access_granted")
+                            else:
+                                self.send_adaptive_response(message.chat.id, "❌ Failed to update user profile.", user_tier, "update_failed")
+                                
+                        except Exception as e:
+                            logger.error(f"Error in /givecrypto command: {e}")
+                            self.send_adaptive_response(message.chat.id, f"❌ Error: {str(e)}", user_tier, "command_error")
+                    else:
+                        self.send_adaptive_response(message.chat.id, "❌ Unauthorized. This command is restricted to commanders.", user_tier, "unauthorized")
                 
                 elif message.text.startswith("/slots"):
                     # Import fire mode handlers with fallback protection
@@ -1519,7 +1773,7 @@ Use `/help` for the complete command list."""
                 logger.error(f"Error handling command {message.text}: {e}")
                 self.send_adaptive_response(message.chat.id, "❌ Command processing error. Please try again.", user_tier, "error")
         
-        @self.bot.callback_query_handler(func=lambda call: call.data.startswith("mode_") or call.data.startswith("slots_") or call.data.startswith("semi_fire_") or call.data.startswith("menu_") or call.data.startswith("combat_") or call.data.startswith("field_") or call.data.startswith("tier_") or call.data.startswith("xp_") or call.data.startswith("help_") or call.data.startswith("tool_") or call.data.startswith("bot_") or call.data.startswith("notebook_"))
+        @self.bot.callback_query_handler(func=lambda call: call.data.startswith("mode_") or call.data.startswith("slots_") or call.data.startswith("semi_fire_") or call.data.startswith("menu_") or call.data.startswith("combat_") or call.data.startswith("field_") or call.data.startswith("tier_") or call.data.startswith("xp_") or call.data.startswith("help_") or call.data.startswith("tool_") or call.data.startswith("bot_") or call.data.startswith("notebook_") or call.data.startswith("onboard_"))
         def handle_all_callbacks(call):
             """Handle all inline keyboard callbacks including fire mode and Intel Center"""
             user_id = str(call.from_user.id)
@@ -2965,6 +3219,267 @@ Server: Coinexx1Demo
         except Exception as e:
             logger.error(f"Parameter validation error: {e}")
             return False
+    
+    def _lookup_telegram_id_by_username(self, username: str) -> Optional[str]:
+        """Look up telegram_id by username from user registry"""
+        try:
+            from src.bitten_core.user_registry_manager import get_user_registry_manager
+            registry = get_user_registry_manager()
+            
+            # Search through all users for matching username
+            # Note: This requires storing usernames in registry, which might need enhancement
+            # For now, check if username matches user_id field
+            for telegram_id, user_info in registry.registry_data.items():
+                if user_info.get('user_id', '') == username:
+                    return telegram_id
+            
+            # If no direct match, try to look up in recent messages or cache
+            # This is a simplified version - in production you might want to maintain
+            # a username->telegram_id mapping cache
+            logger.warning(f"Username {username} not found in registry")
+            return None
+            
+        except Exception as e:
+            logger.error(f"Error looking up username {username}: {e}")
+            return None
+    
+    def _format_gold_welcome_message(self) -> str:
+        """Format the gold operative welcome message"""
+        # Escape special characters for MarkdownV2
+        message = (
+            "🎖️ *Gold Access Granted*\n\n"
+            "You've been activated as a *Gold Operative*\\.\n"
+            "Private XAUUSD signals will now be delivered directly to you\\.\n\n"
+            "🪙 *\\+200 XP* per gold mission\n"
+            "📈 *High\\-volatility edge*\n"
+            "⚠️ *Use with caution – leverage is your responsibility*"
+        )
+        return message
+    
+    def _format_crypto_welcome_message(self) -> str:
+        """Format the C.O.R.E. crypto access welcome message"""
+        # Escape special characters for MarkdownV2
+        message = (
+            "🔓 *C\\.O\\.R\\.E\\. Access Granted*\n\n"
+            "You are now authorized to receive crypto mission signals\\.\n\n"
+            "🔥 BTCUSD, ETHUSD, and more\n"
+            "📈 Tactical setups only — no spam\n"
+            "🎖 XP rewards for every precision fire\n"
+            "🧨 Expect volatility\\. Execute with control\\."
+        )
+        return message
+    
+    def start_core_signal_listener(self):
+        """Start background thread to listen for CORE signals"""
+        try:
+            thread = threading.Thread(target=self._core_signal_listener, daemon=True)
+            thread.start()
+            logger.info("🚀 CORE signal listener started")
+        except Exception as e:
+            logger.error(f"Failed to start CORE signal listener: {e}")
+    
+    def _core_signal_listener(self):
+        """Background thread to receive and process CORE signals"""
+        context = zmq.Context()
+        subscriber = context.socket(zmq.SUB)
+        
+        try:
+            # Connect to CORE signal publisher
+            subscriber.connect("tcp://127.0.0.1:5556")
+            subscriber.setsockopt(zmq.SUBSCRIBE, b"CORE_SIGNAL")
+            
+            logger.info("📡 Listening for CORE_SIGNAL on tcp://127.0.0.1:5556")
+            
+            while True:
+                try:
+                    # Receive signal with timeout
+                    if subscriber.poll(timeout=1000):  # 1 second timeout
+                        raw_message = subscriber.recv_string(zmq.NOBLOCK)
+                        
+                        # Parse: "CORE_SIGNAL {json_data}"
+                        if raw_message.startswith("CORE_SIGNAL "):
+                            json_data = raw_message[12:]  # Remove "CORE_SIGNAL " prefix
+                            signal = json.loads(json_data)
+                            
+                            # Process the signal
+                            self._process_core_signal(signal)
+                            
+                except zmq.Again:
+                    # No message received, continue
+                    continue
+                except Exception as e:
+                    logger.error(f"Error processing CORE signal: {e}")
+                    time.sleep(5)  # Brief pause before retry
+                    
+        except Exception as e:
+            logger.error(f"CORE signal listener error: {e}")
+        finally:
+            subscriber.close()
+            context.term()
+    
+    def _process_core_signal(self, signal: dict):
+        """Process incoming CORE signal and send to eligible users"""
+        try:
+            logger.info(f"📥 Processing CORE signal: {signal.get('uuid', 'unknown')}")
+            
+            # Add signal to truth tracker for performance monitoring
+            try:
+                from core_truth_integration import track_core_signal
+                tracked = track_core_signal(signal)
+                if tracked:
+                    logger.info(f"📊 C.O.R.E. signal {signal.get('uuid', 'unknown')} added to truth tracking")
+                else:
+                    logger.warning(f"⚠️ Failed to add C.O.R.E. signal to truth tracker")
+            except Exception as e:
+                logger.error(f"❌ Error adding C.O.R.E. signal to truth tracker: {e}")
+            
+            # Get eligible users (offshore + crypto opt-in)
+            eligible_users = self._get_crypto_eligible_users()
+            
+            if not eligible_users:
+                logger.info("ℹ️ No eligible users for crypto signals")
+                return
+            
+            # Format message
+            message_text = self._format_core_signal_message(signal)
+            buttons = self._create_mission_brief_button(signal.get('uuid', ''))
+            
+            # Send to eligible users
+            delivered_count = 0
+            for user_profile in eligible_users:
+                try:
+                    chat_id = user_profile.get('telegram_id')
+                    if chat_id:
+                        self.bot.send_message(
+                            chat_id=chat_id,
+                            text=message_text,
+                            parse_mode="MarkdownV2",
+                            reply_markup=buttons
+                        )
+                        
+                        # Award XP if system available
+                        xp_amount = signal.get('xp', 160)
+                        self._award_core_xp(str(chat_id), xp_amount)
+                        
+                        delivered_count += 1
+                        
+                        # Log delivery
+                        self._log_core_delivery(signal, str(chat_id))
+                        
+                except Exception as e:
+                    logger.error(f"Failed to send CORE signal to {chat_id}: {e}")
+            
+            logger.info(f"✅ CORE signal delivered to {delivered_count} users")
+            
+        except Exception as e:
+            logger.error(f"Error processing CORE signal: {e}")
+    
+    def _get_crypto_eligible_users(self) -> list:
+        """Get users eligible for crypto signals (offshore + opted in)"""
+        try:
+            # Mock implementation - replace with actual user database lookup
+            eligible_users = []
+            
+            # Example user profiles (replace with real database query)
+            # SELECT * FROM users WHERE user_region != 'US' AND crypto_opt_in = TRUE
+            
+            # For testing, return mock users
+            mock_users = [
+                {
+                    'telegram_id': 7176191872,  # Your user ID for testing
+                    'user_region': 'International',
+                    'crypto_opt_in': True
+                }
+            ]
+            
+            for user in mock_users:
+                if user.get('user_region') != 'US' and user.get('crypto_opt_in'):
+                    eligible_users.append(user)
+            
+            return eligible_users
+            
+        except Exception as e:
+            logger.error(f"Error getting crypto eligible users: {e}")
+            return []
+    
+    def _format_core_signal_message(self, signal: dict) -> str:
+        """Format CORE signal for Telegram delivery"""
+        try:
+            symbol = signal.get('symbol', 'BTCUSD')
+            pattern = signal.get('pattern', 'Unknown')
+            score = signal.get('score', 0)
+            
+            # Escape special characters for MarkdownV2
+            def escape_md(text):
+                chars_to_escape = ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!']
+                for char in chars_to_escape:
+                    text = text.replace(char, f'\\{char}')
+                return text
+            
+            symbol_escaped = escape_md(symbol)
+            pattern_escaped = escape_md(pattern)
+            
+            message = (
+                f"🔥 *C\\.O\\.R\\.E\\. SIGNAL: {symbol_escaped}*\n"
+                f"🕒 {pattern_escaped} \\– Score: {score}/100"
+            )
+            
+            return message
+            
+        except Exception as e:
+            logger.error(f"Error formatting CORE message: {e}")
+            return "🔥 *C\\.O\\.R\\.E\\. SIGNAL RECEIVED*"
+    
+    def _create_mission_brief_button(self, uuid: str) -> 'InlineKeyboardMarkup':
+        """Create inline button for mission brief"""
+        try:
+            from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+            
+            buttons = InlineKeyboardMarkup()
+            brief_button = InlineKeyboardButton(
+                text="📄 Mission Brief",
+                url=f"https://core-missions.bitten.trading/brief/{uuid}"
+            )
+            buttons.add(brief_button)
+            
+            return buttons
+            
+        except Exception as e:
+            logger.error(f"Error creating mission brief button: {e}")
+            return None
+    
+    def _award_core_xp(self, user_id: str, xp_amount: int):
+        """Award XP for CORE signal (integrate with existing XP system)"""
+        try:
+            # TODO: Integrate with existing XP system if available
+            # For now, just log the XP award
+            logger.info(f"🎯 Awarded {xp_amount} XP to user {user_id} for CORE signal")
+            
+            # Example integration:
+            # if hasattr(self, 'xp_system'):
+            #     self.xp_system.award_xp(user_id, xp_amount, source="core")
+            
+        except Exception as e:
+            logger.error(f"Error awarding CORE XP: {e}")
+    
+    def _log_core_delivery(self, signal: dict, user_id: str):
+        """Log CORE signal delivery to JSONL file"""
+        try:
+            log_entry = {
+                "uuid": signal.get('uuid', ''),
+                "user_id": user_id,
+                "symbol": signal.get('symbol', ''),
+                "score": signal.get('score', 0),
+                "timestamp": datetime.now().isoformat(),
+                "pattern": signal.get('pattern', ''),
+                "xp_awarded": signal.get('xp', 160)
+            }
+            
+            with open(self.core_log_file, 'a') as f:
+                f.write(json.dumps(log_entry) + '\n')
+                
+        except Exception as e:
+            logger.error(f"Error logging CORE delivery: {e}")
     
     def run(self):
         """Start the bot"""

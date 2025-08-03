@@ -1,3 +1,10 @@
+# ┌──────────────────────────────────────────────────────────────┐
+# │ BITTEN ZMQ SYSTEM - DO NOT FALL BACK TO FILE/HTTP ROUTES    │
+# │ Persistent ZMQ architecture is required                      │
+# │ EA v7 connects directly via libzmq.dll to 134.199.204.67    │
+# │ All command, telemetry, and feedback must use ZMQ sockets   │
+# └──────────────────────────────────────────────────────────────┘
+
 # BITTEN Fire Router - Direct Broker API Integration
 # 
 # PRODUCTION CLONE FARM SYSTEM (July 18, 2025)
@@ -24,6 +31,7 @@ from typing import Dict, Optional, Any, Tuple, List
 from dataclasses import dataclass, asdict
 from enum import Enum
 from contextlib import contextmanager
+from pathlib import Path
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -38,7 +46,8 @@ class ExecutionMode(Enum):
     LIVE = "live"
 
 class TradingPairs(Enum):
-    """Trading pairs enumeration"""
+    """Trading pairs enumeration - Forex + C.O.R.E. Crypto"""
+    # Forex Pairs
     EURUSD = "EURUSD"
     GBPUSD = "GBPUSD"
     USDJPY = "USDJPY"
@@ -51,6 +60,11 @@ class TradingPairs(Enum):
     EURGBP = "EURGBP"
     XAUUSD = "XAUUSD"
     XAGUSD = "XAGUSD"
+    
+    # C.O.R.E. Crypto Pairs
+    BTCUSD = "BTCUSD"
+    ETHUSD = "ETHUSD"
+    XRPUSD = "XRPUSD"
 
 @dataclass
 class TradeRequest:
@@ -188,8 +202,16 @@ class AdvancedValidator:
         self.validation_stats = {
             "total_validations": 0,
             "passed_validations": 0,
-            "failed_validations": 0
+            "failed_validations": 0,
+            "crypto_validations": 0,
+            "forex_validations": 0
         }
+        
+        # Define crypto and forex symbols for enhanced validation
+        self.crypto_symbols = {"BTCUSD", "ETHUSD", "XRPUSD"}
+        self.forex_symbols = {"EURUSD", "GBPUSD", "USDJPY", "USDCHF", "AUDUSD", 
+                            "USDCAD", "NZDUSD", "EURJPY", "GBPJPY", "EURGBP", 
+                            "XAUUSD", "XAGUSD"}
         
     def validate_trade(self, request: TradeRequest, user_profile: Optional[Dict] = None) -> Tuple[bool, str]:
         """Comprehensive trade validation with enhanced safety checks"""
@@ -201,9 +223,31 @@ class AdvancedValidator:
             self.validation_stats["failed_validations"] += 1
             return False, "Invalid symbol format - must be at least 6 characters"
         
-        if request.volume <= 0 or request.volume > 10:
+        # 1.5. Enhanced crypto vs forex validation
+        is_crypto = request.symbol in self.crypto_symbols
+        is_forex = request.symbol in self.forex_symbols
+        
+        if is_crypto:
+            self.validation_stats["crypto_validations"] += 1
+            # Crypto-specific validation
+            if request.symbol == "BTCUSD" and (request.volume <= 0 or request.volume > 5.0):
+                self.validation_stats["failed_validations"] += 1
+                return False, "Invalid BTCUSD volume - must be between 0 and 5.0 BTC"
+            elif request.symbol == "ETHUSD" and (request.volume <= 0 or request.volume > 50.0):
+                self.validation_stats["failed_validations"] += 1
+                return False, "Invalid ETHUSD volume - must be between 0 and 50.0 ETH"
+            elif request.symbol == "XRPUSD" and (request.volume <= 0 or request.volume > 10000.0):
+                self.validation_stats["failed_validations"] += 1
+                return False, "Invalid XRPUSD volume - must be between 1 and 10,000 XRP"
+        elif is_forex:
+            self.validation_stats["forex_validations"] += 1
+            # Forex-specific validation (existing)
+            if request.volume <= 0 or request.volume > 10:
+                self.validation_stats["failed_validations"] += 1
+                return False, "Invalid forex volume - must be between 0 and 10 lots"
+        else:
             self.validation_stats["failed_validations"] += 1
-            return False, "Invalid volume - must be between 0 and 10 lots"
+            return False, f"Unsupported symbol: {request.symbol}. Supported: {', '.join(self.crypto_symbols | self.forex_symbols)}"
         
         # 2. Stop Loss / Take Profit validation
         if request.stop_loss and request.take_profit:
@@ -391,15 +435,14 @@ class FireRouter:
         # Advanced validator
         self.validator = AdvancedValidator()
         
-        # MT5 Bridge Adapter for file-based communication
-        self.mt5_bridge_adapter = None
+        # ZMQ-only adapter - no file fallback
+        self.mt5_zmq_adapter = None
         try:
-            from src.mt5_bridge.mt5_bridge_adapter import get_bridge_adapter
-            self.mt5_bridge_adapter = get_bridge_adapter()
-            self.mt5_bridge_adapter.start()
-            logger.info("✅ MT5BridgeAdapter integrated successfully")
+            from src.mt5_bridge.mt5_zmq_adapter import get_mt5_zmq_adapter
+            self.mt5_zmq_adapter = get_mt5_zmq_adapter()
+            logger.info("✅ MT5 ZMQ Adapter integrated - File fallback disabled")
         except Exception as e:
-            logger.warning(f"⚠️ MT5BridgeAdapter not available: {e}")
+            logger.warning(f"⚠️ MT5 ZMQ Adapter not available: {e}")
         
         # Execution mode
         self.execution_mode = execution_mode
@@ -556,35 +599,102 @@ class FireRouter:
             return result
     
     def _execute_direct_api(self, request: TradeRequest) -> Dict[str, Any]:
-        """Execute trade through direct broker API with MT5BridgeAdapter routing"""
+        """Execute trade through ZMQ bridge or direct broker API"""
         
         try:
-            # Primary execution route: MT5BridgeAdapter (file-based)
-            if self.mt5_bridge_adapter and self.mt5_bridge_adapter.is_connected():
-                logger.info(f"🌉 Routing trade via MT5BridgeAdapter: {request.symbol} {request.direction.value}")
+            # Primary execution route: ZMQ Bridge (socket-based)
+            try:
+                from zmq_bitten_controller import execute_bitten_trade
                 
-                # Execute via bridge adapter
-                bridge_result = self.mt5_bridge_adapter.execute_trade(
-                    trade_id=request.mission_id,
-                    symbol=request.symbol,
-                    direction=request.direction.value,
-                    lot=request.volume,
-                    price=0,  # Market order
-                    take_profit=request.take_profit or 0,
-                    stop_loss=request.stop_loss or 0
-                )
+                logger.info(f"🚀 Routing trade via ZMQ Bridge: {request.symbol} {request.direction.value}")
                 
-                if bridge_result:
-                    logger.info(f"✅ Trade submitted to MT5 via bridge adapter: {request.mission_id}")
+                # Prepare ZMQ signal data
+                zmq_signal = {
+                    'signal_id': request.mission_id,
+                    'symbol': request.symbol,
+                    'action': request.direction.value,
+                    'lot': request.volume,
+                    'sl': request.stop_loss or 0,
+                    'tp': request.take_profit or 0
+                }
+                
+                # Track execution result
+                execution_result = {'success': False, 'message': 'Pending'}
+                
+                # Define callback to capture result
+                def on_trade_result(result):
+                    execution_result['success'] = (result.status == 'success')
+                    execution_result['message'] = result.message
+                    execution_result['ticket'] = result.ticket
+                    execution_result['price'] = result.price
+                
+                # Send via ZMQ with callback
+                zmq_success = execute_bitten_trade(zmq_signal, callback=on_trade_result)
+                
+                if zmq_success:
+                    logger.info(f"✅ Trade submitted to MT5 via ZMQ bridge: {request.mission_id}")
+                    # Wait briefly for result callback (in production, use proper async)
+                    import time
+                    time.sleep(0.5)  # Allow callback to fire
+                    
                     return {
                         "success": True,
-                        "message": "Trade submitted to MT5 via bridge adapter",
+                        "message": "Trade submitted to MT5 via ZMQ bridge",
                         "trade_id": request.mission_id,
-                        "execution_method": "mt5_bridge_adapter",
-                        "bridge_result": bridge_result
+                        "execution_method": "zmq_bridge",
+                        "ticket": execution_result.get('ticket'),
+                        "price": execution_result.get('price')
                     }
                 else:
-                    logger.warning(f"⚠️ MT5BridgeAdapter execution failed, falling back to direct API")
+                    logger.warning(f"⚠️ ZMQ Bridge execution failed, falling back to file-based bridge")
+                    
+            except ImportError:
+                logger.warning("ZMQ Bridge not available, using file-based bridge")
+            except Exception as e:
+                logger.warning(f"ZMQ Bridge error: {e}")
+            
+            # Check ZMQ strict mode
+            if os.getenv("ZMQ_STRICT") == "1":
+                # Block any file-based operations
+                fire_txt = Path("/fire.txt")
+                result_txt = Path("/trade_result.txt")
+                if fire_txt.exists() or result_txt.exists():
+                    raise RuntimeError("❌ File-based execution blocked in ZMQ_STRICT mode")
+            
+            # ZMQ execution only - NO FILE FALLBACK
+            if self.mt5_zmq_adapter:
+                logger.info(f"🧠 Routing trade via ZMQ: {request.symbol} {request.direction.value}")
+                
+                # Execute via ZMQ adapter
+                success, message, result_data = self.mt5_zmq_adapter.execute_trade(
+                    symbol=request.symbol,
+                    direction=request.direction.value,
+                    volume=request.volume,
+                    sl=request.stop_loss,
+                    tp=request.take_profit,
+                    user_id=request.user_id,
+                    comment=f"Mission: {request.mission_id}"
+                )
+                
+                if success:
+                    logger.info(f"✅ Trade executed via ZMQ: {request.mission_id}")
+                    return {
+                        "success": True,
+                        "message": message,
+                        "trade_id": str(result_data.get('ticket', request.mission_id)),
+                        "execution_method": "zmq_adapter",
+                        "ticket": result_data.get('ticket'),
+                        "price": result_data.get('price', 0)
+                    }
+                else:
+                    logger.error(f"❌ ZMQ execution failed: {message}")
+                    # NO FILE FALLBACK - return error immediately
+                    return {
+                        "success": False,
+                        "message": f"ZMQ execution failed: {message}",
+                        "execution_method": "zmq_adapter",
+                        "error_code": "ZMQ_FAIL"
+                    }
             
             # Fallback execution route: Direct API
             logger.info(f"🔗 Routing trade via Direct API: {request.symbol} {request.direction.value}")

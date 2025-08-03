@@ -284,6 +284,10 @@ EXAMPLES:
     # Export arguments
     parser.add_argument('--export', type=str, help='Export results to CSV file')
     
+    # Source verification
+    parser.add_argument('--verify-source', action='store_true', 
+                       help='Only show entries tagged with "source": "venom_scalp_master"')
+    
     # Truth log path
     parser.add_argument('--log-path', type=str, default='/root/HydraX-v2/truth_log.jsonl',
                        help='Path to truth_log.jsonl file')
@@ -299,6 +303,10 @@ EXAMPLES:
     print(f"📊 Loaded {len(records)} total records")
     
     # Apply filters
+    if args.verify_source:
+        records = [r for r in records if r.get('source') == 'venom_scalp_master']
+        print(f"🔒 Filtered by verified source 'venom_scalp_master': {len(records)} records")
+    
     if args.pair:
         records = query_tool.filter_by_pair(records, args.pair)
         print(f"🎯 Filtered by pair {args.pair}: {len(records)} records")

@@ -167,7 +167,7 @@ class SimpleMarketAnalyzer:
         confidence = random.randint(65, 95)  # For testing
         
         if avg_5 > avg_20 * 1.0001:  # Bullish momentum
-            if confidence >= 70:
+            if confidence >= 79:
                 signal = {
                     'symbol': symbol,
                     'direction': 'BUY',
@@ -177,7 +177,7 @@ class SimpleMarketAnalyzer:
                     'tp': current_price + (0.0020 if symbol != 'XAUUSD' else 10.0)
                 }
         elif avg_5 < avg_20 * 0.9999:  # Bearish momentum
-            if confidence >= 70:
+            if confidence >= 79:
                 signal = {
                     'symbol': symbol,
                     'direction': 'SELL',
@@ -214,7 +214,7 @@ async def main():
     signal_cooldown = 300  # 5 minutes between signals per symbol
     
     print("\n🔥 System is LIVE! Monitoring markets...")
-    print("Signals will appear when conditions are met (70%+ confidence)")
+    print("Signals will appear when conditions are met (79%+ confidence)")
     print("Press Ctrl+C to stop\n")
     
     while True:

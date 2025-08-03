@@ -1,0 +1,215 @@
+#!/usr/bin/env python3
+"""
+🏛️ ATHENA GROUP DISPATCHER
+Short tactical messages for @bitten_signals group with HUD links
+Replaces long briefings with punchy tactical alerts
+"""
+
+import json
+import time
+import logging
+import requests
+from datetime import datetime
+from typing import Dict, List, Optional, Any
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger('AthenaGroupDispatcher')
+
+class AthenaGroupDispatcher:
+    """
+    ATHENA tactical dispatcher for group messages
+    Short, punchy messages with HUD links for full briefings
+    """
+    
+    def __init__(self):
+        # ATHENA Mission Bot configuration
+        self.athena_bot_token = "8322305650:AAGtBpEMm759_7gI4m9sg0OJwFhBVjR4pEI"
+        self.telegram_api_base = f"https://api.telegram.org/bot{self.athena_bot_token}"
+        
+        # Group configuration - BITTEN Signals group
+        self.group_chat_id = "-1002581996861"  # Numeric group ID
+        
+        # Load ATHENA personality for tactical lines
+        try:
+            from src.bitten_core.personality.athena_personality import AthenaPersonality
+            self.athena = AthenaPersonality()
+            self.athena_available = True
+            logger.info("✅ ATHENA personality loaded for group dispatch")
+        except ImportError as e:
+            logger.error(f"❌ ATHENA personality not available: {e}")
+            self.athena_available = False
+        
+        # Dispatch tracking
+        self.group_signals_sent = 0
+        self.last_group_signal = None
+        
+        logger.info("🏛️ ATHENA Group Dispatcher initialized")
+        logger.info(f"📡 Target Group: {self.group_chat_id}")
+    
+    def dispatch_group_signal(self, signal_data: Dict) -> Dict:
+        """
+        Send short tactical message to @bitten_signals group
+        Format: Short tactical alert + HUD link for full briefing
+        """
+        try:
+            # Extract signal data
+            signal_id = signal_data.get('signal_id', f'ATHENA_{int(time.time())}')
+            symbol = signal_data.get('symbol', 'UNKNOWN').upper()
+            direction = signal_data.get('direction', 'UNKNOWN').upper()
+            tcs_score = signal_data.get('tcs_score', 0)
+            confidence = round(tcs_score, 1)
+            
+            logger.info(f"🏛️ Dispatching group signal: {signal_id} - {symbol} {direction}")
+            
+            # Generate HUD URL for full briefing
+            hud_url = self._generate_hud_url(signal_id)
+            
+            # Generate tactical line based on TCS confidence
+            tactical_line = self._get_tactical_line(confidence)
+            
+            # Create short tactical message
+            message = f"""🧠 *ATHENA UPLINK*
+🎯 {symbol} {direction} | Confidence: *{confidence}%*
+⚔️ {tactical_line}
+📥 [MISSION BRIEF]({hud_url})"""
+            
+            # Send to group
+            result = self._send_telegram_message(
+                chat_id=self.group_chat_id,
+                text=message,
+                parse_mode="Markdown",
+                disable_web_page_preview=True
+            )
+            
+            if result['success']:
+                self.group_signals_sent += 1
+                self.last_group_signal = {
+                    'signal_id': signal_id,
+                    'symbol': symbol,
+                    'direction': direction,
+                    'confidence': confidence,
+                    'sent_at': datetime.now().isoformat(),
+                    'message_id': result.get('message_id')
+                }
+                
+                logger.info(f"✅ Group signal dispatched: {signal_id} to {self.group_chat_id}")
+                
+                return {
+                    'success': True,
+                    'signal_id': signal_id,
+                    'group_chat_id': self.group_chat_id,
+                    'message_id': result.get('message_id'),
+                    'hud_url': hud_url,
+                    'tactical_line': tactical_line
+                }
+            else:
+                logger.error(f"❌ Group dispatch failed: {result.get('error')}")
+                return {
+                    'success': False,
+                    'error': result.get('error'),
+                    'signal_id': signal_id
+                }
+                
+        except Exception as e:
+            logger.error(f"❌ Group signal dispatch error: {e}")
+            return {
+                'success': False,
+                'error': str(e),
+                'signal_id': signal_data.get('signal_id', 'unknown')
+            }
+    
+    def _get_tactical_line(self, confidence: float) -> str:
+        """Generate tactical line based on TCS confidence bands"""
+        if confidence < 80:
+            return "Unstable terrain. Proceed with tactical caution."
+        elif 80 <= confidence <= 90:
+            return "Opportunity window detected. Strike if aligned."
+        else:
+            return "Target is exposed. Greenlight. Precision is key."
+    
+    def _generate_hud_url(self, signal_id: str) -> str:
+        """Generate HUD URL for full mission briefing"""
+        # Use the existing HydraX WebApp HUD system
+        base_url = "https://joinbitten.com"
+        return f"{base_url}/hud?signal_id={signal_id}"
+    
+    def _send_telegram_message(self, chat_id: str, text: str, parse_mode: str = "Markdown", disable_web_page_preview: bool = False) -> Dict:
+        """Send message via Telegram API"""
+        try:
+            url = f"{self.telegram_api_base}/sendMessage"
+            payload = {
+                'chat_id': chat_id,
+                'text': text,
+                'parse_mode': parse_mode,
+                'disable_web_page_preview': disable_web_page_preview
+            }
+            
+            response = requests.post(url, json=payload, timeout=10)
+            
+            if response.status_code == 200:
+                result = response.json()
+                if result.get('ok'):
+                    return {
+                        'success': True,
+                        'message_id': result['result']['message_id']
+                    }
+                else:
+                    return {
+                        'success': False,
+                        'error': result.get('description', 'Unknown Telegram error')
+                    }
+            else:
+                return {
+                    'success': False,
+                    'error': f'HTTP {response.status_code}: {response.text}'
+                }
+                
+        except Exception as e:
+            return {
+                'success': False,
+                'error': f'Request failed: {str(e)}'
+            }
+    
+    def send_tactical_update(self, message: str) -> Dict:
+        """Send general tactical update to group"""
+        try:
+            formatted_message = f"🏛️ *ATHENA TACTICAL UPDATE*\n\n{message}"
+            
+            result = self._send_telegram_message(
+                chat_id=self.group_chat_id,
+                text=formatted_message,
+                parse_mode="Markdown"
+            )
+            
+            if result['success']:
+                logger.info(f"✅ Tactical update sent to {self.group_chat_id}")
+            else:
+                logger.error(f"❌ Tactical update failed: {result.get('error')}")
+            
+            return result
+            
+        except Exception as e:
+            logger.error(f"❌ Tactical update error: {e}")
+            return {'success': False, 'error': str(e)}
+    
+    def get_group_stats(self) -> Dict:
+        """Get group dispatch statistics"""
+        return {
+            'group_chat_id': self.group_chat_id,
+            'total_signals_sent': self.group_signals_sent,
+            'last_signal': self.last_group_signal,
+            'athena_available': self.athena_available,
+            'dispatcher_active': True
+        }
+
+# Global instance for easy integration
+athena_group_dispatcher = AthenaGroupDispatcher()
+
+def dispatch_group_signal(signal_data: Dict) -> Dict:
+    """Convenience function to dispatch signal to group"""
+    return athena_group_dispatcher.dispatch_group_signal(signal_data)
+
+def send_tactical_update(message: str) -> Dict:
+    """Convenience function to send tactical update"""
+    return athena_group_dispatcher.send_tactical_update(message)

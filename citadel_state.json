@@ -1,19 +1,26 @@
 {
-  "_metadata": {
-    "analysis_summary": {
-      "avg_runtime_minutes": 52.333333333333336,
-      "fast_failure_rate": 0.0,
-      "total_pairs_with_overrides": 0
-    },
-    "generated_at": "2025-07-29T22:39:18.289965+00:00",
-    "pairs_analyzed": 2,
-    "total_outcomes_analyzed": 3
-  },
   "global": {
-    "pressure_reason": "Low signal volume: 1/12h, 1/24h",
-    "pressure_release": true,
-    "pressure_until": "2025-07-30T02:39:18.289094+00:00",
-    "restored_pair": "EURUSD",
-    "tcs_flex": 4.0
-  }
+    "adaptive_throttle": {
+      "tcs_threshold": 67.5,
+      "tier_level": 1,
+      "reason_code": "TIER_1_PRESSURE_RELEASE",
+      "last_signal_timestamp": 1753961169.417698,
+      "minutes_since_signal": 20.141813735167187,
+      "threshold_changed_at": 1753962377.9265475,
+      "next_decay_in_minutes": 14.858186264832813,
+      "pressure_override_active": false,
+      "updated_at": 1753962377.927041
+    }
+  },
+  "throttle_controller": {
+    "tcs_threshold": 76.0,
+    "ml_threshold": 0.65,
+    "governor_state": "throttle_hold",
+    "state_entered_at": 1753940204.2146738,
+    "next_evaluation": 1753941405.1925015,
+    "signals_fired_count": 7889,
+    "consecutive_losses": 0,
+    "last_signal_time": 1753938984.1556523
+  },
+  "last_updated": 1753966463.2375846
 }

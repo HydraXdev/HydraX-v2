@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 class TCSOptimizationConfig:
     """Configuration for TCS optimization"""
     target_signals_per_day: int = 65
-    min_tcs_threshold: float = 70.0
+    min_tcs_threshold: float = 79.0  # Increased from 70.0 to reduce signal rate
     max_tcs_threshold: float = 78.0
     target_win_rate: float = 0.85
     min_win_rate: float = 0.82

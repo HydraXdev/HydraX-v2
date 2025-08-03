@@ -109,7 +109,7 @@ class XPLogger:
         self.xp_rewards = {
             'base_trade': 10,
             'winning_trade': 25,
-            'high_tcs_bonus': 15,  # TCS >= 85
+            'high_tcs_bonus': 15,  # TCS >= threshold + 15
             'volume_bonus': 5,     # >= 1.0 lot
             'streak_bonus': 10,    # per consecutive win
             'daily_bonus': 50,     # first trade of day
@@ -318,8 +318,10 @@ class XPLogger:
         """Calculate XP for opening a trade"""
         xp = self.xp_rewards['base_trade']
         
-        # High TCS bonus
-        if trade_log.tcs_score >= 85:
+        # High TCS bonus using centralized threshold
+        from tcs_controller import get_current_threshold
+        threshold = get_current_threshold()
+        if trade_log.tcs_score >= (threshold + 15):
             xp += self.xp_rewards['high_tcs_bonus']
         
         # Volume bonus

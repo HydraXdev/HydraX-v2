@@ -146,7 +146,10 @@ class StrategyOrchestrator:
             try:
                 strategy = self.strategies[symbol][backup]
                 signal = strategy.analyze_setup([market_data], indicators)
-                if signal and signal.tcs_score >= 75:  # Higher threshold for backup
+                # Use centralized threshold with higher requirement for backup
+                from tcs_controller import get_current_threshold
+                threshold = get_current_threshold()
+                if signal and signal.tcs_score >= (threshold + 5):  # Higher threshold for backup
                     logger.info(f"Backup strategy {backup} generated signal")
                     return signal
             except Exception as e:

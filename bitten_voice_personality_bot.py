@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """
 🎭 BITTEN VOICE & PERSONALITY BOT
-Dedicated bot for ATHENA, Drill Sergeant, NEXUS, DOC, OBSERVER personalities
+Dedicated bot for Drill Sergeant, NEXUS, DOC, OBSERVER personalities
 Separate from trading signals - handles all voice and character interactions
+(ATHENA moved to dedicated athena_mission_bot.py)
 
 TOKEN: 8103700393:AAEK3RjTGHHYyy_X1Uc9FUuUoRcLuzYZe4k
 """
@@ -29,7 +30,7 @@ from config_loader import get_voice_bot_token
 # Import personality systems
 try:
     from src.bitten_core.voice.unified_personality_orchestrator import unified_orchestrator
-    from src.bitten_core.voice.athena_personality import AthenaPersonality
+    # from src.bitten_core.voice.athena_personality import AthenaPersonality  # REMOVED - Moved to dedicated bot
     from src.bitten_core.voice.nexus_personality import NexusPersonality  
     from src.bitten_core.voice.doc_personality import DocPersonality
     from src.bitten_core.intel_bot_personalities import IntelBotPersonalities, BotPersonality
@@ -75,8 +76,8 @@ class BittenVoicePersonalityBot:
         """Initialize all personality systems"""
         try:
             if PERSONALITY_SYSTEMS_AVAILABLE:
-                # Core personalities
-                self.athena = AthenaPersonality()
+                # Core personalities (ATHENA moved to dedicated mission bot)
+                # self.athena = AthenaPersonality()  # REMOVED - Now in athena_mission_bot.py
                 self.nexus = NexusPersonality()
                 self.doc = DocPersonality()
                 
@@ -101,7 +102,7 @@ class BittenVoicePersonalityBot:
     def setup_fallback_personalities(self):
         """Fallback personality responses"""
         self.fallback_responses = {
-            'ATHENA': "🏛️ ATHENA: Strategic analysis in progress...",
+            # 'ATHENA': "🏛️ ATHENA: Strategic analysis in progress...",  # REMOVED - Dedicated bot
             'DRILL': "🪖 DRILL SERGEANT: Stay focused, recruit!",
             'NEXUS': "📡 NEXUS: Monitoring all frequencies...",
             'DOC': "🩺 DOC: Protecting your capital...",
@@ -111,22 +112,8 @@ class BittenVoicePersonalityBot:
     def setup_handlers(self):
         """Setup bot command handlers"""
         
-        @self.bot.message_handler(commands=['athena'])
-        def handle_athena(message):
-            """ATHENA strategic commander"""
-            user_id = str(message.from_user.id)
-            self.active_personalities[user_id] = 'ATHENA'
-            
-            if PERSONALITY_SYSTEMS_AVAILABLE and hasattr(self, 'athena'):
-                response = self.athena.get_mission_briefing(
-                    {'symbol': 'EURUSD', 'direction': 'BUY'}, 
-                    'NIBBLER', 
-                    f"MISSION_{int(time.time())}"
-                )
-            else:
-                response = self.fallback_responses['ATHENA']
-                
-            self.bot.reply_to(message, f"🏛️ **ATHENA ACTIVATED**\n\n{response}")
+        # ATHENA REMOVED - Now handled by dedicated athena_mission_bot.py
+        # ATHENA strategic commander handlers moved to dedicated bot
         
         @self.bot.message_handler(commands=['drill'])
         def handle_drill(message):
@@ -193,7 +180,7 @@ class BittenVoicePersonalityBot:
             keyboard = types.InlineKeyboardMarkup()
             
             keyboard.add(
-                types.InlineKeyboardButton("🏛️ ATHENA", callback_data="personality_athena"),
+                # types.InlineKeyboardButton("🏛️ ATHENA", callback_data="personality_athena"),  # REMOVED - Dedicated bot
                 types.InlineKeyboardButton("🪖 DRILL", callback_data="personality_drill")
             )
             keyboard.add(
@@ -208,11 +195,12 @@ class BittenVoicePersonalityBot:
                 message,
                 "🎭 **BITTEN PERSONALITY SELECTION**\n\n"
                 "Choose your AI companion:\n"
-                "🏛️ **ATHENA** - Strategic Commander\n"
                 "🪖 **DRILL** - Motivational Sergeant\n"
                 "📡 **NEXUS** - Recruiter Protocol\n"
                 "🩺 **DOC** - Risk Manager\n"
-                "👁️ **OBSERVER** - Market Watcher",
+                "👁️ **OBSERVER** - Market Watcher\n\n"
+                "📢 **ATHENA** - Strategic Commander now operates via dedicated Mission Bot\n"
+                "ATHENA - Strategic Commander now operates via dedicated Mission Bot",
                 reply_markup=keyboard
             )
         
@@ -225,7 +213,7 @@ class BittenVoicePersonalityBot:
             self.active_personalities[user_id] = personality
             
             responses = {
-                'ATHENA': "🏛️ ATHENA Strategic Commander activated. Ready for tactical analysis.",
+                # 'ATHENA': "🏛️ ATHENA Strategic Commander activated. Ready for tactical analysis.",  # REMOVED - Dedicated bot
                 'DRILL': "🪖 DRILL SERGEANT activated. Time to get motivated, recruit!",
                 'NEXUS': "📡 NEXUS Recruiter Protocol activated. Ready to celebrate your victories!",
                 'DOC': "🩺 DOC Risk Manager activated. Your capital protection is my priority.",
@@ -244,7 +232,7 @@ class BittenVoicePersonalityBot:
             status = f"🎭 **VOICE SYSTEM STATUS**\n\n"
             status += f"**Active Personality**: {active}\n"
             status += f"**Systems Available**: {'✅' if PERSONALITY_SYSTEMS_AVAILABLE else '❌'}\n"
-            status += f"**Available Personalities**: ATHENA, DRILL, NEXUS, DOC, OBSERVER\n\n"
+            status += f"**Available Personalities**: DRILL, NEXUS, DOC, OBSERVER (ATHENA = Dedicated Mission Bot)\n\n"
             status += "Use /personalities to select a different character."
             
             self.bot.reply_to(message, status)
@@ -253,11 +241,11 @@ class BittenVoicePersonalityBot:
         def handle_personality_chat(message):
             """Handle general chat with active personality"""
             user_id = str(message.from_user.id)
-            active_personality = self.active_personalities.get(user_id, 'ATHENA')
+            active_personality = self.active_personalities.get(user_id, 'DRILL')  # Changed default from ATHENA
             
             # Route to appropriate personality
             if active_personality == 'ATHENA':
-                response = "🏛️ ATHENA: Strategic analysis of your message complete. Tactical recommendations available."
+                response = "🏛️ ATHENA now operates via dedicated Mission Bot. Use /personalities to select an available personality."
             elif active_personality == 'DRILL':
                 responses = [
                     "🪖 DRILL SERGEANT: Keep pushing forward, recruit!",
@@ -279,8 +267,8 @@ class BittenVoicePersonalityBot:
     def start_polling(self):
         """Start the bot polling"""
         logger.info("🚀 Starting BITTEN Voice & Personality Bot...")
-        logger.info("🎭 Personalities: ATHENA, DRILL, NEXUS, DOC, OBSERVER")
-        logger.info("📱 Commands: /personalities, /athena, /drill, /nexus, /doc, /observer")
+        logger.info("🎭 Personalities: DRILL, NEXUS, DOC, OBSERVER (ATHENA = Dedicated Mission Bot)")
+        logger.info("📱 Commands: /personalities, /drill, /nexus, /doc, /observer")
         
         try:
             self.bot.infinity_polling(timeout=30, long_polling_timeout=30)
@@ -293,11 +281,11 @@ def main():
     """Main entry point"""
     print("🎭 BITTEN VOICE & PERSONALITY BOT")
     print("=" * 50)
-    print("🏛️ ATHENA - Strategic Commander")
     print("🪖 DRILL SERGEANT - Motivational Force")
     print("📡 NEXUS - Recruiter Protocol")
     print("🩺 DOC - Risk Manager")
     print("👁️ OBSERVER - Market Watcher")
+    print("📢 ATHENA - Strategic Commander (Dedicated Mission Bot)")
     print("=" * 50)
     
     bot = BittenVoicePersonalityBot()

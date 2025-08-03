@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mission Error - {{ error_code }}</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --danger-red: #ef4444;
+            --dark-bg: #0f172a;
+            --panel-bg: rgba(15, 23, 42, 0.95);
+            --border-color: #334155;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--dark-bg) 0%, #1e293b 100%);
+            color: #f1f5f9;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .error-container {
+            background: var(--panel-bg);
+            border: 1px solid var(--danger-red);
+            border-radius: 12px;
+            padding: 40px;
+            max-width: 500px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+        
+        .error-icon {
+            font-size: 4em;
+            color: var(--danger-red);
+            margin-bottom: 20px;
+        }
+        
+        .error-title {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: var(--danger-red);
+            margin-bottom: 16px;
+        }
+        
+        .error-message {
+            color: #94a3b8;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+        
+        .retry-button {
+            background: var(--danger-red);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.3s ease;
+        }
+        
+        .retry-button:hover {
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="error-icon">❌</div>
+        <div class="error-title">Mission Error {{ error_code }}</div>
+        <div class="error-message">{{ error }}</div>
+        <button class="retry-button" onclick="window.history.back()">← Go Back</button>
+    </div>
+    
+    <script>
+        // Telegram WebApp API
+        const tg = window.Telegram?.WebApp;
+        if (tg) {
+            tg.ready();
+            tg.expand();
+        }
+    </script>
+</body>
+</html>

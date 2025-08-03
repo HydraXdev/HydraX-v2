@@ -42,6 +42,8 @@ class SignalTracker:
     citadel_score: float = 0.0
     ml_filter_passed: str = "unknown"
     source: str = "unknown"
+    signal_type: str = "forex"  # "forex" or "crypto"
+    engine: str = "unknown"
     
     def __post_init__(self):
         self.start_time = time.time()
@@ -55,11 +57,13 @@ class TruthTracker:
     def __init__(self, 
                  signals_folder: str = "/root/HydraX-v2/missions",
                  truth_log_path: str = "/root/HydraX-v2/truth_log.jsonl",
+                 crypto_truth_log_path: str = "/root/HydraX-v2/crypto_truth_log.jsonl",
                  market_data_url: str = MARKET_DATA_URL,
                  citadel_state_path: str = "/root/HydraX-v2/citadel_state.json"):
         
         self.signals_folder = Path(signals_folder)
         self.truth_log_path = Path(truth_log_path)
+        self.crypto_truth_log_path = Path(crypto_truth_log_path)
         self.market_data_url = market_data_url
         self.citadel_state_path = Path(citadel_state_path)
         
@@ -116,14 +120,34 @@ class TruthTracker:
             if not signal_id:
                 return None
             
-            # 🛡️ SECURITY: Reject signals from unauthorized sources
+            # 🛡️ SECURITY: Accept signals from authorized sources
             source = data.get('source', '')
-            if source != 'venom_scalp_master':
-                logger.warning(f"[REJECTED] Signal from unknown source: {source if source else 'MISSING'} - {signal_id}")
+            engine = data.get('engine', '')
+            
+            # Accept both VENOM forex signals and C.O.R.E. crypto signals
+            is_venom_signal = source == 'venom_scalp_master'
+            is_core_signal = engine == 'CORE' and data.get('symbol', '').startswith('BTC')
+            
+            if not (is_venom_signal or is_core_signal):
+                logger.warning(f"[REJECTED] Signal from unauthorized source/engine: source={source}, engine={engine} - {signal_id}")
                 return None
             
-            # Handle both signal formats (VENOM_SCALP and USER missions)
-            if 'enhanced_signal' in data:
+            # Handle multiple signal formats
+            if is_core_signal:
+                # C.O.R.E. crypto signal format
+                symbol = data.get('symbol', '')
+                direction = 'BUY'  # C.O.R.E. signals are always BUY (crypto long positions)
+                entry_price = data.get('entry', 0)
+                stop_loss = data.get('sl', 0)
+                take_profit = data.get('tp', 0)
+                tcs_score = data.get('score', 0)
+                created_at_str = data.get('timestamp', '')
+                try:
+                    from datetime import datetime
+                    created_at = datetime.fromisoformat(created_at_str.replace('Z', '+00:00')).timestamp() if created_at_str else file_time
+                except:
+                    created_at = file_time
+            elif 'enhanced_signal' in data:
                 # VENOM_SCALP format
                 enhanced = data.get('enhanced_signal', {})
                 basic = data.get('signal', {})
@@ -173,7 +197,9 @@ class TruthTracker:
                 # 📊 METADATA TRACKING: Include extracted metadata
                 citadel_score=float(citadel_score),
                 ml_filter_passed=ml_filter_passed,
-                source=source
+                source=source or engine,  # Use engine for C.O.R.E. signals
+                signal_type="crypto" if is_core_signal else "forex",
+                engine=engine or "venom_scalp_master"
             )
             
         except Exception as e:
@@ -223,7 +249,7 @@ class TruthTracker:
         """Fetch current market data from endpoint"""
         try:
             # Try the GET endpoint for retrieving all data first
-            all_data_url = self.market_data_url.replace('/market-data', '/market-data/all')
+            all_data_url = self.market_data_url.replace('/market-data', '/market-data/all?fast=true')
             response = requests.get(all_data_url, timeout=5)
             if response.status_code == 200:
                 data = response.json()
@@ -390,13 +416,21 @@ class TruthTracker:
             else:
                 return None  # No exit condition met yet
             
-            # Calculate pips result
-            pip_size = 0.0001 if tracker.symbol not in ['USDJPY', 'USDCAD'] else 0.01
-            
-            if tracker.direction == 'BUY':
-                pips_result = (exit_price - tracker.entry_price) / pip_size
+            # Calculate pips result (crypto uses dollar moves, not pips)
+            if tracker.signal_type == "crypto":
+                # For crypto, use direct dollar movement
+                if tracker.direction == 'BUY':
+                    pips_result = exit_price - tracker.entry_price  # Dollar profit/loss
+                else:
+                    pips_result = tracker.entry_price - exit_price
             else:
-                pips_result = (tracker.entry_price - exit_price) / pip_size
+                # For forex, use traditional pip calculation
+                pip_size = 0.0001 if tracker.symbol not in ['USDJPY', 'USDCAD'] else 0.01
+                
+                if tracker.direction == 'BUY':
+                    pips_result = (exit_price - tracker.entry_price) / pip_size
+                else:
+                    pips_result = (tracker.entry_price - exit_price) / pip_size
             
             return {
                 'signal_id': tracker.signal_id,
@@ -419,7 +453,9 @@ class TruthTracker:
                 # 📊 METADATA TRACKING: Include metadata in results
                 'citadel_score': tracker.citadel_score,
                 'ml_filter_passed': tracker.ml_filter_passed,
-                'source': tracker.source
+                'source': tracker.source,
+                'signal_type': tracker.signal_type,
+                'engine': tracker.engine
             }
             
         except Exception as e:
@@ -427,19 +463,23 @@ class TruthTracker:
             return None
     
     def log_result(self, result: Dict):
-        """Append result to truth log file with metadata tracking"""
+        """Append result to appropriate truth log file (forex/crypto) with metadata tracking"""
         try:
-            # ✅ VALIDATION: Check if truth_log.jsonl exists and is writable
-            if not self.truth_log_path.exists():
+            # Determine which log file to use based on signal type
+            signal_type = result.get('signal_type', 'forex')
+            log_path = self.crypto_truth_log_path if signal_type == 'crypto' else self.truth_log_path
+            
+            # ✅ VALIDATION: Check if log file exists and is writable
+            if not log_path.exists():
                 # Ensure parent directory exists
-                self.truth_log_path.parent.mkdir(parents=True, exist_ok=True)
+                log_path.parent.mkdir(parents=True, exist_ok=True)
                 # Create empty file
-                self.truth_log_path.touch()
-                logger.info(f"📝 Created truth log file: {self.truth_log_path}")
+                log_path.touch()
+                logger.info(f"📝 Created {signal_type} truth log file: {log_path}")
             
             # Test writeability
-            if not os.access(self.truth_log_path, os.W_OK):
-                logger.error(f"❌ Truth log file is not writable: {self.truth_log_path}")
+            if not os.access(log_path, os.W_OK):
+                logger.error(f"❌ {signal_type.title()} truth log file is not writable: {log_path}")
                 return
             
             # 📊 METADATA VALIDATION: Ensure required metadata fields are present
@@ -453,12 +493,13 @@ class TruthTracker:
                         result[field] = 'unknown'
             
             # 🛡️ SECURITY: Final source validation before logging
-            if result.get('source') != 'venom_scalp_master':
-                logger.error(f"❌ SECURITY VIOLATION: Attempt to log result with invalid source: {result.get('source')} - {result.get('signal_id')}")
+            valid_sources = ['venom_scalp_master', 'CORE']
+            if result.get('source') not in valid_sources and result.get('engine') not in valid_sources:
+                logger.error(f"❌ SECURITY VIOLATION: Attempt to log result with invalid source/engine: source={result.get('source')}, engine={result.get('engine')} - {result.get('signal_id')}")
                 return
             
             # Append result as JSON line with complete metadata
-            with open(self.truth_log_path, 'a') as f:
+            with open(log_path, 'a') as f:
                 f.write(json.dumps(result, sort_keys=True) + '\n')
             
             exit_type_display = {
@@ -469,8 +510,11 @@ class TruthTracker:
             }.get(result.get('exit_type', 'UNKNOWN'), '❓')
             
             # Enhanced logging with metadata
+            signal_type = result.get('signal_type', 'forex')
+            unit = '$' if signal_type == 'crypto' else 'pips'
+            log_file = log_path.name
             metadata_info = f"TCS:{result.get('tcs_score', 0):.1f} CITADEL:{result.get('citadel_score', 0):.1f} ML:{result.get('ml_filter_passed', 'unknown')}"
-            logger.info(f"✅ {result['result']} {exit_type_display}: {result['signal_id']} - {result['symbol']} {result['direction']} - {result['runtime_minutes']}min - {result['pips_result']} pips [{metadata_info}]")
+            logger.info(f"✅ {signal_type.upper()} {result['result']} {exit_type_display}: {result['signal_id']} - {result['symbol']} {result['direction']} - {result['runtime_minutes']}min - {result['pips_result']:+.1f} {unit} [{metadata_info}] → {log_file}")
             
         except Exception as e:
             logger.error(f"❌ Error logging result to truth log: {e}")
@@ -510,7 +554,9 @@ class TruthTracker:
                             # 📊 METADATA TRACKING: Include metadata in timeout results
                             'citadel_score': tracker.citadel_score,
                             'ml_filter_passed': tracker.ml_filter_passed,
-                            'source': tracker.source
+                            'source': tracker.source,
+                            'signal_type': tracker.signal_type,
+                            'engine': tracker.engine
                         }
                         self.log_result(timeout_result)
                         completed_signals.append(signal_id)
@@ -560,6 +606,46 @@ class TruthTracker:
         
         logger.info(f"Truth Tracker started - monitoring {len(self.active_signals)} signals")
     
+    def add_core_signal(self, signal_data: Dict):
+        """Manually add a C.O.R.E. crypto signal for tracking"""
+        try:
+            signal_id = signal_data.get('uuid') or signal_data.get('signal_id')
+            if not signal_id:
+                logger.error("❌ Cannot add C.O.R.E. signal: missing signal ID")
+                return False
+            
+            if signal_id in self.processed_signals:
+                logger.warning(f"⚠️ C.O.R.E. signal {signal_id} already processed")
+                return False
+            
+            # Create tracker from C.O.R.E. signal data
+            tracker = SignalTracker(
+                signal_id=signal_id,
+                symbol=signal_data.get('symbol', 'BTCUSD'),
+                direction='BUY',  # C.O.R.E. signals are always BUY
+                entry_price=float(signal_data.get('entry', 0)),
+                stop_loss=float(signal_data.get('sl', 0)),
+                take_profit=float(signal_data.get('tp', 0)),
+                tcs_score=float(signal_data.get('score', 0)),
+                created_at=time.time(),
+                start_time=time.time(),
+                citadel_score=0.0,  # C.O.R.E. doesn't use CITADEL
+                ml_filter_passed='N/A',
+                source='CORE',
+                signal_type='crypto',
+                engine='CORE'
+            )
+            
+            with self.lock:
+                self.active_signals[signal_id] = tracker
+            
+            logger.info(f"📊 Added C.O.R.E. signal for tracking: {signal_id} - {tracker.symbol} @ ${tracker.entry_price}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"❌ Error adding C.O.R.E. signal: {e}")
+            return False
+    
     def stop(self):
         """Stop the truth tracker"""
         logger.info("Stopping Truth Tracker...")
@@ -567,54 +653,70 @@ class TruthTracker:
         self.executor.shutdown(wait=True)
         logger.info("Truth Tracker stopped")
     
-    def inspect_latest_entries(self, count: int = 3):
+    def inspect_latest_entries(self, count: int = 3, signal_type: str = "both"):
         """
         📊 CLI INSPECTION: Display latest truth log entries in clean table format
+        Args:
+            count: Number of entries to show
+            signal_type: "forex", "crypto", or "both"
         """
         try:
-            if not self.truth_log_path.exists():
-                print("❌ Truth log file does not exist yet")
+            # Determine which log files to read
+            log_files = []
+            if signal_type in ["forex", "both"]:
+                if self.truth_log_path.exists() and os.access(self.truth_log_path, os.R_OK):
+                    log_files.append(("forex", self.truth_log_path))
+                elif signal_type == "forex":
+                    print("❌ Forex truth log file does not exist or is not readable")
+                    return
+            
+            if signal_type in ["crypto", "both"]:
+                if self.crypto_truth_log_path.exists() and os.access(self.crypto_truth_log_path, os.R_OK):
+                    log_files.append(("crypto", self.crypto_truth_log_path))
+                elif signal_type == "crypto":
+                    print("❌ Crypto truth log file does not exist or is not readable")
+                    return
+            
+            if not log_files:
+                print(f"❌ No readable truth log files found for {signal_type}")
                 return
             
-            if not os.access(self.truth_log_path, os.R_OK):
-                print(f"❌ Truth log file is not readable: {self.truth_log_path}")
+            # Read entries from all specified log files
+            all_entries = []
+            for log_type, log_path in log_files:
+                with open(log_path, 'r') as f:
+                    lines = f.readlines()
+                
+                for line in lines:
+                    try:
+                        entry = json.loads(line.strip())
+                        entry['_log_type'] = log_type  # Mark which log it came from
+                        all_entries.append(entry)
+                    except json.JSONDecodeError:
+                        continue
+            
+            if not all_entries:
+                print(f"📝 No valid entries found in {signal_type} truth logs")
                 return
             
-            # Read the last N lines
-            with open(self.truth_log_path, 'r') as f:
-                lines = f.readlines()
-            
-            if not lines:
-                print("📝 Truth log is empty - no entries to display")
-                return
-            
-            # Get the most recent entries
-            recent_lines = lines[-count:] if len(lines) >= count else lines
-            entries = []
-            
-            for line in recent_lines:
-                try:
-                    entry = json.loads(line.strip())
-                    entries.append(entry)
-                except json.JSONDecodeError:
-                    continue
-            
-            if not entries:
-                print("❌ No valid JSON entries found in truth log")
-                return
+            # Sort all entries by completion time and get the most recent
+            all_entries.sort(key=lambda x: x.get('completed_at', 0) or 0)
+            entries = all_entries[-count:] if len(all_entries) >= count else all_entries
             
             # Print clean table format
-            print(f"\n📊 TRUTH LOG INSPECTION - Latest {len(entries)} Entries")
-            print("=" * 120)
+            signal_type_display = signal_type.upper() if signal_type != "both" else "COMBINED"
+            print(f"\n📊 TRUTH LOG INSPECTION - {signal_type_display} - Latest {len(entries)} Entries")
+            print("=" * 140)
             
             # Header
-            header = f"{'Signal ID':<30} {'Symbol':<8} {'Dir':<4} {'Result':<8} {'TCS':<6} {'CITADEL':<8} {'ML Filter':<10} {'Pips':<8} {'Runtime':<10} {'Source':<18}"
+            header = f"{'Signal ID':<30} {'Type':<6} {'Symbol':<8} {'Dir':<4} {'Result':<8} {'TCS':<6} {'CITADEL':<8} {'ML Filter':<10} {'Pips/$':<10} {'Runtime':<10} {'Source':<18}"
             print(header)
-            print("-" * 120)
+            print("-" * 140)
             
             # Data rows
             for entry in entries:
                 signal_id = entry.get('signal_id', 'unknown')[:29]  # Truncate if too long
+                entry_type = entry.get('_log_type', entry.get('signal_type', 'forex'))
                 symbol = entry.get('symbol', 'N/A')
                 direction = entry.get('direction', 'N/A')
                 result = entry.get('result', 'N/A')
@@ -628,7 +730,13 @@ class TruthTracker:
                 # Format numbers
                 tcs_str = f"{tcs_score:.1f}" if isinstance(tcs_score, (int, float)) else str(tcs_score)
                 citadel_str = f"{citadel_score:.1f}" if isinstance(citadel_score, (int, float)) else str(citadel_score)
-                pips_str = f"{pips_result:+.1f}" if isinstance(pips_result, (int, float)) else str(pips_result)
+                
+                # Format pips/dollars based on signal type
+                if entry_type == 'crypto':
+                    pips_str = f"${pips_result:+.0f}" if isinstance(pips_result, (int, float)) else str(pips_result)
+                else:
+                    pips_str = f"{pips_result:+.1f}p" if isinstance(pips_result, (int, float)) else str(pips_result)
+                
                 runtime_str = f"{runtime_minutes:.1f}m" if isinstance(runtime_minutes, (int, float)) else str(runtime_minutes)
                 
                 # Color coding for results
@@ -640,21 +748,40 @@ class TruthTracker:
                 elif result == 'TIMEOUT':
                     result_colored = f"⏱️ {result}"
                 
-                row = f"{signal_id:<30} {symbol:<8} {direction:<4} {result_colored:<8} {tcs_str:<6} {citadel_str:<8} {ml_filter:<10} {pips_str:<8} {runtime_str:<10} {source:<18}"
+                # Type display
+                type_str = entry_type[:5].upper()
+                
+                row = f"{signal_id:<30} {type_str:<6} {symbol:<8} {direction:<4} {result_colored:<8} {tcs_str:<6} {citadel_str:<8} {ml_filter:<10} {pips_str:<10} {runtime_str:<10} {source:<18}"
                 print(row)
             
-            print("=" * 120)
+            print("=" * 140)
             
-            # Summary stats
+            # Summary stats with breakdown by type
             wins = sum(1 for e in entries if e.get('result') == 'WIN')
             losses = sum(1 for e in entries if e.get('result') == 'LOSS')
-            total_pips = sum(e.get('pips_result', 0) for e in entries if isinstance(e.get('pips_result'), (int, float)))
+            
+            # Separate forex and crypto results
+            forex_entries = [e for e in entries if e.get('_log_type', e.get('signal_type', 'forex')) == 'forex']
+            crypto_entries = [e for e in entries if e.get('_log_type', e.get('signal_type', 'forex')) == 'crypto']
+            
+            forex_pips = sum(e.get('pips_result', 0) for e in forex_entries if isinstance(e.get('pips_result'), (int, float)))
+            crypto_dollars = sum(e.get('pips_result', 0) for e in crypto_entries if isinstance(e.get('pips_result'), (int, float)))
             
             win_rate = (wins / len(entries) * 100) if entries else 0
             
-            print(f"📈 SUMMARY: {wins} wins, {losses} losses, {win_rate:.1f}% win rate, {total_pips:+.1f} total pips")
-            print(f"🔍 Metadata Coverage: TCS, CITADEL, ML Filter tracking active")
-            print(f"📝 Log Location: {self.truth_log_path}")
+            print(f"📈 SUMMARY: {wins} wins, {losses} losses, {win_rate:.1f}% win rate")
+            if forex_entries:
+                print(f"💱 FOREX: {len(forex_entries)} signals, {forex_pips:+.1f} total pips")
+            if crypto_entries:
+                print(f"₿ CRYPTO: {len(crypto_entries)} signals, ${crypto_dollars:+.0f} total P&L")
+            
+            print(f"🔍 Metadata Coverage: TCS, CITADEL, ML Filter, Signal Type tracking active")
+            if signal_type == "both":
+                print(f"📝 Log Locations: {self.truth_log_path.name} (forex), {self.crypto_truth_log_path.name} (crypto)")
+            elif signal_type == "crypto":
+                print(f"📝 Log Location: {self.crypto_truth_log_path}")
+            else:
+                print(f"📝 Log Location: {self.truth_log_path}")
             
         except Exception as e:
             print(f"❌ Error inspecting truth log: {e}")
@@ -669,9 +796,11 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python3 truth_tracker.py                    # Start tracking daemon
-  python3 truth_tracker.py --inspect-latest   # Show latest 3 entries
-  python3 truth_tracker.py --inspect-latest 5 # Show latest 5 entries
+  python3 truth_tracker.py                              # Start tracking daemon
+  python3 truth_tracker.py --inspect-latest             # Show latest 3 entries (both types)
+  python3 truth_tracker.py --inspect-latest 5           # Show latest 5 entries (both types)
+  python3 truth_tracker.py --inspect-latest 3 --type forex   # Show latest 3 forex entries only
+  python3 truth_tracker.py --inspect-latest 3 --type crypto  # Show latest 3 crypto entries only
         """
     )
     
@@ -684,13 +813,20 @@ Examples:
         help='Display the most recent N entries from truth log in table format (default: 3)'
     )
     
+    parser.add_argument(
+        '--type',
+        choices=['forex', 'crypto', 'both'],
+        default='both',
+        help='Filter signals by type: forex, crypto, or both (default: both)'
+    )
+    
     args = parser.parse_args()
     tracker = TruthTracker()
     
     # Handle CLI inspection mode
     if args.inspect_latest is not None:
         print("🔍 TRUTH TRACKER - CLI INSPECTION MODE")
-        tracker.inspect_latest_entries(args.inspect_latest)
+        tracker.inspect_latest_entries(args.inspect_latest, args.type)
         return
     
     # Normal daemon mode

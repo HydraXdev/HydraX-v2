@@ -21,6 +21,20 @@ from .bot_control_integration import create_bot_control_integration, BotControlI
 sys.path.append('/root/HydraX-v2/src')
 from venom_activity_logger import log_signal_to_core, log_error
 
+# Import crypto fire builder for C.O.R.E. signal execution
+try:
+    from .crypto_fire_builder import (
+        crypto_fire_builder, 
+        is_crypto_signal, 
+        build_crypto_fire_packet,
+        convert_crypto_packet_to_zmq
+    )
+    CRYPTO_FIRE_BUILDER_AVAILABLE = True
+    print("✅ Crypto Fire Builder imported successfully")
+except ImportError as e:
+    CRYPTO_FIRE_BUILDER_AVAILABLE = False
+    print(f"⚠️ Crypto Fire Builder not available: {e}")
+
 class SystemMode(Enum):
     """System operation modes"""
     BIT = "bit"           # Basic Individual Trading
@@ -903,6 +917,12 @@ class BittenCore:
     def _deliver_signal_to_users(self, signal_data: Dict) -> Dict:
         """Deliver signal via ATHENA tactical mission briefings"""
         try:
+            # XAUUSD GATING: Check if this is a GOLD signal
+            symbol = signal_data.get('symbol', '').upper()
+            if symbol == 'XAUUSD' or 'GOLD' in symbol:
+                # Route XAUUSD signals privately to offshore users only
+                return self._deliver_gold_signal_privately(signal_data)
+            
             # NEW: ATHENA Dual Dispatch System (Individual + Group)
             try:
                 from athena_signal_dispatcher import athena_dispatcher
@@ -1040,6 +1060,194 @@ class BittenCore:
         except Exception as e:
             self._log_error(f"Signal delivery error: {e}")
             return {'success': False, 'error': str(e)}
+    
+    def _deliver_gold_signal_privately(self, signal_data: Dict) -> Dict:
+        """Deliver XAUUSD signals privately to offshore users only"""
+        try:
+            delivered_users = []
+            failed_users = []
+            total_xp_awarded = 0
+            
+            # Get all ready users from registry
+            if self.user_registry:
+                ready_users = self.user_registry.get_all_ready_users()
+                
+                for telegram_id, user_info in ready_users.items():
+                    # Check if user is offshore eligible
+                    user_region = user_info.get('user_region', 'US')
+                    offshore_opt_in = user_info.get('offshore_opt_in', False)
+                    
+                    if user_region != 'US' and offshore_opt_in:
+                        try:
+                            # Format gold signal
+                            gold_message = self._format_gold_signal(signal_data)
+                            
+                            # Send via DM
+                            if self.production_bot:
+                                success = self.production_bot.send_dm_signal(
+                                    telegram_id=telegram_id,
+                                    signal_text=gold_message,
+                                    parse_mode="Markdown"  # Using Markdown for cleaner format
+                                )
+                                
+                                if success:
+                                    delivered_users.append(telegram_id)
+                                    
+                                    # Award bonus XP
+                                    self._award_xp(telegram_id, 200, "Gold Operative Mission")
+                                    total_xp_awarded += 200
+                                    
+                                    # Log gold signal delivery
+                                    self._log_gold_signal_delivery(
+                                        telegram_id=telegram_id,
+                                        user_info=user_info,
+                                        signal_data=signal_data,
+                                        xp_awarded=200
+                                    )
+                                    
+                                    self._log_info(f"🏆 GOLD signal delivered to offshore user {telegram_id}")
+                                else:
+                                    failed_users.append(telegram_id)
+                            else:
+                                failed_users.append(telegram_id)
+                                
+                        except Exception as e:
+                            self._log_error(f"Failed to deliver gold signal to {telegram_id}: {e}")
+                            failed_users.append(telegram_id)
+                    else:
+                        # User not eligible - silently skip
+                        self._log_info(f"User {telegram_id} not eligible for XAUUSD (region: {user_region}, opt-in: {offshore_opt_in})")
+            
+            # Return delivery result
+            return {
+                'success': True,
+                'public_broadcast': False,  # Never broadcast XAUUSD to public
+                'total_delivered': len(delivered_users),
+                'user_delivery': {
+                    'delivered_to': len(delivered_users),
+                    'users': delivered_users,
+                    'failed_users': failed_users
+                },
+                'signal_id': signal_data['signal_id'],
+                'gold_signal': True,
+                'total_xp_awarded': total_xp_awarded,
+                'message': f"Gold signal delivered privately to {len(delivered_users)} offshore users"
+            }
+            
+        except Exception as e:
+            self._log_error(f"Error delivering gold signal: {e}")
+            return {
+                'success': False,
+                'error': str(e),
+                'signal_id': signal_data.get('signal_id', 'unknown')
+            }
+    
+    def _format_gold_signal(self, signal_data: Dict) -> str:
+        """Format XAUUSD signal for private delivery"""
+        try:
+            # Extract signal details
+            direction = signal_data.get('direction', 'BUY').upper()
+            entry_price = signal_data.get('entry_price', 0)
+            stop_loss = signal_data.get('stop_loss', 0)
+            take_profit = signal_data.get('take_profit', 0)
+            signal_type = signal_data.get('signal_type', 'PRECISION_STRIKE')
+            risk_reward = signal_data.get('risk_reward', 2.0)
+            
+            # Calculate pips
+            if direction == "BUY":
+                sl_pips = int((entry_price - stop_loss) * 10)  # XAUUSD = 1 pip = 0.10
+                tp_pips = int((take_profit - entry_price) * 10)
+            else:
+                sl_pips = int((stop_loss - entry_price) * 10)
+                tp_pips = int((entry_price - take_profit) * 10)
+            
+            # Get current time + 15 minutes for window
+            from datetime import datetime, timedelta
+            window_time = datetime.now() + timedelta(minutes=15)
+            window_str = window_time.strftime("%H:%M")
+            
+            # Format message
+            message = f"""🏆 **[GOLD OPERATIVE]** 🏆
+
+**Signal**: {direction} XAUUSD
+**Entry**: {entry_price:.2f}
+**SL**: {stop_loss:.2f} (-{sl_pips} pips)
+**TP**: {take_profit:.2f} (+{tp_pips} pips)
+**R:R**: 1:{risk_reward}
+
+💠 **Bonus**: +200 XP for Private Execution
+🕒 **Window**: 15 minutes (until {window_str})
+⚡ **Type**: {signal_type}
+
+_Elite operative mission. Execute with precision._"""
+            
+            return message
+            
+        except Exception as e:
+            self._log_error(f"Error formatting gold signal: {e}")
+            # Fallback format
+            return f"🏆 GOLD SIGNAL: {signal_data.get('direction', 'BUY')} XAUUSD @ {signal_data.get('entry_price', 0)}"
+    
+    def _award_xp(self, telegram_id: str, xp_amount: int, reason: str):
+        """Award XP to user (placeholder for actual XP system)"""
+        try:
+            # TODO: Integrate with actual XP system when available
+            self._log_info(f"💰 XP Award: {telegram_id} +{xp_amount} XP for {reason}")
+            
+            # For now, just log to console
+            print(f"[XP SYSTEM] User {telegram_id} awarded {xp_amount} XP: {reason}")
+            
+        except Exception as e:
+            self._log_error(f"Error awarding XP: {e}")
+    
+    def _log_gold_signal_delivery(self, telegram_id: str, user_info: Dict, signal_data: Dict, xp_awarded: int):
+        """Log gold signal delivery to JSONL file for tracking and analytics"""
+        try:
+            import json
+            import os
+            from datetime import datetime
+            
+            # Prepare log data
+            log_data = {
+                "timestamp": datetime.utcnow().isoformat(),
+                "user_id": user_info.get('user_id', 'unknown'),
+                "telegram_id": telegram_id,
+                "username": user_info.get('username', 'unknown'),  # May need to be fetched separately
+                "container": user_info.get('container', 'unknown'),
+                "symbol": "XAUUSD",
+                "signal_id": signal_data.get('signal_id', 'unknown'),
+                "direction": signal_data.get('direction', 'unknown'),
+                "entry": signal_data.get('entry_price', 0),
+                "tp": signal_data.get('take_profit', 0),
+                "sl": signal_data.get('stop_loss', 0),
+                "risk_reward": signal_data.get('risk_reward', 0),
+                "signal_type": signal_data.get('signal_type', 'unknown'),
+                "confidence": signal_data.get('confidence', 0),
+                "tcs_score": signal_data.get('confidence', 0),  # Using confidence as TCS
+                "citadel_score": signal_data.get('citadel_score', 0),
+                "pattern": signal_data.get('pattern', 'unknown'),
+                "xp_awarded": xp_awarded,
+                "user_region": user_info.get('user_region', 'unknown'),
+                "offshore_opt_in": user_info.get('offshore_opt_in', False)
+            }
+            
+            # Ensure logs directory exists
+            log_dir = "/root/HydraX-v2/logs"
+            os.makedirs(log_dir, exist_ok=True)
+            
+            # Write to JSONL file (append mode)
+            log_file = os.path.join(log_dir, "gold_dm_log.jsonl")
+            with open(log_file, "a") as f:
+                f.write(json.dumps(log_data) + "\n")
+            
+            self._log_info(f"📝 Gold signal logged for user {telegram_id} - Signal ID: {signal_data.get('signal_id')}")
+            
+            # Also log to console for immediate visibility
+            print(f"[GOLD_SIGNAL_DELIVERED]: User {telegram_id} - Signal {signal_data.get('signal_id')}")
+            
+        except Exception as e:
+            self._log_error(f"Error logging gold signal delivery: {e}")
+            # Don't fail the delivery just because logging failed
     
     def _format_signal_for_hud(self, signal_data: Dict) -> str:
         """Format signal data for Telegram HUD display"""
@@ -1289,17 +1497,58 @@ Your mission briefing is waiting."""
                 if datetime.now() > expires_at:
                     return {'success': False, 'error': f'Signal {signal_id} has expired'}
             
-            # Create trade request for FireRouter
+            # Enhanced signal detection and execution for crypto vs forex
             user_info = self.user_registry.get_user_info(user_id)
             
-            trade_request = TradeRequest(
-                user_id=user_id,
-                symbol=signal_data['symbol'],
-                direction=TradeDirection.BUY if signal_data['direction'] == 'BUY' else TradeDirection.SELL,
-                volume=0.01,  # Will be calculated by FireRouter based on user balance
-                tcs_score=signal_data.get('confidence', 0),
-                mission_id=signal_id
-            )
+            # 🚀 CRYPTO SIGNAL DETECTION & EXECUTION
+            if CRYPTO_FIRE_BUILDER_AVAILABLE and is_crypto_signal(signal_data):
+                print(f"🔥 Detected C.O.R.E. crypto signal: {signal_id}")
+                
+                # Get user account balance for position sizing
+                account_balance = user_info.get('account_balance', 10000.0)
+                user_tier = user_info.get('tier', 'NIBBLER')
+                
+                # Build crypto fire packet with professional ATR-based system
+                crypto_packet = build_crypto_fire_packet(
+                    signal_data=signal_data,
+                    user_profile={'tier': user_tier, 'risk_percent': 1.0},  # Professional 1% risk
+                    account_balance=account_balance
+                )
+                
+                if crypto_packet:
+                    # Convert to ZMQ format for EA execution
+                    zmq_command = convert_crypto_packet_to_zmq(crypto_packet)
+                    
+                    # Create enhanced trade request with crypto data
+                    trade_request = TradeRequest(
+                        user_id=user_id,
+                        symbol=crypto_packet.symbol,
+                        direction=TradeDirection.BUY if crypto_packet.action == 'buy' else TradeDirection.SELL,
+                        volume=crypto_packet.lot,
+                        stop_loss=crypto_packet.sl,
+                        take_profit=crypto_packet.tp,
+                        tcs_score=signal_data.get('confidence', 0),
+                        mission_id=signal_id,
+                        comment=f"CORE-{crypto_packet.symbol}-{signal_data.get('pattern', 'Unknown')}"
+                    )
+                    
+                    print(f"✅ Crypto fire packet built: {crypto_packet.symbol} {crypto_packet.action} {crypto_packet.lot} lots")
+                    print(f"   SL: {crypto_packet.sl} points, TP: {crypto_packet.tp} points")
+                    print(f"   Risk: ${crypto_packet.risk_amount:.2f} ({2.0}% of ${account_balance:.2f})")
+                else:
+                    print(f"❌ Failed to build crypto fire packet for {signal_id}")
+                    return {'success': False, 'error': 'Failed to build crypto trade packet'}
+            else:
+                # 📈 FOREX SIGNAL EXECUTION (Existing Logic)
+                print(f"📈 Processing forex signal: {signal_id}")
+                trade_request = TradeRequest(
+                    user_id=user_id,
+                    symbol=signal_data['symbol'],
+                    direction=TradeDirection.BUY if signal_data['direction'] == 'BUY' else TradeDirection.SELL,
+                    volume=0.01,  # Will be calculated by FireRouter based on user balance
+                    tcs_score=signal_data.get('confidence', 0),
+                    mission_id=signal_id
+                )
             
             # Execute via FireRouter with enhanced monitoring
             execution_result = self.fire_router.execute_trade_request(trade_request, user_info)

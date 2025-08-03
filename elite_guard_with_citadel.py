@@ -28,7 +28,7 @@ import requests
 from citadel_shield_filter import CitadelShieldFilter
 
 # Set up logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 class MarketRegime(Enum):
@@ -268,36 +268,138 @@ class EliteGuardWithCitadel:
         if len(self.m5_data[symbol]) % 3 == 0:  # Every 3 M5 = M15
             self.m15_data[symbol].append(price_data)
     
+    def process_candle_batch(self, data: Dict):
+        """Process OHLC candle batch data from EA"""
+        try:
+            symbol = data.get('symbol')
+            timestamp = data.get('timestamp', datetime.now().timestamp())
+            
+            if not symbol:
+                logger.warning("Candle batch missing symbol")
+                return
+            
+            # Process M1 candles
+            if 'M1' in data and data['M1']:
+                m1_candles = data['M1']
+                logger.info(f"🕯️ Received {len(m1_candles)} M1 candles for {symbol}")
+                
+                # Clear old data and store new candles
+                self.m1_data[symbol].clear()
+                for candle in m1_candles:
+                    candle_data = {
+                        'time': candle['time'],
+                        'open': candle['open'],
+                        'high': candle['high'],
+                        'low': candle['low'],
+                        'close': candle['close'],
+                        'volume': candle.get('volume', 0),
+                        'timestamp': candle['time']
+                    }
+                    self.m1_data[symbol].append(candle_data)
+            
+            # Process M5 candles
+            if 'M5' in data and data['M5']:
+                m5_candles = data['M5']
+                logger.info(f"🕯️ Received {len(m5_candles)} M5 candles for {symbol}")
+                
+                # Clear old data and store new candles
+                self.m5_data[symbol].clear()
+                for candle in m5_candles:
+                    candle_data = {
+                        'time': candle['time'],
+                        'open': candle['open'],
+                        'high': candle['high'],
+                        'low': candle['low'],
+                        'close': candle['close'],
+                        'volume': candle.get('volume', 0),
+                        'timestamp': candle['time']
+                    }
+                    self.m5_data[symbol].append(candle_data)
+            
+            # Process M15 candles
+            if 'M15' in data and data['M15']:
+                m15_candles = data['M15']
+                logger.info(f"🕯️ Received {len(m15_candles)} M15 candles for {symbol}")
+                
+                # Clear old data and store new candles
+                self.m15_data[symbol].clear()
+                for candle in m15_candles:
+                    candle_data = {
+                        'time': candle['time'],
+                        'open': candle['open'],
+                        'high': candle['high'],
+                        'low': candle['low'],
+                        'close': candle['close'],
+                        'volume': candle.get('volume', 0),
+                        'timestamp': candle['time']
+                    }
+                    self.m15_data[symbol].append(candle_data)
+            
+            # Check if we have enough data for pattern detection
+            has_m1 = len(self.m1_data[symbol]) >= 5
+            has_m5 = len(self.m5_data[symbol]) >= 5
+            has_m15 = len(self.m15_data[symbol]) >= 5
+            
+            if has_m1 and has_m5 and has_m15:
+                logger.info(f"✅ {symbol} ready for pattern analysis - M1:{len(self.m1_data[symbol])}, M5:{len(self.m5_data[symbol])}, M15:{len(self.m15_data[symbol])}")
+                
+                # Don't trigger full scan, just mark ready
+                # Pattern scanning will happen in the main loop
+            else:
+                logger.debug(f"⏳ {symbol} waiting for data - M1:{len(self.m1_data[symbol])}, M5:{len(self.m5_data[symbol])}, M15:{len(self.m15_data[symbol])}")
+                
+        except Exception as e:
+            logger.error(f"Error processing candle batch: {e}")
+    
     def detect_liquidity_sweep_reversal(self, symbol: str) -> Optional[PatternSignal]:
         """Detect liquidity sweep reversal pattern (highest priority - 75 base score)"""
-        if len(self.m1_data[symbol]) < 20:
+        if len(self.m1_data[symbol]) < 5:  # Lowered threshold for testing with limited candle data
+            logger.debug(f"🚫 {symbol} liquidity sweep check: insufficient M1 data ({len(self.m1_data[symbol])} < 5)")
             return None
             
         try:
-            recent_data = list(self.m1_data[symbol])[-20:]
-            recent_prices = [p['price'] for p in recent_data]
-            recent_volumes = [p['volume'] for p in recent_data]
+            # Use available data, up to 20 candles
+            available_candles = min(len(self.m1_data[symbol]), 20)
+            recent_data = list(self.m1_data[symbol])[-available_candles:]
             
-            if len(recent_prices) < 10:
+            # Extract OHLC data properly from candles
+            recent_highs = [p.get('high', p.get('close', 0)) for p in recent_data]
+            recent_lows = [p.get('low', p.get('close', 0)) for p in recent_data]
+            recent_closes = [p.get('close', 0) for p in recent_data]
+            recent_volumes = [p.get('volume', 0) for p in recent_data]
+            
+            if len(recent_closes) < 3:  # Minimum 3 candles for basic pattern detection
                 return None
                 
-            # Calculate price movement and volume characteristics
-            price_range = max(recent_prices[-5:]) - min(recent_prices[-5:])
-            avg_price = np.mean(recent_prices[-10:])
-            price_change_pct = (price_range / avg_price) * 100
+            # Calculate price movement using highs/lows for liquidity sweep detection
+            recent_high = max(recent_highs[-5:])
+            recent_low = min(recent_lows[-5:])
+            price_range = recent_high - recent_low
+            avg_price = np.mean(recent_closes[-10:])
+            price_change_pct = (price_range / avg_price) * 100 if avg_price > 0 else 0
             
             # Volume analysis
             avg_volume = np.mean(recent_volumes[-10:]) if recent_volumes else 1
             recent_volume = recent_volumes[-1] if recent_volumes else 1
             volume_surge = recent_volume / avg_volume if avg_volume > 0 else 1
             
+            logger.debug(f"🔍 {symbol} liquidity sweep - Price range: {price_change_pct:.4f}%, Volume surge: {volume_surge:.2f}x")
+            
             # Liquidity sweep criteria: sharp price movement + volume surge
-            if price_change_pct > 0.03 and volume_surge > 1.3:  # 3+ pip movement with 30%+ volume surge
-                # Determine reversal direction based on recent price action
-                latest_price = recent_prices[-1]
-                prev_price = recent_prices[-3]
+            # Using proper pip calculation for forex
+            pip_movement = price_range * 10000 if symbol != "USDJPY" else price_range * 100
+            
+            if pip_movement > 3 and volume_surge > 1.3:  # 3+ pip movement with 30%+ volume surge
+                # Determine reversal direction based on recent candle patterns
+                latest_close = recent_closes[-1]
+                prev_close = recent_closes[-3]
                 
-                if latest_price > prev_price:
+                # Check if we hit a high or low
+                if recent_closes[-1] == recent_high:
+                    direction = "SELL"  # Hit high, expect reversal down
+                elif recent_closes[-1] == recent_low:
+                    direction = "BUY"   # Hit low, expect reversal up
+                elif latest_close > prev_close:
                     direction = "SELL"  # Price spiked up, expect reversal down
                 else:
                     direction = "BUY"   # Price spiked down, expect reversal up
@@ -305,7 +407,7 @@ class EliteGuardWithCitadel:
                 return PatternSignal(
                     pattern="LIQUIDITY_SWEEP_REVERSAL",
                     direction=direction,
-                    entry_price=latest_price,
+                    entry_price=latest_close,  # Use latest_close instead of undefined latest_price
                     confidence=75,  # Base score
                     timeframe="M1",
                     pair=symbol
@@ -322,19 +424,24 @@ class EliteGuardWithCitadel:
             return None
             
         try:
-            recent_data = list(self.m5_data[symbol])[-30:]
-            prices = [p['price'] for p in recent_data]
+            recent_candles = list(self.m5_data[symbol])[-30:]
             
-            # Identify consolidation zone (order block)
-            recent_prices = prices[-15:]  # Last 15 M5 candles
-            recent_high = max(recent_prices)
-            recent_low = min(recent_prices)
+            # Extract OHLC data from candles
+            highs = [c.get('high', c.get('close', 0)) for c in recent_candles]
+            lows = [c.get('low', c.get('close', 0)) for c in recent_candles]
+            closes = [c.get('close', 0) for c in recent_candles]
+            
+            # Identify consolidation zone (order block) using highs and lows
+            recent_highs = highs[-15:]  # Last 15 M5 candles
+            recent_lows = lows[-15:]
+            recent_high = max(recent_highs)
+            recent_low = min(recent_lows)
             ob_range = recent_high - recent_low
             
             if ob_range == 0:
                 return None
             
-            current_price = prices[-1]
+            current_price = closes[-1]
             
             # Check if price is touching order block boundaries
             # Bullish order block (price near recent low)
@@ -370,25 +477,37 @@ class EliteGuardWithCitadel:
             return None
             
         try:
-            recent_data = list(self.m5_data[symbol])[-20:]
-            prices = [p['price'] for p in recent_data]
+            recent_candles = list(self.m5_data[symbol])[-20:]
             
-            current_price = prices[-1]
+            # Extract OHLC data from candles
+            opens = [c.get('open', 0) for c in recent_candles]
+            highs = [c.get('high', 0) for c in recent_candles]
+            lows = [c.get('low', 0) for c in recent_candles]
+            closes = [c.get('close', 0) for c in recent_candles]
             
-            # Look for price gaps in recent history
-            for i in range(len(prices) - 8, len(prices) - 2):
+            current_price = closes[-1]
+            
+            # Look for fair value gaps using proper candle data
+            for i in range(len(recent_candles) - 8, len(recent_candles) - 2):
                 if i < 1:
                     continue
                     
-                # Calculate gap between consecutive prices
-                gap_size = abs(prices[i] - prices[i-1]) / prices[i] * 100
+                # FVG is a gap between the high of one candle and low of the next
+                gap_up = lows[i] - highs[i-1]  # Gap up
+                gap_down = lows[i-1] - highs[i]  # Gap down
                 
-                if gap_size > 0.04:  # 4+ pip gap
-                    gap_start = prices[i-1]
-                    gap_end = prices[i]
+                # Check for significant gap (4+ pips)
+                if symbol.endswith("JPY"):
+                    pip_threshold = 0.04  # 4 pips for JPY
+                else:
+                    pip_threshold = 0.0004  # 4 pips for other pairs
+                
+                if gap_up > pip_threshold:  # Gap up detected
+                    gap_start = highs[i-1]
+                    gap_end = lows[i]
                     gap_midpoint = (gap_start + gap_end) / 2
                     
-                    # Check if current price is approaching the gap
+                    # Check if current price is approaching the gap from above
                     distance_to_gap = abs(current_price - gap_midpoint) / current_price * 100
                     
                     if distance_to_gap < 0.03:  # Within 3 pips of gap midpoint
@@ -586,11 +705,16 @@ class EliteGuardWithCitadel:
         """Scan single pair for all Elite Guard patterns"""
         patterns = []
         
+        logger.debug(f"🔎 Scanning {symbol} for patterns...")
+        
         try:
             # 1. Liquidity Sweep Reversal (highest priority)
             sweep_signal = self.detect_liquidity_sweep_reversal(symbol)
             if sweep_signal:
+                logger.info(f"✅ LIQUIDITY SWEEP detected on {symbol}!")
                 patterns.append(sweep_signal)
+            else:
+                logger.debug(f"❌ No liquidity sweep on {symbol}")
             
             # 2. Order Block Bounce
             ob_signal = self.detect_order_block_bounce(symbol)
@@ -606,9 +730,8 @@ class EliteGuardWithCitadel:
             for pattern in patterns:
                 pattern.final_score = self.apply_ml_confluence_scoring(pattern)
             
-            # Filter by minimum quality (50+ score for expanded testing - 5 hour window)
-            # TEMPORARY: Lowered from 65 to 50 for truth system benchmarking (Aug 1, 2025)
-            quality_patterns = [p for p in patterns if p.final_score >= 50]
+            # Filter by minimum quality (65+ score for production quality)
+            quality_patterns = [p for p in patterns if p.final_score >= 65]
             
             # Sort by score (highest first)
             return sorted(quality_patterns, key=lambda x: x.final_score, reverse=True)
@@ -702,10 +825,20 @@ class EliteGuardWithCitadel:
                     continue
                 
                 # Scan all pairs for patterns
+                logger.info(f"🔍 Starting pattern scan cycle at {current_time}")
                 for symbol in self.trading_pairs:
                     try:
+                        # Log buffer sizes
+                        tick_count = len(self.tick_data[symbol])
+                        m1_count = len(self.m1_data[symbol])
+                        m5_count = len(self.m5_data[symbol])
+                        m15_count = len(self.m15_data[symbol])
+                        
+                        logger.info(f"📊 {symbol} buffers - Ticks: {tick_count}, M1: {m1_count}, M5: {m5_count}, M15: {m15_count}")
+                        
                         # Skip if insufficient data
                         if len(self.tick_data[symbol]) < 10:
+                            logger.debug(f"⏭️ Skipping {symbol} - insufficient tick data ({tick_count} < 10)")
                             continue
                         
                         # Cooldown check (5 minutes per pair)
@@ -807,6 +940,13 @@ class EliteGuardWithCitadel:
                     elif msg_type == 'status':
                         # EA status message
                         logger.info(f"📡 EA Status: {data.get('message', 'Connected')}")
+                    
+                    elif msg_type == 'candle_batch':
+                        # OHLC candle data for pattern detection
+                        symbol = data.get('symbol')
+                        if symbol:
+                            logger.info(f"🕯️ Received candle batch for {symbol}")
+                            self.process_candle_batch(data)
                         
             except zmq.Again:
                 # No message received, continue

@@ -328,8 +328,12 @@ class v5MissionBriefingGenerator:
             return v5MissionType.VOLATILITY_MONSTER_HUNT
         elif signal_class == v5SignalClass.M3_PRIMARY:
             return v5MissionType.M3_LIGHTNING_RAID
-        elif tcs_score >= 85:
-            return v5MissionType._BEAST_UNLEASHED
+        else:
+            # Use centralized threshold
+            from tcs_controller import get_current_threshold
+            threshold = get_current_threshold()
+            if tcs_score >= (threshold + 15):
+                return v5MissionType._BEAST_UNLEASHED
         elif signal_class == v5SignalClass.M1_INSTANT:
             return v5MissionType.ULTRA_VOLUME_ASSAULT
         else:
@@ -340,10 +344,14 @@ class v5MissionBriefingGenerator:
         
         if timeframe == 'M1' or session == 'OVERLAP':
             return v5UrgencyLevel.CRITICAL
-        elif timeframe == 'M3' or tcs_score >= 85:
-            return v5UrgencyLevel.ULTRA_HIGH
-        elif timeframe == 'M5' or tcs_score >= 70:
-            return v5UrgencyLevel.HIGH
+        else:
+            # Use centralized threshold
+            from tcs_controller import get_current_threshold
+            threshold = get_current_threshold()
+            if timeframe == 'M3' or tcs_score >= (threshold + 15):
+                return v5UrgencyLevel.ULTRA_HIGH
+            elif timeframe == 'M5' or tcs_score >= threshold:
+                return v5UrgencyLevel.HIGH
         elif timeframe == 'M15':
             return v5UrgencyLevel.MEDIUM
         else:
@@ -366,13 +374,16 @@ class v5MissionBriefingGenerator:
         
         # TCS-based multiplier (v5.0 optimized for lower TCS)
         tcs = signal_data.get('tcs', 50)
-        if tcs >= 85:
+        # Use centralized threshold
+        from tcs_controller import get_current_threshold
+        threshold = get_current_threshold()
+        if tcs >= (threshold + 15):
             tcs_mult = 1.5
-        elif tcs >= 75:
+        elif tcs >= (threshold + 5):
             tcs_mult = 1.3
-        elif tcs >= 65:
+        elif tcs >= (threshold - 5):
             tcs_mult = 1.2
-        elif tcs >= 55:
+        elif tcs >= (threshold - 15):
             tcs_mult = 1.1
         else:
             tcs_mult = 1.0  # v5.0 handles lower TCS
@@ -468,8 +479,12 @@ class v5MissionBriefingGenerator:
             description = f"{base_desc} 🚀 TRIPLE BOOST SESSION ACTIVE! 🚀"
         elif confluence_count > 1:
             description = f"{base_desc} 🔥 {confluence_count} patterns aligned for maximum impact!"
-        elif tcs_score >= 85:
-            description = f"{base_desc} ⭐ Ultra-high confidence signal detected!"
+        else:
+            # Use centralized threshold
+            from tcs_controller import get_current_threshold
+            threshold = get_current_threshold()
+            if tcs_score >= (threshold + 15):
+                description = f"{base_desc} ⭐ Ultra-high confidence signal detected!"
         else:
             description = base_desc
         
@@ -487,11 +502,14 @@ class v5MissionBriefingGenerator:
         
         # TCS notes (v5.0 optimized)
         tcs = signal_data.get('tcs', 50)
-        if tcs >= 85:
+        # Use centralized threshold
+        from tcs_controller import get_current_threshold
+        threshold = get_current_threshold()
+        if tcs >= (threshold + 15):
             notes.append("🏆 Premium TCS score - Execute with confidence")
-        elif tcs >= 70:
+        elif tcs >= threshold:
             notes.append("✅ Strong TCS score - Good execution candidate")
-        elif tcs >= 55:
+        elif tcs >= (threshold - 15):
             notes.append("⚖️ Standard TCS score - Manage risk appropriately")
         else:
             notes.append("⚡ Ultra-aggressive TCS - High volume mode active")

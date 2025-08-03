@@ -2,8 +2,8 @@
   "signal_id": "VENOM_SCALP_USDJPY_000008",
   "pair": "USDJPY",
   "direction": "BUY",
-  "timestamp": 1753827378.737004,
-  "confidence": 77.5,
+  "timestamp": 1753838459.024968,
+  "confidence": 81.0,
   "quality": "silver",
   "session": "Asian",
   "signal": {
@@ -13,7 +13,7 @@
     "stop_pips": 11,
     "risk_reward": 1.5,
     "signal_type": "RAPID_ASSAULT",
-    "duration_minutes": 80
+    "duration_minutes": 68
   },
   "enhanced_signal": {
     "symbol": "USDJPY",
@@ -23,7 +23,7 @@
     "take_profit": 148.302,
     "risk_reward_ratio": 1.5,
     "signal_type": "RAPID_ASSAULT",
-    "confidence": 77.5
+    "confidence": 81.0
   },
   "venom_analysis": {
     "volatility": 0.0001,

@@ -383,20 +383,23 @@ class v5RiskManager:
         return base_mult
     
     def _get_tcs_risk_multiplier(self, tcs: float) -> float:
-        """Get risk multiplier based on TCS (optimized for v5.0 lower thresholds)"""
-        if tcs >= 90:
+        """Get risk multiplier based on TCS using centralized threshold"""
+        from tcs_controller import get_current_threshold
+        threshold = get_current_threshold()
+        
+        if tcs >= (threshold + 20):
             return 1.5
-        elif tcs >= 80:
+        elif tcs >= (threshold + 10):
             return 1.3
-        elif tcs >= 70:
+        elif tcs >= threshold:
             return 1.2
-        elif tcs >= 60:
+        elif tcs >= (threshold - 10):
             return 1.1
-        elif tcs >= 50:
+        elif tcs >= (threshold - 20):
             return 1.0
-        elif tcs >= 40:  # v5.0 minimum
+        elif tcs >= (threshold - 30):
             return 0.9
-        elif tcs >= 35:  # M3 minimum
+        elif tcs >= (threshold - 35):
             return 0.8
         else:
             return 0.7  # Below minimum

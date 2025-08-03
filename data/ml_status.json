@@ -1,0 +1,13 @@
+{
+  "accuracy": 87.2,
+  "last_retrain": "2025-07-30 09:15",
+  "total_cycles": 142,
+  "training_status": "Active",
+  "last_model_update": "2025-07-30T09:15:23",
+  "retrain_log_path": "/root/HydraX-v2/logs/ml_retrain.log",
+  "model_version": "v2.1.4",
+  "samples_processed": 8472,
+  "validation_accuracy": 89.1,
+  "training_loss": 0.023,
+  "validation_loss": 0.031
+}

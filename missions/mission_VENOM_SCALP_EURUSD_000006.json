@@ -2,8 +2,8 @@
   "signal_id": "VENOM_SCALP_EURUSD_000006",
   "pair": "EURUSD",
   "direction": "BUY",
-  "timestamp": 1753827134.713666,
-  "confidence": 79.6,
+  "timestamp": 1753838218.873027,
+  "confidence": 77.4,
   "quality": "silver",
   "session": "Asian",
   "signal": {
@@ -13,7 +13,7 @@
     "stop_pips": 11,
     "risk_reward": 1.5,
     "signal_type": "RAPID_ASSAULT",
-    "duration_minutes": 55
+    "duration_minutes": 80
   },
   "enhanced_signal": {
     "symbol": "EURUSD",
@@ -23,7 +23,7 @@
     "take_profit": 1.16687,
     "risk_reward_ratio": 1.5,
     "signal_type": "RAPID_ASSAULT",
-    "confidence": 79.6
+    "confidence": 77.4
   },
   "venom_analysis": {
     "volatility": 0.0001,

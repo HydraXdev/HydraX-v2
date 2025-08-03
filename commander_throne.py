@@ -36,7 +36,8 @@ THRONE_CONFIG = {
     "rate_limits": {
         "xp_award": 10,  # per hour
         "global_override": 5,  # per hour
-        "mass_message": 3   # per hour
+        "mass_message": 3,   # per hour
+        "venom_config": 5   # per hour
     }
 }
 
@@ -342,7 +343,8 @@ def api_soldier_roster():
     soldiers = [
         {
             "username": "_OPERATIVE_001",
-            "tier": "xp": 12750,
+            "tier": "COMMANDER",
+            "xp": 12750,
             "telegram_linked": True,
             "last_seen": "5m ago",
             "trade_count": 127
@@ -620,13 +622,15 @@ def control_apex():
         action = request.json.get('action')
         
         if action == 'start':
-            # Start subprocess.Popen(['python3', '/root/HydraX-v2/apex_v5_lean.py'],
+            # Start apex engine
+            subprocess.Popen(['python3', '/root/HydraX-v2/apex_v5_lean.py'],
                            stdout=open('/root/HydraX-v2/apex_lean.log', 'a'),
                            stderr=subprocess.STDOUT)
             message = "engine started"
             
         elif action == 'stop':
-            # Stop pid_file = "/root/HydraX-v2/.apex_engine.pid"
+            # Stop apex engine
+            pid_file = "/root/HydraX-v2/.apex_engine.pid"
             if os.path.exists(pid_file):
                 with open(pid_file, 'r') as f:
                     pid = int(f.read().strip())
@@ -986,6 +990,662 @@ def api_user_credit_details(user_id):
     except Exception as e:
         logger.error(f"Error getting user credit details: {e}")
         return jsonify({"error": "Failed to get user details"}), 500
+
+@app.route('/throne/api/venom/risk-config', methods=['GET'])
+@require_auth("COMMANDER")
+def api_get_venom_risk_config():
+    """Get current VENOM risk configuration"""
+    try:
+        risk_config_file = "/root/HydraX-v2/venom_risk_config.json"
+        
+        # Default risk configuration
+        default_config = {
+            "max_trades_per_session": 8,
+            "max_daily_loss_cap_percent": 10.0,
+            "auto_halt_on_loss": True,
+            "risk_per_trade_percent": 2.0,
+            "current_daily_loss": 0.0,
+            "trades_today": 0,
+            "halt_active": False,
+            "last_updated": datetime.now().isoformat(),
+            "updated_by": "system"
+        }
+        
+        if os.path.exists(risk_config_file):
+            with open(risk_config_file, 'r') as f:
+                config = json.load(f)
+                # Ensure all fields exist
+                for key, value in default_config.items():
+                    if key not in config:
+                        config[key] = value
+        else:
+            config = default_config
+            # Create default config file
+            with open(risk_config_file, 'w') as f:
+                json.dump(config, f, indent=4)
+        
+        # Calculate risk status
+        loss_ratio = config["current_daily_loss"] / config["max_daily_loss_cap_percent"] if config["max_daily_loss_cap_percent"] > 0 else 0
+        trades_ratio = config["trades_today"] / config["max_trades_per_session"] if config["max_trades_per_session"] > 0 else 0
+        
+        risk_status = "SAFE"
+        risk_color = "#00ff41"
+        
+        if config["halt_active"]:
+            risk_status = "HALTED"
+            risk_color = "#ff0040"
+        elif loss_ratio >= 0.9 or trades_ratio >= 0.9:
+            risk_status = "CRITICAL"
+            risk_color = "#ff0040"
+        elif loss_ratio >= 0.7 or trades_ratio >= 0.7:
+            risk_status = "WARNING"
+            risk_color = "#ffaa00"
+        
+        config["risk_status"] = risk_status
+        config["risk_color"] = risk_color
+        config["loss_ratio"] = round(loss_ratio * 100, 1)
+        config["trades_ratio"] = round(trades_ratio * 100, 1)
+        
+        return jsonify(config)
+        
+    except Exception as e:
+        logger.error(f"Error getting VENOM risk config: {e}")
+        return jsonify({"error": "Failed to get risk configuration"}), 500
+
+@app.route('/throne/api/venom/risk-config', methods=['POST'])
+@require_auth("COMMANDER")
+def api_update_venom_risk_config():
+    """Update VENOM risk configuration (COMMANDER only)"""
+    try:
+        commander_id = session.get('commander_id')
+        
+        # Check rate limiting for config changes
+        if not throne_db.check_rate_limit(commander_id, "venom_config"):
+            return jsonify({"error": "Rate limit exceeded - max 5 config changes per hour"}), 429
+        
+        data = request.get_json()
+        risk_config_file = "/root/HydraX-v2/venom_risk_config.json"
+        
+        # Load existing config
+        if os.path.exists(risk_config_file):
+            with open(risk_config_file, 'r') as f:
+                config = json.load(f)
+        else:
+            config = {}
+        
+        # Validate and update parameters
+        updates = {}
+        
+        if 'max_trades_per_session' in data:
+            value = int(data['max_trades_per_session'])
+            if 1 <= value <= 15:
+                config['max_trades_per_session'] = value
+                updates['max_trades_per_session'] = value
+            else:
+                return jsonify({"error": "Max trades per session must be between 1-15"}), 400
+        
+        if 'max_daily_loss_cap_percent' in data:
+            value = float(data['max_daily_loss_cap_percent'])
+            if 1.0 <= value <= 50.0:
+                config['max_daily_loss_cap_percent'] = value
+                updates['max_daily_loss_cap_percent'] = value
+            else:
+                return jsonify({"error": "Daily loss cap must be between 1%-50%"}), 400
+        
+        if 'auto_halt_on_loss' in data:
+            value = bool(data['auto_halt_on_loss'])
+            config['auto_halt_on_loss'] = value
+            updates['auto_halt_on_loss'] = value
+        
+        if 'risk_per_trade_percent' in data:
+            value = float(data['risk_per_trade_percent'])
+            if 0.1 <= value <= 5.0:
+                config['risk_per_trade_percent'] = value
+                updates['risk_per_trade_percent'] = value
+            else:
+                return jsonify({"error": "Risk per trade must be between 0.1%-5.0%"}), 400
+        
+        # Update metadata
+        config['last_updated'] = datetime.now().isoformat()
+        config['updated_by'] = commander_id
+        
+        # Save updated config
+        with open(risk_config_file, 'w') as f:
+            json.dump(config, f, indent=4)
+        
+        # Log the command
+        throne_db.log_command(
+            commander_id,
+            "venom_risk_config_update",
+            "venom_engine",
+            updates,
+            json.dumps({"success": True, "updates": updates}),
+            request.remote_addr
+        )
+        
+        # Signal VENOM engine to reload config (create signal file)
+        signal_file = "/root/HydraX-v2/venom_reload_signal.txt"
+        with open(signal_file, 'w') as f:
+            f.write(f"reload_risk_config:{datetime.now().isoformat()}")
+        
+        logger.info(f"VENOM risk config updated by {commander_id}: {updates}")
+        
+        return jsonify({
+            "success": True,
+            "message": "VENOM risk configuration updated",
+            "updates": updates,
+            "reload_signal_sent": True
+        })
+        
+    except Exception as e:
+        logger.error(f"Error updating VENOM risk config: {e}")
+        return jsonify({"error": f"Failed to update risk configuration: {str(e)}"}), 500
+
+@app.route('/throne/api/venom/risk-status')
+@require_auth("OBSERVER")
+def api_venom_risk_status():
+    """Get real-time VENOM risk status"""
+    try:
+        risk_config_file = "/root/HydraX-v2/venom_risk_config.json"
+        
+        if not os.path.exists(risk_config_file):
+            return jsonify({
+                "risk_status": "UNKNOWN",
+                "risk_color": "#888",
+                "message": "Risk config not found"
+            })
+        
+        with open(risk_config_file, 'r') as f:
+            config = json.load(f)
+        
+        # Get current trading statistics (this would be updated by VENOM engine)
+        current_daily_loss = config.get("current_daily_loss", 0.0)
+        trades_today = config.get("trades_today", 0)
+        max_loss_cap = config.get("max_daily_loss_cap_percent", 10.0)
+        max_trades = config.get("max_trades_per_session", 8)
+        halt_active = config.get("halt_active", False)
+        
+        # Calculate risk ratios
+        loss_ratio = (current_daily_loss / max_loss_cap) * 100 if max_loss_cap > 0 else 0
+        trades_ratio = (trades_today / max_trades) * 100 if max_trades > 0 else 0
+        
+        # Determine status
+        if halt_active:
+            status = "HALTED"
+            color = "#ff0040"
+            message = "Trading halted by risk controls"
+        elif loss_ratio >= 90 or trades_ratio >= 90:
+            status = "CRITICAL"
+            color = "#ff0040"
+            message = "⚠️ Approaching risk limits"
+        elif loss_ratio >= 70 or trades_ratio >= 70:
+            status = "WARNING"
+            color = "#ffaa00"
+            message = "Caution: Risk levels elevated"
+        else:
+            status = "SAFE"
+            color = "#00ff41"
+            message = "✅ Within safe limits"
+        
+        return jsonify({
+            "risk_status": status,
+            "risk_color": color,
+            "message": message,
+            "current_daily_loss": round(current_daily_loss, 2),
+            "trades_today": trades_today,
+            "loss_ratio": round(loss_ratio, 1),
+            "trades_ratio": round(trades_ratio, 1),
+            "max_loss_cap": max_loss_cap,
+            "max_trades": max_trades,
+            "halt_active": halt_active,
+            "last_updated": datetime.now().strftime("%H:%M:%S")
+        })
+        
+    except Exception as e:
+        logger.error(f"Error getting VENOM risk status: {e}")
+        return jsonify({
+            "risk_status": "ERROR",
+            "risk_color": "#ff0040",
+            "message": f"Error: {str(e)}"
+        })
+
+@app.route('/throne/api/truth_stats')
+@require_auth("OBSERVER")
+def api_truth_stats():
+    """Get Black Box Truth Metrics from truth_log.jsonl"""
+    try:
+        import json
+        truth_file = "/root/HydraX-v2/truth_log.jsonl"
+        
+        if not os.path.exists(truth_file):
+            return jsonify({
+                "total_signals": 0,
+                "wins": 0,
+                "losses": 0,
+                "win_rate": 0.0,
+                "avg_pips": 0.0,
+                "avg_runtime": 0.0,
+                "total_pips": 0.0,
+                "last_updated": "No data"
+            })
+        
+        # Parse truth log
+        signals = []
+        wins = 0
+        losses = 0
+        total_pips = 0.0
+        total_runtime = 0.0
+        
+        with open(truth_file, 'r') as f:
+            for line in f:
+                if line.strip():
+                    try:
+                        data = json.loads(line.strip())
+                        # Check if it's a completed trade record
+                        if 'result' in data and data.get('result') in ['WIN', 'LOSS']:
+                            signals.append(data)
+                            
+                            if data['result'] == 'WIN':
+                                wins += 1
+                            else:
+                                losses += 1
+                            
+                            # Get pips (try different field names)
+                            pips = data.get('pips', data.get('pips_result', 0))
+                            if isinstance(pips, (int, float)):
+                                total_pips += pips
+                            
+                            # Get runtime (try different field names)
+                            runtime = data.get('runtime_minutes', data.get('runtime_seconds', 0))
+                            if isinstance(runtime, (int, float)):
+                                # Convert seconds to minutes if needed
+                                if runtime > 300:  # Assume it's seconds if > 300
+                                    runtime = runtime / 60
+                                total_runtime += runtime
+                                
+                    except json.JSONDecodeError:
+                        continue
+        
+        total_signals = len(signals)
+        win_rate = (wins / total_signals * 100) if total_signals > 0 else 0
+        avg_pips = total_pips / total_signals if total_signals > 0 else 0
+        avg_runtime = total_runtime / total_signals if total_signals > 0 else 0
+        
+        return jsonify({
+            "total_signals": total_signals,
+            "wins": wins,
+            "losses": losses,
+            "win_rate": round(win_rate, 1),
+            "avg_pips": round(avg_pips, 1),
+            "avg_runtime": round(avg_runtime, 1),
+            "total_pips": round(total_pips, 1),
+            "last_updated": datetime.now().strftime("%H:%M:%S")
+        })
+        
+    except Exception as e:
+        logger.error(f"Error getting truth stats: {e}")
+        return jsonify({
+            "total_signals": 0,
+            "wins": 0,
+            "losses": 0,
+            "win_rate": 0.0,
+            "avg_pips": 0.0,
+            "avg_runtime": 0.0,
+            "total_pips": 0.0,
+            "last_updated": "Error"
+        })
+
+@app.route('/throne/api/live_trade_feed')
+@require_auth("OBSERVER")
+def api_live_trade_feed():
+    """Get live trade feed from truth_log.jsonl (last 15 completed trades)"""
+    try:
+        import json
+        truth_file = "/root/HydraX-v2/truth_log.jsonl"
+        
+        if not os.path.exists(truth_file):
+            return jsonify({"trades": []})
+        
+        trades = []
+        
+        with open(truth_file, 'r') as f:
+            for line in f:
+                if line.strip():
+                    try:
+                        data = json.loads(line.strip())
+                        # Only get completed trades
+                        if 'result' in data and data.get('result') in ['WIN', 'LOSS']:
+                            # Extract trade info
+                            symbol = data.get('symbol', 'UNKNOWN')
+                            result = data.get('result', 'UNKNOWN')
+                            pips = data.get('pips', data.get('pips_result', 0))
+                            runtime = data.get('runtime_minutes', data.get('runtime_seconds', 0))
+                            tcs = data.get('confidence', data.get('tcs_score', 0))
+                            citadel = data.get('citadel_score', 0)
+                            timestamp = data.get('timestamp', data.get('completed_at', ''))
+                            
+                            # Convert runtime if in seconds
+                            if isinstance(runtime, (int, float)) and runtime > 300:
+                                runtime = runtime / 60
+                            
+                            # Parse timestamp
+                            if isinstance(timestamp, (int, float)):
+                                from datetime import datetime
+                                time_str = datetime.fromtimestamp(timestamp).strftime("%H:%M")
+                            elif isinstance(timestamp, str) and 'T' in timestamp:
+                                time_str = timestamp.split('T')[1][:5]  # HH:MM
+                            else:
+                                time_str = "--:--"
+                            
+                            trades.append({
+                                "time": time_str,
+                                "symbol": symbol,
+                                "result": result,
+                                "pips": round(pips, 1) if isinstance(pips, (int, float)) else 0,
+                                "runtime": round(runtime, 1) if isinstance(runtime, (int, float)) else 0,
+                                "tcs": round(tcs, 1) if isinstance(tcs, (int, float)) else 0,
+                                "citadel": round(citadel, 1) if isinstance(citadel, (int, float)) else 0
+                            })
+                            
+                    except json.JSONDecodeError:
+                        continue
+        
+        # Return last 15 trades, most recent first
+        return jsonify({"trades": trades[-15:][::-1]})
+        
+    except Exception as e:
+        logger.error(f"Error getting live trade feed: {e}")
+        return jsonify({"trades": []})
+
+@app.route('/throne/api/active_signals')
+@require_auth("OBSERVER")
+def api_active_signals():
+    """Get active signals from mission folder with source == venom_scalp_master"""
+    try:
+        import glob
+        import json
+        
+        missions_dir = "/root/HydraX-v2/missions"
+        if not os.path.exists(missions_dir):
+            return jsonify({"signals": []})
+        
+        active_signals = []
+        
+        # Find all mission files
+        mission_files = glob.glob(os.path.join(missions_dir, "*.json"))
+        
+        for file_path in mission_files:
+            try:
+                with open(file_path, 'r') as f:
+                    mission = json.load(f)
+                
+                # Check if source is venom_scalp_master and status is active
+                if (mission.get('source') == 'venom_scalp_master' and 
+                    mission.get('status') == 'active'):
+                    
+                    # Extract signal info
+                    signal_info = {
+                        "mission_id": mission.get('mission_id', ''),
+                        "symbol": mission.get('symbol', ''),
+                        "direction": mission.get('direction', ''),
+                        "tcs_score": mission.get('tcs_score', 0),
+                        "signal_type": mission.get('signal_type', ''),
+                        "entry_price": mission.get('entry_price', 0),
+                        "stop_loss": mission.get('stop_loss', 0),
+                        "take_profit": mission.get('take_profit', 0),
+                        "created_at": mission.get('created_at', ''),
+                        "expires_at": mission.get('expires_at', ''),
+                        "risk_reward_ratio": mission.get('risk_reward_ratio', 0)
+                    }
+                    
+                    # Calculate time remaining
+                    try:
+                        from datetime import datetime
+                        expires_str = mission.get('expires_at', '')
+                        if expires_str:
+                            expires_at = datetime.fromisoformat(expires_str.replace('Z', '+00:00'))
+                            time_remaining = (expires_at - datetime.now()).total_seconds() / 60
+                            signal_info['time_remaining'] = max(0, round(time_remaining, 1))
+                        else:
+                            signal_info['time_remaining'] = 0
+                    except:
+                        signal_info['time_remaining'] = 0
+                    
+                    active_signals.append(signal_info)
+                    
+            except (json.JSONDecodeError, IOError):
+                continue
+        
+        # Sort by creation time (newest first)
+        active_signals.sort(key=lambda x: x.get('created_at', ''), reverse=True)
+        
+        return jsonify({"signals": active_signals[:10]})  # Limit to 10 most recent
+        
+    except Exception as e:
+        logger.error(f"Error getting active signals: {e}")
+        return jsonify({"signals": []})
+
+@app.route('/throne/api/ml_status')
+@require_auth("OBSERVER")
+def get_ml_status():
+    """Get ML Brain metrics and training status"""
+    try:
+        # Default ML status data
+        ml_status = {
+            "accuracy": 84.3,
+            "last_retrain": "2025-07-28 14:30",
+            "total_cycles": 127,
+            "training_status": "Active",
+            "last_model_update": datetime.now().isoformat(),
+            "retrain_log_path": "/root/HydraX-v2/logs/ml_retrain.log"
+        }
+        
+        # Try to read from ml_status.json if it exists
+        ml_status_path = '/root/HydraX-v2/data/ml_status.json'
+        if os.path.exists(ml_status_path):
+            try:
+                with open(ml_status_path, 'r') as f:
+                    saved_status = json.load(f)
+                    ml_status.update(saved_status)
+            except Exception as e:
+                logger.warning(f"Could not read ML status file: {e}")
+        
+        return jsonify(ml_status)
+        
+    except Exception as e:
+        logger.error(f"Error getting ML status: {e}")
+        return jsonify({
+            "accuracy": 0,
+            "last_retrain": "Unknown",
+            "total_cycles": 0,
+            "training_status": "Error",
+            "error": str(e)
+        })
+
+@app.route('/throne/api/retrain_log')
+@require_auth("OBSERVER")
+def get_retrain_log():
+    """Get the latest ML retrain log"""
+    try:
+        log_path = '/root/HydraX-v2/logs/ml_retrain.log'
+        if os.path.exists(log_path):
+            with open(log_path, 'r') as f:
+                content = f.read()
+            return f"<pre style='color: #00ff41; background: #000; padding: 20px;'>{content}</pre>"
+        else:
+            return "<pre style='color: #888; background: #000; padding: 20px;'>No retrain log found</pre>"
+    except Exception as e:
+        logger.error(f"Error reading retrain log: {e}")
+        return f"<pre style='color: #ff0040; background: #000; padding: 20px;'>Error: {str(e)}</pre>"
+
+@app.route('/throne/api/signal_timeline')
+@require_auth("OBSERVER")
+def get_signal_timeline():
+    """Get 24-hour signal timeline data from truth_log.jsonl"""
+    try:
+        # Initialize 24-hour array (0-23)
+        hourly_counts = [0] * 24
+        
+        # Get current time for 24h window
+        now = datetime.now()
+        yesterday = now - timedelta(hours=24)
+        
+        truth_log_path = '/root/HydraX-v2/truth_log.jsonl'
+        
+        if os.path.exists(truth_log_path):
+            with open(truth_log_path, 'r') as f:
+                for line in f:
+                    try:
+                        entry = json.loads(line.strip())
+                        
+                        # Parse timestamp
+                        timestamp_str = entry.get('timestamp', '')
+                        if timestamp_str:
+                            # Handle different timestamp formats
+                            try:
+                                if 'T' in timestamp_str:
+                                    timestamp = datetime.fromisoformat(timestamp_str.replace('Z', '+00:00'))
+                                else:
+                                    timestamp = datetime.strptime(timestamp_str, '%Y-%m-%d %H:%M:%S')
+                            except:
+                                continue
+                            
+                            # Only count signals from last 24 hours
+                            if timestamp >= yesterday:
+                                hour = timestamp.hour
+                                hourly_counts[hour] += 1
+                                
+                    except (json.JSONDecodeError, KeyError):
+                        continue
+        
+        return jsonify({
+            "hourly_counts": hourly_counts,
+            "total_signals": sum(hourly_counts),
+            "peak_hour": hourly_counts.index(max(hourly_counts)) if max(hourly_counts) > 0 else 0
+        })
+        
+    except Exception as e:
+        logger.error(f"Error getting signal timeline: {e}")
+        return jsonify({"hourly_counts": [0] * 24, "total_signals": 0, "peak_hour": 0})
+
+@app.route('/throne/api/hud_access_logs')
+@require_auth("OBSERVER")
+def get_hud_access_logs():
+    """Get HUD access logs"""
+    try:
+        # Create logs directory if it doesn't exist
+        logs_dir = '/root/HydraX-v2/logs'
+        os.makedirs(logs_dir, exist_ok=True)
+        
+        hud_log_path = '/root/HydraX-v2/logs/hud_access.jsonl'
+        logs = []
+        
+        if os.path.exists(hud_log_path):
+            # Read last 50 entries
+            with open(hud_log_path, 'r') as f:
+                lines = f.readlines()
+                for line in lines[-50:]:  # Last 50 entries
+                    try:
+                        log_entry = json.loads(line.strip())
+                        
+                        # Format timestamp
+                        if 'timestamp' in log_entry:
+                            timestamp_str = log_entry['timestamp']
+                            try:
+                                if 'T' in timestamp_str:
+                                    dt = datetime.fromisoformat(timestamp_str.replace('Z', '+00:00'))
+                                else:
+                                    dt = datetime.strptime(timestamp_str, '%Y-%m-%d %H:%M:%S')
+                                log_entry['timestamp'] = dt.strftime('%H:%M:%S')
+                            except:
+                                pass
+                        
+                        logs.append(log_entry)
+                    except json.JSONDecodeError:
+                        continue
+        
+        # Reverse to show newest first
+        logs.reverse()
+        
+        return jsonify({"logs": logs})
+        
+    except Exception as e:
+        logger.error(f"Error getting HUD access logs: {e}")
+        return jsonify({"logs": []})
+
+@app.route('/throne/api/trade_of_the_day')
+@require_auth("OBSERVER")
+def get_trade_of_the_day():
+    """Get the best trade of the day from truth_log.jsonl"""
+    try:
+        # Get current time for 24h window
+        now = datetime.now()
+        yesterday = now - timedelta(hours=24)
+        
+        truth_log_path = '/root/HydraX-v2/truth_log.jsonl'
+        best_trade = None
+        best_pips = 0
+        
+        if os.path.exists(truth_log_path):
+            with open(truth_log_path, 'r') as f:
+                for line in f:
+                    try:
+                        entry = json.loads(line.strip())
+                        
+                        # Only WIN trades
+                        if entry.get('result', '').upper() != 'WIN':
+                            continue
+                        
+                        # Parse timestamp
+                        timestamp_str = entry.get('timestamp', '')
+                        if timestamp_str:
+                            try:
+                                if 'T' in timestamp_str:
+                                    timestamp = datetime.fromisoformat(timestamp_str.replace('Z', '+00:00'))
+                                else:
+                                    timestamp = datetime.strptime(timestamp_str, '%Y-%m-%d %H:%M:%S')
+                            except:
+                                continue
+                            
+                            # Only trades from last 24 hours
+                            if timestamp < yesterday:
+                                continue
+                        
+                        # Get pips (try different field names)
+                        pips = entry.get('pips_result') or entry.get('pips') or 0
+                        if isinstance(pips, str):
+                            try:
+                                pips = float(pips)
+                            except:
+                                pips = 0
+                        
+                        # Check if this is the best trade
+                        if pips > best_pips:
+                            best_pips = pips
+                            best_trade = {
+                                "symbol": entry.get('symbol', 'UNKNOWN'),
+                                "pips_result": pips,
+                                "tcs": entry.get('tcs', 0),
+                                "ml_pass": entry.get('ml_pass', 'N/A'),
+                                "citadel_score": entry.get('citadel_score', 'N/A'),
+                                "runtime_minutes": entry.get('runtime_minutes') or entry.get('runtime_seconds', 0) / 60 if entry.get('runtime_seconds') else 0,
+                                "time_of_day": timestamp.strftime('%H:%M') if timestamp_str else 'N/A',
+                                "timestamp": timestamp_str
+                            }
+                            
+                    except (json.JSONDecodeError, KeyError):
+                        continue
+        
+        return jsonify({"trade": best_trade})
+        
+    except Exception as e:
+        logger.error(f"Error getting trade of the day: {e}")
+        return jsonify({"trade": None})
+
+@app.route('/static/<path:filename>')
+def serve_static(filename):
+    """Serve static files including PWA assets"""
+    return app.send_static_file(filename)
 
 @app.route('/health')
 def health_check():

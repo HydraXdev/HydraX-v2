@@ -68,7 +68,9 @@ class UserRegistryManager:
                 "fire_eligible": False,
                 "last_activity": current_time,
                 "connection_attempts": 0,
-                "successful_connections": 0
+                "successful_connections": 0,
+                "user_region": "US",  # Default to US, can be "US" or "INTL"
+                "offshore_opt_in": False  # Default to False for safety
             }
             
             self.registry_data[telegram_id] = user_data
@@ -162,6 +164,58 @@ class UserRegistryManager:
         except Exception as e:
             logger.error(f"Error recording connection for {telegram_id}: {e}")
     
+    def update_user_region(self, telegram_id: str, region: str) -> bool:
+        """Update user region (US or INTL)"""
+        try:
+            if telegram_id not in self.registry_data:
+                logger.warning(f"User {telegram_id} not found in registry")
+                return False
+            
+            if region not in ["US", "INTL"]:
+                logger.error(f"Invalid region: {region}. Must be US or INTL")
+                return False
+                
+            self.registry_data[telegram_id]["user_region"] = region
+            self.registry_data[telegram_id]["updated_at"] = datetime.now(timezone.utc).isoformat()
+            self.save_registry()
+            logger.info(f"Updated user {telegram_id} region to {region}")
+            return True
+        except Exception as e:
+            logger.error(f"Error updating user region: {e}")
+            return False
+    
+    def update_offshore_opt_in(self, telegram_id: str, opt_in: bool) -> bool:
+        """Update user offshore opt-in status"""
+        try:
+            if telegram_id not in self.registry_data:
+                logger.warning(f"User {telegram_id} not found in registry")
+                return False
+                
+            self.registry_data[telegram_id]["offshore_opt_in"] = opt_in
+            self.registry_data[telegram_id]["updated_at"] = datetime.now(timezone.utc).isoformat()
+            self.save_registry()
+            logger.info(f"Updated user {telegram_id} offshore opt-in to {opt_in}")
+            return True
+        except Exception as e:
+            logger.error(f"Error updating offshore opt-in: {e}")
+            return False
+    
+    def update_crypto_opt_in(self, telegram_id: str, opt_in: bool) -> bool:
+        """Update user crypto opt-in status"""
+        try:
+            if telegram_id not in self.registry_data:
+                logger.warning(f"User {telegram_id} not found in registry")
+                return False
+                
+            self.registry_data[telegram_id]["crypto_opt_in"] = opt_in
+            self.registry_data[telegram_id]["updated_at"] = datetime.now(timezone.utc).isoformat()
+            self.save_registry()
+            logger.info(f"Updated user {telegram_id} crypto opt-in to {opt_in}")
+            return True
+        except Exception as e:
+            logger.error(f"Error updating crypto opt-in: {e}")
+            return False
+    
     def get_registry_stats(self) -> Dict[str, Any]:
         """Get registry statistics"""
         total_users = len(self.registry_data)
@@ -208,6 +262,18 @@ def get_user_container(telegram_id: str) -> Optional[str]:
 def is_user_ready(telegram_id: str) -> bool:
     """Check if user ready for fire - convenience function"""
     return get_user_registry_manager().is_user_ready_for_fire(telegram_id)
+
+def update_user_region(telegram_id: str, region: str) -> bool:
+    """Update user region - convenience function"""
+    return get_user_registry_manager().update_user_region(telegram_id, region)
+
+def update_offshore_opt_in(telegram_id: str, opt_in: bool) -> bool:
+    """Update offshore opt-in - convenience function"""
+    return get_user_registry_manager().update_offshore_opt_in(telegram_id, opt_in)
+
+def update_crypto_opt_in(telegram_id: str, opt_in: bool) -> bool:
+    """Update crypto opt-in - convenience function"""
+    return get_user_registry_manager().update_crypto_opt_in(telegram_id, opt_in)
 
 if __name__ == "__main__":
     # Test the registry system

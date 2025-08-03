@@ -12,7 +12,7 @@ import random
 from datetime import datetime
 
 # Core Flask imports (always needed)
-from flask import Flask, render_template_string, request, jsonify, redirect
+from flask import Flask, render_template, render_template_string, request, jsonify, redirect
 from flask_socketio import SocketIO
 
 # Load environment early
@@ -197,6 +197,16 @@ def api_signals():
             if not signal_data:
                 return jsonify({'error': 'No signal data provided'}), 400
             
+            # BLACK BOX INTERCEPTION - Log EVERY signal at generation
+            try:
+                from black_box_complete_truth_system import get_truth_system
+                truth_system = get_truth_system()
+                signal_data = truth_system.log_signal_generation(signal_data)
+                logger.info("🔒 Signal logged to Black Box Complete Truth System")
+            except Exception as e:
+                logger.error(f"Black Box truth tracking error: {e}")
+                # Continue anyway - Black Box failure shouldn't stop signals
+            
             # Log the incoming signal
             logger.info(f"📨 Received VENOM+CITADEL signal: {signal_data.get('signal_id')} "
                        f"for {signal_data.get('symbol')} "
@@ -279,392 +289,220 @@ def api_venom_signals():
         logger.error(f"VENOM signals API error: {e}")
         return jsonify({'error': f'VENOM signal generation failed: {str(e)}'}), 500
 
+def log_hud_access(user_id, mission_id, username=None):
+    """Log HUD access for Commander Throne monitoring"""
+    try:
+        import json
+        from datetime import datetime
+        
+        # Create logs directory if it doesn't exist
+        logs_dir = '/root/HydraX-v2/logs'
+        os.makedirs(logs_dir, exist_ok=True)
+        
+        log_entry = {
+            "user_id": user_id,
+            "username": username or f"User_{user_id}",
+            "mission_id": mission_id,
+            "timestamp": datetime.now().isoformat(),
+            "access_type": "hud_view"
+        }
+        
+        # Append to log file
+        with open('/root/HydraX-v2/logs/hud_access.jsonl', 'a') as f:
+            f.write(json.dumps(log_entry) + '\n')
+            
+    except Exception as e:
+        print(f"Warning: Could not log HUD access: {e}")
+
 @app.route('/hud')
 def mission_briefing():
     """Mission HUD interface for Telegram WebApp links"""
     try:
-        mission_id = request.args.get('mission_id')
+        # Accept both mission_id and signal (legacy) parameters
+        mission_id = request.args.get('mission_id') or request.args.get('signal')
+        user_id = request.args.get('user_id')
+        
         if not mission_id:
-            return "Missing mission_id parameter", 400
+            return render_template('error_hud.html', 
+                                 error="Missing mission_id or signal parameter", 
+                                 error_code=400), 400
         
-        # Load mission data
-        mission_file = f"./missions/{mission_id}.json"
-        if not os.path.exists(mission_file):
-            return f"Mission {mission_id} not found", 404
+        # Log HUD access for Commander Throne monitoring
+        if user_id and mission_id:
+            log_hud_access(user_id, mission_id)
         
-        with open(mission_file, 'r') as f:
-            mission_data = json.load(f)
+        # Optional: Log HUD load attempts for debugging
+        client_ip = request.environ.get('HTTP_X_FORWARDED_FOR', request.remote_addr)
+        logger.info(f"HUD load attempt: mission_id={mission_id}, user_id={user_id}, ip={client_ip}")
         
-        # Calculate time remaining
+        # Try to load mission file with mission_ prefix first, then fallback to direct name
+        mission_paths = [
+            f"./missions/mission_{mission_id}.json",  # Preferred format
+            f"./missions/{mission_id}.json"           # Fallback format
+        ]
+        
+        mission_file = None
+        mission_data = None
+        
+        for path in mission_paths:
+            if os.path.exists(path):
+                mission_file = path
+                break
+        
+        if not mission_file:
+            logger.warning(f"Mission file not found for mission_id: {mission_id}")
+            return render_template('error_hud.html', 
+                                 error=f"Mission {mission_id} not found", 
+                                 error_code=404), 404
+        
+        try:
+            with open(mission_file, 'r') as f:
+                mission_data = json.load(f)
+        except json.JSONDecodeError as e:
+            logger.error(f"Invalid JSON in mission file {mission_file}: {e}")
+            return render_template('error_hud.html', 
+                                 error=f"Mission {mission_id} has invalid data format", 
+                                 error_code=500), 500
+        except IOError as e:
+            logger.error(f"Cannot read mission file {mission_file}: {e}")
+            return render_template('error_hud.html', 
+                                 error=f"Cannot load mission {mission_id}", 
+                                 error_code=500), 500
+        
+        # Calculate time remaining (default to 1 hour if no timing data)
         from datetime import datetime
         try:
             expires_at = datetime.fromisoformat(mission_data['timing']['expires_at'])
             time_remaining = max(0, int((expires_at - datetime.now()).total_seconds()))
         except:
-            time_remaining = 0
+            # Default to 1 hour expiry for new missions
+            time_remaining = 3600
         
-        # Extract mission info
+        logger.info(f"Mission {mission_id} loaded: {mission_data.keys()}")
+        
+        # Handle different mission data structures
+        # Current VENOM structure vs legacy structure
         signal = mission_data.get('signal', {})
+        enhanced_signal = mission_data.get('enhanced_signal', {})
         mission = mission_data.get('mission', {})
-        user = mission_data.get('user', {})
+        user_data = mission_data.get('user', {})
+        user_id = mission_data.get('user_id', 'unknown')
         
-        # Get notebook XP information for HUD integration
-        notebook_xp_info = {}
+        # Use enhanced_signal data if available (current VENOM format)
+        if enhanced_signal:
+            signal_data = enhanced_signal
+            logger.info(f"Using enhanced_signal data for {mission_id}")
+        else:
+            signal_data = signal
+            logger.info(f"Using signal data for {mission_id}")
+        
+        # Fallback to root level data
+        symbol = signal_data.get('symbol') or mission_data.get('pair', 'UNKNOWN')
+        direction = signal_data.get('direction') or mission_data.get('direction', 'BUY')
+        entry_price = signal_data.get('entry_price', 0)
+        stop_loss = signal_data.get('stop_loss', 0)
+        take_profit = signal_data.get('take_profit', 0)
+        
+        # CITADEL shield data
+        citadel_shield = mission_data.get('citadel_shield', {})
+        citadel_score = citadel_shield.get('score', mission_data.get('confidence', 75))
+        
+        # Validate required fields
+        missing_fields = []
+        if not symbol or symbol == 'UNKNOWN':
+            missing_fields.append('symbol')
+        if not direction:
+            missing_fields.append('direction')
+        if not entry_price:
+            missing_fields.append('entry_price')
+        
+        logger.info(f"Mission {mission_id} fields: symbol={symbol}, direction={direction}, entry={entry_price}, missing={missing_fields}")
+        
+        # Prepare template variables for new_hud_template.html
+        template_vars = {
+            # Basic signal info
+            'symbol': symbol,
+            'direction': direction,
+            'entry_price': entry_price,
+            'stop_loss': stop_loss,
+            'take_profit': take_profit,
+            'entry_masked': f"{float(entry_price):.5f}" if entry_price else "Loading...",
+            'sl_masked': f"{float(stop_loss):.5f}" if stop_loss else "Loading...",
+            'tp_masked': f"{float(take_profit):.5f}" if take_profit else "Loading...",
+            
+            # Quality scores
+            'tcs_score': signal_data.get('confidence', mission_data.get('confidence', 75)),
+            'citadel_score': citadel_score,
+            'ml_filter_passed': mission_data.get('ml_filter', {}).get('filter_result') != 'prediction_failed',
+            
+            # Risk calculation
+            'rr_ratio': signal_data.get('risk_reward_ratio', signal_data.get('risk_reward', 2.0)),
+            'account_balance': user_data.get('balance', 10000.0),
+            'sl_dollars': "100.00",  # Default values
+            'tp_dollars': "200.00",
+            
+            # Mission info
+            'mission_id': mission_id,
+            'signal_id': mission_data.get('signal_id', mission_id),
+            'user_id': user_id,
+            'expiry_seconds': time_remaining,
+            
+            # User stats
+            'user_stats': {
+                'tier': user_data.get('tier', 'NIBBLER'),
+                'win_rate': user_data.get('win_rate', 65),
+                'trades_remaining': user_data.get('trades_remaining', 5),
+                'balance': user_data.get('balance', 10000.0)
+            },
+            
+            # Warning for missing fields
+            'missing_fields': missing_fields,
+            'has_warnings': len(missing_fields) > 0,
+            
+            # CITADEL shield info
+            'citadel_classification': citadel_shield.get('classification', 'SHIELD_ACTIVE'),
+            'citadel_explanation': citadel_shield.get('explanation', 'Signal analysis in progress')
+        }
+        
+        # Load and render the new HUD template
+        return render_template('new_hud_template.html', **template_vars)
+        
+    except Exception as e:
+        # Enhanced error logging with mission_id context
+        logger.error(f"Mission HUD error for mission_id='{mission_id}': {e}", exc_info=True)
+        
+        # Enhanced error handling with fallback HUD  
         try:
-            from src.bitten_core.notebook_xp_integration import create_notebook_xp_integration
-            user_id = mission_data.get('user_id', 'unknown')
-            if user_id and user_id != 'unknown':
-                notebook_integration = create_notebook_xp_integration(str(user_id))
-                dashboard = notebook_integration.get_notebook_xp_dashboard()
-                notebook_xp_info = {
-                    'total_entries': dashboard.get('total_entries', 0),
-                    'total_xp_earned': dashboard.get('total_xp_earned', 0),
-                    'weekly_streak': dashboard.get('weekly_streak', 0),
-                    'next_milestone': dashboard.get('next_milestone'),
-                    'insight_mode_active': dashboard.get('insight_mode_active', False),
-                    'pairing_suggestions': dashboard.get('pairing_suggestions', [])
-                }
-        except Exception as e:
-            logger.error(f"Error loading notebook XP info for HUD: {e}")
-            notebook_xp_info = {'total_entries': 0, 'total_xp_earned': 0, 'weekly_streak': 0}
+            return render_template('error_hud.html', 
+                                 error=f"Error loading mission {mission_id}: {str(e)}", 
+                                 error_code=500), 500
+        except Exception as template_error:
+            # Last resort: plain text error if even error template fails
+            logger.error(f"Error template also failed: {template_error}")
+            return f"Error loading mission {mission_id}: {str(e)}", 500
+
+@app.route('/notebook/<user_id>')
+def normans_notebook(user_id):
+    """Norman's Notebook - Story-integrated trade journal with XP integration"""
+    try:
+        # Import the enhanced notebook with XP integration
+        from src.bitten_core.notebook_xp_integration import create_notebook_xp_integration
+        from src.bitten_core.normans_notebook import NormansNotebook
+        
+        # Initialize both systems
+        notebook = NormansNotebook(user_id=user_id)
+        notebook_xp = create_notebook_xp_integration(user_id)
+        
+        # Get comprehensive data
+        recent_entries = notebook.get_recent_entries(limit=10)
+        available_norman_entries = notebook.story_progression.get_available_norman_entries(user_id)
+        user_stats = notebook.get_user_emotional_state()
+        xp_dashboard = notebook_xp.get_notebook_xp_dashboard()
+        signal_suggestions = notebook_xp.get_signal_pairing_suggestions()
         
         return render_template_string("""
         <!DOCTYPE html>
         <html lang="en">
-        <head>
-            <title>COMMANDER - {{ signal.symbol }} - TACTICAL BRIEF</title>
-            <meta charset="utf-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1">
-            <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-            <style>
-                :root {
-                    --commander-purple: #7c3aed;
-                    --elite-gold: #fbbf24;
-                    --success-green: #10b981;
-                    --warning-amber: #f59e0b;
-                    --danger-red: #ef4444;
-                    --dark-bg: #0f172a;
-                    --panel-bg: rgba(15, 23, 42, 0.95);
-                    --border-color: #334155;
-                }
-                * { margin: 0; padding: 0; box-sizing: border-box; }
-                body {
-                    font-family: 'Inter', sans-serif;
-                    background: linear-gradient(135deg, var(--dark-bg) 0%, #1e293b 100%);
-                    color: #f1f5f9;
-                    height: 100vh;
-                    overflow-x: hidden;
-                }
-                .commander-header {
-                    background: linear-gradient(90deg, var(--commander-purple) 0%, #8b5cf6 100%);
-                    color: white;
-                    text-align: center;
-                    padding: 12px;
-                    font-weight: 600;
-                    letter-spacing: 1px;
-                    font-size: 1em;
-                }
-                .hud-container {
-                    display: grid;
-                    grid-template-areas: 
-                        "mission-overview mission-overview"
-                        "trade-details account-summary"
-                        "pattern-analysis pattern-analysis"
-                        "execution-panel execution-panel";
-                    grid-template-columns: 1fr 1fr;
-                    grid-template-rows: auto 1fr auto auto;
-                    height: calc(100vh - 50px);
-                    gap: 16px;
-                    padding: 16px;
-                }
-                .mission-overview {
-                    grid-area: mission-overview;
-                    background: var(--panel-bg);
-                    border: 1px solid var(--border-color);
-                    border-radius: 12px;
-                    padding: 24px;
-                    backdrop-filter: blur(10px);
-                }
-                .trade-details {
-                    grid-area: trade-details;
-                    background: var(--panel-bg);
-                    border: 1px solid var(--border-color);
-                    border-radius: 12px;
-                    padding: 24px;
-                    backdrop-filter: blur(10px);
-                }
-                .account-summary {
-                    grid-area: account-summary;
-                    background: var(--panel-bg);
-                    border: 1px solid var(--border-color);
-                    border-radius: 12px;
-                    padding: 24px;
-                    backdrop-filter: blur(10px);
-                }
-                .pattern-analysis {
-                    grid-area: pattern-analysis;
-                    background: var(--panel-bg);
-                    border: 1px solid var(--border-color);
-                    border-radius: 12px;
-                    padding: 20px;
-                    backdrop-filter: blur(10px);
-                }
-                .execution-panel {
-                    grid-area: execution-panel;
-                    background: var(--panel-bg);
-                    border: 1px solid var(--border-color);
-                    border-radius: 12px;
-                    padding: 24px;
-                    backdrop-filter: blur(10px);
-                    text-align: center;
-                }
-                .section-title {
-                    font-family: 'Orbitron', monospace;
-                    font-weight: 700;
-                    color: var(--commander-purple);
-                    font-size: 1.1em;
-                    text-transform: uppercase;
-                    letter-spacing: 1px;
-                    margin-bottom: 20px;
-                    padding-bottom: 12px;
-                    border-bottom: 1px solid var(--border-color);
-                }
-                .mission-title-large {
-                    font-family: 'Orbitron', monospace;
-                    font-size: 2.5em;
-                    font-weight: 900;
-                    color: var(--elite-gold);
-                    text-align: center;
-                    margin-bottom: 16px;
-                    text-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
-                }
-                .confidence-badge {
-                    background: linear-gradient(45deg, var(--success-green), #059669);
-                    color: white;
-                    padding: 8px 16px;
-                    border-radius: 20px;
-                    font-weight: 600;
-                    display: inline-block;
-                    margin-bottom: 16px;
-                    font-size: 0.9em;
-                }
-                .stats-grid {
-                    display: grid;
-                    grid-template-columns: repeat(2, 1fr);
-                    gap: 16px;
-                }
-                .stat-card {
-                    background: rgba(0, 0, 0, 0.3);
-                    padding: 16px;
-                    border-radius: 8px;
-                    border-left: 4px solid var(--commander-purple);
-                }
-                .stat-label {
-                    color: #94a3b8;
-                    font-size: 0.85em;
-                    text-transform: uppercase;
-                    letter-spacing: 0.5px;
-                    margin-bottom: 4px;
-                }
-                .stat-value {
-                    color: #f1f5f9;
-                    font-weight: 700;
-                    font-size: 1.3em;
-                }
-                .stat-value.success { color: var(--success-green); }
-                .stat-value.warning { color: var(--warning-amber); }
-                .stat-value.danger { color: var(--danger-red); }
-                .countdown-display {
-                    font-family: 'Orbitron', monospace;
-                    font-size: 2.2em;
-                    color: var(--elite-gold);
-                    margin-bottom: 24px;
-                    text-shadow: 0 0 15px rgba(251, 191, 36, 0.4);
-                }
-                .execute-button {
-                    background: linear-gradient(45deg, var(--commander-purple), #8b5cf6);
-                    border: none;
-                    border-radius: 12px;
-                    padding: 20px 50px;
-                    font-family: 'Orbitron', monospace;
-                    font-size: 1.4em;
-                    font-weight: 700;
-                    color: white;
-                    cursor: pointer;
-                    box-shadow: 0 8px 25px rgba(124, 58, 237, 0.4);
-                    transition: all 0.3s ease;
-                    text-transform: uppercase;
-                    letter-spacing: 1px;
-                }
-                .execute-button:hover {
-                    background: linear-gradient(45deg, #8b5cf6, var(--commander-purple));
-                    box-shadow: 0 12px 35px rgba(124, 58, 237, 0.6);
-                    transform: translateY(-2px);
-                }
-                .execute-button:disabled {
-                    opacity: 0.5;
-                    cursor: not-allowed;
-                    transform: none;
-                }
-                .risk-indicator {
-                    display: flex;
-                    align-items: center;
-                    justify-content: space-between;
-                    background: rgba(16, 185, 129, 0.1);
-                    border: 1px solid var(--success-green);
-                    padding: 12px 16px;
-                    border-radius: 8px;
-                    margin-top: 16px;
-                }
-                .risk-text {
-                    color: var(--success-green);
-                    font-weight: 600;
-                }
-                @media (max-width: 768px) {
-                    .hud-container {
-                        grid-template-areas: 
-                            "mission-overview"
-                            "trade-details"
-                            "account-summary"
-                            "pattern-analysis"
-                            "execution-panel";
-                        grid-template-columns: 1fr;
-                        grid-template-rows: auto auto auto auto auto;
-                    }
-                    .mission-title-large { font-size: 2em; }
-                    .stats-grid { grid-template-columns: 1fr; gap: 12px; }
-                }
-            </style>
-            <script>
-                let timeRemaining = {{ time_remaining }};
-                function updateCountdown() {
-                    if (timeRemaining <= 0) {
-                        document.getElementById('countdown').innerHTML = '⏰ MISSION EXPIRED';
-                        document.getElementById('fire-btn').disabled = true;
-                        return;
-                    }
-                    const minutes = Math.floor(timeRemaining / 60);
-                    const seconds = timeRemaining % 60;
-                    document.getElementById('countdown').innerHTML = 
-                        `⏱️ ${minutes}:${seconds.toString().padStart(2, '0')} REMAINING`;
-                    timeRemaining--;
-                }
-                setInterval(updateCountdown, 1000);
-                updateCountdown();
-            </script>
-        </head>
-        <body>
-            <div class="commander-header">
-                🎖️ COMMANDER ACCESS - TACTICAL TRADING INTERFACE - AUTHORIZED PERSONNEL ONLY 🎖️
-            </div>
-
-            <div class="hud-container">
-                <div class="mission-overview">
-                    <div class="mission-title-large">{{ signal.symbol }}</div>
-                    <div class="confidence-badge">🎯 TCS: {{ signal.tcs_score }}% CONFIDENCE</div>
-                    
-                    <div class="section-title">Mission Overview</div>
-                    
-                    <div style="color: #94a3b8; line-height: 1.6; margin-bottom: 16px;">
-                        High-probability {{ signal.symbol }} opportunity identified. Market structure aligned for tactical entry.
-                        Risk management protocols active. {{ signal.signal_type }} pattern detected.
-                        <div style="margin-top: 8px; padding: 8px; background: rgba(139, 90, 43, 0.1); border-left: 3px solid #8b5a2b; border-radius: 4px; font-size: 0.9em;">
-                            💡 <em>Pro Tip: Document your thoughts in your Trading Journal below for better decision-making{% if notebook_xp_info.pairing_suggestions %} and earn +8 XP for reflecting on recent trades{% endif %}!</em>
-                            {% if notebook_xp_info.next_milestone %}
-                            <div style="margin-top: 4px; color: var(--elite-gold); font-weight: 500;">
-                                🏆 Next milestone: {{ notebook_xp_info.next_milestone.name }} ({{ notebook_xp_info.next_milestone.progress }}/{{ notebook_xp_info.next_milestone.required }} entries)
-                            </div>
-                            {% endif %}
-                        </div>
-                    </div>
-
-                    <div class="risk-indicator">
-                        <span class="risk-text">✅ Risk Parameters: Optimal</span>
-                        <span style="color: var(--elite-gold); font-weight: 600;">R:R {{ signal.risk_reward_ratio }}</span>
-                    </div>
-                    
-                    <div class="countdown-display" id="countdown" style="margin-top: 16px; font-size: 1.5em;"></div>
-                </div>
-
-                <div class="trade-details">
-                    <div class="section-title">Trade Parameters</div>
-                    
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-label">Entry Price</div>
-                            <div class="stat-value">{{ signal.entry_price }}</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-label">Stop Loss</div>
-                            <div class="stat-value danger">{{ signal.stop_loss }}</div>
-                            <div class="stat-sublabel" style="color: var(--danger-red); font-size: 0.9em; margin-top: 4px;">Risk: ${{ (signal.entry_price - signal.stop_loss)|abs * 10000 * 0.01 }}</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-label">Take Profit</div>
-                            <div class="stat-value success">{{ signal.take_profit }}</div>
-                            <div class="stat-sublabel" style="color: var(--success-green); font-size: 0.9em; margin-top: 4px;">Reward: ${{ (signal.take_profit - signal.entry_price)|abs * 10000 * 0.01 }}</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-label">R:R Ratio</div>
-                            <div class="stat-value">{{ signal.risk_reward_ratio }}</div>
-                            <div class="stat-sublabel" style="color: #94a3b8; font-size: 0.9em; margin-top: 4px;">{{ signal.direction }} {{ signal.signal_type }}</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="account-summary">
-                    <div class="section-title">Performance & Status</div>
-                    
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-label">Shots Remaining</div>
-                            <div class="stat-value warning">5/6</div>
-                            <div class="stat-sublabel" style="color: #94a3b8; font-size: 0.9em; margin-top: 4px;">Daily Limit</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-label">Win Rate</div>
-                            <div class="stat-value success">73%</div>
-                            <div class="stat-sublabel" style="color: #94a3b8; font-size: 0.9em; margin-top: 4px;">Last 30 days</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-label">P&L Today</div>
-                            <div class="stat-value success">+$247</div>
-                            <div class="stat-sublabel" style="color: #94a3b8; font-size: 0.9em; margin-top: 4px;">2 Wins, 0 Losses</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-label">Fire Mode</div>
-                            <div class="stat-value" id="fire-mode-display">SELECT</div>
-                            <div class="stat-sublabel" style="color: #94a3b8; font-size: 0.9em; margin-top: 4px; cursor: pointer;" onclick="toggleFireMode()">Toggle: AUTO/SELECT</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="pattern-analysis">
-                    <div class="section-title">📊 Pattern Analysis</div>
-                    
-                    {% if signal.get('shield_score') %}
-                    <div style="background: rgba(251, 191, 36, 0.1); border: 1px solid var(--elite-gold); border-radius: 8px; padding: 16px; margin-bottom: 16px;">
-                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                            <span style="color: var(--elite-gold); font-weight: 600; font-size: 1.1em;">
-                                🛡️ CITADEL Shield Analysis
-                            </span>
-                            <span style="color: var(--elite-gold); font-weight: 700; font-size: 1.2em;">
-                                {{ signal.shield_score }}/10
-                            </span>
-                        </div>
-                        <div style="color: #94a3b8; font-size: 0.9em;">
-                            {% if signal.shield_score >= 8.0 %}
-                                <div style="color: var(--success-green); font-weight: 600;">✅ SHIELD APPROVED - High institutional quality</div>
-                                <div>This signal shows strong institutional characteristics with optimal protection factors.</div>
-                            {% elif signal.shield_score >= 6.0 %}
-                                <div style="color: var(--elite-gold); font-weight: 600;">🛡️ SHIELD ACTIVE - Solid quality setup</div>
-                                <div>Decent setup with good protection factors and manageable risks.</div>
-                            {% elif signal.shield_score >= 4.0 %}
-                                <div style="color: var(--warning-amber); font-weight: 600;">⚠️ VOLATILITY ZONE - Proceed with caution</div>
-                                <div>High-risk environment detected. Consider reduced position size.</div>
-                            {% else %}
-                                <div style="color: #ef4444; font-weight: 600;">🔍 UNVERIFIED - Exercise extreme caution</div>
-                                <div>Insufficient confirmation for this setup. High trap probability.</div>
                             {% endif %}
                         </div>
                     </div>
@@ -834,339 +672,6 @@ def mission_briefing():
         logger.error(f"Mission HUD error: {e}")
         return f"Error loading mission: {str(e)}", 500
 
-@app.route('/notebook/<user_id>')
-def normans_notebook(user_id):
-    """Norman's Notebook - Story-integrated trade journal with XP integration"""
-    try:
-        # Import the enhanced notebook with XP integration
-        from src.bitten_core.notebook_xp_integration import create_notebook_xp_integration
-        from src.bitten_core.normans_notebook import NormansNotebook
-        
-        # Initialize both systems
-        notebook = NormansNotebook(user_id=user_id)
-        notebook_xp = create_notebook_xp_integration(user_id)
-        
-        # Get comprehensive data
-        recent_entries = notebook.get_recent_entries(limit=10)
-        available_norman_entries = notebook.story_progression.get_available_norman_entries(user_id)
-        user_stats = notebook.get_user_emotional_state()
-        xp_dashboard = notebook_xp.get_notebook_xp_dashboard()
-        signal_suggestions = notebook_xp.get_signal_pairing_suggestions()
-        
-        return render_template_string("""
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <title>Norman's Notebook - Trade Journal</title>
-            <meta charset="utf-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1">
-            <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
-            <style>
-                :root {
-                    --notebook-brown: #8b5a2b;
-                    --paper-cream: #f4f1e8;
-                    --ink-blue: #1e3a8a;
-                    --accent-gold: #fbbf24;
-                    --text-dark: #1f2937;
-                }
-                body {
-                    font-family: 'Inter', sans-serif;
-                    background: linear-gradient(135deg, var(--notebook-brown) 0%, #a0522d 100%);
-                    margin: 0;
-                    padding: 20px;
-                    min-height: 100vh;
-                }
-                .notebook-container {
-                    max-width: 800px;
-                    margin: 0 auto;
-                    background: var(--paper-cream);
-                    border-radius: 12px;
-                    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-                    overflow: hidden;
-                }
-                .notebook-header {
-                    background: var(--ink-blue);
-                    color: white;
-                    padding: 24px;
-                    text-align: center;
-                }
-                .notebook-title {
-                    font-family: 'Orbitron', monospace;
-                    font-size: 2em;
-                    font-weight: 700;
-                    margin: 0;
-                }
-                .notebook-subtitle {
-                    margin: 8px 0 0 0;
-                    opacity: 0.9;
-                    font-style: italic;
-                }
-                .notebook-content {
-                    padding: 32px;
-                    color: var(--text-dark);
-                }
-                .section {
-                    margin-bottom: 32px;
-                    padding-bottom: 24px;
-                    border-bottom: 2px solid #e5e7eb;
-                }
-                .section:last-child {
-                    border-bottom: none;
-                }
-                .section-title {
-                    font-family: 'Orbitron', monospace;
-                    font-size: 1.3em;
-                    color: var(--ink-blue);
-                    margin-bottom: 16px;
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-                }
-                .journal-entry {
-                    background: white;
-                    border-left: 4px solid var(--accent-gold);
-                    padding: 16px;
-                    margin-bottom: 16px;
-                    border-radius: 0 8px 8px 0;
-                    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-                }
-                .entry-meta {
-                    font-size: 0.9em;
-                    color: #6b7280;
-                    margin-bottom: 8px;
-                }
-                .entry-content {
-                    line-height: 1.6;
-                }
-                .norman-entry {
-                    background: #fef3c7;
-                    border-left-color: var(--notebook-brown);
-                }
-                .wisdom-quote {
-                    background: #ecfdf5;
-                    border: 1px solid #10b981;
-                    border-radius: 8px;
-                    padding: 16px;
-                    margin: 16px 0;
-                    font-style: italic;
-                    text-align: center;
-                }
-                .new-entry-form {
-                    background: white;
-                    padding: 24px;
-                    border-radius: 8px;
-                    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-                }
-                .form-group {
-                    margin-bottom: 16px;
-                }
-                .form-label {
-                    display: block;
-                    font-weight: 600;
-                    margin-bottom: 8px;
-                    color: var(--ink-blue);
-                }
-                .form-input, .form-textarea {
-                    width: 100%;
-                    padding: 12px;
-                    border: 2px solid #d1d5db;
-                    border-radius: 6px;
-                    font-family: inherit;
-                    font-size: 1em;
-                }
-                .form-textarea {
-                    min-height: 120px;
-                    resize: vertical;
-                }
-                .submit-btn {
-                    background: var(--ink-blue);
-                    color: white;
-                    border: none;
-                    padding: 12px 24px;
-                    border-radius: 6px;
-                    font-weight: 600;
-                    cursor: pointer;
-                    transition: background 0.3s;
-                }
-                .submit-btn:hover {
-                    background: #1e40af;
-                }
-                .emotional-state {
-                    display: grid;
-                    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-                    gap: 16px;
-                    margin-top: 16px;
-                }
-                .emotion-card {
-                    background: white;
-                    padding: 16px;
-                    border-radius: 8px;
-                    text-align: center;
-                    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-                }
-                .emotion-value {
-                    font-size: 1.5em;
-                    font-weight: 700;
-                    color: var(--ink-blue);
-                }
-            </style>
-        </head>
-        <body>
-            <div class="notebook-container">
-                <div class="notebook-header">
-                    <h1 class="notebook-title">📓 Norman's Notebook</h1>
-                    <p class="notebook-subtitle">Your personal trading journey through the Delta</p>
-                </div>
-                
-                <div class="notebook-content">
-                    <div class="section">
-                        <h2 class="section-title">🎯 Your Trading Journey</h2>
-                        <p>Welcome to your personal trading journal, inspired by Norman's journey from the Mississippi Delta to trading mastery. Here you can reflect on your trades, track emotional patterns, and learn from both victories and setbacks.</p>
-                        
-                        <div class="wisdom-quote">
-                            "Every trade tells a story. Write yours down, learn from it, and let it guide you forward." - Norman's Wisdom
-                        </div>
-                    </div>
-                    
-                    <div class="section">
-                        <h2 class="section-title">📊 Emotional State Tracking</h2>
-                        <div class="emotional-state">
-                            <div class="emotion-card">
-                                <div class="emotion-value">{{ user_stats.confidence or 'N/A' }}</div>
-                                <div>Confidence</div>
-                            </div>
-                            <div class="emotion-card">
-                                <div class="emotion-value">{{ user_stats.discipline or 'N/A' }}</div>
-                                <div>Discipline</div>
-                            </div>
-                            <div class="emotion-card">
-                                <div class="emotion-value">{{ user_stats.patience or 'N/A' }}</div>
-                                <div>Patience</div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="section">
-                        <h2 class="section-title">⚡ XP Progress & Rewards</h2>
-                        <div class="emotional-state">
-                            <div class="emotion-card">
-                                <div class="emotion-value">{{ xp_dashboard.total_entries }}</div>
-                                <div>Total Entries</div>
-                            </div>
-                            <div class="emotion-card">
-                                <div class="emotion-value">{{ xp_dashboard.total_xp_earned }}</div>
-                                <div>XP Earned</div>
-                            </div>
-                            <div class="emotion-card">
-                                <div class="emotion-value">{{ xp_dashboard.milestones_achieved }}</div>
-                                <div>Milestones</div>
-                            </div>
-                            <div class="emotion-card">
-                                <div class="emotion-value">{{ xp_dashboard.weekly_streak }}</div>
-                                <div>Week Streak</div>
-                            </div>
-                        </div>
-                        
-                        {% if xp_dashboard.next_milestone %}
-                        <div style="margin-top: 16px; padding: 16px; background: linear-gradient(135deg, #fbbf24, #f59e0b); color: white; border-radius: 8px;">
-                            <strong>🏆 Next Milestone: {{ xp_dashboard.next_milestone.name }}</strong><br>
-                            Progress: {{ xp_dashboard.next_milestone.progress }}/{{ xp_dashboard.next_milestone.required }} entries ({{ "%.0f"|format(xp_dashboard.next_milestone.percentage) }}%)<br>
-                            <strong>Reward: +{{ xp_dashboard.next_milestone.xp_reward }} XP</strong>
-                        </div>
-                        {% endif %}
-                        
-                        {% if signal_suggestions %}
-                        <div style="margin-top: 16px; padding: 16px; background: linear-gradient(135deg, #10b981, #059669); color: white; border-radius: 8px;">
-                            <strong>🔗 Recent Trade Available for Reflection (+8 XP):</strong><br>
-                            📊 {{ signal_suggestions[0].symbol }} {{ signal_suggestions[0].direction }} | Status: {{ signal_suggestions[0].status }}<br>
-                            🎯 TCS: {{ signal_suggestions[0].tcs_score }}% | ⏰ {{ signal_suggestions[0].executed_at[:19].replace('T', ' ') }}<br>
-                            <em>💭 Consider adding your thoughts about this trade for bonus XP!</em>
-                        </div>
-                        {% endif %}
-                        
-                        {% if xp_dashboard.insight_mode_active %}
-                        <div style="margin-top: 16px; padding: 16px; background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; border-radius: 8px;">
-                            <strong>🧠 Insight Mode Active!</strong><br>
-                            You earn +2 bonus XP for every trade reflection you write. Keep up the great work!
-                        </div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="section">
-                        <h2 class="section-title">✍️ New Journal Entry</h2>
-                        <div class="new-entry-form">
-                            <form method="POST" action="/notebook/{{ user_id }}/add-entry">
-                                <div class="form-group">
-                                    <label class="form-label">Trade Symbol (if applicable)</label>
-                                    <input type="text" name="symbol" class="form-input" placeholder="e.g., EURUSD">
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">Your Reflection</label>
-                                    <textarea name="content" class="form-textarea" placeholder="What did you learn from this trade? How did you feel? What would you do differently?" required></textarea>
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">Current Mood</label>
-                                    <select name="mood" class="form-input">
-                                        <option value="confident">Confident</option>
-                                        <option value="anxious">Anxious</option>
-                                        <option value="excited">Excited</option>
-                                        <option value="frustrated">Frustrated</option>
-                                        <option value="calm">Calm</option>
-                                        <option value="uncertain">Uncertain</option>
-                                    </select>
-                                </div>
-                                <button type="submit" class="submit-btn">📝 Add Entry</button>
-                            </form>
-                        </div>
-                    </div>
-                    
-                    <div class="section">
-                        <h2 class="section-title">📚 Recent Entries</h2>
-                        {% if recent_entries %}
-                            {% for entry in recent_entries %}
-                            <div class="journal-entry {% if entry.type == 'norman_entry' %}norman-entry{% endif %}">
-                                <div class="entry-meta">
-                                    {{ entry.timestamp.strftime('%B %d, %Y at %I:%M %p') if entry.timestamp else 'Unknown time' }} 
-                                    {% if entry.type == 'norman_entry' %}• Norman's Entry{% endif %}
-                                </div>
-                                <div class="entry-content">{{ entry.content or 'No content available' }}</div>
-                            </div>
-                            {% endfor %}
-                        {% else %}
-                            <p style="text-align: center; color: #6b7280; font-style: italic;">
-                                No entries yet. Start your trading journal by adding your first reflection above.
-                            </p>
-                        {% endif %}
-                    </div>
-                    
-                    {% if available_norman_entries %}
-                    <div class="section">
-                        <h2 class="section-title">🏛️ Norman's Wisdom</h2>
-                        <p style="color: #6b7280; margin-bottom: 16px;">
-                            As you progress in your trading journey, Norman's personal insights become available to guide you.
-                        </p>
-                        {% for entry_id in available_norman_entries %}
-                        <div class="journal-entry norman-entry">
-                            <div class="entry-meta">Norman's Personal Journal</div>
-                            <div class="entry-content">Entry unlocked: {{ entry_id }}</div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-        </body>
-        </html>
-        """, 
-        recent_entries=recent_entries,
-        available_norman_entries=available_norman_entries,
-        user_stats=user_stats,
-        user_id=user_id
-        )
-        
-    except Exception as e:
-        logger.error(f"Norman's Notebook error: {e}")
-        return f"Error loading Norman's Notebook: {str(e)}", 500
 
 @app.route('/notebook/<user_id>/add-entry', methods=['POST'])
 def add_notebook_entry(user_id):

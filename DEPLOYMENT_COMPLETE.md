@@ -103,7 +103,7 @@ python3 webapp_server.py &
 
 #### **Environment Variables:**
 ```bash
-TELEGRAM_BOT_TOKEN=7854827710:AAGsO-vgMpsTOVNu6zoo_-GGJkYQd97Mc5w
+TELEGRAM_BOT_TOKEN=7854827710:AAE6m_sNuMk2X6Z3yf2mYO6-6-Clqan-F2c
 CHAT_ID=-1002581996861
 ADMIN_USER_ID=7176191872
 WEBAPP_URL=https://joinbitten.com/hud

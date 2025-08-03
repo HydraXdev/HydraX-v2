@@ -63,7 +63,7 @@ def start_trading_bot():
         ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         
         logger.info(f"✅ Trading Bot started with PID: {process.pid}")
-        logger.info(f"📱 Token: 7854827710:AAGsO-vgMpsTOVNu6zoo_-GGJkYQd97Mc5w")
+        logger.info(f"📱 Token: 7854827710:AAE6m_sNuMk2X6Z3yf2mYO6-6-Clqan-F2c")
         return process
         
     except Exception as e:

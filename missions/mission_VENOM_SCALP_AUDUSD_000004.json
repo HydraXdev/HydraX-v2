@@ -2,8 +2,8 @@
   "signal_id": "VENOM_SCALP_AUDUSD_000004",
   "pair": "AUDUSD",
   "direction": "BUY",
-  "timestamp": 1753826650.906053,
-  "confidence": 73.9,
+  "timestamp": 1753837738.626228,
+  "confidence": 73.7,
   "quality": "bronze",
   "session": "Asian",
   "signal": {
@@ -13,7 +13,7 @@
     "stop_pips": 11,
     "risk_reward": 1.5,
     "signal_type": "RAPID_ASSAULT",
-    "duration_minutes": 55
+    "duration_minutes": 74
   },
   "enhanced_signal": {
     "symbol": "AUDUSD",
@@ -23,7 +23,7 @@
     "take_profit": 0.65478,
     "risk_reward_ratio": 1.5,
     "signal_type": "RAPID_ASSAULT",
-    "confidence": 73.9
+    "confidence": 73.7
   },
   "venom_analysis": {
     "volatility": 0.0001,
@@ -38,7 +38,7 @@
   "ml_filter": {
     "ml_filter_enabled": true,
     "filter_result": "prediction_failed",
-    "min_threshold": 0.65
+    "min_threshold": 0.6
   },
   "citadel_shield": {
     "score": 6.5,

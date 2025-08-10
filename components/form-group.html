@@ -1,0 +1,150 @@
+<!-- Reusable Form Group Component -->
+<!-- Usage: {% include 'components/form-group.html' %} with context -->
+
+{% macro form_group(
+    id,
+    name,
+    label,
+    type='text',
+    placeholder=None,
+    value=None,
+    required=False,
+    help_text=None,
+    error=None,
+    autocomplete=None,
+    pattern=None
+) %}
+<div class="form-group{% if error %} form-group--error{% endif %}">
+    <label for="{{ id }}" class="form-label">
+        {{ label }}
+        {% if required %}
+        <span class="form-required" aria-label="required">*</span>
+        {% endif %}
+    </label>
+    
+    <input 
+        type="{{ type }}"
+        id="{{ id }}"
+        name="{{ name }}"
+        class="form-input"
+        {% if placeholder %}placeholder="{{ placeholder }}"{% endif %}
+        {% if value %}value="{{ value }}"{% endif %}
+        {% if required %}required aria-required="true"{% endif %}
+        {% if help_text %}aria-describedby="{{ id }}-help"{% endif %}
+        {% if error %}aria-describedby="{{ id }}-error" aria-invalid="true"{% endif %}
+        {% if autocomplete %}autocomplete="{{ autocomplete }}"{% endif %}
+        {% if pattern %}pattern="{{ pattern }}"{% endif %}
+    >
+    
+    {% if help_text %}
+    <div id="{{ id }}-help" class="form-help">
+        {{ help_text }}
+    </div>
+    {% endif %}
+    
+    {% if error %}
+    <div id="{{ id }}-error" class="form-error" role="alert">
+        {{ error }}
+    </div>
+    {% endif %}
+</div>
+{% endmacro %}
+
+<!-- CSS for Form Group Component -->
+<style>
+.form-group {
+    margin-bottom: var(--space-md);
+}
+
+.form-label {
+    display: block;
+    font-size: var(--font-sm);
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin-bottom: var(--space-xs);
+    line-height: 1.4;
+}
+
+.form-required {
+    color: var(--color-danger);
+    margin-left: var(--space-xs);
+}
+
+.form-input {
+    width: 100%;
+    padding: var(--space-sm) var(--space-md);
+    font-size: var(--font-base);
+    font-family: inherit;
+    line-height: 1.5;
+    color: var(--color-text-primary);
+    background: var(--color-bg-light);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-md);
+    transition: all 0.2s ease;
+    
+    &::placeholder {
+        color: var(--color-text-secondary);
+    }
+    
+    &:focus {
+        outline: none;
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 3px rgba(0, 212, 170, 0.1);
+    }
+    
+    &:invalid:not(:focus):not(:placeholder-shown) {
+        border-color: var(--color-danger);
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+    }
+}
+
+.form-help {
+    font-size: var(--font-xs);
+    color: var(--color-text-secondary);
+    margin-top: var(--space-xs);
+    line-height: 1.4;
+}
+
+.form-error {
+    font-size: var(--font-xs);
+    color: var(--color-danger);
+    margin-top: var(--space-xs);
+    line-height: 1.4;
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    
+    &::before {
+        content: "⚠";
+        flex-shrink: 0;
+    }
+}
+
+.form-group--error .form-input {
+    border-color: var(--color-danger);
+    
+    &:focus {
+        border-color: var(--color-danger);
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+    }
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+    .form-input {
+        background: var(--color-bg-dark);
+        
+        &:-webkit-autofill {
+            -webkit-box-shadow: 0 0 0 1000px var(--color-bg-dark) inset;
+            -webkit-text-fill-color: var(--color-text-primary);
+        }
+    }
+}
+
+/* Mobile improvements */
+@media (max-width: 640px) {
+    .form-input {
+        font-size: 16px; /* Prevents zoom on iOS */
+    }
+}
+</style>

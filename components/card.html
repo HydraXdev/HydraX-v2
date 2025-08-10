@@ -1,0 +1,146 @@
+<!-- Reusable Card Component -->
+<!-- Usage: {% include 'components/card.html' %} with context -->
+
+{% macro card(
+    title=None,
+    subtitle=None,
+    content=None,
+    footer=None,
+    variant='default',
+    padding='md',
+    clickable=False,
+    href=None,
+    aria_label=None
+) %}
+<{% if clickable and href %}a href="{{ href }}"{% else %}div{% endif %}
+    class="card card--{{ variant }} card--padding-{{ padding }}{% if clickable %} card--clickable{% endif %}"
+    {% if aria_label %}aria-label="{{ aria_label }}"{% endif %}
+    {% if clickable and not href %}role="button" tabindex="0"{% endif %}>
+    
+    {% if title %}
+    <div class="card__header">
+        <h3 class="card__title">{{ title }}</h3>
+        {% if subtitle %}
+        <p class="card__subtitle">{{ subtitle }}</p>
+        {% endif %}
+    </div>
+    {% endif %}
+    
+    {% if content %}
+    <div class="card__content">
+        {{ content|safe }}
+    </div>
+    {% endif %}
+    
+    {% if footer %}
+    <div class="card__footer">
+        {{ footer|safe }}
+    </div>
+    {% endif %}
+</{% if clickable and href %}a{% else %}div{% endif %}>
+{% endmacro %}
+
+<!-- CSS for Card Component -->
+<style>
+.card {
+    background: var(--color-bg-light);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    transition: all 0.2s ease;
+    
+    /* Clickable variant */
+    &.card--clickable {
+        cursor: pointer;
+        
+        &:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--color-primary);
+        }
+        
+        &:focus-visible {
+            outline: 3px solid var(--color-primary);
+            outline-offset: 2px;
+        }
+    }
+}
+
+/* Padding variants */
+.card--padding-none { padding: 0; }
+.card--padding-sm { padding: var(--space-sm); }
+.card--padding-md { padding: var(--space-md); }
+.card--padding-lg { padding: var(--space-lg); }
+.card--padding-xl { padding: var(--space-xl); }
+
+/* Card sections */
+.card__header {
+    padding: var(--space-md);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.card__title {
+    font-size: var(--font-xl);
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin: 0;
+}
+
+.card__subtitle {
+    font-size: var(--font-sm);
+    color: var(--color-text-secondary);
+    margin-top: var(--space-xs);
+}
+
+.card__content {
+    padding: var(--space-md);
+}
+
+.card__footer {
+    padding: var(--space-md);
+    border-top: 1px solid var(--color-border);
+    background: rgba(0, 0, 0, 0.2);
+}
+
+/* Variant styles */
+.card--success {
+    border-color: var(--color-success);
+    background: linear-gradient(135deg, 
+        rgba(16, 185, 129, 0.1) 0%, 
+        var(--color-bg-light) 100%);
+}
+
+.card--warning {
+    border-color: var(--color-warning);
+    background: linear-gradient(135deg, 
+        rgba(245, 158, 11, 0.1) 0%, 
+        var(--color-bg-light) 100%);
+}
+
+.card--danger {
+    border-color: var(--color-danger);
+    background: linear-gradient(135deg, 
+        rgba(239, 68, 68, 0.1) 0%, 
+        var(--color-bg-light) 100%);
+}
+
+.card--primary {
+    border-color: var(--color-primary);
+    background: linear-gradient(135deg, 
+        rgba(0, 212, 170, 0.1) 0%, 
+        var(--color-bg-light) 100%);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .card {
+        border-radius: var(--radius-md);
+    }
+    
+    .card__header,
+    .card__content,
+    .card__footer {
+        padding: var(--space-sm);
+    }
+}
+</style>

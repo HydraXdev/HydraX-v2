@@ -132,6 +132,26 @@ socketio = SocketIO(
     engineio_logger=False
 )
 
+# Dev-only authentication bypass for accessibility testing
+# WARNING: Never enable in production!
+@app.route('/__dev/login')
+def dev_login():
+    """Development-only route for accessibility testing"""
+    if not os.getenv('ALLOW_FAKE_LOGIN') == '1':
+        return "Dev login disabled", 404
+    
+    user_id = request.args.get('user', '7176191872')
+    redirect_url = request.args.get('redirect', '/hud')
+    
+    # Set fake session data for testing
+    from flask import session
+    session['user_id'] = user_id
+    session['authenticated'] = True
+    session['user_tier'] = 'COMMANDER'  # For testing purposes
+    
+    logger.info(f"🔧 DEV LOGIN: Set session for user {user_id}")
+    return redirect(redirect_url)
+
 # Register onboarding routes
 if onboarding_system_available:
     try:
@@ -1957,6 +1977,43 @@ def war_room():
                 to {{ transform: rotate(360deg); }}
             }}
             
+            /* Accessibility Utilities */
+            .sr-only {{
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                padding: 0;
+                margin: -1px;
+                overflow: hidden;
+                clip: rect(0, 0, 0, 0);
+                white-space: nowrap;
+                border: 0;
+            }}
+            
+            /* Skip to Content Link */
+            .skip-link {{
+                position: absolute;
+                top: -40px;
+                left: 10px;
+                z-index: 999;
+                padding: 10px;
+                background: #00D9FF;
+                color: #000;
+                text-decoration: none;
+                border-radius: 4px;
+            }}
+            
+            .skip-link:focus {{
+                top: 10px;
+            }}
+            
+            /* Focus Indicators */
+            a:focus-visible,
+            button:focus-visible {{
+                outline: 3px solid #00D9FF;
+                outline-offset: 2px;
+            }}
+
             /* Responsive Design */
             @media (max-width: 768px) {{
                 .stats-grid {{
@@ -1979,54 +2036,57 @@ def war_room():
         </style>
     </head>
     <body>
+        <a href="#main-content" class="skip-link">Skip to main content</a>
+        
         <!-- War Room Header -->
-        <div class="war-header">
+        <header class="war-header" role="banner">
             <div class="header-content">
                 <div class="rank-display">
-                    <div class="rank-badge">🎖️</div>
+                    <div class="rank-badge" aria-label="Military rank badge">🎖️</div>
                     <div>
-                        <div class="callsign">{callsign}</div>
-                        <div class="rank-info">{rank_name} TIER • {rank_desc}</div>
+                        <h1 class="callsign">{callsign}</h1>
+                        <div class="rank-info" aria-label="Rank information">{rank_name} TIER • {rank_desc}</div>
                     </div>
                 </div>
                 <div style="text-align: right;">
                     <div style="font-size: 12px; color: #666;">OPERATION: BITTEN</div>
-                    <div style="font-size: 14px; color: #00D9FF;">STATUS: ACTIVE</div>
+                    <div style="font-size: 14px; color: #00D9FF;" aria-label="Operation status">STATUS: ACTIVE</div>
                 </div>
             </div>
-        </div>
+        </header>
         
-        <!-- Performance Stats Grid -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-label">🎯 Total Missions</div>
-                <div class="stat-value">{total_trades}</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">⚡ Win Rate</div>
-                <div class="stat-value {'positive' if win_rate > 0.5 else 'negative'}">{win_rate:.1%}</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">💰 Total P&L</div>
-                <div class="stat-value {'positive' if total_pnl > 0 else 'negative'}">{'+'if total_pnl > 0 else ''}${total_pnl:,.0f}</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">🔥 Current Streak</div>
-                <div class="stat-value">{current_streak}</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">📊 Avg R:R</div>
-                <div class="stat-value">{avg_rr:.1f}:1</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">🏆 Global Rank</div>
-                <div class="stat-value">#{global_rank}</div>
-            </div>
-        </div>
+        <main id="main-content" role="main">
+            <!-- Performance Stats Grid -->
+            <section class="stats-grid" aria-label="Performance Statistics">
+                <div class="stat-card">
+                    <div class="stat-label">🎯 Total Missions</div>
+                    <div class="stat-value" aria-label="Total missions: {total_trades}">{total_trades}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">⚡ Win Rate</div>
+                    <div class="stat-value {'positive' if win_rate > 0.5 else 'negative'}" aria-label="Win rate: {win_rate:.1%}">{win_rate:.1%}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">💰 Total P&L</div>
+                    <div class="stat-value {'positive' if total_pnl > 0 else 'negative'}" aria-label="Total profit and loss: {'+'if total_pnl > 0 else ''}${total_pnl:,.0f}">{'+'if total_pnl > 0 else ''}${total_pnl:,.0f}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">🔥 Current Streak</div>
+                    <div class="stat-value" aria-label="Current winning streak: {current_streak}">{current_streak}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">📊 Avg R:R</div>
+                    <div class="stat-value" aria-label="Average risk to reward ratio: {avg_rr:.1f} to 1">{avg_rr:.1f}:1</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">🏆 Global Rank</div>
+                    <div class="stat-value" aria-label="Global ranking: number {global_rank}">#{global_rank}</div>
+                </div>
+            </section>
         
-        <!-- Recent Kill Cards -->
-        <div class="kill-cards">
-            <h2 class="section-title">💀 RECENT KILLS</h2>
+            <!-- Recent Kill Cards -->
+            <section class="kill-cards" aria-label="Recent successful trades">
+                <h2 class="section-title">💀 RECENT KILLS</h2>
             {''.join([f'''
             <div class="kill-card">
                 <div class="kill-info">
@@ -2285,6 +2345,12 @@ def war_room():
                     }}, index * 50);
                 }});
             }});
+            </section>
+        </main>
+        
+        <footer role="contentinfo" style="text-align: center; padding: 20px; color: #666; border-top: 1px solid #333; margin-top: 40px;">
+            <p>&copy; 2025 BITTEN Trading Academy. All rights reserved.</p>
+        </footer>
         </script>
     </body>
     </html>

@@ -1,0 +1,22 @@
+{
+  "FIXED_URL_TEST_1754660621": {
+    "mission_id": "FIXED_URL_TEST_1754660621",
+    "signal_id": "FIXED_URL_TEST_1754660621",
+    "symbol": "EURUSD",
+    "direction": "BUY",
+    "confidence": 78,
+    "pattern_type": "LIQUIDITY_SWEEP_REVERSAL",
+    "signal_type": "PRECISION_STRIKE",
+    "entry_price": 1.1649,
+    "sl_pips": 20,
+    "tp_pips": 40,
+    "target_pips": 40,
+    "stop_pips": 20,
+    "risk_reward": 2.0,
+    "session": "LONDON",
+    "citadel_score": 8.5,
+    "xp_reward": 156,
+    "generated_at": "2025-08-08T13:44:43.101331",
+    "engine": "ELITE_GUARD"
+  }
+}

@@ -27,7 +27,7 @@ logging.basicConfig(
 logger = logging.getLogger('SystemMonitor')
 
 # Telegram bot for monitoring alerts
-MONITOR_BOT_TOKEN = "7854827710:AAE6m_sNuMk2X6Z3yf2mYO6-6-Clqan-F2c"  # Production bot
+MONITOR_BOT_TOKEN = "7854827710:AAE9kCptkoSl8lmQwmX940UMqFWOb3TmTI0"  # Production bot - SECURED
 ADMIN_CHAT_IDS = ["6150318148"]  # Admin/developer chat IDs for alerts
 
 class SystemMonitor:

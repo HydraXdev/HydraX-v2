@@ -18,7 +18,6 @@ from typing import Dict, Optional, Any
 import threading
 from time import sleep
 import subprocess
-import docker
 import base64
 import string
 from pathlib import Path
@@ -79,6 +78,184 @@ except ImportError:
     def bit_trade_reaction(success, profit=0, symbol=""): return ""
     def bit_welcome(tier="NIBBLER"): return "Welcome to BITTEN."
     def bit_daily_wisdom(): return "Market analysis in progress..."
+
+# === HydraX hardening helpers (inserted by refactor) ===
+import signal as sig_module
+import tempfile
+import fcntl
+from concurrent.futures import ThreadPoolExecutor
+from collections import deque, defaultdict
+
+try:
+    from urllib3.util.retry import Retry
+    from requests.adapters import HTTPAdapter
+except Exception:
+    pass
+
+try:
+    from telebot.apihelper import ApiException
+except Exception:
+    class ApiException(Exception):
+        result_json = {}
+
+# Shared executor for offloading blocking IO
+EXEC = globals().get("EXEC") or ThreadPoolExecutor(max_workers=8)
+
+def http_session():
+    s = requests.Session()
+    retry = Retry(
+        total=5,
+        backoff_factor=0.5,
+        status_forcelist=(429, 500, 502, 503, 504),
+        allowed_methods=frozenset(['GET','POST','PUT','DELETE','PATCH'])
+    )
+    s.mount("https://", HTTPAdapter(max_retries=retry))
+    s.mount("http://", HTTPAdapter(max_retries=retry))
+    s.headers.update({"User-Agent": "HydraXBot/1.0"})
+    return s
+
+HTTP = http_session() if requests else None
+
+def http_post_bg(url, **kwargs):
+    kwargs.setdefault("timeout", 10)
+    return EXEC.submit(HTTP.post, url, **kwargs)
+
+def http_get_bg(url, **kwargs):
+    kwargs.setdefault("timeout", 10)
+    return EXEC.submit(HTTP.get, url, **kwargs)
+
+# Backoff-aware Telegram send/edit (FloodWait)
+def send_with_retry(fn, max_attempts=5, base=1.0, **kwargs):
+    attempt = 0
+    while True:
+        try:
+            return fn(**kwargs)
+        except ApiException as e:
+            attempt += 1
+            data = getattr(e, "result_json", {}) or {}
+            params = data.get("parameters") or {}
+            retry_after = params.get("retry_after")
+            if retry_after:
+                time.sleep(min(60, float(retry_after)))
+            elif attempt < max_attempts:
+                time.sleep(min(30, base * (2 ** (attempt - 1))))
+            else:
+                raise
+
+def safe_send_message(bot, chat_id, text, **kwargs):
+    return send_with_retry(lambda **kw: bot.send_message(**kw), chat_id=chat_id, text=text, **kwargs)
+
+def safe_edit_message_text(bot, chat_id, message_id, text, **kwargs):
+    return send_with_retry(lambda **kw: bot.edit_message_text(**kw),
+                           chat_id=chat_id, message_id=message_id, text=text, **kwargs)
+
+# Per-user rate limiting
+RATE_BUCKET = defaultdict(lambda: deque(maxlen=10))
+RATE_WINDOW = 10  # seconds
+RATE_LIMIT = 5    # max events per window
+
+def allow_user(user_id):
+    now = time.time()
+    dq = RATE_BUCKET[user_id]
+    while dq and now - dq[0] > RATE_WINDOW:
+        dq.popleft()
+    if len(dq) >= RATE_LIMIT:
+        return False
+    dq.append(now)
+    return True
+
+def rate_limited(bot):
+    def deco(fn):
+        def wrapper(message, *a, **kw):
+            uid = getattr(getattr(message, "from_user", None), "id", 0)
+            if not allow_user(uid):
+                try:
+                    bot.reply_to(message, "Slow down a bit ⚠️")
+                except Exception:
+                    pass
+                return
+            return fn(message, *a, **kw)
+        return wrapper
+    return deco
+
+# Admin-only via env
+ADMIN_IDS = {int(x) for x in os.getenv("ADMIN_IDS","7176191872").split(",") if x.strip().isdigit()}
+
+def admin_only(bot):
+    def deco(fn):
+        def wrapper(message, *a, **kw):
+            uid = getattr(getattr(message, "from_user", None), "id", 0)
+            if uid not in ADMIN_IDS:
+                try:
+                    bot.reply_to(message, "Admin only.")
+                except Exception:
+                    pass
+                return
+            return fn(message, *a, **kw)
+        return wrapper
+    return deco
+
+# Atomic JSON persistence helpers
+def atomic_write_json(path, data):
+    dir_ = os.path.dirname(path) or "."
+    fd, tmp = tempfile.mkstemp(prefix=".tmp-", dir=dir_)
+    try:
+        with os.fdopen(fd, "w") as f:
+            f.write(json.dumps(data, ensure_ascii=False, separators=(",",":")))
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp, path)
+    finally:
+        try: os.remove(tmp)
+        except FileNotFoundError: pass
+
+def locked_load_json(path, default=None):
+    default = default or {}
+    try:
+        with open(path, "r") as f:
+            try:
+                fcntl.flock(f, fcntl.LOCK_SH)
+                data = json.load(f)
+                fcntl.flock(f, fcntl.LOCK_UN)
+            except Exception:
+                data = json.load(f)
+            return data
+    except FileNotFoundError:
+        return default
+
+# Non-blocking ZMQ recv guard
+def safe_recv(sock):
+    try:
+        return sock.recv_string(flags=zmq.NOBLOCK)
+    except zmq.Again:
+        return None
+    except Exception:
+        return None
+
+# Schedule helper to avoid time.sleep in handlers
+def run_later(delay_sec, fn, *args, **kwargs):
+    t = threading.Timer(delay_sec, fn, args=args, kwargs=kwargs)
+    t.daemon = True
+    t.start()
+    return t
+
+# Graceful shutdown plumbing
+SHUTDOWN = False
+def _handle_shutdown_factory(bot, exec_):
+    def handle_shutdown(sig, frame):
+        global SHUTDOWN
+        SHUTDOWN = True
+        try:
+            bot.stop_polling()
+        except Exception:
+            pass
+        try:
+            exec_.shutdown(wait=True)
+        except Exception:
+            pass
+        os._exit(0)
+    return handle_shutdown
+# === end helpers ===
 
 # Import mission generator
 try:
@@ -600,27 +777,16 @@ class BittenProductionBot:
             try:
                 if message.text == "/status":
                     try:
-                        # Import container status tracker
-                        from src.bitten_core.container_status_tracker import get_container_status_tracker
                         from src.bitten_core.user_registry_manager import get_user_registry_manager
                         
-                        tracker = get_container_status_tracker()
                         registry = get_user_registry_manager()
                         
                         if int(uid) in COMMANDER_IDS:
                             # System overview for commanders
                             system_status = self.get_system_status()
-                            container_overview = tracker.get_system_overview()
-                            combined_status = f"{system_status}\n\n{container_overview}"
                             self.send_adaptive_response(message.chat.id, combined_status, user_tier, "commander_status")
                         else:
-                            # Individual container status for users
-                            container_name = registry.get_container_name(uid)
-                            if container_name:
-                                status_message = tracker.format_container_status_message(container_name)
-                                self.send_adaptive_response(message.chat.id, status_message, user_tier, "user_container_status")
                             else:
-                                self.send_adaptive_response(message.chat.id, "❌ No container assigned. Visit https://joinbitten.com to set up your account and claim your free Press Pass.", user_tier, "no_container")
                     except Exception as e:
                         logger.error(f"Status command error: {e}")
                         fallback_msg = "❌ Status check temporarily unavailable."
@@ -1455,7 +1621,6 @@ Use /recruit to get your referral link and start earning!"""
                         self.send_adaptive_response(message.chat.id, "❌ Credits system not available.", user_tier, "system_unavailable")
                 
                 elif message.text.startswith("/connect"):
-                    # MT5 Container Connection Handler
                     try:
                         response = self.telegram_command_connect_handler(message, uid, user_tier)
                         
@@ -2673,16 +2838,13 @@ Use /help for command list or visit the webapp for detailed information."""
     
     def telegram_command_connect_handler(self, message, uid: str, user_tier: str) -> str:
         """
-        Handle /connect command for MT5 container onboarding
         Securely inject credentials and start MT5 login process
         """
         try:
             # Import registry and status tracker
             from src.bitten_core.user_registry_manager import get_user_registry_manager
-            from src.bitten_core.container_status_tracker import get_container_status_tracker
             
             registry = get_user_registry_manager()
-            status_tracker = get_container_status_tracker()
             
             # Security: Log connection attempt (without credentials)
             logger.info(f"User {uid} attempting MT5 connection")
@@ -2707,30 +2869,21 @@ Use /help for command list or visit the webapp for detailed information."""
             if not self._validate_connection_params(login_id, password, server_name):
                 return "❌ Invalid connection parameters. Please check your login ID, password, and server name."
             
-            # STEP 2: Map user to container and register in registry
-            container_name = f"mt5_user_{uid}"
             
             # Register user in registry if not already registered
             user_info = registry.get_user_info(uid)
             if not user_info:
-                registry.register_user(uid, uid, container_name, str(login_id), server_name)
             else:
                 # Update existing user credentials
                 registry.update_user_credentials(uid, str(login_id), server_name)
             
-            # STEP 2: Auto-handle container creation and management
-            container_status = self._ensure_container_ready_enhanced(container_name, uid)
-            if not container_status['success']:
-                return container_status['message']
             
             # STEP 3: Inject credentials into MT5 config with timeout
             registry.update_user_status(uid, "credentials_injected")
-            if not self._inject_mt5_credentials_with_timeout(container_name, login_id, password, server_name):
                 registry.update_user_status(uid, "error_state")
                 return "⏳ Still initializing your terminal. Please try /connect again in a minute."
             
             # STEP 4: Restart MT5 and verify login with timeout
-            login_result = self._restart_mt5_and_login_with_timeout(container_name)
             if not login_result['success']:
                 if login_result.get('timeout'):
                     return "⏳ Still initializing your terminal. Please try /connect again in a minute."
@@ -2739,7 +2892,6 @@ Use /help for command list or visit the webapp for detailed information."""
                     return "❌ MT5 login failed. Please verify your credentials and server."
             
             # STEP 5: Extract account telemetry
-            account_info = self._extract_account_telemetry(container_name, login_id)
             if not account_info:
                 registry.update_user_status(uid, "error_state")
                 return "❌ Could not extract account information. Login may have failed."
@@ -2750,8 +2902,6 @@ Use /help for command list or visit the webapp for detailed information."""
             self._register_account_with_core(uid, account_info)
             
             # STEP 7: Check if EA is ready and update status
-            container_status = status_tracker.check_container_status(container_name)
-            if container_status.ea_active:
                 registry.update_user_status(uid, "ready_for_fire")
             
             # Record successful connection
@@ -2767,10 +2917,8 @@ You're ready to receive signals. Type /status to confirm.
 • Leverage: 1:{account_info.get('leverage', 'Unknown')}
 • Currency: {account_info.get('currency', 'USD')}
 
-🛡️ **System Status:** {container_status.status}
 
 🔗 **Connection Info:**
-• Container: `{container_name}`
 • Login: `{login_id}`
 • Server: `{server_name}`"""
             
@@ -2806,81 +2954,47 @@ You're ready to receive signals. Type /status to confirm.
             logger.error(f"Credential parsing error: {e}")
             return None
     
-    def _ensure_container_ready(self, container_name: str) -> bool:
         """Legacy method - kept for backward compatibility"""
-        result = self._ensure_container_ready_enhanced(container_name, "legacy")
         return result['success']
     
-    def _ensure_container_ready_enhanced(self, container_name: str, user_id: str) -> dict:
-        """Enhanced container handling with auto-creation and improved error messages"""
         try:
-            import docker
-            client = docker.from_env()
             
-            # STEP 2.1: Check if container exists
             try:
-                container = client.containers.get(container_name)
-                logger.info(f"Container {container_name} found with status: {container.status}")
                 
                 # STEP 2.2: If exists but stopped, start it
-                if container.status != 'running':
-                    logger.info(f"Starting stopped container: {container_name}")
-                    container.start()
                     
-                    # Wait for container to be ready
                     for i in range(10):  # 10 second timeout
                         time.sleep(1)
-                        container.reload()
-                        if container.status == 'running':
-                            logger.info(f"Container {container_name} started successfully")
-                            return {'success': True, 'message': 'Container started'}
                     
                     return {
                         'success': False, 
                         'message': "⏳ Still initializing your terminal. Please try /connect again in a minute."
                     }
                 
-                return {'success': True, 'message': 'Container ready'}
                 
-            except docker.errors.NotFound:
-                # STEP 2.3: Container doesn't exist - create from template
-                logger.info(f"Container {container_name} not found. Creating from template...")
                 
                 # Check if template exists
                 try:
                     template_image = client.images.get('hydrax-user-template:latest')
-                except docker.errors.ImageNotFound:
                     logger.error("hydrax-user-template:latest not found")
                     return {
                         'success': False,
                         'message': "We couldn't find your terminal. It may not be active yet. Please try again in a few minutes or contact support."
                     }
                 
-                # Create new container from template
                 try:
-                    logger.info(f"Creating new container {container_name} from hydrax-user-template")
-                    container = client.containers.run(
                         'hydrax-user-template:latest',
-                        name=container_name,
                         detach=True,
                         restart_policy={"Name": "unless-stopped"},
                         environment={
                             'USER_ID': user_id,
-                            'CONTAINER_NAME': container_name
                         },
                         volumes={
-                            f'mt5_data_{user_id}': {'bind': '/wine/drive_c/MetaTrader5/Data', 'mode': 'rw'}
                         }
                     )
                     
-                    # Wait for container initialization
-                    logger.info(f"Waiting for container {container_name} to initialize...")
                     for i in range(10):  # 10 second timeout
                         time.sleep(1)
-                        container.reload()
-                        if container.status == 'running':
-                            logger.info(f"Container {container_name} created and started successfully")
-                            return {'success': True, 'message': 'Container created successfully'}
                     
                     return {
                         'success': False,
@@ -2888,20 +3002,17 @@ You're ready to receive signals. Type /status to confirm.
                     }
                     
                 except Exception as create_error:
-                    logger.error(f"Failed to create container {container_name}: {create_error}")
                     return {
                         'success': False,
                         'message': "We couldn't find your terminal. It may not be active yet. Please try again in a few minutes or contact support."
                     }
             
         except Exception as e:
-            logger.error(f"Enhanced container check error for {container_name}: {e}")
             return {
                 'success': False,
                 'message': "We couldn't find your terminal. It may not be active yet. Please try again in a few minutes or contact support."
             }
     
-    def _inject_mt5_credentials_with_timeout(self, container_name: str, login_id: int, password: str, server_name: str) -> bool:
         """Enhanced credential injection with timeout handling"""
         try:
             # Try injection with timeout
@@ -2911,7 +3022,6 @@ You're ready to receive signals. Type /status to confirm.
             result = {'success': False}
             
             def inject_credentials():
-                result['success'] = self._inject_mt5_credentials(container_name, login_id, password, server_name)
             
             # Run injection in thread with timeout
             thread = threading.Thread(target=inject_credentials)
@@ -2920,7 +3030,6 @@ You're ready to receive signals. Type /status to confirm.
             thread.join(timeout=10.0)  # 10 second timeout
             
             if thread.is_alive():
-                logger.error(f"Credential injection timeout for {container_name}")
                 return False
             
             return result['success']
@@ -2929,11 +3038,7 @@ You're ready to receive signals. Type /status to confirm.
             logger.error(f"Enhanced credential injection error: {e}")
             return False
     
-    def _inject_mt5_credentials(self, container_name: str, login_id: int, password: str, server_name: str) -> bool:
-        """Inject MT5 credentials into container config with security measures"""
         try:
-            client = docker.from_env()
-            container = client.containers.get(container_name)
             
             # Security: Never log the password
             logger.info(f"Injecting credentials for login {login_id} on server {server_name}")
@@ -2960,17 +3065,12 @@ EnableAPI=1
             # Encode config content to base64 to avoid shell injection
             encoded_content = base64.b64encode(config_content.encode()).decode()
             
-            # Write config to container securely
-            exec_result = container.exec_run([
                 'bash', '-c', 
-                f'mkdir -p /wine/drive_c/MetaTrader5/config && echo "{encoded_content}" | base64 -d > /wine/drive_c/MetaTrader5/config/terminal.ini && chmod 600 /wine/drive_c/MetaTrader5/config/terminal.ini'
             ])
             
             if exec_result.exit_code == 0:
                 # Also create the fire.txt file for trade execution
-                container.exec_run([
                     'bash', '-c',
-                    'mkdir -p /wine/drive_c/MetaTrader5/Files/BITTEN && touch /wine/drive_c/MetaTrader5/Files/BITTEN/fire.txt && chmod 666 /wine/drive_c/MetaTrader5/Files/BITTEN/fire.txt'
                 ])
                 return True
             return False
@@ -2978,7 +3078,6 @@ EnableAPI=1
             logger.error(f"Credential injection error: {e}")
             return False
     
-    def _restart_mt5_and_login_with_timeout(self, container_name: str) -> dict:
         """Enhanced MT5 restart with timeout and better feedback"""
         try:
             import threading
@@ -2986,7 +3085,6 @@ EnableAPI=1
             result = {'success': False, 'timeout': False}
             
             def restart_mt5():
-                result['success'] = self._restart_mt5_and_login(container_name)
             
             # Run restart in thread with timeout
             thread = threading.Thread(target=restart_mt5)
@@ -2995,7 +3093,6 @@ EnableAPI=1
             thread.join(timeout=10.0)  # 10 second timeout
             
             if thread.is_alive():
-                logger.error(f"MT5 restart timeout for {container_name}")
                 result['timeout'] = True
                 return result
             
@@ -3005,29 +3102,21 @@ EnableAPI=1
             logger.error(f"Enhanced MT5 restart error: {e}")
             return {'success': False, 'timeout': False}
     
-    def _restart_mt5_and_login(self, container_name: str) -> bool:
         """Restart MT5 terminal and attempt login"""
         try:
-            client = docker.from_env()
-            container = client.containers.get(container_name)
             
             # Kill existing MT5 processes
-            container.exec_run(['pkill', 'terminal64.exe'], detach=True)
             time.sleep(3)
             
             # Start MT5 in portable mode
-            container.exec_run([
                 'bash', '-c',
-                'cd /wine/drive_c/Program\\ Files/MetaTrader\\ 5/ && wine terminal64.exe /portable'
             ], detach=True)
             
             # Wait for login attempt
             time.sleep(10)
             
             # Check if login was successful (simplified check)
-            result = container.exec_run([
                 'bash', '-c',
-                'ls -la /wine/drive_c/MetaTrader5/config/ | grep terminal.ini'
             ])
             
             return result.exit_code == 0
@@ -3035,11 +3124,8 @@ EnableAPI=1
             logger.error(f"MT5 restart error: {e}")
             return False
     
-    def _extract_account_telemetry(self, container_name: str, login_id: int) -> Optional[dict]:
         """Extract account information from MT5"""
         try:
-            client = docker.from_env()
-            container = client.containers.get(container_name)
             
             # Use a simple Python script to extract account info via MetaTrader5 library
             extraction_script = f'''
@@ -3066,8 +3152,6 @@ except Exception as e:
     print(f'{{"error": "{{e}}"}}')
 '''
             
-            # Execute the script in the container
-            result = container.exec_run([
                 'python3', '-c', extraction_script
             ])
             

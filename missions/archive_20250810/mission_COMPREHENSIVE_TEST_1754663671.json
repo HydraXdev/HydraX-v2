@@ -1,0 +1,48 @@
+{
+  "mission_id": "COMPREHENSIVE_TEST_1754663671",
+  "signal_id": "COMPREHENSIVE_TEST_1754663671",
+  "timing": {
+    "expires_at": "2025-08-08T15:34:31.355437",
+    "created_at": "2025-08-08T14:34:31.355474",
+    "time_remaining": 3600
+  },
+  "enhanced_signal": {
+    "signal_id": "COMPREHENSIVE_TEST_1754663671",
+    "symbol": "GBPUSD",
+    "direction": "SELL",
+    "entry_price": 1.265,
+    "stop_loss": 1.267,
+    "take_profit": 1.261,
+    "confidence": 92.5,
+    "pattern_type": "ORDER_BLOCK_BOUNCE",
+    "signal_type": "PRECISION_STRIKE",
+    "session": "LONDON"
+  },
+  "citadel_shield": {
+    "score": 9.2,
+    "classification": "SHIELD_APPROVED",
+    "risk_multiplier": 1.5,
+    "insights": "Institutional order block rejection with volume confirmation. High probability setup aligned with smart money flow."
+  },
+  "mission": {
+    "sl_pips": 20,
+    "tp_pips": 40,
+    "risk_reward": 2.0,
+    "session": "LONDON",
+    "xp_reward": 200
+  },
+  "user": {
+    "user_id": "7176191872",
+    "tier": "COMMANDER",
+    "account_balance": 10850.47,
+    "position_size": 0.08,
+    "risk_amount": 150,
+    "win_rate": 68.5,
+    "trades_remaining": 4
+  },
+  "user_id": "7176191872",
+  "pair": "GBPUSD",
+  "direction": "SELL",
+  "confidence": 92.5,
+  "engine": "ELITE_GUARD"
+}

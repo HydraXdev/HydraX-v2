@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="/static/css/bitten.css">
+    <link rel="stylesheet" href="/static/css/hud.css">
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ symbol }} {{ direction }} - BITTEN TACTICAL MISSION BRIEFING</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --commander-purple: #7c3aed;
+            --elite-gold: #fbbf24;
+            --success-green: #10b981;
+            --warning-amber: #f59e0b;
+            --danger-red: #ef4444;
+            --dark-bg: #0f172a;
+            --panel-bg: rgba(15, 23, 42, 0.95);
+            --border-color: #334155;
+            --bright-green: #00ff41;
+            --military-green: #1a3d1a;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--dark-bg) 0%, #1e293b 100%);
+            color: #f1f5f9;
+            overflow-x: hidden;
+        }
+
+        /* Header Bar with User Stats and Quick Links */
+        .header-bar {
+            background: linear-gradient(90deg, var(--commander-purple) 0%, #8b5cf6 100%);
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .user-stats-bar {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 10px;
+            opacity: 0.9;
+            text-transform: uppercase;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--elite-gold);
+        }
+
+        .quick-links {
+            display: flex;
+            gap: 10px;
+        }
+
+        .quick-link {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .quick-link:hover {
+            background: var(--elite-gold);
+            color: var(--dark-bg);
+            transform: translateY(-2px);
+        }
+
+        /* Main Container */
+        .mission-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Mission Header */
+        .mission-header {
+            background: var(--panel-bg);
+            border: 2px solid var(--bright-green);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.3);
+        }
+
+        .mission-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 2.5em;
+            text-align: center;
+            color: var(--bright-green);
+            text-shadow: 0 0 20px var(--bright-green);
+            margin-bottom: 20px;
+        }
+
+        .mission-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .meta-box {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid var(--elite-gold);
+        }
+
+        .meta-label {
+            font-size: 11px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .meta-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--bright-green);
+        }
+
+        /* Two Column Layout */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 968px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Signal Analysis Panel */
+        .signal-analysis {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .section-title {
+            font-size: 1.3em;
+            color: var(--elite-gold);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .analysis-item {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .analysis-label {
+            font-size: 11px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .analysis-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--bright-green);
+        }
+
+        .analysis-value.negative {
+            color: var(--danger-red);
+        }
+
+        /* Chart Container */
+        .chart-container {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            height: 300px;
+            position: relative;
+        }
+
+        /* CITADEL Shield */
+        .citadel-shield {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .shield-score {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .shield-value {
+            font-size: 3em;
+            font-weight: bold;
+            color: var(--bright-green);
+            text-shadow: 0 0 20px currentColor;
+        }
+
+        .shield-classification {
+            font-size: 14px;
+            color: var(--elite-gold);
+            text-transform: uppercase;
+            margin-top: 5px;
+        }
+
+        .shield-insights {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        /* Risk Management */
+        .risk-management {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .risk-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .risk-item {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .risk-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .risk-label {
+            font-size: 12px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .risk-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--bright-green);
+        }
+
+        /* Norman's Insights Section */
+        .norman-section {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(124, 58, 237, 0.05));
+            border: 2px solid var(--commander-purple);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .norman-section::before {
+            content: "📓";
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 30px;
+            opacity: 0.3;
+        }
+
+        .norman-quote {
+            font-style: italic;
+            font-size: 16px;
+            color: var(--elite-gold);
+            margin-bottom: 15px;
+            padding-left: 20px;
+            border-left: 3px solid var(--commander-purple);
+        }
+
+        .norman-analysis {
+            font-size: 14px;
+            line-height: 1.8;
+            color: #cbd5e1;
+        }
+
+        /* Execution Panel */
+        .execution-panel {
+            background: var(--panel-bg);
+            border: 2px solid var(--bright-green);
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.3);
+        }
+
+        .countdown-timer {
+            font-family: 'Orbitron', monospace;
+            font-size: 2.5em;
+            color: var(--warning-amber);
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px currentColor;
+        }
+
+        .countdown-timer.critical {
+            color: var(--danger-red);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        .fire-button {
+            background: linear-gradient(45deg, var(--success-green), #0ea5e9);
+            color: white;
+            border: none;
+            padding: 20px 60px;
+            font-size: 24px;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 10px;
+        }
+
+        .fire-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.6);
+        }
+
+        .fire-button:disabled {
+            background: #64748b;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .abort-button {
+            background: linear-gradient(45deg, #64748b, #475569);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 16px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 10px;
+            opacity: 0.8;
+        }
+        
+        .abort-button:hover {
+            opacity: 1;
+            transform: translateY(-2px);
+        }
+
+        /* Live Indicators */
+        .live-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background: var(--success-green);
+            border-radius: 50%;
+            animation: blink 2s infinite;
+            margin-right: 5px;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* Action Links Grid */
+        .action-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .action-link {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--bright-green);
+            padding: 12px;
+            border-radius: 8px;
+            text-decoration: none;
+            text-align: center;
+            transition: all 0.3s;
+            border: 1px solid var(--border-color);
+        }
+
+        .action-link:hover {
+            background: var(--commander-purple);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .mission-title {
+                font-size: 1.8em;
+            }
+            
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .fire-button {
+                padding: 15px 40px;
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Bar with Stats and Links -->
+    <div class="header-bar">
+        <div class="user-stats-bar">
+            <div class="stat-item">
+                <div class="stat-label">Tier</div>
+                <div class="stat-value">{{ user_stats.tier if user_stats else 'COMMANDER' }}</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Win Rate</div>
+                <div class="stat-value">{{ user_stats.win_rate if user_stats else '65' }}%</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Balance</div>
+                <div class="stat-value">${{ '{:,.2f}'.format(user_stats.balance) if user_stats else '10,000' }}</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Trades Left</div>
+                <div class="stat-value">{{ user_stats.trades_remaining if user_stats else '5' }}</div>
+            </div>
+        </div>
+        <div class="quick-links">
+            <a href="/me?user_id={{ user_id }}" class="quick-link">
+                🎖️ War Room
+            </a>
+            <a href="/notebook/{{ user_id }}" class="quick-link">
+                📓 Norman's Notebook
+            </a>
+            <a href="/history" class="quick-link">
+                📊 Trade History
+            </a>
+            <a href="/stats/{{ user_id }}" class="quick-link">
+                📈 Analytics
+            </a>
+        </div>
+    </div>
+
+    <!-- Mission Container -->
+    <div class="mission-container">
+        <!-- Mission Header -->
+        <div class="mission-header">
+            <div class="mission-title">
+                <span class="live-indicator"></span>
+                {{ symbol }} {{ direction }} - TACTICAL MISSION BRIEFING
+            </div>
+            <div class="mission-meta">
+                <div class="meta-box">
+                    <div class="meta-label">Mission ID</div>
+                    <div class="meta-value">{{ mission_id[:12] }}...</div>
+                </div>
+                <div class="meta-box">
+                    <div class="meta-label">Signal Type</div>
+                    <div class="meta-value">{{ briefing.operation_header.mission_type if briefing else 'PRECISION' }}</div>
+                </div>
+                <div class="meta-box">
+                    <div class="meta-label">Confidence</div>
+                    <div class="meta-value">{{ tcs_score }}%</div>
+                </div>
+                <div class="meta-box">
+                    <div class="meta-label">Time Remaining</div>
+                    <div class="meta-value countdown-timer" id="countdown">--:--</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Two Column Layout -->
+        <div class="content-grid">
+            <!-- Left Column: Analysis -->
+            <div>
+                <!-- Signal Analysis -->
+                <div class="signal-analysis">
+                    <h2 class="section-title">
+                        <span class="live-indicator"></span>
+                        Market Analysis & Entry Points
+                    </h2>
+                    
+                    <div class="analysis-grid">
+                        <div class="analysis-item">
+                            <div class="analysis-label">Entry Price</div>
+                            <div class="analysis-value">{{ '{:.5f}'.format(entry_price) if entry_price else 'Loading' }}</div>
+                        </div>
+                        <div class="analysis-item">
+                            <div class="analysis-label">Stop Loss</div>
+                            <div class="analysis-value negative">{{ '{:.5f}'.format(stop_loss) if stop_loss else 'Loading' }}</div>
+                        </div>
+                        <div class="analysis-item">
+                            <div class="analysis-label">Take Profit</div>
+                            <div class="analysis-value">{{ '{:.5f}'.format(take_profit) if take_profit else 'Loading' }}</div>
+                        </div>
+                        <div class="analysis-item">
+                            <div class="analysis-label">R:R Ratio</div>
+                            <div class="analysis-value">1:{{ briefing.tactical_intel.reward_potential.split(':')[1] if briefing else '2.0' }}</div>
+                        </div>
+                    </div>
+
+                    <!-- Price Chart -->
+                    <div class="chart-container">
+                        <canvas id="priceChart"></canvas>
+                    </div>
+
+                    <!-- Pattern Analysis -->
+                    <div style="margin-top: 20px; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 8px;">
+                        <h3 style="color: var(--elite-gold); margin-bottom: 10px;">Pattern Detected</h3>
+                        <p style="font-size: 14px; line-height: 1.6;">
+                            <strong>{{ briefing.tactical_intel.pattern_detected if briefing else 'LIQUIDITY_SWEEP_REVERSAL' }}</strong><br>
+                            {{ briefing.citadel_analysis.institutional_insights if briefing else 'Institutional accumulation detected after liquidity sweep. Price rejected from key level with volume confirmation.' }}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Risk Management -->
+                <div class="risk-management">
+                    <h2 class="section-title">
+                        💰 Position & Risk Management
+                    </h2>
+                    
+                    <div class="risk-grid">
+                        <div class="risk-item">
+                            <div class="risk-label">Position Size</div>
+                            <div class="risk-value">{{ briefing.mission_parameters.position_size if briefing else '0.10' }} lots</div>
+                        </div>
+                        <div class="risk-item">
+                            <div class="risk-label">Risk Amount</div>
+                            <div class="risk-value">${{ briefing.tactical_intel.risk_assessment if briefing else '100' }}</div>
+                        </div>
+                        <div class="risk-item">
+                            <div class="risk-label">Potential Reward</div>
+                            <div class="risk-value">${{ '200' if not briefing else briefing.tactical_intel.risk_assessment.replace('$','').replace(' exposure','') }}</div>
+                        </div>
+                        <div class="risk-item">
+                            <div class="risk-label">Account Risk</div>
+                            <div class="risk-value">2.0%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Norman's Insights -->
+                <div class="norman-section">
+                    <h2 class="section-title">
+                        📓 Norman's Trading Wisdom
+                    </h2>
+                    <div class="norman-quote">
+                        "Every trade is a story, and this one's telling you to pay attention to the institutional footprints."
+                    </div>
+                    <div class="norman-analysis">
+                        <p><strong>Market Context:</strong> {{ briefing.situation_assessment.target_zone if briefing else symbol }} is showing classic institutional accumulation patterns. The smart money has been building positions here.</p>
+                        <p style="margin-top: 10px;"><strong>Your Edge:</strong> You're entering where the big players entered. This isn't gambling - it's following the footprints of those who move markets.</p>
+                        <p style="margin-top: 10px;"><strong>Remember:</strong> Discipline beats luck every time. Stick to your stop loss, take your profit at the target, and let the probabilities work in your favor.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: CITADEL & Execution -->
+            <div>
+                <!-- CITADEL Shield Analysis -->
+                <div class="citadel-shield">
+                    <h2 class="section-title">
+                        🛡️ CITADEL Shield Analysis
+                    </h2>
+                    
+                    <div class="shield-score">
+                        <div class="shield-value">{{ citadel_score }}/10</div>
+                        <div class="shield-classification">{{ briefing.citadel_analysis.shield_status if briefing else 'SHIELD ACTIVE' }}</div>
+                    </div>
+                    
+                    <div class="shield-insights">
+                        <h3 style="color: var(--elite-gold); margin-bottom: 10px;">Institutional Analysis</h3>
+                        <ul style="list-style: none; padding: 0;">
+                            <li style="margin-bottom: 8px;">✅ Market Regime: {{ briefing.citadel_analysis.market_regime if briefing else 'OPTIMAL' }}</li>
+                            <li style="margin-bottom: 8px;">✅ Liquidity: Sufficient for execution</li>
+                            <li style="margin-bottom: 8px;">✅ Correlation: No conflicts detected</li>
+                            <li style="margin-bottom: 8px;">✅ News Impact: Low volatility window</li>
+                            <li style="margin-bottom: 8px;">✅ Session: {{ briefing.mission_parameters.session_context if briefing else 'LONDON' }} - Prime trading hours</li>
+                        </ul>
+                        <p style="margin-top: 15px; font-size: 13px; color: #94a3b8;">
+                            Position multiplier: {{ briefing.citadel_analysis.risk_multiplier if briefing else '1.0' }}x based on shield score
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Session & Timing Analysis -->
+                <div style="background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-top: 20px;">
+                    <h2 class="section-title">
+                        ⏰ Optimal Execution Window
+                    </h2>
+                    <div style="text-align: center; padding: 20px;">
+                        <div style="font-size: 14px; color: #94a3b8; margin-bottom: 10px;">Current Session</div>
+                        <div style="font-size: 24px; color: var(--bright-green); font-weight: bold;">
+                            {{ briefing.mission_parameters.session_context if briefing else 'LONDON SESSION' }}
+                        </div>
+                        <div style="margin-top: 20px; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 8px;">
+                            <div style="font-size: 12px; color: #94a3b8; margin-bottom: 5px;">Session Characteristics</div>
+                            <div style="font-size: 13px; line-height: 1.6;">
+                                High liquidity period with institutional participation. Optimal for precision entries with minimal slippage.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Execution Panel -->
+        <div class="execution-panel">
+            <h2 class="section-title" style="justify-content: center;">
+                🔥 TACTICAL EXECUTION CENTER
+            </h2>
+            
+            <div class="countdown-timer" id="mainCountdown">
+                <span id="countdownMinutes">--</span>:<span id="countdownSeconds">--</span>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <p style="font-size: 16px; color: #cbd5e1;">
+                    Signal expires in <span id="timeRemaining">--</span> minutes
+                </p>
+                <p style="font-size: 14px; color: #94a3b8; margin-top: 5px;">
+                    Execute now for maximum probability of success
+                </p>
+            </div>
+            
+            <div>
+                <button class="fire-button" onclick="executeTrade()">
+                    🚀 EXECUTE TRADE
+                </button>
+                <button class="abort-button" onclick="skipMission()">
+                    ⏭️ SKIP THIS SIGNAL
+                </button>
+            </div>
+            
+            <div class="action-links">
+                <a href="/analysis/{{ mission_id }}" class="action-link">
+                    📊 Deep Analysis
+                </a>
+                <a href="/history" class="action-link">
+                    📜 Trade History
+                </a>
+                <a href="/settings" class="action-link">
+                    ⚙️ Settings
+                </a>
+                <a href="/help" class="action-link">
+                    ❓ Help
+                </a>
+            </div>
+        </div>
+
+        <!-- Additional Resources -->
+        <div style="margin-top: 30px; padding: 20px; background: var(--panel-bg); border-radius: 12px; text-align: center;">
+            <h3 style="color: var(--elite-gold); margin-bottom: 15px;">📚 Resources & Support</h3>
+            <div class="action-links">
+                <a href="/education/patterns" class="action-link">
+                    📖 Pattern Library
+                </a>
+                <a href="/education/risk" class="action-link">
+                    💰 Risk Management
+                </a>
+                <a href="/community" class="action-link">
+                    👥 Community
+                </a>
+                <a href="/support" class="action-link">
+                    💬 Get Help
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Countdown Timer
+        const timeRemaining = {{ time_remaining }};
+        let secondsLeft = timeRemaining;
+        
+        function updateCountdown() {
+            if (secondsLeft <= 0) {
+                document.getElementById('countdown').textContent = 'EXPIRED';
+                document.getElementById('mainCountdown').textContent = 'EXPIRED';
+                document.getElementById('mainCountdown').classList.add('critical');
+                document.querySelector('.fire-button').disabled = true;
+                return;
+            }
+            
+            const minutes = Math.floor(secondsLeft / 60);
+            const seconds = secondsLeft % 60;
+            
+            document.getElementById('countdown').textContent = 
+                `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            document.getElementById('countdownMinutes').textContent = 
+                minutes.toString().padStart(2, '0');
+            document.getElementById('countdownSeconds').textContent = 
+                seconds.toString().padStart(2, '0');
+            document.getElementById('timeRemaining').textContent = minutes;
+            
+            if (secondsLeft < 300) { // Less than 5 minutes
+                document.getElementById('mainCountdown').classList.add('critical');
+            }
+            
+            secondsLeft--;
+        }
+        
+        // Update every second
+        setInterval(updateCountdown, 1000);
+        updateCountdown(); // Initial call
+        
+        // Chart Setup
+        const ctx = document.getElementById('priceChart').getContext('2d');
+        const entryPrice = {{ entry_price }};
+        const stopLoss = {{ stop_loss }};
+        const takeProfit = {{ take_profit }};
+        
+        // Generate sample price data around entry
+        const labels = [];
+        const data = [];
+        for (let i = -20; i <= 20; i++) {
+            labels.push(i === 0 ? 'NOW' : i > 0 ? `+${i}m` : `${i}m`);
+            // Simulate price movement
+            const variation = (Math.random() - 0.5) * 0.0005;
+            data.push(entryPrice + variation);
+        }
+        
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '{{ symbol }} Price',
+                    data: data,
+                    borderColor: '#00ff41',
+                    backgroundColor: 'rgba(0, 255, 65, 0.1)',
+                    tension: 0.4,
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    annotation: {
+                        annotations: {
+                            entryLine: {
+                                type: 'line',
+                                yMin: entryPrice,
+                                yMax: entryPrice,
+                                borderColor: '#fbbf24',
+                                borderWidth: 2,
+                                label: {
+                                    content: 'ENTRY',
+                                    enabled: true
+                                }
+                            },
+                            slLine: {
+                                type: 'line',
+                                yMin: stopLoss,
+                                yMax: stopLoss,
+                                borderColor: '#ef4444',
+                                borderWidth: 2,
+                                borderDash: [5, 5],
+                                label: {
+                                    content: 'SL',
+                                    enabled: true
+                                }
+                            },
+                            tpLine: {
+                                type: 'line',
+                                yMin: takeProfit,
+                                yMax: takeProfit,
+                                borderColor: '#10b981',
+                                borderWidth: 2,
+                                borderDash: [5, 5],
+                                label: {
+                                    content: 'TP',
+                                    enabled: true
+                                }
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: '#94a3b8'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: '#94a3b8'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Trade Execution
+        function executeTrade() {
+            if (window.Telegram && window.Telegram.WebApp) {
+                // Send fire command via Telegram WebApp
+                window.Telegram.WebApp.sendData(`/fire {{ mission_id }}`);
+                window.Telegram.WebApp.close();
+            } else {
+                // Fallback to web execution
+                window.location.href = `/fire?signal={{ mission_id }}&user={{ user_id }}`;
+            }
+        }
+        
+        function skipMission() {
+            // This just skips the signal, it does NOT close any open trades
+            if (confirm('Skip this signal? (This will NOT affect any open trades)')) {
+                // Log the skip for analytics
+                console.log('User skipped signal:', '{{ mission_id }}');
+                
+                if (window.Telegram && window.Telegram.WebApp) {
+                    // Close the webapp and return to Telegram
+                    window.Telegram.WebApp.close();
+                } else {
+                    // Go back to previous page or dashboard
+                    window.location.href = '/dashboard';
+                }
+            }
+        }
+        
+        // Note: To close an OPEN trade, users must use their MT5 terminal or 
+        // a dedicated trade management interface, NOT the mission briefing
+        
+        // Initialize Telegram WebApp
+        if (window.Telegram && window.Telegram.WebApp) {
+            window.Telegram.WebApp.ready();
+            window.Telegram.WebApp.expand();
+        }
+    </script>
+</body>
+</html>

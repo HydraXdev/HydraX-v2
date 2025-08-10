@@ -3,6 +3,7 @@
 # │ Persistent ZMQ architecture is required                      │
 # │ EA v7 connects directly via libzmq.dll to 134.199.204.67    │
 # │ All command, telemetry, and feedback must use ZMQ sockets   │
+# │ SEE: /root/HydraX-v2/BITTEN_ZMQ_MANIFESTO.md BEFORE CHANGES │
 # └──────────────────────────────────────────────────────────────┘
 
 # BITTEN Fire Router - Direct Broker API Integration
@@ -392,7 +393,7 @@ class AdvancedValidator:
         # Check for weekend trading restrictions
         now = datetime.now()
         if now.weekday() >= 5:  # Saturday or Sunday
-            return False, "Weekend trading restricted"
+            return False, "🚫 Market Closed - Forex market is closed on weekends. Trading resumes Sunday 21:00 UTC"
         
         # Check for high-risk symbol restrictions
         high_risk_symbols = ["XAUUSD", "BTCUSD", "ETHUSD"]
@@ -483,8 +484,14 @@ class FireRouter:
         # Return legacy format
         return "sent_to_bridge" if result.success else "failed"
     
-    def execute_trade_request(self, request: TradeRequest, user_profile: Optional[Dict] = None) -> TradeExecutionResult:
-        """Execute trade request with comprehensive validation and bridge communication"""
+    def execute_trade_request(self, request: TradeRequest, user_profile: Optional[Dict] = None, use_fresh_packet: bool = True) -> TradeExecutionResult:
+        """Execute trade request with comprehensive validation and fresh packet building
+        
+        Args:
+            request: Trade request with signal details
+            user_profile: User account and tier information
+            use_fresh_packet: Whether to build fresh packet with adjusted entries (default: True)
+        """
         
         execution_start = time.time()
         
@@ -497,6 +504,107 @@ class FireRouter:
                     error_code="EMERGENCY_STOP",
                     execution_time_ms=int((time.time() - execution_start) * 1000)
                 )
+            
+            # CRITICAL: Enforce handshake requirement before ANY trade
+            if user_profile and user_profile.get('telegram_id'):
+                try:
+                    import sys
+                    sys.path.append('/root/HydraX-v2')
+                    from handshake_enforcer import enforce_handshake_before_fire
+                    
+                    signal_data = {
+                        'stop_pips': request.stop_loss_pips or 20,
+                        'symbol': request.symbol
+                    }
+                    
+                    can_trade, enforcement_message = enforce_handshake_before_fire(
+                        user_profile['telegram_id'], 
+                        signal_data
+                    )
+                    
+                    if not can_trade:
+                        logger.warning(f"Trade blocked by handshake enforcer: {enforcement_message}")
+                        return TradeExecutionResult(
+                            success=False,
+                            message=enforcement_message,
+                            error_code="NO_HANDSHAKE",
+                            execution_time_ms=int((time.time() - execution_start) * 1000)
+                        )
+                        
+                except Exception as e:
+                    logger.error(f"Handshake enforcement check failed: {e}")
+                    # Fail safe - block trade if we can't verify
+                    return TradeExecutionResult(
+                        success=False,
+                        message="❌ Cannot verify account data - trade blocked for safety",
+                        error_code="HANDSHAKE_CHECK_FAILED",
+                        execution_time_ms=int((time.time() - execution_start) * 1000)
+                    )
+            
+            # Build fresh packet if requested and vitality data available
+            if use_fresh_packet and hasattr(request, 'metadata') and request.metadata:
+                try:
+                    from src.bitten_core.fresh_fire_builder import get_fresh_fire_builder
+                    from src.bitten_core.signal_vitality_engine import get_vitality_engine
+                    
+                    # Get mission data if available
+                    mission_data = request.metadata.get('mission_data')
+                    if mission_data:
+                        # Calculate vitality
+                        vitality_engine = get_vitality_engine()
+                        vitality_metrics = vitality_engine.calculate_vitality(
+                            mission_data.get('signal_id', ''),
+                            user_profile.get('balance', 10000) if user_profile else 10000
+                        )
+                        
+                        # Build fresh packet if vitality is acceptable
+                        if vitality_metrics.vitality_score >= 20:
+                            fresh_builder = get_fresh_fire_builder()
+                            
+                            # Get current market data
+                            import requests
+                            try:
+                                market_response = requests.get(
+                                    f'http://localhost:8001/market-data/venom-feed?symbol={request.symbol}',
+                                    timeout=1
+                                )
+                                current_market = market_response.json() if market_response.status_code == 200 else {}
+                            except:
+                                current_market = {}
+                            
+                            # Build fresh packet
+                            fresh_packet = fresh_builder.build_fresh_packet(
+                                mission_data,
+                                vitality_metrics,
+                                user_profile or {},
+                                current_market
+                            )
+                            
+                            # Validate fresh packet
+                            is_valid, error_msg = fresh_builder.validate_packet(fresh_packet)
+                            if is_valid:
+                                # Update request with fresh parameters
+                                request.entry_price = fresh_packet.entry_price
+                                request.stop_loss = fresh_packet.stop_loss
+                                request.take_profit = fresh_packet.take_profit
+                                request.volume = fresh_packet.lot_size
+                                
+                                # Add fresh packet info to metadata
+                                if not request.metadata:
+                                    request.metadata = {}
+                                request.metadata['fresh_packet'] = True
+                                request.metadata['entry_adjusted_pips'] = fresh_packet.entry_adjustment_pips
+                                request.metadata['vitality_score'] = fresh_packet.vitality_score
+                                
+                                logger.info(f"Using fresh fire packet for {request.symbol}: Entry adjusted by {fresh_packet.entry_adjustment_pips:.1f} pips")
+                            else:
+                                logger.warning(f"Fresh packet validation failed: {error_msg}")
+                        else:
+                            logger.warning(f"Signal vitality too low ({vitality_metrics.vitality_score:.1f}%) - using original parameters")
+                            
+                except Exception as e:
+                    logger.error(f"Error building fresh packet: {e}")
+                    # Continue with original parameters
             
             # Update statistics
             with self._stats_lock:

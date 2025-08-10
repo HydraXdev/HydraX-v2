@@ -9,6 +9,7 @@ import json
 import time
 import logging
 import numpy as np
+import os
 from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass
 from datetime import datetime, timedelta
@@ -43,34 +44,30 @@ class CitadelShieldFilter:
     """
     
     def __init__(self):
-        # Broker configuration (demo APIs for testing)
+        # REAL broker configuration - NO DEMO MODES WHEN REAL MONEY IS INVOLVED
         self.brokers = [
             {
                 'name': 'IC Markets',
-                'demo_api': 'https://demo-api.icmarkets.com',  # Placeholder
-                'enabled': False  # Start disabled, enable when APIs available
-            },
-            {
-                'name': 'Pepperstone', 
-                'demo_api': 'https://demo-api.pepperstone.com',  # Placeholder
-                'enabled': False
+                'live_api': 'https://api.icmarkets.com',  # REAL LIVE API
+                'api_key': os.environ.get('IC_MARKETS_API_KEY'),
+                'api_secret': os.environ.get('IC_MARKETS_SECRET'),
+                'enabled': bool(os.environ.get('IC_MARKETS_API_KEY'))  # Only enable if credentials exist
             },
             {
                 'name': 'OANDA',
-                'demo_api': 'https://api-fxpractice.oanda.com/v3',  # Real OANDA demo API
-                'enabled': False  # Need API key
+                'live_api': 'https://api-fxtrade.oanda.com/v3',  # REAL LIVE OANDA API
+                'api_key': os.environ.get('OANDA_API_KEY'),
+                'account_id': os.environ.get('OANDA_ACCOUNT_ID'),
+                'enabled': bool(os.environ.get('OANDA_API_KEY') and os.environ.get('OANDA_ACCOUNT_ID'))
             },
             {
-                'name': 'FXCM',
-                'demo_api': 'https://api-demo.fxcm.com',  # Placeholder
-                'enabled': False
-            },
-            {
-                'name': 'FP Markets',
-                'demo_api': 'https://demo-api.fpmarkets.com',  # Placeholder
-                'enabled': False
+                'name': 'Pepperstone',
+                'live_api': 'https://api.pepperstone.com',  # REAL API (if available)
+                'api_key': os.environ.get('PEPPERSTONE_API_KEY'),
+                'enabled': bool(os.environ.get('PEPPERSTONE_API_KEY'))
             }
         ]
+        
         
         # Consensus caching (10-15 second cache to minimize API calls)
         self.consensus_cache = {}
@@ -162,56 +159,14 @@ class CitadelShieldFilter:
     
     def fetch_broker_tick(self, broker: Dict, symbol: str) -> Optional[Dict]:
         """
-        Fetch current tick data from broker API
-        For now returns simulated data - replace with real API calls
+        SIMULATION BLOCKED - REAL BROKER APIs ONLY
         """
-        try:
-            # PLACEHOLDER: In production, implement real broker API calls
-            # For now, simulate broker data with slight variations
-            
-            # Simulate base price (would come from actual broker API)
-            base_prices = {
-                'EURUSD': 1.0850,
-                'GBPUSD': 1.2750,
-                'USDJPY': 149.50,
-                'USDCAD': 1.3600,
-                'AUDUSD': 0.6650
-            }
-            
-            if symbol not in base_prices:
-                return None
-            
-            # Add small broker-specific variation (simulate real broker differences)
-            broker_variations = {
-                'IC Markets': 0.0001,
-                'Pepperstone': -0.0001,
-                'OANDA': 0.00005,
-                'FXCM': -0.00005,
-                'FP Markets': 0.00015
-            }
-            
-            base_price = base_prices[symbol]
-            variation = broker_variations.get(broker['name'], 0)
-            
-            # Simulate bid/ask spread
-            if 'JPY' in symbol:
-                spread = 0.02  # 2 pips for JPY pairs
-            else:
-                spread = 0.0002  # 2 pips for other pairs
-            
-            bid = base_price + variation - (spread / 2)
-            ask = base_price + variation + (spread / 2)
-            
-            return {
-                'bid': bid,
-                'ask': ask,
-                'spread': spread,
-                'timestamp': time.time()
-            }
-            
-        except Exception as e:
-            logger.error(f"Error fetching tick from {broker['name']}: {e}")
-            return None
+        logger.error("🚨 SIMULATED BROKER TICKS DISABLED")
+        logger.error("🚨 Real money is on the line - use real broker APIs only")
+        logger.error(f"🚨 Attempted to simulate: {broker['name']} {symbol}")
+        
+        # Block all simulated data
+        raise RuntimeError(f"SIMULATION BLOCKED for {broker['name']} - Use real broker API")
     
     def detect_manipulation(self, symbol: str, entry_price: float, consensus: ConsensusData) -> Tuple[bool, str]:
         """
@@ -359,12 +314,16 @@ class CitadelShieldFilter:
         }
     
     def enable_demo_mode(self):
-        """Enable demo mode with simulated broker data for testing"""
-        for broker in self.brokers:
-            broker['enabled'] = True
+        """DEMO MODE PERMANENTLY DISABLED - REAL DATA ONLY"""
+        logger.error("🚨 DEMO MODE DISABLED - REAL MONEY IS ON THE LINE")
+        logger.error("🚨 Use citadel_shield_real_data_only.py for production")
+        logger.error("🚨 NO SIMULATED DATA WHEN REAL MONEY IS INVOLVED")
         
-        logger.info("🧪 CITADEL Shield demo mode enabled")
-        logger.info("⚠️ Using simulated broker data - replace with real APIs for production")
+        # Do not enable any brokers in demo mode
+        for broker in self.brokers:
+            broker['enabled'] = False
+        
+        raise RuntimeError("DEMO MODE BLOCKED - Use real broker APIs only")
 
 # Test function
 def test_citadel_shield():

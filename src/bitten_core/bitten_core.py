@@ -864,6 +864,9 @@ class BittenCore:
                 "shield_score": signal_data.get('shield_score', 'N/A')
             })
             
+            # Create mission file for HUD/webapp
+            self._create_mission_file(signal_data)
+            
             # Deliver signal to ready users
             delivery_result = self._deliver_signal_to_users(signal_data)
             
@@ -1749,3 +1752,83 @@ Your mission briefing is waiting."""
             'last_restart': self.performance_stats['last_restart'],
             'supported_pairs': self.config['supported_pairs']
         }
+    
+    def _create_mission_file(self, signal_data: Dict):
+        """Create mission file for webapp/HUD access"""
+        try:
+            import os
+            import json
+            import time
+            from datetime import datetime, timedelta
+            
+            signal_id = signal_data.get('signal_id', f"MISSION_{int(time.time())}")
+            
+            # Create mission data structure matching existing format
+            mission_data = {
+                "mission_id": signal_id,
+                "signal_id": signal_id,
+                "signal": {
+                    "symbol": signal_data.get('symbol'),
+                    "direction": signal_data.get('direction'),
+                    "signal_type": signal_data.get('signal_type'),
+                    "entry_price": signal_data.get('entry_price'),
+                    "stop_loss": signal_data.get('sl'),
+                    "take_profit": signal_data.get('tp'),
+                    "stop_pips": signal_data.get('stop_pips', 10),
+                    "target_pips": signal_data.get('target_pips', 20),
+                    "risk_reward": signal_data.get('risk_reward', 2.0),
+                    "confidence": signal_data.get('confidence'),
+                    "tcs_score": signal_data.get('confidence'),
+                    "pattern": signal_data.get('pattern_type'),
+                    "pattern_type": signal_data.get('pattern_type'),
+                    "session": signal_data.get('session'),
+                    "timeframe": "M1"
+                },
+                "symbol": signal_data.get('symbol'),
+                "direction": signal_data.get('direction'),
+                "signal_type": signal_data.get('signal_type'),
+                "entry_price": signal_data.get('entry_price'),
+                "stop_loss": signal_data.get('sl'),
+                "take_profit": signal_data.get('tp'),
+                "stop_pips": signal_data.get('stop_pips', 10),
+                "target_pips": signal_data.get('target_pips', 20),
+                "risk_reward": signal_data.get('risk_reward', 2.0),
+                "confidence": signal_data.get('confidence'),
+                "tcs_score": signal_data.get('confidence'),
+                "pattern": signal_data.get('pattern_type'),
+                "pattern_type": signal_data.get('pattern_type'),
+                "session": signal_data.get('session'),
+                "timeframe": "M1",
+                "shield_score": signal_data.get('shield_score', 7.0),
+                "shield_classification": "SHIELD_ACTIVE",
+                "shield_label": "SHIELD ACTIVE",
+                "shield_emoji": "✅",
+                "shield_explanation": "Signal processed through BITTEN Core system",
+                "shield_recommendation": "Tactical execution recommended",
+                "position_multiplier": 1.0,
+                "created_at": datetime.now().isoformat(),
+                "expires_at": (datetime.now() + timedelta(hours=2)).isoformat(),
+                "hard_close_at": (datetime.now() + timedelta(hours=2, minutes=5)).isoformat(),
+                "countdown_seconds": 7200,
+                "xp_reward": signal_data.get('xp_reward', 100),
+                "status": "pending",
+                "fire_count": 0,
+                "user_fired": False,
+                "source": "ELITE_GUARD_v6",
+                "created_timestamp": int(time.time()),
+                "processed_at": datetime.now().isoformat()
+            }
+            
+            # Ensure missions directory exists
+            missions_dir = "/root/HydraX-v2/missions"
+            os.makedirs(missions_dir, exist_ok=True)
+            
+            # Write mission file
+            mission_file = f"{missions_dir}/{signal_id}.json"
+            with open(mission_file, 'w') as f:
+                json.dump(mission_data, f, indent=2)
+            
+            self._log_info(f"✅ Mission file created: {mission_file}")
+            
+        except Exception as e:
+            self._log_error(f"Failed to create mission file for {signal_data.get('signal_id', 'unknown')}: {e}")

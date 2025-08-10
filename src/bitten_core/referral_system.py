@@ -626,6 +626,51 @@ class ReferralSystem:
         
         return rewards_given
     
+    def get_squad_stats(self, user_id: str) -> Dict[str, Any]:
+        """
+        Get squad statistics for a user.
+        
+        Args:
+            user_id: User ID to get squad stats for
+            
+        Returns:
+            Dict containing squad statistics
+        """
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                conn.row_factory = sqlite3.Row
+                cursor = conn.cursor()
+                
+                # Get squad stats
+                cursor.execute('''
+                    SELECT * FROM squad_stats WHERE user_id = ?
+                ''', (user_id,))
+                
+                squad_row = cursor.fetchone()
+                if not squad_row:
+                    return {
+                        'total_recruits': 0,
+                        'active_recruits': 0,
+                        'total_xp': 0,
+                        'squad_rank': 'LONE_WOLF'
+                    }
+                
+                return {
+                    'total_recruits': squad_row['total_recruits'] or 0,
+                    'active_recruits': squad_row['active_recruits'] or 0, 
+                    'total_xp': squad_row['total_xp_earned'] or 0,
+                    'squad_rank': squad_row['squad_rank'] or 'LONE_WOLF'
+                }
+                
+        except Exception as e:
+            logger.error(f"Error getting squad stats for {user_id}: {e}")
+            return {
+                'total_recruits': 0,
+                'active_recruits': 0,
+                'total_xp': 0,
+                'squad_rank': 'LONE_WOLF'
+            }
+
     def get_squad_genealogy(self, user_id: str, max_depth: int = 3) -> Dict[str, Any]:
         """Get multi-tier squad genealogy tree"""
         conn = sqlite3.connect(self.db_path)

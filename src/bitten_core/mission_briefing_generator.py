@@ -74,6 +74,16 @@ class MissionBriefing:
     time_remaining: int
     expected_duration: int  # minutes
     
+    # Signal Vitality & Decay (NEW)
+    signal_age_minutes: int
+    vitality_percentage: float  # 100% fresh to 0% expired
+    vitality_status: str  # FRESH, VALID, AGING, EXPIRED
+    vitality_icon: str  # 🟢🟡🟠🔴
+    xp_bonus_multiplier: float  # 2x, 1.5x, 1x, 0x
+    decay_rate: str  # RAPID (30min) or STANDARD (60min)
+    execution_blocked: bool  # True if signal too old
+    slippage_warning: Optional[str]  # Warning about potential price drift
+    
     # Social proof
     active_operators: int
     total_engaged: int
@@ -188,6 +198,15 @@ class MissionBriefingGenerator:
         self.user_id = user_id
         self.norman_story = NormansStoryIntegrator()
         
+        # Signal decay configuration
+        self.decay_rates = {
+            'RAPID_ASSAULT': 30,  # Expires in 30 minutes
+            'PRECISION_STRIKE': 60,  # Expires in 60 minutes
+            'SNIPER_SHOT': 60,  # Snipers get more time
+            'TACTICAL_SHOT': 45,  # Medium duration
+            'DEFAULT': 45  # Default for unknown types
+        }
+        
         # Enhanced callsign pool with Norman's story elements
         self.callsign_pool = {
             MissionType.RAPID_ASSAULT_SCALP: [
@@ -234,12 +253,80 @@ class MissionBriefingGenerator:
             }
         }
     
+    def calculate_signal_vitality(self, signal_data: Dict) -> Dict:
+        """Calculate signal vitality based on age and type"""
+        # Get signal generation time
+        signal_time = signal_data.get('generated_at', datetime.now())
+        if isinstance(signal_time, str):
+            try:
+                signal_time = datetime.fromisoformat(signal_time.replace('Z', '+00:00'))
+            except:
+                signal_time = datetime.now()
+        elif isinstance(signal_time, (int, float)):
+            signal_time = datetime.fromtimestamp(signal_time)
+        
+        # Calculate age
+        current_time = datetime.now()
+        age_seconds = (current_time - signal_time).total_seconds()
+        age_minutes = int(age_seconds / 60)
+        
+        # Get decay rate based on signal type
+        signal_type = signal_data.get('signal_type', signal_data.get('type', 'DEFAULT'))
+        if isinstance(signal_type, str):
+            signal_type = signal_type.upper().replace(' ', '_')
+        
+        max_age_minutes = self.decay_rates.get(signal_type, self.decay_rates['DEFAULT'])
+        
+        # Calculate vitality percentage (100% fresh to 0% expired)
+        vitality = max(0, min(100, (1 - (age_minutes / max_age_minutes)) * 100))
+        
+        # Determine status and bonuses based on vitality
+        if vitality >= 80:
+            status = "FRESH SIGNAL"
+            icon = "🟢"  # Green circle
+            xp_multiplier = 2.0
+            execution_blocked = False
+            slippage_warning = None
+        elif vitality >= 50:
+            status = "VALID SIGNAL"
+            icon = "🟡"  # Yellow circle
+            xp_multiplier = 1.5
+            execution_blocked = False
+            slippage_warning = "Minor price drift possible"
+        elif vitality >= 20:
+            status = "AGING SIGNAL"
+            icon = "🟠"  # Orange circle
+            xp_multiplier = 1.0
+            execution_blocked = False
+            slippage_warning = "Significant price drift likely - trade with caution"
+        else:
+            status = "EXPIRED SIGNAL"
+            icon = "🔴"  # Red circle
+            xp_multiplier = 0.0
+            execution_blocked = True
+            slippage_warning = "Signal expired - DO NOT EXECUTE"
+        
+        return {
+            'age_minutes': age_minutes,
+            'vitality_percentage': vitality,
+            'vitality_status': status,
+            'vitality_icon': icon,
+            'xp_bonus_multiplier': xp_multiplier,
+            'decay_rate': f"{signal_type} ({max_age_minutes}min)",
+            'execution_blocked': execution_blocked,
+            'slippage_warning': slippage_warning,
+            'expires_in_minutes': max(0, max_age_minutes - age_minutes)
+        }
+    
     def generate_mission_briefing(self, 
                                  signal_data: Dict,
                                  market_data: Dict,
                                  user_tier: str = "AUTHORIZED",
                                  user_id: str = None) -> MissionBriefing:
         """Generate complete mission briefing from signal and market data"""
+        
+        # Calculate signal vitality FIRST
+        vitality_data = self.calculate_signal_vitality(signal_data)
         
         # Determine mission type
         mission_type = self._determine_mission_type(signal_data)
@@ -304,7 +391,11 @@ class MissionBriefingGenerator:
         emoji_set = self._get_emoji_set(mission_type, urgency)
         color_scheme = self.color_schemes.get(visual_style, self.color_schemes["arcade"])
         
-        # Create mission briefing
+        # Add slippage warning to risk warnings if signal is aging
+        if vitality_data['slippage_warning'] and vitality_data['slippage_warning'] not in risk_warnings:
+            risk_warnings.insert(0, f"⚠️ {vitality_data['slippage_warning']}")
+        
+        # Create mission briefing with vitality data
         briefing = MissionBriefing(
             mission_id=mission_id,
             mission_type=mission_type,
@@ -325,6 +416,16 @@ class MissionBriefingGenerator:
             expires_at=expires_at,
             time_remaining=time_remaining,
             expected_duration=signal_data.get('expected_duration', 45),
+            # Signal vitality data (NEW)
+            signal_age_minutes=vitality_data['age_minutes'],
+            vitality_percentage=vitality_data['vitality_percentage'],
+            vitality_status=vitality_data['vitality_status'],
+            vitality_icon=vitality_data['vitality_icon'],
+            xp_bonus_multiplier=vitality_data['xp_bonus_multiplier'],
+            decay_rate=vitality_data['decay_rate'],
+            execution_blocked=vitality_data['execution_blocked'],
+            slippage_warning=vitality_data['slippage_warning'],
+            # Social proof
             active_operators=signal_data.get('active_traders', 0),
             total_engaged=signal_data.get('total_engaged', 0),
             squad_avg_tcs=signal_data.get('squad_avg_tcs', 70.0),
@@ -434,6 +535,18 @@ class MissionBriefingGenerator:
                 'type': 'standard',
                 'countdown_seconds': briefing.time_remaining
             }
+        
+        # Add vitality display data (NEW)
+        data['vitality_display'] = {
+            'icon': briefing.vitality_icon,
+            'status': briefing.vitality_status,
+            'percentage': f"{briefing.vitality_percentage:.0f}%",
+            'age': f"{briefing.signal_age_minutes} min",
+            'xp_bonus': f"{briefing.xp_bonus_multiplier}x XP" if briefing.xp_bonus_multiplier > 0 else "No XP",
+            'can_execute': not briefing.execution_blocked,
+            'warning': briefing.slippage_warning,
+            'decay_info': briefing.decay_rate
+        }
         
         # Add visual elements
         data['visuals'] = {

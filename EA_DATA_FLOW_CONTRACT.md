@@ -3,6 +3,7 @@
 **BINDING AGREEMENT**: This document represents the FINAL, TESTED, and OPERATIONAL data flow from EA to Elite Guard.
 **Date Established**: August 1, 2025
 **Status**: LOCKED AND VERIFIED ✅
+**SEE ALSO**: `/root/HydraX-v2/BITTEN_ZMQ_MANIFESTO.md` - Complete ZMQ system doctrine and EA specifications
 
 ## ⚡ THE SACRED DATA FLOW - DO NOT MODIFY
 

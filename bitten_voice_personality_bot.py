@@ -27,6 +27,9 @@ sys.path.append('/root/HydraX-v2')
 # Import configuration loader
 from config_loader import get_voice_bot_token
 
+# 🚨 SECURITY HARDENING IMPORT
+from bot_security_hardening import validate_request
+
 # Import personality systems
 try:
     from src.bitten_core.voice.unified_personality_orchestrator import unified_orchestrator
@@ -119,6 +122,13 @@ class BittenVoicePersonalityBot:
         def handle_drill(message):
             """Drill Sergeant personality"""
             user_id = str(message.from_user.id)
+            
+            # 🚨 SECURITY HARDENING - Validate request first
+            if not validate_request(user_id, message.text, message.chat.type):
+                logger.warning(f"🚫 Security check failed for voice bot user {user_id}: {message.text}")
+                self.bot.reply_to(message, "🚨 Request blocked by security system. Please try again later.")
+                return
+                
             self.active_personalities[user_id] = 'DRILL'
             
             if PERSONALITY_SYSTEMS_AVAILABLE and hasattr(self, 'drill_system'):
@@ -136,6 +146,13 @@ class BittenVoicePersonalityBot:
         def handle_nexus(message):
             """NEXUS recruiter personality"""
             user_id = str(message.from_user.id)
+            
+            # 🚨 SECURITY HARDENING - Validate request first
+            if not validate_request(user_id, message.text, message.chat.type):
+                logger.warning(f"🚫 Security check failed for voice bot user {user_id}: {message.text}")
+                self.bot.reply_to(message, "🚨 Request blocked by security system. Please try again later.")
+                return
+                
             self.active_personalities[user_id] = 'NEXUS'
             
             if PERSONALITY_SYSTEMS_AVAILABLE and hasattr(self, 'nexus'):
@@ -152,6 +169,13 @@ class BittenVoicePersonalityBot:
         def handle_doc(message):
             """DOC medic personality"""
             user_id = str(message.from_user.id)
+            
+            # 🚨 SECURITY HARDENING - Validate request first
+            if not validate_request(user_id, message.text, message.chat.type):
+                logger.warning(f"🚫 Security check failed for voice bot user {user_id}: {message.text}")
+                self.bot.reply_to(message, "🚨 Request blocked by security system. Please try again later.")
+                return
+                
             self.active_personalities[user_id] = 'DOC'
             
             if PERSONALITY_SYSTEMS_AVAILABLE and hasattr(self, 'doc'):
@@ -169,6 +193,13 @@ class BittenVoicePersonalityBot:
         def handle_observer(message):
             """OBSERVER market watcher"""
             user_id = str(message.from_user.id)
+            
+            # 🚨 SECURITY HARDENING - Validate request first
+            if not validate_request(user_id, message.text, message.chat.type):
+                logger.warning(f"🚫 Security check failed for voice bot user {user_id}: {message.text}")
+                self.bot.reply_to(message, "🚨 Request blocked by security system. Please try again later.")
+                return
+                
             self.active_personalities[user_id] = 'OBSERVER'
             
             response = "👁️ **OBSERVER**: Monitoring market patterns and user behavior. All tactical movements logged."
@@ -177,6 +208,14 @@ class BittenVoicePersonalityBot:
         @self.bot.message_handler(commands=['personalities'])
         def handle_personalities_menu(message):
             """Show all available personalities"""
+            user_id = str(message.from_user.id)
+            
+            # 🚨 SECURITY HARDENING - Validate request first
+            if not validate_request(user_id, message.text, message.chat.type):
+                logger.warning(f"🚫 Security check failed for voice bot user {user_id}: {message.text}")
+                self.bot.reply_to(message, "🚨 Request blocked by security system. Please try again later.")
+                return
+                
             keyboard = types.InlineKeyboardMarkup()
             
             keyboard.add(
@@ -227,6 +266,13 @@ class BittenVoicePersonalityBot:
         def handle_voice_status(message):
             """Check voice system status"""
             user_id = str(message.from_user.id)
+            
+            # 🚨 SECURITY HARDENING - Validate request first
+            if not validate_request(user_id, message.text, message.chat.type):
+                logger.warning(f"🚫 Security check failed for voice bot user {user_id}: {message.text}")
+                self.bot.reply_to(message, "🚨 Request blocked by security system. Please try again later.")
+                return
+                
             active = self.active_personalities.get(user_id, 'None')
             
             status = f"🎭 **VOICE SYSTEM STATUS**\n\n"
@@ -241,6 +287,13 @@ class BittenVoicePersonalityBot:
         def handle_personality_chat(message):
             """Handle general chat with active personality"""
             user_id = str(message.from_user.id)
+            
+            # 🚨 SECURITY HARDENING - Validate request first
+            if not validate_request(user_id, message.text, message.chat.type):
+                logger.warning(f"🚫 Security check failed for voice bot chat {user_id}: {message.text}")
+                self.bot.reply_to(message, "🚨 Request blocked by security system. Please try again later.")
+                return
+                
             active_personality = self.active_personalities.get(user_id, 'DRILL')  # Changed default from ATHENA
             
             # Route to appropriate personality

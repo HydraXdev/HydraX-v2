@@ -1,0 +1,45 @@
+/* COMMANDER THRONE SPECIFIC STYLES */
+
+.throne-header {
+    background: linear-gradient(135deg, 
+        var(--bg-primary), 
+        var(--bg-secondary));
+    padding: 30px;
+    border-bottom: 2px solid var(--primary-green);
+    text-align: center;
+}
+
+.analytics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.metric-card {
+    background: var(--bg-secondary);
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s;
+}
+
+.metric-card:hover {
+    border-color: var(--primary-green);
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 255, 65, 0.2);
+}
+
+.metric-value {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: var(--primary-green);
+    margin: 10px 0;
+}
+
+.metric-label {
+    color: var(--text-muted);
+    text-transform: uppercase;
+    font-size: 0.875rem;
+    letter-spacing: 1px;
+}

@@ -24,7 +24,7 @@ class AthenaGroupDispatcher:
     
     def __init__(self):
         # ATHENA Mission Bot configuration
-        self.athena_bot_token = "8322305650:AAGtBpEMm759_7gI4m9sg0OJwFhBVjR4pEI"
+        self.athena_bot_token = "8322305650:AAHu8NmQ0rXT0LkZOlDeYop6TAUJXaXbwAg"
         self.telegram_api_base = f"https://api.telegram.org/bot{self.athena_bot_token}"
         
         # Group configuration - BITTEN Signals group
@@ -44,6 +44,15 @@ class AthenaGroupDispatcher:
         self.group_signals_sent = 0
         self.last_group_signal = None
         
+        # Import existing mission briefing generator
+        try:
+            from src.bitten_core.mission_briefing_generator import MissionBriefingGenerator
+            self.mission_generator = MissionBriefingGenerator()
+            logger.info("✅ Mission briefing generator loaded")
+        except ImportError as e:
+            logger.error(f"❌ Mission briefing generator not available: {e}")
+            self.mission_generator = None
+        
         logger.info("🏛️ ATHENA Group Dispatcher initialized")
         logger.info(f"📡 Target Group: {self.group_chat_id}")
     
@@ -61,6 +70,8 @@ class AthenaGroupDispatcher:
             confidence = round(tcs_score, 1)
             
             logger.info(f"🏛️ Dispatching group signal: {signal_id} - {symbol} {direction}")
+            
+            # Mission files handled by PersonalizedMissionBrain via athena_signal_dispatcher
             
             # Generate HUD URL for full briefing
             hud_url = self._generate_hud_url(signal_id)
@@ -94,6 +105,14 @@ class AthenaGroupDispatcher:
                 }
                 
                 logger.info(f"✅ Group signal dispatched: {signal_id} to {self.group_chat_id}")
+                
+                # Track message for auto-deletion after 8 hours
+                try:
+                    from src.bitten_core.auto_cleanup_system import track_message
+                    track_message('athena', self.group_chat_id, result.get('message_id'), signal_id)
+                    logger.info(f"📅 Message scheduled for auto-deletion in 8 hours")
+                except Exception as e:
+                    logger.warning(f"Could not track message for auto-deletion: {e}")
                 
                 return {
                     'success': True,
@@ -130,9 +149,9 @@ class AthenaGroupDispatcher:
     
     def _generate_hud_url(self, signal_id: str) -> str:
         """Generate HUD URL for full mission briefing"""
-        # Use the existing HydraX WebApp HUD system
+        # Use the existing HydraX WebApp HUD system with correct parameter name
         base_url = "https://joinbitten.com"
-        return f"{base_url}/hud?signal_id={signal_id}"
+        return f"{base_url}/hud?mission_id={signal_id}&user_id=7176191872"
     
     def _send_telegram_message(self, chat_id: str, text: str, parse_mode: str = "Markdown", disable_web_page_preview: bool = False) -> Dict:
         """Send message via Telegram API"""

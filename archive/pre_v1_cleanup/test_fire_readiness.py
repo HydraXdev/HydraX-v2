@@ -1,1 +1,0 @@
-/root/core/test/test_fire.py

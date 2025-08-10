@@ -147,15 +147,16 @@ class BITTENZMQController:
             if 'signal_id' not in signal_data:
                 signal_data['signal_id'] = f"SIG_{int(time.time() * 1000)}"
             
-            # Format message
+            # Format message - EA EXPECTS "type": "fire"
             message = {
-                "type": "signal",
+                "type": "fire",
+                "target_uuid": "COMMANDER_DEV_001",
                 "signal_id": signal_data['signal_id'],
                 "symbol": signal_data['symbol'],
-                "action": signal_data['action'].lower(),
-                "lot": float(signal_data.get('lot', 0.01)),
+                "entry": 0,  # Market execution
                 "sl": float(signal_data.get('sl', 0)),
                 "tp": float(signal_data.get('tp', 0)),
+                "lot": float(signal_data.get('lot', 0.01)),
                 "timestamp": datetime.utcnow().isoformat()
             }
             

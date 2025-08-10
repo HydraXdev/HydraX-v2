@@ -200,41 +200,87 @@ class PersonalizedMissionBrain:
         return tcs_score >= required_tcs
     
     def _save_personalized_mission(self, mission: PersonalizedMission):
-        """Save personalized mission to user's mission directory"""
+        """Save personalized mission in HUD-compatible format"""
         try:
-            user_mission_dir = f"/root/HydraX-v2/missions/user_{mission.user_id}/"
             import os
-            os.makedirs(user_mission_dir, exist_ok=True)
+            from datetime import datetime, timedelta
             
-            mission_file = f"{user_mission_dir}{mission.mission_id}.json"
+            # Save to main missions directory for HUD access
+            missions_dir = "/root/HydraX-v2/missions/"
+            os.makedirs(missions_dir, exist_ok=True)
             
-            # Convert to dict for JSON serialization
+            # Use mission_id format that HUD expects
+            mission_file = f"{missions_dir}mission_{mission.mission_id}.json"
+            
+            # Create HUD-compatible nested structure
             mission_data = {
-                'user_id': mission.user_id,
                 'mission_id': mission.mission_id,
-                'symbol': mission.symbol,
+                'signal_id': mission.mission_id,
+                
+                # Timing section - required by HUD
+                'timing': {
+                    'expires_at': datetime.fromtimestamp(mission.expires_timestamp).isoformat(),
+                    'created_at': datetime.fromtimestamp(mission.created_timestamp).isoformat(),
+                    'time_remaining': max(0, mission.expires_timestamp - int(datetime.now().timestamp()))
+                },
+                
+                # Enhanced signal section - preferred by HUD
+                'enhanced_signal': {
+                    'signal_id': mission.mission_id,
+                    'symbol': mission.symbol,
+                    'direction': mission.direction,
+                    'entry_price': mission.entry_price,
+                    'stop_loss': mission.stop_loss,
+                    'take_profit': mission.take_profit,
+                    'confidence': mission.tcs_score,
+                    'pattern_type': mission.personalization_data.get('pattern_type', 'UNKNOWN'),
+                    'signal_type': mission.personalization_data.get('signal_type', 'PRECISION_STRIKE')
+                },
+                
+                # CITADEL shield section
+                'citadel_shield': {
+                    'score': mission.personalization_data.get('citadel_score', 0),
+                    'classification': 'SHIELD_APPROVED' if mission.personalization_data.get('citadel_score', 0) >= 8 else 'SHIELD_ACTIVE',
+                    'risk_multiplier': 1.5 if mission.personalization_data.get('citadel_score', 0) >= 8 else 1.0,
+                    'insights': f'Personalized for {mission.tier} tier trader'
+                },
+                
+                # Mission section
+                'mission': {
+                    'sl_pips': mission.personalization_data.get('sl_pips', 20),
+                    'tp_pips': mission.personalization_data.get('tp_pips', 40),
+                    'risk_reward': mission.personalization_data.get('risk_reward', 2.0),
+                    'session': mission.personalization_data.get('session', 'UNKNOWN'),
+                    'xp_reward': mission.personalization_data.get('xp_reward', 100)
+                },
+                
+                # User section - personalized data
+                'user': {
+                    'user_id': mission.user_id,
+                    'tier': mission.tier,
+                    'account_balance': mission.account_balance,
+                    'position_size': mission.position_size,
+                    'risk_amount': mission.risk_amount,
+                    'tactical_strategy': mission.tactical_strategy
+                },
+                
+                # Root level fallbacks for compatibility
+                'user_id': mission.user_id,
+                'pair': mission.symbol,
                 'direction': mission.direction,
-                'entry_price': mission.entry_price,
-                'stop_loss': mission.stop_loss,
-                'take_profit': mission.take_profit,
-                'position_size': mission.position_size,
-                'risk_amount': mission.risk_amount,
-                'account_balance': mission.account_balance,
-                'tier': mission.tier,
-                'tactical_strategy': mission.tactical_strategy,
-                'tcs_score': mission.tcs_score,
-                'created_timestamp': mission.created_timestamp,
-                'expires_timestamp': mission.expires_timestamp,
-                'personalization_data': mission.personalization_data,
+                'confidence': mission.tcs_score,
+                'engine': 'PERSONALIZED_MISSION_BRAIN',
+                
+                # Metadata
                 'status': 'pending',
-                'real_data_verified': True,  # FLAG: Confirms real data only
-                'simulation_mode': False     # FLAG: Confirms no simulation
+                'real_data_verified': True,
+                'simulation_mode': False
             }
             
             with open(mission_file, 'w') as f:
                 json.dump(mission_data, f, indent=2)
                 
-            self.logger.info(f"✅ Saved personalized mission: {mission_file}")
+            self.logger.info(f"✅ Saved HUD-compatible mission: {mission_file}")
             
         except Exception as e:
             self.logger.error(f"❌ Failed to save mission {mission.mission_id}: {e}")

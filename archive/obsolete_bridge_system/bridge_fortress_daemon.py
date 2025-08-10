@@ -1,1 +1,0 @@
-/root/core/bridge_fortress_daemon.py

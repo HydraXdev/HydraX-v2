@@ -52,18 +52,18 @@ class FirePublisher:
                 logger.info(f"   Symbol: {signal.get('symbol')} | Direction: {signal.get('direction')}")
                 logger.info(f"   Confidence: {signal.get('confidence')}%")
                 
-                # Convert to fire command format
+                # Convert to fire command format - EA EXPECTS "type": "fire"
                 fire_command = {
-                    "type": "signal",
-                    "signal_id": signal.get('signal_id'),
+                    "type": "fire",
+                    "target_uuid": signal.get('target_uuid', 'COMMANDER_DEV_001'),
                     "symbol": signal.get('symbol'),
-                    "action": signal.get('direction', '').lower(),
-                    "lot": 0.01,
-                    "sl": signal.get('stop_loss_pips', 50),
-                    "tp": signal.get('target_pips', 100),
+                    "entry": signal.get('entry_price', 0),
+                    "sl": signal.get('sl', 0),
+                    "tp": signal.get('tp', 0),
+                    "lot": signal.get('lot_size', 0.01),
                     "timestamp": datetime.utcnow().isoformat(),
                     "source": "elite_guard",
-                    "confidence": signal.get('confidence', 0)
+                    "signal_id": signal.get('signal_id')
                 }
                 
                 # Add to queue for sending

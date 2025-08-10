@@ -1,5 +1,0 @@
-mission_id,status,fired_at,fired_by,symbol,direction,entry_price,stop_loss,take_profit,tcs_score,signal_type,risk_reward_ratio,volume,execution_success,execution_message,user_tier,account_balance
-APEX5_EURUSD_052506,fired,2025-07-16T05:25:06.606755,7176191872,EURUSD,BUY,1.0895,1.08841,1.09217,85,RAPID_ASSAULT,2.45,10.0,true,✅ Trade executed successfully,COMMANDER,28350.0
-APEX5_EURUSD_055049,fired,2025-07-16T05:50:58.595805,7176191872,EURUSD,BUY,1.09,1.08891,1.09267,85,RAPID_ASSAULT,2.45,10.0,true,✅ Trade executed successfully,COMMANDER,28350.0
-APEX5_EURUSD_051619,failed,2025-07-16T05:16:35.684962,7176191872,EURUSD,BUY,1.0898,1.08871,1.09204,72,RAPID_ASSAULT,2.06,10.0,false,❌ Validation failed: TCS score too low: 72% (minimum 75.0%),COMMANDER,28350.0
-APEX5_EURUSD_051646,failed,2025-07-16T05:19:54.172244,7176191872,EURUSD,BUY,1.0895,1.08841,1.09207,82,RAPID_ASSAULT,2.36,10.0,false,❌ Execution failed: Bridge connection failed after 4 attempts + resurrection attempt,COMMANDER,28350.0

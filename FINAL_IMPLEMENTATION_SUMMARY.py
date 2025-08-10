@@ -7,7 +7,7 @@ import asyncio
 from telegram import Bot
 from telegram.constants import ParseMode
 
-BOT_TOKEN = '7854827710:AAE6m_sNuMk2X6Z3yf2mYO6-6-Clqan-F2c'
+BOT_TOKEN = '7854827710:AAE9kCptkoSl8lmQwmX940UMqFWOb3TmTI0'
 CHAT_ID = -1002581996861
 
 async def send_final_summary():

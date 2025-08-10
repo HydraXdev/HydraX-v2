@@ -12,7 +12,7 @@ from datetime import datetime
 async def test_correct_alerts():
     """Send alerts with the ORIGINAL CORRECT templates"""
     
-    bot = Bot("7854827710:AAE6m_sNuMk2X6Z3yf2mYO6-6-Clqan-F2c")
+    bot = Bot("7854827710:AAE9kCptkoSl8lmQwmX940UMqFWOb3TmTI0")
     chat_id = "-1002581996861"
     
     print("🚀 Testing ORIGINAL CORRECT alert templates...")

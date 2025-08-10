@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="stylesheet" href="/static/css/bitten.css">
+    <link rel="stylesheet" href="/static/css/hud.css">
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🏆 BITTEN Commander Throne - Dashboard</title>
@@ -979,6 +982,145 @@
             </div>
             <div style="margin-top: 10px; font-size: 10px; color: #888; text-align: center;">
                 Last Updated: <span id="mlLastUpdated">--</span>
+            </div>
+        </div>
+
+        <!-- Signal Completion Analytics -->
+        <div class="dashboard-panel">
+            <div class="panel-title">🎯 SIGNAL COMPLETION ANALYTICS</div>
+            <div class="mission-stats">
+                <div class="stat-item">
+                    <span>Generated 24h:</span>
+                    <span class="stat-value" id="signalsGenerated24h">--</span>
+                </div>
+                <div class="stat-item">
+                    <span>Fired 24h:</span>
+                    <span class="stat-value" id="signalsFired24h" style="color: #00ff41;">--</span>
+                </div>
+                <div class="stat-item">
+                    <span>Completion Rate:</span>
+                    <span class="stat-value" id="completionRate" style="color: #ff6b00;">--%</span>
+                </div>
+                <div class="stat-item">
+                    <span>Expired 24h:</span>
+                    <span class="stat-value" id="signalsExpired24h" style="color: #ff0040;">--</span>
+                </div>
+                <div class="stat-item">
+                    <span>Avg Fire Time:</span>
+                    <span class="stat-value" id="avgFireTime">-- min</span>
+                </div>
+                <div class="stat-item">
+                    <span>Active Users:</span>
+                    <span class="stat-value" id="activeFireUsers">--</span>
+                </div>
+            </div>
+            <div style="margin-top: 10px; font-size: 10px; color: #888; text-align: center;">
+                Last Updated: <span id="completionLastUpdated">--</span>
+            </div>
+        </div>
+
+        <!-- Elite Guard Analytics -->
+        <div class="dashboard-panel">
+            <div class="panel-title">⚡ ELITE GUARD ANALYTICS</div>
+            <div class="mission-stats">
+                <div class="stat-item">
+                    <span>Elite Signals 24h:</span>
+                    <span class="stat-value" id="eliteSignals24h">--</span>
+                </div>
+                <div class="stat-item">
+                    <span>Elite Fired 24h:</span>
+                    <span class="stat-value" id="eliteFired24h" style="color: #00ff41;">--</span>
+                </div>
+                <div class="stat-item">
+                    <span>Elite Completion:</span>
+                    <span class="stat-value" id="eliteCompletionRate" style="color: #ff6b00;">--%</span>
+                </div>
+                <div class="stat-item">
+                    <span>Shield Boost:</span>
+                    <span class="stat-value" id="shieldEffectiveness" style="color: #d4af37;">--%</span>
+                </div>
+            </div>
+            
+            <!-- Pattern Performance Mini-Display -->
+            <div style="margin-top: 15px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 5px;">
+                <div style="font-size: 11px; color: #ff6b00; margin-bottom: 8px; text-align: center; font-weight: bold;">PATTERN PERFORMANCE</div>
+                <div id="patternPerformanceList" style="font-size: 10px; line-height: 1.4;">
+                    <!-- Pattern data will be populated here -->
+                </div>
+            </div>
+            
+            <div style="margin-top: 10px; font-size: 10px; color: #888; text-align: center;">
+                Last Updated: <span id="eliteLastUpdated">--</span>
+            </div>
+        </div>
+
+        <!-- Expiry Warning System -->
+        <div class="dashboard-panel">
+            <div class="panel-title">⚠️ EXPIRY ALERTS</div>
+            <div class="mission-stats">
+                <div class="stat-item">
+                    <span>Critical Signals:</span>
+                    <span class="stat-value" id="criticalSignalsCount" style="color: #ff0040;">--</span>
+                </div>
+                <div class="stat-item">
+                    <span>Alert Level:</span>
+                    <span class="stat-value" id="alertLevel">--</span>
+                </div>
+                <div class="stat-item">
+                    <span>Expired 24h:</span>
+                    <span class="stat-value" id="totalExpired24h">--</span>
+                </div>
+                <div class="stat-item">
+                    <span>Quality Lost:</span>
+                    <span class="stat-value" id="qualitySignalsLost" style="color: #ff0040;">--</span>
+                </div>
+            </div>
+            
+            <!-- Critical Signals List -->
+            <div style="margin-top: 15px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 5px; max-height: 120px; overflow-y: auto;">
+                <div style="font-size: 11px; color: #ff0040; margin-bottom: 8px; text-align: center; font-weight: bold;">CRITICAL EXPIRING SIGNALS</div>
+                <div id="criticalSignalsList" style="font-size: 10px; line-height: 1.4;">
+                    <!-- Critical signals will be populated here -->
+                </div>
+            </div>
+            
+            <div style="margin-top: 10px; font-size: 10px; color: #888; text-align: center;">
+                Last Updated: <span id="expiryLastUpdated">--</span>
+            </div>
+        </div>
+
+        <!-- Fire Command Analytics -->
+        <div class="dashboard-panel">
+            <div class="panel-title">🔫 FIRE COMMAND ANALYTICS</div>
+            <div class="mission-stats">
+                <div class="stat-item">
+                    <span>Fire Attempts 24h:</span>
+                    <span class="stat-value" id="fireAttempts24h">--</span>
+                </div>
+                <div class="stat-item">
+                    <span>Fire Success Rate:</span>
+                    <span class="stat-value" id="fireSuccessRate" style="color: #00ff41;">--%</span>
+                </div>
+                <div class="stat-item">
+                    <span>Avg Exec Time:</span>
+                    <span class="stat-value" id="avgExecTime">--</span>
+                </div>
+                <div class="stat-item">
+                    <span>Failures 24h:</span>
+                    <span class="stat-value" id="fireFailures24h" style="color: #ff0040;">--</span>
+                </div>
+            </div>
+            
+            <!-- Failure Analysis Mini-Display -->
+            <div style="margin-top: 15px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 5px;">
+                <div style="font-size: 11px; color: #ff6b00; margin-bottom: 8px; text-align: center; font-weight: bold;">FAILURE ANALYSIS</div>
+                <div id="failureAnalysisList" style="font-size: 10px; line-height: 1.4;">
+                    <!-- Failure data will be populated here -->
+                </div>
+            </div>
+            
+            <div style="margin-top: 10px; font-size: 10px; color: #888; text-align: center;">
+                Last Updated: <span id="fireLastUpdated">--</span>
             </div>
         </div>
 
@@ -2456,6 +2598,212 @@
             }
         }
 
+        // Signal Completion Analytics
+        async function loadSignalCompletionStats() {
+            try {
+                const response = await fetch('/throne/api/signal_completion_stats');
+                const data = await response.json();
+                
+                if (data.completion_metrics) {
+                    const metrics = data.completion_metrics;
+                    document.getElementById('signalsGenerated24h').textContent = metrics.signals_generated_24h || 0;
+                    document.getElementById('signalsFired24h').textContent = metrics.signals_fired_24h || 0;
+                    document.getElementById('completionRate').textContent = metrics.completion_rate + '%' || '0%';
+                    document.getElementById('signalsExpired24h').textContent = metrics.signals_expired_24h || 0;
+                    document.getElementById('avgFireTime').textContent = metrics.avg_fire_time || '0 minutes';
+                }
+                
+                if (data.user_engagement) {
+                    const engagement = data.user_engagement;
+                    document.getElementById('activeFireUsers').textContent = engagement.active_fire_users_24h || 0;
+                }
+                
+                document.getElementById('completionLastUpdated').textContent = data.last_updated || '--';
+                
+            } catch (error) {
+                console.error('Error loading signal completion stats:', error);
+                document.getElementById('signalsGenerated24h').textContent = 'ERR';
+                document.getElementById('signalsFired24h').textContent = 'ERR';
+                document.getElementById('completionRate').textContent = 'ERR';
+            }
+        }
+
+        // Elite Guard Analytics
+        async function loadEliteGuardAnalytics() {
+            try {
+                const response = await fetch('/throne/api/elite_guard_analytics');
+                const data = await response.json();
+                
+                if (data.elite_guard_overview) {
+                    const overview = data.elite_guard_overview;
+                    document.getElementById('eliteSignals24h').textContent = overview.signals_generated_24h || 0;
+                    document.getElementById('eliteFired24h').textContent = overview.signals_fired_24h || 0;
+                    document.getElementById('eliteCompletionRate').textContent = overview.completion_rate || '0%';
+                }
+                
+                if (data.citadel_shield_impact) {
+                    const shield = data.citadel_shield_impact;
+                    document.getElementById('shieldEffectiveness').textContent = shield.shield_effectiveness || '0%';
+                }
+                
+                // Update pattern performance
+                const patternList = document.getElementById('patternPerformanceList');
+                patternList.innerHTML = '';
+                
+                if (data.pattern_performance) {
+                    const patterns = data.pattern_performance;
+                    Object.keys(patterns).forEach(pattern => {
+                        const perf = patterns[pattern];
+                        const patternDiv = document.createElement('div');
+                        patternDiv.style.cssText = 'margin-bottom: 5px; padding: 3px 5px; background: rgba(255,255,255,0.05); border-radius: 3px;';
+                        
+                        const patternName = pattern.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
+                        patternDiv.innerHTML = `
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="color: #ff6b00;">${patternName}:</span>
+                                <span style="color: #00ff41;">${perf.fire_rate}</span>
+                            </div>
+                            <div style="font-size: 9px; color: #888; margin-top: 2px;">
+                                Gen: ${perf.generated} | Win Rate: ${perf.win_rate}
+                            </div>
+                        `;
+                        patternList.appendChild(patternDiv);
+                    });
+                }
+                
+                if (Object.keys(data.pattern_performance || {}).length === 0) {
+                    patternList.innerHTML = '<div style="color: #888; text-align: center;">No pattern data available</div>';
+                }
+                
+                document.getElementById('eliteLastUpdated').textContent = data.last_updated || '--';
+                
+            } catch (error) {
+                console.error('Error loading Elite Guard analytics:', error);
+                document.getElementById('eliteSignals24h').textContent = 'ERR';
+                document.getElementById('eliteFired24h').textContent = 'ERR';
+                document.getElementById('eliteCompletionRate').textContent = 'ERR';
+            }
+        }
+
+        // Expiry Warning System
+        async function loadExpiryAlerts() {
+            try {
+                const response = await fetch('/throne/api/expiring_signals');
+                const data = await response.json();
+                
+                if (data.critical_signals) {
+                    document.getElementById('criticalSignalsCount').textContent = data.critical_signals.length || 0;
+                    
+                    // Color-code alert level
+                    const alertLevel = data.alert_level || 'NORMAL';
+                    const alertElement = document.getElementById('alertLevel');
+                    alertElement.textContent = alertLevel;
+                    
+                    if (alertLevel === 'CRITICAL') {
+                        alertElement.style.color = '#ff0040';
+                    } else {
+                        alertElement.style.color = '#00ff41';
+                    }
+                    
+                    // Update critical signals list
+                    const criticalList = document.getElementById('criticalSignalsList');
+                    criticalList.innerHTML = '';
+                    
+                    if (data.critical_signals.length > 0) {
+                        data.critical_signals.forEach(signal => {
+                            const signalDiv = document.createElement('div');
+                            signalDiv.style.cssText = 'margin-bottom: 5px; padding: 3px 5px; background: rgba(255,0,64,0.1); border-left: 2px solid #ff0040; border-radius: 3px;';
+                            
+                            const lossColor = signal.potential_loss === 'CRITICAL' ? '#ff0040' : 
+                                            signal.potential_loss === 'HIGH' ? '#ff6b00' : '#ffaa00';
+                            
+                            signalDiv.innerHTML = `
+                                <div style="display: flex; justify-content: space-between; font-weight: bold;">
+                                    <span style="color: #ff6b00;">${signal.symbol}</span>
+                                    <span style="color: #ff0040;">${signal.expires_in_minutes}m</span>
+                                </div>
+                                <div style="font-size: 9px; color: #888; margin-top: 2px;">
+                                    TCS: ${signal.tcs_score}% | Risk: <span style="color: ${lossColor};">${signal.potential_loss}</span>
+                                </div>
+                            `;
+                            criticalList.appendChild(signalDiv);
+                        });
+                    } else {
+                        criticalList.innerHTML = '<div style="color: #888; text-align: center;">No critical signals</div>';
+                    }
+                }
+                
+                if (data.expiry_trends) {
+                    const trends = data.expiry_trends;
+                    document.getElementById('totalExpired24h').textContent = trends.total_expired_24h || 0;
+                    document.getElementById('qualitySignalsLost').textContent = trends.quality_signals_lost || 0;
+                }
+                
+                document.getElementById('expiryLastUpdated').textContent = data.last_updated || '--';
+                
+            } catch (error) {
+                console.error('Error loading expiry alerts:', error);
+                document.getElementById('criticalSignalsCount').textContent = 'ERR';
+                document.getElementById('alertLevel').textContent = 'ERR';
+            }
+        }
+
+        // Fire Command Analytics
+        async function loadFireCommandAnalytics() {
+            try {
+                const response = await fetch('/throne/api/fire_command_analytics');
+                const data = await response.json();
+                
+                if (data.execution_metrics) {
+                    const metrics = data.execution_metrics;
+                    document.getElementById('fireAttempts24h').textContent = metrics.fire_attempts_24h || 0;
+                    document.getElementById('fireSuccessRate').textContent = metrics.success_rate || '0%';
+                    document.getElementById('avgExecTime').textContent = metrics.avg_execution_time || '0s';
+                    document.getElementById('fireFailures24h').textContent = metrics.fire_failures_24h || 0;
+                }
+                
+                // Update failure analysis
+                const failureList = document.getElementById('failureAnalysisList');
+                failureList.innerHTML = '';
+                
+                if (data.failure_analysis) {
+                    const failures = data.failure_analysis;
+                    const failureTypes = [
+                        {key: 'expired_signals', label: 'Expired Signals', color: '#ff6b00'},
+                        {key: 'insufficient_balance', label: 'Low Balance', color: '#ffaa00'},
+                        {key: 'connection_errors', label: 'Connection', color: '#ff0040'},
+                        {key: 'authorization_failures', label: 'Auth Failures', color: '#ff0040'},
+                        {key: 'unknown_errors', label: 'Unknown', color: '#888'}
+                    ];
+                    
+                    failureTypes.forEach(type => {
+                        const count = failures[type.key] || 0;
+                        if (count > 0) {
+                            const failureDiv = document.createElement('div');
+                            failureDiv.style.cssText = 'display: flex; justify-content: space-between; margin-bottom: 3px; padding: 2px 5px; background: rgba(255,255,255,0.05); border-radius: 2px;';
+                            failureDiv.innerHTML = `
+                                <span style="color: ${type.color}; font-size: 9px;">${type.label}:</span>
+                                <span style="color: #fff; font-size: 9px; font-weight: bold;">${count}</span>
+                            `;
+                            failureList.appendChild(failureDiv);
+                        }
+                    });
+                    
+                    if (failureList.innerHTML === '') {
+                        failureList.innerHTML = '<div style="color: #00ff41; text-align: center; font-size: 9px;">No failures detected</div>';
+                    }
+                }
+                
+                document.getElementById('fireLastUpdated').textContent = data.last_updated || '--';
+                
+            } catch (error) {
+                console.error('Error loading fire command analytics:', error);
+                document.getElementById('fireAttempts24h').textContent = 'ERR';
+                document.getElementById('fireSuccessRate').textContent = 'ERR';
+                document.getElementById('avgExecTime').textContent = 'ERR';
+            }
+        }
+
         // Live Activity Feed
         let activityBuffer = [];
         const MAX_ACTIVITIES = 20;
@@ -2517,6 +2865,10 @@
         loadSignalHeatmapData();
         loadHUDAccessLogs();
         loadTradeOfTheDay();
+        loadSignalCompletionStats();
+        loadEliteGuardAnalytics();
+        loadExpiryAlerts();
+        loadFireCommandAnalytics();
         initializeActivityFeed();
         
         // Refresh data every 30 seconds
@@ -2533,6 +2885,10 @@
             loadMLMetrics();
             loadSignalHeatmapData();
             loadHUDAccessLogs();
+            loadSignalCompletionStats();
+            loadEliteGuardAnalytics();
+            loadExpiryAlerts();
+            loadFireCommandAnalytics();
             loadTradeOfTheDay();
             addActivity('REFRESH', 'Dashboard data updated', '#888');
         }, 30000);

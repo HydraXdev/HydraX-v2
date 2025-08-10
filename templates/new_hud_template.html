@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="stylesheet" href="/static/css/bitten.css">
+    <link rel="stylesheet" href="/static/css/hud.css">
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>COMMANDER - {{ symbol }} - TACTICAL BRIEF</title>
@@ -354,6 +357,13 @@
             <div style="margin-top: 16px; color: #64748b; font-size: 0.9em;">
                 {{ user_stats.tier|title }}-level position sizing applied • 3% account risk
             </div>
+            
+            <div style="margin-top: 16px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                <button onclick="openChart()" style="background: var(--border-color); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.9em;">📈 Live Chart</button>
+                <button onclick="openPerformance()" style="background: var(--border-color); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.9em;">📊 Performance</button>
+                <button onclick="openNotebook()" style="background: linear-gradient(135deg, #8b5a2b, #a0522d); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.9em; box-shadow: 0 2px 4px rgba(0,0,0,0.2); font-weight: 500;" title="Record your thoughts and track your trading journey - Earn XP for reflections!">📓 Trading Journal</button>
+                <button onclick="openHistory()" style="background: var(--border-color); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.9em;">📋 History</button>
+            </div>
         </div>
     </div>
     
@@ -509,6 +519,25 @@
             }
         }, 1000);
         {% endif %}
+        
+        // Navigation functions
+        function openChart() {
+            // TODO: Implement chart opening
+            alert('📈 Chart view coming soon!');
+        }
+        
+        function openPerformance() {
+            window.open('/stats/{{ user_id }}', '_blank');
+        }
+        
+        function openNotebook() {
+            const userId = '{{ user_id }}';
+            window.open(`/notebook/${userId}`, '_blank');
+        }
+        
+        function openHistory() {
+            window.open('/history', '_blank');
+        }
     </script>
 </body>
 </html>

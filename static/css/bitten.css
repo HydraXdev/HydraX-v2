@@ -1,0 +1,324 @@
+/* BITTEN REVOLUTION - MILITARY TACTICAL THEME */
+
+:root {
+    /* Military Color Palette */
+    --primary-dark: #0a0e1a;      /* Dark navy */
+    --primary-green: #00ff41;     /* Terminal green */
+    --danger-red: #ff0040;        /* Alert red */
+    --warning-amber: #ffaa00;     /* Warning amber */
+    --steel-gray: #4a5568;        /* Military gray */
+    --success-green: #48bb78;     /* Mission success */
+    
+    /* Tactical UI Colors */
+    --bg-primary: #0f1419;        /* Dark background */
+    --bg-secondary: #1a202c;      /* Card background */
+    --text-primary: #e2e8f0;      /* Main text */
+    --text-muted: #718096;        /* Muted text */
+    --border-color: #2d3748;      /* Border lines */
+}
+
+/* Global Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Courier New', monospace;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+/* Military Grid System */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Tactical Headers */
+h1, h2, h3, h4 {
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+}
+
+h1 {
+    font-size: 2.5rem;
+    color: var(--primary-green);
+    text-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
+}
+
+/* Mission Cards */
+.mission-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--primary-green);
+    border-radius: 4px;
+    padding: 20px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.mission-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, 
+        transparent, 
+        var(--primary-green), 
+        transparent);
+    animation: scan 2s linear infinite;
+}
+
+/* Signal Display */
+.signal-box {
+    background: rgba(0, 255, 65, 0.1);
+    border: 2px solid var(--primary-green);
+    border-radius: 4px;
+    padding: 15px;
+    margin: 15px 0;
+    font-family: monospace;
+    position: relative;
+}
+
+.signal-box.danger {
+    background: rgba(255, 0, 64, 0.1);
+    border-color: var(--danger-red);
+}
+
+.signal-box.warning {
+    background: rgba(255, 170, 0, 0.1);
+    border-color: var(--warning-amber);
+}
+
+/* Tactical Buttons */
+.btn {
+    display: inline-block;
+    padding: 12px 24px;
+    background: var(--primary-green);
+    color: var(--bg-primary);
+    text-decoration: none;
+    border: none;
+    border-radius: 4px;
+    font-weight: bold;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn:hover {
+    background: var(--success-green);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 255, 65, 0.4);
+}
+
+.btn.btn-danger {
+    background: var(--danger-red);
+}
+
+.btn.btn-danger:hover {
+    background: #ff3355;
+    box-shadow: 0 5px 15px rgba(255, 0, 64, 0.4);
+}
+
+/* Status Indicators */
+.status {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.status.active {
+    background: rgba(0, 255, 65, 0.2);
+    color: var(--primary-green);
+    border: 1px solid var(--primary-green);
+}
+
+.status.pending {
+    background: rgba(255, 170, 0, 0.2);
+    color: var(--warning-amber);
+    border: 1px solid var(--warning-amber);
+}
+
+.status.completed {
+    background: rgba(72, 187, 120, 0.2);
+    color: var(--success-green);
+    border: 1px solid var(--success-green);
+}
+
+/* Data Tables */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+}
+
+.data-table th,
+.data-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.data-table th {
+    background: var(--bg-secondary);
+    color: var(--primary-green);
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.data-table tr:hover {
+    background: rgba(0, 255, 65, 0.05);
+}
+
+/* Progress Bars */
+.progress-bar {
+    width: 100%;
+    height: 30px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, 
+        var(--primary-green), 
+        var(--success-green));
+    transition: width 0.5s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--bg-primary);
+    font-weight: bold;
+}
+
+/* Animations */
+@keyframes scan {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+.pulse {
+    animation: pulse 2s infinite;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+    
+    h1 {
+        font-size: 1.75rem;
+    }
+    
+    .mission-card {
+        padding: 15px;
+    }
+}
+
+/* Terminal Effect */
+.terminal {
+    background: black;
+    color: var(--primary-green);
+    padding: 20px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    position: relative;
+}
+
+.terminal::before {
+    content: '> ';
+    color: var(--primary-green);
+}
+
+/* HUD Overlay */
+.hud-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 20px;
+    background: linear-gradient(180deg, 
+        rgba(10, 14, 26, 0.9), 
+        transparent);
+    z-index: 1000;
+    pointer-events: none;
+}
+
+/* Gamification Elements */
+.xp-bar {
+    background: var(--bg-secondary);
+    height: 40px;
+    border: 2px solid var(--primary-green);
+    border-radius: 20px;
+    overflow: hidden;
+    position: relative;
+}
+
+.xp-fill {
+    height: 100%;
+    background: linear-gradient(90deg, 
+        var(--primary-green), 
+        var(--success-green));
+    transition: width 1s ease;
+}
+
+.tier-badge {
+    display: inline-block;
+    padding: 8px 16px;
+    background: var(--bg-secondary);
+    border: 2px solid var(--primary-green);
+    border-radius: 4px;
+    font-weight: bold;
+    text-transform: uppercase;
+    box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+}
+
+/* Alert Boxes */
+.alert {
+    padding: 15px;
+    margin: 15px 0;
+    border-radius: 4px;
+    border-left: 4px solid;
+}
+
+.alert.success {
+    background: rgba(72, 187, 120, 0.1);
+    border-color: var(--success-green);
+    color: var(--success-green);
+}
+
+.alert.danger {
+    background: rgba(255, 0, 64, 0.1);
+    border-color: var(--danger-red);
+    color: var(--danger-red);
+}
+
+.alert.warning {
+    background: rgba(255, 170, 0, 0.1);
+    border-color: var(--warning-amber);
+    color: var(--warning-amber);
+}

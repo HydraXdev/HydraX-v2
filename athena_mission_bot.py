@@ -23,6 +23,9 @@ from telebot import types
 sys.path.append('/root/HydraX-v2/src')
 sys.path.append('/root/HydraX-v2')
 
+# 🚨 SECURITY HARDENING IMPORT
+from bot_security_hardening import validate_request
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -35,7 +38,7 @@ logging.basicConfig(
 logger = logging.getLogger('AthenaMissionBot')
 
 # ATHENA Mission Bot Token
-ATHENA_BOT_TOKEN = "8322305650:AAGtBpEMm759_7gI4m9sg0OJwFhBVjR4pEI"
+ATHENA_BOT_TOKEN = "8322305650:AAHu8NmQ0rXT0LkZOlDeYop6TAUJXaXbwAg"
 
 class AthenaMissionBot:
     """

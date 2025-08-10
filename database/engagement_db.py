@@ -692,6 +692,70 @@ class EngagementDatabase:
             'export_timestamp': datetime.now().isoformat()
         }
     
+    def get_recent_winning_trades(self, user_id: int, limit: int = 5) -> List[Dict]:
+        """
+        Get recent winning trades for War Room display.
+        
+        Args:
+            user_id: User ID to get trades for
+            limit: Maximum number of trades to return
+            
+        Returns:
+            List of winning trade dictionaries
+        """
+        try:
+            with self.get_connection() as conn:
+                cursor = conn.cursor()
+                
+                # For now, return empty list since we need to integrate with actual trade results
+                # TODO: Replace with actual trade result tracking from MT5 bridge
+                cursor.execute('''
+                    SELECT signal_id, timestamp, executed
+                    FROM signal_fires
+                    WHERE user_id = ? AND executed = 1
+                    ORDER BY timestamp DESC
+                    LIMIT ?
+                ''', (user_id, limit))
+                
+                trades = []
+                for row in cursor.fetchall():
+                    # Parse signal details from signal_id if possible
+                    signal_id = row['signal_id']
+                    timestamp = datetime.fromisoformat(row['timestamp']) if row['timestamp'] else datetime.now()
+                    
+                    # Calculate time ago
+                    time_diff = datetime.now() - timestamp
+                    if time_diff.days > 0:
+                        time_ago = f"{time_diff.days} day{'s' if time_diff.days > 1 else ''} ago"
+                    elif time_diff.seconds > 3600:
+                        hours = time_diff.seconds // 3600
+                        time_ago = f"{hours} hour{'s' if hours > 1 else ''} ago"
+                    else:
+                        minutes = time_diff.seconds // 60
+                        time_ago = f"{minutes} minute{'s' if minutes > 1 else ''} ago"
+                    
+                    # Extract symbol from signal_id (format like "VENOM_EURUSD_123")
+                    try:
+                        parts = signal_id.split('_')
+                        symbol = parts[1] if len(parts) > 1 else 'UNKNOWN'
+                    except:
+                        symbol = 'UNKNOWN'
+                    
+                    trades.append({
+                        'symbol': symbol,
+                        'direction': 'BUY',  # Default - TODO: extract from signal data
+                        'entry_price': 1.0000,  # Default - TODO: get from trade results
+                        'time_ago': time_ago,
+                        'tcs_score': 75,  # Default - TODO: extract from signal data
+                        'profit_amount': 0  # Default - TODO: get from trade results
+                    })
+                
+                return trades
+                
+        except Exception as e:
+            logger.error(f"Error getting recent winning trades: {e}")
+            return []
+    
     def cleanup_old_data(self, days_to_keep: int = 90) -> int:
         """
         Clean up old signal fire data.

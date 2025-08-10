@@ -584,15 +584,15 @@
                     <div class="risk-grid">
                         <div class="risk-item">
                             <div class="risk-label">Position Size</div>
-                            <div class="risk-value">{{ briefing.mission_parameters.position_size if briefing else '0.10' }} lots</div>
+                            <div class="risk-value">{{ position_size }} lots</div>
                         </div>
                         <div class="risk-item">
                             <div class="risk-label">Risk Amount</div>
-                            <div class="risk-value">${{ briefing.tactical_intel.risk_assessment if briefing else '100' }}</div>
+                            <div class="risk-value">${{ sl_dollars }}</div>
                         </div>
                         <div class="risk-item">
                             <div class="risk-label">Potential Reward</div>
-                            <div class="risk-value">${{ '200' if not briefing else briefing.tactical_intel.risk_assessment.replace('$','').replace(' exposure','') }}</div>
+                            <div class="risk-value">${{ tp_dollars }}</div>
                         </div>
                         <div class="risk-item">
                             <div class="risk-label">Account Risk</div>

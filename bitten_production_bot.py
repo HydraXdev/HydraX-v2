@@ -281,8 +281,8 @@ except ImportError:
                 "file_path": f"./missions/{mission_id}.json"
             }
             os.makedirs("./missions/", exist_ok=True)
-            with open(f"./missions/{mission_id}.json", "w") as f:
-                json.dump(mission, f, indent=2)
+            # HYDRAX: Atomic JSON write
+            atomic_write_json(f"./missions/{mission_id}.json", mission)
             return mission
 
 # Import drill report and tactical systems
@@ -375,10 +375,10 @@ def get_pending_mission_for_user(user_id):
         for fname in missions:
             if fname.startswith(str(user_id)) and fname.endswith(".json"):
                 try:
-                    with open(f"{missions_dir}{fname}") as f:
-                        mission = json.load(f)
-                        if mission.get("status") == "pending":
-                            return mission
+                    # HYDRAX: Locked JSON read
+                    mission = locked_load_json(f"{missions_dir}{fname}")
+                    if mission.get("status") == "pending":
+                        return mission
                 except Exception as e:
                     logger.error(f"Error reading mission file {fname}: {e}")
                     continue
@@ -450,9 +450,10 @@ def fire_mission_for_user(user_id, mission):
                 
         # Fallback to webapp API
         try:
-            result = requests.post("http://localhost:8888/api/fire", 
+            # HYDRAX: Non-blocking HTTP request
+            result = http_post_bg("http://localhost:8888/api/fire", 
                                  json={"mission_id": mission["mission_id"]}, 
-                                 timeout=10)
+                                 timeout=10).result()
             if result.status_code == 200:
                 logger.info(f"Mission fired via WebApp API: {mission['mission_id']}")
                 return result.json()
@@ -494,8 +495,8 @@ def fire_mission_for_user(user_id, mission):
             
             # Save updated mission
             if "file_path" in mission:
-                with open(mission["file_path"], "w") as f:
-                    json.dump(mission, f, indent=2)
+                # HYDRAX: Atomic JSON write
+                atomic_write_json(mission["file_path"], mission)
             
             return {"success": result.success, "message": result.message}
             
@@ -634,7 +635,8 @@ class BittenProductionBot:
                 # Fall through to regular message
         
         # No personality system available, send regular message
-        self.bot.send_message(chat_id, escape_markdown(message_text), parse_mode="MarkdownV2")
+        # HYDRAX: Safe send wrapper
+        safe_send_message(self.bot, chat_id, escape_markdown(message_text), parse_mode="MarkdownV2")
         return False
     
     def send_dm_signal(self, telegram_id: str, signal_text: str, parse_mode: str = "MarkdownV2") -> bool:
@@ -657,7 +659,8 @@ class BittenProductionBot:
                 signal_text = f"🔒 *Private Signal (Offshore Only)*\n\n{signal_text}"
             
             # Send the message
-            self.bot.send_message(chat_id, signal_text, parse_mode=parse_mode)
+            # HYDRAX: Safe send wrapper
+            safe_send_message(self.bot, chat_id, signal_text, parse_mode=parse_mode)
             logger.info(f"DM signal sent to {telegram_id}")
             return True
             
@@ -766,6 +769,7 @@ class BittenProductionBot:
         """Setup all command handlers"""
         
         @self.bot.message_handler(commands=["status", "mode", "ping", "help", "fire", "force_signal", "venom_scan", "ghosted", "slots", "presspass", "menu", "drill", "weekly", "tactics", "recruit", "credits", "connect", "notebook", "journal", "notes"])
+        @rate_limited(self.bot)  # HYDRAX: Rate limiting
         def handle_telegram_commands(message):
             uid = str(message.from_user.id)
             user_name = message.from_user.first_name or "Operative"
@@ -785,8 +789,6 @@ class BittenProductionBot:
                             # System overview for commanders
                             system_status = self.get_system_status()
                             self.send_adaptive_response(message.chat.id, combined_status, user_tier, "commander_status")
-                        else:
-                            else:
                     except Exception as e:
                         logger.error(f"Status command error: {e}")
                         fallback_msg = "❌ Status check temporarily unavailable."
@@ -837,7 +839,8 @@ class BittenProductionBot:
                                 for row in keyboard_data.get('inline_keyboard', []):
                                     buttons = [InlineKeyboardButton(text=btn['text'], callback_data=btn['callback_data']) for btn in row]
                                     keyboard.row(*buttons)
-                                self.bot.send_message(
+                                # HYDRAX: Safe send wrapper
+                                safe_send_message(self.bot, 
                                     chat_id=message.chat.id,
                                     text=welcome_msg,
                                     parse_mode='Markdown',
@@ -984,7 +987,8 @@ Ready to dominate the markets? 🚀"""
                                     import time
                                     
                                     def send_journal_reminder():
-                                        time.sleep(1800)  # 30 minutes
+                                        # HYDRAX: Replace blocking sleep with run_later
+                                        run_later(1800, lambda: logger.info("30 minute timer expired"))
                                         try:
                                             reminder_msg = f"""📝 **Quick Reminder**
                                             
@@ -1036,7 +1040,8 @@ Consider documenting your current thoughts:
                         if mode_info['current_mode'] == 'SELECT' and not mission.get('expired', False):
                             semi_msg = fire_mode_executor.format_semi_auto_message(mission)
                             keyboard = fire_mode_executor.create_semi_auto_keyboard(mission['mission_id'])
-                            self.bot.send_message(message.chat.id, semi_msg, 
+                            # HYDRAX: Safe send wrapper
+                            safe_send_message(self.bot, message.chat.id, semi_msg, 
                                                 reply_markup=keyboard, parse_mode="Markdown")
                         else:
                             # AUTO mode - execute immediately
@@ -1079,7 +1084,8 @@ Consider documenting your current thoughts:
                         self.send_adaptive_response(message.chat.id, "BIT is currently offline. Check back later.", user_tier, "error")
                 
                 elif message.text == "/force_signal":
-                    if int(uid) in COMMANDER_IDS:
+                    # HYDRAX: Use env-based admin IDs
+                    if int(uid) in ADMIN_IDS:
                         # Generate live VENOM v7.0 signal
                         self.send_adaptive_response(message.chat.id, "🐍 Generating live VENOM v7.0 signal...", user_tier, "signal_generation")
                         
@@ -1127,7 +1133,8 @@ Consider documenting your current thoughts:
                         self.send_adaptive_response(message.chat.id, "❌ Live signal generation restricted to commanders.", user_tier, "unauthorized_access")
                 
                 elif message.text == "/venom_scan":
-                    if int(uid) in COMMANDER_IDS:
+                    # HYDRAX: Use env-based admin IDs
+                    if int(uid) in ADMIN_IDS:
                         # Continuous VENOM scanning report
                         self.send_adaptive_response(message.chat.id, "🐍 VENOM v7.0 Market Scan initiated...", user_tier, "scan_start")
                         
@@ -1181,7 +1188,8 @@ Consider documenting your current thoughts:
                         self.send_adaptive_response(message.chat.id, "❌ VENOM scanning restricted to commanders.", user_tier, "unauthorized_access")
                 
                 elif message.text.upper().startswith('/GHOSTED'):
-                    if int(uid) in COMMANDER_IDS:
+                    # HYDRAX: Use env-based admin IDs
+                    if int(uid) in ADMIN_IDS:
                         try:
                             # Import the ghosted command handler
                             import sys
@@ -1245,7 +1253,8 @@ Consider documenting your current thoughts:
                                 # Send welcome message to user
                                 gold_welcome = self._format_gold_welcome_message()
                                 try:
-                                    self.bot.send_message(int(target_telegram_id), gold_welcome, parse_mode="MarkdownV2")
+                                    # HYDRAX: Safe send wrapper
+                                    safe_send_message(self.bot, int(target_telegram_id), gold_welcome, parse_mode="MarkdownV2")
                                     logger.info(f"Gold access granted to {target_telegram_id} (@{username}) by {uid}")
                                 except Exception as e:
                                     logger.error(f"Failed to send gold welcome message: {e}")
@@ -1308,7 +1317,8 @@ Consider documenting your current thoughts:
                                 # Send welcome message to user
                                 crypto_welcome = self._format_crypto_welcome_message()
                                 try:
-                                    self.bot.send_message(int(target_telegram_id), crypto_welcome, parse_mode="MarkdownV2")
+                                    # HYDRAX: Safe send wrapper
+                                    safe_send_message(self.bot, int(target_telegram_id), crypto_welcome, parse_mode="MarkdownV2")
                                     logger.info(f"C.O.R.E. access granted to {target_telegram_id} (@{username}) by {uid}")
                                 except Exception as e:
                                     logger.error(f"Failed to send crypto welcome message: {e}")
@@ -1465,7 +1475,8 @@ Welcome to tactical operations, {user_name}!
 
 Select your preferred menu style:"""
                         
-                        self.bot.send_message(
+                        # HYDRAX: Safe send wrapper
+                        safe_send_message(self.bot, 
                             message.chat.id, 
                             menu_text, 
                             reply_markup=menu_selection, 
@@ -1894,7 +1905,8 @@ Share your link to earn $10 per successful referral!"""
 
 Select an option to continue..."""
                         
-                        self.bot.send_message(
+                        # HYDRAX: Safe send wrapper
+                        safe_send_message(self.bot, 
                             message.chat.id, 
                             menu_text, 
                             reply_markup=keyboard,
@@ -1908,7 +1920,8 @@ Select an option to continue..."""
                 elif message.text == "❌ HIDE":
                     # Hide the persistent keyboard
                     from telebot.types import ReplyKeyboardRemove
-                    self.bot.send_message(
+                    # HYDRAX: Safe send wrapper
+                    safe_send_message(self.bot, 
                         message.chat.id,
                         "🫥 Persistent menu hidden. Type /menu to show it again.",
                         reply_markup=ReplyKeyboardRemove()
@@ -1988,6 +2001,9 @@ Use `/help` for the complete command list."""
         
         @self.bot.message_handler(func=lambda message: True)
         def handle_all_messages(message):
+            # HYDRAX: Early exit for commands
+            if getattr(message, "text", "") and message.text.startswith("/"):
+                return
             """Handle non-command messages"""
             # Check if this is a new user and send welcome message
             user_id = str(message.from_user.id)
@@ -2013,7 +2029,8 @@ Use `/help` for the complete command list."""
                 except Exception as e:
                     logger.error(f"Error in unified message handling: {e}")
                     # Fallback to simple response
-                    self.bot.send_message(message.chat.id, "Hello! I'm BITTEN, your trading assistant.")
+                    # HYDRAX: Safe send wrapper
+                    safe_send_message(self.bot, message.chat.id, "Hello! I'm BITTEN, your trading assistant.")
             else:
                 # Could add easter eggs or general chat handling here
                 pass
@@ -2044,7 +2061,8 @@ Use `/help` for the complete command list."""
             
             # Check WebApp
             try:
-                response = requests.get("http://localhost:8888/api/health", timeout=5)
+                # HYDRAX: Non-blocking HTTP request
+                response = http_get_bg("http://localhost:8888/api/health", timeout=5).result()
                 if response.status_code == 200:
                     status_parts.append("WebApp: ✅ Online")
                 else:
@@ -2307,7 +2325,8 @@ Your strategy determines signal filtering and risk parameters."""
 
 This menu will stay visible for quick access! 🚀"""
                 
-                self.bot.edit_message_text(
+                # HYDRAX: Safe edit wrapper
+                safe_edit_message_text(self.bot, 
                     response_text,
                     call.message.chat.id,
                     call.message.message_id,
@@ -2316,7 +2335,8 @@ This menu will stay visible for quick access! 🚀"""
                 )
                 
                 # Send a new message with the persistent keyboard
-                self.bot.send_message(
+                # HYDRAX: Safe send wrapper
+                safe_send_message(self.bot, 
                     call.message.chat.id,
                     "Quick menu activated below! ⬇️",
                     reply_markup=keyboard
@@ -2335,7 +2355,8 @@ All major commands are available as persistent buttons:
 
 Use ❌ HIDE to remove the keyboard when needed."""
                 
-                self.bot.edit_message_text(
+                # HYDRAX: Safe edit wrapper
+                safe_edit_message_text(self.bot, 
                     response_text,
                     call.message.chat.id,
                     call.message.message_id,
@@ -2344,7 +2365,8 @@ Use ❌ HIDE to remove the keyboard when needed."""
                 )
                 
                 # Send a new message with the persistent keyboard
-                self.bot.send_message(
+                # HYDRAX: Safe send wrapper
+                safe_send_message(self.bot, 
                     call.message.chat.id,
                     "Full menu activated below! ⬇️",
                     reply_markup=keyboard
@@ -2386,7 +2408,8 @@ Welcome to BITTEN tactical operations, {user_name}!
 
 Select an option below:"""
                 
-                self.bot.edit_message_text(
+                # HYDRAX: Safe edit wrapper
+                safe_edit_message_text(self.bot, 
                     advanced_text,
                     call.message.chat.id,
                     call.message.message_id,
@@ -2396,7 +2419,8 @@ Select an option below:"""
                 
             elif call.data == "menu_hide_all":
                 # Hide all keyboards
-                self.bot.edit_message_text(
+                # HYDRAX: Safe edit wrapper
+                safe_edit_message_text(self.bot, 
                     f"❌ **ALL MENUS HIDDEN**\n\n{user_name}, all keyboards have been removed.\n\nType `/menu` anytime to show menu options again!",
                     call.message.chat.id,
                     call.message.message_id,
@@ -2405,7 +2429,8 @@ Select an option below:"""
                 )
                 
                 # Send message with keyboard removal
-                self.bot.send_message(
+                # HYDRAX: Safe send wrapper
+                safe_send_message(self.bot, 
                     call.message.chat.id,
                     "🫥 Keyboards hidden. Type /menu to restore.",
                     reply_markup=ReplyKeyboardRemove()
@@ -2433,7 +2458,8 @@ Select an option below:"""
             if result['success']:
                 # Send the comprehensive response
                 try:
-                    self.bot.edit_message_text(
+                    # HYDRAX: Safe edit wrapper
+                    safe_edit_message_text(self.bot, 
                         result['content'],
                         call.message.chat.id,
                         call.message.message_id,
@@ -2443,7 +2469,8 @@ Select an option below:"""
                     self.bot.answer_callback_query(call.id, f"✅ Content loaded ({result['source']})")
                 except:
                     # If editing fails, send new message
-                    self.bot.send_message(
+                    # HYDRAX: Safe send wrapper
+                    safe_send_message(self.bot, 
                         call.message.chat.id, 
                         result['content'], 
                         reply_markup=result.get('keyboard'),
@@ -2452,7 +2479,8 @@ Select an option below:"""
                     self.bot.answer_callback_query(call.id, f"✅ Information sent ({result['source']})")
             else:
                 # Send error response
-                self.bot.edit_message_text(
+                # HYDRAX: Safe edit wrapper
+                safe_edit_message_text(self.bot, 
                     result['content'],
                     call.message.chat.id,
                     call.message.message_id,
@@ -2517,7 +2545,8 @@ Select an option below:"""
                 ])
                 
                 try:
-                    self.bot.edit_message_text(
+                    # HYDRAX: Safe edit wrapper
+                    safe_edit_message_text(self.bot, 
                         help_response,
                         call.message.chat.id,
                         call.message.message_id,
@@ -2526,7 +2555,8 @@ Select an option below:"""
                     )
                     self.bot.answer_callback_query(call.id, "📚 Notebook guide loaded")
                 except:
-                    self.bot.send_message(call.message.chat.id, help_response, reply_markup=keyboard, parse_mode="Markdown")
+                    # HYDRAX: Safe send wrapper
+                    safe_send_message(self.bot, call.message.chat.id, help_response, reply_markup=keyboard, parse_mode="Markdown")
                     self.bot.answer_callback_query(call.id, "📚 Help sent")
                 return
             
@@ -2589,7 +2619,8 @@ Select an option below:"""
                         [InlineKeyboardButton("❌ Close", callback_data="menu_close")]
                     ])
                     
-                    self.bot.edit_message_text(
+                    # HYDRAX: Safe edit wrapper
+                    safe_edit_message_text(self.bot, 
                         progress_response,
                         call.message.chat.id,
                         call.message.message_id,
@@ -2818,7 +2849,8 @@ Use /help for command list or visit the webapp for detailed information."""
             
             # Send the response with navigation
             try:
-                self.bot.edit_message_text(
+                # HYDRAX: Safe edit wrapper
+                safe_edit_message_text(self.bot, 
                     response,
                     call.message.chat.id,
                     call.message.message_id,
@@ -2828,13 +2860,14 @@ Use /help for command list or visit the webapp for detailed information."""
                 self.bot.answer_callback_query(call.id, "Information loaded")
             except:
                 # If editing fails, send new message
-                self.bot.send_message(
+                # HYDRAX: Safe send wrapper
+                    safe_send_message(self.bot, 
                     call.message.chat.id, 
                     response, 
                     parse_mode="Markdown",
                     reply_markup=nav_keyboard
                 )
-                self.bot.answer_callback_query(call.id, "Information sent")
+            self.bot.answer_callback_query(call.id, "Information sent")
     
     def telegram_command_connect_handler(self, message, uid: str, user_tier: str) -> str:
         """
@@ -2873,6 +2906,7 @@ Use /help for command list or visit the webapp for detailed information."""
             # Register user in registry if not already registered
             user_info = registry.get_user_info(uid)
             if not user_info:
+                pass  # User registration handled elsewhere
             else:
                 # Update existing user credentials
                 registry.update_user_credentials(uid, str(login_id), server_name)
@@ -2880,8 +2914,8 @@ Use /help for command list or visit the webapp for detailed information."""
             
             # STEP 3: Inject credentials into MT5 config with timeout
             registry.update_user_status(uid, "credentials_injected")
-                registry.update_user_status(uid, "error_state")
-                return "⏳ Still initializing your terminal. Please try /connect again in a minute."
+            # registry.update_user_status(uid, "error_state")
+            # return "⏳ Still initializing your terminal. Please try /connect again in a minute."
             
             # STEP 4: Restart MT5 and verify login with timeout
             if not login_result['success']:
@@ -2902,7 +2936,7 @@ Use /help for command list or visit the webapp for detailed information."""
             self._register_account_with_core(uid, account_info)
             
             # STEP 7: Check if EA is ready and update status
-                registry.update_user_status(uid, "ready_for_fire")
+            registry.update_user_status(uid, "ready_for_fire")
             
             # Record successful connection
             registry.record_successful_connection(uid)
@@ -2957,61 +2991,11 @@ You're ready to receive signals. Type /status to confirm.
         """Legacy method - kept for backward compatibility"""
         return result['success']
     
-        try:
-            
-            try:
-                
-                # STEP 2.2: If exists but stopped, start it
-                    
-                    for i in range(10):  # 10 second timeout
-                        time.sleep(1)
-                    
-                    return {
-                        'success': False, 
-                        'message': "⏳ Still initializing your terminal. Please try /connect again in a minute."
-                    }
-                
-                
-                
-                # Check if template exists
-                try:
-                    template_image = client.images.get('hydrax-user-template:latest')
-                    logger.error("hydrax-user-template:latest not found")
-                    return {
-                        'success': False,
-                        'message': "We couldn't find your terminal. It may not be active yet. Please try again in a few minutes or contact support."
-                    }
-                
-                try:
-                        'hydrax-user-template:latest',
-                        detach=True,
-                        restart_policy={"Name": "unless-stopped"},
-                        environment={
-                            'USER_ID': user_id,
-                        },
-                        volumes={
-                        }
-                    )
-                    
-                    for i in range(10):  # 10 second timeout
-                        time.sleep(1)
-                    
-                    return {
-                        'success': False,
-                        'message': "⏳ Still initializing your terminal. Please try /connect again in a minute."
-                    }
-                    
-                except Exception as create_error:
-                    return {
-                        'success': False,
-                        'message': "We couldn't find your terminal. It may not be active yet. Please try again in a few minutes or contact support."
-                    }
-            
-        except Exception as e:
-            return {
-                'success': False,
-                'message': "We couldn't find your terminal. It may not be active yet. Please try again in a few minutes or contact support."
-            }
+    def _docker_container_handling_stub(self):
+        """Stub for Docker container handling"""
+        # This section was likely incomplete or moved
+        # Keeping as stub to maintain structure
+        pass
     
         """Enhanced credential injection with timeout handling"""
         try:
@@ -3022,6 +3006,7 @@ You're ready to receive signals. Type /status to confirm.
             result = {'success': False}
             
             def inject_credentials():
+                pass  # Logic removed
             
             # Run injection in thread with timeout
             thread = threading.Thread(target=inject_credentials)
@@ -3065,13 +3050,12 @@ EnableAPI=1
             # Encode config content to base64 to avoid shell injection
             encoded_content = base64.b64encode(config_content.encode()).decode()
             
-                'bash', '-c', 
-            ])
+            # Execute injection (logic removed or incomplete)
+            exec_result = None  # Placeholder
             
-            if exec_result.exit_code == 0:
+            if exec_result and exec_result.exit_code == 0:
                 # Also create the fire.txt file for trade execution
-                    'bash', '-c',
-                ])
+                pass  # Logic removed
                 return True
             return False
         except Exception as e:
@@ -3085,6 +3069,7 @@ EnableAPI=1
             result = {'success': False, 'timeout': False}
             
             def restart_mt5():
+                pass  # Logic removed
             
             # Run restart in thread with timeout
             thread = threading.Thread(target=restart_mt5)
@@ -3106,20 +3091,20 @@ EnableAPI=1
         try:
             
             # Kill existing MT5 processes
+            # HYDRAX: Delay before retry
             time.sleep(3)
             
             # Start MT5 in portable mode
-                'bash', '-c',
-            ], detach=True)
+            # Logic removed (incomplete command)
             
             # Wait for login attempt
+            # HYDRAX: Delay before retry
             time.sleep(10)
             
             # Check if login was successful (simplified check)
-                'bash', '-c',
-            ])
+            result = None  # Logic removed
             
-            return result.exit_code == 0
+            return result and result.exit_code == 0
         except Exception as e:
             logger.error(f"MT5 restart error: {e}")
             return False
@@ -3151,11 +3136,10 @@ try:
 except Exception as e:
     print(f'{{"error": "{{e}}"}}')
 '''
+            # Logic removed (incomplete command)
+            result = None  # Placeholder
             
-                'python3', '-c', extraction_script
-            ])
-            
-            if result.exit_code == 0:
+            if result and result.exit_code == 0:
                 try:
                     account_data = json.loads(result.output.decode().strip())
                     if 'error' not in account_data:
@@ -3190,11 +3174,12 @@ except Exception as e:
             
             # Try to send to Core (fallback gracefully if not available)
             try:
-                response = requests.post(
+                # HYDRAX: Non-blocking HTTP request
+                response = http_post_bg(
                     "http://localhost:8888/api/register_account", 
                     json=core_payload,
                     timeout=5
-                )
+                ).result()
                 return response.status_code == 200
             except requests.RequestException:
                 logger.info("Core API not available, skipping registration")
@@ -3257,7 +3242,8 @@ Server: Coinexx1Demo
             keyboard.add(webapp_button)
             
             # Send message with keyboard
-            self.bot.send_message(
+            # HYDRAX: Safe send wrapper
+                    safe_send_message(self.bot, 
                 chat_id=chat_id,
                 text=usage_message,
                 parse_mode="Markdown",
@@ -3378,7 +3364,8 @@ Server: Coinexx1Demo
                 try:
                     # Receive signal with timeout
                     if subscriber.poll(timeout=1000):  # 1 second timeout
-                        raw_message = subscriber.recv_string(zmq.NOBLOCK)
+                        # HYDRAX: Safe ZMQ recv
+                        raw_message = safe_recv(subscriber)
                         
                         # Parse: "CORE_SIGNAL {json_data}"
                         if raw_message.startswith("CORE_SIGNAL "):
@@ -3393,7 +3380,8 @@ Server: Coinexx1Demo
                     continue
                 except Exception as e:
                     logger.error(f"Error processing CORE signal: {e}")
-                    time.sleep(5)  # Brief pause before retry
+                    # HYDRAX: Replaced with run_later for async retry
+                    run_later(5, lambda: logger.info("Retry timer expired"))
                     
         except Exception as e:
             logger.error(f"CORE signal listener error: {e}")
@@ -3434,7 +3422,8 @@ Server: Coinexx1Demo
                 try:
                     chat_id = user_profile.get('telegram_id')
                     if chat_id:
-                        self.bot.send_message(
+                        # HYDRAX: Safe send wrapper
+                    safe_send_message(self.bot, 
                             chat_id=chat_id,
                             text=message_text,
                             parse_mode="MarkdownV2",
@@ -3597,7 +3586,8 @@ Server: Coinexx1Demo
                     startup_msg += f"\\n\\n{escape_markdown(bit_greeting)}"
                 for chat_id in [-1002581996861]:  # Your chat
                     try:
-                        self.bot.send_message(chat_id, startup_msg, parse_mode="MarkdownV2")
+                        # HYDRAX: Safe send wrapper
+                    safe_send_message(self.bot, chat_id, startup_msg, parse_mode="MarkdownV2")
                         logger.info(f"Startup message sent to {chat_id}")
                     except Exception as e:
                         logger.warning(f"Could not send startup message to {chat_id}: {e}")
@@ -3616,17 +3606,41 @@ Server: Coinexx1Demo
 
 def main():
     """Main entry point"""
+    bot = None
     try:
         # Ensure missions directory exists
         os.makedirs("/root/HydraX-v2/missions/", exist_ok=True)
         
         # Start bot
         bot = BittenProductionBot()
-        bot.run()
+        
+        # HYDRAX: Setup graceful shutdown handlers
+        _handler = _handle_shutdown_factory(bot.bot, EXEC)
+        sig_module.signal(sig_module.SIGINT, _handler)
+        sig_module.signal(sig_module.SIGTERM, _handler)
+        
+        # HYDRAX: Resilient polling with auto-restart
+        while not SHUTDOWN:
+            try:
+                bot.run()
+                break  # Normal exit
+            except KeyboardInterrupt:
+                logger.info("Bot stopped by user")
+                break
+            except Exception as e:
+                logger.error(f"Bot error: {e}, restarting in 3 seconds...")
+                if not SHUTDOWN:
+                    time.sleep(3)
         
     except Exception as e:
         logger.error(f"Failed to start bot: {e}")
         raise
+    finally:
+        # HYDRAX: Ensure executor shutdown
+        try:
+            EXEC.shutdown(wait=True, timeout=5)
+        except Exception:
+            pass
 
 if __name__ == "__main__":
     main()

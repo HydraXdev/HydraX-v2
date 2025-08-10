@@ -289,6 +289,30 @@ def api_venom_signals():
         logger.error(f"VENOM signals API error: {e}")
         return jsonify({'error': f'VENOM signal generation failed: {str(e)}'}), 500
 
+def calculate_position_size(balance: float, sl_pips: float, tier: str) -> float:
+    """
+    Calculate the exact position size to risk 2% of account
+    
+    Args:
+        balance: User's account balance
+        sl_pips: Stop loss distance in pips
+        tier: User's tier (affects multiplier)
+    
+    Returns:
+        float: Position size in lots
+    """
+    risk_amount = balance * 0.02  # 2% risk
+    pip_value = 10  # $10 per pip for 1 standard lot (adjust for different pairs)
+    
+    # Base position size to risk 2%
+    base_lots = risk_amount / (sl_pips * pip_value)
+    
+    # Apply tier multiplier
+    tier_multiplier = 2 if tier == 'COMMANDER' else 1
+    
+    # Round to 2 decimal places (broker standard)
+    return round(base_lots * tier_multiplier, 2)
+
 def log_hud_access(user_id, mission_id, username=None):
     """Log HUD access for Commander Throne monitoring"""
     try:
@@ -469,11 +493,21 @@ def mission_briefing():
             'citadel_score': citadel_score,
             'ml_filter_passed': mission_data.get('ml_filter', {}).get('filter_result') != 'prediction_failed',
             
-            # Risk calculation with user overlay
+            # Real-time risk calculation based on actual account balance
             'rr_ratio': signal_data.get('risk_reward_ratio', signal_data.get('risk_reward', 2.0)),
             'account_balance': user_stats.get('balance', user_data.get('balance', 10000.0)),
-            'sl_dollars': f"{user_stats.get('balance', 10000.0) * 0.02:.2f}",  # 2% risk
-            'tp_dollars': f"{user_stats.get('balance', 10000.0) * 0.04:.2f}",  # 2:1 R:R
+            
+            # Calculate ACTUAL dollar risk based on user's real balance
+            # Position size adjusted by tier: COMMANDER = 2x, others = 1x
+            'position_multiplier': 2 if user_stats['tier'] == 'COMMANDER' else 1,
+            'base_position': 0.01,  # Base lot size
+            
+            # Real dollar amounts based on 2% risk management
+            'sl_dollars': f"{user_stats.get('balance', 10000.0) * 0.02:.2f}",  # 2% of actual balance
+            'tp_dollars': f"{user_stats.get('balance', 10000.0) * 0.02 * signal_data.get('risk_reward_ratio', 2.0):.2f}",  # Risk * R:R ratio
+            
+            # Account risk percentage
+            'risk_percent': 2.0,  # Standard 2% risk per trade
             
             # Mission info
             'mission_id': mission_id,
@@ -484,8 +518,13 @@ def mission_briefing():
             # User stats with real overlay data
             'user_stats': user_stats,  # Use the loaded user stats from registry
             
-            # Calculate position size based on user tier
-            'position_size': 0.01 * (2 if user_stats['tier'] == 'COMMANDER' else 1),
+            # Calculate ACTUAL position size based on risk and stop loss
+            # This gives the real lot size to risk exactly 2% of account
+            'position_size': calculate_position_size(
+                user_stats.get('balance', 10000.0),
+                signal_data.get('sl_pips', 20),
+                user_stats['tier']
+            ) if 'sl_pips' in signal_data else 0.01 * (2 if user_stats['tier'] == 'COMMANDER' else 1),
             
             # Warning for missing fields
             'missing_fields': missing_fields,

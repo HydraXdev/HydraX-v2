@@ -505,6 +505,29 @@ class FireRouter:
                     execution_time_ms=int((time.time() - execution_start) * 1000)
                 )
             
+            # CRITICAL: Enforce ONE-AT-A-TIME trading rule
+            if user_profile and user_profile.get('telegram_id'):
+                try:
+                    from mission_timing_control import mission_timing
+                    
+                    # Check if user can open position (ONE AT A TIME)
+                    user_tier = user_profile.get('tier', 'NIBBLER')
+                    can_open, reason = mission_timing.can_open_position(
+                        user_profile['telegram_id'],
+                        user_tier
+                    )
+                    
+                    if not can_open:
+                        logger.warning(f"Trade blocked by ONE-AT-A-TIME rule: {reason}")
+                        return TradeExecutionResult(
+                            success=False,
+                            message=reason,
+                            error_code="POSITION_LIMIT",
+                            execution_time_ms=int((time.time() - execution_start) * 1000)
+                        )
+                except Exception as e:
+                    logger.error(f"Error checking position limits: {e}")
+            
             # CRITICAL: Enforce handshake requirement before ANY trade
             if user_profile and user_profile.get('telegram_id'):
                 try:
@@ -652,6 +675,20 @@ class FireRouter:
                     account_info=execution_result.get("account_info"),
                     execution_time_ms=execution_time_ms
                 )
+                
+                # Register position for ONE-AT-A-TIME tracking
+                if user_profile and user_profile.get('telegram_id'):
+                    try:
+                        from mission_timing_control import mission_timing
+                        signal_type = "PRECISION_STRIKE" if request.signal_type and "PRECISION" in request.signal_type.upper() else "RAPID_ASSAULT"
+                        mission_timing.register_position(
+                            user_profile['telegram_id'],
+                            request.mission_id,
+                            signal_type
+                        )
+                        logger.info(f"Position registered for timing control: {request.mission_id}")
+                    except Exception as e:
+                        logger.error(f"Failed to register position: {e}")
                 
                 # Track trade completion for drill reports
                 if hasattr(self, 'drill_report_handler') and self.drill_report_handler and request.user_id:

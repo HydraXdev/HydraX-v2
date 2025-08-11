@@ -1,135 +1,68 @@
-<<<<<<< HEAD
-# Environment and secrets
+# Environment Variables
 .env
-.env.*
-!.env.example
+.env.local
+.env.production
 
 # Python
-=======
-# HydraX MT5 Terminal Automation - .gitignore
-# ==============================================
-
-# Docker and Container Artifacts
-*.log
-docker-compose.override.yml
-.dockerignore
-
-# Wine and MT5 Runtime Files
-.wine/
-*.exe
-mt5setup.exe
-*.msi
-
-# MT5 Generated Files
-MQL5/Files/*.txt
-MQL5/Files/fire.txt
-MQL5/Logs/
-MQL5/Tester/
-*.ex5
-*.ex4
-
-# Configuration Files with Credentials
-config-*/
-**/login.ini
-**/account.ini
-
-# Python RuntimeO
-X
-env/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
 venv/
 ENV/
-*.egg-info/
-.pytest_cache/
+env/
 
 # Logs
 *.log
 logs/
-*.out
+*.log.*
 
 # Database
 *.db
+*.db-shm
+*.db-wal
 *.sqlite
 *.sqlite3
+*.jsonl
 
-# Temporary files
-*.tmp
-*.temp
-.DS_Store
-Thumbs.db
+# PM2
+.pm2/
+
+# Backups
+backups/
+*.backup
+*.bak
 
 # IDE
-=======
-venv/
-env/
-.env
-
-# Operating System Files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# IDE and Editor Files
->>>>>>> d636c9c (Initial HydraX MT5 Terminal Automation System)
 .vscode/
 .idea/
 *.swp
 *.swo
-*~
 
-<<<<<<< HEAD
-# MT5 Files
-*.ex5
-*.ex4
+# Sensitive files
+secrets/
+credentials/
+*.key
+*.pem
+*.cert
 
-# Backup files
-*.backup
-*.bak
+# Mission files
+missions/*.json
+user_missions/
 
-# Sensitive data
-*secret*
-*password*
-*token*
-*key*
-!*example*
-!*template*
-
-# Build artifacts
-build/
-dist/
-*.tar.gz
-*.zip
-
-# Local development
-.local/
-local/
-=======
-# Log Files
-*.log
-*.log.*
-logs/
-
-# Temporary Files
+# Temporary files
 tmp/
 temp/
 *.tmp
-*.bak
-*.backup
 
-# Archive Files (except required distributions)
-*.zip
-*.tar.gz
-*.tar
-*.rar
-!hydrax_mt5_autoterminal_starter.zip
+# System files
+.DS_Store
+Thumbs.db
 
-# VNC and Display Files
-*.vnc
-/tmp/.X*
+# Test files
+test_*.py
 
-# MT5 Profile Backups
-Profiles/Backup/
->>>>>>> d636c9c (Initial HydraX MT5 Terminal Automation System)
+# Node modules (if any)
+node_modules/
+package-lock.json

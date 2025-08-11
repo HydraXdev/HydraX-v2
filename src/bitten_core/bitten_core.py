@@ -870,12 +870,16 @@ class BittenCore:
             # Deliver signal to ready users
             delivery_result = self._deliver_signal_to_users(signal_data)
             
+            # Check for auto-fire AFTER rule validation
+            auto_fire_result = self._check_and_execute_auto_fire(signal_data)
+            
             return {
                 'success': True,
                 'signal_id': signal_id,
                 'queued': True,
                 'queue_size': len(self.signal_queue),
-                'delivery_result': delivery_result
+                'delivery_result': delivery_result,
+                'auto_fire_result': auto_fire_result
             }
             
         except Exception as e:
@@ -1457,23 +1461,89 @@ Reply: /fire {signal_id} to execute"""
         except Exception as e:
             self._log_error(f"Error sending trade result notification to user {user_id}: {e}")
     
+    def _check_and_execute_auto_fire(self, signal_data: Dict, user_id: str = "7176191872") -> Dict:
+        """
+        Check if user should auto-fire and execute if conditions met
+        This runs AFTER all rule validation
+        """
+        try:
+            # Import fire mode components
+            from .fire_mode_database import fire_mode_db
+            from .fire_mode_executor import FireModeExecutor
+            import zmq
+            import json
+            
+            executor = FireModeExecutor()
+            
+            # Get user's fire mode
+            mode_info = fire_mode_db.get_user_mode(user_id)
+            
+            # Check if user is in AUTO mode
+            if mode_info['current_mode'] != 'AUTO':
+                return {'auto_fired': False, 'reason': 'Not in AUTO mode'}
+            
+            # Check signal confidence threshold
+            confidence = signal_data.get('confidence', 0)
+            if confidence < 70:  # Lower threshold for testing
+                return {'auto_fired': False, 'reason': f'Confidence {confidence}% below threshold'}
+            
+            # All checks passed - execute auto-fire
+            self._log_info(f"🔥 AUTO-FIRE triggered for {user_id} on {signal_data['signal_id']}")
+            
+            # Send to fire router service via internal port
+            context = zmq.Context()
+            sender = context.socket(zmq.PUSH)
+            sender.connect("tcp://127.0.0.1:5554")  # Internal port to fire router service
+            
+            fire_command = {
+                'source': 'BittenCore',
+                'signal_id': signal_data['signal_id'],
+                'symbol': signal_data['symbol'],
+                'direction': signal_data['direction'],
+                'target_uuid': 'COMMANDER_DEV_001',
+                'entry_price': signal_data.get('entry_price', 0),
+                'sl_pips': signal_data.get('stop_pips', 20),
+                'tp_pips': signal_data.get('target_pips', 40),
+                'lot_size': 0.01,
+                'user_id': user_id
+            }
+            
+            sender.send_json(fire_command)
+            sender.close()
+            context.term()
+            
+            self._log_info(f"✅ AUTO-FIRE command sent to fire router service")
+            return {'auto_fired': True, 'signal_id': signal_data['signal_id']}
+                
+        except Exception as e:
+            self._log_error(f"Auto-fire check error: {e}")
+            return {'auto_fired': False, 'error': str(e)}
+    
     def execute_fire_command(self, user_id: str, signal_id: str) -> Dict:
         """Handle /fire command execution for a specific signal"""
         try:
-            # CRITICAL: COMMANDER 7176191872 - ZERO SIMULATION OVERRIDE
-            if user_id == "7176191872":
-                # UNRESTRICTED FIRE ACCESS - NO AUTHORIZATION CHECKS
-                logger.info(f"🎖️ COMMANDER {user_id} fire command - ZERO SIMULATION ENFORCED")
-                # Skip to direct execution with commander privileges
-                return self._execute_commander_fire(user_id, signal_id)
+            # Import trading guardrails
+            from .trading_guardrails import get_trading_guardrails
+            guardrails = get_trading_guardrails()
             
-            # Check if user is authorized (normal users only)
-            if not self.user_registry or not self.user_registry.is_user_ready_for_fire(user_id):
-                # Return specific message for non-ready users
-                return {
-                    'success': False, 
-                    'error': 'not_ready_for_fire',
-                    'message': """❌ You're not ready to fire yet.
+            # CRITICAL: COMMANDER 7176191872 - SPECIAL HANDLING BUT WITH GUARDRAILS
+            if user_id == "7176191872":
+                # COMMANDER with guardrails (not completely unrestricted)
+                logger.info(f"🎖️ COMMANDER {user_id} fire command - Applying COMMANDER tier guardrails")
+                user_tier = "COMMANDER"
+            else:
+                # Get user tier from registry
+                user_info = self.user_registry.get_user_info(user_id) if self.user_registry else {}
+                user_tier = user_info.get('tier', 'NIBBLER')
+            
+            # Check if user is authorized (skip for special user)
+            if user_id != "7176191872":
+                if not self.user_registry or not self.user_registry.is_user_ready_for_fire(user_id):
+                    # Return specific message for non-ready users
+                    return {
+                        'success': False, 
+                        'error': 'not_ready_for_fire',
+                        'message': """❌ You're not ready to fire yet.
 
 But you're closer than you think.
 
@@ -1483,7 +1553,7 @@ But you're closer than you think.
 - Get full access to the system — even before funding your account
 
 Your mission briefing is waiting."""
-                }
+                    }
             
             # Find the signal in processed signals
             if signal_id not in self.processed_signals:
@@ -1491,17 +1561,62 @@ Your mission briefing is waiting."""
             
             signal_data = self.processed_signals[signal_id]
             
-            # Check if signal is still valid (not expired)
-            expires_at = signal_data.get('expires_at')
-            if expires_at:
-                if isinstance(expires_at, str):
-                    expires_at = datetime.fromisoformat(expires_at)
-                
-                if datetime.now() > expires_at:
-                    return {'success': False, 'error': f'Signal {signal_id} has expired'}
+            # Get user info for guardrails check
+            if user_id == "7176191872":
+                user_info = {
+                    'tier': 'COMMANDER',
+                    'account_balance': 850.0,  # Default balance for special user
+                    'telegram_id': user_id
+                }
+            else:
+                user_info = self.user_registry.get_user_info(user_id) if self.user_registry else {}
+            
+            # Get current market data for dynamic signal validity
+            current_market = {
+                'ask': signal_data.get('current_ask', signal_data.get('entry', 0)),
+                'bid': signal_data.get('current_bid', signal_data.get('entry', 0)),
+                'spread': signal_data.get('spread', 2),
+                'is_open': True  # Assume market is open (would check broker API)
+            }
+            
+            # Apply trading guardrails
+            permission = guardrails.can_user_trade(
+                user_id=user_id,
+                tier=user_tier,
+                signal=signal_data,
+                balance=user_info.get('account_balance', 1000.0),
+                current_market=current_market
+            )
+            
+            if not permission.allowed:
+                logger.warning(f"Trade blocked by guardrails for user {user_id}: {permission.reason}")
+                return {
+                    'success': False,
+                    'error': 'guardrails_blocked',
+                    'message': f"❌ Trade blocked: {permission.reason}",
+                    'details': permission.details
+                }
+            
+            # Calculate position size using guardrails
+            trade_params = guardrails.calculate_position_size(
+                balance=user_info.get('account_balance', 1000.0),
+                signal=signal_data,
+                tier=user_tier
+            )
+            
+            logger.info(f"📊 Position calculated: {trade_params.lot_size} lots, "
+                       f"SL: {trade_params.sl_pips} pips, TP: {trade_params.tp_pips} pips, "
+                       f"Risk: ${trade_params.risk_amount:.2f}, RR: 1:{trade_params.risk_reward}")
+            
+            # Update signal with calculated parameters
+            signal_data['calculated_lot_size'] = trade_params.lot_size
+            signal_data['calculated_sl_pips'] = trade_params.sl_pips
+            signal_data['calculated_tp_pips'] = trade_params.tp_pips
+            
+            # Signal validity is now checked by guardrails (dynamic, not timer-based)
+            # No need for separate expiry check here
             
             # Enhanced signal detection and execution for crypto vs forex
-            user_info = self.user_registry.get_user_info(user_id)
             
             # 🚀 CRYPTO SIGNAL DETECTION & EXECUTION
             if CRYPTO_FIRE_BUILDER_AVAILABLE and is_crypto_signal(signal_data):
@@ -1527,9 +1642,11 @@ Your mission briefing is waiting."""
                         user_id=user_id,
                         symbol=crypto_packet.symbol,
                         direction=TradeDirection.BUY if crypto_packet.action == 'buy' else TradeDirection.SELL,
-                        volume=crypto_packet.lot,
+                        volume=trade_params.lot_size,  # Use guardrails-calculated size
                         stop_loss=crypto_packet.sl,
                         take_profit=crypto_packet.tp,
+                        stop_loss_pips=trade_params.sl_pips,
+                        take_profit_pips=trade_params.tp_pips,
                         tcs_score=signal_data.get('confidence', 0),
                         mission_id=signal_id,
                         comment=f"CORE-{crypto_packet.symbol}-{signal_data.get('pattern', 'Unknown')}"
@@ -1548,7 +1665,9 @@ Your mission briefing is waiting."""
                     user_id=user_id,
                     symbol=signal_data['symbol'],
                     direction=TradeDirection.BUY if signal_data['direction'] == 'BUY' else TradeDirection.SELL,
-                    volume=0.01,  # Will be calculated by FireRouter based on user balance
+                    volume=trade_params.lot_size,  # Use guardrails-calculated size
+                    stop_loss_pips=trade_params.sl_pips,
+                    take_profit_pips=trade_params.tp_pips,
                     tcs_score=signal_data.get('confidence', 0),
                     mission_id=signal_id
                 )
@@ -1564,6 +1683,17 @@ Your mission briefing is waiting."""
                 
                 # Mark in user's signal history
                 self.mark_user_signal_executed(user_id, signal_id)
+                
+                # Record trade in guardrails system
+                guardrails.record_position_opened(
+                    user_id=user_id,
+                    position_id=execution_result.ticket if hasattr(execution_result, 'ticket') else signal_id,
+                    signal=signal_data,
+                    lot_size=trade_params.lot_size,
+                    entry_price=signal_data.get('entry', 0),
+                    stop_loss=signal_data.get('stop_loss', 0),
+                    take_profit=signal_data.get('take_profit', 0)
+                )
                 
                 # Start background monitoring for trade result
                 try:
@@ -1597,6 +1727,12 @@ Your mission briefing is waiting."""
                     'success': True,
                     'signal_id': signal_id,
                     'execution_result': execution_result,
+                    'guardrails_applied': True,
+                    'position_size': trade_params.lot_size,
+                    'risk_amount': trade_params.risk_amount,
+                    'potential_profit': trade_params.potential_profit,
+                    'risk_reward': trade_params.risk_reward,
+                    'signal_class': trade_params.signal_class,
                     'message': execution_result.message,
                     'signal_data': {
                         'symbol': signal_data['symbol'],
@@ -1763,19 +1899,48 @@ Your mission briefing is waiting."""
             
             signal_id = signal_data.get('signal_id', f"MISSION_{int(time.time())}")
             
+            # Calculate actual SL/TP from entry price and pip values if needed
+            entry_price = signal_data.get('entry_price', 0)
+            stop_pips = signal_data.get('stop_pips', 10)
+            target_pips = signal_data.get('target_pips', 20)
+            direction = signal_data.get('direction', 'BUY').upper()
+            symbol = signal_data.get('symbol', 'EURUSD')
+            
+            # Determine pip value based on symbol (JPY pairs have different pip values)
+            if 'JPY' in symbol:
+                pip_value = 0.01  # For JPY pairs, 1 pip = 0.01
+            else:
+                pip_value = 0.0001  # For other pairs, 1 pip = 0.0001
+            
+            # Calculate stop_loss and take_profit from pips if not provided
+            stop_loss = signal_data.get('sl') or signal_data.get('stop_loss')
+            take_profit = signal_data.get('tp') or signal_data.get('take_profit')
+            
+            if entry_price and not stop_loss:
+                if direction == 'BUY':
+                    stop_loss = round(entry_price - (stop_pips * pip_value), 5 if 'JPY' not in symbol else 3)
+                else:  # SELL
+                    stop_loss = round(entry_price + (stop_pips * pip_value), 5 if 'JPY' not in symbol else 3)
+            
+            if entry_price and not take_profit:
+                if direction == 'BUY':
+                    take_profit = round(entry_price + (target_pips * pip_value), 5 if 'JPY' not in symbol else 3)
+                else:  # SELL
+                    take_profit = round(entry_price - (target_pips * pip_value), 5 if 'JPY' not in symbol else 3)
+            
             # Create mission data structure matching existing format
             mission_data = {
                 "mission_id": signal_id,
                 "signal_id": signal_id,
                 "signal": {
-                    "symbol": signal_data.get('symbol'),
-                    "direction": signal_data.get('direction'),
+                    "symbol": symbol,
+                    "direction": direction,
                     "signal_type": signal_data.get('signal_type'),
-                    "entry_price": signal_data.get('entry_price'),
-                    "stop_loss": signal_data.get('sl'),
-                    "take_profit": signal_data.get('tp'),
-                    "stop_pips": signal_data.get('stop_pips', 10),
-                    "target_pips": signal_data.get('target_pips', 20),
+                    "entry_price": entry_price,
+                    "stop_loss": stop_loss,
+                    "take_profit": take_profit,
+                    "stop_pips": stop_pips,
+                    "target_pips": target_pips,
                     "risk_reward": signal_data.get('risk_reward', 2.0),
                     "confidence": signal_data.get('confidence'),
                     "tcs_score": signal_data.get('confidence'),
@@ -1784,14 +1949,14 @@ Your mission briefing is waiting."""
                     "session": signal_data.get('session'),
                     "timeframe": "M1"
                 },
-                "symbol": signal_data.get('symbol'),
-                "direction": signal_data.get('direction'),
+                "symbol": symbol,
+                "direction": direction,
                 "signal_type": signal_data.get('signal_type'),
-                "entry_price": signal_data.get('entry_price'),
-                "stop_loss": signal_data.get('sl'),
-                "take_profit": signal_data.get('tp'),
-                "stop_pips": signal_data.get('stop_pips', 10),
-                "target_pips": signal_data.get('target_pips', 20),
+                "entry_price": entry_price,
+                "stop_loss": stop_loss,
+                "take_profit": take_profit,
+                "stop_pips": stop_pips,
+                "target_pips": target_pips,
                 "risk_reward": signal_data.get('risk_reward', 2.0),
                 "confidence": signal_data.get('confidence'),
                 "tcs_score": signal_data.get('confidence'),

@@ -272,13 +272,13 @@ def setup_stripe_products():
         'FANG': {
             'name': 'BITTEN Fang',
             'description': 'Advanced tier with sniper mode and 10 daily trades',
-            'monthly_price': 8900,
+            'monthly_price': 7900,
             'annual_price': 71200
         },
         'COMMANDER': {
             'name': 'BITTEN Commander',
             'description': 'Professional tier with full automation and 20 daily trades',
-            'monthly_price': 18900,
+            'monthly_price': 13900,
             'annual_price': 111200
         },
         '': {

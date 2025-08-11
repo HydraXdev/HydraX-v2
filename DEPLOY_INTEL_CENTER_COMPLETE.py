@@ -9,7 +9,7 @@ import asyncio
 from telegram import Bot, MenuButtonWebApp, WebAppInfo, InlineKeyboardButton, InlineKeyboardMarkup, KeyboardButton, ReplyKeyboardMarkup
 from telegram.constants import ParseMode
 
-BOT_TOKEN = "7854827710:AAGsO-vgMpsTOVNu6zoo_-GGJkYQd97Mc5w"
+BOT_TOKEN = os.getenv("BOT_TOKEN")
 CHAT_ID = -1002581996861
 
 async def deploy_complete_intel_center():

@@ -73,6 +73,7 @@ class TradeRequest:
     symbol: str
     direction: TradeDirection
     volume: float
+    entry_price: Optional[float] = None
     stop_loss: Optional[float] = None
     take_profit: Optional[float] = None
     comment: str = ""
@@ -392,8 +393,11 @@ class AdvancedValidator:
         
         # Check for weekend trading restrictions
         now = datetime.now()
-        if now.weekday() >= 5:  # Saturday or Sunday
-            return False, "🚫 Market Closed - Forex market is closed on weekends. Trading resumes Sunday 21:00 UTC"
+        if now.weekday() == 5:  # Saturday - market closed
+            return False, "🚫 Market Closed - Forex market is closed on Saturdays. Trading resumes Sunday 21:00 UTC"
+        elif now.weekday() == 6:  # Sunday - check if market is open (21:00 UTC+)
+            if now.hour < 21:
+                return False, "🚫 Market Closed - Forex market opens Sunday 21:00 UTC"
         
         # Check for high-risk symbol restrictions
         high_risk_symbols = ["XAUUSD", "BTCUSD", "ETHUSD"]
@@ -471,7 +475,112 @@ class FireRouter:
         # Emergency stop flag
         self.emergency_stop = False
         
+        # ZMQ Publisher for fire commands
+        self.zmq_context = None
+        self.fire_publisher = None
+        self._init_zmq_publisher()
+        
         logger.info(f"Fire Router initialized - Mode: {execution_mode.value}, API: {api_endpoint}")
+    
+    def _init_zmq_publisher(self):
+        """Initialize ZMQ publisher for fire commands"""
+        try:
+            import zmq
+            self.zmq_context = zmq.Context()
+            # Create a separate socket that publishes fire commands
+            # The final_fire_publisher is bound to 5555, so we connect as client
+            self.fire_publisher = self.zmq_context.socket(zmq.PUSH)
+            
+            # ADD TIMEOUTS to prevent infinite blocking
+            self.fire_publisher.setsockopt(zmq.SNDTIMEO, 5000)  # 5 second send timeout
+            self.fire_publisher.setsockopt(zmq.LINGER, 1000)   # 1 second linger on close
+            
+            # Connect to fire_router_service.py PULL socket on port 5554
+            self.fire_publisher.connect("tcp://localhost:5554")
+            logger.info("✅ ZMQ fire publisher connected to port 5554 with 5s timeout")
+        except Exception as e:
+            logger.error(f"❌ Failed to initialize ZMQ publisher: {e}")
+    
+    def _execute_zmq_only(self, request: TradeRequest) -> Dict[str, Any]:
+        """Execute trade via ZMQ publisher only - NO DIRECT API"""
+        
+        try:
+            if not self.fire_publisher:
+                return {
+                    "success": False,
+                    "message": "ZMQ publisher not available",
+                    "error_code": "NO_ZMQ"
+                }
+            
+            # Calculate pips properly based on symbol
+            if request.symbol and 'JPY' in request.symbol:
+                pip_multiplier = 100  # For JPY pairs
+            else:
+                pip_multiplier = 10000  # For other pairs
+            
+            # Calculate SL and TP in pips
+            sl_pips = 20  # Default
+            tp_pips = 40  # Default
+            
+            if request.stop_loss and request.entry_price:
+                sl_pips = abs(request.entry_price - request.stop_loss) * pip_multiplier
+                
+            if request.take_profit and request.entry_price:
+                tp_pips = abs(request.take_profit - request.entry_price) * pip_multiplier
+            
+            # Create fire command for Fire Router Service - matching expected format
+            # EA expects actual price levels for stop_loss and take_profit, not pips
+            fire_command = {
+                "type": "fire",
+                "source": "BittenCore",  # Required for fire_router_service validation
+                "signal_id": request.mission_id,
+                "symbol": request.symbol,
+                "direction": request.direction.value.upper(),
+                "entry_price": request.entry_price or 0,
+                "stop_loss": request.stop_loss or 0,  # Send actual price level
+                "take_profit": request.take_profit or 0,  # Send actual price level
+                "sl_pips": round(sl_pips, 1),  # Also send pips for reference
+                "tp_pips": round(tp_pips, 1),  # Also send pips for reference
+                "lot_size": request.volume,
+                "timestamp": datetime.now().isoformat(),
+                "user_id": request.user_id,
+                "target_uuid": "COMMANDER_DEV_001",  # Add target UUID for EA
+                "comment": f"BITTEN_{request.mission_id}"
+            }
+            
+            # Log the command for debugging
+            logger.info(f"🔥 Fire command prepared: symbol={fire_command['symbol']}, "
+                       f"sl_pips={fire_command['sl_pips']}, tp_pips={fire_command['tp_pips']}, "
+                       f"lot={fire_command['lot_size']}, direction={fire_command['direction']}")
+            
+            # Publish fire command with timeout handling
+            import zmq
+            try:
+                self.fire_publisher.send_json(fire_command)
+                logger.info(f"🔥 Fire command published to ZMQ port 5554")
+                
+                return {
+                    "success": True,
+                    "message": "Fire command sent via ZMQ",
+                    "trade_id": request.mission_id,
+                    "execution_method": "zmq_publisher"
+                }
+            except zmq.Again:
+                # Timeout occurred
+                logger.error(f"❌ ZMQ send timeout - fire router service not responding on port 5554")
+                return {
+                    "success": False,
+                    "message": "ZMQ timeout - fire router service not responding on port 5554",
+                    "error_code": "ZMQ_TIMEOUT"
+                }
+            
+        except Exception as e:
+            logger.error(f"❌ ZMQ fire command failed: {e}")
+            return {
+                "success": False,
+                "message": f"ZMQ execution failed: {str(e)}",
+                "error_code": "ZMQ_PUBLISH_FAILED"
+            }
     
     def execute_trade(self, mission: Dict[str, Any]) -> str:
         """Legacy interface for backward compatibility"""
@@ -627,9 +736,9 @@ class FireRouter:
                 self._log_trade_result(request, result)
                 return result
             
-            # 2. EXECUTION PHASE - LIVE ONLY
+            # 2. EXECUTION PHASE - ZMQ ONLY (NO DIRECT API)
             
-            execution_result = self._execute_direct_api(request)
+            execution_result = self._execute_zmq_only(request)
             
             # 3. FINALIZE RESULT
             execution_time_ms = int((time.time() - execution_start) * 1000)

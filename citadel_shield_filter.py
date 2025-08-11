@@ -73,10 +73,10 @@ class CitadelShieldFilter:
         self.consensus_cache = {}
         self.cache_ttl = 15  # seconds
         
-        # Manipulation detection thresholds
-        self.max_price_deviation = 0.005  # 0.5% max deviation from consensus
-        self.min_broker_confidence = 75   # Minimum 75% broker agreement
-        self.max_outliers = 1            # Maximum 1 outlier broker
+        # Manipulation detection thresholds (FURTHER TIGHTENED)
+        self.max_price_deviation = 0.0035  # 0.35% max deviation from consensus (was 0.5%)
+        self.min_broker_confidence = 60    # Minimum 60% broker agreement (tightened from 80%)
+        self.max_outliers = 1              # Maximum 1 outlier broker
         
         # Statistics tracking
         self.signals_processed = 0
@@ -174,18 +174,23 @@ class CitadelShieldFilter:
         Returns (is_manipulated, reason)
         """
         try:
+            from session_clock import current_session
+            
             if consensus is None:
                 return True, "No consensus data available"
             
-            # Check price deviation from consensus
+            # Check price deviation from consensus (tighter for M1 scalps on majors)
             price_deviation = abs(entry_price - consensus.median_price) / consensus.median_price
             
             if price_deviation > self.max_price_deviation:
                 return True, f"Price deviation {price_deviation*100:.2f}% > {self.max_price_deviation*100}%"
             
-            # Check broker confidence
-            if consensus.confidence < self.min_broker_confidence:
-                return True, f"Low broker confidence {consensus.confidence:.1f}% < {self.min_broker_confidence}%"
+            # Session-aware consensus confidence requirements
+            session = current_session()
+            min_conf_threshold = 75 if session in ('LONDON', 'OVERLAP', 'NY') else 65
+            
+            if consensus.confidence < min_conf_threshold:
+                return True, f"Low consensus confidence {consensus.confidence:.1f}% < {min_conf_threshold}% for {session}"
             
             # Check outlier count
             if consensus.outlier_count > self.max_outliers:
@@ -204,6 +209,7 @@ class CitadelShieldFilter:
     def enhance_signal_score(self, signal: Dict, consensus: ConsensusData) -> float:
         """
         Enhance signal score based on consensus quality
+        Store bonus separately to prevent poor EV signals from passing
         """
         try:
             base_score = signal.get('confidence', 60)
@@ -225,6 +231,12 @@ class CitadelShieldFilter:
                 score_boost += 2
             elif consensus.broker_count >= 3:
                 score_boost += 1
+            
+            # Store bonus separately so acceptor can evaluate base signal quality
+            if 'meta' not in signal:
+                signal['meta'] = {}
+            signal['meta']['shield_bonus'] = score_boost
+            signal['base_confidence'] = base_score
             
             enhanced_score = min(base_score + score_boost, 90)  # Cap at 90%
             

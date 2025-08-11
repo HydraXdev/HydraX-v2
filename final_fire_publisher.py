@@ -39,6 +39,7 @@ class FirePublisher:
             try:
                 subscriber.setsockopt(zmq.RCVTIMEO, 1000)
                 message = subscriber.recv_string()
+                logger.info(f"🔍 RAW MESSAGE: {message[:100]}...")  # Debug log
                 
                 # Elite Guard sends "ELITE_GUARD_SIGNAL {json}"
                 if message.startswith("ELITE_GUARD_SIGNAL "):
@@ -51,6 +52,15 @@ class FirePublisher:
                 logger.info(f"🎯 Received Elite Guard signal: {signal.get('signal_id')}")
                 logger.info(f"   Symbol: {signal.get('symbol')} | Direction: {signal.get('direction')}")
                 logger.info(f"   Confidence: {signal.get('confidence')}%")
+                
+                # Create mission using existing athena_signal_dispatcher
+                try:
+                    from athena_signal_dispatcher import athena_dispatcher
+                    mission_result = athena_dispatcher.dispatch_signal_via_athena(signal)
+                    if mission_result.get('success'):
+                        logger.info(f"📋 Created {mission_result.get('total_missions', 0)} missions")
+                except Exception as e:
+                    logger.warning(f"Mission creation failed: {e}")
                 
                 # Convert to fire command format - EA EXPECTS "type": "fire"
                 fire_command = {

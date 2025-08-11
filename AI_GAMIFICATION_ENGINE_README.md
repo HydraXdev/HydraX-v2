@@ -44,8 +44,8 @@ The AI Gamification Engine is a sophisticated system that automatically generate
 pip install httpx asyncio sqlite3 pathlib
 
 # Environment variables
-export OPENAI_API_KEY="your-openai-key"
-export ANTHROPIC_API_KEY="your-claude-key"
+export OPENAI_API_KEY="REDACTED"
+export ANTHROPIC_API_KEY="REDACTED"
 ```
 
 ### Quick Start

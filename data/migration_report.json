@@ -1,0 +1,13 @@
+{
+  "timestamp": "2025-08-10T18:20:17.441389",
+  "stats": {
+    "total_users": 2,
+    "migrated": 1,
+    "conflicts": 0,
+    "errors": 0
+  },
+  "migrated_users": [
+    7176191872,
+    123456789
+  ]
+}

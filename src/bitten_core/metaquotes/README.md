@@ -62,8 +62,8 @@ cd /root/HydraX-v2/migrations
 Set MetaQuotes API credentials in environment variables:
 
 ```bash
-export METAQUOTES_API_KEY="your-api-key"
-export METAQUOTES_API_SECRET="your-api-secret"
+export METAQUOTES_API_KEY="REDACTED"
+export METAQUOTES_API_SECRET="REDACTED"
 export METAQUOTES_PARTNER_ID="your-partner-id"
 export BITTEN_ENCRYPTION_SEED="your-encryption-seed"
 ```

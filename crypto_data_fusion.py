@@ -703,6 +703,38 @@ class CryptoDataFusionEngine:
         self.logger.info("Crypto Data Fusion Engine shutdown complete")
 
 
+# === EXCHANGE DATA HELPERS ===
+
+from typing import Dict
+from crypto_consensus import compute_consensus
+import time
+
+def top_of_book(exchange_manager, symbol:str) -> Dict[str,dict]:
+    """
+    Return {venue: {'bid':..., 'ask':..., 'mid':..., 'spread_bps':..., 'depth5bps_usd':...}}
+    Implement using exchange_manager websocket snapshots; fallback to REST if needed.
+    """
+    quotes = {}
+    for venue in exchange_manager.connected():
+        q = exchange_manager.best_quote(venue, symbol)  # implement in manager
+        if not q: continue
+        bid, ask = q["bid"], q["ask"]
+        mid = (bid + ask)/2.0
+        spread_bps = (ask - bid)/mid * 10000.0
+        depth = q.get("depth5bps_usd", 0.0)
+        quotes[venue] = {"bid":bid,"ask":ask,"mid":mid,"spread_bps":spread_bps,"depth5bps_usd":depth}
+    return quotes
+
+def order_book_imbalance(imbalance_detector, venue:str, symbol:str) -> float:
+    # Return ratio bid_depth/ask_depth near top; implement in imbalance_detector
+    return imbalance_detector.top_imbalance(venue, symbol) or 1.0
+
+def consensus_snapshot(exchange_manager, symbol:str):
+    quotes = top_of_book(exchange_manager, symbol)
+    cons = compute_consensus(quotes)
+    return cons, quotes
+
+
 async def main():
     """Main entry point for the fusion engine"""
     engine = CryptoDataFusionEngine()

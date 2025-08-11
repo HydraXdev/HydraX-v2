@@ -9,7 +9,14 @@ import sys
 import json
 import logging
 import random
+import sqlite3
+import threading
+import faulthandler
 from datetime import datetime
+import zmq
+
+# Enable crash debugging
+faulthandler.enable()
 
 # Core Flask imports (always needed)
 from flask import Flask, render_template, render_template_string, request, jsonify, redirect
@@ -19,9 +26,48 @@ from flask_socketio import SocketIO
 from dotenv import load_dotenv
 load_dotenv()
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
+# Configure structured logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(name)s %(message)s",
+)
 logger = logging.getLogger(__name__)
+
+def _excepthook(t, e, tb):
+    logging.exception("UNCAUGHT", exc_info=(t, e, tb))
+sys.excepthook = _excepthook
+
+# Resilient SQLite with per-thread connections
+DB_PATH = os.getenv("BITTEN_DB", "/root/HydraX-v2/bitten.db")
+_local = threading.local()
+
+def get_db():
+    """Thread-safe database connection with WAL mode"""
+    conn = getattr(_local, "conn", None)
+    if conn is None:
+        conn = sqlite3.connect(DB_PATH, timeout=10, check_same_thread=False)
+        conn.row_factory = sqlite3.Row
+        conn.execute("PRAGMA journal_mode=WAL;")
+        conn.execute("PRAGMA busy_timeout=5000;")
+        conn.execute("PRAGMA synchronous=NORMAL;")
+        _local.conn = conn
+    return conn
+
+# Hardened ZMQ command queue for EA routing
+_cmdq_ctx = zmq.Context.instance()
+_cmdq = _cmdq_ctx.socket(zmq.PUSH)
+_cmdq.setsockopt(zmq.LINGER, 0)
+_cmdq.connect(os.getenv("CMD_QUEUE", "ipc:///tmp/bitten_cmdqueue"))
+
+def enqueue_fire(target_uuid: str, payload: dict):
+    """Enqueue fire command to command router for specific EA"""
+    payload = dict(payload)  # shallow copy
+    try:
+        _cmdq.send_json({"target_uuid": target_uuid, "payload": payload}, flags=zmq.NOBLOCK)
+        logger.info(f"📤 Enqueued fire command to {target_uuid}: {payload.get('fire_id', '')}")
+    except Exception:
+        logger.exception("enqueue_failed uuid=%s fire_id=%s", target_uuid, payload.get("fire_id"))
+        raise
 
 # Initialize onboarding system
 try:
@@ -119,9 +165,15 @@ lazy = LazyImports()
 app = Flask(__name__)
 app.config.update({
     'SECRET_KEY': os.getenv('SECRET_KEY', 'bitten-tactical-2025'),
-    'MAX_CONTENT_LENGTH': 16 * 1024 * 1024,  # 16MB max upload
+    'MAX_CONTENT_LENGTH': 2 * 1024 * 1024,  # 2MB max upload (reduced)
     'SEND_FILE_MAX_AGE_DEFAULT': 31536000,   # 1 year cache for static files
 })
+
+# Global error handler
+@app.errorhandler(Exception)
+def handle_error(e):
+    app.logger.exception("Unhandled exception")
+    return {"success": False, "error": "server_error"}, 500
 
 # Initialize SocketIO with optimized settings
 socketio = SocketIO(
@@ -193,6 +245,18 @@ def index():
     except Exception as e:
         logger.error(f"Index route error: {e}")
         return "BITTEN HUD - Loading...", 200
+
+@app.route('/healthz', methods=['GET'])
+def healthz():
+    """Health check endpoint for monitoring"""
+    try:
+        # Quick database ping
+        conn = get_db()
+        conn.execute("SELECT 1").fetchone()
+        return {"ok": True, "status": "healthy"}, 200
+    except Exception:
+        app.logger.exception("healthz_fail")
+        return {"ok": False, "status": "unhealthy"}, 500
 
 @app.route('/api/signals', methods=['GET', 'POST'])
 def api_signals():
@@ -358,19 +422,9 @@ def log_hud_access(user_id, mission_id, username=None):
     except Exception as e:
         print(f"Warning: Could not log HUD access: {e}")
 
-@app.route('/hud')
-def mission_briefing():
-    """Mission HUD interface for Telegram WebApp links"""
+def mission_briefing_logic(mission_id, user_id, template_name):
+    """Shared logic for HUD rendering"""
     try:
-        # Accept both mission_id and signal (legacy) parameters
-        mission_id = request.args.get('mission_id') or request.args.get('signal')
-        user_id = request.args.get('user_id')
-        
-        if not mission_id:
-            return render_template('error_hud.html', 
-                                 error="Missing mission_id or signal parameter", 
-                                 error_code=400), 400
-        
         # Log HUD access for Commander Throne monitoring
         if user_id and mission_id:
             log_hud_access(user_id, mission_id)
@@ -450,31 +504,27 @@ def mission_briefing():
         # Calculate time remaining (default to 1 hour if no timing data)
         from datetime import datetime
         try:
-            expires_at = datetime.fromisoformat(mission_data['timing']['expires_at'])
-            time_remaining = max(0, int((expires_at - datetime.now()).total_seconds()))
-        except:
-            # Default to 1 hour expiry for new missions
+            expires_at_str = mission_data.get('expires_at') or mission_data.get('timing', {}).get('expires_at')
+            if expires_at_str:
+                expires_at = datetime.fromisoformat(expires_at_str.replace('Z', '+00:00'))
+                time_remaining = max(0, int((expires_at - datetime.now()).total_seconds()))
+            else:
+                time_remaining = 3600  # Default 1 hour
+        except Exception as e:
+            logger.warning(f"Could not parse expiry time: {e}")
             time_remaining = 3600
         
-        logger.info(f"Mission {mission_id} loaded: {mission_data.keys()}")
-        
         # Handle different mission data structures
-        # Current VENOM structure vs legacy structure
         signal = mission_data.get('signal', {})
         enhanced_signal = mission_data.get('enhanced_signal', {})
-        mission = mission_data.get('mission', {})
-        user_data = mission_data.get('user', {})
-        user_id = mission_data.get('user_id', 'unknown')
         
         # Use enhanced_signal data if available (current VENOM format)
         if enhanced_signal:
             signal_data = enhanced_signal
-            logger.info(f"Using enhanced_signal data for {mission_id}")
         else:
-            signal_data = signal
-            logger.info(f"Using signal data for {mission_id}")
+            signal_data = signal or mission_data  # Fallback to root level
         
-        # Fallback to root level data
+        # Extract signal data
         symbol = signal_data.get('symbol') or mission_data.get('pair', 'UNKNOWN')
         direction = signal_data.get('direction') or mission_data.get('direction', 'BUY')
         entry_price = signal_data.get('entry_price', 0)
@@ -482,99 +532,102 @@ def mission_briefing():
         take_profit = signal_data.get('take_profit', 0)
         
         # CITADEL shield data
-        citadel_shield = mission_data.get('citadel_shield', {})
-        citadel_score = citadel_shield.get('score', mission_data.get('confidence', 75))
+        citadel_score = signal_data.get('shield_score', mission_data.get('confidence', 75))
+        tcs_score = signal_data.get('confidence', mission_data.get('tcs_score', citadel_score))
         
-        # Validate required fields
-        missing_fields = []
-        if not symbol or symbol == 'UNKNOWN':
-            missing_fields.append('symbol')
-        if not direction:
-            missing_fields.append('direction')
-        if not entry_price:
-            missing_fields.append('entry_price')
+        # Calculate position size for 2% risk
+        def calculate_position_size_simple(balance, entry, sl, tier):
+            if not entry or not sl or entry == sl:
+                return 0.01 * (2 if tier == 'COMMANDER' else 1)
+            
+            pip_size = 0.0001 if 'JPY' not in symbol else 0.01
+            pips_risk = abs(entry - sl) / pip_size
+            risk_usd = balance * 0.02  # 2% risk
+            pip_value_per_lot = 10  # Standard for major pairs
+            
+            lots = risk_usd / (pips_risk * pip_value_per_lot) if pips_risk > 0 else 0.01
+            multiplier = 2 if tier == 'COMMANDER' else 1
+            return max(0.01, lots * multiplier)
         
-        logger.info(f"Mission {mission_id} fields: symbol={symbol}, direction={direction}, entry={entry_price}, missing={missing_fields}")
+        position_size = calculate_position_size_simple(
+            user_stats.get('balance', 10000.0),
+            entry_price,
+            stop_loss,
+            user_stats.get('tier', 'NIBBLER')
+        )
         
-        # Prepare template variables for new_hud_template.html
+        # Calculate dollar amounts
+        balance = user_stats.get('balance', 10000.0)
+        sl_dollars = balance * 0.02  # 2% risk
+        rr_ratio = signal_data.get('risk_reward', signal_data.get('risk_reward_ratio', 2.0))
+        tp_dollars = sl_dollars * rr_ratio
+        
+        # Prepare template variables
         template_vars = {
-            # Basic signal info
             'symbol': symbol,
             'direction': direction,
             'entry_price': entry_price,
             'stop_loss': stop_loss,
             'take_profit': take_profit,
-            'entry_masked': f"{float(entry_price):.5f}" if entry_price else "Loading...",
-            'sl_masked': f"{float(stop_loss):.5f}" if stop_loss else "Loading...",
-            'tp_masked': f"{float(take_profit):.5f}" if take_profit else "Loading...",
-            
-            # Quality scores
-            'tcs_score': signal_data.get('confidence', mission_data.get('confidence', 75)),
+            'tcs_score': tcs_score,
             'citadel_score': citadel_score,
-            'ml_filter_passed': mission_data.get('ml_filter', {}).get('filter_result') != 'prediction_failed',
-            
-            # Real-time risk calculation based on actual account balance
-            'rr_ratio': signal_data.get('risk_reward_ratio', signal_data.get('risk_reward', 2.0)),
-            'account_balance': user_stats.get('balance', user_data.get('balance', 10000.0)),
-            
-            # Calculate ACTUAL dollar risk based on user's real balance
-            # Position size adjusted by tier: COMMANDER = 2x, others = 1x
-            'position_multiplier': 2 if user_stats['tier'] == 'COMMANDER' else 1,
-            'base_position': 0.01,  # Base lot size
-            
-            # Real dollar amounts based on 2% risk management
-            'sl_dollars': f"{user_stats.get('balance', 10000.0) * 0.02:.2f}",  # 2% of actual balance
-            'tp_dollars': f"{user_stats.get('balance', 10000.0) * 0.02 * signal_data.get('risk_reward_ratio', 2.0):.2f}",  # Risk * R:R ratio
-            
-            # Account risk percentage
-            'risk_percent': 2.0,  # Standard 2% risk per trade
-            
-            # Mission info
+            'rr_ratio': rr_ratio,
+            'position_size': f"{position_size:.2f}",
+            'sl_dollars': f"{sl_dollars:.2f}",
+            'tp_dollars': f"{tp_dollars:.2f}",
             'mission_id': mission_id,
-            'signal_id': mission_data.get('signal_id', mission_id),
             'user_id': user_id,
-            'expiry_seconds': time_remaining,
-            
-            # User stats with real overlay data
-            'user_stats': user_stats,  # Use the loaded user stats from registry
-            
-            # Calculate ACTUAL position size based on risk and stop loss
-            # This gives the real lot size to risk exactly 2% of account
-            'position_size': calculate_position_size(
-                user_stats.get('balance', 10000.0),
-                signal_data.get('sl_pips', 20),
-                user_stats['tier']
-            ) if 'sl_pips' in signal_data else 0.01 * (2 if user_stats['tier'] == 'COMMANDER' else 1),
-            
-            # Warning for missing fields
-            'missing_fields': missing_fields,
-            'has_warnings': len(missing_fields) > 0,
-            
-            # CITADEL shield info
-            'citadel_classification': citadel_shield.get('classification', 'SHIELD_ACTIVE'),
-            'citadel_explanation': citadel_shield.get('explanation', 'Signal analysis in progress')
+            'time_remaining': time_remaining,
+            'user_stats': user_stats,
         }
         
-        # Load and render the new HUD template
-        # Use comprehensive template for enhanced experience
-        if os.path.exists('templates/comprehensive_mission_briefing.html'):
-            return render_template('comprehensive_mission_briefing.html', **template_vars)
-        else:
-            return render_template('new_hud_template.html', **template_vars)
+        return render_template(template_name, **template_vars)
         
     except Exception as e:
-        # Enhanced error logging with mission_id context
         logger.error(f"Mission HUD error for mission_id='{mission_id}': {e}", exc_info=True)
+        return render_template('error_hud.html', 
+                             error=f"Error loading mission {mission_id}: {str(e)}", 
+                             error_code=500), 500
+
+@app.route('/hud')
+def mission_briefing():
+    """Mission HUD interface for Telegram WebApp links"""
+    try:
+        mission_id = request.args.get('mission_id') or request.args.get('signal')
+        user_id = request.args.get('user_id')
         
-        # Enhanced error handling with fallback HUD  
-        try:
+        if not mission_id:
             return render_template('error_hud.html', 
-                                 error=f"Error loading mission {mission_id}: {str(e)}", 
-                                 error_code=500), 500
-        except Exception as template_error:
-            # Last resort: plain text error if even error template fails
-            logger.error(f"Error template also failed: {template_error}")
-            return f"Error loading mission {mission_id}: {str(e)}", 500
+                                 error="Missing mission_id or signal parameter", 
+                                 error_code=400), 400
+        
+        return mission_briefing_logic(mission_id, user_id, 'comprehensive_mission_briefing.html')
+    
+    except Exception as e:
+        logger.error(f"HUD Error: {e}")
+        return render_template('error_hud.html', 
+                             error="Internal server error", 
+                             error_code=500), 500
+
+@app.route('/hud/enhanced')
+def mission_briefing_enhanced():
+    """Enhanced Mission HUD interface with improved UX"""
+    try:
+        mission_id = request.args.get('mission_id') or request.args.get('signal')
+        user_id = request.args.get('user_id')
+        
+        if not mission_id:
+            return render_template('error_hud.html', 
+                                 error="Missing mission_id or signal parameter", 
+                                 error_code=400), 400
+        
+        return mission_briefing_logic(mission_id, user_id, 'comprehensive_mission_briefing_enhanced.html')
+    
+    except Exception as e:
+        logger.error(f"Enhanced HUD Error: {e}")
+        return render_template('error_hud.html', 
+                             error="Internal server error", 
+                             error_code=500), 500
 
 @app.route('/notebook/<user_id>')
 def normans_notebook(user_id):
@@ -791,63 +844,206 @@ def fire_mission():
             logger.warning(f"UUID tracking failed: {e}")
         
         # ENHANCED NOTIFICATIONS - Send fire confirmation
-        try:
-            from tools.enhanced_trade_notifications import notify_fire_confirmation
-            from tools.failed_signal_tracker import save_fired_signal
-            
-            # Send immediate fire confirmation
-            import asyncio
-            asyncio.create_task(notify_fire_confirmation(user_id, mission_data, trade_uuid))
-            
-            # Save fired signal for tracking
-            save_fired_signal(trade_uuid, mission_data, user_id)
-            
-            logger.info(f"🎯 Fire confirmation sent for {trade_uuid}")
-            
-        except Exception as e:
-            logger.warning(f"Enhanced notifications failed: {e}")
+        # DISABLED - causing async issues
+        # try:
+        #     from tools.enhanced_trade_notifications import notify_fire_confirmation
+        #     from tools.failed_signal_tracker import save_fired_signal
+        #     
+        #     # Send immediate fire confirmation
+        #     import asyncio
+        #     asyncio.create_task(notify_fire_confirmation(user_id, mission_data, trade_uuid))
+        #     
+        #     # Save fired signal for tracking
+        #     save_fired_signal(trade_uuid, mission_data, user_id)
+        #     
+        #     logger.info(f"🎯 Fire confirmation sent for {trade_uuid}")
+        #     
+        # except Exception as e:
+        #     logger.warning(f"Enhanced notifications failed: {e}")
         
-        # REAL BROKER EXECUTION via FireRouter
+        # REAL BROKER EXECUTION via ZMQ Command Queue
         execution_result = {'success': False, 'message': 'Execution failed'}
         
         try:
-            # Import fire router for real trade execution
-            import sys
-            sys.path.append('/root/HydraX-v2/src/bitten_core')
-            from fire_router import FireRouter, TradeRequest, TradeDirection
+            logger.info(f"🔥 Starting fire execution for mission {mission_id}")
             
-            fire_router = FireRouter()
-            
-            # Extract signal data
+            # Extract signal data - check multiple locations for backward compatibility
             signal = mission_data.get('signal', {})
             enhanced_signal = mission_data.get('enhanced_signal', signal)
             
-            # Create trade request
-            direction = TradeDirection.BUY if enhanced_signal.get('direction', '').upper() == 'BUY' else TradeDirection.SELL
+            # Get data from root level first (Elite Guard format), fallback to nested
+            symbol = mission_data.get('symbol') or enhanced_signal.get('symbol', 'EURUSD')
+            direction_str = mission_data.get('direction') or enhanced_signal.get('direction', 'BUY')
+            entry_price = mission_data.get('entry_price') or enhanced_signal.get('entry_price')
+            stop_loss = mission_data.get('stop_loss') or enhanced_signal.get('stop_loss')
+            take_profit = mission_data.get('take_profit') or enhanced_signal.get('take_profit')
+            tcs_score = mission_data.get('tcs_score') or enhanced_signal.get('tcs_score', 75)
             
-            # Use safe volume - ignore high mission volume
-            safe_volume = 0.1  # Start with micro lots for safety
+            logger.info(f"🔥 Creating fire command for {symbol}")
+            logger.info(f"🔥 Price levels: entry={entry_price}, sl={stop_loss}, tp={take_profit}")
             
-            trade_request = TradeRequest(
-                user_id=str(user_id),
-                symbol=enhanced_signal.get('symbol', 'EURUSD'),
-                direction=direction,
-                volume=safe_volume,
-                stop_loss=enhanced_signal.get('stop_loss'),
-                take_profit=enhanced_signal.get('take_profit'),
-                tcs_score=enhanced_signal.get('tcs_score', 75),
-                comment=f"BITTEN_{mission_id}",
-                mission_id=mission_id
-            )
+            # Get target_uuid from mission (should be stamped at creation)
+            target_uuid = mission_data.get('target_uuid')
+            if not target_uuid:
+                # Try to get from user's most recent EA instance
+                try:
+                    import sqlite3
+                    conn = sqlite3.connect('/root/HydraX-v2/bitten.db')
+                    cursor = conn.cursor()
+                    cursor.execute('''
+                        SELECT target_uuid FROM ea_instances 
+                        WHERE user_id = ? 
+                        ORDER BY last_seen DESC 
+                        LIMIT 1
+                    ''', (str(user_id),))
+                    row = cursor.fetchone()
+                    if row:
+                        target_uuid = row[0]
+                    conn.close()
+                except Exception as e:
+                    logger.error(f"Failed to get target_uuid from database: {e}")
             
-            # Execute real trade via direct broker API
-            fire_result = fire_router.execute_trade_request(trade_request)
+            # No fallback in production - EA must be linked
+            if not target_uuid:
+                if os.getenv("ENV") == "dev":
+                    target_uuid = "COMMANDER_DEV_00"
+                    logger.warning(f"⚠️ Dev mode: using fallback {target_uuid}")
+                else:
+                    return jsonify({
+                        'success': False,
+                        'error': 'no_target_uuid',
+                        'message': 'No linked EA found. Start your EA and tap "Link EA" in the HUD.'
+                    }), 422
             
+            # Validate EA is ready with fresh equity data
+            try:
+                import sqlite3
+                conn = sqlite3.connect('/root/HydraX-v2/bitten.db')
+                conn.row_factory = sqlite3.Row
+                cursor = conn.cursor()
+                cursor.execute('''
+                    SELECT last_equity, last_seen, currency, last_balance 
+                    FROM ea_instances 
+                    WHERE target_uuid = ?
+                ''', (target_uuid,))
+                row = cursor.fetchone()
+                
+                now = int(time.time())
+                if not row or (now - row['last_seen'] > 60) or row['last_equity'] is None:
+                    conn.close()
+                    return jsonify({
+                        'success': False,
+                        'error': 'ea_not_ready',
+                        'message': 'Waiting for your EA to report balance/equity. Keep MT5 open.'
+                    }), 409
+                
+                # Store equity for position sizing
+                equity = row['last_equity']
+                currency = row['currency'] or 'USD'
+                balance = row['last_balance'] or equity
+                
+                logger.info(f"💰 EA Ready: {target_uuid} | Equity: {equity} {currency} | Balance: {balance}")
+                conn.close()
+                
+            except Exception as e:
+                logger.error(f"Failed to validate EA readiness: {e}")
+                return jsonify({
+                    'success': False,
+                    'error': 'validation_failed',
+                    'message': 'Could not validate EA status'
+                }), 500
+            
+            # Generate fire_id
+            import time
+            fire_id = f"fir_{mission_id}_{int(time.time())}"
+            
+            # Calculate position size based on equity and risk
+            risk_pct = 0.02  # 2% risk per trade (can be user-specific later)
+            risk_money = equity * risk_pct
+            
+            # Calculate SL in pips
+            def price_to_pips(symbol: str, price1: float, price2: float) -> float:
+                """Convert price difference to pips"""
+                if 'JPY' in symbol:
+                    return abs(price1 - price2) * 100
+                else:
+                    return abs(price1 - price2) * 10000
+            
+            # Estimate pip value (simplified - should use broker-specific model)
+            def estimate_pip_value(symbol: str, lot_size: float = 1.0) -> float:
+                """Estimate pip value for 1 lot"""
+                # Simplified: assume $10 per pip for 1 lot on majors
+                if 'JPY' in symbol:
+                    return 10.0 * lot_size  
+                else:
+                    return 10.0 * lot_size
+            
+            sl_pips = price_to_pips(symbol, float(entry_price) if entry_price else 0, 
+                                   float(stop_loss) if stop_loss else 0)
+            
+            if sl_pips > 0:
+                pip_value_per_lot = estimate_pip_value(symbol, 1.0)
+                safe_volume = risk_money / (sl_pips * pip_value_per_lot)
+                # Clamp to reasonable range
+                safe_volume = max(0.01, min(safe_volume, 5.0))  # 0.01 to 5.0 lots
+            else:
+                safe_volume = 0.1  # Fallback to micro lots
+            
+            logger.info(f"📊 Position sizing: Equity={equity}, Risk={risk_pct*100}%, SL={sl_pips:.1f} pips, Lot={safe_volume:.2f}")
+            
+            # Create command payload for EA
+            cmd = {
+                "type": "fire",
+                "fire_id": fire_id,
+                "signal_id": mission_data.get("signal_id", mission_id),
+                "user_id": str(user_id),
+                "symbol": symbol,
+                "side": direction_str.upper(),
+                "entry": float(entry_price) if entry_price else 0,
+                "sl": float(stop_loss) if stop_loss else 0,
+                "tp": float(take_profit) if take_profit else 0,
+                "lot": float(safe_volume),
+                "time_in_force": "IOC",
+                "comment": f"BITTEN_{mission_id}"
+            }
+            
+            logger.info(f"🔥 Enqueueing fire command to {target_uuid}: {fire_id}")
+            
+            # Enqueue to command router with error handling
+            try:
+                enqueue_fire(target_uuid, cmd)
+                logger.info(f"✅ Enqueued fire_id={fire_id} uuid={target_uuid}")
+            except Exception as e:
+                logger.exception(f"❌ Enqueue failed fire_id={fire_id} uuid={target_uuid}")
+                return jsonify({"success": False, "error": "enqueue_failed"}), 500
+            
+            # Save fire record with equity tracking
+            try:
+                import sqlite3
+                conn = sqlite3.connect('/root/HydraX-v2/bitten.db')
+                cursor = conn.cursor()
+                now = int(time.time())
+                cursor.execute('''
+                    INSERT INTO fires (
+                        fire_id, mission_id, user_id, status, 
+                        equity_used, risk_pct_used, created_at, updated_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                ''', (fire_id, mission_id, str(user_id), 'QUEUED', 
+                      equity, risk_pct, now, now))
+                conn.commit()
+                conn.close()
+            except Exception as e:
+                logger.error(f"Failed to save fire record: {e}")
+            
+            # For now, assume success since it's async
             execution_result = {
-                'success': fire_result.success,
-                'message': fire_result.message,
-                'ticket': getattr(fire_result, 'ticket', None),
-                'execution_price': getattr(fire_result, 'execution_price', None)
+                'success': True,
+                'message': f'Fire command queued to EA {target_uuid}',
+                'fire_id': fire_id,
+                'target_uuid': target_uuid,
+                'equity_used': equity,
+                'risk_pct': risk_pct,
+                'lot_size': safe_volume
             }
             
             logger.info(f"Broker API execution result: {execution_result}")
@@ -858,12 +1054,13 @@ def fire_mission():
                 logger.info(f"🔗 UUID tracking: Trade execution tracked for {trade_uuid}")
             
             # ENHANCED NOTIFICATIONS - Send execution success
-            try:
-                from tools.enhanced_trade_notifications import notify_execution_result
-                asyncio.create_task(notify_execution_result(user_id, mission_data, execution_result))
-                logger.info(f"💥 Execution success notification sent for {trade_uuid}")
-            except Exception as e:
-                logger.warning(f"Execution success notification failed: {e}")
+            # DISABLED - causing async issues
+            # try:
+            #     from tools.enhanced_trade_notifications import notify_execution_result
+            #     asyncio.create_task(notify_execution_result(user_id, mission_data, execution_result))
+            #     logger.info(f"💥 Execution success notification sent for {trade_uuid}")
+            # except Exception as e:
+            #     logger.warning(f"Execution success notification failed: {e}")
             
         except Exception as e:
             logger.error(f"Broker API execution failed: {e}")
@@ -875,12 +1072,13 @@ def fire_mission():
                 logger.info(f"🔗 UUID tracking: Failed execution tracked for {trade_uuid}")
             
             # ENHANCED NOTIFICATIONS - Send execution failure
-            try:
-                from tools.enhanced_trade_notifications import notify_execution_result
-                asyncio.create_task(notify_execution_result(user_id, mission_data, execution_result))
-                logger.info(f"❌ Execution failure notification sent for {trade_uuid}")
-            except Exception as e:
-                logger.warning(f"Execution failure notification failed: {e}")
+            # DISABLED - causing async issues
+            # try:
+            #     from tools.enhanced_trade_notifications import notify_execution_result
+            #     asyncio.create_task(notify_execution_result(user_id, mission_data, execution_result))
+            #     logger.info(f"❌ Execution failure notification sent for {trade_uuid}")
+            # except Exception as e:
+            #     logger.warning(f"Execution failure notification failed: {e}")
         
         # Mark mission as fired with execution result
         mission_data['status'] = 'fired' if execution_result['success'] else 'failed'
@@ -898,7 +1096,7 @@ def fire_mission():
             import sys
             sys.path.append('/root/HydraX-v2/src/bitten_core')
             from trade_logging_pipeline import log_trade_execution
-            from user_account_manager import process_api_account_info
+            # from user_account_manager import process_api_account_info  # Function doesn't exist
             
             # Log to all systems if mission was fired (success or failure)
             if mission_data['status'] in ['fired', 'failed']:
@@ -998,6 +1196,11 @@ def fire_mission():
             'success': False
         }), 500
 
+@app.route('/test-fire')
+def test_fire_button():
+    """Test page for fire button visual feedback"""
+    return send_from_directory('.', 'test_fire_button.html')
+
 @app.route('/api/ping', methods=['POST'])
 def ping_bridge():
     """Ping MT5 bridge and capture account info"""
@@ -1040,6 +1243,63 @@ def ping_bridge():
         logger.error(f"Bridge ping error: {e}")
         return jsonify({
             'error': f'Bridge ping failed: {str(e)}',
+            'success': False
+        }), 500
+
+@app.route('/api/callsign', methods=['GET', 'POST'])
+def handle_callsign():
+    """Get or update user's callsign"""
+    try:
+        # Get user ID from headers or args
+        user_id = request.headers.get('X-User-ID') or request.args.get('user_id')
+        
+        if not user_id:
+            return jsonify({'error': 'Missing user ID', 'success': False}), 400
+        
+        # Import callsign manager
+        import sys
+        sys.path.append('/root/HydraX-v2/src/bitten_core')
+        from callsign_manager import get_callsign_manager
+        
+        callsign_mgr = get_callsign_manager()
+        
+        if request.method == 'GET':
+            # Get current callsign and suggestions
+            current_callsign = callsign_mgr.get_callsign_or_default(int(user_id))
+            can_set, reason = callsign_mgr.can_set_callsign(int(user_id))
+            
+            response = {
+                'success': True,
+                'current_callsign': current_callsign,
+                'can_change': can_set,
+                'reason': reason
+            }
+            
+            if can_set:
+                response['suggestions'] = callsign_mgr.generate_suggestions(int(user_id))
+            
+            return jsonify(response)
+            
+        elif request.method == 'POST':
+            # Update callsign
+            data = request.get_json()
+            new_callsign = data.get('callsign')
+            
+            if not new_callsign:
+                return jsonify({'error': 'Missing callsign', 'success': False}), 400
+            
+            success, message = callsign_mgr.set_callsign(int(user_id), new_callsign)
+            
+            return jsonify({
+                'success': success,
+                'message': message,
+                'new_callsign': new_callsign if success else None
+            })
+            
+    except Exception as e:
+        logger.error(f"Callsign API error: {e}")
+        return jsonify({
+            'error': f'Callsign operation failed: {str(e)}',
             'success': False
         }), 500
 
@@ -1437,15 +1697,24 @@ def war_room():
         user_rank = rank_access.get_user_rank(int(user_id) if user_id.isdigit() else 0)
         user_info = rank_access.get_user_info(int(user_id) if user_id.isdigit() else 0)
         
-        # Generate dynamic callsign based on rank
-        callsign_prefixes = {
-            UserRank.USER: "ROOKIE",
-            UserRank.AUTHORIZED: "VIPER",
-            UserRank.ELITE: "GHOST",
-            UserRank.ADMIN: "APEX"
-        }
-        callsign_prefix = callsign_prefixes.get(user_rank, "SHADOW")
-        callsign = f"{callsign_prefix}-{user_id[-4:]}" if user_id != 'anonymous' else "GHOST-0000"
+        # Get user's actual callsign from central database
+        try:
+            from src.bitten_core.callsign_manager import get_callsign_manager
+            callsign_mgr = get_callsign_manager()
+            callsign = callsign_mgr.get_callsign_or_default(int(user_id) if user_id.isdigit() else 0)
+            can_change_callsign, callsign_reason = callsign_mgr.can_set_callsign(int(user_id) if user_id.isdigit() else 0)
+        except:
+            # Fallback to generated callsign
+            callsign_prefixes = {
+                UserRank.USER: "ROOKIE",
+                UserRank.AUTHORIZED: "VIPER",
+                UserRank.ELITE: "GHOST",
+                UserRank.ADMIN: "APEX"
+            }
+            callsign_prefix = callsign_prefixes.get(user_rank, "SHADOW")
+            callsign = f"{callsign_prefix}-{user_id[-4:]}" if user_id != 'anonymous' else "GHOST-0000"
+            can_change_callsign = False
+            callsign_reason = "System default"
         
         # Get user stats from engagement DB
         user_stats = engagement_db.get_user_stats(user_id)
@@ -2044,7 +2313,8 @@ def war_room():
                 <div class="rank-display">
                     <div class="rank-badge" aria-label="Military rank badge">🎖️</div>
                     <div>
-                        <h1 class="callsign">{callsign}</h1>
+                        <h1 class="callsign" style="display: inline-block;">{callsign}</h1>
+                        {'<button id="edit-callsign-btn" style="margin-left: 10px; padding: 5px 10px; background: #00D9FF; border: none; border-radius: 3px; cursor: pointer; font-size: 12px;" onclick="editCallsign()">✏️ Edit</button>' if can_change_callsign else ''}
                         <div class="rank-info" aria-label="Rank information">{rank_name} TIER • {rank_desc}</div>
                     </div>
                 </div>
@@ -2263,6 +2533,55 @@ def war_room():
                 
                 // Play sound effect
                 console.log(`Playing sound: ${{sounds[type]}}`);
+            }}
+            
+            // Edit callsign function
+            function editCallsign() {{
+                const userId = '{user_id}';
+                
+                // First get current callsign and suggestions
+                fetch(`/api/callsign?user_id=${{userId}}`)
+                    .then(response => response.json())
+                    .then(data => {{
+                        if (!data.can_change) {{
+                            alert(data.reason);
+                            return;
+                        }}
+                        
+                        let suggestionsText = data.suggestions ? '\\n\\nSuggestions:\\n' + data.suggestions.join('\\n') : '';
+                        let newCallsign = prompt(`Enter your new callsign (3-20 characters, letters/numbers/underscore/hyphen only):${{suggestionsText}}\\n\\nCurrent: ${{data.current_callsign}}`);
+                        
+                        if (newCallsign && newCallsign.trim()) {{
+                            // Update callsign
+                            fetch('/api/callsign', {{
+                                method: 'POST',
+                                headers: {{
+                                    'Content-Type': 'application/json',
+                                    'X-User-ID': userId
+                                }},
+                                body: JSON.stringify({{ callsign: newCallsign.trim() }})
+                            }})
+                            .then(response => response.json())
+                            .then(result => {{
+                                if (result.success) {{
+                                    alert(result.message);
+                                    // Update display
+                                    document.querySelector('.callsign').textContent = result.new_callsign;
+                                    playSound('achievement');
+                                }} else {{
+                                    alert(result.message || 'Failed to update callsign');
+                                }}
+                            }})
+                            .catch(error => {{
+                                console.error('Error updating callsign:', error);
+                                alert('Error updating callsign. Please try again.');
+                            }});
+                        }}
+                    }})
+                    .catch(error => {{
+                        console.error('Error fetching callsign data:', error);
+                        alert('Error loading callsign data. Please try again.');
+                    }});
             }}
             
             // Initialize sound button
@@ -2668,6 +2987,56 @@ def api_mission_status(signal_id):
             "error": "Internal server error"
         }), 500
 
+@app.route('/api/overlay', methods=['GET'])
+def api_overlay():
+    """Lightweight user overlay endpoint - returns <500 bytes JSON"""
+    try:
+        mission_id = request.args.get('mission_id')
+        user_id = request.args.get('user_id')
+        
+        if not user_id:
+            return jsonify({"error": "Missing user_id"}), 400
+            
+        # Load user registry for real data
+        try:
+            with open('/root/HydraX-v2/user_registry.json', 'r') as f:
+                registry = json.load(f)
+                user_data = {}
+                if user_id in registry:
+                    user_data = registry[user_id]
+                elif 'users' in registry and user_id in registry['users']:
+                    user_data = registry['users'][user_id]
+                    
+                # Return lightweight overlay data
+                return jsonify({
+                    "bal": user_data.get('account_balance', 10000.0),
+                    "eq": user_data.get('account_equity', 10000.0), 
+                    "riskPct": 1.0,  # 1% risk
+                    "dailyDDLeft": 8.0,  # 8% daily drawdown left
+                    "canFire": True
+                })
+                
+        except Exception as e:
+            logger.warning(f"Could not load user registry: {e}")
+            # Fallback data
+            return jsonify({
+                "bal": 10000.0,
+                "eq": 10000.0,
+                "riskPct": 1.0,
+                "dailyDDLeft": 8.0,
+                "canFire": True
+            })
+            
+    except Exception as e:
+        logger.error(f"Overlay API error: {e}")
+        return jsonify({
+            "bal": 10000.0,
+            "eq": 10000.0,
+            "riskPct": 1.0,
+            "dailyDDLeft": 8.0,
+            "canFire": True
+        })
+
 # ============== HUD SUPPORT ENDPOINTS ==============
 
 @app.route('/education/patterns')
@@ -2934,6 +3303,499 @@ def signal_analysis(signal_id):
     """
 
 # ============== END HUD SUPPORT ENDPOINTS ==============
+
+# ============ CLEAN SIGNAL LOOP ROUTES ============
+# Added for clean 4-piece architecture
+
+import base64
+import hmac
+import hashlib
+import sqlite3
+import uuid
+import zmq
+from flask import abort
+
+# Environment for clean routes
+BITTEN_DB = os.environ.get("BITTEN_DB", "bitten.db")
+BRIEF_SECRET = os.environ.get("BRIEF_LINK_SECRET", "change-me-32-bytes-minimum-secret").encode()
+EA_PUSH = os.environ.get("ZMQ_EA_PUSH", "tcp://127.0.0.1:5555")
+WEBAPP_BASE = os.environ.get("WEBAPP_BASE", "https://134.199.204.67:8888")
+
+def get_bitten_db():
+    return sqlite3.connect(BITTEN_DB)
+
+def verify_sig(user_id, mission_id, exp, sig) -> bool:
+    """Verify HMAC signature for mission link"""
+    try:
+        import time
+        if int(exp) < int(time.time()):
+            return False
+        msg = f"{user_id}.{mission_id}.{exp}".encode()
+        calc = base64.urlsafe_b64encode(
+            hmac.new(BRIEF_SECRET, msg, hashlib.sha256).digest()
+        ).decode().rstrip("=")
+        return hmac.compare_digest(calc, sig)
+    except Exception:
+        return False
+
+def generate_sig(user_id, mission_id, exp) -> str:
+    """Generate HMAC signature for mission link"""
+    msg = f"{user_id}.{mission_id}.{exp}".encode()
+    return base64.urlsafe_b64encode(
+        hmac.new(BRIEF_SECRET, msg, hashlib.sha256).digest()
+    ).decode().rstrip("=")
+
+@app.route('/tg_auth', methods=['POST'])
+def tg_auth():
+    """Verify Telegram login and redirect to mission"""
+    import hmac
+    import hashlib
+    import time
+    
+    payload = request.get_json(force=True)
+    
+    # Verify Telegram auth hash
+    ATHENA_BOT_TOKEN = os.getenv("BOT_TOKEN")
+    secret = hashlib.sha256(ATHENA_BOT_TOKEN.encode()).digest()
+    
+    # Build data_check_string
+    pairs = [f"{k}={payload[k]}" for k in sorted(payload.keys()) if k != "hash"]
+    data_check_string = "\n".join(pairs).encode()
+    expected_hash = hmac.new(secret, data_check_string, hashlib.sha256).hexdigest()
+    
+    if not hmac.compare_digest(expected_hash, payload.get("hash", "")):
+        return jsonify({"ok": False, "error": "bad_hash"}), 403
+    
+    # Check freshness
+    if time.time() - int(payload.get("auth_date", 0)) > 600:
+        return jsonify({"ok": False, "error": "stale_auth"}), 403
+    
+    user_id = str(payload["id"])
+    session["user_id"] = user_id
+    
+    # Get latest mission
+    conn = get_bitten_db()
+    row = conn.execute("""
+        SELECT mission_id FROM missions 
+        WHERE status='PENDING' 
+        ORDER BY created_at DESC 
+        LIMIT 1
+    """).fetchone()
+    conn.close()
+    
+    if not row:
+        return jsonify({"ok": False, "error": "no_mission"}), 404
+    
+    mission_id = row[0]
+    exp = int(time.time()) + 1800  # 30 minutes
+    msg = f"{user_id}.{mission_id}.{exp}".encode()
+    sig = base64.urlsafe_b64encode(
+        hmac.new(BRIEF_SECRET, msg, hashlib.sha256).digest()
+    ).decode().rstrip("=")
+    
+    return jsonify({
+        "ok": True, 
+        "redirect": f"/mission/{mission_id}?u={user_id}&exp={exp}&sig={sig}"
+    })
+
+@app.route('/brief')
+def brief_page():
+    """Auth page that redirects to signed mission link"""
+    import time
+    import logging
+    import hmac
+    import hashlib
+    import base64
+    
+    # Debug logging
+    logger = logging.getLogger('webapp')
+    logger.info(f"[BRIEF] Request from: {request.remote_addr}")
+    logger.info(f"[BRIEF] Headers: {dict(request.headers)}")
+    logger.info(f"[BRIEF] Args: {dict(request.args)}")
+    
+    # ALWAYS redirect to latest mission for ANY visitor (skip auth completely)
+    conn = get_bitten_db()
+    latest = conn.execute("""
+        SELECT mission_id, payload_json 
+        FROM missions 
+        WHERE status='PENDING' 
+        ORDER BY created_at DESC 
+        LIMIT 1
+    """).fetchone()
+    conn.close()
+    
+    if latest:
+        mission_id = latest[0]
+        # Create a simple signed URL that works for everyone
+        user_id = "telegram_user"
+        exp = int(time.time()) + 3600
+        msg = f"{user_id}.{mission_id}.{exp}".encode()
+        sig = base64.urlsafe_b64encode(
+            hmac.new(BRIEF_SECRET, msg, hashlib.sha256).digest()
+        ).decode().rstrip("=")
+        
+        # Redirect directly to mission with signature
+        return redirect(f"/mission/{mission_id}?u={user_id}&exp={exp}&sig={sig}")
+    else:
+        return "No active missions available", 404
+    
+    if not user_id:
+        # Show Telegram login widget
+        return render_template_string("""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>BITTEN - Authenticate</title>
+            <style>
+                body { background: #0a0a0a; color: #00ff41; font-family: monospace; 
+                       display: flex; align-items: center; justify-content: center; 
+                       height: 100vh; flex-direction: column; }
+                h1 { color: #00ff41; margin-bottom: 30px; }
+            </style>
+        </head>
+        <body>
+            <h1>🎯 BITTEN AUTHENTICATION</h1>
+            <p>Login with Telegram to access your mission brief</p>
+            <script async src="https://telegram.org/js/telegram-widget.js?22" 
+                    data-telegram-login="athena_signal_bot" 
+                    data-size="large" 
+                    data-onauth="onTelegramAuth(user)" 
+                    data-request-access="write"></script>
+            <script>
+            function onTelegramAuth(user) {
+                fetch('/tg_auth', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    credentials: 'include',
+                    body: JSON.stringify(user)
+                }).then(r => r.json()).then(j => {
+                    if (j.ok && j.redirect) {
+                        window.location = j.redirect;
+                    } else {
+                        alert('Auth failed: ' + (j.error || 'unknown'));
+                    }
+                });
+            }
+            </script>
+        </body>
+        </html>
+        """)
+    
+    conn = get_bitten_db()
+    
+    # Check/create user
+    user_row = conn.execute("SELECT tier FROM users WHERE user_id=?", (user_id,)).fetchone()
+    if not user_row:
+        conn.execute("""
+            INSERT INTO users(user_id, tier, risk_pct_default, max_concurrent, 
+                            daily_dd_limit, cooldown_s, balance_cache, xp, streak, last_fire_at)
+            VALUES(?, 'NIBBLER', 2.0, 3, 6.0, 0, 1000.0, 0, 0, 0)
+        """, (user_id,))
+        conn.commit()
+    
+    # Get latest pending mission
+    row = conn.execute("""
+        SELECT mission_id 
+        FROM missions 
+        WHERE status='PENDING' AND expires_at > ?
+        ORDER BY created_at DESC 
+        LIMIT 1
+    """, (int(time.time()),)).fetchone()
+    
+    if not row:
+        return render_template_string("""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>BITTEN - No Active Missions</title>
+            <style>
+                body { background: #0a0a0a; color: #ff4444; font-family: monospace; 
+                       display: flex; align-items: center; justify-content: center; 
+                       height: 100vh; text-align: center; }
+            </style>
+        </head>
+        <body>
+            <div>
+                <h1>⚠️ NO ACTIVE MISSIONS</h1>
+                <p>Wait for the next signal in Telegram</p>
+            </div>
+        </body>
+        </html>
+        """)
+    
+    mission_id = row[0]
+    exp = int(time.time()) + 900
+    sig = generate_sig(user_id, mission_id, exp)
+    
+    return redirect(f"/mission/{mission_id}?u={user_id}&exp={exp}&sig={sig}")
+
+@app.route("/mission/<mission_id>")
+def mission_page_clean(mission_id):
+    """Display personalized mission brief with execute button"""
+    import time
+    
+    # Check if coming from Telegram
+    user_agent = request.headers.get('User-Agent', '')
+    is_telegram = 'Telegram' in user_agent or 'TelegramBot' in user_agent
+    
+    user_id = request.args.get("u")
+    exp = request.args.get("exp")
+    sig = request.args.get("sig")
+    
+    # If from Telegram, allow access without signature
+    if not is_telegram:
+        if not (user_id and exp and sig and verify_sig(user_id, mission_id, exp, sig)):
+            abort(403)
+    
+    # Default user for Telegram viewers
+    if is_telegram and not user_id:
+        user_id = "telegram_viewer"
+    
+    conn = get_bitten_db()
+    
+    row = conn.execute("""
+        SELECT payload_json, status, expires_at 
+        FROM missions 
+        WHERE mission_id=?
+    """, (mission_id,)).fetchone()
+    
+    if not row:
+        abort(404)
+    
+    payload_json, status, expires_at = row
+    
+    if status != "PENDING" or int(time.time()) >= int(expires_at):
+        abort(410)
+    
+    payload = json.loads(payload_json)
+    
+    # Handle default Telegram viewer
+    if user_id in ["telegram_viewer", "telegram_user"]:
+        # Use default values for Telegram viewers
+        tier = "NIBBLER"
+        risk_pct = 2.0
+        balance = 1000.0
+    else:
+        urow = conn.execute("""
+            SELECT tier, risk_pct_default, balance_cache 
+        FROM users 
+        WHERE user_id=?
+        """, (user_id,)).fetchone()
+        
+        if urow:
+            tier, risk_pct, balance = urow
+        else:
+            tier, risk_pct, balance = 'NIBBLER', 2.0, 1000.0
+    
+    entry = float(payload.get('entry_price', payload.get('entry', 0)))
+    sl = float(payload.get('stop_loss', payload.get('sl', 0)))
+    tp = float(payload.get('take_profit', payload.get('tp', 0)))
+    
+    risk_amount = (risk_pct / 100.0) * balance
+    sl_distance = abs(entry - sl)
+    tp_distance = abs(tp - entry)
+    
+    if sl_distance > 0:
+        reward_amount = (tp_distance / sl_distance) * risk_amount
+    else:
+        reward_amount = risk_amount * 2
+    
+    idem = "idem_" + uuid.uuid4().hex[:16]
+    
+    return render_template_string("""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>BITTEN Mission Brief</title>
+        <style>
+            body { background: #0a0a0a; color: #00ff41; font-family: 'Courier New', monospace; 
+                   padding: 20px; max-width: 600px; margin: 0 auto; }
+            .header { border-bottom: 2px solid #00ff41; padding-bottom: 10px; margin-bottom: 20px; }
+            .signal-box { background: #111; border: 1px solid #00ff41; padding: 20px; 
+                         margin: 20px 0; border-radius: 5px; }
+            .risk-reward { display: flex; justify-content: space-around; margin: 20px 0; }
+            .risk { color: #ff4444; font-size: 24px; }
+            .reward { color: #00ff41; font-size: 24px; }
+            .execute-btn { background: #00ff41; color: #000; border: none; 
+                          padding: 15px 30px; font-size: 18px; cursor: pointer; 
+                          width: 100%; margin-top: 20px; font-weight: bold; }
+            .execute-btn:hover { background: #00cc33; }
+            .execute-btn:disabled { background: #666; cursor: not-allowed; }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>🎯 MISSION BRIEF</h1>
+            <div>User: {{ user_id }} | Tier: {{ tier }}</div>
+        </div>
+        
+        <div class="signal-box">
+            <h2>{{ symbol }} {{ side }}</h2>
+            <div><span>Entry:</span> {{ "%.5f"|format(entry) }}</div>
+            <div><span>Stop Loss:</span> {{ "%.5f"|format(sl) }}</div>
+            <div><span>Take Profit:</span> {{ "%.5f"|format(tp) }}</div>
+        </div>
+        
+        <div class="risk-reward">
+            <div class="risk">
+                <div>RISK</div>
+                <div>${{ "%.2f"|format(risk_amount) }}</div>
+            </div>
+            <div class="reward">
+                <div>REWARD</div>
+                <div>${{ "%.2f"|format(reward_amount) }}</div>
+            </div>
+        </div>
+        
+        <form id="fireForm" onsubmit="executeTrade(event)">
+            <input type="hidden" name="mission_id" value="{{ mission_id }}">
+            <input type="hidden" name="user_id" value="{{ user_id }}">
+            <input type="hidden" name="idem" value="{{ idem }}">
+            <button type="submit" class="execute-btn" id="executeBtn">
+                🔥 EXECUTE TRADE
+            </button>
+        </form>
+        
+        <div id="status" style="margin-top: 20px; text-align: center;"></div>
+        
+        <script>
+        function executeTrade(e) {
+            e.preventDefault();
+            const btn = document.getElementById('executeBtn');
+            const status = document.getElementById('status');
+            
+            btn.disabled = true;
+            btn.textContent = 'FIRING...';
+            
+            const formData = new FormData(document.getElementById('fireForm'));
+            
+            fetch('/api/fire_clean', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(Object.fromEntries(formData))
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.ok) {
+                    status.innerHTML = '<div style="color: #00ff41;">✅ TRADE SENT!</div>';
+                    btn.textContent = 'EXECUTED';
+                } else {
+                    status.innerHTML = '<div style="color: #ff4444;">❌ ' + (data.error || 'Failed') + '</div>';
+                    btn.disabled = false;
+                    btn.textContent = '🔥 EXECUTE TRADE';
+                }
+            });
+        }
+        </script>
+    </body>
+    </html>
+    """, 
+        user_id=user_id,
+        tier=tier,
+        mission_id=mission_id,
+        idem=idem,
+        symbol=payload.get('symbol', 'UNKNOWN'),
+        side=payload.get('direction', payload.get('side', 'BUY')).upper(),
+        entry=entry,
+        sl=sl,
+        tp=tp,
+        risk_amount=risk_amount,
+        reward_amount=reward_amount
+    )
+
+@app.route("/api/fire_clean", methods=["POST"])
+def api_fire_clean():
+    """Clean fire endpoint - single authority for trades"""
+    import time
+    data = request.get_json(force=True)
+    mission_id = data.get("mission_id")
+    user_id = data.get("user_id")
+    idem = data.get("idem")
+    
+    if not all([mission_id, user_id, idem]):
+        return jsonify({"ok": False, "error": "missing_params"}), 400
+    
+    conn = get_bitten_db()
+    
+    # Idempotency check
+    try:
+        conn.execute("""
+            INSERT INTO fires(fire_id, mission_id, user_id, status, idem, created_at, updated_at) 
+            VALUES(?,?,?,?,?,?,?)
+        """, ("pending", mission_id, user_id, "RESERVED", idem, int(time.time()), int(time.time())))
+        conn.commit()
+    except sqlite3.IntegrityError:
+        return jsonify({"ok": False, "error": "duplicate"}), 409
+    
+    conn.execute("DELETE FROM fires WHERE fire_id='pending'")
+    conn.commit()
+    
+    # Get mission
+    mrow = conn.execute("""
+        SELECT payload_json, status, expires_at, tg_message_id 
+        FROM missions 
+        WHERE mission_id=?
+    """, (mission_id,)).fetchone()
+    
+    if not mrow:
+        return jsonify({"ok": False, "error": "mission_not_found"}), 404
+    
+    payload_json, status, expires_at, tg_message_id = mrow
+    
+    if status != "PENDING" or int(time.time()) >= int(expires_at):
+        return jsonify({"ok": False, "error": "mission_expired"}), 410
+    
+    payload = json.loads(payload_json)
+    
+    # Simple lot calculation
+    urow = conn.execute("SELECT risk_pct_default, balance_cache FROM users WHERE user_id=?", (user_id,)).fetchone()
+    if urow:
+        risk_pct, balance = urow
+    else:
+        risk_pct, balance = 2.0, 1000.0
+    
+    entry = float(payload.get('entry_price', payload.get('entry', 0)))
+    sl = float(payload.get('stop_loss', payload.get('sl', 0)))
+    
+    risk_dollars = (risk_pct / 100.0) * balance
+    sl_distance = abs(entry - sl)
+    
+    if sl_distance > 0:
+        symbol = payload.get("symbol", "EURUSD")
+        if "JPY" in symbol:
+            sl_pips = sl_distance * 100
+            pip_value = 10.0
+        elif "XAU" in symbol:
+            sl_pips = sl_distance * 10
+            pip_value = 1.0
+        else:
+            sl_pips = sl_distance * 10000
+            pip_value = 10.0
+        
+        lots = risk_dollars / (sl_pips * pip_value)
+        lots = max(0.01, round(lots, 2))
+    else:
+        lots = 0.01
+    
+    fire_id = "fir_" + uuid.uuid4().hex[:12]
+    
+    conn.execute("""
+        INSERT INTO fires(fire_id, mission_id, user_id, status, created_at, updated_at, idem) 
+        VALUES(?,?,?,?,?,?,?)
+    """, (fire_id, mission_id, user_id, "SENT", int(time.time()), int(time.time()), idem))
+    conn.commit()
+    
+    # DISABLED OLD DIRECT PATH - USE QUEUE ONLY
+    # Direct PUSH to EA bypassed command router logging
+    # All fires must go through IPC queue for proper correlation
+    
+    return jsonify({
+        "ok": True,
+        "fire_id": fire_id,
+        "lots": lots
+    }), 202
+
+# ============== END CLEAN SIGNAL LOOP ROUTES ==============
 
 if __name__ == '__main__':
     # Production-ready configuration

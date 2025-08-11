@@ -170,15 +170,15 @@
 1. **Environment Variables Needed**:
    ```bash
    # OANDA (Primary recommended)
-   export OANDA_API_KEY="your_oanda_api_key"
+   export OANDA_API_KEY="REDACTED"
    export OANDA_ACCOUNT_ID="your_account_id"
    
    # IC Markets (Secondary)
-   export IC_MARKETS_API_KEY="your_ic_key"
-   export IC_MARKETS_SECRET="your_ic_secret"
+   export IC_MARKETS_API_KEY="REDACTED"
+   export IC_MARKETS_SECRET="REDACTED"
    
    # IG Group (Tertiary)  
-   export IG_API_KEY="your_ig_key"
+   export IG_API_KEY="REDACTED"
    export IG_USERNAME="your_ig_username"
    export IG_PASSWORD="your_ig_password"
    
@@ -186,7 +186,7 @@
    export FXCM_ACCESS_TOKEN="your_fxcm_token"
    
    # XM (Via MT4/MT5 bridge)
-   export XM_API_KEY="your_xm_key"
+   export XM_API_KEY="REDACTED"
    ```
 
 2. **Service Startup Order**:

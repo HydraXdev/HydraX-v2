@@ -35,6 +35,7 @@ from enum import Enum
 import threading
 from collections import defaultdict, deque
 import requests
+from typing import Optional, Tuple
 
 # Import existing components for integration
 try:
@@ -1388,6 +1389,69 @@ class CryptoSMCEngine:
                 for symbol in self.crypto_symbols
             }
         }
+
+# === NEW CRYPTO-NATIVE PATTERNS ===
+
+def confirm_imbalance(imb_ratio: float, min_ratio: float) -> bool:
+    # Order-book imbalance confirmation (top-of-book or L2)
+    return imb_ratio >= min_ratio
+
+def confirm_volume_surge(vol_ratio: float, min_ratio: float) -> bool:
+    return vol_ratio >= min_ratio
+
+def volatility_regime(atr_pct: float) -> str:
+    # atr_pct = ATR / price * 100
+    if atr_pct < 0.5: return "LOW"
+    if atr_pct < 1.5: return "NORMAL"
+    return "HIGH"
+
+def pattern_liquidation_sweep(symbol, candles, liq_stats, ob_imbalance, bias_dir) -> Optional[Tuple]:
+    """
+    Large wick coincident with liquidation cluster; entry on micro-OB retest.
+    base=80 (A-tier) but requires confirmations.
+    """
+    if len(candles) < 5: return None
+    c = candles[-1]
+    rng = c.h - c.l if hasattr(c, 'h') else c.high - c.low
+    if rng <= 0: return None
+    
+    # Handle both CryptoCandle and dict formats
+    if hasattr(c, 'h'):
+        wick_up = c.h - max(c.o, c.c)
+        wick_dn = min(c.o, c.c) - c.l
+    else:
+        wick_up = c.high - max(c.open, c.close)  
+        wick_dn = min(c.open, c.close) - c.low
+        
+    liq_total = liq_stats.get("total", 0.0)
+
+    # thresholds (USD) by symbol
+    LIQ_MIN = {"BTCUSD": 3e6, "ETHUSD": 1e6}.get(symbol, 3e5)
+    IMB_MIN = 1.3  # 1.3x imbalance skew
+
+    if liq_total < LIQ_MIN: return None
+    if bias_dir == "BUY" and wick_dn >= 0.35*rng and ob_imbalance >= IMB_MIN:
+        entry = (c.l + min(c.o, c.c)) / 2.0 if hasattr(c, 'l') else (c.low + min(c.open, c.close)) / 2.0
+        return ("BUY", entry, {"pattern":"LIQ_SWEEP", "base":80})
+    if bias_dir == "SELL" and wick_up >= 0.35*rng and ob_imbalance >= IMB_MIN:
+        entry = (c.h + max(c.o, c.c)) / 2.0 if hasattr(c, 'h') else (c.high + max(c.open, c.close)) / 2.0
+        return ("SELL", entry, {"pattern":"LIQ_SWEEP", "base":80})
+    return None
+
+def pattern_funding_flip_trap(symbol, funding_rate, last_flip_ts, minutes_since_flip, bias_dir):
+    """
+    Funding extremes or recent flip → contrarian trap near levels.
+    base=74; bonus if flip <30m ago.
+    """
+    ext = abs(funding_rate) >= 0.03  # 3% / 8h equivalent extreme; tune by venue
+    recent = minutes_since_flip <= 30
+    if not (ext or recent): return None
+    # Directional bias: if funding very positive -> look for SELL traps; negative -> BUY traps
+    if funding_rate > 0 and bias_dir == "SELL":
+        return ("SELL", None, {"pattern":"FUNDING_TRAP", "base":74, "recent_flip": recent})
+    if funding_rate < 0 and bias_dir == "BUY":
+        return ("BUY", None, {"pattern":"FUNDING_TRAP", "base":74, "recent_flip": recent})
+    return None
 
 # Global instance for integration
 crypto_smc_engine = CryptoSMCEngine()

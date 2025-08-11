@@ -106,8 +106,8 @@ async def bot_command(update, context):
 ### Tier Levels
 1. **PRESS_PASS** - 7-day trial with full features
 2. **NIBBLER** - Basic paid tier ($39/mo)
-3. **FANG** - Advanced tier ($89/mo)
-4. **COMMANDER** - Elite tier ($189/mo)
+3. **FANG** - Advanced tier ($79/mo)
+4. **COMMANDER** - Elite tier ($139/mo)
 
 ### Tier Upgrades
 ```python

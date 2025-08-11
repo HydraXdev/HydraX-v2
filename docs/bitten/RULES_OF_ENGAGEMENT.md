@@ -91,8 +91,8 @@ Last Updated: 2025-01-04
 | Tier | Price | Daily Shots | CHAINGUN | AUTO-FIRE | STEALTH |
 |------|-------|-------------|----------|-----------|---------|
 | NIBBLER | $39 | 6 | ❌ | ❌ | ❌ |
-| FANG | $89 | 8-10 | ✅ | ❌ | ❌ |
-| COMMANDER | $189 | ∞ | ✅ | ✅ | ✅ |
+| FANG | $79 | 8-10 | ✅ | ❌ | ❌ |
+| COMMANDER | $139 | ∞ | ✅ | ✅ | ✅ |
 
 ---
 

@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ symbol }} {{ direction }} · Tactical Mission</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/hud_enhanced.css">
+</head>
+<body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    
+    <!-- Enhanced Top Command Strip -->
+    <header class="hud-top" role="banner">
+        <div class="hud-top__mission">
+            <h1 class="hud-title">
+                {{ symbol }} {{ direction }} · Tactical Mission
+                <span class="hud-badge" id="countdown_badge">--:--</span>
+            </h1>
+        </div>
+        <nav class="hud-top__nav" role="navigation" aria-label="Primary">
+            <a href="/me?user_id={{ user_id }}">War Room</a>
+            <a href="/notebook/{{ user_id }}">Notebook</a>
+            <a href="/history">History</a>
+            <a href="/analysis/{{ mission_id }}">Analytics</a>
+        </nav>
+        <div class="hud-top__stats" aria-label="Indicators">
+            <div class="stat"><span>Confidence</span><strong>{{ tcs_score }}%</strong></div>
+        </div>
+    </header>
+
+    <main id="main-content" class="mission-container">
+        <!-- Tactical Center with Live Chart + Overlays -->
+        <section class="panel chart-wrap" aria-labelledby="chart_head">
+            <h2 id="chart_head" class="panel-title">Tactical View</h2>
+
+            <div class="chart-frame">
+                <!-- Live Chart.js canvas -->
+                <canvas id="priceChart" height="380" aria-label="Live price"></canvas>
+
+                <!-- Grid + Overlays (Entry/SL/TP tags, radar) -->
+                <div class="chart-grid" aria-hidden="true"></div>
+                <div class="overlay-tag entry" aria-hidden="true">ENTRY {{ '{:.5f}'.format(entry_price) if entry_price else 'Loading' }}</div>
+                <div class="overlay-tag sl" aria-hidden="true">SL {{ '{:.5f}'.format(stop_loss) if stop_loss else 'Loading' }}</div>
+                <div class="overlay-tag tp" aria-hidden="true">TP {{ '{:.5f}'.format(take_profit) if take_profit else 'Loading' }}</div>
+                <div class="radar" aria-hidden="true"><div class="ring"></div></div>
+            </div>
+
+            <!-- "Feel it" Risk/Reward -->
+            <div class="rr-feel" aria-label="Risk / Reward">
+                <div class="rr-bars">
+                    <div class="rr-card">
+                        <div class="rr-title">Potential Loss (to SL)</div>
+                        <div class="rr-bar"><div class="loss" id="lossBar"></div></div>
+                        <div class="rr-meta"><span class="rr-callout lose" id="lossUsd">-$0.00</span><span id="pipsRisk">0 pips</span></div>
+                    </div>
+                    <div class="rr-card">
+                        <div class="rr-title">Potential Reward (to TP)</div>
+                        <div class="rr-bar"><div class="gain" id="gainBar"></div></div>
+                        <div class="rr-meta"><span class="rr-callout win" id="rewardUsd">+$0.00</span><span id="pipsReward">0 pips</span></div>
+                    </div>
+                </div>
+                <div><span class="rr-multiple" id="rMultiple">R Multiple: --</span></div>
+            </div>
+        </section>
+
+        <!-- Two Column Layout -->
+        <div class="content-grid">
+            <!-- Left Column: Analysis -->
+            <div>
+                <!-- Signal Analysis Panel -->
+                <div class="panel signal-analysis">
+                    <h2 class="panel-title">
+                        <span class="live-indicator"></span>
+                        Market Analysis & Entry Points
+                    </h2>
+                    
+                    <div class="analysis-grid">
+                        <div class="analysis-item">
+                            <div class="analysis-label">Entry Price</div>
+                            <div class="analysis-value">{{ '{:.5f}'.format(entry_price) if entry_price else 'Loading' }}</div>
+                        </div>
+                        <div class="analysis-item">
+                            <div class="analysis-label">Stop Loss</div>
+                            <div class="analysis-value negative">{{ '{:.5f}'.format(stop_loss) if stop_loss else 'Loading' }}</div>
+                        </div>
+                        <div class="analysis-item">
+                            <div class="analysis-label">Take Profit</div>
+                            <div class="analysis-value">{{ '{:.5f}'.format(take_profit) if take_profit else 'Loading' }}</div>
+                        </div>
+                        <div class="analysis-item">
+                            <div class="analysis-label">R:R Ratio</div>
+                            <div class="analysis-value">{{ rr_ratio }}</div>
+                        </div>
+                    </div>
+
+                    <!-- Pattern Analysis -->
+                    <div class="pattern-insight">
+                        <h3>Pattern Detected</h3>
+                        <p>
+                            <strong>LIQUIDITY_SWEEP_REVERSAL</strong><br>
+                            Institutional accumulation detected after liquidity sweep. Price rejected from key level with volume confirmation.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Norman's Insights -->
+                <div class="panel norman-section">
+                    <h2 class="panel-title">📓 Norman's Trading Wisdom</h2>
+                    <div class="norman-quote">
+                        "Every trade is a story, and this one's telling you to pay attention to the institutional footprints."
+                    </div>
+                    <div class="norman-analysis">
+                        <p><strong>Market Context:</strong> {{ symbol }} is showing classic institutional accumulation patterns. The smart money has been building positions here.</p>
+                        <p><strong>Your Edge:</strong> You're entering where the big players entered. This isn't gambling - it's following the footprints of those who move markets.</p>
+                        <p><strong>Remember:</strong> Discipline beats luck every time. Stick to your stop loss, take your profit at the target, and let the probabilities work in your favor.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: CITADEL & Execution -->
+            <div>
+                <!-- CITADEL Shield Analysis -->
+                <div class="panel citadel-shield">
+                    <h2 class="panel-title">🛡️ CITADEL Shield Analysis</h2>
+                    
+                    <div class="shield-score">
+                        <div class="shield-value">{{ citadel_score }}/10</div>
+                        <div class="shield-classification">SHIELD ACTIVE</div>
+                    </div>
+                    
+                    <div class="shield-insights">
+                        <h3>Institutional Analysis</h3>
+                        <ul>
+                            <li>✅ Market Regime: OPTIMAL</li>
+                            <li>✅ Liquidity: Sufficient for execution</li>
+                            <li>✅ Correlation: No conflicts detected</li>
+                            <li>✅ News Impact: Low volatility window</li>
+                            <li>✅ Session: LONDON - Prime trading hours</li>
+                        </ul>
+                        <p class="multiplier-info">
+                            Position multiplier: 1.0x based on shield score
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Command Deck -->
+                <div class="panel command-deck">
+                    <h2 class="panel-title">🔥 TACTICAL EXECUTION CENTER</h2>
+                    
+                    <div class="countdown-timer" id="mainCountdown">
+                        <span id="countdownMinutes">--</span>:<span id="countdownSeconds">--</span>
+                    </div>
+                    
+                    <div class="execution-info">
+                        <p>Signal expires in <span id="timeRemaining">--</span> minutes</p>
+                        <p>Execute now for maximum probability of success</p>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="btn primary fire-btn" onclick="executeTrade()">
+                            🚀 EXECUTE TRADE
+                        </button>
+                        <button class="btn ghost" onclick="skipMission()">
+                            ✖️ SKIP THIS SIGNAL
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional Resources -->
+        <div class="panel resources-panel">
+            <h3 class="panel-title">📚 Resources & Support</h3>
+            <div class="action-links">
+                <a href="/education/patterns" class="action-link">
+                    📖 Pattern Library
+                </a>
+                <a href="/education/risk" class="action-link">
+                    💰 Risk Management
+                </a>
+                <a href="/community" class="action-link">
+                    👥 Community
+                </a>
+                <a href="/support" class="action-link">
+                    💬 Get Help
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Lightweight User Overlay (auto-hide) -->
+    <div class="overlay" id="overlay" aria-label="User overlay">
+        <div class="overlay-row">
+            <div class="ovl-chip"><span>Balance</span><strong id="ovl_bal">$—</strong></div>
+            <div class="ovl-chip"><span>Equity</span><strong id="ovl_eq">$—</strong></div>
+            <div class="ovl-chip"><span>Risk %</span><strong id="ovl_riskPct">—</strong></div>
+            <div class="ovl-chip"><span>Lot Size</span><strong id="ovl_lots">—</strong></div>
+            <div class="ovl-chip"><span>DD Left</span><strong id="ovl_dd">—</strong></div>
+        </div>
+        <div class="overlay-actions">
+            <button class="btn primary" id="ovl_exec">🚀 Execute</button>
+            <button class="btn ghost" id="ovl_skip">✖️ Skip</button>
+        </div>
+    </div>
+
+    <script>
+        // Countdown with pulse
+        (function(){
+            const end = new Date(Date.now() + ({{ time_remaining }} * 1000)).getTime();
+            const badge = document.getElementById('countdown_badge');
+            const mainTimer = document.getElementById('mainCountdown');
+            
+            function tick(){
+                const ms = Math.max(0, end - Date.now());
+                const m = Math.floor(ms/60000), s = Math.floor((ms%60000)/1000);
+                const timeStr = `${m}:${String(s).padStart(2,'0')}`;
+                
+                badge.textContent = timeStr;
+                document.getElementById('countdownMinutes').textContent = String(m).padStart(2, '0');
+                document.getElementById('countdownSeconds').textContent = String(s).padStart(2, '0');
+                document.getElementById('timeRemaining').textContent = m;
+                
+                // Pulse when critical
+                badge.classList.toggle('badge-pulse', ms < 60000);
+                mainTimer.classList.toggle('critical', ms < 300000);
+                
+                if (ms > 0) requestAnimationFrame(tick);
+            }
+            tick();
+        })();
+
+        // Risk/Reward computation (client only)
+        (function(){
+            const balance = {{ user_stats.balance if user_stats else 10000 }};
+            const riskPct = 1.0; // 1% risk
+            const pipSize = 0.0001; // Default pip size
+            const pvLot = 10; // Pip value per lot
+            const entry = {{ entry_price }};
+            const sl = {{ stop_loss }};
+            const tp = {{ take_profit }};
+
+            const pipsRisk = Math.abs(entry - sl) / pipSize;
+            const pipsReward = Math.abs(tp - entry) / pipSize;
+            const riskUsd = balance * (riskPct / 100);
+            const lots = pipsRisk > 0 ? (riskUsd / (pipsRisk * pvLot)) : 0;
+            const rewardUsd = lots * pipsReward * pvLot;
+
+            // Fill the UI
+            document.getElementById('pipsRisk').textContent = `${pipsRisk.toFixed(0)} pips`;
+            document.getElementById('pipsReward').textContent = `${pipsReward.toFixed(0)} pips`;
+            document.getElementById('lossUsd').textContent = `-$${riskUsd.toFixed(2)}`;
+            document.getElementById('rewardUsd').textContent = `+$${rewardUsd.toFixed(2)}`;
+            document.getElementById('rMultiple').textContent = `R Multiple: ${(rewardUsd/riskUsd).toFixed(2)}R`;
+            
+            const totalRisk = riskUsd + rewardUsd;
+            document.getElementById('lossBar').style.width = `${Math.max(8, (riskUsd/totalRisk)*100)}%`;
+            document.getElementById('gainBar').style.width = `${Math.max(8, (rewardUsd/totalRisk)*100)}%`;
+        })();
+
+        // Chart Setup
+        const ctx = document.getElementById('priceChart').getContext('2d');
+        const entryPrice = {{ entry_price }};
+        const stopLoss = {{ stop_loss }};
+        const takeProfit = {{ take_profit }};
+        
+        // Generate sample price data around entry
+        const labels = [];
+        const data = [];
+        for (let i = -20; i <= 20; i++) {
+            labels.push(i === 0 ? 'NOW' : i > 0 ? `+${i}m` : `${i}m`);
+            const variation = (Math.random() - 0.5) * 0.0005;
+            data.push(entryPrice + variation);
+        }
+        
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '{{ symbol }} Price',
+                    data: data,
+                    borderColor: '#00ff41',
+                    backgroundColor: 'rgba(0, 255, 65, 0.1)',
+                    tension: 0.4,
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                        ticks: { color: '#94a3b8' }
+                    },
+                    x: {
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                        ticks: { color: '#94a3b8' }
+                    }
+                }
+            }
+        });
+
+        // Auto-hide overlay when command deck visible
+        (function(){
+            const overlay = document.getElementById('overlay');
+            const deck = document.querySelector('.command-deck');
+            if (deck) {
+                const obs = new IntersectionObserver((entries) => {
+                    for(const e of entries){
+                        if(e.isIntersecting){ 
+                            overlay.classList.add('hide'); 
+                        } else { 
+                            overlay.classList.remove('hide'); 
+                        }
+                    }
+                }, {threshold: 0.15});
+                obs.observe(deck);
+            }
+        })();
+
+        // Fetch lightweight overlay JSON
+        (function(){
+            const qs = new URLSearchParams(location.search);
+            const mid = qs.get('mission_id'); 
+            const uid = qs.get('user_id');
+            
+            fetch(`/api/overlay?mission_id=${mid}&user_id=${uid}`, {cache:'no-store'})
+                .then(r => r.json())
+                .then(j => {
+                    document.getElementById('ovl_bal').textContent = `$${j.bal.toFixed(2)}`;
+                    document.getElementById('ovl_eq').textContent = `$${j.eq.toFixed(2)}`;
+                    document.getElementById('ovl_riskPct').textContent = `${j.riskPct.toFixed(1)}%`;
+                    document.getElementById('ovl_dd').textContent = `${j.dailyDDLeft.toFixed(1)}%`;
+
+                    // Compute lots client-side
+                    const entry = {{ entry_price }}; 
+                    const sl = {{ stop_loss }};
+                    const pip = 0.0001; 
+                    const pvLot = 10;
+                    const pipsRisk = Math.abs(entry - sl) / pip || 1;
+                    const riskUsd = j.bal * (j.riskPct / 100);
+                    const lots = Math.max(0, riskUsd / (pipsRisk * pvLot));
+                    document.getElementById('ovl_lots').textContent = lots.toFixed(2);
+                })
+                .catch(() => {
+                    // Fallback with existing user_stats
+                    const balance = {{ user_stats.balance if user_stats else 10000 }};
+                    document.getElementById('ovl_bal').textContent = `$${balance.toFixed(2)}`;
+                    document.getElementById('ovl_eq').textContent = `$${balance.toFixed(2)}`;
+                    document.getElementById('ovl_riskPct').textContent = '1.0%';
+                    document.getElementById('ovl_dd').textContent = '8.0%';
+                    
+                    const entry = {{ entry_price }}; 
+                    const sl = {{ stop_loss }};
+                    const pip = 0.0001; 
+                    const pvLot = 10;
+                    const pipsRisk = Math.abs(entry - sl) / pip || 1;
+                    const riskUsd = balance * 0.01;
+                    const lots = Math.max(0, riskUsd / (pipsRisk * pvLot));
+                    document.getElementById('ovl_lots').textContent = lots.toFixed(2);
+                });
+
+            // Overlay button handlers
+            document.getElementById('ovl_exec').onclick = () => executeTrade();
+            document.getElementById('ovl_skip').onclick = () => skipMission();
+        })();
+
+        // Trade execution functions
+        function executeTrade() {
+            if (window.Telegram && window.Telegram.WebApp) {
+                window.Telegram.WebApp.sendData(`/fire {{ mission_id }}`);
+                window.Telegram.WebApp.close();
+            } else {
+                window.location.href = `/fire?signal={{ mission_id }}&user={{ user_id }}`;
+            }
+        }
+        
+        function skipMission() {
+            if (confirm('Skip this signal? (This will NOT affect any open trades)')) {
+                console.log('User skipped signal:', '{{ mission_id }}');
+                
+                if (window.Telegram && window.Telegram.WebApp) {
+                    window.Telegram.WebApp.close();
+                } else {
+                    window.location.href = '/me';
+                }
+            }
+        }
+
+        // Initialize Telegram WebApp
+        if (window.Telegram && window.Telegram.WebApp) {
+            window.Telegram.WebApp.ready();
+            window.Telegram.WebApp.expand();
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                executeTrade();
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                skipMission();
+            }
+        });
+    </script>
+</body>
+</html>

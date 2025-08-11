@@ -4,7 +4,7 @@
     "bridge_port": 9100,
     "account": {
       "login": "843859",
-      "password": "Ao4@brz64erHaG",
+      "password": os.getenv("BOT_TOKEN"),
       "server": "Coinexx-Demo",
       "assigned_to": "test_presspass_12345",
       "assigned_at": "2025-07-16T20:41:56.935789",

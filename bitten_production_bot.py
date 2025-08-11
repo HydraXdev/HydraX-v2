@@ -28,6 +28,16 @@ import uuid
 sys.path.append('/root/HydraX-v2/src')
 sys.path.append('/root/HydraX-v2')
 
+# Import shared utilities
+from hydrax_utils import (
+    EXEC, HTTP, http_get_bg, http_post_bg,
+    send_with_retry, safe_send_message, safe_edit_message_text,
+    rate_limited, admin_only, ADMIN_IDS,
+    atomic_write_json, locked_load_json,
+    run_later, _handle_shutdown_factory, SHUTDOWN,
+    measure_latency, cleanup_old_files
+)
+
 # Import configuration loader
 from config_loader import get_bot_token, get_logging_config, validate_required_config
 
@@ -79,151 +89,7 @@ except ImportError:
     def bit_welcome(tier="NIBBLER"): return "Welcome to BITTEN."
     def bit_daily_wisdom(): return "Market analysis in progress..."
 
-# === HydraX hardening helpers (inserted by refactor) ===
-import signal as sig_module
-import tempfile
-import fcntl
-from concurrent.futures import ThreadPoolExecutor
-from collections import deque, defaultdict
-
-try:
-    from urllib3.util.retry import Retry
-    from requests.adapters import HTTPAdapter
-except Exception:
-    pass
-
-try:
-    from telebot.apihelper import ApiException
-except Exception:
-    class ApiException(Exception):
-        result_json = {}
-
-# Shared executor for offloading blocking IO
-EXEC = globals().get("EXEC") or ThreadPoolExecutor(max_workers=8)
-
-def http_session():
-    s = requests.Session()
-    retry = Retry(
-        total=5,
-        backoff_factor=0.5,
-        status_forcelist=(429, 500, 502, 503, 504),
-        allowed_methods=frozenset(['GET','POST','PUT','DELETE','PATCH'])
-    )
-    s.mount("https://", HTTPAdapter(max_retries=retry))
-    s.mount("http://", HTTPAdapter(max_retries=retry))
-    s.headers.update({"User-Agent": "HydraXBot/1.0"})
-    return s
-
-HTTP = http_session() if requests else None
-
-def http_post_bg(url, **kwargs):
-    kwargs.setdefault("timeout", 10)
-    return EXEC.submit(HTTP.post, url, **kwargs)
-
-def http_get_bg(url, **kwargs):
-    kwargs.setdefault("timeout", 10)
-    return EXEC.submit(HTTP.get, url, **kwargs)
-
-# Backoff-aware Telegram send/edit (FloodWait)
-def send_with_retry(fn, max_attempts=5, base=1.0, **kwargs):
-    attempt = 0
-    while True:
-        try:
-            return fn(**kwargs)
-        except ApiException as e:
-            attempt += 1
-            data = getattr(e, "result_json", {}) or {}
-            params = data.get("parameters") or {}
-            retry_after = params.get("retry_after")
-            if retry_after:
-                time.sleep(min(60, float(retry_after)))
-            elif attempt < max_attempts:
-                time.sleep(min(30, base * (2 ** (attempt - 1))))
-            else:
-                raise
-
-def safe_send_message(bot, chat_id, text, **kwargs):
-    return send_with_retry(lambda **kw: bot.send_message(**kw), chat_id=chat_id, text=text, **kwargs)
-
-def safe_edit_message_text(bot, chat_id, message_id, text, **kwargs):
-    return send_with_retry(lambda **kw: bot.edit_message_text(**kw),
-                           chat_id=chat_id, message_id=message_id, text=text, **kwargs)
-
-# Per-user rate limiting
-RATE_BUCKET = defaultdict(lambda: deque(maxlen=10))
-RATE_WINDOW = 10  # seconds
-RATE_LIMIT = 5    # max events per window
-
-def allow_user(user_id):
-    now = time.time()
-    dq = RATE_BUCKET[user_id]
-    while dq and now - dq[0] > RATE_WINDOW:
-        dq.popleft()
-    if len(dq) >= RATE_LIMIT:
-        return False
-    dq.append(now)
-    return True
-
-def rate_limited(bot):
-    def deco(fn):
-        def wrapper(message, *a, **kw):
-            uid = getattr(getattr(message, "from_user", None), "id", 0)
-            if not allow_user(uid):
-                try:
-                    bot.reply_to(message, "Slow down a bit ⚠️")
-                except Exception:
-                    pass
-                return
-            return fn(message, *a, **kw)
-        return wrapper
-    return deco
-
-# Admin-only via env
-ADMIN_IDS = {int(x) for x in os.getenv("ADMIN_IDS","7176191872").split(",") if x.strip().isdigit()}
-
-def admin_only(bot):
-    def deco(fn):
-        def wrapper(message, *a, **kw):
-            uid = getattr(getattr(message, "from_user", None), "id", 0)
-            if uid not in ADMIN_IDS:
-                try:
-                    bot.reply_to(message, "Admin only.")
-                except Exception:
-                    pass
-                return
-            return fn(message, *a, **kw)
-        return wrapper
-    return deco
-
-# Atomic JSON persistence helpers
-def atomic_write_json(path, data):
-    dir_ = os.path.dirname(path) or "."
-    fd, tmp = tempfile.mkstemp(prefix=".tmp-", dir=dir_)
-    try:
-        with os.fdopen(fd, "w") as f:
-            f.write(json.dumps(data, ensure_ascii=False, separators=(",",":")))
-            f.flush()
-            os.fsync(f.fileno())
-        os.replace(tmp, path)
-    finally:
-        try: os.remove(tmp)
-        except FileNotFoundError: pass
-
-def locked_load_json(path, default=None):
-    default = default or {}
-    try:
-        with open(path, "r") as f:
-            try:
-                fcntl.flock(f, fcntl.LOCK_SH)
-                data = json.load(f)
-                fcntl.flock(f, fcntl.LOCK_UN)
-            except Exception:
-                data = json.load(f)
-            return data
-    except FileNotFoundError:
-        return default
-
-# Non-blocking ZMQ recv guard
+# Non-blocking ZMQ recv guard (keep local since ZMQ-specific)
 def safe_recv(sock):
     try:
         return sock.recv_string(flags=zmq.NOBLOCK)
@@ -231,31 +97,6 @@ def safe_recv(sock):
         return None
     except Exception:
         return None
-
-# Schedule helper to avoid time.sleep in handlers
-def run_later(delay_sec, fn, *args, **kwargs):
-    t = threading.Timer(delay_sec, fn, args=args, kwargs=kwargs)
-    t.daemon = True
-    t.start()
-    return t
-
-# Graceful shutdown plumbing
-SHUTDOWN = False
-def _handle_shutdown_factory(bot, exec_):
-    def handle_shutdown(sig, frame):
-        global SHUTDOWN
-        SHUTDOWN = True
-        try:
-            bot.stop_polling()
-        except Exception:
-            pass
-        try:
-            exec_.shutdown(wait=True)
-        except Exception:
-            pass
-        os._exit(0)
-    return handle_shutdown
-# === end helpers ===
 
 # Import mission generator
 try:
@@ -769,14 +610,28 @@ class BittenProductionBot:
         """Setup all command handlers"""
         
         @self.bot.message_handler(commands=["status", "mode", "ping", "help", "fire", "force_signal", "venom_scan", "ghosted", "slots", "presspass", "menu", "drill", "weekly", "tactics", "recruit", "credits", "connect", "notebook", "journal", "notes"])
+        @measure_latency(self.bot, label_fn=lambda m: f"cmd:{m.text.split()[0] if m.text else 'unknown'}")
         @rate_limited(self.bot)  # HYDRAX: Rate limiting
         def handle_telegram_commands(message):
             uid = str(message.from_user.id)
             user_name = message.from_user.first_name or "Operative"
             
-            # Get user tier for personality system
-            user_config = AUTHORIZED_USERS.get(uid, {})
-            user_tier = user_config.get("tier", "NIBBLER")
+            # Get user tier from central database
+            user_tier = "NIBBLER"  # Default tier
+            try:
+                from src.bitten_core.central_user_manager import get_central_user_manager
+                user_mgr = get_central_user_manager()
+                user_data = user_mgr.get_complete_user(int(uid))
+                if user_data:
+                    user_tier = user_data.get('tier', 'NIBBLER')
+                else:
+                    # User doesn't exist yet - will be created on /start
+                    user_tier = "PRESS_PASS"
+            except Exception as e:
+                logger.warning(f"Could not get user tier from central DB: {e}")
+                # Fallback to AUTHORIZED_USERS if central DB fails
+                user_config = AUTHORIZED_USERS.get(uid, {})
+                user_tier = user_config.get("tier", "NIBBLER")
             
             try:
                 if message.text == "/status":
@@ -812,124 +667,180 @@ class BittenProductionBot:
                     ping_msg = f"🛰️ Pong. BITTEN is online and synced.\n⏰ {datetime.now().strftime('%H:%M:%S UTC')}"
                     self.send_adaptive_response(message.chat.id, ping_msg, user_tier, "ping_check")
                 
-                elif message.text == "/help":
-                    help_msg = self.get_help_message(uid)
-                    self.send_adaptive_response(message.chat.id, help_msg, user_tier, "help_request")
-                
-                elif message.text.startswith("/start"):
-                    # Enhanced cinematic onboarding experience
-                    parts = message.text.split()
-                    
-                    # Check for new user onboarding
+                elif message.text == "/menu" or message.text == "/help":
+                    # Show interactive menu instead of text help
                     try:
-                        from src.bitten_core.onboarding_cinematic import cinematic_onboarding
-                        from src.bitten_core.enhanced_personality_system import enhanced_personalities
+                        from src.bitten_core.menu_system import get_menu_system
+                        from src.bitten_core.central_user_manager import get_central_user_manager
+                        
+                        menu_sys = get_menu_system()
+                        user_mgr = get_central_user_manager()
+                        
+                        # Get user data for tier
+                        user_data = user_mgr.get_complete_user(int(uid))
+                        if user_data:
+                            user_tier = user_data.get('tier', 'PRESS_PASS')
+                        
+                        # Get main menu
+                        msg, keyboard = menu_sys.get_main_menu(int(uid), user_tier)
+                        
+                        # Send with keyboard
+                        safe_send_message(self.bot,
+                            chat_id=message.chat.id,
+                            text=msg,
+                            parse_mode='Markdown',
+                            reply_markup=keyboard
+                        )
+                        logger.info(f"Showed main menu to user {uid}")
+                        
+                    except Exception as e:
+                        logger.error(f"Menu error: {e}")
+                        # Fallback to text help
+                        help_msg = self.get_help_message(uid)
+                        self.send_adaptive_response(message.chat.id, help_msg, user_tier, "help_request")
+                
+                elif message.text.startswith("/callsign"):
+                    # Handle callsign command
+                    try:
+                        from src.bitten_core.callsign_manager import get_callsign_manager
                         from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
                         
-                        # Check if user is truly new (no XP)
-                        user_stats = self.get_user_stats(uid)
-                        is_new_user = user_stats.get('total_xp', 0) == 0
+                        callsign_mgr = get_callsign_manager()
+                        parts = message.text.split(maxsplit=1)
                         
-                        if is_new_user and len(parts) == 1:
-                            # New user with no referral code - cinematic experience
-                            welcome_msg, keyboard_data = cinematic_onboarding.get_onboarding_message(uid, "welcome")
+                        if len(parts) == 1:
+                            # No callsign provided - show current or suggestions
+                            current_callsign = callsign_mgr.get_callsign_or_default(int(uid))
+                            can_set, reason = callsign_mgr.can_set_callsign(int(uid))
                             
-                            if keyboard_data:
-                                keyboard = InlineKeyboardMarkup()
-                                for row in keyboard_data.get('inline_keyboard', []):
-                                    buttons = [InlineKeyboardButton(text=btn['text'], callback_data=btn['callback_data']) for btn in row]
-                                    keyboard.row(*buttons)
-                                # HYDRAX: Safe send wrapper
+                            if not can_set:
+                                msg = f"**Current Identity**: {current_callsign}\n\n{reason}"
+                            else:
+                                # Generate suggestions
+                                suggestions = callsign_mgr.generate_suggestions(int(uid))
+                                
+                                msg = f"""🎮 **CALLSIGN SELECTION**
+                                
+Your current identity: **{current_callsign}**
+
+Choose your battlefield identity! Your callsign will be displayed on leaderboards and in your squad.
+
+**Suggested Callsigns:**"""
+                                for suggestion in suggestions:
+                                    msg += f"\n• {suggestion}"
+                                
+                                msg += "\n\n**To set your callsign:**\n`/callsign YourChosenName`"
+                                msg += "\n\n_Callsigns can only be changed once per week._"
+                            
+                            self.send_adaptive_response(message.chat.id, msg, user_tier, "callsign_info")
+                        
+                        else:
+                            # Callsign provided - try to set it
+                            new_callsign = parts[1].strip()
+                            success, result_msg = callsign_mgr.set_callsign(int(uid), new_callsign)
+                            
+                            if success:
+                                # Add some flair to the success message
+                                full_msg = f"{result_msg}\n\n🎯 Your new identity is locked in. Time to dominate the battlefield!"
+                            else:
+                                full_msg = result_msg
+                            
+                            self.send_adaptive_response(message.chat.id, full_msg, user_tier, "callsign_set")
+                            
+                    except Exception as e:
+                        logger.error(f"Callsign command error: {e}")
+                        error_msg = "❌ Error processing callsign. Please try again."
+                        self.send_adaptive_response(message.chat.id, error_msg, user_tier, "callsign_error")
+                
+                elif message.text.startswith("/start"):
+                    # Use centralized onboarding flow for user management
+                    parts = message.text.split()
+                    
+                    # Extract referral code if present (/start REF_123456)
+                    referral_code = parts[1] if len(parts) > 1 else None
+                    
+                    # Get telegram user data
+                    telegram_data = {
+                        'username': message.from_user.username or '',
+                        'first_name': message.from_user.first_name or '',
+                        'last_name': message.from_user.last_name or '',
+                        'start_param': referral_code  # Pass referral code if present
+                    }
+                    
+                    # Use centralized onboarding flow
+                    try:
+                        from src.bitten_core.user_onboarding_flow import get_onboarding_flow
+                        onboarding = get_onboarding_flow()
+                        
+                        # Handle first contact (creates user if new)
+                        result = onboarding.handle_first_contact(int(uid), telegram_data)
+                        
+                        if result.get('is_new'):
+                            # New user created in central database with PRESS_PASS tier
+                            welcome_msg = result.get('message', 'Welcome to BITTEN!')
+                            
+                            # Show main menu for new users
+                            try:
+                                from src.bitten_core.menu_system import get_menu_system
+                                from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+                                
+                                menu_sys = get_menu_system()
+                                
+                                # Add welcome message with menu
+                                full_msg = welcome_msg + "\n\n📋 **Use the menu below to navigate:**"
+                                msg, keyboard = menu_sys.get_main_menu(int(uid), 'PRESS_PASS')
+                                
                                 safe_send_message(self.bot, 
                                     chat_id=message.chat.id,
-                                    text=welcome_msg,
+                                    text=full_msg,
                                     parse_mode='Markdown',
                                     reply_markup=keyboard
                                 )
-                            else:
-                                self.send_adaptive_response(message.chat.id, welcome_msg, user_tier, "cinematic_welcome")
+                            except:
+                                # Fallback to simple welcome
+                                self.send_adaptive_response(message.chat.id, welcome_msg, 'PRESS_PASS', "new_user_welcome")
                                 
-                            logger.info(f"New user {uid} started cinematic onboarding")
+                            logger.info(f"✅ New user {uid} created in central database with PRESS_PASS tier")
+                            return
+                        else:
+                            # Existing user - welcome back with menu
+                            welcome_msg = result.get('message', 'Welcome back to BITTEN!')
+                            user = result.get('user', {})
+                            current_tier = user.get('tier', 'PRESS_PASS')
+                            
+                            # Show menu for returning users
+                            try:
+                                from src.bitten_core.menu_system import get_menu_system
+                                menu_sys = get_menu_system()
+                                
+                                msg, keyboard = menu_sys.get_main_menu(int(uid), current_tier)
+                                full_msg = welcome_msg + "\n\n" + msg
+                                
+                                safe_send_message(self.bot,
+                                    chat_id=message.chat.id,
+                                    text=full_msg,
+                                    parse_mode='Markdown',
+                                    reply_markup=keyboard
+                                )
+                            except:
+                                self.send_adaptive_response(message.chat.id, welcome_msg, current_tier, "returning_user_welcome")
+                            
+                            logger.info(f"Returning user {uid} with tier {current_tier}")
                             return
                         
                     except Exception as e:
-                        logger.error(f"Cinematic onboarding error: {e}")
-                        # Continue with regular onboarding if cinematic fails
-                    
-                    # Handle referral codes and returning users
-                    if len(parts) > 1:
-                        # Referral code provided
-                        referral_code = parts[1]
-                        try:
-                            from src.bitten_core.credit_referral_system import get_credit_referral_system
-                            referral_system = get_credit_referral_system()
-                            
-                            if referral_system.use_referral_code(referral_code, uid):
-                                # Successful referral code usage
-                                welcome_msg = f"""🎉 **WELCOME TO BITTEN!**
-
-You've been referred by a fellow trader! 
-
-💰 **REFERRAL BONUS**: When you subscribe to any paid tier ($39+), your referrer will earn a $10 credit.
-
-🎯 **Ready to start tactical trading?**
-
-📋 **Next Steps:**
-• Use `/presspass` to get started with a 7-day trial
-• Use `/help` to see all available commands
-• Use `/tactical` to learn about trading strategies
-
-Welcome to the most tactical trading community! 🚀"""
-                                
-                                self.send_adaptive_response(message.chat.id, welcome_msg, user_tier, "referral_welcome")
-                                logger.info(f"User {uid} successfully used referral code {referral_code}")
-                            else:
-                                # Invalid/expired/duplicate referral code - normal welcome
-                                normal_welcome = f"""🎯 **WELCOME TO BITTEN!**
+                        logger.error(f"Centralized onboarding error: {e}")
+                        # Fallback to basic welcome if centralized system fails
+                        fallback_msg = """🎯 **WELCOME TO BITTEN!**
 
 Your tactical trading journey begins now!
 
 📋 **Get Started:**
-• Use `/presspass` for a 7-day free trial
 • Use `/help` to see all commands
-• Use `/tactical` to learn trading strategies
+• Use `/status` to check your stats
 
 Ready to dominate the markets? 🚀"""
-                                
-                                self.send_adaptive_response(message.chat.id, normal_welcome, user_tier, "normal_welcome")
-                                logger.info(f"User {uid} used invalid/expired referral code {referral_code}")
-                                
-                        except Exception as e:
-                            logger.error(f"Referral code processing error for user {uid}: {e}")
-                            # Fallback to normal welcome
-                            fallback_welcome = f"""🎯 **WELCOME TO BITTEN!**
-
-Your tactical trading journey begins now!
-
-📋 **Get Started:**
-• Use `/presspass` for a 7-day free trial
-• Use `/help` to see all commands
-• Use `/tactical` to learn trading strategies
-
-Ready to dominate the markets? 🚀"""
-                            
-                            self.send_adaptive_response(message.chat.id, fallback_welcome, user_tier, "fallback_welcome")
-                    else:
-                        # No referral code - normal welcome for returning users
-                        normal_welcome = f"""🎯 **WELCOME BACK TO BITTEN!**
-
-Your tactical trading journey continues!
-
-📋 **Quick Commands:**
-• Use `/status` to check your current stats
-• Use `/help` to see all commands
-• Use `/tactical` to review trading strategies
-• Use `/recruit` to get your own referral link
-
-Ready to dominate the markets? 🚀"""
-                        
-                        self.send_adaptive_response(message.chat.id, normal_welcome, user_tier, "normal_welcome")
-                        logger.info(f"Returning user {uid} used /start")
+                        self.send_adaptive_response(message.chat.id, fallback_msg, user_tier, "fallback_welcome")
                 
                 elif message.text == "/api":
                     # Fire Loop Validation System - API Status Command
@@ -1952,11 +1863,23 @@ Use `/help` for the complete command list."""
                 self.send_adaptive_response(message.chat.id, "❌ Command processing error. Please try again.", user_tier, "error")
         
         @self.bot.callback_query_handler(func=lambda call: call.data.startswith("mode_") or call.data.startswith("slots_") or call.data.startswith("semi_fire_") or call.data.startswith("menu_") or call.data.startswith("combat_") or call.data.startswith("field_") or call.data.startswith("tier_") or call.data.startswith("xp_") or call.data.startswith("help_") or call.data.startswith("tool_") or call.data.startswith("bot_") or call.data.startswith("notebook_") or call.data.startswith("onboard_"))
+        @measure_latency(self.bot, label_fn=lambda c: f"callback:{c.data.split('_')[0] if c.data else 'unknown'}")
         def handle_all_callbacks(call):
             """Handle all inline keyboard callbacks including fire mode and Intel Center"""
             user_id = str(call.from_user.id)
-            user_config = AUTHORIZED_USERS.get(user_id, {})
-            user_tier = user_config.get("tier", "NIBBLER")
+            
+            # Get user tier from central database
+            user_tier = "NIBBLER"  # Default tier
+            try:
+                from src.bitten_core.central_user_manager import get_central_user_manager
+                user_mgr = get_central_user_manager()
+                user_data = user_mgr.get_complete_user(int(user_id))
+                if user_data:
+                    user_tier = user_data.get('tier', 'NIBBLER')
+            except:
+                # Fallback to AUTHORIZED_USERS if central DB fails
+                user_config = AUTHORIZED_USERS.get(user_id, {})
+                user_tier = user_config.get("tier", "NIBBLER")
             
             try:
                 # Handle fire mode callbacks
@@ -1970,6 +1893,225 @@ Use `/help` for the complete command list."""
                         FireModeHandlers.handle_slots_callback(self.bot, call, user_tier)
                     elif call.data.startswith("semi_fire_"):
                         fire_mode_executor.handle_semi_fire_callback(self.bot, call)
+                
+                # Handle menu system callbacks
+                elif call.data.startswith("menu_") or call.data in ["menu_main", "cancel"]:
+                    from src.bitten_core.menu_system import get_menu_system
+                    from src.bitten_core.central_user_manager import get_central_user_manager
+                    
+                    menu_sys = get_menu_system()
+                    user_mgr = get_central_user_manager()
+                    
+                    # Get user data
+                    user_data = user_mgr.get_complete_user(int(user_id))
+                    if not user_data:
+                        user_data = {'tier': 'PRESS_PASS', 'callsign': 'Operative'}
+                    
+                    msg = ""
+                    keyboard = None
+                    
+                    # Route to appropriate menu
+                    if call.data == "menu_main" or call.data == "menu_refresh":
+                        msg, keyboard = menu_sys.get_main_menu(int(user_id), user_data.get('tier'))
+                    
+                    elif call.data == "menu_signals":
+                        msg, keyboard = menu_sys.get_signals_menu()
+                    
+                    elif call.data == "menu_fire_mode":
+                        # Get current fire mode
+                        from src.bitten_core.fire_mode_database import fire_mode_db
+                        user_mode = fire_mode_db.get_user_mode(user_id)
+                        current_mode = user_mode.get('mode', 'manual')
+                        msg, keyboard = menu_sys.get_fire_mode_menu(current_mode)
+                    
+                    elif call.data == "menu_profile":
+                        # Get full user stats
+                        stats = user_data.get('trading_stats', {})
+                        profile_data = {
+                            'callsign': user_data.get('profiles', {}).get('callsign', 'Not Set'),
+                            'tier': user_data.get('tier'),
+                            'total_trades': stats.get('total_trades', 0),
+                            'win_rate': stats.get('win_rate', 0)
+                        }
+                        msg, keyboard = menu_sys.get_profile_menu(profile_data)
+                    
+                    elif call.data == "menu_stats":
+                        stats = user_data.get('trading_stats', {})
+                        msg, keyboard = menu_sys.get_stats_menu(stats)
+                    
+                    elif call.data == "menu_learn":
+                        msg, keyboard = menu_sys.get_learn_menu()
+                    
+                    elif call.data == "menu_help":
+                        msg, keyboard = menu_sys.get_help_menu()
+                    
+                    elif call.data == "menu_squad":
+                        # Squad/referral menu
+                        msg = "🪖 **YOUR SQUAD**\n\nRecruit traders to your squad and earn rewards!"
+                        keyboard = menu_sys.get_back_button()
+                    
+                    elif call.data == "menu_leaderboard":
+                        # Show leaderboard
+                        msg = "🏆 **GLOBAL LEADERBOARD**\n\nTop traders this week:\n\n1. VenomStrike - 94.2% WR\n2. GhostAlpha - 92.1% WR\n3. ThunderBolt - 89.7% WR"
+                        keyboard = menu_sys.get_back_button()
+                    
+                    elif call.data == "menu_settings":
+                        msg = "⚙️ **SETTINGS**\n\nCustomize your trading experience"
+                        keyboard = menu_sys.get_back_button()
+                    
+                    elif call.data == "menu_upgrade":
+                        msg = """⭐ **UPGRADE YOUR TIER**
+
+**Current Tier:** PRESS PASS (Free)
+
+🔰 **NIBBLER** - $39/month
+• 6 trades/day (vs 3)
+• 3 positions (vs 1)
+• Custom callsign
+• Instant signals
+• Referral earnings
+
+⚔️ **FANG** - $79/month  
+• 10 trades/day
+• 6 positions
+• SNIPER signals (1:2 RR)
+• Semi-auto mode
+• 8.5% loss protection
+
+👑 **COMMANDER** - $139/month
+• 20 trades/day
+• 10 positions
+• Full automation
+• Priority execution
+• 10% loss protection
+
+Upgrade at: https://bitten.trading/upgrade"""
+                        keyboard = menu_sys.get_back_button()
+                    
+                    elif call.data == "menu_warroom":
+                        # Generate war room link
+                        war_room_url = f"https://134.199.204.67:8888/me?user_id={user_id}"
+                        msg = f"🎖️ **WAR ROOM ACCESS**\n\nYour personal command center is ready!\n\n[Open War Room]({war_room_url})"
+                        keyboard = menu_sys.get_back_button()
+                    
+                    elif call.data == "cancel":
+                        msg = "❌ Action cancelled"
+                        keyboard = menu_sys.get_back_button()
+                    
+                    # Update message if we have content
+                    if msg and keyboard:
+                        safe_edit_message_text(
+                            self.bot,
+                            text=msg,
+                            chat_id=call.message.chat.id,
+                            message_id=call.message.message_id,
+                            parse_mode='Markdown',
+                            reply_markup=keyboard,
+                            disable_web_page_preview=True
+                        )
+                        self.bot.answer_callback_query(call.id, "✅")
+                
+                # Handle profile submenu callbacks
+                elif call.data.startswith("profile_"):
+                    from src.bitten_core.menu_system import get_menu_system
+                    from src.bitten_core.callsign_manager import get_callsign_manager
+                    
+                    menu_sys = get_menu_system()
+                    callsign_mgr = get_callsign_manager()
+                    
+                    if call.data == "profile_callsign":
+                        # Show callsign menu
+                        current = callsign_mgr.get_callsign_or_default(int(user_id))
+                        suggestions = callsign_mgr.generate_suggestions(int(user_id))
+                        msg, keyboard = menu_sys.get_callsign_menu(current, suggestions)
+                        
+                        safe_edit_message_text(
+                            self.bot,
+                            text=msg,
+                            chat_id=call.message.chat.id,
+                            message_id=call.message.message_id,
+                            parse_mode='Markdown',
+                            reply_markup=keyboard
+                        )
+                        self.bot.answer_callback_query(call.id, "Choose your callsign")
+                
+                # Handle callsign selection
+                elif call.data.startswith("callsign_"):
+                    from src.bitten_core.callsign_manager import get_callsign_manager
+                    from src.bitten_core.menu_system import get_menu_system
+                    
+                    callsign_mgr = get_callsign_manager()
+                    menu_sys = get_menu_system()
+                    
+                    if call.data.startswith("callsign_set_"):
+                        # Extract callsign from callback data
+                        new_callsign = call.data.replace("callsign_set_", "")
+                        success, msg = callsign_mgr.set_callsign(int(user_id), new_callsign)
+                        
+                        if success:
+                            response = f"✅ {msg}\n\nYour new identity is set!"
+                        else:
+                            response = f"❌ {msg}"
+                        
+                        keyboard = menu_sys.get_back_button("menu_profile")
+                        safe_edit_message_text(
+                            self.bot,
+                            text=response,
+                            chat_id=call.message.chat.id,
+                            message_id=call.message.message_id,
+                            parse_mode='Markdown',
+                            reply_markup=keyboard
+                        )
+                        self.bot.answer_callback_query(call.id, "✅" if success else "❌")
+                    
+                    elif call.data == "callsign_custom":
+                        # Tell user to use the /callsign command
+                        msg = "✍️ **CUSTOM CALLSIGN**\n\nTo set a custom callsign, type:\n`/callsign YourChosenName`\n\nRules:\n• 3-20 characters\n• Letters, numbers, underscore, hyphen only\n• No offensive content"
+                        keyboard = menu_sys.get_back_button("profile_callsign")
+                        
+                        safe_edit_message_text(
+                            self.bot,
+                            text=msg,
+                            chat_id=call.message.chat.id,
+                            message_id=call.message.message_id,
+                            parse_mode='Markdown',
+                            reply_markup=keyboard
+                        )
+                        self.bot.answer_callback_query(call.id, "Type /callsign YourName")
+                
+                # Handle fire mode selection from menu
+                elif call.data.startswith("fire_mode_"):
+                    from src.bitten_core.fire_mode_database import fire_mode_db
+                    from src.bitten_core.menu_system import get_menu_system
+                    
+                    menu_sys = get_menu_system()
+                    
+                    if call.data == "fire_mode_manual":
+                        fire_mode_db.set_user_mode(user_id, "manual")
+                        msg, keyboard = menu_sys.get_fire_mode_menu("manual")
+                        msg = "✅ Fire mode set to MANUAL\n\n" + msg
+                    elif call.data == "fire_mode_semi":
+                        fire_mode_db.set_user_mode(user_id, "semi_auto")
+                        msg, keyboard = menu_sys.get_fire_mode_menu("semi_auto")
+                        msg = "✅ Fire mode set to SEMI-AUTO\n\n" + msg
+                    elif call.data == "fire_mode_full":
+                        fire_mode_db.set_user_mode(user_id, "full_auto")
+                        msg, keyboard = menu_sys.get_fire_mode_menu("full_auto")
+                        msg = "✅ Fire mode set to FULL AUTO\n\n" + msg
+                    else:
+                        # Help or stats
+                        msg = "Fire mode information..."
+                        keyboard = menu_sys.get_back_button("menu_fire_mode")
+                    
+                    safe_edit_message_text(
+                        self.bot,
+                        text=msg,
+                        chat_id=call.message.chat.id,
+                        message_id=call.message.message_id,
+                        parse_mode='Markdown',
+                        reply_markup=keyboard
+                    )
+                    self.bot.answer_callback_query(call.id, "✅")
                 
                 # Handle menu system callbacks
                 elif call.data in ["menu_quick_persistent", "menu_full_persistent", "menu_advanced_inline", "menu_hide_all"]:
@@ -2000,6 +2142,7 @@ Use `/help` for the complete command list."""
                 logger.error(f"❌ Failed to register drill handlers: {e}")
         
         @self.bot.message_handler(func=lambda message: True)
+        @measure_latency(self.bot, label_fn=lambda m: "fallback")
         def handle_all_messages(message):
             # HYDRAX: Early exit for commands
             if getattr(message, "text", "") and message.text.startswith("/"):
@@ -2007,8 +2150,19 @@ Use `/help` for the complete command list."""
             """Handle non-command messages"""
             # Check if this is a new user and send welcome message
             user_id = str(message.from_user.id)
-            user_config = AUTHORIZED_USERS.get(user_id, {})
-            user_tier = user_config.get("tier", "NIBBLER")
+            
+            # Get user tier from central database
+            user_tier = "NIBBLER"  # Default tier
+            try:
+                from src.bitten_core.central_user_manager import get_central_user_manager
+                user_mgr = get_central_user_manager()
+                user_data = user_mgr.get_complete_user(int(user_id))
+                if user_data:
+                    user_tier = user_data.get('tier', 'NIBBLER')
+            except:
+                # Fallback to AUTHORIZED_USERS if central DB fails
+                user_config = AUTHORIZED_USERS.get(user_id, {})
+                user_tier = user_config.get("tier", "NIBBLER")
             
             # Send welcome message for new users with unified personality system
             if UNIFIED_PERSONALITY_AVAILABLE and self.unified_bot:
@@ -3243,7 +3397,7 @@ Server: Coinexx1Demo
             
             # Send message with keyboard
             # HYDRAX: Safe send wrapper
-                    safe_send_message(self.bot, 
+            safe_send_message(self.bot, 
                 chat_id=chat_id,
                 text=usage_message,
                 parse_mode="Markdown",
@@ -3423,7 +3577,7 @@ Server: Coinexx1Demo
                     chat_id = user_profile.get('telegram_id')
                     if chat_id:
                         # HYDRAX: Safe send wrapper
-                    safe_send_message(self.bot, 
+                        safe_send_message(self.bot, 
                             chat_id=chat_id,
                             text=message_text,
                             parse_mode="MarkdownV2",
@@ -3554,12 +3708,33 @@ Server: Coinexx1Demo
         except Exception as e:
             logger.error(f"Error logging CORE delivery: {e}")
     
+    def setup_cleanup_task(self):
+        """Setup daily cleanup task for missions directory"""
+        missions_path = "/root/HydraX-v2/missions"
+        
+        def daily_cleanup():
+            try:
+                cleanup_old_files(missions_path, days=14, max_files=500)
+                # Schedule next cleanup in 24 hours
+                run_later(86400, daily_cleanup)
+            except Exception as e:
+                logger.error(f"Cleanup task error: {e}")
+                # Retry in 1 hour on error
+                run_later(3600, daily_cleanup)
+        
+        # Start cleanup in 5 minutes, then daily
+        run_later(300, daily_cleanup)
+        logger.info("Daily cleanup task scheduled for missions directory")
+    
     def run(self):
         """Start the bot"""
         try:
             logger.info("Starting BITTEN Production Bot...")
             logger.info(f"Authorized users: {list(AUTHORIZED_USERS.keys())}")
             logger.info(f"Commanders: {COMMANDER_IDS}")
+            
+            # Setup daily cleanup task
+            self.setup_cleanup_task()
             
             # Test bot connection first
             try:
@@ -3587,7 +3762,7 @@ Server: Coinexx1Demo
                 for chat_id in [-1002581996861]:  # Your chat
                     try:
                         # HYDRAX: Safe send wrapper
-                    safe_send_message(self.bot, chat_id, startup_msg, parse_mode="MarkdownV2")
+                        safe_send_message(self.bot, chat_id, startup_msg, parse_mode="MarkdownV2")
                         logger.info(f"Startup message sent to {chat_id}")
                     except Exception as e:
                         logger.warning(f"Could not send startup message to {chat_id}: {e}")
@@ -3615,6 +3790,7 @@ def main():
         bot = BittenProductionBot()
         
         # HYDRAX: Setup graceful shutdown handlers
+        import signal as sig_module
         _handler = _handle_shutdown_factory(bot.bot, EXEC)
         sig_module.signal(sig_module.SIGINT, _handler)
         sig_module.signal(sig_module.SIGTERM, _handler)

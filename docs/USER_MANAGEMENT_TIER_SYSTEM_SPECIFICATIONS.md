@@ -82,7 +82,7 @@ The system implements a 5-tier subscription model with progressive feature unloc
   - Basic risk management
 
 #### 3. FANG (Intermediate)
-- **Price**: $89/month
+- **Price**: $79/month
 - **Target**: Developing traders
 - **Features**:
   - Daily shots: 10
@@ -93,7 +93,7 @@ The system implements a 5-tier subscription model with progressive feature unloc
   - Advanced risk controls
 
 #### 4. COMMANDER (Advanced)
-- **Price**: $189/month
+- **Price**: $139/month
 - **Target**: Experienced traders
 - **Features**:
   - Daily shots: 20

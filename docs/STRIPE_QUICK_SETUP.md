@@ -8,7 +8,7 @@
 
 2. **Products & Prices**
    - Need to create 4 products (NIBBLER, FANG, COMMANDER)
-   - Monthly prices only ($39, $89, $189, )
+   - Monthly prices only ($39, $79, $139, )
 
 ## Step 1: Create Products
 

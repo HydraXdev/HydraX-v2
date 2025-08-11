@@ -33,6 +33,22 @@ import queue
 from collections import defaultdict, deque
 import signal
 import sys
+import random
+
+# --- BEGIN PATCH: imports ---
+from crypto_session_clock import current_session, hours_left_active
+from crypto_calibration import prob_from_score, expectancy
+from crypto_acceptor import accept
+from crypto_data_fusion_simple import consensus_snapshot, order_book_imbalance
+from crypto_risk import spread_ok, consensus_ok, est_slippage_cost_bps
+from crypto_smc_patterns import (
+    pattern_liquidation_sweep, pattern_funding_flip_trap,
+    confirm_imbalance, confirm_volume_surge, volatility_regime
+)
+from funding_feed import FundingFeed
+from liquidation_feed import LiquidationFeed
+from telemetry_json import JSONLogger
+# --- END PATCH ---
 
 # ML Libraries
 try:
@@ -52,6 +68,8 @@ class PatternType(Enum):
     CRYPTO_ORDER_BLOCK = "CRYPTO_ORDER_BLOCK" 
     CRYPTO_FAIR_VALUE_GAP = "CRYPTO_FAIR_VALUE_GAP"
     CRYPTO_MOMENTUM_BREAKOUT = "CRYPTO_MOMENTUM_BREAKOUT"
+    LIQ_SWEEP = "LIQ_SWEEP"
+    FUNDING_TRAP = "FUNDING_TRAP"
 
 @dataclass
 class CryptoTick:
@@ -90,6 +108,10 @@ class CryptoSignal:
     expires_at: datetime
     session: str
     xp_reward: int
+    # New fields for enhanced crypto engine
+    ev: float = 0.0
+    p_win: float = 0.0
+    rarity_qtile: float = 0.0
 
 class UltimateCORECryptoEngine:
     """
@@ -124,6 +146,15 @@ class UltimateCORECryptoEngine:
         self.ml_model = None
         self.ml_scaler = None
         self.setup_ml_model()
+        
+        # --- BEGIN PATCH: init additions ---
+        self.funding = FundingFeed()
+        self.liquidations = LiquidationFeed(window_sec=300)
+        self.jsonlog = JSONLogger()
+        # Exchange manager and imbalance detector - initialize stubs for now
+        self.exchange_manager = None  # TODO: Initialize when ready
+        self.imbalance_detector = None  # TODO: Initialize when ready
+        # --- END PATCH ---
         
         # ZMQ setup
         self.context = zmq.Context()
@@ -161,13 +192,13 @@ class UltimateCORECryptoEngine:
             self.data_subscriber.setsockopt_string(zmq.SUBSCRIBE, "")  # Subscribe to all messages
             self.data_subscriber.setsockopt(zmq.RCVTIMEO, 1000)  # 1 second timeout
             
-            # Publisher for crypto signals (port 5558 - separate from Elite Guard's 5557)
+            # Publisher for crypto signals (port 5570 - separate from Elite Guard's 5557)
             self.signal_publisher = self.context.socket(zmq.PUB)
-            self.signal_publisher.bind("tcp://*:5558")
+            self.signal_publisher.bind("tcp://*:5570")
             
             self.logger.info("✅ ZMQ connections established")
             self.logger.info("📡 Data source: Elite Guard pass-through (port 5560)")
-            self.logger.info("📤 Signal output: Port 5558 (crypto signals)")
+            self.logger.info("📤 Signal output: Port 5570 (crypto signals)")
             
         except Exception as e:
             self.logger.error(f"❌ ZMQ setup failed: {e}")
@@ -201,6 +232,123 @@ class UltimateCORECryptoEngine:
         except Exception as e:
             self.logger.error(f"⚠️ ML setup failed: {e}")
             self.ml_model = None
+    
+    # --- BEGIN PATCH: build levels helper ---
+    def build_levels(self, symbol, direction, entry_price, atr, signal_type):
+        # RR: RAPID=1:1.5, PRECISION=1:2 with crypto ATR multipliers already set upstream
+        tp_mult = 1.5 if signal_type == "RAPID_ASSAULT" else 2.0
+        sl_mult = atr  # atr passed in is already atr*mult (2.0 or 2.5)
+        if direction == "BUY":
+            sl = entry_price - sl_mult
+            tp = entry_price + sl_mult * tp_mult
+        else:
+            sl = entry_price + sl_mult
+            tp = entry_price - sl_mult * tp_mult
+        rr = abs(tp - entry_price)/max(1e-12, abs(entry_price - sl))
+        return sl, tp, round(rr,2)
+    
+    def rarity_quantile(self, pattern_name, symbol):
+        """Simple rarity quantile calculation"""
+        pattern_rarity = {
+            'LIQ_SWEEP': 0.85,
+            'FUNDING_TRAP': 0.75,
+            'CRYPTO_MOMENTUM_BREAKOUT': 0.6,
+            'CRYPTO_LIQUIDITY_SWEEP': 0.7,
+            'CRYPTO_ORDER_BLOCK': 0.55,
+            'CRYPTO_FAIR_VALUE_GAP': 0.5
+        }
+        base_rarity = pattern_rarity.get(pattern_name, 0.5)
+        # Adjust for symbol
+        if 'BTC' in symbol:
+            base_rarity = min(0.95, base_rarity + 0.05)
+        return round(base_rarity, 2)
+    
+    def telemetry_count_last_24h(self):
+        """Count signals published in last 24h"""
+        cutoff = time.time() - 24*3600
+        count = 0
+        for signal in self.signal_history:
+            if hasattr(signal, 'generated_at') and signal.generated_at.timestamp() > cutoff:
+                count += 1
+        return count
+
+    def get_volatility_regime(self, symbol: str, candles: List[CryptoCandle]) -> str:
+        """Detect volatility regime: LOW, NORMAL, HIGH based on ATR%"""
+        if len(candles) < 20:
+            return 'NORMAL'
+        
+        atr = self.calculate_crypto_atr(candles, 14)
+        mid_price = candles[-1].close
+        atr_pct = (atr / mid_price) * 100  # ATR as percentage
+        
+        # Crypto thresholds (higher than forex)
+        if atr_pct < 1.5:
+            return 'LOW'
+        elif atr_pct > 4.0:
+            return 'HIGH'
+        else:
+            return 'NORMAL'
+    
+    def check_confirmations(self, symbol: str, candles: List[CryptoCandle]) -> dict:
+        """Check for strong confirmations required for A-tier signals"""
+        confirmations = {
+            'has_volume': False,
+            'has_imb': False, 
+            'has_liq': False,
+            'vol_surge_ratio': 0.0,
+            'ob_imbalance': 1.0,
+            'liq_total_usd': 0.0
+        }
+        
+        if len(candles) < 5:
+            return confirmations
+        
+        # Volume surge check
+        recent_volumes = [c.volume for c in candles[-5:]]
+        if len(recent_volumes) >= 2:
+            current_vol = recent_volumes[-1]
+            avg_vol = sum(recent_volumes[:-1]) / len(recent_volumes[:-1])
+            surge_ratio = current_vol / avg_vol if avg_vol > 0 else 1.0
+            confirmations['vol_surge_ratio'] = surge_ratio
+            confirmations['has_volume'] = surge_ratio >= 1.2
+        
+        # Order book imbalance (stub - would connect to exchange data)
+        if hasattr(self, 'imbalance_detector'):
+            try:
+                imbalance = order_book_imbalance(self.imbalance_detector, 'binance', symbol)
+                confirmations['ob_imbalance'] = imbalance
+                confirmations['has_imb'] = imbalance >= 1.2
+            except:
+                pass
+        
+        # Liquidation cluster (stub - would connect to liquidation feed)
+        if hasattr(self, 'liquidations'):
+            try:
+                stats = self.liquidations.cluster_stats(symbol)
+                liq_usd = stats.get('total_usd', 0.0)
+                confirmations['liq_total_usd'] = liq_usd
+                # Different thresholds by symbol
+                liq_threshold = 3e6 if symbol.startswith('BTC') else 1e6
+                confirmations['has_liq'] = liq_usd >= liq_threshold
+            except:
+                pass
+        
+        return confirmations
+    
+    def choose_signal_type(self, symbol: str, pattern: str) -> SignalType:
+        """Bias toward PRECISION (1:2) signals, especially during EU/US"""
+        sess = current_session()
+        p_precision = 0.75 if sess in ('EU','US') else 0.55  # was ~50/50
+        
+        # Some patterns naturally favor PRECISION
+        if pattern in ['CRYPTO_LIQUIDITY_SWEEP', 'CRYPTO_ORDER_BLOCK']:
+            p_precision += 0.1
+        
+        if random.random() < p_precision:
+            return SignalType.PRECISION_STRIKE
+        else:
+            return SignalType.RAPID_ASSAULT
+    # --- END PATCH ---
             
     def start(self):
         """Start the Ultimate C.O.R.E. engine"""
@@ -368,7 +516,89 @@ class UltimateCORECryptoEngine:
                         
                         signal = self.detect_crypto_patterns(symbol)
                         if signal:
-                            self.publish_signal(signal)
+                            # Confirmation gate - require strong confirmations before accepting
+                            m1_candles = list(self.m1_candles[symbol])[-10:]
+                            confirmations = self.check_confirmations(symbol, m1_candles)
+                            
+                            has_volume = confirmations['has_volume']
+                            has_imb = confirmations['has_imb'] 
+                            has_liq = confirmations['has_liq']
+                            
+                            # Require at least one strong confirmation for A-tier quality
+                            if not (has_volume or has_imb or has_liq):
+                                continue  # Skip weak setups
+                            
+                            # Check slippage cost (reject if too high)
+                            # Estimate notional for 2% risk at typical position size
+                            notional_usd = 10000  # Assume $10k notional for estimation
+                            if hasattr(self, 'exchange_manager'):
+                                try:
+                                    cons, quotes = consensus_snapshot(self.exchange_manager, symbol)
+                                    depth_usd = cons.depth_usd if cons else 0
+                                    slippage_cost = est_slippage_cost_bps(depth_usd, notional_usd)
+                                    if slippage_cost > 6.0:  # Reject if projected slippage > 6bps
+                                        continue
+                                except:
+                                    pass
+                            
+                            # Compute EV and finalize signal payload
+                            count_24h = self.telemetry_count_last_24h()
+                            
+                            # Get probability from calibration
+                            p_win = prob_from_score(int(signal.confidence))
+                            rr = signal.risk_reward
+                            ev = p_win * rr - (1.0 - p_win) * 1.0
+                            rarity_q = self.rarity_quantile(signal.pattern_type.value, symbol)
+                            
+                            # Create signal payload for acceptor
+                            sig_payload = {
+                                'final_score': int(signal.confidence),
+                                'ev': ev,
+                                'pattern': signal.pattern_type.value,
+                                'direction': signal.direction,
+                                'timestamp_ts': time.time(),
+                                'basket': symbol[:3],  # BTC, ETH, etc.
+                                'rarity_qtile': rarity_q
+                            }
+                            
+                            # Use acceptor instead of publishing immediately
+                            if accept(sig_payload, count_24h):
+                                # Enhance signal with computed values
+                                signal.ev = ev
+                                signal.p_win = p_win
+                                signal.rarity_qtile = rarity_q
+                                
+                                # Log to JSON telemetry
+                                telemetry_payload = {
+                                    'signal_id': signal.signal_id,
+                                    'symbol': signal.symbol,
+                                    'pattern': signal.pattern_type.value,
+                                    'direction': signal.direction,
+                                    'final_score': int(signal.confidence),
+                                    'ev': ev,
+                                    'p_win': p_win,
+                                    'rr': rr,
+                                    'rarity_qtile': rarity_q,
+                                    'accepted': True,
+                                    'count_24h': count_24h
+                                }
+                                self.jsonlog.log_signal(telemetry_payload)
+                                
+                                # Publish the accepted signal
+                                self.publish_signal(signal)
+                            else:
+                                # Log rejected signal for analytics
+                                telemetry_payload = {
+                                    'signal_id': signal.signal_id,
+                                    'symbol': signal.symbol,
+                                    'pattern': signal.pattern_type.value,
+                                    'final_score': int(signal.confidence),
+                                    'ev': ev,
+                                    'accepted': False,
+                                    'count_24h': count_24h
+                                }
+                                self.jsonlog.log_signal(telemetry_payload)
+                            
                             # Set cooldown (60 seconds for crypto)
                             self.pattern_cooldowns[symbol] = datetime.now() + timedelta(seconds=60)
                             
@@ -379,7 +609,7 @@ class UltimateCORECryptoEngine:
                 time.sleep(5)
                 
     def detect_crypto_patterns(self, symbol: str) -> Optional[CryptoSignal]:
-        """Detect crypto-specific SMC patterns"""
+        """Detect crypto-specific SMC patterns with enhanced consensus and risk checks"""
         
         # Get recent data
         m1_candles = list(self.m1_candles[symbol])[-20:]  # Last 20 M1 candles
@@ -388,8 +618,65 @@ class UltimateCORECryptoEngine:
         
         if len(m1_candles) < 10 or len(m5_candles) < 5:
             return None
-            
-        # Try different patterns (prioritize RAPID_ASSAULT)
+
+        # --- BEGIN PATCH: pattern pipeline snippet inside detection loop ---
+        # consensus & quotes
+        try:
+            cons, quotes = consensus_snapshot(self.exchange_manager, symbol) if self.exchange_manager else (None, {})
+            if cons and cons.nx >= 2 and not spread_ok(symbol, cons.spread_bps):
+                return None  # skip poor spread conditions
+        except Exception as e:
+            self.logger.debug(f"Consensus check failed for {symbol}: {e}")
+            cons, quotes = None, {}
+
+        # venue imbalance (pick primary venue if you want, else median)
+        venue = None
+        if self.exchange_manager and hasattr(self.exchange_manager, 'primary'):
+            venue = self.exchange_manager.primary() or next(iter(quotes.keys()), None)
+        imb_ratio = 1.0
+        if venue and self.imbalance_detector:
+            try:
+                imb_ratio = order_book_imbalance(self.imbalance_detector, venue, symbol)
+            except Exception as e:
+                self.logger.debug(f"Imbalance check failed: {e}")
+
+        # funding & liquidations context
+        fund = self.funding.get(symbol)
+        minutes_since_flip = (time.time() - fund["last_flip_ts"])/60.0 if fund["last_flip_ts"] else 999
+        liq_stats = self.liquidations.cluster_stats(symbol)
+
+        # Determine bias direction for new patterns
+        current_price = m1_candles[-1].close if m1_candles else 0
+        prev_price = m1_candles[-5].close if len(m1_candles) >= 5 else current_price
+        bias_dir = "BUY" if current_price > prev_price else "SELL"
+
+        # NEW: Liquidation Sweep (A-tier if confirms)
+        try:
+            pat = pattern_liquidation_sweep(symbol, m1_candles, liq_stats, imb_ratio, bias_dir)
+            if pat:
+                direction, entry_price, meta = pat
+                if entry_price is None:
+                    entry_price = current_price
+                signal = self.build_new_crypto_signal(symbol, direction, entry_price, meta)
+                if signal:
+                    return signal
+        except Exception as e:
+            self.logger.debug(f"Liquidation sweep pattern error: {e}")
+
+        # NEW: Funding Flip Trap (contextual)
+        try:
+            pat = pattern_funding_flip_trap(symbol, fund["rate"], fund["last_flip_ts"], minutes_since_flip, bias_dir)
+            if pat:
+                direction, entry_price, meta = pat
+                if entry_price is None:
+                    entry_price = current_price
+                signal = self.build_new_crypto_signal(symbol, direction, entry_price, meta)
+                if signal:
+                    return signal
+        except Exception as e:
+            self.logger.debug(f"Funding flip trap pattern error: {e}")
+
+        # Existing patterns with enhanced confirmations
         patterns = [
             self.detect_crypto_momentum_breakout,    # High frequency - RAPID_ASSAULT
             self.detect_crypto_liquidity_sweep,     # Medium frequency  
@@ -401,9 +688,14 @@ class UltimateCORECryptoEngine:
             try:
                 signal = pattern_func(symbol, m1_candles, m5_candles, recent_ticks)
                 if signal:
-                    return signal
+                    # Apply additional crypto confirmations
+                    vol_ratio = recent_ticks[-1].volume / np.mean([t.volume for t in recent_ticks[-10:-1]]) if len(recent_ticks) >= 10 else 1.0
+                    if confirm_volume_surge(vol_ratio, 1.2) or confirm_imbalance(imb_ratio, 1.15):
+                        return signal
+                    # If no confirmation, continue to next pattern
             except Exception as e:
                 self.logger.error(f"❌ Pattern {pattern_func.__name__} error for {symbol}: {e}")
+        # --- END PATCH ---
                 
         return None
         
@@ -449,26 +741,56 @@ class UltimateCORECryptoEngine:
             base_confidence = 72.0  # Base for RAPID_ASSAULT
             final_confidence = min(base_confidence + ml_score * 10, 85.0)
             
-            # Generate signal
+            # Volatility regime adjustment
+            vol_regime = self.get_volatility_regime(symbol, m1_candles)
+            if vol_regime == 'LOW':
+                final_confidence += 3  # Easier to predict in low vol
+            elif vol_regime == 'HIGH':
+                final_confidence -= 5  # Harder in high vol
+            
+            # Consensus momentum penalty
+            if hasattr(self, 'exchange_manager'):
+                try:
+                    _, quotes = consensus_snapshot(self.exchange_manager, symbol)
+                    venue_spreads = [q['spread_bps'] for q in quotes.values()]
+                    if venue_spreads and max(venue_spreads) - min(venue_spreads) > 8:
+                        final_confidence -= 4  # Venue drift penalty
+                except:
+                    pass
+            
+            final_confidence = max(45.0, min(final_confidence, 95.0))  # Cap bounds
+            
+            # Generate signal with biased type selection
+            signal_type = self.choose_signal_type(symbol, "CRYPTO_MOMENTUM_BREAKOUT")
+            
+            # Adjust R:R based on signal type
+            if signal_type == SignalType.PRECISION_STRIKE:
+                tp_distance = sl_distance * 2.0  # 1:2 ratio
+                if direction == "BUY":
+                    take_profit = entry + tp_distance
+                else:
+                    take_profit = entry - tp_distance
+            
             signal = CryptoSignal(
                 signal_id=f"CORE_CRYPTO_{symbol}_{int(time.time())}",
                 symbol=symbol,
                 direction=direction,
-                signal_type=SignalType.RAPID_ASSAULT,
+                signal_type=signal_type,
                 pattern_type=PatternType.CRYPTO_MOMENTUM_BREAKOUT,
                 entry_price=entry,
                 stop_loss=stop_loss,
                 take_profit=take_profit,
                 confidence=final_confidence,
                 ml_score=ml_score,
-                risk_reward=1.5,
+                risk_reward=2.0 if signal_type == SignalType.PRECISION_STRIKE else 1.5,
                 generated_at=datetime.now(),
                 expires_at=datetime.now() + timedelta(minutes=30),  # 30min expiry
                 session=self.get_crypto_session(),
                 xp_reward=int(final_confidence * 1.5)
             )
             
-            self.logger.info(f"🚀 RAPID_ASSAULT detected: {symbol} {direction} @ {entry:.5f} (conf: {final_confidence:.1f}%)")
+            signal_name = "PRECISION_STRIKE" if signal_type == SignalType.PRECISION_STRIKE else "RAPID_ASSAULT"
+            self.logger.info(f"🚀 {signal_name} detected: {symbol} {direction} @ {entry:.5f} (conf: {final_confidence:.1f}%)")
             return signal
             
         return None
@@ -515,6 +837,25 @@ class UltimateCORECryptoEngine:
             ml_score = self.get_ml_score(symbol, m1_candles, m5_candles, ticks)
             base_confidence = 78.0
             final_confidence = min(base_confidence + ml_score * 8, 88.0)
+            
+            # Volatility regime adjustment
+            vol_regime = self.get_volatility_regime(symbol, m1_candles)
+            if vol_regime == 'LOW':
+                final_confidence += 3  # Easier to predict in low vol
+            elif vol_regime == 'HIGH':
+                final_confidence -= 5  # Harder in high vol
+            
+            # Consensus momentum penalty
+            if hasattr(self, 'exchange_manager'):
+                try:
+                    _, quotes = consensus_snapshot(self.exchange_manager, symbol)
+                    venue_spreads = [q['spread_bps'] for q in quotes.values()]
+                    if venue_spreads and max(venue_spreads) - min(venue_spreads) > 8:
+                        final_confidence -= 4  # Venue drift penalty
+                except:
+                    pass
+            
+            final_confidence = max(45.0, min(final_confidence, 95.0))  # Cap bounds
             
             signal = CryptoSignal(
                 signal_id=f"CORE_SWEEP_{symbol}_{int(time.time())}",
@@ -583,6 +924,25 @@ class UltimateCORECryptoEngine:
             ml_score = self.get_ml_score(symbol, m1_candles, m5_candles, ticks)
             base_confidence = 75.0
             final_confidence = min(base_confidence + ml_score * 7, 85.0)
+            
+            # Volatility regime adjustment
+            vol_regime = self.get_volatility_regime(symbol, m1_candles)
+            if vol_regime == 'LOW':
+                final_confidence += 3  # Easier to predict in low vol
+            elif vol_regime == 'HIGH':
+                final_confidence -= 5  # Harder in high vol
+            
+            # Consensus momentum penalty
+            if hasattr(self, 'exchange_manager'):
+                try:
+                    _, quotes = consensus_snapshot(self.exchange_manager, symbol)
+                    venue_spreads = [q['spread_bps'] for q in quotes.values()]
+                    if venue_spreads and max(venue_spreads) - min(venue_spreads) > 8:
+                        final_confidence -= 4  # Venue drift penalty
+                except:
+                    pass
+            
+            final_confidence = max(45.0, min(final_confidence, 95.0))  # Cap bounds
             
             signal = CryptoSignal(
                 signal_id=f"CORE_OB_{symbol}_{int(time.time())}",
@@ -657,18 +1017,48 @@ class UltimateCORECryptoEngine:
                     base_confidence = 73.0
                     final_confidence = min(base_confidence + ml_score * 6, 82.0)
                     
+                    # Volatility regime adjustment
+                    vol_regime = self.get_volatility_regime(symbol, m1_candles)
+                    if vol_regime == 'LOW':
+                        final_confidence += 3  # Easier to predict in low vol
+                    elif vol_regime == 'HIGH':
+                        final_confidence -= 5  # Harder in high vol
+                    
+                    # Consensus momentum penalty
+                    if hasattr(self, 'exchange_manager'):
+                        try:
+                            _, quotes = consensus_snapshot(self.exchange_manager, symbol)
+                            venue_spreads = [q['spread_bps'] for q in quotes.values()]
+                            if venue_spreads and max(venue_spreads) - min(venue_spreads) > 8:
+                                final_confidence -= 4  # Venue drift penalty
+                        except:
+                            pass
+                    
+                    final_confidence = max(45.0, min(final_confidence, 95.0))  # Cap bounds
+                    
+                    # Bias signal type selection
+                    signal_type = self.choose_signal_type(symbol, "CRYPTO_FAIR_VALUE_GAP")
+                    
+                    # Adjust R:R based on signal type
+                    if signal_type == SignalType.PRECISION_STRIKE:
+                        tp_distance = sl_distance * 2.0  # 1:2 ratio
+                        if direction == "BUY":
+                            take_profit = entry + tp_distance
+                        else:
+                            take_profit = entry - tp_distance
+                    
                     signal = CryptoSignal(
                         signal_id=f"CORE_FVG_{symbol}_{int(time.time())}",
                         symbol=symbol,
                         direction=direction,
-                        signal_type=SignalType.RAPID_ASSAULT,
+                        signal_type=signal_type,
                         pattern_type=PatternType.CRYPTO_FAIR_VALUE_GAP,
                         entry_price=entry,
                         stop_loss=stop_loss,
                         take_profit=take_profit,
                         confidence=final_confidence,
                         ml_score=ml_score,
-                        risk_reward=1.5,
+                        risk_reward=2.0 if signal_type == SignalType.PRECISION_STRIKE else 1.5,
                         generated_at=datetime.now(),
                         expires_at=datetime.now() + timedelta(minutes=45),
                         session=self.get_crypto_session(),
@@ -830,6 +1220,9 @@ class UltimateCORECryptoEngine:
                 'expires_at': signal.expires_at.isoformat(),
                 'session': signal.session,
                 'xp_reward': signal.xp_reward,
+                'ev': signal.ev,
+                'p_win': signal.p_win,
+                'rarity_qtile': signal.rarity_qtile,
                 'engine': 'ULTIMATE_CORE_CRYPTO'
             }
             

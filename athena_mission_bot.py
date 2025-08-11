@@ -3,8 +3,6 @@
 🏛️ ATHENA MISSION BOT
 Dedicated Telegram bot for ATHENA's tactical mission dispatching
 Strategic Commander AI for BITTEN trading signals
-
-Token: 8322305650:AAGtBpEMm759_7gI4m9sg0OJwFhBVjR4pEI
 """
 
 import os
@@ -14,6 +12,7 @@ import time
 import logging
 import requests
 import asyncio
+import signal
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any
 import telebot
@@ -22,6 +21,12 @@ from telebot import types
 # Add paths for imports
 sys.path.append('/root/HydraX-v2/src')
 sys.path.append('/root/HydraX-v2')
+
+# Import shared utilities
+from hydrax_utils import (
+    safe_send_message, _handle_shutdown_factory, EXEC,
+    measure_latency, rate_limited
+)
 
 # 🚨 SECURITY HARDENING IMPORT
 from bot_security_hardening import validate_request
@@ -38,7 +43,7 @@ logging.basicConfig(
 logger = logging.getLogger('AthenaMissionBot')
 
 # ATHENA Mission Bot Token
-ATHENA_BOT_TOKEN = "8322305650:AAHu8NmQ0rXT0LkZOlDeYop6TAUJXaXbwAg"
+ATHENA_BOT_TOKEN = os.getenv("ATHENA_BOT_TOKEN")
 
 class AthenaMissionBot:
     """
@@ -339,6 +344,19 @@ I am ATHENA, your strategic mission commander. I coordinate all tactical operati
 def main():
     """Launch ATHENA Mission Bot"""
     athena_bot = AthenaMissionBot()
+    
+    # Add basic ping handler
+    @athena_bot.bot.message_handler(commands=['ping'])
+    @measure_latency(athena_bot.bot, label_fn=lambda m: "cmd:ping")
+    @rate_limited(athena_bot.bot)
+    def handle_ping(message):
+        safe_send_message(athena_bot.bot, message.chat.id, "pong")
+    
+    # Setup graceful shutdown
+    _handler = _handle_shutdown_factory(athena_bot.bot, EXEC)
+    signal.signal(signal.SIGINT, _handler)
+    signal.signal(signal.SIGTERM, _handler)
+    
     athena_bot.run()
 
 if __name__ == "__main__":

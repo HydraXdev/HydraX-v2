@@ -297,7 +297,7 @@ v5.0 to Telegram Connector
 Monitors logs and sends to BIT COMMANDER bot
 """
 
-BOT_TOKEN = "7854827710:AAGsO-vgMpsTOVNu6zoo_-GGJkYQd97Mc5w"  # BIT COMMANDER
+BOT_TOKEN = os.getenv("BOT_TOKEN")  # BIT COMMANDER
 CHAT_ID = -1002581996861  # Group ID
 
 def monitor_apex_logs(log_file: str):

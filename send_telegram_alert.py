@@ -11,7 +11,7 @@ import json
 from datetime import datetime
 
 # Load Telegram bot token from .env
-BOT_TOKEN = "7854827710:AAE9kCptkoSl8lmQwmX940UMqFWOb3TmTI0"
+BOT_TOKEN = os.getenv("BOT_TOKEN")
 
 # Your Telegram user ID (Commander)
 CHAT_ID = "7176191872"

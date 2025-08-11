@@ -1,5 +1,84 @@
+// BITTEN Telegram Bots - Production Hardened (August 10, 2025)
+// Reference: /root/HydraX-v2/TELEGRAM_BOTS_PRODUCTION_HARDENING_REFERENCE.md
+// Features: Non-blocking I/O, Rate limiting, FloodWait protection, Auto-cleanup
+// Management: pm2 status | pm2 logs --lines 50 | pm2 restart all
+
 module.exports = {
   apps: [
+    // Production bot - main trading bot
+    {
+      name: 'bitten-production-bot',
+      script: 'bitten_production_bot.py',
+      interpreter: 'python3',
+      cwd: '/root/HydraX-v2',
+      instances: 1,
+      autorestart: true,
+      watch: false,
+      max_memory_restart: '1G',
+      env: {
+        NODE_ENV: 'production',
+        PYTHONPATH: '/root/HydraX-v2',
+        LOG_LEVEL: 'INFO',
+        BOT_TOKEN: '7854827710:AAE9kCptkoSl8lmQwmX940UMqFWOb3TmTI0',
+        WEBAPP_BASE_URL: 'https://bitten.gold',
+        CHAT_ID: '-1002581996861',
+        ADMIN_IDS: process.env.ADMIN_IDS || '7176191872'
+      },
+      min_uptime: '10s',
+      max_restarts: 10,
+      restart_delay: 4000,
+      kill_timeout: 5000
+    },
+    
+    // Voice personality bot
+    {
+      name: 'bitten-voice-bot',
+      script: 'bitten_voice_personality_bot.py',
+      interpreter: 'python3',
+      cwd: '/root/HydraX-v2',
+      instances: 1,
+      autorestart: true,
+      watch: false,
+      max_memory_restart: '500M',
+      env: {
+        NODE_ENV: 'production',
+        PYTHONPATH: '/root/HydraX-v2',
+        LOG_LEVEL: 'INFO',
+        VOICE_BOT_TOKEN: '8103700393:AAEK3RjTGHHYyy_X1Uc9FUuUoRcLuzYZe4k',
+        TELEGRAM_BOT_TOKEN: '8103700393:AAEK3RjTGHHYyy_X1Uc9FUuUoRcLuzYZe4k',
+        CHAT_ID: '-1002581996861',
+        ADMIN_IDS: process.env.ADMIN_IDS || '7176191872'
+      },
+      min_uptime: '10s',
+      max_restarts: 10,
+      restart_delay: 4000,
+      kill_timeout: 5000
+    },
+    
+    // Athena mission bot
+    {
+      name: 'athena-mission-bot',
+      script: 'athena_mission_bot.py',
+      interpreter: 'python3',
+      cwd: '/root/HydraX-v2',
+      instances: 1,
+      autorestart: true,
+      watch: false,
+      max_memory_restart: '500M',
+      env: {
+        NODE_ENV: 'production',
+        PYTHONPATH: '/root/HydraX-v2',
+        LOG_LEVEL: 'INFO',
+        BOT_TOKEN: '7854827710:AAE9kCptkoSl8lmQwmX940UMqFWOb3TmTI0',
+        CHAT_ID: '-1002581996861',
+        ADMIN_IDS: process.env.ADMIN_IDS || '7176191872'
+      },
+      min_uptime: '10s',
+      max_restarts: 10,
+      restart_delay: 4000,
+      kill_timeout: 5000
+    },
+    
     {
       name: 'bitten-webapp',
       script: 'webapp_server.py',

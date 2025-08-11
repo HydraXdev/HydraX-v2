@@ -1,0 +1,26 @@
+{
+  "users": {
+    "7176191872": {
+      "user_id": "7176191872",
+      "telegram_id": "7176191872",
+      "user_uuid": "COMMANDER_DEV_001",
+      "username": "commander_dev",
+      "tier": "COMMANDER",
+      "account_balance": 850.47,
+      "account_currency": "USD",
+      "account_equity": 850.47,
+      "mt5_account": "843859",
+      "container": "mt5_user_7176191872",
+      "broker": "Coinexx-Demo",
+      "server": "",
+      "status": "ready_for_fire",
+      "fire_eligible": true,
+      "handshake_received": true,
+      "handshake_captured": true,
+      "capture_source": "tick_stream",
+      "wine_environment": "/root/.wine_user_7176191872",
+      "last_update": "2025-08-08T20:50:23.735290",
+      "created_at": "2025-07-01T00:00:00.000000"
+    }
+  }
+}

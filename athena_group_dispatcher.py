@@ -24,7 +24,7 @@ class AthenaGroupDispatcher:
     
     def __init__(self):
         # ATHENA Mission Bot configuration
-        self.athena_bot_token = "8322305650:AAHu8NmQ0rXT0LkZOlDeYop6TAUJXaXbwAg"
+        self.athena_bot_token = os.getenv("ATHENA_BOT_TOKEN")
         self.telegram_api_base = f"https://api.telegram.org/bot{self.athena_bot_token}"
         
         # Group configuration - BITTEN Signals group

@@ -4,8 +4,6 @@
 Dedicated bot for Drill Sergeant, NEXUS, DOC, OBSERVER personalities
 Separate from trading signals - handles all voice and character interactions
 (ATHENA moved to dedicated athena_mission_bot.py)
-
-TOKEN: 8103700393:AAEK3RjTGHHYyy_X1Uc9FUuUoRcLuzYZe4k
 """
 
 import os
@@ -15,6 +13,7 @@ import time
 import logging
 import asyncio
 import random
+import signal
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any
 import telebot
@@ -23,6 +22,12 @@ from telebot import types
 # Add paths for imports
 sys.path.append('/root/HydraX-v2/src')
 sys.path.append('/root/HydraX-v2')
+
+# Import shared utilities
+from hydrax_utils import (
+    safe_send_message, _handle_shutdown_factory, EXEC,
+    measure_latency, rate_limited
+)
 
 # Import configuration loader
 from config_loader import get_voice_bot_token
@@ -342,6 +347,19 @@ def main():
     print("=" * 50)
     
     bot = BittenVoicePersonalityBot()
+    
+    # Add basic ping handler
+    @bot.bot.message_handler(commands=['ping'])
+    @measure_latency(bot.bot, label_fn=lambda m: "cmd:ping")
+    @rate_limited(bot.bot)
+    def handle_ping(message):
+        safe_send_message(bot.bot, message.chat.id, "pong")
+    
+    # Setup graceful shutdown
+    _handler = _handle_shutdown_factory(bot.bot, EXEC)
+    signal.signal(signal.SIGINT, _handler)
+    signal.signal(signal.SIGTERM, _handler)
+    
     bot.start_polling()
 
 if __name__ == "__main__":

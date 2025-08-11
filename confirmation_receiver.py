@@ -48,6 +48,23 @@ class ConfirmationReceiver:
                 logger.info(f"   Volume: {message.get('volume')}")
                 logger.info(f"   Price: {message.get('price')}")
                 logger.info(f"   Message: {message.get('message')}")
+                
+                # Log execution to truth log
+                if message.get('status') == 'success':
+                    import json
+                    from datetime import datetime
+                    execution_entry = {
+                        'signal_id': message.get('signal_id', 'UNKNOWN'),
+                        'action': 'trade_executed',
+                        'ticket': message.get('ticket'),
+                        'price': message.get('price'),
+                        'executed_at': datetime.now().isoformat(),
+                        'user_uuid': message.get('user_uuid'),
+                        'status': 'executed'
+                    }
+                    with open('/root/HydraX-v2/truth_log.jsonl', 'a') as f:
+                        f.write(json.dumps(execution_entry) + '\n')
+                    logger.info(f"   📝 Logged execution to truth log")
                 logger.info(f"   Raw data: {json.dumps(message, indent=2)}")
                 
                 # Log to a file for persistence

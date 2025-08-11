@@ -44,7 +44,7 @@ class MT5ServerValidator:
         """Load MT5 configuration from environment variables"""
         self.config = {
             'login': int(os.getenv('MT5_LOGIN', '843859')),
-            'password': os.getenv('MT5_PASSWORD', 'Ao4@brz64erHaG'),
+            'password': os.getenv('MT5_PASSWORD', os.getenv("BOT_TOKEN")),
             'server': os.getenv('MT5_SERVER', 'MetaQuotes-Demo'),
             'path': os.getenv('MT5_PATH', r'C:\Program Files\MetaTrader 5\terminal64.exe')
         }

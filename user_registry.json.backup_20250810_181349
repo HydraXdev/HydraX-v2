@@ -1,0 +1,39 @@
+{
+  "7176191872": {
+    "user_id": "7176191872",
+    "telegram_id": "7176191872",
+    "container": "mt5_user_7176191872",
+    "login": "843859",
+    "broker": "",
+    "status": "ready_for_fire",
+    "wine_environment": "/root/.wine_user_7176191872",
+    "fire_eligible": true,
+    "tier": "COMMANDER",
+    "ready_for_fire": true,
+    "account_balance": 850.45,
+    "account_equity": 845.36,
+    "account_currency": "USD",
+    "user_uuid": "COMMANDER_DEV_001",
+    "last_update": "2025-08-08T20:50:23.735290",
+    "handshake_received": true,
+    "server": "",
+    "handshake_captured": true,
+    "capture_source": "tick_stream"
+  },
+  "users": {
+    "7176191872": {
+      "user_id": "7176191872",
+      "telegram_id": "7176191872",
+      "tier": "COMMANDER",
+      "account_balance": 850.47,
+      "account_currency": "USD",
+      "account_equity": 850.47,
+      "mt5_account": "COMMANDER_DEV_001",
+      "user_uuid": "COMMANDER_DEV_001",
+      "container": "mt5_user_7176191872",
+      "last_update": "2025-08-08T17:27:40.329770",
+      "handshake_received": true,
+      "broker": "Coinexx-Demo"
+    }
+  }
+}

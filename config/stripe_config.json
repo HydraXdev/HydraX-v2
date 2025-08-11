@@ -1,0 +1,22 @@
+{
+  "timestamp": "2025-08-10T21:37:04.614793",
+  "products": {
+    "NIBBLER": {
+      "product_id": "prod_SqNg222jVyv9LK",
+      "price_id": "price_1RugvKK9gVP9JPc4nc89lfek",
+      "monthly_price": 39.0
+    },
+    "FANG": {
+      "product_id": "prod_SqNg9J4hJE3aoz",
+      "price_id": "price_1RugvLK9gVP9JPc4ykAZJzsZ",
+      "monthly_price": 79.0
+    },
+    "COMMANDER": {
+      "product_id": "prod_SqNgtPKGfa2C2J",
+      "price_id": "price_1RugvMK9gVP9JPc4iH12ZhwH",
+      "monthly_price": 139.0
+    }
+  },
+  "webhook_secret": "whsec_5mQ5JirCxSLQB1FrQoOkdT0AyZAGmTze",
+  "api_key_prefix": "sk_live_51Rhe37K9gVP"
+}

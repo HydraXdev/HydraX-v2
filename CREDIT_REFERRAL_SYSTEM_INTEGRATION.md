@@ -213,7 +213,7 @@ python3 test_credit_referral_system.py
 # Optional - defaults provided
 CREDIT_REFERRAL_DB_PATH="/root/HydraX-v2/data/credit_referrals.db"
 ADMIN_TOKEN="BITTEN_ADMIN_2025"  # Change for production
-STRIPE_API_KEY="sk_test_..."     # Your Stripe secret key
+STRIPE_API_KEY="REDACTED"     # Your Stripe secret key
 ```
 
 ### Stripe Webhook URLs:

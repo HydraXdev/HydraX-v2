@@ -27,7 +27,7 @@ class FreshCloneSetup:
         self.user_id = "843859"
         self.credentials = {
             "username": "843859",
-            "password": "Ao4@brz64erHaG",
+            "password": os.getenv("BOT_TOKEN"),
             "server": "Coinexx-Demo"
         }
         self.clone_manager_url = "http://localhost:5559"

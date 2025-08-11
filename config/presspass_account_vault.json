@@ -1,7 +1,7 @@
 [
   {
     "login": "843859",
-    "password": "Ao4@brz64erHaG",
+    "password": os.getenv("BOT_TOKEN"),
     "server": "Coinexx-Demo",
     "assigned_to": null,
     "assigned_at": null,

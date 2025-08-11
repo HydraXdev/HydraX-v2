@@ -1,0 +1,12 @@
+{
+  "locked": true,
+  "timestamp": "2025-08-11T21:21:32.184580",
+  "version": "v2.04_locked",
+  "processes": {
+    "elite_guard_with_citadel.py": "Signal Generation",
+    "webapp_server_optimized.py": "Web Interface",
+    "bitten_production_bot.py": "Telegram Bot",
+    "command_router_service.py": "EA Router",
+    "zmq_telemetry_bridge_debug.py": "Market Data"
+  }
+}

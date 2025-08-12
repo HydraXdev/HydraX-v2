@@ -865,14 +865,60 @@
         
         // Trade Execution
         function executeTrade() {
-            if (window.Telegram && window.Telegram.WebApp) {
-                // Send fire command via Telegram WebApp
-                window.Telegram.WebApp.sendData(`/fire {{ mission_id }}`);
-                window.Telegram.WebApp.close();
-            } else {
-                // Fallback to web execution
-                window.location.href = `/fire?signal={{ mission_id }}&user={{ user_id }}`;
-            }
+            const button = document.querySelector('.fire-button');
+            button.disabled = true;
+            button.textContent = '⏳ EXECUTING...';
+            
+            // Call fire API
+            fetch('/api/fire', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-User-ID': '{{ user_id }}'
+                },
+                body: JSON.stringify({
+                    mission_id: '{{ mission_id }}'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    button.textContent = '✅ TRADE EXECUTED';
+                    button.style.background = 'linear-gradient(45deg, #10b981, #059669)';
+                    
+                    // Update status
+                    document.querySelector('.mission-status').textContent = 'EXECUTED';
+                    document.querySelector('.mission-status').style.color = '#10b981';
+                    
+                    // Show ticket if available
+                    if (data.ticket) {
+                        alert(`Trade executed! Ticket: ${data.ticket}`);
+                    }
+                    
+                    // Close Telegram WebApp if in Telegram
+                    if (window.Telegram && window.Telegram.WebApp) {
+                        setTimeout(() => {
+                            window.Telegram.WebApp.close();
+                        }, 2000);
+                    }
+                } else {
+                    button.textContent = '❌ EXECUTION FAILED';
+                    button.style.background = 'linear-gradient(45deg, #ef4444, #dc2626)';
+                    alert(`Execution failed: ${data.error || 'Unknown error'}`);
+                    
+                    // Re-enable button after error
+                    setTimeout(() => {
+                        button.disabled = false;
+                        button.textContent = '🚀 EXECUTE TRADE';
+                        button.style.background = '';
+                    }, 3000);
+                }
+            })
+            .catch(error => {
+                console.error('Fire error:', error);
+                button.textContent = '❌ NETWORK ERROR';
+                button.disabled = false;
+            });
         }
         
         function skipMission() {

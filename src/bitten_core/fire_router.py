@@ -134,9 +134,13 @@ class DirectAPIManager:
             with self._lock:
                 self.total_connections += 1
             
-            # Initialize direct broker API session
-            from clone_farm.broker_api import get_broker_session
-            session = get_broker_session(self.api_endpoint)
+            # Direct API disabled - use command_router via IPC queue
+            USE_DIRECT_API = False
+            if USE_DIRECT_API:
+                # Old direct API block (kept behind flag)
+                pass
+            else:
+                raise RuntimeError("Direct API path disabled; use command_router via IPC queue.")
             
             # Track successful connection
             with self._lock:

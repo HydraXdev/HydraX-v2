@@ -29,6 +29,7 @@ class CleanTruthWriter:
                 'generated_at': datetime.now().isoformat(),
                 'citadel_score': signal.get('shield_score', signal.get('consensus_confidence', 0)),
                 'risk_reward': signal.get('risk_reward', 1.0),
+                'target_pips': signal.get('target_pips', 10),
                 'status': 'pending',
                 'completed': False,
                 'signal_type': signal.get('signal_type', 'PRECISION_STRIKE'),

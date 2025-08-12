@@ -1,0 +1,377 @@
+{
+  "processes": [
+    {
+      "name": "zmq_telemetry_bridge",
+      "path": "/root/HydraX-v2/zmq_telemetry_bridge_debug.py",
+      "pm2_name": null,
+      "mode": "background",
+      "pid": 2411770,
+      "binds": ["tcp://*:5556", "tcp://*:5560"],
+      "connects": [],
+      "env_required": [],
+      "depends_on": [],
+      "healthcheck": {
+        "type": "port",
+        "ports": [5556, 5560]
+      }
+    },
+    {
+      "name": "elite_guard",
+      "path": "/root/HydraX-v2/elite_guard_with_citadel.py",
+      "pm2_name": "elite_guard",
+      "mode": "pm2",
+      "pid": 3102500,
+      "binds": ["tcp://*:5557"],
+      "connects": ["tcp://localhost:5560"],
+      "env_required": [],
+      "depends_on": ["zmq_telemetry_bridge"],
+      "healthcheck": {
+        "type": "port",
+        "port": 5557
+      }
+    },
+    {
+      "name": "relay_to_telegram",
+      "path": "/root/HydraX-v2/elite_guard_zmq_relay.py",
+      "pm2_name": "relay_to_telegram",
+      "mode": "pm2",
+      "pid": 3100355,
+      "binds": [],
+      "connects": ["tcp://localhost:5557"],
+      "env_required": [],
+      "depends_on": ["elite_guard"],
+      "healthcheck": {
+        "type": "logs",
+        "pattern": "Received signal"
+      }
+    },
+    {
+      "name": "webapp",
+      "path": "/root/HydraX-v2/webapp_server_optimized.py",
+      "pm2_name": "webapp",
+      "mode": "pm2",
+      "pid": 3125334,
+      "binds": ["0.0.0.0:8888"],
+      "connects": ["ipc:///tmp/bitten_cmdqueue"],
+      "env_required": ["BITTEN_DB"],
+      "depends_on": [],
+      "healthcheck": {
+        "type": "http",
+        "endpoint": "http://127.0.0.1:8888/healthz"
+      }
+    },
+    {
+      "name": "command_router",
+      "path": "/root/HydraX-v2/command_router.py",
+      "pm2_name": "command_router",
+      "mode": "pm2",
+      "pid": 3125079,
+      "binds": ["tcp://*:5555", "ipc:///tmp/bitten_cmdqueue"],
+      "connects": [],
+      "env_required": [],
+      "depends_on": [],
+      "healthcheck": {
+        "type": "port",
+        "port": 5555
+      }
+    },
+    {
+      "name": "confirm_listener",
+      "path": "/root/HydraX-v2/confirm_listener.py",
+      "pm2_name": "confirm_listener",
+      "mode": "pm2",
+      "pid": 3126882,
+      "binds": ["tcp://*:5558"],
+      "connects": [],
+      "env_required": ["BITTEN_DB", "CONFIRM_BIND"],
+      "depends_on": [],
+      "healthcheck": {
+        "type": "port",
+        "port": 5558
+      }
+    },
+    {
+      "name": "outcome_daemon",
+      "path": "/root/HydraX-v2/signal_outcome_monitor.py",
+      "pm2_name": "outcome_daemon",
+      "mode": "pm2",
+      "pid": 3120143,
+      "binds": [],
+      "connects": ["tcp://localhost:5560"],
+      "env_required": [],
+      "depends_on": ["zmq_telemetry_bridge"],
+      "healthcheck": {
+        "type": "logs",
+        "pattern": "Monitoring"
+      }
+    },
+    {
+      "name": "commander_throne",
+      "path": "/root/HydraX-v2/commander_throne.py",
+      "pm2_name": null,
+      "mode": "background",
+      "pid": 2454259,
+      "binds": ["0.0.0.0:8899"],
+      "connects": [],
+      "env_required": [],
+      "depends_on": [],
+      "healthcheck": {
+        "type": "port",
+        "port": 8899
+      }
+    }
+  ],
+  "ports": [
+    {
+      "port": 5555,
+      "proto": "tcp",
+      "binder_process": "command_router",
+      "purpose": "ROUTER socket for EA command distribution",
+      "allowed_clients": ["EA DEALER sockets"]
+    },
+    {
+      "port": 5556,
+      "proto": "tcp",
+      "binder_process": "zmq_telemetry_bridge",
+      "purpose": "PULL socket receiving market data from EAs",
+      "allowed_clients": ["Remote EA PUSH sockets"]
+    },
+    {
+      "port": 5557,
+      "proto": "tcp",
+      "binder_process": "elite_guard",
+      "purpose": "PUB socket broadcasting trading signals",
+      "allowed_clients": ["relay_to_telegram"]
+    },
+    {
+      "port": 5558,
+      "proto": "tcp",
+      "binder_process": "confirm_listener",
+      "purpose": "PULL socket receiving trade confirmations",
+      "allowed_clients": ["Remote EA PUSH sockets"]
+    },
+    {
+      "port": 5560,
+      "proto": "tcp",
+      "binder_process": "zmq_telemetry_bridge",
+      "purpose": "PUB socket redistributing market data",
+      "allowed_clients": ["elite_guard", "outcome_daemon"]
+    },
+    {
+      "port": 8888,
+      "proto": "http",
+      "binder_process": "webapp",
+      "purpose": "Web interface and API endpoints",
+      "allowed_clients": ["localhost", "users via browser"]
+    },
+    {
+      "port": 8899,
+      "proto": "http",
+      "binder_process": "commander_throne",
+      "purpose": "Analytics dashboard",
+      "allowed_clients": ["localhost", "users via browser"]
+    }
+  ],
+  "queues": [
+    {
+      "addr": "ipc:///tmp/bitten_cmdqueue",
+      "binder_process": "command_router",
+      "purpose": "IPC queue for fire commands from webapp to router"
+    }
+  ],
+  "endpoints": [
+    {
+      "method": "POST",
+      "path": "/api/signals",
+      "handler_file": "webapp_server_optimized.py",
+      "writes_tables": ["missions"],
+      "reads_tables": []
+    },
+    {
+      "method": "GET",
+      "path": "/brief",
+      "handler_file": "webapp_server_optimized.py",
+      "writes_tables": ["missions"],
+      "reads_tables": ["missions", "users"]
+    },
+    {
+      "method": "POST",
+      "path": "/api/fire",
+      "handler_file": "webapp_server_optimized.py",
+      "writes_tables": ["fires"],
+      "reads_tables": ["missions", "users"]
+    },
+    {
+      "method": "PUT",
+      "path": "/api/missions/{id}/status",
+      "handler_file": "webapp_server_optimized.py",
+      "writes_tables": ["missions"],
+      "reads_tables": ["missions"]
+    },
+    {
+      "method": "GET",
+      "path": "/healthz",
+      "handler_file": "webapp_server_optimized.py",
+      "writes_tables": [],
+      "reads_tables": []
+    },
+    {
+      "method": "GET",
+      "path": "/me",
+      "handler_file": "webapp_server_optimized.py",
+      "writes_tables": [],
+      "reads_tables": ["fires", "missions", "users"]
+    },
+    {
+      "method": "GET",
+      "path": "/api/missions",
+      "handler_file": "webapp_server_optimized.py",
+      "writes_tables": [],
+      "reads_tables": ["missions"]
+    }
+  ],
+  "db": [
+    {
+      "table": "missions",
+      "primary_key": "mission_id",
+      "columns": [
+        {"name": "mission_id", "type": "TEXT"},
+        {"name": "signal_id", "type": "TEXT"},
+        {"name": "payload_json", "type": "TEXT"},
+        {"name": "tg_message_id", "type": "INTEGER"},
+        {"name": "status", "type": "TEXT"},
+        {"name": "expires_at", "type": "INTEGER"},
+        {"name": "created_at", "type": "INTEGER"},
+        {"name": "target_uuid", "type": "TEXT"}
+      ],
+      "used_by": ["webapp", "outcome_daemon"]
+    },
+    {
+      "table": "fires",
+      "primary_key": "fire_id",
+      "columns": [
+        {"name": "fire_id", "type": "TEXT"},
+        {"name": "mission_id", "type": "TEXT"},
+        {"name": "user_id", "type": "TEXT"},
+        {"name": "status", "type": "TEXT"},
+        {"name": "ticket", "type": "INTEGER"},
+        {"name": "price", "type": "REAL"},
+        {"name": "idem", "type": "TEXT"},
+        {"name": "created_at", "type": "INTEGER"},
+        {"name": "updated_at", "type": "INTEGER"},
+        {"name": "equity_used", "type": "REAL"},
+        {"name": "risk_pct_used", "type": "REAL"}
+      ],
+      "used_by": ["webapp", "confirm_listener"]
+    },
+    {
+      "table": "ea_instances",
+      "primary_key": "target_uuid",
+      "columns": [
+        {"name": "target_uuid", "type": "TEXT"},
+        {"name": "user_id", "type": "TEXT"},
+        {"name": "last_seen", "type": "INTEGER"},
+        {"name": "account_balance", "type": "REAL"},
+        {"name": "account_equity", "type": "REAL"},
+        {"name": "account_currency", "type": "TEXT"},
+        {"name": "messages_received", "type": "INTEGER"}
+      ],
+      "used_by": ["command_router", "webapp"]
+    },
+    {
+      "table": "signals",
+      "primary_key": "signal_id",
+      "columns": [
+        {"name": "signal_id", "type": "TEXT"},
+        {"name": "symbol", "type": "TEXT"},
+        {"name": "direction", "type": "TEXT"},
+        {"name": "entry_price", "type": "REAL"},
+        {"name": "stop_pips", "type": "REAL"},
+        {"name": "target_pips", "type": "REAL"},
+        {"name": "confidence", "type": "REAL"},
+        {"name": "pattern_type", "type": "TEXT"},
+        {"name": "created_at", "type": "INTEGER"}
+      ],
+      "used_by": ["webapp"]
+    },
+    {
+      "table": "users",
+      "primary_key": "user_id",
+      "columns": [
+        {"name": "user_id", "type": "TEXT"},
+        {"name": "username", "type": "TEXT"},
+        {"name": "tier", "type": "TEXT"},
+        {"name": "settings_json", "type": "TEXT"},
+        {"name": "created_at", "type": "INTEGER"}
+      ],
+      "used_by": ["webapp"]
+    }
+  ],
+  "contracts": {
+    "signal_zmq": {
+      "signal_id": "string",
+      "symbol": "string",
+      "direction": "string",
+      "entry_price": "number",
+      "stop_pips": "number",
+      "target_pips": "number",
+      "confidence": "number",
+      "pattern_type": "string",
+      "signal_type": "string",
+      "citadel_score": "number",
+      "timestamp": "number"
+    },
+    "mission_create": {
+      "signal_id": "string",
+      "symbol": "string",
+      "direction": "string",
+      "entry_price": "number",
+      "stop_pips": "number",
+      "target_pips": "number",
+      "confidence": "number",
+      "pattern_type": "string"
+    },
+    "fire_cmd": {
+      "type": "fire",
+      "fire_id": "string",
+      "target_uuid": "string",
+      "symbol": "string",
+      "direction": "BUY|SELL",
+      "entry": "number",
+      "sl": "number",
+      "tp": "number",
+      "lot": "number"
+    },
+    "confirmation": {
+      "type": "confirmation",
+      "fire_id": "string",
+      "target_uuid": "string",
+      "status": "FILLED|FAILED",
+      "ticket": "number",
+      "price": "number",
+      "symbol": "string"
+    }
+  },
+  "allowed_processes": [
+    "command_router",
+    "confirm_listener",
+    "elite_guard",
+    "outcome_daemon",
+    "relay_to_telegram",
+    "webapp",
+    "zmq_telemetry_bridge_debug.py",
+    "commander_throne.py"
+  ],
+  "disallowed_processes": [
+    "fire_router_service.py",
+    "zmq_bitten_controller.py",
+    "clone_farm",
+    "venom",
+    "bitten_production_bot.py",
+    "handshake_processor.py"
+  ],
+  "immutables": [
+    "/root/HydraX-v2/command_router.py",
+    "/root/HydraX-v2/confirm_listener.py"
+  ]
+}

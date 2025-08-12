@@ -8,8 +8,12 @@ import os
 import sys
 import json
 import logging
+import time
+from pathlib import Path
 import random
 from datetime import datetime
+import sqlite3
+from contextlib import contextmanager
 
 # Core Flask imports (always needed)
 from flask import Flask, render_template, render_template_string, request, jsonify, redirect
@@ -123,6 +127,17 @@ app.config.update({
     'SEND_FILE_MAX_AGE_DEFAULT': 31536000,   # 1 year cache for static files
 })
 
+# Database helper
+@contextmanager
+def get_bitten_db():
+    """Database connection context manager"""
+    conn = sqlite3.connect('/root/HydraX-v2/bitten.db')
+    conn.row_factory = sqlite3.Row
+    try:
+        yield conn
+    finally:
+        conn.close()
+
 # Initialize SocketIO with optimized settings
 socketio = SocketIO(
     app, 
@@ -173,6 +188,11 @@ def index():
     except Exception as e:
         logger.error(f"Index route error: {e}")
         return "BITTEN HUD - Loading...", 200
+
+@app.route('/healthz')
+def healthz():
+    """Health check endpoint for monitoring"""
+    return jsonify({'status': 'OK', 'service': 'webapp', 'timestamp': time.time()}), 200
 
 @app.route('/api/signals', methods=['GET', 'POST'])
 def api_signals():
@@ -480,6 +500,7 @@ def mission_briefing():
             'signal_id': mission_data.get('signal_id', mission_id),
             'user_id': user_id,
             'expiry_seconds': time_remaining,
+            'time_remaining': time_remaining,  # Add for countdown timer
             
             # User stats with real overlay data
             'user_stats': user_stats,  # Use the loaded user stats from registry
@@ -675,6 +696,79 @@ def add_notebook_entry(user_id):
     except Exception as e:
         logger.error(f"Add notebook entry error: {e}")
         return redirect(f'/notebook/{user_id}?error=add_failed')
+
+@app.route('/brief')
+def brief_mission():
+    """Create per-user mission when clicking from Telegram"""
+    try:
+        signal_id = request.args.get('signal_id')
+        # Get user_id from multiple sources
+        user_id = request.args.get('user_id')
+        
+        # If no user_id in URL, try to get from session/cookie
+        if not user_id:
+            user_id = request.cookies.get('user_id')
+        
+        # If still no user_id, try Telegram WebApp data
+        if not user_id:
+            tg_data = request.args.get('tgWebAppData')
+            if tg_data:
+                try:
+                    import base64
+                    decoded = json.loads(base64.b64decode(tg_data))
+                    user_id = str(decoded.get('user', {}).get('id'))
+                except:
+                    pass
+        
+        # Default to a generic user if no ID found
+        if not user_id:
+            user_id = '7176191872'  # Default commander user
+        
+        if not signal_id:
+            return jsonify({'error': 'No signal_id provided'}), 400
+            
+        # Check if mission file exists
+        mission_file = f'/root/HydraX-v2/missions/{signal_id}.json'
+        if not os.path.exists(mission_file):
+            return jsonify({'error': f'Signal {signal_id} not found'}), 404
+            
+        # Load signal data
+        with open(mission_file) as f:
+            signal_data = json.load(f)
+            
+        # Create per-user mission in database
+        mission_id = f"{signal_id}_USER_{user_id}"
+        
+        with get_bitten_db() as conn:
+            # Check if mission already exists
+            existing = conn.execute(
+                'SELECT mission_id FROM missions WHERE mission_id = ?',
+                (mission_id,)
+            ).fetchone()
+            
+            if not existing:
+                # Create new mission
+                conn.execute('''
+                    INSERT INTO missions (mission_id, signal_id, payload_json, status, expires_at, created_at, target_uuid)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                ''', (
+                    mission_id,
+                    signal_id,
+                    json.dumps(signal_data),
+                    'PENDING',
+                    int(time.time()) + 7200,  # 2 hour expiry
+                    int(time.time()),
+                    user_id
+                ))
+                conn.commit()
+                logger.info(f"Created mission {mission_id} for user {user_id}")
+        
+        # Redirect to HUD with the mission
+        return redirect(f'/hud?mission_id={signal_id}&user_id={user_id}')
+        
+    except Exception as e:
+        logger.error(f"Brief endpoint error: {e}")
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/fire', methods=['POST'])
 def fire_mission():
@@ -2830,8 +2924,9 @@ def signal_analysis(signal_id):
 
 # ============== END HUD SUPPORT ENDPOINTS ==============
 
-if __name__ == '__main__':
-    # Production-ready configuration
+if __name__ == '__main__' and os.environ.get("FLASK_DEV", "") == "1":
+    # ONLY run Flask dev server when explicitly requested
+    # This prevents PM2 from accidentally starting the dev server
     host = os.getenv('WEBAPP_HOST', '0.0.0.0')
     port = int(os.getenv('WEBAPP_PORT', 8888))
     debug_mode = os.getenv('FLASK_ENV') == 'development'

@@ -90,10 +90,10 @@ class BITTENZMQController:
     def start(self):
         """Start the controller"""
         try:
-            # Create command socket (PUSH)
+            # Create command socket (PUSH) - connect to existing command router
             self.command_socket = self.context.socket(zmq.PUSH)
-            self.command_socket.bind(f"tcp://*:{self.command_port}")
-            logger.info(f"✅ Command socket bound on port {self.command_port}")
+            self.command_socket.connect(f"tcp://localhost:{self.command_port}")
+            logger.info(f"✅ Command socket connected to port {self.command_port}")
             
             # Create feedback socket (PULL) - receives both telemetry and results
             self.feedback_socket = self.context.socket(zmq.PULL)

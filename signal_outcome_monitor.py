@@ -60,6 +60,40 @@ class SignalOutcomeMonitor:
         except FileNotFoundError:
             print("   No truth log found, starting fresh")
     
+    def pip_size(self, symbol: str) -> float:
+        """Calculate pip size for a symbol"""
+        s = symbol.upper()
+        if s.endswith("JPY"): return 0.01
+        if s.startswith("XAU"): return 0.1
+        if s.startswith("XAG"): return 0.01
+        return 0.0001
+        
+    def ensure_levels(self, signal: dict) -> tuple:
+        """Ensure signal has absolute SL/TP levels"""
+        sym = signal.get('symbol', '').upper()
+        side = signal.get('direction', '').upper()
+        entry = float(signal.get('entry_price', 0))
+        sl_abs = float(signal.get('sl', 0))
+        tp_abs = float(signal.get('tp', 0))
+        stop_pips = float(signal.get('stop_pips', 0) or signal.get('sl_pips', 0))
+        target_pips = float(signal.get('target_pips', 0) or signal.get('tp_pips', 0))
+        
+        # If we already have absolute levels, use them
+        if sl_abs > 0 and tp_abs > 0:
+            return sl_abs, tp_abs, entry
+            
+        # Calculate from pips if we have entry and pips
+        if entry > 0 and (stop_pips > 0 or target_pips > 0) and side in ("BUY", "SELL"):
+            pip = self.pip_size(sym)
+            if side == "BUY":
+                sl_abs = entry - (stop_pips * pip) if stop_pips > 0 else 0
+                tp_abs = entry + (target_pips * pip) if target_pips > 0 else 0
+            else:
+                sl_abs = entry + (stop_pips * pip) if stop_pips > 0 else 0
+                tp_abs = entry - (target_pips * pip) if target_pips > 0 else 0
+                
+        return sl_abs, tp_abs, entry
+    
     def process_tick(self, symbol: str, bid: float, ask: float):
         """Process tick data and check if any signals hit SL/TP"""
         
@@ -74,6 +108,18 @@ class SignalOutcomeMonitor:
                 continue
                 
             data['ticks_processed'] += 1
+            
+            # Ensure we have SL/TP levels
+            sl, tp, entry_price = self.ensure_levels(signal)
+            
+            # Skip if we couldn't determine levels
+            if sl <= 0 or tp <= 0:
+                continue
+                
+            # Store computed levels back in signal for future use
+            if 'sl' not in signal or signal['sl'] <= 0:
+                signal['sl'] = sl
+                signal['tp'] = tp
             
             # Determine relevant price based on direction
             if signal['direction'] == 'BUY':
@@ -231,17 +277,27 @@ class SignalOutcomeMonitor:
                 if self.subscriber.poll(100):  # 100ms timeout
                     message = self.subscriber.recv_string()
                     
-                    # Parse tick data
-                    if message.startswith("TICK"):
-                        parts = message.split()
-                        if len(parts) >= 4:
-                            symbol = parts[1]
-                            try:
-                                bid = float(parts[2])
-                                ask = float(parts[3])
-                                self.process_tick(symbol, bid, ask)
-                            except ValueError:
-                                pass
+                    # Parse tick data - expecting JSON format
+                    try:
+                        data = json.loads(message)
+                        if data.get('type') == 'TICK':
+                            symbol = data.get('symbol')
+                            bid = data.get('bid')
+                            ask = data.get('ask')
+                            if symbol and bid and ask:
+                                self.process_tick(symbol, float(bid), float(ask))
+                    except (json.JSONDecodeError, ValueError, TypeError):
+                        # Try old format as fallback
+                        if message.startswith("TICK"):
+                            parts = message.split()
+                            if len(parts) >= 4:
+                                try:
+                                    symbol = parts[1]
+                                    bid = float(parts[2])
+                                    ask = float(parts[3])
+                                    self.process_tick(symbol, bid, ask)
+                                except ValueError:
+                                    pass
                 
                 # Print statistics every 30 seconds
                 if time.time() - last_stats > 30:

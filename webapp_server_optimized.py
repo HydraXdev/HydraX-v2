@@ -736,6 +736,39 @@ def brief_mission():
         with open(mission_file) as f:
             signal_data = json.load(f)
             
+        # Helper function for pip size
+        def pip_size(symbol):
+            s = symbol.upper()
+            if s.endswith("JPY"): return 0.01
+            if s.startswith("XAU"): return 0.1
+            if s.startswith("XAG"): return 0.01
+            return 0.0001
+            
+        # Calculate absolute SL/TP from pips
+        signal = signal_data.get('signal', signal_data)
+        sym = signal.get('symbol', '').upper()
+        side = signal.get('direction', '').upper()
+        entry = float(signal.get('entry_price') or 0)
+        stop_pips = float(signal.get('stop_pips') or signal.get('sl_pips') or 10)
+        target_pips = float(signal.get('target_pips') or signal.get('tp_pips') or 15)
+        
+        if entry > 0 and sym and side:
+            pip = pip_size(sym)
+            if side == "BUY":
+                sl = entry - (stop_pips * pip) if stop_pips > 0 else 0
+                tp = entry + (target_pips * pip) if target_pips > 0 else 0
+            elif side == "SELL":
+                sl = entry + (stop_pips * pip) if stop_pips > 0 else 0
+                tp = entry - (target_pips * pip) if target_pips > 0 else 0
+            else:
+                sl = tp = 0
+                
+            # Add absolute levels to signal data
+            signal['sl'] = round(sl, 6)
+            signal['tp'] = round(tp, 6)
+            if 'signal' in signal_data:
+                signal_data['signal'] = signal
+            
         # Create per-user mission in database
         mission_id = f"{signal_id}_USER_{user_id}"
         
@@ -842,41 +875,44 @@ def fire_mission():
         except Exception as e:
             logger.warning(f"Enhanced notifications failed: {e}")
         
-        # REAL BROKER EXECUTION via FireRouter
+        # REAL BROKER EXECUTION via IPC Queue
         execution_result = {'success': False, 'message': 'Execution failed'}
         
         try:
-            # Import fire router for real trade execution
-            import sys
-            sys.path.append('/root/HydraX-v2/src/bitten_core')
-            from fire_router import FireRouter, TradeRequest, TradeDirection
-            
-            fire_router = FireRouter()
+            # Import enqueue_fire for IPC queue submission
+            from enqueue_fire import enqueue_fire, create_fire_command
             
             # Extract signal data
             signal = mission_data.get('signal', {})
             enhanced_signal = mission_data.get('enhanced_signal', signal)
             
-            # Create trade request
-            direction = TradeDirection.BUY if enhanced_signal.get('direction', '').upper() == 'BUY' else TradeDirection.SELL
+            # Create fire command for queue
+            direction = 'BUY' if enhanced_signal.get('direction', '').upper() == 'BUY' else 'SELL'
             
             # Use safe volume - ignore high mission volume
-            safe_volume = 0.1  # Start with micro lots for safety
+            safe_volume = 0.01  # Start with micro lots for safety
             
-            trade_request = TradeRequest(
+            fire_cmd = create_fire_command(
+                mission_id=mission_id,
                 user_id=str(user_id),
                 symbol=enhanced_signal.get('symbol', 'EURUSD'),
                 direction=direction,
-                volume=safe_volume,
-                stop_loss=enhanced_signal.get('stop_loss'),
-                take_profit=enhanced_signal.get('take_profit'),
-                tcs_score=enhanced_signal.get('tcs_score', 75),
-                comment=f"BITTEN_{mission_id}",
-                mission_id=mission_id
+                entry=float(enhanced_signal.get('entry_price', 0)),
+                sl=float(enhanced_signal.get('stop_loss', 0) or enhanced_signal.get('sl', 0)),
+                tp=float(enhanced_signal.get('take_profit', 0) or enhanced_signal.get('tp', 0)),
+                lot=safe_volume
             )
             
-            # Execute real trade via direct broker API
-            fire_result = fire_router.execute_trade_request(trade_request)
+            # Send to IPC queue
+            enqueue_fire(fire_cmd)
+            
+            # Return immediate success (actual execution happens async)
+            fire_result = type('obj', (object,), {
+                'success': True,
+                'message': 'Trade queued for execution',
+                'ticket': None,
+                'execution_price': None
+            })
             
             execution_result = {
                 'success': fire_result.success,

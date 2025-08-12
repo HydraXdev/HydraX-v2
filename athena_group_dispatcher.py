@@ -70,6 +70,8 @@ class AthenaGroupDispatcher:
             confidence = round(tcs_score, 1)
             
             logger.info(f"🏛️ Dispatching group signal: {signal_id} - {symbol} {direction}")
+            logger.info(f"📊 Debug - Signal data keys: {list(signal_data.keys())}")
+            logger.info(f"📊 Debug - TCS Score: {tcs_score}, Confidence: {confidence}")
             
             # Mission files handled by PersonalizedMissionBrain via athena_signal_dispatcher
             
@@ -86,12 +88,17 @@ class AthenaGroupDispatcher:
 📥 [MISSION BRIEF]({hud_url})"""
             
             # Send to group
+            logger.info(f"📤 Attempting to send to group: {self.group_chat_id}")
+            logger.info(f"📝 Message content: {message[:100]}...")
+            
             result = self._send_telegram_message(
                 chat_id=self.group_chat_id,
                 text=message,
                 parse_mode="Markdown",
                 disable_web_page_preview=True
             )
+            
+            logger.info(f"📬 Send result: {result}")
             
             if result['success']:
                 self.group_signals_sent += 1
@@ -149,9 +156,10 @@ class AthenaGroupDispatcher:
     
     def _generate_hud_url(self, signal_id: str) -> str:
         """Generate HUD URL for full mission briefing"""
-        # Use the existing HydraX WebApp HUD system with correct parameter name
+        # Use the brief endpoint without user_id - will be determined on click
+        # Each user clicking the link gets their own personalized mission
         base_url = "https://joinbitten.com"
-        return f"{base_url}/hud?mission_id={signal_id}&user_id=7176191872"
+        return f"{base_url}/brief?signal_id={signal_id}"
     
     def _send_telegram_message(self, chat_id: str, text: str, parse_mode: str = "Markdown", disable_web_page_preview: bool = False) -> Dict:
         """Send message via Telegram API"""

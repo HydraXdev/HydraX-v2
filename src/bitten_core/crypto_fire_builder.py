@@ -174,8 +174,8 @@ class CryptoPositionSizer:
     
     def __init__(self):
         # C.O.R.E. Crypto Trading Settings (Always)
-        self.default_risk_percent = 1.0  # 1% risk per trade (tighter for 55-65% win rates)
-        self.max_daily_drawdown = 4.0    # 4% daily drawdown cap (4 losses max)
+        self.default_risk_percent = 5.0  # 5% risk per trade for aggressive growth
+        self.max_daily_drawdown = 20.0   # 20% daily drawdown cap (4 losses @ 5% each)
         self.risk_reward_ratio = 2.0     # 1:2 RR for all signals (prioritize reward)
         self.atr_multiplier = 3.0        # SL = ATR * 3 for crypto volatility
         

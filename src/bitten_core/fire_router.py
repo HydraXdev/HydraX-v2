@@ -908,10 +908,25 @@ class FireRouter:
         
         direction = TradeDirection.BUY if mission.get("type", "buy").lower() == "buy" else TradeDirection.SELL
         
+        # Calculate proper lot size if not provided
+        lot_size = mission.get("lot_size", mission.get("lot"))
+        if not lot_size or lot_size == 0.01:
+            # Calculate based on 5% risk
+            account_balance = mission.get("account_balance", 10000.0)
+            risk_percent = 0.05  # 5% risk
+            stop_loss_pips = mission.get("stop_pips", 20)
+            
+            risk_amount = account_balance * risk_percent
+            dollars_per_pip = 10.0  # For major pairs
+            calculated_lot_size = risk_amount / (stop_loss_pips * dollars_per_pip)
+            lot_size = max(0.01, min(calculated_lot_size, 1.0))
+            
+            logger.info(f"Calculated lot size: {lot_size:.2f} for {risk_percent*100}% risk on ${account_balance:.2f}")
+        
         return TradeRequest(
             symbol=mission.get("symbol", "EURUSD"),
             direction=direction,
-            volume=mission.get("lot_size", mission.get("lot", 0.01)),
+            volume=lot_size,
             stop_loss=mission.get("sl"),
             take_profit=mission.get("tp"),
             comment=mission.get("comment", ""),

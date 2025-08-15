@@ -1,0 +1,507 @@
+RUN diag_20250812_133805 @ Tue Aug 12 13:38:05 UTC 2025
+
+== PM2 LIST ==
+┌────┬──────────────────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name                     │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼──────────────────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 18 │ bitten-production-bot    │ default     │ N/A     │ fork    │ 0        │ 0      │ 75   │ errored   │ 0%       │ 0b       │ root     │ disabled │
+│ 17 │ command_router           │ default     │ N/A     │ fork    │ 3125079  │ 10h    │ 0    │ online    │ 0%       │ 14.5mb   │ root     │ disabled │
+│ 1  │ confirm_listener         │ default     │ N/A     │ fork    │ 3126882  │ 9h     │ 16   │ online    │ 0%       │ 16.9mb   │ root     │ disabled │
+│ 11 │ elite_guard              │ default     │ N/A     │ fork    │ 3102500  │ 12h    │ 1    │ online    │ 0%       │ 79.5mb   │ root     │ disabled │
+│ 16 │ outcome_daemon           │ default     │ N/A     │ fork    │ 3120143  │ 10h    │ 3    │ online    │ 0%       │ 14.8mb   │ root     │ disabled │
+│ 10 │ relay_to_telegram        │ default     │ N/A     │ fork    │ 3166228  │ 60m    │ 1    │ online    │ 0%       │ 30.0mb   │ root     │ disabled │
+│ 15 │ webapp                   │ default     │ N/A     │ fork    │ 3165495  │ 65m    │ 14   │ online    │ 0%       │ 21.8mb   │ root     │ disabled │
+└────┴──────────────────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+Module
+┌────┬──────────────────────────────┬───────────────┬──────────┬──────────┬──────┬──────────┬──────────┬──────────┐
+│ id │ module                       │ version       │ pid      │ status   │ ↺    │ cpu      │ mem      │ user     │
+├────┼──────────────────────────────┼───────────────┼──────────┼──────────┼──────┼──────────┼──────────┼──────────┤
+│ 8  │ pm2-logrotate                │ 2.7.0         │ 3116912  │ online   │ 3    │ 0%       │ 71.9mb   │ root     │
+└────┴──────────────────────────────┴───────────────┴──────────┴──────────┴──────┴──────────┴──────────┴──────────┘
+
+== PORT BINDINGS 5555/5556/5557/5558/5560/8888 ==
+tcp        0      0 0.0.0.0:8888            0.0.0.0:*               LISTEN     
+tcp        0      0 0.0.0.0:5560            0.0.0.0:*               LISTEN     
+tcp        0      0 0.0.0.0:5555            0.0.0.0:*               LISTEN     
+tcp        0      0 0.0.0.0:5558            0.0.0.0:*               LISTEN     
+tcp        0      0 0.0.0.0:5557            0.0.0.0:*               LISTEN     
+tcp        0      0 0.0.0.0:5556            0.0.0.0:*               LISTEN     
+
+== HEALTH ENDPOINT ==
+{"service":"webapp","status":"OK","timestamp":1755006699.8843446}
+
+== DB SCHEMA CHECK ==
+CREATE TABLE missions(
+      mission_id TEXT PRIMARY KEY,
+      signal_id TEXT,
+      payload_json TEXT NOT NULL,
+      tg_message_id INTEGER,
+      status TEXT,               -- PENDING/FILLED/FAILED/TIMEOUT
+      expires_at INTEGER,
+      created_at INTEGER
+    , target_uuid TEXT);
+CREATE INDEX idx_missions_status ON missions(status);
+CREATE INDEX idx_missions_expires ON missions(expires_at);
+CREATE TABLE fires(
+      fire_id TEXT PRIMARY KEY,
+      mission_id TEXT NOT NULL,
+      user_id TEXT NOT NULL,
+      status TEXT,               -- SENT/FILLED/FAILED/TIMEOUT
+      ticket INTEGER,
+      price REAL,
+      idem TEXT UNIQUE,
+      created_at INTEGER,
+      updated_at INTEGER
+    , equity_used REAL, risk_pct_used REAL);
+CREATE INDEX idx_fires_user ON fires(user_id);
+CREATE INDEX idx_fires_mission ON fires(mission_id);
+CREATE INDEX idx_fires_idem ON fires(idem);
+CREATE TABLE ea_instances (
+        target_uuid TEXT PRIMARY KEY,
+        user_id TEXT,
+        account_login TEXT,
+        broker TEXT,
+        currency TEXT,
+        leverage INTEGER,
+        last_balance REAL,
+        last_equity REAL,
+        last_seen INTEGER,
+        created_at INTEGER,
+        updated_at INTEGER
+    );
+CREATE INDEX idx_ea_user ON ea_instances(user_id);
+CREATE INDEX idx_ea_seen ON ea_instances(last_seen);
+  File "<stdin>", line 10
+    PY < /dev/null
+         ^
+SyntaxError: invalid syntax
+
+== ZMQ :5557 SIGNAL SNIFF ==
+NO SIGNAL in 5s: Resource temporarily unavailable
+
+== RELAY LOGS ==
+[TAILING] Tailing last 50 lines for [relay_to_telegram] process (change the value with --lines option)
+/root/.pm2/logs/relay-to-telegram-out.log last 50 lines:
+10|relay_t | ============================================================
+10|relay_t | 🚀 ELITE GUARD ZMQ-TO-HTTP RELAY
+10|relay_t | ============================================================
+10|relay_t | 📡 Bridging: Elite Guard ZMQ → BITTEN WebApp
+10|relay_t | 🎯 Purpose: Enable full mission lifecycle for Elite Guard signals
+10|relay_t | 🔄 Flow: ZMQ 5557 → HTTP /api/signals → BittenCore → ATHENA → Telegram
+10|relay_t | ============================================================
+10|relay_t | ============================================================
+10|relay_t | 🚀 ELITE GUARD ZMQ-TO-HTTP RELAY
+10|relay_t | ============================================================
+10|relay_t | 📡 Bridging: Elite Guard ZMQ → BITTEN WebApp
+10|relay_t | 🎯 Purpose: Enable full mission lifecycle for Elite Guard signals
+10|relay_t | 🔄 Flow: ZMQ 5557 → HTTP /api/signals → BittenCore → ATHENA → Telegram
+10|relay_t | ============================================================
+
+/root/.pm2/logs/relay-to-telegram-error.log last 50 lines:
+10|relay_t | python3: can't open file '/root/HydraX-v2/relay_to_telegram.py': [Errno 2] No such file or directory
+10|relay_t | python3: can't open file '/root/HydraX-v2/relay_to_telegram.py': [Errno 2] No such file or directory
+10|relay_t | python3: can't open file '/root/HydraX-v2/relay_to_telegram.py': [Errno 2] No such file or directory
+10|relay_t | python3: can't open file '/root/HydraX-v2/relay_to_telegram.py': [Errno 2] No such file or directory
+10|relay_t | python3: can't open file '/root/HydraX-v2/relay_to_telegram.py': [Errno 2] No such file or directory
+10|relay_t | 2025-08-12 00:54:57,287 - EliteGuardZMQRelay - INFO - 🚀 Starting Elite Guard ZMQ-to-HTTP Relay
+10|relay_t | 2025-08-12 00:54:57,287 - EliteGuardZMQRelay - INFO - 📡 ZMQ Source: tcp://127.0.0.1:5557
+10|relay_t | 2025-08-12 00:54:57,288 - EliteGuardZMQRelay - INFO - 🌐 HTTP Target: http://localhost:8888/api/signals
+10|relay_t | 2025-08-12 00:54:57,288 - EliteGuardZMQRelay - INFO - ============================================================
+10|relay_t | 2025-08-12 00:54:57,290 - EliteGuardZMQRelay - INFO - ✅ Elite Guard ZMQ Relay started successfully
+10|relay_t | 2025-08-12 00:54:57,290 - EliteGuardZMQRelay - INFO - 🔍 Listening for ELITE_GUARD_SIGNAL messages...
+10|relay_t | 2025-08-12 00:56:32,927 - EliteGuardZMQRelay - INFO - ✅ Signal relayed: ELITE_GUARD_EURJPY_1754960192 (EURJPY SELL)
+10|relay_t | 2025-08-12 00:56:33,560 - EliteGuardZMQRelay - INFO - ✅ Signal relayed: ELITE_GUARD_GBPJPY_1754960192 (GBPJPY SELL)
+10|relay_t | 2025-08-12 01:08:03,022 - EliteGuardZMQRelay - INFO - ✅ Signal relayed: ELITE_GUARD_USDJPY_1754960882 (USDJPY BUY)
+10|relay_t | 2025-08-12 01:17:03,451 - EliteGuardZMQRelay - INFO - ✅ Signal relayed: ELITE_GUARD_USDJPY_1754961422 (USDJPY SELL)
+10|relay_t | 2025-08-12 01:54:05,580 - EliteGuardZMQRelay - INFO - ✅ Signal relayed: ELITE_GUARD_EURUSD_1754963644 (EURUSD BUY)
+10|relay_t | 2025-08-12 04:51:44,704 - EliteGuardZMQRelay - INFO - ✅ Signal relayed: ELITE_GUARD_EURUSD_1754974303 (EURUSD SELL)
+10|relay_t | 2025-08-12 07:31:53,022 - EliteGuardZMQRelay - INFO - ✅ Signal relayed: ELITE_GUARD_EURUSD_1754983912 (EURUSD SELL)
+10|relay_t | 2025-08-12 07:44:53,578 - EliteGuardZMQRelay - INFO - ✅ Signal relayed: ELITE_GUARD_GBPUSD_1754984693 (GBPUSD SELL)
+10|relay_t | 2025-08-12 07:47:53,762 - EliteGuardZMQRelay - INFO - ✅ Signal relayed: ELITE_GUARD_GBPUSD_1754984873 (GBPUSD SELL)
+10|relay_t | 2025-08-12 08:09:54,831 - EliteGuardZMQRelay - INFO - ✅ Signal relayed: ELITE_GUARD_GBPUSD_1754986194 (GBPUSD BUY)
+10|relay_t | 2025-08-12 08:09:55,350 - EliteGuardZMQRelay - INFO - ✅ Signal relayed: ELITE_GUARD_EURUSD_1754986194 (EURUSD BUY)
+10|relay_t | 2025-08-12 08:18:55,378 - EliteGuardZMQRelay - INFO - ✅ Signal relayed: ELITE_GUARD_EURUSD_1754986734 (EURUSD SELL)
+10|relay_t | 2025-08-12 08:34:56,294 - EliteGuardZMQRelay - INFO - ✅ Signal relayed: ELITE_GUARD_EURUSD_1754987695 (EURUSD SELL)
+10|relay_t | 2025-08-12 09:00:57,603 - EliteGuardZMQRelay - INFO - ✅ Signal relayed: ELITE_GUARD_GBPUSD_1754989257 (GBPUSD SELL)
+10|relay_t | 2025-08-12 09:00:58,105 - EliteGuardZMQRelay - INFO - ✅ Signal relayed: ELITE_GUARD_EURUSD_1754989257 (EURUSD SELL)
+10|relay_t | 2025-08-12 09:03:57,755 - EliteGuardZMQRelay - INFO - ✅ Signal relayed: ELITE_GUARD_GBPUSD_1754989437 (GBPUSD BUY)
+10|relay_t | 2025-08-12 09:21:58,814 - EliteGuardZMQRelay - INFO - ✅ Signal relayed: ELITE_GUARD_EURUSD_1754990518 (EURUSD BUY)
+10|relay_t | 2025-08-12 09:29:59,278 - EliteGuardZMQRelay - INFO - ✅ Signal relayed: ELITE_GUARD_GBPUSD_1754990998 (GBPUSD BUY)
+10|relay_t | 2025-08-12 09:30:59,330 - EliteGuardZMQRelay - INFO - ✅ Signal relayed: ELITE_GUARD_GBPJPY_1754991058 (GBPJPY SELL)
+10|relay_t | 2025-08-12 09:40:59,358 - EliteGuardZMQRelay - INFO - ✅ Signal relayed: ELITE_GUARD_XAUUSD_1754991659 (XAUUSD SELL)
+10|relay_t | 2025-08-12 09:42:59,962 - EliteGuardZMQRelay - INFO - ✅ Signal relayed: ELITE_GUARD_GBPJPY_1754991779 (GBPJPY BUY)
+10|relay_t | 2025-08-12 09:44:00,009 - EliteGuardZMQRelay - INFO - ✅ Signal relayed: ELITE_GUARD_USDJPY_1754991839 (USDJPY SELL)
+10|relay_t | 2025-08-12 09:44:59,561 - EliteGuardZMQRelay - INFO - ✅ Signal relayed: ELITE_GUARD_XAUUSD_1754991899 (XAUUSD SELL)
+10|relay_t | 2025-08-12 09:45:00,059 - EliteGuardZMQRelay - INFO - ✅ Signal relayed: ELITE_GUARD_EURUSD_1754991899 (EURUSD BUY)
+10|relay_t | 2025-08-12 12:37:49,743 - EliteGuardZMQRelay - INFO - 
+10|relay_t | 🛑 Received signal 2
+10|relay_t | 2025-08-12 12:37:49,743 - EliteGuardZMQRelay - ERROR - Message processing error: Context was terminated
+10|relay_t | 2025-08-12 12:37:49,744 - EliteGuardZMQRelay - INFO - 📊 Final Statistics:
+10|relay_t | 2025-08-12 12:37:49,744 - EliteGuardZMQRelay - INFO -    Signals Received: 24
+10|relay_t | 2025-08-12 12:37:49,744 - EliteGuardZMQRelay - INFO -    Signals Relayed: 24
+10|relay_t | 2025-08-12 12:37:49,744 - EliteGuardZMQRelay - INFO -    HTTP Errors: 0
+10|relay_t | 2025-08-12 12:37:49,744 - EliteGuardZMQRelay - INFO -    ZMQ Errors: 1
+10|relay_t | 2025-08-12 12:37:49,744 - EliteGuardZMQRelay - INFO - 🔒 Elite Guard ZMQ Relay stopped
+10|relay_t | 2025-08-12 12:37:50,486 - EliteGuardZMQRelay - INFO - 🚀 Starting Elite Guard ZMQ-to-HTTP Relay
+10|relay_t | 2025-08-12 12:37:50,486 - EliteGuardZMQRelay - INFO - 📡 ZMQ Source: tcp://127.0.0.1:5557
+10|relay_t | 2025-08-12 12:37:50,487 - EliteGuardZMQRelay - INFO - 🌐 HTTP Target: http://localhost:8888/api/signals
+10|relay_t | 2025-08-12 12:37:50,487 - EliteGuardZMQRelay - INFO - ============================================================
+10|relay_t | 2025-08-12 12:37:50,487 - EliteGuardZMQRelay - INFO - ✅ Elite Guard ZMQ Relay started successfully
+10|relay_t | 2025-08-12 12:37:50,487 - EliteGuardZMQRelay - INFO - 🔍 Listening for ELITE_GUARD_SIGNAL messages...
+
+SIG=ELITE_GUARD_EURUSD_1755006769
+
+== /api/signals RESPONSE ==
+HTTP/1.1 200 OK
+Server: gunicorn
+Date: Tue, 12 Aug 2025 13:53:10 GMT
+Connection: keep-alive
+Content-Type: application/json
+Content-Length: 87
+
+{"result":{"error":"Missing field: signal_type","success":false},"status":"processed"}
+
+== /api/signals RESPONSE (WITH signal_type) ==
+HTTP/1.1 200 OK
+Server: gunicorn
+Date: Tue, 12 Aug 2025 13:53:31 GMT
+Connection: keep-alive
+Content-Type: application/json
+Content-Length: 87
+
+{"result":{"error":"Missing field: risk_reward","success":false},"status":"processed"}
+SIG=
+FINAL_SIG=ELITE_GUARD_EURUSD_1755006828
+
+== /api/signals RESPONSE (COMPLETE) ==
+HTTP/1.1 200 OK
+Server: gunicorn
+Date: Tue, 12 Aug 2025 13:53:48 GMT
+Connection: keep-alive
+Content-Type: application/json
+Content-Length: 667
+
+{"result":{"delivery_result":{"athena_dispatch":true,"dispatch_details":{"dispatch_results":[],"success":false},"group_details":{"group_chat_id":"-1002581996861","hud_url":"https://joinbitten.com/brief?signal_id=ELITE_GUARD_EURUSD_1755006828","message_id":4641,"signal_id":"ELITE_GUARD_EURUSD_1755006828","success":true,"tactical_line":"Unstable terrain. Proceed with tactical caution."},"public_broadcast":true,"signal_id":"ELITE_GUARD_EURUSD_1755006828","success":true,"total_delivered":0,"user_delivery":{"delivered_to":0,"failed_users":[],"users":[]}},"queue_size":1,"queued":true,"signal_id":"ELITE_GUARD_EURUSD_1755006828","success":true},"status":"processed"}
+
+== DB MISSION ROW FOR ELITE_GUARD_EURUSD_1755006828 ==
+
+== WEBAPP ERROR LOGS (last 50) ==
+[TAILING] Tailing last 50 lines for [webapp] process (change the value with --lines option)
+/root/.pm2/logs/webapp-error.log last 50 lines:
+15|webapp  | WARNING:webapp_server_optimized:Mission file not found for mission_id: TEST_SIGNAL
+15|webapp  | INFO:webapp_server_optimized:HUD load attempt: mission_id=TEST_SIGNAL, user_id=None, ip=127.0.0.1
+15|webapp  | WARNING:webapp_server_optimized:Mission file not found for mission_id: TEST_SIGNAL
+15|webapp  | INFO:webapp_server_optimized:HUD load attempt: mission_id=TEST_SIGNAL, user_id=None, ip=127.0.0.1
+15|webapp  | WARNING:webapp_server_optimized:Mission file not found for mission_id: TEST_SIGNAL
+15|webapp  | ERROR:webapp_server_optimized:Black Box truth tracking error: No module named 'black_box_complete_truth_system'
+15|webapp  | INFO:webapp_server_optimized:📨 Received VENOM+CITADEL signal: ELITE_GUARD_EURUSD_1755006769 for EURUSD CITADEL: 0/10
+15|webapp  | INFO:src.bitten_core.telegram_router:Mock Telegram Router initialized
+15|webapp  | WARNING:src.bitten_core.fire_router:⚠️ MT5 ZMQ Adapter not available: No module named 'src.mt5_bridge.trade_result_model'
+15|webapp  | INFO:src.bitten_core.fire_router:Fire Router initialized - Mode: live, API: api.broker.local
+15|webapp  | INFO:src.bitten_core.telegram_bot_controls:Mock Telegram Bot Controls initialized
+15|webapp  | INFO:src.bitten_core.bot_control_integration:Mock router detected - skipping command registration
+15|webapp  | INFO:webapp_server_optimized:✅ Signal processed: {'success': False, 'error': 'Missing field: signal_type'}
+15|webapp  | ERROR:webapp_server_optimized:Black Box truth tracking error: No module named 'black_box_complete_truth_system'
+15|webapp  | INFO:webapp_server_optimized:📨 Received VENOM+CITADEL signal: ELITE_GUARD_EURUSD_1755006811 for EURUSD CITADEL: 0/10
+15|webapp  | INFO:src.bitten_core.telegram_router:Mock Telegram Router initialized
+15|webapp  | WARNING:src.bitten_core.fire_router:⚠️ MT5 ZMQ Adapter not available: No module named 'src.mt5_bridge.trade_result_model'
+15|webapp  | INFO:src.bitten_core.fire_router:Fire Router initialized - Mode: live, API: api.broker.local
+15|webapp  | INFO:src.bitten_core.telegram_bot_controls:Mock Telegram Bot Controls initialized
+15|webapp  | INFO:src.bitten_core.bot_control_integration:Mock router detected - skipping command registration
+15|webapp  | INFO:webapp_server_optimized:✅ Signal processed: {'success': False, 'error': 'Missing field: risk_reward'}
+15|webapp  | ERROR:webapp_server_optimized:Black Box truth tracking error: No module named 'black_box_complete_truth_system'
+15|webapp  | INFO:webapp_server_optimized:📨 Received VENOM+CITADEL signal: ELITE_GUARD_EURUSD_1755006828 for EURUSD CITADEL: 0/10
+15|webapp  | INFO:src.bitten_core.telegram_router:Mock Telegram Router initialized
+15|webapp  | WARNING:src.bitten_core.fire_router:⚠️ MT5 ZMQ Adapter not available: No module named 'src.mt5_bridge.trade_result_model'
+15|webapp  | INFO:src.bitten_core.fire_router:Fire Router initialized - Mode: live, API: api.broker.local
+15|webapp  | INFO:src.bitten_core.telegram_bot_controls:Mock Telegram Bot Controls initialized
+15|webapp  | INFO:src.bitten_core.bot_control_integration:Mock router detected - skipping command registration
+15|webapp  | INFO:citadel_core.citadel_analyzer:Enhanced EURUSD with live broker data: 0 support levels, 0 liquidity events
+15|webapp  | INFO:citadel_core.analyzers.signal_inspector:Signal inspection complete for EURUSD: BREAKOUT
+15|webapp  | INFO:citadel_core.analyzers.market_regime:Market regime for EURUSD: ranging_calm in overlap_london_ny session
+15|webapp  | INFO:citadel_core.analyzers.liquidity_mapper:Liquidity analysis for EURUSD: Sweep=False, Trap probability=LOW
+15|webapp  | INFO:citadel_core.analyzers.cross_tf_validator:Cross-TF validation: 0/4 aligned, quality=POOR
+15|webapp  | INFO:citadel_core.scoring.shield_engine:Shield score calculated: 6.8 (SHIELD_ACTIVE)
+15|webapp  | INFO:citadel_core.storage.shield_logger:Logged shield analysis for ELITE_GUARD_EURUSD_1755006828: Score=6.8, Class=SHIELD_ACTIVE
+15|webapp  | INFO:citadel_core.citadel_analyzer:CITADEL analysis complete for EURUSD: Score=6.8, Classification=SHIELD_ACTIVE
+15|webapp  | INFO:AthenaGroupDispatcher:🏛️ Dispatching group signal: ELITE_GUARD_EURUSD_1755006828 - EURUSD BUY
+15|webapp  | INFO:AthenaGroupDispatcher:📊 Debug - Signal data keys: ['signal_id', 'symbol', 'direction', 'entry_price', 'stop_pips', 'target_pips', 'confidence', 'pattern_type', 'signal_type', 'risk_reward', 'processed_at', 'status', 'shield_score', 'shield_classification', 'shield_label', 'shield_emoji', 'shield_explanation', 'shield_recommendation', 'position_multiplier']
+15|webapp  | INFO:AthenaGroupDispatcher:📊 Debug - TCS Score: 0, Confidence: 0
+15|webapp  | INFO:AthenaGroupDispatcher:📤 Attempting to send to group: -1002581996861
+15|webapp  | INFO:AthenaGroupDispatcher:📝 Message content: 🧠 *ATHENA UPLINK*
+15|webapp  | 🎯 EURUSD BUY | Confidence: *0%*
+15|webapp  | ⚔️ Unstable terrain. Proceed with tactical caution...
+15|webapp  | INFO:AthenaGroupDispatcher:📬 Send result: {'success': True, 'message_id': 4641}
+15|webapp  | INFO:AthenaGroupDispatcher:✅ Group signal dispatched: ELITE_GUARD_EURUSD_1755006828 to -1002581996861
+15|webapp  | INFO:AutoCleanup:Tracked message 4641 for deletion in 8 hours
+15|webapp  | INFO:AthenaGroupDispatcher:📅 Message scheduled for auto-deletion in 8 hours
+15|webapp  | INFO:webapp_server_optimized:✅ Signal processed: {'success': True, 'signal_id': 'ELITE_GUARD_EURUSD_1755006828', 'queued': True, 'queue_size': 1, 'delivery_result': {'success': True, 'public_broadcast': True, 'total_delivered': 0, 'user_delivery': {'delivered_to': 0, 'users': [], 'failed_users': []}, 'signal_id': 'ELITE_GUARD_EURUSD_1755006828', 'athena_dispatch': True, 'dispatch_details': {'success': False, 'dispatch_results': []}, 'group_details': {'success': True, 'signal_id': 'ELITE_GUARD_EURUSD_1755006828', 'group_chat_id': '-1002581996861', 'message_id': 4641, 'hud_url': 'https://joinbitten.com/brief?signal_id=ELITE_GUARD_EURUSD_1755006828', 'tactical_line': 'Unstable terrain. Proceed with tactical caution.'}}}
+15|webapp  | INFO:webapp_server_optimized:HUD load attempt: mission_id=TEST_SIGNAL, user_id=None, ip=127.0.0.1
+15|webapp  | WARNING:webapp_server_optimized:Mission file not found for mission_id: TEST_SIGNAL
+
+/root/.pm2/logs/webapp-out.log last 50 lines:
+15|webapp  | 127.0.0.1 - - [12/Aug/2025:13:24:50 +0000] "GET /hud?signal=TEST_SIGNAL HTTP/1.1" 404 2626 "-" "python-requests/2.32.4"
+15|webapp  | 127.0.0.1 - - [12/Aug/2025:13:25:50 +0000] "GET /hud?signal=TEST_SIGNAL HTTP/1.1" 404 2626 "-" "python-requests/2.32.4"
+15|webapp  | 127.0.0.1 - - [12/Aug/2025:13:26:50 +0000] "GET /hud?signal=TEST_SIGNAL HTTP/1.1" 404 2626 "-" "python-requests/2.32.4"
+15|webapp  | 127.0.0.1 - - [12/Aug/2025:13:27:50 +0000] "GET /hud?signal=TEST_SIGNAL HTTP/1.1" 404 2626 "-" "python-requests/2.32.4"
+15|webapp  | 127.0.0.1 - - [12/Aug/2025:13:28:50 +0000] "GET /hud?signal=TEST_SIGNAL HTTP/1.1" 404 2626 "-" "python-requests/2.32.4"
+15|webapp  | 127.0.0.1 - - [12/Aug/2025:13:29:51 +0000] "GET /hud?signal=TEST_SIGNAL HTTP/1.1" 404 2626 "-" "python-requests/2.32.4"
+15|webapp  | 127.0.0.1 - - [12/Aug/2025:13:30:51 +0000] "GET /hud?signal=TEST_SIGNAL HTTP/1.1" 404 2626 "-" "python-requests/2.32.4"
+15|webapp  | 127.0.0.1 - - [12/Aug/2025:13:31:51 +0000] "GET /hud?signal=TEST_SIGNAL HTTP/1.1" 404 2626 "-" "python-requests/2.32.4"
+15|webapp  | 127.0.0.1 - - [12/Aug/2025:13:32:51 +0000] "GET /hud?signal=TEST_SIGNAL HTTP/1.1" 404 2626 "-" "python-requests/2.32.4"
+15|webapp  | 127.0.0.1 - - [12/Aug/2025:13:33:51 +0000] "GET /hud?signal=TEST_SIGNAL HTTP/1.1" 404 2626 "-" "python-requests/2.32.4"
+15|webapp  | 127.0.0.1 - - [12/Aug/2025:13:34:51 +0000] "GET /hud?signal=TEST_SIGNAL HTTP/1.1" 404 2626 "-" "python-requests/2.32.4"
+15|webapp  | 127.0.0.1 - - [12/Aug/2025:13:35:51 +0000] "GET /hud?signal=TEST_SIGNAL HTTP/1.1" 404 2626 "-" "python-requests/2.32.4"
+15|webapp  | 127.0.0.1 - - [12/Aug/2025:13:36:51 +0000] "GET /hud?signal=TEST_SIGNAL HTTP/1.1" 404 2626 "-" "python-requests/2.32.4"
+15|webapp  | 127.0.0.1 - - [12/Aug/2025:13:37:51 +0000] "GET /hud?signal=TEST_SIGNAL HTTP/1.1" 404 2626 "-" "python-requests/2.32.4"
+15|webapp  | 127.0.0.1 - - [12/Aug/2025:13:38:51 +0000] "GET /hud?signal=TEST_SIGNAL HTTP/1.1" 404 2626 "-" "python-requests/2.32.4"
+15|webapp  | 127.0.0.1 - - [12/Aug/2025:13:39:51 +0000] "GET /hud?signal=TEST_SIGNAL HTTP/1.1" 404 2626 "-" "python-requests/2.32.4"
+15|webapp  | 127.0.0.1 - - [12/Aug/2025:13:40:51 +0000] "GET /hud?signal=TEST_SIGNAL HTTP/1.1" 404 2626 "-" "python-requests/2.32.4"
+15|webapp  | 127.0.0.1 - - [12/Aug/2025:13:41:51 +0000] "GET /hud?signal=TEST_SIGNAL HTTP/1.1" 404 2626 "-" "python-requests/2.32.4"
+15|webapp  | 127.0.0.1 - - [12/Aug/2025:13:42:51 +0000] "GET /hud?signal=TEST_SIGNAL HTTP/1.1" 404 2626 "-" "python-requests/2.32.4"
+15|webapp  | 127.0.0.1 - - [12/Aug/2025:13:43:51 +0000] "GET /hud?signal=TEST_SIGNAL HTTP/1.1" 404 2626 "-" "python-requests/2.32.4"
+15|webapp  | 127.0.0.1 - - [12/Aug/2025:13:44:51 +0000] "GET /hud?signal=TEST_SIGNAL HTTP/1.1" 404 2626 "-" "python-requests/2.32.4"
+15|webapp  | 127.0.0.1 - - [12/Aug/2025:13:45:51 +0000] "GET /hud?signal=TEST_SIGNAL HTTP/1.1" 404 2626 "-" "python-requests/2.32.4"
+15|webapp  | 127.0.0.1 - - [12/Aug/2025:13:46:52 +0000] "GET /hud?signal=TEST_SIGNAL HTTP/1.1" 404 2626 "-" "python-requests/2.32.4"
+15|webapp  | 127.0.0.1 - - [12/Aug/2025:13:47:52 +0000] "GET /hud?signal=TEST_SIGNAL HTTP/1.1" 404 2626 "-" "python-requests/2.32.4"
+15|webapp  | 127.0.0.1 - - [12/Aug/2025:13:48:52 +0000] "GET /hud?signal=TEST_SIGNAL HTTP/1.1" 404 2626 "-" "python-requests/2.32.4"
+15|webapp  | 127.0.0.1 - - [12/Aug/2025:13:49:52 +0000] "GET /hud?signal=TEST_SIGNAL HTTP/1.1" 404 2626 "-" "python-requests/2.32.4"
+15|webapp  | 127.0.0.1 - - [12/Aug/2025:13:50:52 +0000] "GET /hud?signal=TEST_SIGNAL HTTP/1.1" 404 2626 "-" "python-requests/2.32.4"
+15|webapp  | 127.0.0.1 - - [12/Aug/2025:13:51:39 +0000] "GET /healthz HTTP/1.1" 200 66 "-" "curl/7.81.0"
+15|webapp  | 127.0.0.1 - - [12/Aug/2025:13:51:52 +0000] "GET /hud?signal=TEST_SIGNAL HTTP/1.1" 404 2626 "-" "python-requests/2.32.4"
+15|webapp  | 127.0.0.1 - - [12/Aug/2025:13:52:52 +0000] "GET /hud?signal=TEST_SIGNAL HTTP/1.1" 404 2626 "-" "python-requests/2.32.4"
+15|webapp  | [BITTEN_CORE ERROR] 2025-08-12T13:53:10.178353: UserRegistryManager not available
+15|webapp  | [BITTEN_CORE INFO] 2025-08-12T13:53:10.178667: BITTEN Core System initialized successfully
+15|webapp  | [BITTEN_CORE INFO] 2025-08-12T13:53:10.178924: 🐍 Processing VENOM signal: ELITE_GUARD_EURUSD_1755006769
+15|webapp  | [BITTEN_CORE ERROR] 2025-08-12T13:53:10.179223: Signal missing required field: signal_type
+15|webapp  | 127.0.0.1 - - [12/Aug/2025:13:53:10 +0000] "POST /api/signals HTTP/1.1" 200 87 "-" "curl/7.81.0"
+15|webapp  | [BITTEN_CORE ERROR] 2025-08-12T13:53:31.466050: UserRegistryManager not available
+15|webapp  | [BITTEN_CORE INFO] 2025-08-12T13:53:31.466075: BITTEN Core System initialized successfully
+15|webapp  | [BITTEN_CORE INFO] 2025-08-12T13:53:31.466083: 🐍 Processing VENOM signal: ELITE_GUARD_EURUSD_1755006811
+15|webapp  | [BITTEN_CORE ERROR] 2025-08-12T13:53:31.466094: Signal missing required field: risk_reward
+15|webapp  | 127.0.0.1 - - [12/Aug/2025:13:53:31 +0000] "POST /api/signals HTTP/1.1" 200 87 "-" "curl/7.81.0"
+15|webapp  | [BITTEN_CORE ERROR] 2025-08-12T13:53:48.391689: UserRegistryManager not available
+15|webapp  | [BITTEN_CORE INFO] 2025-08-12T13:53:48.391722: BITTEN Core System initialized successfully
+15|webapp  | [BITTEN_CORE INFO] 2025-08-12T13:53:48.391734: 🐍 Processing VENOM signal: ELITE_GUARD_EURUSD_1755006828
+15|webapp  | [BITTEN_CORE INFO] 2025-08-12T13:53:48.404851: 🛡️ CITADEL Shield Score: 6.8/10 for ELITE_GUARD_EURUSD_1755006828
+15|webapp  | [BITTEN_CORE INFO] 2025-08-12T13:53:48.404892: Signal processed: ELITE_GUARD_EURUSD_1755006828 | EURUSD BUY | TCS: 77.0%
+15|webapp  | [BITTEN_CORE INFO] 2025-08-12T13:53:48.405520: ✅ Mission file created: /root/HydraX-v2/missions/ELITE_GUARD_EURUSD_1755006828.json
+15|webapp  | [BITTEN_CORE INFO] 2025-08-12T13:53:48.915255: 🏛️ ATHENA individual dispatch: 0 delivered, 0 failed
+15|webapp  | [BITTEN_CORE INFO] 2025-08-12T13:53:48.915279: 📡 ATHENA group dispatch: ✅ SUCCESS
+15|webapp  | 127.0.0.1 - - [12/Aug/2025:13:53:48 +0000] "POST /api/signals HTTP/1.1" 200 667 "-" "curl/7.81.0"
+15|webapp  | 127.0.0.1 - - [12/Aug/2025:13:53:52 +0000] "GET /hud?signal=TEST_SIGNAL HTTP/1.1" 404 2626 "-" "python-requests/2.32.4"
+
+
+== HUD /brief (HEADERS ONLY) ==
+HTTP/1.1 302 FOUND
+Server: gunicorn
+Date: Tue, 12 Aug 2025 13:54:46 GMT
+Connection: keep-alive
+Content-Type: text/html; charset=utf-8
+Content-Length: 323
+Location: /hud?mission_id=ELITE_GUARD_EURUSD_1755006828&user_id=7176191872
+
+
+== MANUALLY CREATING MISSION DB ENTRY ==
+Created
+
+== HUD STATUS API ==
+MID=ELITE_GUARD_EURUSD_1755006828_7176191872
+{"expires_at":1755007806,"mission_id":"ELITE_GUARD_EURUSD_1755006828_7176191872","now":1755006951,"status":"PENDING"}
+
+== FIRE REQUEST ==
+HTTP/1.1 400 BAD REQUEST
+Server: gunicorn
+Date: Tue, 12 Aug 2025 13:56:09 GMT
+Connection: keep-alive
+Content-Type: application/json
+Content-Length: 55
+
+{"error":"Missing user ID","ok":false,"success":false}
+
+== FIRE REQUEST (WITH USERID) ==
+HTTP/1.1 400 BAD REQUEST
+Server: gunicorn
+Date: Tue, 12 Aug 2025 13:56:27 GMT
+Connection: keep-alive
+Content-Type: application/json
+Content-Length: 55
+
+{"error":"Missing user ID","ok":false,"success":false}
+
+== FIRES TABLE CHECK ==
+
+== ROUTER LOGS ==
+[TAILING] Tailing last 50 lines for [command_router] process (change the value with --lines option)
+/root/.pm2/logs/command-router-out.log last 50 lines:
+17|command | [CMD] 💰 EA Metrics: COMMANDER_DEV_00 | Balance: 922.43 | Equity: 922.43 | Currency: USD
+17|command | [CMD] 📍 HEARTBEAT from COMMANDER_DEV_00 | Messages: 764
+17|command | [CMD] 💰 EA Metrics: COMMANDER_DEV_00 | Balance: 922.43 | Equity: 922.43 | Currency: USD
+17|command | [CMD] 📍 HEARTBEAT from COMMANDER_DEV_00 | Messages: 765
+17|command | [CMD] 💰 EA Metrics: COMMANDER_DEV_00 | Balance: 922.43 | Equity: 922.43 | Currency: USD
+17|command | [CMD] 📍 HEARTBEAT from COMMANDER_DEV_00 | Messages: 766
+17|command | [CMD] 💰 EA Metrics: COMMANDER_DEV_00 | Balance: 922.43 | Equity: 922.43 | Currency: USD
+17|command | [CMD] 📍 HEARTBEAT from COMMANDER_DEV_00 | Messages: 767
+17|command | [CMD] 💰 EA Metrics: COMMANDER_DEV_00 | Balance: 922.43 | Equity: 922.43 | Currency: USD
+17|command | [CMD] 📍 HEARTBEAT from COMMANDER_DEV_00 | Messages: 768
+17|command | [CMD] 💰 EA Metrics: COMMANDER_DEV_00 | Balance: 922.43 | Equity: 922.43 | Currency: USD
+17|command | [CMD] 📍 HEARTBEAT from COMMANDER_DEV_00 | Messages: 769
+17|command | [CMD] 💰 EA Metrics: COMMANDER_DEV_00 | Balance: 922.43 | Equity: 922.43 | Currency: USD
+17|command | [CMD] 📍 HEARTBEAT from COMMANDER_DEV_00 | Messages: 770
+17|command | [CMD] 💰 EA Metrics: COMMANDER_DEV_00 | Balance: 922.43 | Equity: 922.43 | Currency: USD
+17|command | [CMD] 📍 HEARTBEAT from COMMANDER_DEV_00 | Messages: 771
+17|command | [CMD] 💰 EA Metrics: COMMANDER_DEV_00 | Balance: 922.43 | Equity: 922.43 | Currency: USD
+17|command | [CMD] 📍 HEARTBEAT from COMMANDER_DEV_00 | Messages: 772
+17|command | [CMD] 💰 EA Metrics: COMMANDER_DEV_00 | Balance: 922.43 | Equity: 922.43 | Currency: USD
+17|command | [CMD] 📍 HEARTBEAT from COMMANDER_DEV_00 | Messages: 773
+17|command | [CMD] 💰 EA Metrics: COMMANDER_DEV_00 | Balance: 922.43 | Equity: 922.43 | Currency: USD
+17|command | [CMD] 📍 HEARTBEAT from COMMANDER_DEV_00 | Messages: 774
+17|command | [CMD] 💰 EA Metrics: COMMANDER_DEV_00 | Balance: 922.43 | Equity: 922.43 | Currency: USD
+17|command | [CMD] 📍 HEARTBEAT from COMMANDER_DEV_00 | Messages: 775
+17|command | [CMD] 💰 EA Metrics: COMMANDER_DEV_00 | Balance: 922.43 | Equity: 922.43 | Currency: USD
+17|command | [CMD] 📍 HEARTBEAT from COMMANDER_DEV_00 | Messages: 776
+17|command | [CMD] 💰 EA Metrics: COMMANDER_DEV_00 | Balance: 922.43 | Equity: 922.43 | Currency: USD
+17|command | [CMD] 📍 HEARTBEAT from COMMANDER_DEV_00 | Messages: 777
+17|command | [CMD] 💰 EA Metrics: COMMANDER_DEV_00 | Balance: 922.43 | Equity: 922.43 | Currency: USD
+17|command | [CMD] 📍 HEARTBEAT from COMMANDER_DEV_00 | Messages: 778
+17|command | [CMD] 💰 EA Metrics: COMMANDER_DEV_00 | Balance: 922.43 | Equity: 922.43 | Currency: USD
+17|command | [CMD] 📍 HEARTBEAT from COMMANDER_DEV_00 | Messages: 779
+17|command | [CMD] 💰 EA Metrics: COMMANDER_DEV_00 | Balance: 922.43 | Equity: 922.43 | Currency: USD
+17|command | [CMD] 📍 HEARTBEAT from COMMANDER_DEV_00 | Messages: 780
+17|command | [CMD] 💰 EA Metrics: COMMANDER_DEV_00 | Balance: 922.43 | Equity: 922.43 | Currency: USD
+17|command | [CMD] 📍 HEARTBEAT from COMMANDER_DEV_00 | Messages: 781
+17|command | [CMD] 💰 EA Metrics: COMMANDER_DEV_00 | Balance: 922.43 | Equity: 922.43 | Currency: USD
+17|command | [CMD] 📍 HEARTBEAT from COMMANDER_DEV_00 | Messages: 782
+17|command | [CMD] 💰 EA Metrics: COMMANDER_DEV_00 | Balance: 922.43 | Equity: 922.43 | Currency: USD
+17|command | [CMD] 📍 HEARTBEAT from COMMANDER_DEV_00 | Messages: 783
+17|command | [CMD] 💰 EA Metrics: COMMANDER_DEV_00 | Balance: 922.43 | Equity: 922.43 | Currency: USD
+17|command | [CMD] 📍 HEARTBEAT from COMMANDER_DEV_00 | Messages: 784
+17|command | [CMD] 💰 EA Metrics: COMMANDER_DEV_00 | Balance: 922.43 | Equity: 922.43 | Currency: USD
+17|command | [CMD] 📍 HEARTBEAT from COMMANDER_DEV_00 | Messages: 785
+17|command | [CMD] 💰 EA Metrics: COMMANDER_DEV_00 | Balance: 922.43 | Equity: 922.43 | Currency: USD
+17|command | [CMD] 📍 HEARTBEAT from COMMANDER_DEV_00 | Messages: 786
+17|command | [CMD] 💰 EA Metrics: COMMANDER_DEV_00 | Balance: 922.43 | Equity: 922.43 | Currency: USD
+17|command | [CMD] 📍 HEARTBEAT from COMMANDER_DEV_00 | Messages: 787
+17|command | [CMD] 💰 EA Metrics: COMMANDER_DEV_00 | Balance: 922.43 | Equity: 922.43 | Currency: USD
+17|command | [CMD] Shutting down...
+
+/root/.pm2/logs/command-router-error.log last 50 lines:
+17|command | 2025-08-12 13:32:17,954 [EA] HEARTBEAT COMMANDER_DEV_001
+17|command | 2025-08-12 13:32:47,956 [EA] HEARTBEAT COMMANDER_DEV_001
+17|command | 2025-08-12 13:33:17,968 [EA] HEARTBEAT COMMANDER_DEV_001
+17|command | 2025-08-12 13:33:47,954 [EA] HEARTBEAT COMMANDER_DEV_001
+17|command | 2025-08-12 13:34:17,963 [EA] HEARTBEAT COMMANDER_DEV_001
+17|command | 2025-08-12 13:34:47,960 [EA] HEARTBEAT COMMANDER_DEV_001
+17|command | 2025-08-12 13:35:17,964 [EA] HEARTBEAT COMMANDER_DEV_001
+17|command | 2025-08-12 13:35:47,956 [EA] HEARTBEAT COMMANDER_DEV_001
+17|command | 2025-08-12 13:36:17,953 [EA] HEARTBEAT COMMANDER_DEV_001
+17|command | 2025-08-12 13:36:47,964 [EA] HEARTBEAT COMMANDER_DEV_001
+17|command | 2025-08-12 13:37:17,962 [EA] HEARTBEAT COMMANDER_DEV_001
+17|command | 2025-08-12 13:37:47,951 [EA] HEARTBEAT COMMANDER_DEV_001
+17|command | 2025-08-12 13:38:17,968 [EA] HEARTBEAT COMMANDER_DEV_001
+17|command | 2025-08-12 13:38:47,964 [EA] HEARTBEAT COMMANDER_DEV_001
+17|command | 2025-08-12 13:39:17,957 [EA] HEARTBEAT COMMANDER_DEV_001
+17|command | 2025-08-12 13:39:47,971 [EA] HEARTBEAT COMMANDER_DEV_001
+17|command | 2025-08-12 13:40:17,965 [EA] HEARTBEAT COMMANDER_DEV_001
+17|command | 2025-08-12 13:40:47,956 [EA] HEARTBEAT COMMANDER_DEV_001
+17|command | 2025-08-12 13:41:17,955 [EA] HEARTBEAT COMMANDER_DEV_001
+17|command | 2025-08-12 13:41:47,953 [EA] HEARTBEAT COMMANDER_DEV_001
+17|command | 2025-08-12 13:42:17,957 [EA] HEARTBEAT COMMANDER_DEV_001
+17|command | 2025-08-12 13:42:47,952 [EA] HEARTBEAT COMMANDER_DEV_001
+17|command | 2025-08-12 13:43:17,958 [EA] HEARTBEAT COMMANDER_DEV_001
+17|command | 2025-08-12 13:43:47,953 [EA] HEARTBEAT COMMANDER_DEV_001
+17|command | 2025-08-12 13:44:17,960 [EA] HEARTBEAT COMMANDER_DEV_001
+17|command | 2025-08-12 13:44:47,966 [EA] HEARTBEAT COMMANDER_DEV_001
+17|command | 2025-08-12 13:45:17,980 [EA] HEARTBEAT COMMANDER_DEV_001
+17|command | 2025-08-12 13:45:47,964 [EA] HEARTBEAT COMMANDER_DEV_001
+17|command | 2025-08-12 13:46:17,963 [EA] HEARTBEAT COMMANDER_DEV_001
+17|command | 2025-08-12 13:46:47,953 [EA] HEARTBEAT COMMANDER_DEV_001
+17|command | 2025-08-12 13:47:17,956 [EA] HEARTBEAT COMMANDER_DEV_001
+17|command | 2025-08-12 13:47:47,962 [EA] HEARTBEAT COMMANDER_DEV_001
+17|command | 2025-08-12 13:48:17,960 [EA] HEARTBEAT COMMANDER_DEV_001
+17|command | 2025-08-12 13:48:47,963 [EA] HEARTBEAT COMMANDER_DEV_001
+17|command | 2025-08-12 13:49:17,957 [EA] HEARTBEAT COMMANDER_DEV_001
+17|command | 2025-08-12 13:49:47,959 [EA] HEARTBEAT COMMANDER_DEV_001
+17|command | 2025-08-12 13:50:17,953 [EA] HEARTBEAT COMMANDER_DEV_001
+17|command | 2025-08-12 13:50:47,951 [EA] HEARTBEAT COMMANDER_DEV_001
+17|command | 2025-08-12 13:51:17,961 [EA] HEARTBEAT COMMANDER_DEV_001
+17|command | 2025-08-12 13:51:47,964 [EA] HEARTBEAT COMMANDER_DEV_001
+17|command | 2025-08-12 13:52:17,965 [EA] HEARTBEAT COMMANDER_DEV_001
+17|command | 2025-08-12 13:52:47,972 [EA] HEARTBEAT COMMANDER_DEV_001
+17|command | 2025-08-12 13:53:17,967 [EA] HEARTBEAT COMMANDER_DEV_001
+17|command | 2025-08-12 13:53:47,958 [EA] HEARTBEAT COMMANDER_DEV_001
+17|command | 2025-08-12 13:54:17,970 [EA] HEARTBEAT COMMANDER_DEV_001
+17|command | 2025-08-12 13:54:47,961 [EA] HEARTBEAT COMMANDER_DEV_001
+17|command | 2025-08-12 13:55:17,966 [EA] HEARTBEAT COMMANDER_DEV_001
+17|command | 2025-08-12 13:55:47,955 [EA] HEARTBEAT COMMANDER_DEV_001
+17|command | 2025-08-12 13:56:17,966 [EA] HEARTBEAT COMMANDER_DEV_001
+17|command | 2025-08-12 13:56:47,960 [EA] HEARTBEAT COMMANDER_DEV_001
+
+
+== EA FRESHNESS ==
+COMMANDER_DEV_00|37302|922.43
+TEST_EA_METRICS_001|72051|1150.5
+
+== CONFIRM LISTENER LOGS (last 50) ==
+[TAILING] Tailing last 50 lines for [confirm_listener] process (change the value with --lines option)
+/root/.pm2/logs/confirm-listener-out.log last 50 lines:
+/root/.pm2/logs/confirm-listener-error.log last 50 lines:
+1|confirm_ |     pull.bind(BIND)
+1|confirm_ |   File "/usr/local/lib/python3.10/dist-packages/zmq/sugar/socket.py", line 320, in bind
+1|confirm_ |     super().bind(addr)
+1|confirm_ |   File "zmq/backend/cython/_zmq.py", line 998, in zmq.backend.cython._zmq.Socket.bind
+1|confirm_ |   File "zmq/backend/cython/_zmq.py", line 187, in zmq.backend.cython._zmq._check_rc
+1|confirm_ | zmq.error.ZMQError: Address already in use (addr='tcp://*:5558')
+1|confirm_ | Traceback (most recent call last):
+1|confirm_ |   File "/root/HydraX-v2/confirm_listener.py", line 98, in <module>
+1|confirm_ |     main()
+1|confirm_ |   File "/root/HydraX-v2/confirm_listener.py", line 73, in main
+1|confirm_ |     pull.bind(BIND)
+1|confirm_ |   File "/usr/local/lib/python3.10/dist-packages/zmq/sugar/socket.py", line 320, in bind
+1|confirm_ |     super().bind(addr)
+1|confirm_ |   File "zmq/backend/cython/_zmq.py", line 998, in zmq.backend.cython._zmq.Socket.bind
+1|confirm_ |   File "zmq/backend/cython/_zmq.py", line 187, in zmq.backend.cython._zmq._check_rc
+1|confirm_ | zmq.error.ZMQError: Address already in use (addr='tcp://*:5558')
+1|confirm_ | Traceback (most recent call last):
+1|confirm_ |   File "/root/HydraX-v2/confirm_listener.py", line 98, in <module>
+1|confirm_ |     main()
+1|confirm_ |   File "/root/HydraX-v2/confirm_listener.py", line 73, in main
+1|confirm_ |     pull.bind(BIND)
+1|confirm_ |   File "/usr/local/lib/python3.10/dist-packages/zmq/sugar/socket.py", line 320, in bind
+1|confirm_ |     super().bind(addr)
+1|confirm_ |   File "zmq/backend/cython/_zmq.py", line 998, in zmq.backend.cython._zmq.Socket.bind
+1|confirm_ |   File "zmq/backend/cython/_zmq.py", line 187, in zmq.backend.cython._zmq._check_rc
+1|confirm_ | zmq.error.ZMQError: Address already in use (addr='tcp://*:5558')
+1|confirm_ | Traceback (most recent call last):
+1|confirm_ |   File "/root/HydraX-v2/confirm_listener.py", line 98, in <module>
+1|confirm_ |     main()
+1|confirm_ |   File "/root/HydraX-v2/confirm_listener.py", line 73, in main
+1|confirm_ |     pull.bind(BIND)
+1|confirm_ |   File "/usr/local/lib/python3.10/dist-packages/zmq/sugar/socket.py", line 320, in bind
+1|confirm_ |     super().bind(addr)
+1|confirm_ |   File "zmq/backend/cython/_zmq.py", line 998, in zmq.backend.cython._zmq.Socket.bind
+1|confirm_ |   File "zmq/backend/cython/_zmq.py", line 187, in zmq.backend.cython._zmq._check_rc
+1|confirm_ | zmq.error.ZMQError: Address already in use (addr='tcp://*:5558')
+1|confirm_ | Traceback (most recent call last):
+1|confirm_ |   File "/root/HydraX-v2/confirm_listener.py", line 98, in <module>
+1|confirm_ |     main()
+1|confirm_ |   File "/root/HydraX-v2/confirm_listener.py", line 73, in main
+1|confirm_ |     pull.bind(BIND)
+1|confirm_ |   File "/usr/local/lib/python3.10/dist-packages/zmq/sugar/socket.py", line 320, in bind
+1|confirm_ |     super().bind(addr)
+1|confirm_ |   File "zmq/backend/cython/_zmq.py", line 998, in zmq.backend.cython._zmq.Socket.bind
+1|confirm_ |   File "zmq/backend/cython/_zmq.py", line 187, in zmq.backend.cython._zmq._check_rc
+1|confirm_ | zmq.error.ZMQError: Address already in use (addr='tcp://*:5558')
+1|confirm_ | 2025-08-12 03:49:39,751 confirm listener on tcp://*:5558
+1|confirm_ | 2025-08-12 03:49:51,246 fire_id fir_smoke not found in database
+1|confirm_ | 2025-08-12 03:50:23,661 fire_id fir_smoke not found in database
+1|confirm_ | 2025-08-12 03:50:44,577 fire fir_smoke → FILLED (ticket=123456 price=1.2345)
+
+
+== DUPLICATE SIGNAL CHECK (5m) ==
+ELITE_GUARD_EURUSD_1755006828|2
+
+== RELAY TOKEN/GROUP SANITY ==
+
+
+== FINAL SUMMARY ==

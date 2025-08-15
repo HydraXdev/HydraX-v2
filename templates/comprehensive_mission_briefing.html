@@ -880,15 +880,24 @@
                     mission_id: '{{ mission_id }}'
                 })
             })
-            .then(response => response.json())
+            .then(response => {
+                console.log('Response status:', response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
                     button.textContent = '✅ TRADE EXECUTED';
                     button.style.background = 'linear-gradient(45deg, #10b981, #059669)';
                     
-                    // Update status
-                    document.querySelector('.mission-status').textContent = 'EXECUTED';
-                    document.querySelector('.mission-status').style.color = '#10b981';
+                    // Update status if element exists
+                    const statusElement = document.querySelector('.mission-status');
+                    if (statusElement) {
+                        statusElement.textContent = 'EXECUTED';
+                        statusElement.style.color = '#10b981';
+                    }
                     
                     // Show ticket if available
                     if (data.ticket) {
@@ -917,7 +926,24 @@
             .catch(error => {
                 console.error('Fire error:', error);
                 button.textContent = '❌ NETWORK ERROR';
+                button.style.background = 'linear-gradient(45deg, #ef4444, #dc2626)';
+                
+                // More detailed error logging
+                console.log('Error details:', {
+                    message: error.message,
+                    stack: error.stack,
+                    type: error.name
+                });
+                
+                // Show detailed error to user
+                alert(`Network error: ${error.message}. Check console for details.`);
+                
+                // Re-enable button
                 button.disabled = false;
+                setTimeout(() => {
+                    button.textContent = '🚀 EXECUTE TRADE';
+                    button.style.background = '';
+                }, 3000);
             });
         }
         

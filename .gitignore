@@ -65,4 +65,5 @@ test_*.py
 
 # Node modules (if any)
 node_modules/
-package-lock.json
+package-lock.json.env.master
+.secrets/

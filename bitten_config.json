@@ -1,0 +1,141 @@
+{
+    "system": {
+        "name": "BITTEN",
+        "version": "2.0",
+        "environment": "production"
+    },
+    
+    "network": {
+        "ports": {
+            "command_router": 5555,
+            "market_data_in": 5556,
+            "signal_publish": 5557,
+            "confirmations": 5558,
+            "market_relay": 5560,
+            "webapp": 8888,
+            "throne": 8899
+        },
+        "bind_address": "0.0.0.0"
+    },
+    
+    "database": {
+        "path": "/root/HydraX-v2/bitten.db",
+        "type": "sqlite3",
+        "backup_dir": "/root/HydraX-v2/backups"
+    },
+    
+    "redis": {
+        "host": "localhost",
+        "port": 6379,
+        "db": 0
+    },
+    
+    "telegram": {
+        "group_id": -1002581996861,
+        "bot_username": "@bitten_athena_bot",
+        "commander_user_id": "7176191872"
+    },
+    
+    "trading": {
+        "max_signals_per_day": 40,
+        "signal_expiry_seconds": 300,
+        "min_confidence": 70,
+        "risk_percent": 2,
+        "auto_fire_threshold": 70,
+        "max_concurrent_trades": 3
+    },
+    
+    "elite_guard": {
+        "patterns": [
+            "LIQUIDITY_SWEEP_REVERSAL",
+            "ORDER_BLOCK_BOUNCE",
+            "FAIR_VALUE_GAP_FILL"
+        ],
+        "timeframes": ["M1", "M5"],
+        "citadel_enabled": true,
+        "citadel_min_score": 6.0
+    },
+    
+    "symbols": {
+        "forex": [
+            "EURUSD", "GBPUSD", "USDJPY", "USDCHF", 
+            "AUDUSD", "USDCAD", "NZDUSD", "EURGBP",
+            "EURJPY", "GBPJPY", "XAUUSD", "XAGUSD"
+        ],
+        "crypto": [
+            "BTCUSD", "ETHUSD", "BNBUSD", "XRPUSD",
+            "ADAUSD", "DOGEUSD", "DOTUSD", "UNIUSD"
+        ]
+    },
+    
+    "monitoring": {
+        "heartbeat_interval": 30,
+        "ea_timeout": 120,
+        "log_level": "INFO",
+        "log_rotation": "daily",
+        "max_log_size_mb": 100
+    },
+    
+    "paths": {
+        "root": "/root/HydraX-v2",
+        "src": "/root/HydraX-v2/src",
+        "logs": "/root/HydraX-v2/logs",
+        "missions": "/root/HydraX-v2/missions",
+        "archive": "/root/HydraX-v2/ARCHIVE_2025_08_13"
+    },
+    
+    "processes": {
+        "elite_guard": {
+            "script": "elite_guard_with_citadel.py",
+            "pm2_name": "elite_guard",
+            "restart_on_failure": true
+        },
+        "telemetry_bridge": {
+            "script": "zmq_telemetry_bridge_debug.py",
+            "pm2_name": "zmq_telemetry_bridge",
+            "restart_on_failure": true
+        },
+        "signal_relay": {
+            "script": "elite_guard_zmq_relay.py",
+            "pm2_name": "relay_to_telegram",
+            "restart_on_failure": true
+        },
+        "webapp": {
+            "script": "webapp_server_optimized.py",
+            "pm2_name": "webapp",
+            "restart_on_failure": true
+        },
+        "telegram_bot": {
+            "script": "bitten_production_bot.py",
+            "pm2_name": "bitten-production-bot",
+            "restart_on_failure": true
+        },
+        "command_router": {
+            "script": "command_router.py",
+            "pm2_name": "command_router",
+            "restart_on_failure": true
+        },
+        "confirm_listener": {
+            "script": "confirm_listener.py",
+            "pm2_name": "confirm_listener",
+            "restart_on_failure": true
+        }
+    },
+    
+    "features": {
+        "auto_fire_enabled": true,
+        "citadel_shield": true,
+        "truth_tracking": true,
+        "outcome_monitoring": true,
+        "user_tiers": ["GRUNT", "SOLDIER", "COMMANDER"],
+        "battle_pass": false,
+        "referral_system": false
+    },
+    
+    "security": {
+        "require_ea_heartbeat": true,
+        "max_api_requests_per_minute": 60,
+        "allowed_ips": [],
+        "enable_ssl": false
+    }
+}

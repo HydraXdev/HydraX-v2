@@ -169,15 +169,15 @@ class FreshFireBuilder:
         """Get risk percent based on user tier and settings"""
         tier = user_profile.get('tier', 'NIBBLER')
         
-        # Default 2% risk for all tiers
-        base_risk = 2.0
+        # EXPERIMENTAL: 5% risk for tonight's testing (normally 2%)
+        base_risk = 5.0
         
         # Adjust based on tier or user preferences
         if tier == 'PRESS_PASS':
             return 1.0  # Demo accounts use 1%
         elif tier == 'COMMANDER':
-            # Commanders can use up to 3% if they want
-            return min(3.0, user_profile.get('risk_preference', 2.0))
+            # EXPERIMENTAL: Commanders can use up to 5% for tonight
+            return min(5.0, user_profile.get('risk_preference', 5.0))
         else:
             return base_risk
     

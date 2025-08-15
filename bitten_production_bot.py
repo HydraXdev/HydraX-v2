@@ -786,7 +786,9 @@ class BittenProductionBot:
                             system_status = self.get_system_status()
                             self.send_adaptive_response(message.chat.id, combined_status, user_tier, "commander_status")
                         else:
-                            else:
+                            # Regular user status
+                            self.send_adaptive_response(message.chat.id, combined_status, user_tier, "user_status")
+                            
                     except Exception as e:
                         logger.error(f"Status command error: {e}")
                         fallback_msg = "❌ Status check temporarily unavailable."
@@ -2873,6 +2875,8 @@ Use /help for command list or visit the webapp for detailed information."""
             # Register user in registry if not already registered
             user_info = registry.get_user_info(uid)
             if not user_info:
+                # Register new user
+                registry.register_user(uid, str(login_id), server_name)
             else:
                 # Update existing user credentials
                 registry.update_user_credentials(uid, str(login_id), server_name)
@@ -2880,8 +2884,9 @@ Use /help for command list or visit the webapp for detailed information."""
             
             # STEP 3: Inject credentials into MT5 config with timeout
             registry.update_user_status(uid, "credentials_injected")
-                registry.update_user_status(uid, "error_state")
-                return "⏳ Still initializing your terminal. Please try /connect again in a minute."
+            
+            # Success message
+            return "✅ Terminal connected successfully! You can now use /fire commands."
             
             # STEP 4: Restart MT5 and verify login with timeout
             if not login_result['success']:
@@ -2902,7 +2907,7 @@ Use /help for command list or visit the webapp for detailed information."""
             self._register_account_with_core(uid, account_info)
             
             # STEP 7: Check if EA is ready and update status
-                registry.update_user_status(uid, "ready_for_fire")
+            registry.update_user_status(uid, "ready_for_fire")
             
             # Record successful connection
             registry.record_successful_connection(uid)

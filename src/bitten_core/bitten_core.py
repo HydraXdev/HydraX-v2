@@ -1457,6 +1457,86 @@ Reply: /fire {signal_id} to execute"""
         except Exception as e:
             self._log_error(f"Error sending trade result notification to user {user_id}: {e}")
     
+    def _load_real_signal_data(self, signal_id: str) -> Optional[Dict]:
+        """Load real signal data from database"""
+        try:
+            import sqlite3
+            conn = sqlite3.connect('/root/HydraX-v2/bitten.db')
+            cursor = conn.cursor()
+            
+            # Get signal from signals table
+            cursor.execute("""
+                SELECT signal_id, symbol, direction, confidence, entry, sl, tp, 
+                       payload_json
+                FROM signals 
+                WHERE signal_id = ?
+            """, (signal_id,))
+            
+            result = cursor.fetchone()
+            conn.close()
+            
+            if result:
+                # Parse payload_json for additional data if available
+                payload_data = {}
+                if result[7]:  # payload_json
+                    try:
+                        import json
+                        payload_data = json.loads(result[7])
+                    except:
+                        pass
+                
+                signal_data = {
+                    'signal_id': result[0],
+                    'symbol': result[1],
+                    'direction': result[2],
+                    'confidence': float(result[3]) if result[3] else 75.0,
+                    'entry_price': float(result[4]) if result[4] else 0.0,
+                    'sl': float(result[5]) if result[5] else 0.0,
+                    'tp': float(result[6]) if result[6] else 0.0,
+                    'stop_pips': payload_data.get('stop_pips', 20),
+                    'target_pips': payload_data.get('target_pips', 40),
+                    'pattern_type': payload_data.get('pattern_type', 'UNKNOWN'),
+                    'risk_reward': payload_data.get('risk_reward', 2.0),
+                    'timestamp': datetime.now()
+                }
+                return signal_data
+            
+            return None
+            
+        except Exception as e:
+            logger.error(f"Error loading signal data for {signal_id}: {e}")
+            return None
+
+    def _get_user_actual_balance(self, user_id: str) -> float:
+        """Get user's actual balance from EA instances table"""
+        try:
+            import sqlite3
+            conn = sqlite3.connect('/root/HydraX-v2/bitten.db')
+            cursor = conn.cursor()
+            
+            # Get balance from EA instances for this user
+            cursor.execute("""
+                SELECT last_equity, last_balance 
+                FROM ea_instances 
+                WHERE user_id = ? 
+                ORDER BY last_seen DESC 
+                LIMIT 1
+            """, (user_id,))
+            
+            result = cursor.fetchone()
+            conn.close()
+            
+            if result:
+                equity, balance = result
+                # Use equity if available, otherwise balance
+                return float(equity) if equity else float(balance) if balance else 0.0
+            
+            return 0.0
+            
+        except Exception as e:
+            logger.error(f"Error getting user balance: {e}")
+            return 0.0
+
     def execute_fire_command(self, user_id: str, signal_id: str) -> Dict:
         """Handle /fire command execution for a specific signal"""
         try:
@@ -1503,6 +1583,25 @@ Your mission briefing is waiting."""
             # Enhanced signal detection and execution for crypto vs forex
             user_info = self.user_registry.get_user_info(user_id)
             
+            # Get real account balance from EA database
+            try:
+                import sqlite3
+                conn = sqlite3.connect('/root/HydraX-v2/bitten.db')
+                cursor = conn.cursor()
+                cursor.execute("SELECT last_balance FROM ea_instances WHERE user_id=?", (user_id,))
+                result = cursor.fetchone()
+                if result and result[0]:
+                    user_info = user_info or {}
+                    user_info['account_balance'] = float(result[0])
+                    print(f"💰 Real account balance for user {user_id}: ${result[0]:.2f}")
+                conn.close()
+            except Exception as e:
+                print(f"Warning: Could not get real balance for user {user_id}: {e}")
+                if not user_info:
+                    user_info = {}
+                if 'account_balance' not in user_info:
+                    user_info['account_balance'] = 10000.0  # Default fallback
+            
             # 🚀 CRYPTO SIGNAL DETECTION & EXECUTION
             if CRYPTO_FIRE_BUILDER_AVAILABLE and is_crypto_signal(signal_data):
                 print(f"🔥 Detected C.O.R.E. crypto signal: {signal_id}")
@@ -1544,11 +1643,33 @@ Your mission briefing is waiting."""
             else:
                 # 📈 FOREX SIGNAL EXECUTION (Existing Logic)
                 print(f"📈 Processing forex signal: {signal_id}")
+                
+                # Calculate proper lot size based on 5% risk
+                # Get actual user balance from EA instances
+                actual_balance = self._get_user_actual_balance(user_id)
+                account_balance = actual_balance if actual_balance > 0 else user_info.get('account_balance', 10000.0)
+                risk_percent = 0.05  # 5% risk
+                stop_loss_pips = signal_data.get('stop_pips', 20)  # Default 20 pips
+                
+                # Calculate lot size for 5% risk
+                # For EURUSD, 1 lot = $10 per pip
+                # Risk amount = balance * risk_percent
+                # Lot size = risk_amount / (stop_loss_pips * dollars_per_pip)
+                risk_amount = account_balance * risk_percent
+                dollars_per_pip = 10.0 if 'USD' in signal_data['symbol'] else 10.0  # Simplified
+                calculated_lot_size = risk_amount / (stop_loss_pips * dollars_per_pip)
+                
+                # Apply minimum and maximum limits
+                lot_size = max(0.01, min(calculated_lot_size, 1.0))  # Min 0.01, Max 1.0
+                
+                print(f"💰 Position sizing: Balance ${account_balance:.2f}, Risk {risk_percent*100}% = ${risk_amount:.2f}")
+                print(f"📏 Stop loss {stop_loss_pips} pips, Calculated lot size: {lot_size:.2f}")
+                
                 trade_request = TradeRequest(
                     user_id=user_id,
                     symbol=signal_data['symbol'],
                     direction=TradeDirection.BUY if signal_data['direction'] == 'BUY' else TradeDirection.SELL,
-                    volume=0.01,  # Will be calculated by FireRouter based on user balance
+                    volume=lot_size,  # Calculated based on 5% risk
                     tcs_score=signal_data.get('confidence', 0),
                     mission_id=signal_id
                 )
@@ -1639,22 +1760,22 @@ Your mission briefing is waiting."""
         try:
             logger.info(f"🎖️ COMMANDER FIRE: User {user_id}, Signal {signal_id} - ZERO SIMULATION")
             
-            # COMMANDER gets unrestricted access - create signal if not exists
+            # COMMANDER gets unrestricted access - REAL SIGNALS ONLY
             if signal_id not in self.processed_signals:
-                # Create a test signal for commander testing
-                test_signal = {
-                    'signal_id': signal_id,
-                    'symbol': 'EURUSD',  # Default for testing
-                    'direction': 'BUY',
-                    'confidence': 95.0,
-                    'stop_pips': 20,
-                    'target_pips': 40,
-                    'timestamp': datetime.now(),
-                    'user_id': user_id,
-                    'commander_test': True
-                }
-                self.processed_signals[signal_id] = test_signal
-                logger.info(f"🎖️ Created test signal for COMMANDER: {signal_id}")
+                # Load real signal from database - NO FALLBACKS ALLOWED
+                real_signal = self._load_real_signal_data(signal_id)
+                if real_signal:
+                    self.processed_signals[signal_id] = real_signal
+                    logger.info(f"🎖️ Loaded REAL signal for COMMANDER: {signal_id} - {real_signal['symbol']} {real_signal['direction']}")
+                else:
+                    # FAIL IMMEDIATELY - NO FAKE DATA FOR LIVE MONEY
+                    logger.error(f"🚨 SIGNAL NOT FOUND: {signal_id} - ABORTING FIRE COMMAND")
+                    return {
+                        'success': False,
+                        'error': 'SIGNAL_NOT_FOUND',
+                        'message': f'❌ Signal {signal_id} not found in database. NO FAKE DATA ALLOWED.',
+                        'signal_id': signal_id
+                    }
             
             signal_data = self.processed_signals[signal_id]
             signal_data['executed_at'] = datetime.now().isoformat()

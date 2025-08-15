@@ -100,6 +100,57 @@ def _upsert_ea_instance(payload):
     except Exception as e:
         LOG.warning("DB update failed: %s", e)
 
+def _insert_fire_record(cmd):
+    """Insert fire command into database for tracking"""
+    try:
+        fire_id = cmd.get("fire_id")
+        if not fire_id:
+            return
+            
+        # Extract user_id from the EA instance that will execute this
+        target_uuid = cmd.get("target_uuid")
+        if not target_uuid:
+            return
+            
+        # Get user_id from ea_instances table
+        conn = _ea_db()
+        cur = conn.cursor()
+        cur.execute("SELECT user_id FROM ea_instances WHERE target_uuid = ?", (target_uuid,))
+        row = cur.fetchone()
+        user_id = row[0] if row and row[0] else "unknown"
+        
+        # Create fires table if needed
+        cur.execute("""
+        CREATE TABLE IF NOT EXISTS fires (
+            fire_id TEXT PRIMARY KEY,
+            mission_id TEXT NOT NULL,
+            user_id TEXT NOT NULL,
+            status TEXT,
+            ticket INTEGER,
+            price REAL,
+            idem TEXT UNIQUE,
+            created_at INTEGER,
+            updated_at INTEGER,
+            equity_used REAL,
+            risk_pct_used REAL
+        )
+        """)
+        
+        # Insert fire record with SENT status
+        now = int(time.time())
+        cur.execute("""
+            INSERT OR IGNORE INTO fires 
+            (fire_id, mission_id, user_id, status, created_at, updated_at)
+            VALUES (?, ?, ?, 'SENT', ?, ?)
+        """, (fire_id, fire_id, user_id, now, now))
+        
+        conn.commit()
+        conn.close()
+        LOG.info(f"[CMD] 📝 Fire record created: {fire_id} for user {user_id}")
+        
+    except Exception as e:
+        LOG.warning(f"[CMD] Fire record insert error: {e}")
+
 
 router = ctx.socket(zmq.ROUTER); router.bind(PUSH_BIND)
 pull   = ctx.socket(zmq.PULL)
@@ -169,6 +220,10 @@ def queue_to_router_forever():
             LOG.warning("[CMD] ❌ No socket identity for UUID %s", uuid)
             continue
 
+        # Insert fire record into database for tracking
+        if cmd.get("type") == "fire":
+            _insert_fire_record(cmd)
+        
         payload = json.dumps(cmd).encode()
         # ROUTER to DEALER: send [identity, payload] - DEALER strips identity automatically  
         router.send_multipart([identity, payload])

@@ -1,0 +1,30 @@
+#!/usr/bin/env python3
+import os, time, json, redis
+R = redis.Redis(host=os.environ.get("REDIS_HOST","127.0.0.1"),
+                port=int(os.environ.get("REDIS_PORT","6379")), decode_responses=True)
+SRC = os.environ.get("SRC_STREAM","signals")
+DST = os.environ.get("DST_STREAM","alerts")
+GROUP = os.environ.get("GROUP","alerts_fanout")
+CONS  = os.environ.get("CONSUMER","fanout1")
+PATMAP = json.loads(os.environ.get("PATTERN_CLASS_JSON","{}"))
+def pclass(pt): return PATMAP.get(pt,"SNIPER")
+def ensure():
+    try: R.xgroup_create(SRC, GROUP, id="$", mkstream=True)
+    except: pass
+def loop():
+    ensure()
+    while True:
+        resp = R.xreadgroup(GROUP, CONS, {SRC: ">"}, count=50, block=5000)
+        for _, items in (resp or []):
+            for mid, fields in items:
+                ok=True
+                try:
+                    ev = json.loads(fields.get("event") or fields.get("data") or "{}")
+                    ev["pattern_class"] = pclass(ev.get("pattern_type"))
+                    R.xadd(DST, {"event": json.dumps(ev)}, maxlen=1000)
+                except Exception as e:
+                    ok=False; print("[fanout] err:", e)
+                finally:
+                    if ok: R.xack(SRC, GROUP, mid)
+        time.sleep(0.1)
+if __name__=="__main__": loop()

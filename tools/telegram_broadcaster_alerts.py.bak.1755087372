@@ -1,0 +1,282 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+import os, json, time, redis, requests, sys
+import hmac, hashlib, base64
+
+# Load secrets for link signing and TTL
+try:
+    exec(open("/root/HydraX-v2/.secrets/links.env").read())
+    exec(open("/root/HydraX-v2/.secrets/telegram.env").read())
+except:
+    pass
+
+# Token signing functions (duplicate from webapp for offline operation)
+SIGN_KEY = os.environ.get("MISSION_LINK_SIGNING_KEY","").encode()
+TTL = int(os.environ.get("MISSION_LINK_TTL_SEC","600"))
+
+def _mint_link_token(user_id, signal_id, ttl=TTL):
+    payload = {"uid": str(user_id), "sid": str(signal_id), "exp": int(time.time()) + ttl}
+    msg = json.dumps(payload, separators=(",",":"), sort_keys=True).encode()
+    sig = hmac.new(SIGN_KEY, msg, hashlib.sha256).digest()
+    tok = base64.urlsafe_b64encode(msg + b"." + sig).decode().rstrip("=")
+    return tok
+
+def fmt_dm(ev, user_id):
+    """Format alert for direct message with tokenized link"""
+    # Title line: A.T.H.E.N.A. Mission Control
+    line1 = "A.T.H.E.N.A.   Mission Control"
+    
+    # Second line: classification
+    pc = ev.get('pattern_class', 'RAPID')
+    if pc == "RAPID":
+        line2 = "[RAPID] ⚡ RAPID ALERT"
+    else:
+        line2 = "[SNIPER] 🎯 SNIPER PRIME"
+    
+    # Third line: symbol, direction, confidence
+    symbol = ev.get('symbol', '')
+    direction = ev.get('direction', '')
+    confidence = int(round(ev.get('confidence', 0)))
+    line3 = f"• {symbol} {direction} • {confidence}%"
+    
+    # Fourth line: RR and expected hold time
+    target_rr = ev.get('target_rr', '?')
+    expected_hold = ev.get('expected_hold_min', '?')
+    line4 = f"RR≈{target_rr} • est. {expected_hold}m"
+    
+    # Fifth line: entry, SL, TP, pattern
+    entry = ev.get('entry_price', '')
+    stop_pips = ev.get('stop_pips', '')
+    target_pips = ev.get('target_pips', '')
+    pattern = ev.get('pattern_type', '')
+    line5 = f"Entry {entry} | SL {stop_pips}p | TP {target_pips}p | {pattern}"
+    
+    # Sixth line: tokenized mission link for this specific user
+    import urllib.parse
+    base_url = os.environ.get('WEBAPP_PUBLIC_BASE', 'https://134.209.204.67:8888')
+    raw_signal_id = ev.get('signal_id', '')
+    if raw_signal_id and user_id:
+        # Properly encode signal_id for URL
+        encoded_signal_id = urllib.parse.quote_plus(raw_signal_id, safe='')
+        # Create signed token for this user and signal
+        token = _mint_link_token(user_id, raw_signal_id)
+        line6 = f"🎯 Fire mission: {base_url}/brief?signal_id={encoded_signal_id}&t={token}"
+        print(f"[ALERT-LINK] DM raw_sid={raw_signal_id} enc_sid={encoded_signal_id} user={user_id} url={base_url}/brief?signal_id={encoded_signal_id}&t={token[:12]}...")
+    else:
+        line6 = ""
+    
+    # Combine all lines
+    lines = [line1, line2, line3, line4, line5]
+    if line6:
+        lines.append(line6)
+    
+    return "\n".join(lines)
+
+R=redis.Redis(host=os.environ.get("REDIS_HOST","127.0.0.1"),
+              port=int(os.environ.get("REDIS_PORT","6379")), decode_responses=True)
+STREAM=os.environ.get("ALERT_STREAM","alerts")
+GROUP=os.environ.get("ALERT_GROUP","telegram")
+CONS =os.environ.get("ALERT_CONSUMER","athena")
+# NO FALLBACK - must use environment variables
+TG_TOKEN=os.environ.get("TELEGRAM_BOT_TOKEN")
+TG_CHAT=os.environ.get("TELEGRAM_CHAT_ID")
+EXPECTED_USERNAME=os.environ.get("EXPECTED_BOT_USERNAME", "bitten_athena_bot")
+
+def fmt(ev):
+    # Extract fields safely
+    sid = ev.get("signal_id", "")
+    sym = ev.get("symbol", "?")
+    dire = ev.get("direction", "?")
+    conf = int(round(ev.get("confidence", 0)))
+    rr = ev.get("target_rr") or ev.get("rr") or None
+    hold = ev.get("expected_hold_min") or ev.get("hold_min") or None
+    pclass = (ev.get("pattern_class", "RAPID") or "RAPID").upper()
+    
+    # Line 1 (class + symbol + side + confidence)
+    tag = "[SNIPER]" if pclass == "SNIPER" else "[RAPID]"
+    line1 = f"{tag} {sym} {dire} • {conf}%"
+    
+    # Line 2 (compact meta; NO pips, NO entry)
+    parts = []
+    if rr is not None:
+        try: 
+            parts.append(f"RR≈{round(float(rr), 2)}")
+        except: 
+            pass
+    if hold is not None:
+        try: 
+            parts.append(f"est {int(hold)}m")
+        except: 
+            pass
+    # If neither rr nor hold present, fall back to pattern_type or class_reason if available
+    meta = " • ".join(parts) if parts else (ev.get("pattern_type") or ev.get("class_reason") or "mission ready")
+    line2 = meta
+    
+    # Line 3 (view-only fallback URL)
+    import urllib.parse
+    base = os.environ.get("WEBAPP_PUBLIC_BASE", "https://134.209.204.67:8888").rstrip("/")
+    view_only_url = f"{base}/brief?signal_id={urllib.parse.quote_plus(sid, safe='')}"
+    line3 = view_only_url
+    
+    # Join exactly 3 lines
+    text = "\n".join([line1, line2, line3])
+    
+    return text
+
+def send(text, retry=2, signal_id="", is_dm=False, event_data=None):
+    if not TG_TOKEN or not TG_CHAT: 
+        print(f"[TG-DRY] No token/chat configured. Would send: {text}"); 
+        return False
+    
+    # Prepare message data
+    message_data = {
+        "chat_id": TG_CHAT,
+        "text": text
+    }
+    
+    # Add inline keyboard with dynamic button label for group messages
+    if signal_id and not is_dm and event_data:
+        import urllib.parse
+        base_url = os.environ.get('WEBAPP_PUBLIC_BASE', 'https://134.209.204.67:8888')
+        
+        # Get pattern class for button label
+        pclass = (event_data.get("pattern_class", "RAPID") or "RAPID").upper()
+        btn_text = "View Intel" if pclass == "SNIPER" else "Mission Brief"
+        
+        # Get RR and hold for logging
+        rr = event_data.get("target_rr") or event_data.get("rr") or None
+        hold = event_data.get("expected_hold_min") or event_data.get("hold_min") or None
+        
+        # Create state parameter with signal_id
+        state_data = {"sid": signal_id}
+        login_url = f"{base_url}/tg_login?state={urllib.parse.quote_plus(json.dumps(state_data), safe='')}"
+        
+        inline_keyboard = {
+            "inline_keyboard": [[{
+                "text": btn_text,
+                "login_url": {
+                    "url": login_url,
+                    "request_write_access": True,
+                    "forward_text": "Authorize to view mission"
+                }
+            }]]
+        }
+        
+        message_data["reply_markup"] = json.dumps(inline_keyboard)
+        print(f"[ALERT-3LINE] sid={signal_id} class={pclass} btn='{btn_text}' rr={rr} hold={hold} login={login_url}")
+    
+    for attempt in range(retry):
+        try:
+            print(f"[TG-SEND] Attempt {attempt+1}/{retry} sending to chat {TG_CHAT}")
+            resp = requests.post(f"https://api.telegram.org/bot{TG_TOKEN}/sendMessage",
+                                data=message_data, timeout=5)
+            resp_json = resp.json()
+            ok = resp_json.get('ok', False)
+            print(f"[TG-RESP] Status={resp.status_code} ok={ok} desc={resp_json.get('description','')}")
+            if ok:
+                result = resp_json.get('result', {})
+                message_id = result.get('message_id')
+                chat_id = result.get('chat', {}).get('id', TG_CHAT)
+                
+                print(f"[TG-SUCCESS] Message sent: msg_id={message_id}")
+                
+                # Track message for TTL deletion
+                if message_id and signal_id:
+                    try:
+                        now_epoch = int(time.time())
+                        key = f"alerts:msg:{chat_id}:{message_id}"
+                        R.hset(key, mapping={
+                            "chat_id": str(chat_id),
+                            "message_id": str(message_id),
+                            "signal_id": signal_id,
+                            "sent_at": str(now_epoch),
+                            "is_dm": "1" if is_dm else "0"
+                        })
+                        R.zadd("alerts:msgs", {f"{chat_id}:{message_id}": now_epoch})
+                        print(f"[TTL-TRACK] chat={chat_id} msg_id={message_id} sid={signal_id} t={now_epoch}")
+                    except Exception as e:
+                        print(f"[TTL-TRACK-ERROR] Failed to track message: {e}")
+                
+                return True
+            else:
+                print(f"[TG-FAIL] Telegram API error: {resp_json}")
+        except Exception as e:
+            print(f"[TG-ERROR] Attempt {attempt+1} failed: {e}")
+            if attempt < retry - 1:
+                time.sleep(1)
+    return False
+
+def ensure(): 
+    try: 
+        R.xgroup_create(STREAM, GROUP, id="$", mkstream=True)
+        print(f"[REDIS] Created consumer group '{GROUP}' on stream '{STREAM}'")
+    except: 
+        print(f"[REDIS] Consumer group '{GROUP}' already exists on stream '{STREAM}'")
+
+def loop():
+    # Verify environment variables
+    if not TG_TOKEN:
+        print("[ERROR] TELEGRAM_BOT_TOKEN not set in environment. Exiting.")
+        sys.exit(1)
+    if not TG_CHAT:
+        print("[ERROR] TELEGRAM_CHAT_ID not set in environment. Exiting.")
+        sys.exit(1)
+    
+    # Verify bot identity
+    try:
+        resp = requests.get(f"https://api.telegram.org/bot{TG_TOKEN}/getMe")
+        if resp.status_code == 200:
+            bot_data = resp.json()
+            if bot_data.get('ok'):
+                username = bot_data.get('result', {}).get('username', '')
+                print(f"[ID] bot_username={username}, chat_id={TG_CHAT}")
+                if username != EXPECTED_USERNAME:
+                    print(f"[ERROR] Wrong bot! Expected {EXPECTED_USERNAME}, got {username}. Exiting.")
+                    sys.exit(2)
+            else:
+                print(f"[ERROR] Bot verification failed: {bot_data.get('description', 'Unknown error')}")
+                sys.exit(2)
+        else:
+            print(f"[ERROR] Failed to verify bot identity: HTTP {resp.status_code}")
+            sys.exit(2)
+    except Exception as e:
+        print(f"[ERROR] Failed to verify bot: {e}")
+        sys.exit(2)
+    
+    ensure()
+    print(f"[STARTED] Telegram broadcaster reading from '{STREAM}' as '{GROUP}:{CONS}'")
+    print(f"[CONFIG] Token={TG_TOKEN[:10]}... Chat={TG_CHAT}")
+    
+    while True:
+        try:
+            print(f"[REDIS-READ] Waiting for new messages on '{STREAM}'...")
+            resp = R.xreadgroup(GROUP, CONS, {STREAM:">"}, count=10, block=5000)
+            
+            if resp:
+                print(f"[REDIS-READ] Received {len(resp[0][1])} messages")
+            
+            for _, items in (resp or []):
+                for mid, fields in items:
+                    print(f"[PROCESS] Processing message ID: {mid}")
+                    ok=True
+                    try:
+                        ev=json.loads(fields.get("event","{}"))
+                        signal_id = ev.get('signal_id', '')
+                        print(f"[ALERT] {signal_id} - {ev.get('symbol')} {ev.get('direction')}")
+                        ok = send(fmt(ev), signal_id=signal_id, is_dm=False, event_data=ev)
+                    except Exception as e:
+                        print(f"[ERROR] Failed to process {mid}: {e}")
+                        ok = False
+                    finally:
+                        if ok: 
+                            R.xack(STREAM, GROUP, mid)
+                            print(f"[ACK] Message {mid} acknowledged")
+                        else:
+                            print(f"[NACK] Message {mid} left pending for retry")
+        except Exception as e:
+            print(f"[LOOP-ERROR] {e}")
+            time.sleep(5)
+        
+        time.sleep(0.2)
+
+if __name__=="__main__": loop()

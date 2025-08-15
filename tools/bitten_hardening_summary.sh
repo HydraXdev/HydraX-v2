@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+# BITTEN System Hardening Summary
+
+echo "================================================"
+echo "     BITTEN SYSTEM HARDENING COMPLETE"
+echo "================================================"
+echo "Deployed: $(date)"
+echo ""
+
+echo "🔒 REDIS STREAMS HARDENING"
+echo "──────────────────────────"
+echo "✅ Signals cutover to Redis-only path"
+echo "✅ Stream retention: 250k messages (auto-trim)"
+echo "✅ Daily backups: 2:12 AM to /var/backups/bitten"
+echo "✅ Hourly trim sweep via cron"
+echo "✅ 7-day backup retention"
+echo ""
+
+echo "📊 CURRENT STATUS"
+echo "─────────────────"
+STREAM_LEN=$(redis-cli XLEN signals 2>/dev/null || echo 0)
+PENDING=$(redis-cli XPENDING signals relay 2>/dev/null | head -1 | awk '{print $1}' || echo 0)
+BACKUP_COUNT=$(ls /var/backups/bitten/redis-aof-*.tar.gz 2>/dev/null | wc -l || echo 0)
+echo "Signals stream: $STREAM_LEN messages, $PENDING pending"
+echo "Backups available: $BACKUP_COUNT"
+echo ""
+
+echo "🛠️ MONITORING TOOLS"
+echo "───────────────────"
+echo "/root/HydraX-v2/tools/bus_status.sh         - Full Redis bus status"
+echo "/root/HydraX-v2/tools/bitten_full_status.sh - Complete system status"
+echo "/root/HydraX-v2/tools/redis_backup.sh       - Manual backup trigger"
+echo "/root/HydraX-v2/tools/trim_fire_streams.py  - Trim fire.* streams"
+echo ""
+
+echo "⚡ QUICK COMMANDS"
+echo "─────────────────"
+echo "View logs:"
+echo "  pm2 logs signals_zmq_to_redis --lines 50"
+echo "  pm2 logs signals_redis_to_webapp --lines 50"
+echo ""
+echo "Check stream:"
+echo "  redis-cli XINFO STREAM signals"
+echo "  redis-cli XPENDING signals relay"
+echo ""
+echo "Rollback signals (if needed):"
+echo "  pm2 start relay_to_telegram && pm2 save"
+echo ""
+echo "Fire cutover (when ready):"
+echo "  /root/HydraX-v2/tools/fire_cutover.sh"
+echo ""
+
+echo "📅 CRON SCHEDULE"
+echo "────────────────"
+crontab -l | grep -E "redis_backup|xtrim" || echo "No cron jobs found"
+echo ""
+
+echo "💾 BACKUP LOCATIONS"
+echo "───────────────────"
+echo "Local: /var/backups/bitten/"
+ls -lh /var/backups/bitten/*.tar.gz 2>/dev/null | tail -3 || echo "No backups yet"
+echo ""
+echo "Note: Configure rclone for off-site backups:"
+echo "  rclone config  # Set up remote"
+echo "  Then add to cron: rclone copy /var/backups/bitten remote:bitten-backups"

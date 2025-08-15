@@ -1,0 +1,75 @@
+════════════════════════════════════════════════════════════════
+           BITTEN SIGNAL CADENCE RECOVERY REPORT
+════════════════════════════════════════════════════════════════
+Generated: 2025-08-12 16:24:00 UTC
+Status: OPERATIONAL WITH DECAY MODE
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                    24-HOUR PERFORMANCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+BEFORE DECAY (Last 24h - 60m):
+• Signals Generated: 0
+• Issue: Confidence validation too strict
+• Banned scores blocking: [75, 70, 65, 88]
+
+AFTER DECAY (Last 60 minutes):
+• Signals Generated: 31
+• Signals Relayed: 31
+• Telegram Delivery: ✅ Group -1002581996861
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                    DECAY MODE SETTINGS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Applied at: 16:20 UTC
+Auto-rollback: 17:50 UTC (90 minutes)
+Remaining time: ~86 minutes
+
+THRESHOLD ADJUSTMENTS:
+• Pip movement: 3 → 2 pips (33% reduction)
+• Volume surge: 1.3x → 1.1x (15% reduction)  
+• Confidence validation: BYPASSED
+• Calculation breakdown: NOT REQUIRED
+• Signal limit: 10 during decay window
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                    RECENT SIGNALS (Sample)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. ELITE_GUARD_XAUUSD_1755015610 | XAUUSD SELL | 68.7%
+2. ELITE_GUARD_EURJPY_1755015610 | EURJPY SELL | 99%
+3. ELITE_GUARD_GBPJPY_1755015610 | GBPJPY SELL | 91.7%
+4. ELITE_GUARD_USDJPY_1755015640 | USDJPY BUY
+5. ELITE_GUARD_USDCAD_1755015640 | USDCAD BUY
+6. ELITE_GUARD_EURUSD_1755015685 | EURUSD SELL
+7. ELITE_GUARD_GBPUSD_1755015700 | GBPUSD SELL
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                    SIGNAL FLOW STATUS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ Elite Guard (PID 3190774): GENERATING
+✅ ZMQ Port 5557: PUBLISHING  
+✅ Relay to Telegram: ACTIVE
+✅ WebApp API: RECEIVING
+✅ Telegram Group: DELIVERING
+⚠️ Database Storage: NOT PERSISTING (code missing)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                    OUTCOME TRACKING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Note: Signals not in database, unable to track outcomes.
+Recommended: Fix webapp DB insertion to enable tracking.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                    RECOMMENDATIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. MONITOR: Signal quality during decay period
+2. FIX: Database insertion in webapp_server_optimized.py
+3. WAIT: Auto-rollback at 17:50 UTC
+4. REVIEW: Confidence validation logic after rollback
+
+════════════════════════════════════════════════════════════════

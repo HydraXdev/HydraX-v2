@@ -1,0 +1,100 @@
+#!/usr/bin/env python3
+import os, time, json, redis
+R = redis.Redis(host=os.environ.get("REDIS_HOST","127.0.0.1"),
+                port=int(os.environ.get("REDIS_PORT","6379")), decode_responses=True)
+SRC = os.environ.get("SRC_STREAM","signals")
+DST = os.environ.get("DST_STREAM","alerts")
+GROUP = os.environ.get("GROUP","alerts_fanout")
+CONS  = os.environ.get("CONSUMER","fanout1")
+
+# Central canonical classifier configuration
+CANON_FLOOR_RR = float(os.environ.get("CANON_FLOOR_RR","1.2"))
+SNIPER_RR_MIN  = float(os.environ.get("SNIPER_RR_MIN","1.8"))
+SNIPER_RR_MIN_WITH_CONF = float(os.environ.get("SNIPER_RR_MIN_WITH_CONF","1.6"))
+SNIPER_CONF_BOOST = float(os.environ.get("SNIPER_CONF_BOOST","75"))
+SESSION_ENFORCE_CLASS = int(os.environ.get("SESSION_ENFORCE_CLASS","0"))  # 0 = off
+
+# Contract linting (log-only)
+REQUIRED_FIELDS = ["signal_id","symbol","direction","entry_price","stop_pips","target_pips","confidence","pattern_type","timestamp"]
+def _lint(ev):
+    missing = [k for k in REQUIRED_FIELDS if k not in ev]
+    if missing:
+        print(f"[CONTRACT:LINT] Missing fields: {missing} in signal_id={ev.get('signal_id')}")
+    # Soft sanity checks:
+    if ev.get("direction") not in ("BUY","SELL"):
+        print(f"[CONTRACT:LINT] Odd direction={ev.get('direction')} sid={ev.get('signal_id')}")
+    return True
+
+def _classify(rr, conf, session_tag="ANY"):
+    if rr is None: return "RAPID"
+    if rr >= SNIPER_RR_MIN or (rr >= SNIPER_RR_MIN_WITH_CONF and (conf or 0) >= SNIPER_CONF_BOOST):
+        return "SNIPER"
+    if rr >= CANON_FLOOR_RR:
+        return "RAPID"
+    return "DISCARD"
+
+def _expected_hold_minutes(pc):
+    return 90 if pc=="SNIPER" else 30
+def ensure():
+    try: R.xgroup_create(SRC, GROUP, id="$", mkstream=True)
+    except: pass
+def loop():
+    ensure()
+    while True:
+        resp = R.xreadgroup(GROUP, CONS, {SRC: ">"}, count=50, block=5000)
+        for _, items in (resp or []):
+            for mid, fields in items:
+                ok=True
+                try:
+                    ev = json.loads(fields.get("event") or fields.get("data") or "{}")
+                    
+                    # Contract linting
+                    _lint(ev)
+                    
+                    # Ensure signal_type is present
+                    if not ev.get("signal_type"):
+                        ev["signal_type"] = "PRECISION_STRIKE"
+                        print("[CONTRACT:WARN] signal_type missing in signal; set to PRECISION_STRIKE")
+                    
+                    # Compute RR from entry/sl/tp if not provided
+                    entry = ev.get("entry_price", 0)
+                    sl_price = ev.get("sl_price")
+                    tp_price = ev.get("tp_price")
+                    stop_pips = ev.get("stop_pips", 0)
+                    target_pips = ev.get("target_pips", 0)
+                    
+                    if sl_price is None and stop_pips:
+                        sl_price = entry - stop_pips * 0.0001  # Assume pip value for now
+                    if tp_price is None and target_pips:
+                        tp_price = entry + target_pips * 0.0001
+                    
+                    risk = abs(entry - sl_price) if sl_price else None
+                    reward = abs(tp_price - entry) if tp_price else None
+                    rr = (reward / risk) if (risk and reward and risk > 0) else None
+                    
+                    # Central classification
+                    ev_rr = ev.get("target_rr", rr)
+                    ev_conf = ev.get("confidence", 0)
+                    
+                    # Store any incoming pattern_class before overwriting
+                    if "pattern_class" in ev:
+                        ev["_incoming_pattern_class_ignored"] = ev["pattern_class"]
+                        print(f"[CLASS] overwrite incoming pattern_class from {ev.get('detector','unknown')}; canon={_classify(ev_rr, ev_conf)}")
+                    
+                    ev["pattern_class"] = _classify(ev_rr, ev_conf)
+                    ev["target_rr"] = round(ev_rr, 2) if ev_rr else None
+                    ev["expected_hold_min"] = _expected_hold_minutes(ev["pattern_class"])
+                    ev["class_reason"] = f"rr={round(ev_rr,2) if ev_rr else 'NA'} conf={int(round(ev_conf))}"
+                    
+                    # Skip DISCARD signals
+                    if ev["pattern_class"] == "DISCARD":
+                        print(f"[CLASS] Discarding signal with RR={ev_rr}, conf={ev_conf}")
+                        continue
+                    
+                    R.xadd(DST, {"event": json.dumps(ev)})  # No destructive maxlen
+                except Exception as e:
+                    ok=False; print("[fanout] err:", e)
+                finally:
+                    if ok: R.xack(SRC, GROUP, mid)
+        time.sleep(0.1)
+if __name__=="__main__": loop()

@@ -1,0 +1,7 @@
+Signal Cadence Recovery Report
+Generated: 2025-08-12 16:22:13 UTC
+
+Decay Mode Status: ACTIVE
+Signals Generated: 0
+Signals Relayed: 31
+Auto-Rollback: ~17:50 UTC

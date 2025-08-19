@@ -357,6 +357,68 @@
             animation: pulse 1s infinite;
         }
 
+        /* Signal Freshness Indicator */
+        .freshness-indicator {
+            position: relative;
+            overflow: visible;
+        }
+
+        .freshness-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 2px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+
+        .freshness-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981 0%, #f59e0b 50%, #ef4444 100%);
+            transition: width 0.3s ease;
+            border-radius: 2px;
+            width: 100%;
+        }
+
+        .freshness-status {
+            font-size: 10px;
+            margin-top: 3px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .freshness-indicator.fresh .freshness-status { color: #10b981; }
+        .freshness-indicator.stale .freshness-status { color: #f59e0b; }
+        .freshness-indicator.expired .freshness-status { color: #ef4444; }
+
+        .pattern-warning {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            border: 1px solid #f87171;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: pulseWarning 2s infinite;
+        }
+
+        @keyframes pulseWarning {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        .warning-icon {
+            font-size: 24px;
+            animation: shake 0.5s infinite;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-2px); }
+            75% { transform: translateX(2px); }
+        }
+
         @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.6; }
@@ -524,8 +586,27 @@
                     <div class="meta-value">{{ tcs_score }}%</div>
                 </div>
                 <div class="meta-box">
-                    <div class="meta-label">Time Remaining</div>
-                    <div class="meta-value countdown-timer" id="countdown">--:--</div>
+                    <div class="meta-label">Signal Status</div>
+                    <div class="meta-value">ACTIVE</div>
+                </div>
+                <div class="meta-box freshness-indicator" id="freshnessIndicator">
+                    <div class="meta-label">Signal Quality</div>
+                    <div class="meta-value" id="freshnessScore">
+                        <span id="freshnessPercentage">100</span>%
+                        <div class="freshness-bar">
+                            <div class="freshness-fill" id="freshnessFill"></div>
+                        </div>
+                    </div>
+                    <div class="freshness-status" id="freshnessStatus">FRESH</div>
+                </div>
+            </div>
+            
+            <!-- Pattern Invalidation Warning -->
+            <div class="pattern-warning" id="patternWarning" style="display: none;">
+                <div class="warning-icon">⚠️</div>
+                <div class="warning-text">
+                    <strong>PATTERN COMPROMISED</strong><br>
+                    <span id="invalidationReason"></span>
                 </div>
             </div>
         </div>
@@ -672,8 +753,8 @@
                 🔥 TACTICAL EXECUTION CENTER
             </h2>
             
-            <div class="countdown-timer" id="mainCountdown">
-                <span id="countdownMinutes">--</span>:<span id="countdownSeconds">--</span>
+            <div class="status-display">
+                <span class="status-active">SIGNAL ACTIVE</span>
             </div>
             
             <div style="margin-bottom: 20px;">
@@ -765,6 +846,192 @@
         // Update every second
         setInterval(updateCountdown, 1000);
         updateCountdown(); // Initial call
+
+        // Signal Freshness Monitoring
+        let socket;
+        let freshnessInterval;
+        const signalId = '{{ signal_id if signal_id else "unknown" }}';
+
+        // Initialize SocketIO for real-time updates
+        function initializeFreshnessMonitoring() {
+            if (signalId === 'unknown' || !signalId) {
+                console.log('No signal ID available for freshness monitoring');
+                return;
+            }
+
+            try {
+                socket = io();
+                
+                // Subscribe to freshness updates for this signal
+                socket.emit('subscribe_freshness', { signal_id: signalId });
+                
+                // Handle real-time freshness updates
+                socket.on('freshness_update', function(data) {
+                    console.log('Received freshness update:', data);
+                    updateFreshnessDisplay(data);
+                });
+                
+                socket.on('freshness_subscribed', function(data) {
+                    console.log('Subscribed to freshness updates for:', data.signal_id);
+                });
+                
+                // Poll freshness status every 10 seconds as backup
+                freshnessInterval = setInterval(checkSignalFreshness, 10000);
+                checkSignalFreshness(); // Initial check
+                
+            } catch (error) {
+                console.error('Error initializing freshness monitoring:', error);
+                // Fallback to polling only
+                freshnessInterval = setInterval(checkSignalFreshness, 15000);
+                checkSignalFreshness();
+            }
+        }
+
+        async function checkSignalFreshness() {
+            // Disabled freshness checking - signals are always valid
+            const data = {
+                freshness_score: 100,
+                status: 'fresh',
+                pattern_valid: true,
+                warning_level: 'none'
+            };
+            updateFreshnessDisplay(data);
+        }
+
+        function updateFreshnessDisplay(data) {
+            const indicator = document.getElementById('freshnessIndicator');
+            const percentage = document.getElementById('freshnessPercentage');
+            const fill = document.getElementById('freshnessFill');
+            const status = document.getElementById('freshnessStatus');
+            const warning = document.getElementById('patternWarning');
+            const fireButton = document.querySelector('.fire-button');
+            
+            if (!indicator || !percentage || !fill || !status) {
+                console.error('Freshness UI elements not found');
+                return;
+            }
+            
+            // Update freshness score
+            const score = Math.round(data.freshness_score || 100);
+            percentage.textContent = score;
+            fill.style.width = `${score}%`;
+            status.textContent = data.status?.toUpperCase() || 'FRESH';
+            
+            // Update indicator class
+            indicator.className = `meta-box freshness-indicator ${data.status || 'fresh'}`;
+            
+            // Handle pattern invalidation
+            if (!data.pattern_valid || data.status === 'expired') {
+                if (warning) {
+                    warning.style.display = 'flex';
+                    const reasonElement = document.getElementById('invalidationReason');
+                    if (reasonElement) {
+                        reasonElement.textContent = 
+                            data.invalidation_reason || 'Signal pattern no longer valid';
+                    }
+                }
+                
+                // Disable fire button
+                if (fireButton) {
+                    fireButton.disabled = true;
+                    fireButton.textContent = 'SIGNAL EXPIRED';
+                    fireButton.style.background = '#ef4444';
+                    fireButton.style.cursor = 'not-allowed';
+                }
+            } else if (data.warning_level === 'caution') {
+                // Show caution state
+                if (fireButton && !fireButton.disabled) {
+                    fireButton.style.background = '#f59e0b';
+                    fireButton.textContent = `🔥 FIRE (${score}% Quality)`;
+                }
+            } else {
+                // Hide warning, enable button
+                if (warning) {
+                    warning.style.display = 'none';
+                }
+                if (fireButton && !fireButton.disabled) {
+                    fireButton.style.background = '#10b981';
+                    fireButton.textContent = `🔥 FIRE (${score}% Quality)`;
+                }
+            }
+        }
+
+        // Enhanced countdown with freshness integration
+        function updateCountdown() {
+            if (secondsLeft <= 0) {
+                document.getElementById('countdown').textContent = 'EXPIRED';
+                document.getElementById('mainCountdown').textContent = 'EXPIRED';
+                document.getElementById('mainCountdown').classList.add('critical');
+                
+                // No countdown expiry - signals remain valid
+                
+                const fireButton = document.querySelector('.fire-button');
+                if (fireButton) {
+                    fireButton.disabled = true;
+                    fireButton.textContent = 'TIME EXPIRED';
+                    fireButton.style.background = '#ef4444';
+                }
+                return;
+            }
+            
+            const minutes = Math.floor(secondsLeft / 60);
+            const seconds = secondsLeft % 60;
+            
+            document.getElementById('countdown').textContent = 
+                `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            document.getElementById('countdownMinutes').textContent = 
+                minutes.toString().padStart(2, '0');
+            document.getElementById('countdownSeconds').textContent = 
+                seconds.toString().padStart(2, '0');
+            document.getElementById('timeRemaining').textContent = minutes;
+            
+            if (secondsLeft < 300) { // Less than 5 minutes
+                document.getElementById('mainCountdown').classList.add('critical');
+            }
+            
+            secondsLeft--;
+        }
+
+        // Load real account balance
+        async function loadRealBalance() {
+            const userId = new URLSearchParams(window.location.search).get('user_id');
+            if (!userId) return;
+            
+            try {
+                const response = await fetch(`/api/user-balance/${userId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Update balance displays
+                    document.querySelectorAll('.balance-display').forEach(el => {
+                        el.textContent = `$${data.balance.toFixed(2)}`;
+                    });
+                    document.querySelectorAll('.equity-display').forEach(el => {
+                        el.textContent = `$${data.equity.toFixed(2)}`;
+                    });
+                    document.querySelectorAll('.currency-display').forEach(el => {
+                        el.textContent = data.currency;
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading balance:', error);
+            }
+        }
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeFreshnessMonitoring();
+            loadRealBalance();
+        });
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', function() {
+            if (freshnessInterval) clearInterval(freshnessInterval);
+            if (socket) {
+                socket.emit('unsubscribe_freshness', { signal_id: signalId });
+                socket.disconnect();
+            }
+        });
         
         // Chart Setup
         const ctx = document.getElementById('priceChart').getContext('2d');

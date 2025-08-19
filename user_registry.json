@@ -10,15 +10,43 @@
     "fire_eligible": true,
     "tier": "COMMANDER",
     "ready_for_fire": true,
-    "account_balance": 474.26,
-    "account_equity": 458.58,
+    "account_balance": 447.5,
+    "account_equity": 391.41,
     "account_currency": "USD",
     "user_uuid": "COMMANDER_DEV_001",
-    "last_update": "2025-08-15T03:15:46.556747",
+    "last_update": "2025-08-19T16:06:20.191443",
     "handshake_received": true,
     "server": "",
     "handshake_captured": true,
+    "training_academy": {
+      "lesson_day": 11,
+      "missions_opened_today": 0,
+      "last_lesson_access": "2025-08-17T21:19:11.618563",
+      "lesson_progress": "completed",
+      "academy_start_date": "2025-08-07T00:00:00",
+      "total_lesson_missions": 47,
+      "academy_graduate": true
+    },
     "capture_source": "tick_stream"
+  },
+  "999888777": {
+    "user_id": "999888777",
+    "telegram_id": "999888777",
+    "tier": "NIBBLER",
+    "account_balance": 1000.0,
+    "account_currency": "USD",
+    "account_equity": 1000.0,
+    "fire_eligible": false,
+    "status": "new_recruit",
+    "training_academy": {
+      "lesson_day": 1,
+      "missions_opened_today": 0,
+      "last_lesson_access": null,
+      "lesson_progress": "active",
+      "academy_start_date": "2025-08-17T21:54:00",
+      "total_lesson_missions": 0,
+      "academy_graduate": false
+    }
   },
   "users": {
     "7176191872": {

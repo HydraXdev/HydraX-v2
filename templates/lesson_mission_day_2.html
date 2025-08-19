@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BASIC TRAINING - Day 2: Market Intelligence</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #00D9FF;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .mission-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: rgba(0, 0, 0, 0.95);
+            border: 3px solid #FF6B6B;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 0 40px rgba(255, 107, 107, 0.4);
+        }
+        
+        .training-header {
+            background: linear-gradient(45deg, #FF6B6B, #FFD93D);
+            color: #000;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .training-badge {
+            position: absolute;
+            top: 10px;
+            left: 20px;
+            background: #000;
+            color: #FF6B6B;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .mission-title {
+            font-size: 28px;
+            font-weight: bold;
+            margin: 10px 0;
+            text-transform: uppercase;
+        }
+        
+        .mission-subtitle {
+            font-size: 16px;
+            font-weight: bold;
+        }
+        
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 30px;
+        }
+        
+        .intel-briefing {
+            background: rgba(0, 217, 255, 0.1);
+            border: 2px solid #00D9FF;
+            border-radius: 10px;
+            padding: 25px;
+        }
+        
+        .live-market {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid #4ECDC4;
+            border-radius: 10px;
+            padding: 25px;
+        }
+        
+        .market-element {
+            background: rgba(0, 0, 0, 0.6);
+            border-left: 4px solid #FFD93D;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+        
+        .element-title {
+            color: #FFD93D;
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+        
+        .element-data {
+            color: #00D9FF;
+            font-size: 20px;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        
+        .element-intel {
+            color: #ccc;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        .tactical-analysis {
+            grid-column: 1 / -1;
+            background: rgba(255, 193, 7, 0.1);
+            border: 2px solid #FFC107;
+            border-radius: 10px;
+            padding: 25px;
+            margin-top: 20px;
+        }
+        
+        .spread-calculator {
+            background: rgba(76, 175, 80, 0.1);
+            border: 2px solid #4CAF50;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .calculation-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .fire-section {
+            grid-column: 1 / -1;
+            background: rgba(255, 107, 107, 0.1);
+            border: 2px solid #FF6B6B;
+            border-radius: 10px;
+            padding: 25px;
+            text-align: center;
+        }
+        
+        .fire-button {
+            background: linear-gradient(45deg, #FF6B6B, #FF8E53);
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            border-radius: 10px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            margin: 20px;
+            transition: all 0.3s ease;
+            width: 300px;
+        }
+        
+        .fire-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.5);
+        }
+        
+        .progress-tracker {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            border-top: 3px solid #FF6B6B;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .progress-bar {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            height: 25px;
+            width: 300px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            background: linear-gradient(90deg, #FF6B6B, #FFD93D);
+            height: 100%;
+            width: 20%;
+            transition: width 0.3s ease;
+        }
+        
+        .rank-insignia {
+            color: #FFD93D;
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="mission-container">
+        <div class="training-header">
+            <div class="training-badge">BASIC TRAINING</div>
+            <div class="mission-title">DAY 2: MARKET INTELLIGENCE</div>
+            <div class="mission-subtitle">Decoding Enemy Territory - Bid/Ask, Pips & Battlefield Conditions</div>
+        </div>
+        
+        <div class="content-grid">
+            <div class="intel-briefing">
+                <h3>📡 INTELLIGENCE BRIEFING</h3>
+                <p><strong>Soldier,</strong> yesterday you learned to identify the enemy. Today we teach you to read the battlefield itself.</p>
+                
+                <p>Every market is a war zone with two opposing forces: <strong>BUYERS</strong> (going long) and <strong>SELLERS</strong> (going short). Your job is to pick the winning side.</p>
+                
+                <h4>🎯 Mission Objectives:</h4>
+                <ul>
+                    <li>Understand bid/ask pricing (enemy intel)</li>
+                    <li>Master pip calculations (measuring ground)</li>
+                    <li>Analyze spread conditions (battlefield hazards)</li>
+                    <li>Execute tactical market entry</li>
+                </ul>
+                
+                <div style="background: rgba(255, 107, 107, 0.2); padding: 15px; border-radius: 8px; margin-top: 20px;">
+                    <strong>⚠️ COMBAT READINESS:</strong> Today you're cleared for LIVE FIRE with training supervision. Your weapon is loaded, soldier.
+                </div>
+            </div>
+            
+            <div class="live-market">
+                <h3>🎯 LIVE BATTLEFIELD CONDITIONS</h3>
+                
+                <div class="market-element">
+                    <div class="element-title">TARGET SYMBOL</div>
+                    <div class="element-data">{{ symbol or 'EURUSD' }}</div>
+                    <div class="element-intel">Primary battlefield: Euro vs US Dollar front</div>
+                </div>
+                
+                <div class="market-element">
+                    <div class="element-title">BID PRICE (Sellers)</div>
+                    <div class="element-data">{{ entry_price or 1.08875 }}</div>
+                    <div class="element-intel">Highest price BUYERS are willing to pay. This is where you SELL.</div>
+                </div>
+                
+                <div class="market-element">
+                    <div class="element-title">ASK PRICE (Buyers)</div>
+                    <div class="element-data">{{ (entry_price + 0.00015) if entry_price else 1.08890 }}</div>
+                    <div class="element-intel">Lowest price SELLERS are willing to accept. This is where you BUY.</div>
+                </div>
+                
+                <div class="market-element">
+                    <div class="element-title">SPREAD (No Man's Land)</div>
+                    <div class="element-data">1.5 pips</div>
+                    <div class="element-intel">The gap between bid and ask. Smaller = better conditions for entry.</div>
+                </div>
+            </div>
+            
+            <div class="tactical-analysis">
+                <h3>🧠 TACTICAL ANALYSIS - UNDERSTANDING THE BATTLEFIELD</h3>
+                
+                <div class="spread-calculator">
+                    <h4>💡 PIP CALCULATION INTEL</h4>
+                    <div class="calculation-row">
+                        <span>1 PIP for EUR/USD:</span>
+                        <span style="color: #4CAF50; font-weight: bold;">0.0001</span>
+                    </div>
+                    <div class="calculation-row">
+                        <span>Current Ask - Bid Spread:</span>
+                        <span style="color: #4CAF50; font-weight: bold;">{{ ((entry_price + 0.00015) - entry_price) * 10000 if entry_price else 1.5 }} pips</span>
+                    </div>
+                    <div class="calculation-row">
+                        <span>Target Profit Distance:</span>
+                        <span style="color: #4CAF50; font-weight: bold;">{{ target_pips or 25 }} pips</span>
+                    </div>
+                    <div class="calculation-row">
+                        <span>Max Risk Distance:</span>
+                        <span style="color: #FF6B6B; font-weight: bold;">{{ stop_pips or 20 }} pips</span>
+                    </div>
+                </div>
+                
+                <h4>📊 BATTLEFIELD INTELLIGENCE:</h4>
+                <p><strong>Direction:</strong> {{ direction or 'BUY' }} - We're betting {{ symbol or 'EURUSD' }} will {{ 'strengthen' if direction == 'BUY' or not direction else 'weaken' }}</p>
+                <p><strong>Entry Strategy:</strong> {{ pattern_type or 'LIQUIDITY_SWEEP_REVERSAL' }} pattern detected</p>
+                <p><strong>Confidence Level:</strong> {{ confidence or 85 }}% - Our reconnaissance confirms high probability</p>
+                <p><strong>Risk/Reward Ratio:</strong> 1:{{ (target_pips / stop_pips) if target_pips and stop_pips else 1.25 }} - Favorable odds for engagement</p>
+            </div>
+            
+            <div class="fire-section">
+                <h3>🔫 LIVE FIRE EXERCISE</h3>
+                <p><strong>This is it, recruit!</strong> You've studied the intelligence, analyzed the battlefield conditions, and calculated the risks. Time to execute your first tactical market entry.</p>
+                
+                <div style="background: rgba(76, 175, 80, 0.1); padding: 15px; border-radius: 8px; margin: 20px 0;">
+                    <strong>✅ PRE-FLIGHT CHECKLIST:</strong><br>
+                    ✓ Market conditions analyzed<br>
+                    ✓ Spread acceptable (< 2 pips)<br>
+                    ✓ Risk calculated (2% of account)<br>
+                    ✓ Exit strategy confirmed<br>
+                    ✓ Pattern confidence above 78%
+                </div>
+                
+                <button class="fire-button" onclick="executeTrade()">
+                    🎯 EXECUTE MISSION
+                </button>
+                
+                <p style="color: #FFD93D; font-size: 14px;">Under training supervision - Your instructor is monitoring</p>
+            </div>
+        </div>
+        
+        <div class="progress-tracker">
+            <div>
+                <div class="rank-insignia">🎖️ RECRUIT - Day 2 of 10</div>
+                <div style="font-size: 14px; color: #999;">Next: Day 3 - Risk Management & Position Sizing</div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 20%;"></div>
+            </div>
+            <div style="text-align: right;">
+                <div style="color: #4CAF50; font-weight: bold;">Training Missions: {{ training_academy.total_lesson_missions or 2 }}</div>
+                <div style="font-size: 14px; color: #999;">Academy Progress: 20%</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function executeTrade() {
+            const button = document.querySelector('.fire-button');
+            button.style.background = 'linear-gradient(45deg, #4CAF50, #45a049)';
+            button.innerHTML = '🚀 MISSION EXECUTING...';
+            button.disabled = true;
+            
+            // Simulate API call for training
+            setTimeout(() => {
+                button.innerHTML = '✅ MISSION COMPLETE';
+                alert('🎖️ Excellent work, soldier! You\'ve successfully executed your first market entry. Your instructor is proud of your progress.');
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

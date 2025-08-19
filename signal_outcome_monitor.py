@@ -21,9 +21,21 @@ class SignalOutcomeMonitor:
         self.completed_signals = []
         self.truth_file = "/root/HydraX-v2/truth_log.jsonl"
         self.outcome_file = "/root/HydraX-v2/signal_outcomes.jsonl"
+        self.freshness_file = "/root/HydraX-v2/signal_freshness.jsonl"
         
-        print("📊 Signal Outcome Monitor started")
-        print("   Monitoring tick data to track SL/TP hits")
+        # FRESHNESS TRACKING SYSTEM
+        self.freshness_snapshots = {}  # signal_id -> {30s, 1m, 2m, 5m snapshots}
+        self.freshness_intervals = [30, 60, 120, 300]  # seconds
+        self.pattern_invalidation_rules = {
+            'LIQUIDITY_SWEEP_REVERSAL': self.check_sweep_invalidation,
+            'ORDER_BLOCK_BOUNCE': self.check_orderblock_invalidation, 
+            'FAIR_VALUE_GAP_FILL': self.check_fvg_invalidation,
+            'VCB_BREAKOUT': self.check_vcb_invalidation,
+            'SWEEP_RETURN': self.check_srl_invalidation
+        }
+        
+        print("📊 Signal Outcome Monitor started with FRESHNESS TRACKING")
+        print("   Monitoring tick data to track SL/TP hits + signal decay")
         self.load_active_signals()
         
     def load_active_signals(self):
@@ -60,6 +72,257 @@ class SignalOutcomeMonitor:
         except FileNotFoundError:
             print("   No truth log found, starting fresh")
     
+    def track_signal_freshness(self, signal_id: str, current_price: float, timestamp: float):
+        """Track signal freshness at key intervals"""
+        if signal_id not in self.active_signals:
+            return
+            
+        signal = self.active_signals[signal_id]['signal']
+        entry_price = signal.get('entry_price', 0)
+        if entry_price == 0:
+            return
+            
+        # Get signal generation timestamp
+        signal_timestamp = signal.get('timestamp', timestamp)
+        if isinstance(signal_timestamp, str):
+            # Parse ISO format if needed
+            try:
+                from datetime import datetime
+                signal_timestamp = datetime.fromisoformat(signal_timestamp.replace('Z', '+00:00')).timestamp()
+            except:
+                signal_timestamp = timestamp
+                
+        age_seconds = timestamp - signal_timestamp
+        
+        # Initialize freshness tracking for new signals
+        if signal_id not in self.freshness_snapshots:
+            self.freshness_snapshots[signal_id] = {
+                'signal_id': signal_id,
+                'symbol': signal.get('symbol', ''),
+                'pattern_type': signal.get('pattern_type', ''),
+                'entry_price': entry_price,
+                'direction': signal.get('direction', ''),
+                'generated_at': signal_timestamp,
+                'snapshots': {},
+                'pattern_invalidated': False,
+                'invalidation_time': None,
+                'invalidation_reason': None,
+                'max_decay_pips': 0,
+                'last_updated': timestamp
+            }
+        
+        freshness = self.freshness_snapshots[signal_id]
+        
+        # Take snapshots at key intervals
+        for interval in self.freshness_intervals:
+            if (age_seconds >= interval and 
+                interval not in freshness['snapshots']):
+                
+                pip_movement = abs(current_price - entry_price) * self.get_pip_multiplier(signal['symbol'])
+                direction_correct = self.is_price_moving_favorably(signal, current_price, entry_price)
+                
+                freshness['snapshots'][interval] = {
+                    'price': current_price,
+                    'age_seconds': age_seconds,
+                    'pip_movement': pip_movement,
+                    'favorable_direction': direction_correct,
+                    'pattern_valid': not freshness['pattern_invalidated'],
+                    'timestamp': timestamp
+                }
+                
+                print(f"   📸 {signal['symbol']} snapshot at {interval}s: {pip_movement:.1f} pips, {'✅' if direction_correct else '❌'}")
+        
+        # Check pattern-specific invalidation
+        pattern_type = signal.get('pattern_type', '')
+        if (not freshness['pattern_invalidated'] and 
+            pattern_type in self.pattern_invalidation_rules):
+            
+            invalidated, reason = self.pattern_invalidation_rules[pattern_type](signal, current_price, age_seconds)
+            if invalidated:
+                freshness['pattern_invalidated'] = True
+                freshness['invalidation_time'] = age_seconds
+                freshness['invalidation_reason'] = reason
+                print(f"   ⚠️ {signal['symbol']} pattern INVALIDATED: {reason}")
+                
+        # Track maximum decay
+        current_decay = abs(current_price - entry_price) * self.get_pip_multiplier(signal['symbol'])
+        freshness['max_decay_pips'] = max(freshness['max_decay_pips'], current_decay)
+        freshness['last_updated'] = timestamp
+        
+        # Save freshness data every 30 seconds
+        if int(age_seconds) % 30 == 0:
+            self.save_freshness_data(signal_id)
+            
+        # Broadcast freshness updates every 15 seconds for real-time UI
+        if int(age_seconds) % 15 == 0:
+            self.broadcast_freshness_update(signal_id)
+
+    def is_price_moving_favorably(self, signal: dict, current_price: float, entry_price: float) -> bool:
+        """Check if price is moving in signal's favor"""
+        direction = signal.get('direction', '').upper()
+        if direction == 'BUY':
+            return current_price > entry_price
+        else:
+            return current_price < entry_price
+
+    def get_pip_multiplier(self, symbol: str) -> float:
+        """Get pip multiplier for a symbol"""
+        s = symbol.upper().replace('/', '')
+        if s.endswith("JPY"): return 100  # 0.01 pip size
+        if s.startswith("XAU"): return 10  # 0.1 pip size
+        if s.startswith("XAG"): return 100  # 0.01 pip size  
+        return 10000  # 0.0001 pip size
+
+    # Pattern-specific invalidation rules
+    def check_sweep_invalidation(self, signal: dict, current_price: float, age_seconds: float) -> tuple:
+        """Liquidity sweep patterns invalidate if price moves back past entry"""
+        entry = signal.get('entry_price', 0)
+        direction = signal.get('direction', '').upper()
+        pip_threshold = 5  # 5 pip reversal invalidates
+        pip_size = 0.0001 if not signal.get('symbol', '').endswith('JPY') else 0.01
+        
+        if direction == 'BUY' and current_price < (entry - pip_threshold * pip_size):
+            return True, f"Price reversed {pip_threshold}+ pips below entry"
+        elif direction == 'SELL' and current_price > (entry + pip_threshold * pip_size):
+            return True, f"Price reversed {pip_threshold}+ pips above entry"
+        elif age_seconds > 300:  # 5 minute max for sweeps
+            return True, "Liquidity sweep timeout (5 minutes)"
+        return False, None
+
+    def check_vcb_invalidation(self, signal: dict, current_price: float, age_seconds: float) -> tuple:
+        """VCB breakouts invalidate if no follow-through in 2 minutes"""
+        entry = signal.get('entry_price', 0)
+        direction = signal.get('direction', '').upper()
+        min_movement = 3  # Need 3 pip movement to stay valid
+        
+        pip_movement = abs(current_price - entry) * self.get_pip_multiplier(signal.get('symbol', ''))
+        
+        if age_seconds > 120 and pip_movement < min_movement:
+            return True, f"No follow-through after 2 minutes ({pip_movement:.1f} pips < {min_movement})"
+        elif age_seconds > 600:  # 10 minute max for VCB
+            return True, "VCB breakout timeout (10 minutes)"
+        return False, None
+
+    def check_orderblock_invalidation(self, signal: dict, current_price: float, age_seconds: float) -> tuple:
+        """Order block bounces invalidate if price breaks through the block"""
+        entry = signal.get('entry_price', 0)
+        direction = signal.get('direction', '').upper()
+        break_threshold = 8  # 8 pip break invalidates
+        pip_size = 0.0001 if not signal.get('symbol', '').endswith('JPY') else 0.01
+        
+        if direction == 'BUY' and current_price < (entry - break_threshold * pip_size):
+            return True, f"Price broke below order block by {break_threshold}+ pips"
+        elif direction == 'SELL' and current_price > (entry + break_threshold * pip_size):
+            return True, f"Price broke above order block by {break_threshold}+ pips"
+        elif age_seconds > 900:  # 15 minute max for order blocks
+            return True, "Order block timeout (15 minutes)"
+        return False, None
+
+    def check_fvg_invalidation(self, signal: dict, current_price: float, age_seconds: float) -> tuple:
+        """Fair value gaps invalidate if filled in wrong direction"""
+        entry = signal.get('entry_price', 0)
+        direction = signal.get('direction', '').upper()
+        
+        # FVG patterns are more forgiving on timing but strict on price action
+        if age_seconds > 720:  # 12 minute max for FVG
+            return True, "Fair value gap timeout (12 minutes)"
+        return False, None
+
+    def check_srl_invalidation(self, signal: dict, current_price: float, age_seconds: float) -> tuple:
+        """Sweep and return patterns invalidate if no quick reversal"""
+        entry = signal.get('entry_price', 0)
+        direction = signal.get('direction', '').upper()
+        min_return = 4  # Need 4 pip return to stay valid
+        
+        pip_movement = abs(current_price - entry) * self.get_pip_multiplier(signal.get('symbol', ''))
+        favorable = self.is_price_moving_favorably(signal, current_price, entry)
+        
+        if age_seconds > 180 and (not favorable or pip_movement < min_return):
+            return True, f"No sufficient return after 3 minutes ({pip_movement:.1f} pips)"
+        elif age_seconds > 600:  # 10 minute max for SRL
+            return True, "Sweep-return timeout (10 minutes)"
+        return False, None
+
+    def save_freshness_data(self, signal_id: str):
+        """Save freshness data to file"""
+        if signal_id not in self.freshness_snapshots:
+            return
+            
+        try:
+            freshness_data = self.freshness_snapshots[signal_id]
+            with open(self.freshness_file, 'a') as f:
+                f.write(json.dumps(freshness_data) + '\n')
+        except Exception as e:
+            print(f"Error saving freshness data: {e}")
+
+    def calculate_freshness_status(self, pattern_type: str, age_seconds: float, freshness_data: dict) -> dict:
+        """Calculate pattern-specific freshness status"""
+        
+        # Pattern-specific decay rules
+        decay_rules = {
+            'LIQUIDITY_SWEEP_REVERSAL': {'fresh': 60, 'stale': 180, 'expired': 300},
+            'ORDER_BLOCK_BOUNCE': {'fresh': 120, 'stale': 300, 'expired': 600},
+            'FAIR_VALUE_GAP_FILL': {'fresh': 90, 'stale': 240, 'expired': 480},
+            'VCB_BREAKOUT': {'fresh': 45, 'stale': 120, 'expired': 300},
+            'SWEEP_RETURN': {'fresh': 75, 'stale': 200, 'expired': 400}
+        }
+        
+        thresholds = decay_rules.get(pattern_type, {'fresh': 60, 'stale': 180, 'expired': 300})
+        
+        # Check if pattern was invalidated
+        if freshness_data.get('pattern_invalidated', False):
+            return {
+                'score': 0,
+                'status': 'expired',
+                'warning': 'danger',
+                'action': 'abort'
+            }
+        
+        # Calculate score based on age
+        if age_seconds <= thresholds['fresh']:
+            score = 100 - (age_seconds / thresholds['fresh']) * 30  # 100-70
+            return {'score': score, 'status': 'fresh', 'warning': 'none', 'action': 'fire'}
+        elif age_seconds <= thresholds['stale']:
+            score = 70 - ((age_seconds - thresholds['fresh']) / (thresholds['stale'] - thresholds['fresh'])) * 50  # 70-20
+            return {'score': score, 'status': 'stale', 'warning': 'caution', 'action': 'caution'}
+        else:
+            return {'score': 0, 'status': 'expired', 'warning': 'danger', 'action': 'abort'}
+
+    def broadcast_freshness_update(self, signal_id: str):
+        """Broadcast freshness update to webapp via HTTP"""
+        if signal_id not in self.freshness_snapshots:
+            return
+            
+        try:
+            freshness_data = self.freshness_snapshots[signal_id]
+            age_seconds = time.time() - freshness_data.get('generated_at', time.time())
+            pattern_type = freshness_data.get('pattern_type', '')
+            
+            # Calculate current freshness status
+            freshness_status = self.calculate_freshness_status(pattern_type, age_seconds, freshness_data)
+            
+            # Prepare broadcast data
+            broadcast_data = {
+                'signal_id': signal_id,
+                'age_seconds': age_seconds,
+                'pattern_valid': not freshness_data.get('pattern_invalidated', False),
+                'freshness_score': freshness_status['score'],
+                'status': freshness_status['status'],
+                'warning_level': freshness_status['warning'],
+                'invalidation_reason': freshness_data.get('invalidation_reason'),
+                'max_decay_pips': freshness_data.get('max_decay_pips', 0),
+                'recommended_action': freshness_status['action']
+            }
+            
+            # Send to webapp for SocketIO broadcast
+            import requests
+            requests.post('http://localhost:8888/api/internal/broadcast-freshness', 
+                json=broadcast_data, timeout=2)
+                
+        except Exception as e:
+            # Non-critical - don't break signal monitoring if webapp unavailable
+            pass
+    
     def pip_size(self, symbol: str) -> float:
         """Calculate pip size for a symbol"""
         s = symbol.upper()
@@ -95,10 +358,11 @@ class SignalOutcomeMonitor:
         return sl_abs, tp_abs, entry
     
     def process_tick(self, symbol: str, bid: float, ask: float):
-        """Process tick data and check if any signals hit SL/TP"""
+        """Process tick data and check if any signals hit SL/TP + track freshness"""
         
         # Check each active signal for this symbol
         completed_now = []
+        current_timestamp = time.time()
         
         for signal_id, data in self.active_signals.items():
             signal = data['signal']
@@ -108,6 +372,10 @@ class SignalOutcomeMonitor:
                 continue
                 
             data['ticks_processed'] += 1
+            
+            # FRESHNESS TRACKING: Track signal decay in real-time
+            current_price = bid if signal.get('direction', '').upper() == 'SELL' else ask
+            self.track_signal_freshness(signal_id, current_price, current_timestamp)
             
             # Ensure we have SL/TP levels
             sl, tp, entry_price = self.ensure_levels(signal)
@@ -204,6 +472,9 @@ class SignalOutcomeMonitor:
                 'direction': data['signal']['direction'],
                 'pattern': data['signal'].get('pattern_type'),
                 'signal_type': data['signal'].get('signal_type'),
+                'confidence': data['signal'].get('confidence', 0),  # Track confidence
+                'session': data['signal'].get('session', ''),  # Track session
+                'risk_reward': data['signal'].get('risk_reward', 1.0),  # Track R:R
                 'entry_price': data['signal']['entry_price'],
                 'sl': data['signal']['sl'],
                 'tp': data['signal']['tp'],
@@ -221,6 +492,9 @@ class SignalOutcomeMonitor:
             # Save outcome
             self.save_outcome(outcome_record)
             self.completed_signals.append(outcome_record)
+            
+            # Send outcome to Elite Guard ML system for learning
+            self.send_outcome_to_ml(outcome_record)
             
             # Remove from active
             del self.active_signals[signal_id]
@@ -241,6 +515,49 @@ class SignalOutcomeMonitor:
                 f.write(json.dumps(outcome) + '\n')
         except Exception as e:
             print(f"Error saving outcome: {e}")
+    
+    def send_outcome_to_ml(self, outcome: Dict):
+        """Send outcome to ML system for performance tracking"""
+        try:
+            # Calculate runtime duration
+            start_time = datetime.fromisoformat(outcome['monitoring_started'])
+            end_time = datetime.fromisoformat(outcome['completed_at'])
+            runtime_minutes = (end_time - start_time).total_seconds() / 60
+            
+            # Log comprehensive tracking data
+            tracking_data = {
+                'signal_id': outcome['signal_id'],
+                'outcome': outcome['outcome'],  # WIN or LOSS
+                'pattern': outcome['pattern'],
+                'confidence': outcome.get('confidence', 0),
+                'symbol': outcome['symbol'],
+                'session': outcome.get('session', ''),
+                'runtime_minutes': round(runtime_minutes, 2),
+                'pips_result': outcome['pips_result'],
+                'max_favorable_pips': outcome['max_favorable'],
+                'max_adverse_pips': outcome['max_adverse'],
+                'risk_reward': outcome.get('risk_reward', 1.0),
+                'completed_at': outcome['completed_at']
+            }
+            
+            # Write to ML tracking file for analysis
+            ml_tracking_file = '/root/HydraX-v2/ml_performance_tracking.jsonl'
+            with open(ml_tracking_file, 'a') as f:
+                f.write(json.dumps(tracking_data) + '\n')
+            
+            # Also update ML signal filter directly
+            from ml_signal_filter import report_trade_outcome
+            report_trade_outcome(
+                signal_id=outcome['signal_id'],
+                outcome='WIN' if outcome['outcome'] == 'WIN' else 'LOSS',
+                pips=outcome['pips_result']
+            )
+            
+            print(f"   📈 ML TRACKING: {outcome['symbol']} {outcome['pattern']} - "
+                  f"{outcome['outcome']} after {runtime_minutes:.1f} mins")
+            
+        except Exception as e:
+            print(f"   ⚠️ ML tracking error: {e}")
     
     def print_statistics(self):
         """Print current monitoring statistics"""
@@ -277,9 +594,15 @@ class SignalOutcomeMonitor:
                 if self.subscriber.poll(100):  # 100ms timeout
                     message = self.subscriber.recv_string()
                     
-                    # Parse tick data - expecting JSON format
+                    # Parse tick data - handle "tick " prefix
                     try:
-                        data = json.loads(message)
+                        # Remove "tick " prefix if present
+                        if message.startswith("tick "):
+                            json_str = message[5:]  # Remove "tick " prefix
+                        else:
+                            json_str = message
+                            
+                        data = json.loads(json_str)
                         if data.get('type') == 'TICK':
                             symbol = data.get('symbol')
                             bid = data.get('bid')
@@ -288,7 +611,7 @@ class SignalOutcomeMonitor:
                                 self.process_tick(symbol, float(bid), float(ask))
                     except (json.JSONDecodeError, ValueError, TypeError):
                         # Try old format as fallback
-                        if message.startswith("TICK"):
+                        if message.startswith("TICK") or message.startswith("tick"):
                             parts = message.split()
                             if len(parts) >= 4:
                                 try:

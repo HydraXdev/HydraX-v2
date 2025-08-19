@@ -63,7 +63,9 @@ class FreshFireBuilder:
             'USDJPY': 10.0,
             'USDCAD': 10.0,
             'AUDUSD': 10.0,
-            'XAUUSD': 1.0,  # Gold has different pip value
+            'EURJPY': 6.8,   # JPY pairs have different pip values
+            'GBPJPY': 6.8,
+            'XAUUSD': 1.0,   # Gold has different pip value
             'BTCUSD': 0.01,  # Crypto pairs
             'ETHUSD': 0.01,
             'XRPUSD': 0.0001
@@ -251,8 +253,9 @@ class FreshFireBuilder:
                 max_xrp = (balance * 0.05) / 0.5  # Assuming ~$0.50 per XRP
                 return min(10000, max_xrp)
         
-        # Forex pairs - max 10% of balance / 100 (rough leverage calc)
-        return min(5.0, balance / 10000)
+        # Forex pairs - more reasonable limits for 5% risk trading
+        # Allow up to 1% of balance per lot (e.g., $1000 balance = 1.0 max lot)
+        return min(10.0, balance / 1000)
     
     def _generate_execution_warnings(
         self,

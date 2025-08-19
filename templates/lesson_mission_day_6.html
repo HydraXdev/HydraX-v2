@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BASIC TRAINING - Day 6: Battlefield Timing</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #00D9FF;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .mission-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(0, 0, 0, 0.95);
+            border: 3px solid #FF6B6B;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 0 40px rgba(255, 107, 107, 0.4);
+        }
+        
+        .training-header {
+            background: linear-gradient(45deg, #FF6B6B, #FFD93D);
+            color: #000;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .session-map {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            padding: 30px;
+        }
+        
+        .session-card {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #666;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .session-card.active {
+            border-color: #4CAF50;
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(156, 204, 101, 0.1));
+            transform: scale(1.05);
+        }
+        
+        .session-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #FFD93D;
+        }
+        
+        .session-time {
+            color: #4ECDC4;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        
+        .session-stats {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+            font-size: 12px;
+        }
+        
+        .session-pulse {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 20px;
+            height: 20px;
+            background: #4CAF50;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.3); }
+        }
+        
+        .timing-intelligence {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, rgba(0, 217, 255, 0.1), rgba(76, 236, 196, 0.1));
+            border: 2px solid #00D9FF;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+        
+        .fire-button {
+            background: linear-gradient(45deg, #FF6B6B, #FF8E53);
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            border-radius: 10px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            margin: 20px;
+            transition: all 0.3s ease;
+            width: 400px;
+        }
+        
+        .progress-tracker {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            border-top: 3px solid #FF6B6B;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .progress-bar {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            height: 25px;
+            width: 300px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            background: linear-gradient(90deg, #FF6B6B, #FFD93D);
+            height: 100%;
+            width: 60%;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="mission-container">
+        <div class="training-header">
+            <div class="training-badge">BASIC TRAINING</div>
+            <div class="mission-title">DAY 6: BATTLEFIELD TIMING</div>
+            <div class="mission-subtitle">Trading Sessions & Market Rhythm Intelligence</div>
+        </div>
+        
+        <div class="session-map">
+            <div class="session-card {{ 'active' if session == 'ASIAN' else '' }}">
+                <div class="session-name">🌅 ASIAN SESSION</div>
+                <div class="session-time">21:00-06:00 GMT</div>
+                {% if session == 'ASIAN' %}<div class="session-pulse"></div>{% endif %}
+                <div class="session-stats">
+                    <div class="stat-item"><span>Volatility:</span><span style="color: #FFD93D;">LOW</span></div>
+                    <div class="stat-item"><span>Volume:</span><span style="color: #FFD93D;">MODERATE</span></div>
+                    <div class="stat-item"><span>Win Rate:</span><span style="color: #4CAF50;">65%</span></div>
+                    <div class="stat-item"><span>Best Pairs:</span><span>JPY crosses</span></div>
+                </div>
+                <div style="font-size: 12px; color: #ccc; margin-top: 10px;">
+                    Slow and steady. Range-bound markets. Perfect for precision strikes.
+                </div>
+            </div>
+            
+            <div class="session-card {{ 'active' if session == 'LONDON' else '' }}">
+                <div class="session-name">🏛️ LONDON SESSION</div>
+                <div class="session-time">07:00-16:00 GMT</div>
+                {% if session == 'LONDON' %}<div class="session-pulse"></div>{% endif %}
+                <div class="session-stats">
+                    <div class="stat-item"><span>Volatility:</span><span style="color: #4CAF50;">HIGH</span></div>
+                    <div class="stat-item"><span>Volume:</span><span style="color: #4CAF50;">VERY HIGH</span></div>
+                    <div class="stat-item"><span>Win Rate:</span><span style="color: #4CAF50;">78%</span></div>
+                    <div class="stat-item"><span>Best Pairs:</span><span>EUR, GBP</span></div>
+                </div>
+                <div style="font-size: 12px; color: #ccc; margin-top: 10px;">
+                    The main battlefield. Maximum liquidity and clear directional moves.
+                </div>
+            </div>
+            
+            <div class="session-card {{ 'active' if session == 'OVERLAP' else '' }}">
+                <div class="session-name">⚡ OVERLAP</div>
+                <div class="session-time">12:00-16:00 GMT</div>
+                {% if session == 'OVERLAP' %}<div class="session-pulse"></div>{% endif %}
+                <div class="session-stats">
+                    <div class="stat-item"><span>Volatility:</span><span style="color: #FF6B6B;">EXTREME</span></div>
+                    <div class="stat-item"><span>Volume:</span><span style="color: #FF6B6B;">MAXIMUM</span></div>
+                    <div class="stat-item"><span>Win Rate:</span><span style="color: #4CAF50;">82%</span></div>
+                    <div class="stat-item"><span>Best Pairs:</span><span>EUR/USD</span></div>
+                </div>
+                <div style="font-size: 12px; color: #ccc; margin-top: 10px;">
+                    London + NY overlap. The sweet spot for high-probability trades.
+                </div>
+            </div>
+            
+            <div class="session-card {{ 'active' if session == 'NY' else '' }}">
+                <div class="session-name">🗽 NEW YORK</div>
+                <div class="session-time">13:00-22:00 GMT</div>
+                {% if session == 'NY' %}<div class="session-pulse"></div>{% endif %}
+                <div class="session-stats">
+                    <div class="stat-item"><span>Volatility:</span><span style="color: #4CAF50;">HIGH</span></div>
+                    <div class="stat-item"><span>Volume:</span><span style="color: #4CAF50;">HIGH</span></div>
+                    <div class="stat-item"><span>Win Rate:</span><span style="color: #4CAF50;">72%</span></div>
+                    <div class="stat-item"><span>Best Pairs:</span><span>USD pairs</span></div>
+                </div>
+                <div style="font-size: 12px; color: #ccc; margin-top: 10px;">
+                    American firepower. Strong trends and momentum-based opportunities.
+                </div>
+            </div>
+            
+            <div class="timing-intelligence">
+                <h3>⏰ CURRENT BATTLEFIELD STATUS</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                    <div>
+                        <h4>🎯 Active Session: {{ session or 'LONDON' }}</h4>
+                        <div style="background: rgba(0, 0, 0, 0.6); padding: 20px; border-radius: 10px;">
+                            <div><strong>Current Signal:</strong> {{ symbol or 'EURUSD' }} {{ direction or 'BUY' }}</div>
+                            <div><strong>Session Bonus:</strong> 
+                                {% if session == 'LONDON' %}+18% confidence
+                                {% elif session == 'OVERLAP' %}+25% confidence  
+                                {% elif session == 'NY' %}+15% confidence
+                                {% else %}+8% confidence
+                                {% endif %}
+                            </div>
+                            <div><strong>Liquidity:</strong> 
+                                {% if session in ['LONDON', 'OVERLAP'] %}EXCELLENT
+                                {% elif session == 'NY' %}GOOD
+                                {% else %}MODERATE
+                                {% endif %}
+                            </div>
+                            <div><strong>Volatility:</strong> 
+                                {% if session == 'OVERLAP' %}MAXIMUM
+                                {% elif session in ['LONDON', 'NY'] %}HIGH
+                                {% else %}LOW
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h4>🧠 Session Intelligence</h4>
+                        <div style="background: rgba(76, 175, 80, 0.1); padding: 20px; border-radius: 10px;">
+                            {% if session == 'ASIAN' %}
+                            <p><strong>ASIAN Tactics:</strong> Markets move slower. Perfect for beginners. Focus on JPY pairs and range-bound strategies. Lower win rate but safer environment.</p>
+                            {% elif session == 'LONDON' %}
+                            <p><strong>LONDON Tactics:</strong> Prime time for EUR and GBP. High liquidity means clean price action. Institutional players most active. Elite Guard performs best.</p>
+                            {% elif session == 'OVERLAP' %}
+                            <p><strong>OVERLAP Tactics:</strong> Both London and NY active. Maximum volume and volatility. Best session for high-confidence patterns. Our strongest performance window.</p>
+                            {% elif session == 'NY' %}
+                            <p><strong>NY Tactics:</strong> USD strength/weakness determines market direction. News events frequent. Strong trends but can reverse quickly on data releases.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <h4>📊 Session Performance Analytics</h4>
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin: 20px 0;">
+                    <div style="background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 8px; text-align: center;">
+                        <div style="color: #FFD93D; font-size: 20px; font-weight: bold;">65%</div>
+                        <div style="font-size: 12px;">Asian Win Rate</div>
+                    </div>
+                    <div style="background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 8px; text-align: center;">
+                        <div style="color: #4CAF50; font-size: 20px; font-weight: bold;">78%</div>
+                        <div style="font-size: 12px;">London Win Rate</div>
+                    </div>
+                    <div style="background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 8px; text-align: center;">
+                        <div style="color: #4CAF50; font-size: 20px; font-weight: bold;">82%</div>
+                        <div style="font-size: 12px;">Overlap Win Rate</div>
+                    </div>
+                    <div style="background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 8px; text-align: center;">
+                        <div style="color: #4CAF50; font-size: 20px; font-weight: bold;">72%</div>
+                        <div style="font-size: 12px;">NY Win Rate</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="grid-column: 1 / -1; background: rgba(255, 107, 107, 0.1); border: 2px solid #FF6B6B; border-radius: 10px; padding: 25px; text-align: center;">
+                <h3>🔫 EXECUTE SESSION-OPTIMIZED STRIKE</h3>
+                <p><strong>Perfect timing, soldier!</strong> You're engaging during the {{ session or 'LONDON' }} session - 
+                {% if session == 'OVERLAP' %}our highest-performance window
+                {% elif session == 'LONDON' %}optimal liquidity conditions
+                {% elif session == 'NY' %}strong momentum opportunities  
+                {% else %}steady, controlled environment
+                {% endif %}.</p>
+                
+                <div style="background: rgba(0, 217, 255, 0.1); padding: 15px; border-radius: 8px; margin: 20px 0;">
+                    <strong>⏰ TIMING ADVANTAGE ACTIVE:</strong><br>
+                    ✓ Session bonus: 
+                    {% if session == 'LONDON' %}+18% confidence
+                    {% elif session == 'OVERLAP' %}+25% confidence  
+                    {% elif session == 'NY' %}+15% confidence
+                    {% else %}+8% confidence
+                    {% endif %}<br>
+                    ✓ Optimal liquidity for {{ symbol or 'EURUSD' }}<br>
+                    ✓ Institutional activity confirmed<br>
+                    ✓ Volume conditions favorable<br>
+                    ✓ Cleared for tactical engagement
+                </div>
+                
+                <button class="fire-button" onclick="executeTimingStrike()">
+                    ⏰ EXECUTE PERFECTLY-TIMED STRIKE
+                </button>
+                
+                <p style="color: #4ECDC4; font-size: 14px;">Elite Guard session algorithms active - Timing is everything</p>
+            </div>
+        </div>
+        
+        <div class="progress-tracker">
+            <div>
+                <div style="color: #FFD93D; font-size: 18px; font-weight: bold;">🎖️ SERGEANT - Day 6 of 10</div>
+                <div style="font-size: 14px; color: #999;">Next: Day 7 - Exit Strategy & Trade Management</div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 60%;"></div>
+            </div>
+            <div style="text-align: right;">
+                <div style="color: #4CAF50; font-weight: bold;">Training Missions: {{ training_academy.total_lesson_missions or 6 }}</div>
+                <div style="font-size: 14px; color: #999;">Session Timing: MASTERED</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function executeTimingStrike() {
+            const button = document.querySelector('.fire-button');
+            button.style.background = 'linear-gradient(45deg, #4CAF50, #45a049)';
+            button.innerHTML = '⏰ TIMING STRIKE EXECUTING...';
+            button.disabled = true;
+            
+            setTimeout(() => {
+                button.innerHTML = '✅ PERFECT TIMING';
+                alert('🎖️ Excellent work, Sergeant! You\'ve mastered session timing and market rhythm. Your understanding of when to strike is now at professional level.');
+            }, 2500);
+        }
+    </script>
+</body>
+</html>

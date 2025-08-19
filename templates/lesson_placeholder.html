@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BITTEN Training Academy - {{ lesson_title }}</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #00D9FF;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .academy-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00D9FF;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 0 30px rgba(0, 217, 255, 0.3);
+        }
+        
+        .academy-header {
+            text-align: center;
+            border-bottom: 2px solid #00D9FF;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .academy-title {
+            font-size: 28px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(0, 217, 255, 0.5);
+        }
+        
+        .lesson-badge {
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+        
+        .construction-notice {
+            background: rgba(255, 193, 7, 0.1);
+            border: 2px solid #FFC107;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .signal-preview {
+            background: rgba(0, 217, 255, 0.1);
+            border: 1px solid #00D9FF;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .progress-bar {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            height: 20px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .progress-fill {
+            background: linear-gradient(90deg, #4ECDC4, #00D9FF);
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+        
+        .academy-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .stat-box {
+            background: rgba(0, 217, 255, 0.1);
+            border: 1px solid #00D9FF;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4ECDC4;
+        }
+        
+        .coming-soon {
+            text-align: center;
+            padding: 40px;
+            color: #FFC107;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="academy-container">
+        <div class="academy-header">
+            <div class="academy-title">BITTEN Training Academy</div>
+            <div class="lesson-badge">{{ lesson_title }}</div>
+            <div style="color: #999;">🎯 Progressive Combat Training System</div>
+        </div>
+        
+        {% if lesson_placeholder %}
+        <div class="construction-notice">
+            <h3>🚧 Lesson Under Construction 🚧</h3>
+            <p>This lesson is being crafted by our elite training team. You're seeing the same live signal as veterans, but with training wheels for now.</p>
+        </div>
+        {% endif %}
+        
+        <div class="academy-stats">
+            <div class="stat-box">
+                <div class="stat-value">{{ lesson_day }}/10</div>
+                <div>Training Day</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value">{{ training_academy.missions_opened_today or 0 }}</div>
+                <div>Today's Missions</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value">{{ training_academy.total_lesson_missions or 0 }}</div>
+                <div>Total Training</div>
+            </div>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: {{ (lesson_day / 10) * 100 }}%"></div>
+        </div>
+        
+        <div class="signal-preview">
+            <h3>🎯 Live Signal Preview</h3>
+            <p><strong>Symbol:</strong> {{ symbol or 'EURUSD' }}</p>
+            <p><strong>Direction:</strong> {{ direction or 'BUY' }}</p>
+            <p><strong>Confidence:</strong> {{ confidence or 85 }}%</p>
+            <p><strong>Pattern:</strong> {{ pattern_type or 'LIQUIDITY_SWEEP_REVERSAL' }}</p>
+            
+            <div style="margin-top: 20px; padding: 15px; background: rgba(255, 193, 7, 0.1); border-radius: 8px;">
+                <strong>⚠️ Training Mode:</strong> This is the same signal that veteran traders see. 
+                Once your lesson is ready, you'll get detailed explanations of every element.
+            </div>
+        </div>
+        
+        <div class="coming-soon">
+            <h3>📚 What's Coming In This Lesson</h3>
+            {% if lesson_day == 1 %}
+                <p>Welcome to BITTEN - Signal anatomy and basic pattern recognition</p>
+            {% elif lesson_day == 2 %}
+                <p>Reading the Market - Bid/Ask spreads, pips, and market structure</p>
+            {% elif lesson_day == 3 %}
+                <p>Risk Management - The 2% rule and position sizing fundamentals</p>
+            {% elif lesson_day == 4 %}
+                <p>Pattern Types - Deep dive into the 5 Smart Money Concepts</p>
+            {% elif lesson_day == 5 %}
+                <p>Confidence Scores - Understanding 78% vs 95% signal strength</p>
+            {% elif lesson_day == 6 %}
+                <p>Trading Sessions - London, New York, Asian market differences</p>
+            {% elif lesson_day == 7 %}
+                <p>Exit Strategy - Stop Loss and Take Profit optimization</p>
+            {% elif lesson_day == 8 %}
+                <p>Fire Modes - Manual vs Semi-Auto vs Full-Auto trading</p>
+            {% elif lesson_day == 9 %}
+                <p>Performance Tracking - Reading your stats and improving</p>
+            {% elif lesson_day == 10 %}
+                <p>Advanced Features - XP system, squads, and analytics</p>
+            {% endif %}
+            
+            <p style="color: #4ECDC4; margin-top: 20px;">
+                🎖️ Complete all 10 lessons to unlock full battlefield access!
+            </p>
+        </div>
+    </div>
+</body>
+</html>

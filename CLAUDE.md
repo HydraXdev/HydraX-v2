@@ -1,8 +1,55 @@
 # BITTEN PRODUCTION SYSTEM - ACTUAL STATE
 
-**Last Updated**: August 15, 2025 02:20 UTC  
+**Last Updated**: August 15, 2025 18:50 UTC  
 **Agent**: Claude Code (Opus 4.1)  
-**Session**: Complete fire pipeline debug and architecture verification
+**Session**: ML Integration Complete - Ready for Sunday Testing
+
+## 🚀 ML INTEGRATION COMPLETE - AUGUST 15, 2025 END OF DAY 🚀
+
+### **MAJOR CHANGES IMPLEMENTED TODAY:**
+
+#### **1. ML Filter Integrated Directly Into Elite Guard**
+- **Location**: `/root/HydraX-v2/elite_guard_with_citadel.py`
+- **Method**: `apply_ml_filter()` at line 1545
+- **Function**: Filters every pattern through tiered system before publishing
+- **Performance Tracking**: `update_performance_outcome()` at line 1545
+
+#### **2. Tiered Signal System Active**
+```python
+TIER_1_AUTO_FIRE: {
+    EURUSD_VCB_BREAKOUT: 80% threshold (lowered from 85%)
+    GBPUSD_VCB_BREAKOUT: 80% threshold (lowered from 87%)
+    Max hourly: 3 for EURUSD, 2 for GBPUSD
+}
+TIER_2_TESTING: Track only, no auto-fire
+TIER_3_PROBATION: ASIAN session, XAUUSD (high thresholds)
+```
+
+#### **3. Sunday Testing Configuration**
+- **Auto-Fire Threshold**: 80% (lowered from 85%)
+- **Pattern Quality Filter**: 72% (lowered from 78%)
+- **Risk/Reward Ratio**: 1:1.25 (changed from 1:1 for quick profits)
+- **Target Pairs**: EURUSD, GBPUSD only (proven winners)
+
+#### **4. Complete Tracking System (NO TIMEOUTS)**
+- **Signal Outcome Monitor**: Enhanced to track EVERY signal to TP/SL
+- **ML Feedback Loop**: Outcomes automatically update performance history
+- **Tracking Files**:
+  - `/root/HydraX-v2/truth_log.jsonl` - All signals
+  - `/root/HydraX-v2/signal_outcomes.jsonl` - Outcomes
+  - `/root/HydraX-v2/ml_performance_tracking.jsonl` - ML data
+
+#### **5. Performance Features**
+- Auto-disables patterns below 40% win rate after 10 trades
+- Auto-promotes patterns above 70% win rate after 20 trades
+- Tracks runtime duration, max favorable/adverse moves
+- Full data logging: pattern, confidence, session, R:R, outcome
+
+### **MONDAY EXPANSION PLAN:**
+- Currently limited to EURUSD/GBPUSD for testing
+- Monday: Can add USDJPY, EURJPY, USDCAD to Tier 2
+- Monitor win rates per pair/pattern combo
+- ML system will auto-optimize based on results
 
 ## 🎯 COMPLETE FIRE PIPELINE ARCHITECTURE - AUGUST 15, 2025 🎯
 
@@ -443,3 +490,112 @@ The system has 280+ Python files. STOP ADDING MORE.
 - Don't create new versions
 
 That's it. Everything else is outdated bloat.
+
+---
+
+## 🎮 XP ECONOMY SYSTEM PLAN - AUGUST 15, 2025
+
+### **DESIGN PHILOSOPHY**
+Based on top-tier gaming systems (CoD, Apex Legends, Valorant) adapted for trading:
+- Daily engagement rewards
+- Skill-based progression
+- Consumable power-ups
+- Prestige system for hardcore users
+- No pay-to-win, only earn-to-win
+
+### **XP EARNING STRUCTURE**
+Based on 5-6 trades per day average:
+
+**Core Actions:**
+- **Trade to TP**: 100 XP (hit take profit)
+- **Trade to SL**: 0 XP (no penalty for stop loss)
+- **Early Close**: 50 XP (half reward for manual close)
+- **Daily First Trade**: +25 XP bonus
+- **Pattern Variety**: +20 XP (different pattern than last trade)
+
+**Streak Bonuses:**
+- 3 wins in a row: +50 XP
+- 5 wins in a row: +100 XP
+- 10 wins in a row: +250 XP
+
+**Daily Challenges (reset at midnight):**
+- Trade 3 different pairs: 75 XP
+- Execute 5 trades: 100 XP
+- Hit 60% win rate: 150 XP
+
+**Expected Daily XP:**
+- Casual (2 trades): ~200 XP
+- Regular (5 trades): ~500 XP
+- Active (10+ trades): ~1000 XP
+
+### **LEVEL PROGRESSION**
+50 levels total with exponential curve:
+- **Level 1-10**: 500 XP per level (tutorial phase)
+- **Level 11-20**: 1000 XP per level (learning phase)
+- **Level 21-30**: 2000 XP per level (competent phase)
+- **Level 31-40**: 3500 XP per level (expert phase)
+- **Level 41-50**: 5000 XP per level (master phase)
+- **Prestige**: Reset to Level 1, keep permanent badge
+
+**Time to Max Level:**
+- Casual player: 6 months
+- Regular player: 3 months
+- Hardcore player: 6 weeks
+
+### **XP SHOP - CONSUMABLE ITEMS**
+
+**Tactical Advantages:**
+- **Sniper Shot** (500 XP): One trade with 90% confidence threshold bypass
+- **Double Down** (1000 XP): Next trade uses 4% risk instead of 2%
+- **Rapid Fire** (750 XP): Remove 15-min cooldown between trades for 1 hour
+- **Extra Mag** (300 XP): +1 concurrent position slot for 24 hours
+- **Radar Pulse** (200 XP): See next 3 signals before they're published
+
+**Defensive Items:**
+- **Armor Plate** (600 XP): Next losing trade refunds 50% XP
+- **Smoke Screen** (400 XP): Hide your trades from squad feed for 24h
+- **Guardian Angel** (1500 XP): Auto-close at 1% profit if trade goes negative
+
+**Cosmetic/Social:**
+- **Custom Callsign Change** (FREE for all users, 7-day cooldown)
+- **Kill Card Background** (2000 XP): Custom trade victory display
+- **Elite Badge** (5000 XP): Special icon in leaderboards
+- **Shadow Protocol** (3000 XP): Anonymous mode for 30 days
+
+**Boosts:**
+- **XP Boost** (1000 XP): 2x XP for next 10 trades
+- **Squad XP Share** (2000 XP): Your squad gets +10% XP for 24h
+- **Weekend Warrior** (1500 XP): 1.5x XP on weekends for a month
+
+### **SPECIAL FEATURES BY LEVEL**
+
+**Level 5**: Unlock XP shop
+**Level 10**: Custom callsign available
+**Level 15**: Trade history stats unlocked
+**Level 20**: Squad creation ability
+**Level 25**: Advanced analytics access
+**Level 30**: Prestige option available
+**Level 35**: Elite trader badge
+**Level 40**: Master trader recognition
+**Level 45**: Legendary status
+**Level 50**: APEX achievement
+
+### **PRESS PASS USERS**
+- XP resets daily at midnight (trial mode)
+- Cannot purchase from XP shop
+- Cannot prestige
+- Shows "TRIAL" badge instead of level
+- Encourages upgrade to maintain progress
+
+### **IMPLEMENTATION NOTES**
+- All XP stored in database with transaction log
+- Shop purchases logged with expiry timestamps
+- Consumables checked before each trade execution
+- Daily challenges generated algorithmically
+- Streak tracking per user in real-time
+
+### **ANTI-ABUSE MEASURES**
+- Max 20 trades per day count for XP
+- Minimum trade duration 60 seconds for XP
+- Same pair within 5 minutes = no variety bonus
+- Suspicious patterns trigger manual review

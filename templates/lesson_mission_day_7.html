@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BASIC TRAINING - Day 7: Exit Strategy Mastery</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #00D9FF;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .mission-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(0, 0, 0, 0.95);
+            border: 3px solid #FF6B6B;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 0 40px rgba(255, 107, 107, 0.4);
+        }
+        
+        .training-header {
+            background: linear-gradient(45deg, #FF6B6B, #FFD93D);
+            color: #000;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .training-badge {
+            position: absolute;
+            top: 10px;
+            left: 20px;
+            background: #000;
+            color: #FF6B6B;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .mission-title {
+            font-size: 28px;
+            font-weight: bold;
+            margin: 10px 0;
+            text-transform: uppercase;
+        }
+        
+        .content-grid {
+            padding: 30px;
+        }
+        
+        .exit-strategy-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .strategy-card {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #4ECDC4;
+            border-radius: 15px;
+            padding: 25px;
+        }
+        
+        .live-trade-management {
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(156, 204, 101, 0.1));
+            border: 2px solid #4CAF50;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+        
+        .exit-scenario {
+            background: rgba(255, 193, 7, 0.1);
+            border: 2px solid #FFC107;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        
+        .scenario-outcome {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .outcome-card {
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .outcome-card.profit {
+            border: 2px solid #4CAF50;
+        }
+        
+        .outcome-card.loss {
+            border: 2px solid #FF6B6B;
+        }
+        
+        .outcome-card.breakeven {
+            border: 2px solid #FFD93D;
+        }
+        
+        .fire-button {
+            background: linear-gradient(45deg, #FF6B6B, #FF8E53);
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            border-radius: 10px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            margin: 20px auto;
+            display: block;
+            width: 400px;
+        }
+    </style>
+</head>
+<body>
+    <div class="mission-container">
+        <div class="training-header">
+            <div class="training-badge">BASIC TRAINING</div>
+            <div class="mission-title">DAY 7: EXIT STRATEGY MASTERY</div>
+            <div class="mission-subtitle">Stop Loss, Take Profit & Trade Management Protocols</div>
+        </div>
+        
+        <div class="content-grid">
+            <div class="exit-strategy-grid">
+                <div class="strategy-card">
+                    <h3>🛡️ DEFENSIVE PROTOCOLS</h3>
+                    <h4>Stop Loss Management</h4>
+                    <div style="background: rgba(255, 107, 107, 0.1); padding: 15px; border-radius: 8px; margin: 15px 0;">
+                        <div><strong>Current Stop Loss:</strong> {{ stop_loss or 1.08675 }}</div>
+                        <div><strong>Distance:</strong> {{ stop_pips or 20 }} pips</div>
+                        <div><strong>Max Loss:</strong> ${{ ((user_stats.balance or 1000) * 0.02)|round(2) }}</div>
+                    </div>
+                    <p><strong>BITTEN Rule:</strong> Never move stop loss against you. It's your lifeline in hostile territory.</p>
+                </div>
+                
+                <div class="strategy-card">
+                    <h3>🎯 OFFENSIVE PROTOCOLS</h3>
+                    <h4>Take Profit Optimization</h4>
+                    <div style="background: rgba(76, 175, 80, 0.1); padding: 15px; border-radius: 8px; margin: 15px 0;">
+                        <div><strong>Target Price:</strong> {{ take_profit or 1.09125 }}</div>
+                        <div><strong>Distance:</strong> {{ target_pips or 25 }} pips</div>
+                        <div><strong>Potential Profit:</strong> ${{ (((user_stats.balance or 1000) * 0.02) * 1.25)|round(2) }}</div>
+                    </div>
+                    <p><strong>BITTEN Rule:</strong> Take profits systematically. Greed is the enemy of consistent profits.</p>
+                </div>
+            </div>
+            
+            <div class="live-trade-management">
+                <h3>⚔️ LIVE MISSION MANAGEMENT</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        <h4>Current Position Status</h4>
+                        <div style="background: rgba(0, 0, 0, 0.6); padding: 15px; border-radius: 8px;">
+                            <div><strong>Symbol:</strong> {{ symbol or 'EURUSD' }}</div>
+                            <div><strong>Direction:</strong> {{ direction or 'BUY' }}</div>
+                            <div><strong>Entry:</strong> {{ entry_price or 1.08875 }}</div>
+                            <div><strong>Current Price:</strong> {{ (entry_price + 0.00050) if entry_price else 1.08925 }}</div>
+                            <div><strong>Unrealized P&L:</strong> <span style="color: #4CAF50;">+$12.50</span></div>
+                        </div>
+                    </div>
+                    <div>
+                        <h4>Exit Decision Matrix</h4>
+                        <div style="background: rgba(0, 217, 255, 0.1); padding: 15px; border-radius: 8px;">
+                            <div>✓ Stop Loss: Protected</div>
+                            <div>✓ Take Profit: On target</div>
+                            <div>✓ Risk/Reward: 1:1.25</div>
+                            <div>✓ Time in Trade: 15 minutes</div>
+                            <div style="color: #4CAF50; font-weight: bold;">STATUS: HOLDING TO TARGET</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="exit-scenario">
+                <h3>📊 EXIT SCENARIO TRAINING</h3>
+                <p><strong>Mission Briefing:</strong> Your position is currently profitable. Elite traders know when to hold and when to fold. Study these scenarios:</p>
+                
+                <div class="scenario-outcome">
+                    <div class="outcome-card profit">
+                        <h4>🎯 TARGET HIT</h4>
+                        <div style="color: #4CAF50; font-size: 24px; font-weight: bold;">+$31.25</div>
+                        <div style="font-size: 12px; margin-top: 10px;">Perfect execution. Take profit triggered at {{ take_profit or 1.09125 }}. This is what disciplined trading looks like.</div>
+                    </div>
+                    
+                    <div class="outcome-card loss">
+                        <h4>🛡️ STOP TRIGGERED</h4>
+                        <div style="color: #FF6B6B; font-size: 24px; font-weight: bold;">-${{ ((user_stats.balance or 1000) * 0.02)|round(2) }}</div>
+                        <div style="font-size: 12px; margin-top: 10px;">Market moved against us. Stop loss protected capital. Live to fight another day.</div>
+                    </div>
+                    
+                    <div class="outcome-card breakeven">
+                        <h4>⚡ EARLY EXIT</h4>
+                        <div style="color: #FFD93D; font-size: 24px; font-weight: bold;">+$12.50</div>
+                        <div style="font-size: 12px; margin-top: 10px;">Manual close at 50% profit. Conservative but profitable approach for uncertain conditions.</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="background: rgba(138, 43, 226, 0.1); border: 2px solid #8A2BE2; border-radius: 15px; padding: 25px; margin: 20px 0;">
+                <h3>🧠 ATHENA'S EXIT WISDOM</h3>
+                <div style="margin-left: 20px;">
+                    <p><em>"The difference between amateur and professional traders isn't how they enter trades - it's how they exit them. Amateurs hope and pray. Professionals plan and execute."</em></p>
+                    
+                    <h4>Elite Exit Principles:</h4>
+                    <ul style="color: #ccc;">
+                        <li><strong>Pre-planned Exits:</strong> Never enter without knowing your exit</li>
+                        <li><strong>Emotion-Free Decisions:</strong> Let the system decide, not your feelings</li>
+                        <li><strong>Risk First:</strong> Always protect capital before chasing profits</li>
+                        <li><strong>Consistency Over Home Runs:</strong> Singles win championships</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div style="background: rgba(255, 107, 107, 0.1); border: 2px solid #FF6B6B; border-radius: 10px; padding: 25px; text-align: center;">
+                <h3>🔫 EXECUTE DISCIPLINED EXIT STRATEGY</h3>
+                <p><strong>Your exit plan is locked and loaded.</strong> Whether this trade hits target, stop, or requires manual intervention, you know exactly what to do.</p>
+                
+                <div style="background: rgba(76, 175, 80, 0.1); padding: 15px; border-radius: 8px; margin: 20px 0;">
+                    <strong>🎖️ EXIT MASTERY PROTOCOLS ACTIVE:</strong><br>
+                    ✓ Stop loss: Immovable at {{ stop_loss or 1.08675 }}<br>
+                    ✓ Take profit: Locked at {{ take_profit or 1.09125 }}<br>
+                    ✓ Risk management: 2% rule enforced<br>
+                    ✓ Emotion control: System-based decisions<br>
+                    ✓ Capital preservation: Priority one
+                </div>
+                
+                <button class="fire-button" onclick="executeExitMastery()">
+                    🎯 EXECUTE DISCIPLINED EXIT STRATEGY
+                </button>
+                
+                <p style="color: #8A2BE2; font-size: 14px;">Athena monitoring - Exit discipline separates pros from amateurs</p>
+            </div>
+        </div>
+        
+        <div class="progress-tracker">
+            <div>
+                <div style="color: #FFD93D; font-size: 18px; font-weight: bold;">🎖️ LIEUTENANT - Day 7 of 10</div>
+                <div style="font-size: 14px; color: #999;">Next: Day 8 - Fire Modes & Automation</div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 70%;"></div>
+            </div>
+            <div style="text-align: right;">
+                <div style="color: #4CAF50; font-weight: bold;">Training Missions: {{ training_academy.total_lesson_missions or 7 }}</div>
+                <div style="font-size: 14px; color: #999;">Exit Strategy: MASTERED</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function executeExitMastery() {
+            alert('🎖️ Outstanding, Lieutenant! You\'ve mastered the art of disciplined exits. Your trade management skills are now at professional level.');
+        }
+    </script>
+</body>
+</html>

@@ -11,9 +11,8 @@ from .result_parser import (
     TradeStatus
 )
 
-from .trade_result_model import (
-    TradeResult,
-    TradeResultBatch
+from .mt5_bridge_adapter import (
+    TradeResult
 )
 
 from .bridge_integration import (
@@ -32,7 +31,6 @@ __all__ = [
     
     # Models
     'TradeResult',
-    'TradeResultBatch',
     
     # Integration
     'MT5BridgeIntegration',

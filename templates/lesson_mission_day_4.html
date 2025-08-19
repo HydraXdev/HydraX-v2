@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BASIC TRAINING - Day 4: Enemy Pattern Recognition</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #00D9FF;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .mission-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(0, 0, 0, 0.95);
+            border: 3px solid #FF6B6B;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 0 40px rgba(255, 107, 107, 0.4);
+        }
+        
+        .training-header {
+            background: linear-gradient(45deg, #FF6B6B, #FFD93D);
+            color: #000;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .training-badge {
+            position: absolute;
+            top: 10px;
+            left: 20px;
+            background: #000;
+            color: #FF6B6B;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .elite-guard-badge {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            background: #000;
+            color: #4ECDC4;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .mission-title {
+            font-size: 28px;
+            font-weight: bold;
+            margin: 10px 0;
+            text-transform: uppercase;
+        }
+        
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 30px;
+        }
+        
+        .pattern-academy {
+            background: linear-gradient(135deg, rgba(76, 236, 196, 0.1), rgba(0, 217, 255, 0.1));
+            border: 2px solid #4ECDC4;
+            border-radius: 10px;
+            padding: 25px;
+        }
+        
+        .live-pattern {
+            background: rgba(255, 193, 7, 0.1);
+            border: 2px solid #FFC107;
+            border-radius: 10px;
+            padding: 25px;
+        }
+        
+        .pattern-card {
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid transparent;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            transition: all 0.3s ease;
+        }
+        
+        .pattern-card.active {
+            border-color: #FFD93D;
+            background: rgba(255, 217, 61, 0.1);
+        }
+        
+        .pattern-name {
+            color: #4ECDC4;
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        
+        .pattern-description {
+            color: #ccc;
+            font-size: 14px;
+            line-height: 1.4;
+            margin-bottom: 10px;
+        }
+        
+        .pattern-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-value {
+            color: #FFD93D;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .stat-label {
+            color: #999;
+            font-size: 12px;
+        }
+        
+        .smc-intel {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, rgba(138, 43, 226, 0.1), rgba(255, 20, 147, 0.1));
+            border: 2px solid #8A2BE2;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+        
+        .current-detection {
+            grid-column: 1 / -1;
+            background: rgba(76, 175, 80, 0.1);
+            border: 2px solid #4CAF50;
+            border-radius: 10px;
+            padding: 25px;
+            text-align: center;
+        }
+        
+        .pattern-visualization {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .pattern-icon {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #666;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .pattern-icon.detected {
+            border-color: #4CAF50;
+            background: rgba(76, 175, 80, 0.2);
+        }
+        
+        .fire-section {
+            grid-column: 1 / -1;
+            background: rgba(255, 107, 107, 0.1);
+            border: 2px solid #FF6B6B;
+            border-radius: 10px;
+            padding: 25px;
+            text-align: center;
+        }
+        
+        .fire-button {
+            background: linear-gradient(45deg, #FF6B6B, #FF8E53);
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            border-radius: 10px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            margin: 20px;
+            transition: all 0.3s ease;
+            width: 350px;
+        }
+        
+        .fire-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.5);
+        }
+        
+        .progress-tracker {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            border-top: 3px solid #FF6B6B;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .progress-bar {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            height: 25px;
+            width: 300px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            background: linear-gradient(90deg, #FF6B6B, #FFD93D);
+            height: 100%;
+            width: 40%;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="mission-container">
+        <div class="training-header">
+            <div class="training-badge">BASIC TRAINING</div>
+            <div class="elite-guard-badge">ELITE GUARD INTEL</div>
+            <div class="mission-title">DAY 4: ENEMY PATTERN RECOGNITION</div>
+            <div class="mission-subtitle">Smart Money Concepts - Reading Institutional Footprints</div>
+        </div>
+        
+        <div class="content-grid">
+            <div class="pattern-academy">
+                <h3>🎯 THE ELITE GUARD'S PATTERN ARSENAL</h3>
+                <p><strong>Intelligence Report:</strong> Our Elite Guard AI has identified 5 primary attack patterns used by institutional traders (the "Smart Money"). Learning to recognize these patterns is your key to victory.</p>
+                
+                <div class="pattern-card active">
+                    <div class="pattern-name">🌊 LIQUIDITY SWEEP REVERSAL</div>
+                    <div class="pattern-description">Big money triggers stop losses to create liquidity, then reverses direction. Like a military feint - fake attack, then real assault.</div>
+                    <div class="pattern-stats">
+                        <div class="stat">
+                            <div class="stat-value">78%</div>
+                            <div class="stat-label">Win Rate</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">HIGH</div>
+                            <div class="stat-label">Frequency</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">RAPID</div>
+                            <div class="stat-label">Class</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="pattern-card">
+                    <div class="pattern-name">📦 ORDER BLOCK BOUNCE</div>
+                    <div class="pattern-description">Price returns to zones where institutions previously accumulated positions. These blocks act like support/resistance bunkers.</div>
+                    <div class="pattern-stats">
+                        <div class="stat">
+                            <div class="stat-value">75%</div>
+                            <div class="stat-label">Win Rate</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">MED</div>
+                            <div class="stat-label">Frequency</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">SNIPER</div>
+                            <div class="stat-label">Class</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="pattern-card">
+                    <div class="pattern-name">⚡ FAIR VALUE GAP FILL</div>
+                    <div class="pattern-description">Market inefficiencies that get filled when price returns to balance. Like filling craters left by institutional bomb runs.</div>
+                    <div class="pattern-stats">
+                        <div class="stat">
+                            <div class="stat-value">72%</div>
+                            <div class="stat-label">Win Rate</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">HIGH</div>
+                            <div class="stat-label">Frequency</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">SNIPER</div>
+                            <div class="stat-label">Class</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="live-pattern">
+                <h3>🔍 LIVE PATTERN ANALYSIS</h3>
+                
+                <h4>🎯 CURRENT DETECTION: {{ pattern_type or 'LIQUIDITY_SWEEP_REVERSAL' }}</h4>
+                
+                <div style="background: rgba(0, 0, 0, 0.6); padding: 20px; border-radius: 10px; margin: 15px 0;">
+                    <div><strong>Target:</strong> {{ symbol or 'EURUSD' }}</div>
+                    <div><strong>Pattern Class:</strong> 
+                        {% if pattern_type in ['VCB_BREAKOUT', 'SWEEP_RETURN'] or not pattern_type %}
+                            <span style="color: #FF6B6B;">⚡ RAPID ASSAULT</span>
+                        {% else %}
+                            <span style="color: #4ECDC4;">🎯 PRECISION SNIPER</span>
+                        {% endif %}
+                    </div>
+                    <div><strong>Confidence:</strong> {{ confidence or 85 }}%</div>
+                    <div><strong>Session:</strong> {{ session or 'LONDON' }}</div>
+                    <div><strong>Direction:</strong> {{ direction or 'BUY' }}</div>
+                </div>
+                
+                <h4>📊 Pattern Signatures Detected:</h4>
+                <div style="background: rgba(76, 175, 80, 0.1); padding: 15px; border-radius: 8px;">
+                    ✓ Volume spike confirmation<br>
+                    ✓ Liquidity zone interaction<br>
+                    ✓ Multi-timeframe alignment<br>
+                    ✓ Session timing optimal<br>
+                    ✓ Spread conditions favorable
+                </div>
+                
+                <h4>🧠 Elite Guard Analysis:</h4>
+                <div style="background: rgba(0, 217, 255, 0.1); padding: 15px; border-radius: 8px; color: #ccc; font-size: 14px;">
+                    {% if pattern_type == 'LIQUIDITY_SWEEP_REVERSAL' or not pattern_type %}
+                    "Institutional players have triggered retail stop losses above/below key levels. Large volume spike indicates accumulation complete. Reversal imminent. High probability setup."
+                    {% elif pattern_type == 'ORDER_BLOCK_BOUNCE' %}
+                    "Price has returned to previous institutional accumulation zone. This area should provide significant support/resistance. Expecting bounce with good risk/reward."
+                    {% elif pattern_type == 'FAIR_VALUE_GAP_FILL' %}
+                    "Market inefficiency detected from previous rapid price movement. Institutions will likely fill this gap before continuing trend. Technical rebalancing in progress."
+                    {% elif pattern_type == 'VCB_BREAKOUT' %}
+                    "Volatility compression detected. Coiling pattern suggests imminent explosive movement. Volume and momentum building for breakout."
+                    {% else %}
+                    "Smart money concepts alignment detected. Multiple confluence factors supporting this directional bias. Proceed with tactical execution."
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="smc-intel">
+                <h3>🧠 SMART MONEY CONCEPTS - CLASSIFIED INTEL</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        <h4>🏦 Institutional Behavior</h4>
+                        <p>Banks and hedge funds don't just "buy" or "sell". They:</p>
+                        <ul>
+                            <li>Create liquidity traps for retail traders</li>
+                            <li>Use order blocks to support their positions</li>
+                            <li>Fill inefficiencies they created</li>
+                            <li>Hunt stop losses before major moves</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4>⚔️ Our Advantage</h4>
+                        <p>BITTEN's Elite Guard reads their footprints:</p>
+                        <ul>
+                            <li>Volume analysis reveals accumulation</li>
+                            <li>Price action shows true intentions</li>
+                            <li>Multi-timeframe confirms patterns</li>
+                            <li>Session timing optimizes entry</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="pattern-visualization">
+                <div class="pattern-icon {{ 'detected' if pattern_type == 'LIQUIDITY_SWEEP_REVERSAL' or not pattern_type else '' }}">
+                    <div>🌊</div>
+                    <div style="font-size: 12px; margin-top: 5px;">SWEEP</div>
+                </div>
+                <div class="pattern-icon {{ 'detected' if pattern_type == 'ORDER_BLOCK_BOUNCE' else '' }}">
+                    <div>📦</div>
+                    <div style="font-size: 12px; margin-top: 5px;">BLOCK</div>
+                </div>
+                <div class="pattern-icon {{ 'detected' if pattern_type == 'FAIR_VALUE_GAP_FILL' else '' }}">
+                    <div>⚡</div>
+                    <div style="font-size: 12px; margin-top: 5px;">GAP</div>
+                </div>
+                <div class="pattern-icon {{ 'detected' if pattern_type == 'VCB_BREAKOUT' else '' }}">
+                    <div>💥</div>
+                    <div style="font-size: 12px; margin-top: 5px;">BREAKOUT</div>
+                </div>
+                <div class="pattern-icon {{ 'detected' if pattern_type == 'SWEEP_RETURN' else '' }}">
+                    <div>🔄</div>
+                    <div style="font-size: 12px; margin-top: 5px;">RETURN</div>
+                </div>
+            </div>
+            
+            <div class="current-detection">
+                <h3>🎯 PATTERN RECOGNITION COMPLETE</h3>
+                <p><strong>Congratulations, soldier!</strong> You're now seeing the market through the Elite Guard's eyes. This {{ pattern_type or 'LIQUIDITY_SWEEP_REVERSAL' }} pattern represents institutional movement that retail traders miss.</p>
+                
+                <div style="background: rgba(0, 217, 255, 0.1); padding: 15px; border-radius: 8px; margin: 20px 0;">
+                    <strong>🎖️ PATTERN MASTERY UNLOCKED:</strong><br>
+                    ✓ Smart Money Concepts understood<br>
+                    ✓ Institutional footprints recognized<br>
+                    ✓ Pattern classification mastered<br>
+                    ✓ Elite Guard intel accessed<br>
+                    ✓ Ready for tactical execution
+                </div>
+            </div>
+            
+            <div class="fire-section">
+                <h3>🔫 EXECUTE PATTERN-BASED ASSAULT</h3>
+                <p><strong>Time to put your pattern recognition to work!</strong> You've identified the enemy's strategy, now exploit their movement for tactical advantage.</p>
+                
+                <button class="fire-button" onclick="executePatternStrike()">
+                    🎯 EXECUTE PATTERN STRIKE
+                </button>
+                
+                <p style="color: #4ECDC4; font-size: 14px;">Elite Guard standing by - Pattern confirmed for engagement</p>
+            </div>
+        </div>
+        
+        <div class="progress-tracker">
+            <div>
+                <div style="color: #FFD93D; font-size: 18px; font-weight: bold;">🎖️ SOLDIER - Day 4 of 10</div>
+                <div style="font-size: 14px; color: #999;">Next: Day 5 - Confidence Scoring & Signal Strength</div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 40%;"></div>
+            </div>
+            <div style="text-align: right;">
+                <div style="color: #4CAF50; font-weight: bold;">Training Missions: {{ training_academy.total_lesson_missions or 4 }}</div>
+                <div style="font-size: 14px; color: #999;">Pattern Recognition: MASTERED</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function executePatternStrike() {
+            const button = document.querySelector('.fire-button');
+            button.style.background = 'linear-gradient(45deg, #4CAF50, #45a049)';
+            button.innerHTML = '🎯 PATTERN STRIKE EXECUTING...';
+            button.disabled = true;
+            
+            setTimeout(() => {
+                button.innerHTML = '✅ PATTERN MASTERED';
+                alert('🎖️ Exceptional work, soldier! You\'ve successfully identified and executed on institutional pattern recognition. The Elite Guard is impressed with your tactical evolution.');
+            }, 2500);
+        }
+    </script>
+</body>
+</html>

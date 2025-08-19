@@ -1649,7 +1649,26 @@ Your mission briefing is waiting."""
                 actual_balance = self._get_user_actual_balance(user_id)
                 account_balance = actual_balance if actual_balance > 0 else user_info.get('account_balance', 10000.0)
                 risk_percent = 0.05  # 5% risk
-                stop_loss_pips = signal_data.get('stop_pips', 20)  # Default 20 pips
+                
+                # Calculate stop loss pips from price levels (fix for null stop_pips)
+                if signal_data.get('stop_pips') and signal_data['stop_pips'] > 0:
+                    stop_loss_pips = signal_data['stop_pips']
+                else:
+                    # Convert price levels to pips
+                    entry_price = signal_data.get('entry_price', signal_data.get('entry', 0))
+                    sl_price = signal_data.get('sl', signal_data.get('stop_loss', 0))
+                    
+                    if entry_price > 0 and sl_price > 0:
+                        # Calculate pip value based on symbol
+                        if 'JPY' in signal_data['symbol']:
+                            pip_size = 0.01  # JPY pairs
+                        else:
+                            pip_size = 0.0001  # Standard forex pairs
+                        
+                        stop_loss_pips = abs(entry_price - sl_price) / pip_size
+                        print(f"📊 Calculated stop loss: {stop_loss_pips:.1f} pips from price difference ({entry_price} - {sl_price})")
+                    else:
+                        stop_loss_pips = 20  # Fallback default
                 
                 # Calculate lot size for 5% risk
                 # For EURUSD, 1 lot = $10 per pip
@@ -1781,19 +1800,52 @@ Your mission briefing is waiting."""
             signal_data['executed_at'] = datetime.now().isoformat()
             signal_data['executed_by'] = user_id
             
-            # CRITICAL: FORCE REAL EXECUTION - NO SIMULATION
+            # CRITICAL: COMMANDER 5% RISK POSITION SIZING
+            actual_balance = self._get_user_actual_balance(user_id)
+            account_balance = actual_balance if actual_balance > 0 else 1000.0
+            risk_percent = 0.05  # COMMANDER gets 5% risk
+            
+            # Calculate stop loss pips from price levels (same logic as regular flow)
+            if signal_data.get('stop_pips') and signal_data['stop_pips'] > 0:
+                stop_loss_pips = signal_data['stop_pips']
+            else:
+                # Convert price levels to pips
+                entry_price = signal_data.get('entry_price', signal_data.get('entry', 0))
+                sl_price = signal_data.get('sl', signal_data.get('stop_loss', 0))
+                
+                if entry_price > 0 and sl_price > 0:
+                    # Calculate pip value based on symbol
+                    if 'JPY' in signal_data['symbol']:
+                        pip_size = 0.01  # JPY pairs
+                    else:
+                        pip_size = 0.0001  # Standard forex pairs
+                    
+                    stop_loss_pips = abs(entry_price - sl_price) / pip_size
+                    print(f"🎖️ COMMANDER calculated stop loss: {stop_loss_pips:.1f} pips from price difference ({entry_price} - {sl_price})")
+                else:
+                    stop_loss_pips = 20  # Fallback default
+            
+            # Calculate lot size for 5% risk
+            risk_amount = account_balance * risk_percent
+            dollars_per_pip = 10.0 if 'USD' in signal_data['symbol'] else 10.0  # Simplified
+            calculated_lot_size = risk_amount / (stop_loss_pips * dollars_per_pip)
+            lot_size = max(0.01, min(calculated_lot_size, 1.0))  # Min 0.01, Max 1.0
+            
+            print(f"🎖️ COMMANDER Position sizing: Balance ${account_balance:.2f}, Risk {risk_percent*100}% = ${risk_amount:.2f}")
+            print(f"🎖️ COMMANDER Stop loss {stop_loss_pips} pips, Calculated lot size: {lot_size:.2f}")
+            
+            # CRITICAL: FORCE REAL EXECUTION WITH PROPER POSITION SIZING
+            trade_request = TradeRequest(
+                user_id=user_id,
+                symbol=signal_data['symbol'],
+                direction=TradeDirection.BUY if signal_data['direction'] == 'BUY' else TradeDirection.SELL,
+                volume=lot_size,  # Calculated based on 5% risk
+                tcs_score=signal_data.get('confidence', 0),
+                mission_id=signal_id
+            )
+            
             execution_result = self.fire_router.execute_trade_request(
-                {
-                    'user_id': user_id,
-                    'signal_id': signal_id,
-                    'symbol': signal_data['symbol'],
-                    'direction': signal_data['direction'],
-                    'confidence': signal_data.get('confidence', 95.0),
-                    'commander_override': True,  # ZERO SIMULATION FLAG
-                    'force_real_execution': True,  # ENFORCE REAL TRADING
-                    'mt5_account': '94956065',  # Direct MT5 account
-                    'mt5_server': 'MetaQuotes-Demo'
-                },
+                trade_request,
                 {'tier': 'COMMANDER', 'user_id': user_id}
             )
             
@@ -1884,6 +1936,36 @@ Your mission briefing is waiting."""
             
             signal_id = signal_data.get('signal_id', f"MISSION_{int(time.time())}")
             
+            # Calculate SL/TP prices if missing (fallback calculation)
+            entry_price = signal_data.get('entry_price', 0)
+            sl_price = signal_data.get('sl')
+            tp_price = signal_data.get('tp')
+            
+            print(f"[DEBUG] Mission creation for {signal_id}: entry={entry_price}, sl={sl_price}, tp={tp_price}")
+            
+            # If SL/TP prices are missing, calculate from pips
+            if (sl_price is None or tp_price is None) and entry_price:
+                symbol = signal_data.get('symbol', 'EURUSD')
+                direction = signal_data.get('direction', 'BUY')
+                stop_pips = signal_data.get('stop_pips', 10)
+                target_pips = signal_data.get('target_pips', 20)
+                
+                # Determine pip size
+                if 'JPY' in symbol:
+                    pip_size = 0.01
+                elif symbol == 'XAUUSD':
+                    pip_size = 0.10
+                else:
+                    pip_size = 0.0001
+                
+                # Calculate SL/TP based on direction
+                if direction == 'BUY':
+                    sl_price = sl_price or entry_price - (stop_pips * pip_size)
+                    tp_price = tp_price or entry_price + (target_pips * pip_size)
+                else:  # SELL
+                    sl_price = sl_price or entry_price + (stop_pips * pip_size)
+                    tp_price = tp_price or entry_price - (target_pips * pip_size)
+
             # Create mission data structure matching existing format
             mission_data = {
                 "mission_id": signal_id,
@@ -1892,9 +1974,9 @@ Your mission briefing is waiting."""
                     "symbol": signal_data.get('symbol'),
                     "direction": signal_data.get('direction'),
                     "signal_type": signal_data.get('signal_type'),
-                    "entry_price": signal_data.get('entry_price'),
-                    "stop_loss": signal_data.get('sl'),
-                    "take_profit": signal_data.get('tp'),
+                    "entry_price": entry_price,
+                    "stop_loss": sl_price,
+                    "take_profit": tp_price,
                     "stop_pips": signal_data.get('stop_pips', 10),
                     "target_pips": signal_data.get('target_pips', 20),
                     "risk_reward": signal_data.get('risk_reward', 2.0),
@@ -1908,9 +1990,9 @@ Your mission briefing is waiting."""
                 "symbol": signal_data.get('symbol'),
                 "direction": signal_data.get('direction'),
                 "signal_type": signal_data.get('signal_type'),
-                "entry_price": signal_data.get('entry_price'),
-                "stop_loss": signal_data.get('sl'),
-                "take_profit": signal_data.get('tp'),
+                "entry_price": entry_price,
+                "stop_loss": sl_price,
+                "take_profit": tp_price,
                 "stop_pips": signal_data.get('stop_pips', 10),
                 "target_pips": signal_data.get('target_pips', 20),
                 "risk_reward": signal_data.get('risk_reward', 2.0),

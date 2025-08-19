@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BASIC TRAINING - Day 3: The BITTEN Protocol</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #00D9FF;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .mission-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: rgba(0, 0, 0, 0.95);
+            border: 3px solid #FF6B6B;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 0 40px rgba(255, 107, 107, 0.4);
+        }
+        
+        .training-header {
+            background: linear-gradient(45deg, #FF6B6B, #FFD93D);
+            color: #000;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .training-badge {
+            position: absolute;
+            top: 10px;
+            left: 20px;
+            background: #000;
+            color: #FF6B6B;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .bitten-logo {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            background: #000;
+            color: #00D9FF;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .mission-title {
+            font-size: 28px;
+            font-weight: bold;
+            margin: 10px 0;
+            text-transform: uppercase;
+        }
+        
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 30px;
+        }
+        
+        .bitten-protocol {
+            background: linear-gradient(135deg, rgba(0, 217, 255, 0.1), rgba(76, 236, 196, 0.1));
+            border: 2px solid #00D9FF;
+            border-radius: 10px;
+            padding: 25px;
+        }
+        
+        .risk-calculator {
+            background: rgba(255, 193, 7, 0.1);
+            border: 2px solid #FFC107;
+            border-radius: 10px;
+            padding: 25px;
+        }
+        
+        .protocol-rule {
+            background: rgba(0, 0, 0, 0.6);
+            border-left: 4px solid #00D9FF;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+        
+        .rule-number {
+            color: #FFD93D;
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+        
+        .rule-data {
+            color: #00D9FF;
+            font-size: 20px;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        
+        .rule-explanation {
+            color: #ccc;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        .athena-wisdom {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, rgba(138, 43, 226, 0.1), rgba(255, 20, 147, 0.1));
+            border: 2px solid #8A2BE2;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            position: relative;
+        }
+        
+        .athena-avatar {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, #8A2BE2, #FF1493);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            position: absolute;
+            top: -30px;
+            left: 30px;
+        }
+        
+        .position-sizing {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .size-example {
+            background: rgba(76, 175, 80, 0.1);
+            border: 2px solid #4CAF50;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .fire-section {
+            grid-column: 1 / -1;
+            background: rgba(255, 107, 107, 0.1);
+            border: 2px solid #FF6B6B;
+            border-radius: 10px;
+            padding: 25px;
+            text-align: center;
+        }
+        
+        .fire-button {
+            background: linear-gradient(45deg, #FF6B6B, #FF8E53);
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            border-radius: 10px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            margin: 20px;
+            transition: all 0.3s ease;
+            width: 300px;
+        }
+        
+        .fire-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.5);
+        }
+        
+        .progress-tracker {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            border-top: 3px solid #FF6B6B;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .progress-bar {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            height: 25px;
+            width: 300px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            background: linear-gradient(90deg, #FF6B6B, #FFD93D);
+            height: 100%;
+            width: 30%;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="mission-container">
+        <div class="training-header">
+            <div class="training-badge">BASIC TRAINING</div>
+            <div class="bitten-logo">BITTEN PROTOCOL</div>
+            <div class="mission-title">DAY 3: THE BITTEN WAY</div>
+            <div class="mission-subtitle">Risk Management & Position Sizing - Survival in the Market Warzone</div>
+        </div>
+        
+        <div class="content-grid">
+            <div class="bitten-protocol">
+                <h3>🛡️ THE BITTEN SURVIVAL PROTOCOL</h3>
+                <p><strong>Listen up, soldier!</strong> BITTEN isn't just a trading system - it's a survival protocol developed by elite market operatives. These rules have kept countless traders alive in hostile market conditions.</p>
+                
+                <div class="protocol-rule">
+                    <div class="rule-number">RULE #1: THE 2% LAW</div>
+                    <div class="rule-data">NEVER RISK MORE THAN 2% PER MISSION</div>
+                    <div class="rule-explanation">Even the best intelligence can be wrong. This rule ensures you survive to fight another day. Your account balance: ${{ user_stats.balance or account_balance or 1000 }}</div>
+                </div>
+                
+                <div class="protocol-rule">
+                    <div class="rule-number">RULE #2: POSITION SIZING</div>
+                    <div class="rule-data">MAX RISK: ${{ ((user_stats.balance or account_balance or 1000) * 0.02)|round(2) }}</div>
+                    <div class="rule-explanation">2% of your account. This is your maximum loss tolerance for this mission. Calculate position size based on stop loss distance.</div>
+                </div>
+                
+                <div class="protocol-rule">
+                    <div class="rule-number">RULE #3: STOP LOSS DISCIPLINE</div>
+                    <div class="rule-data">ALWAYS SET YOUR EXIT</div>
+                    <div class="rule-explanation">Before you enter, know where you'll retreat. Every BITTEN signal includes predetermined stop loss and take profit levels.</div>
+                </div>
+                
+                <div class="protocol-rule">
+                    <div class="rule-number">RULE #4: NO REVENGE TRADING</div>
+                    <div class="rule-data">LOSING IS PART OF THE MISSION</div>
+                    <div class="rule-explanation">Even 80% win rate means 2 out of 10 trades will fail. Accept losses and follow the protocol. BITTEN keeps you disciplined.</div>
+                </div>
+            </div>
+            
+            <div class="risk-calculator">
+                <h3>🎯 LIVE MISSION CALCULATIONS</h3>
+                
+                <h4>Current Target: {{ symbol or 'EURUSD' }}</h4>
+                <div style="background: rgba(0, 0, 0, 0.6); padding: 15px; border-radius: 8px; margin: 15px 0;">
+                    <div><strong>Direction:</strong> {{ direction or 'BUY' }}</div>
+                    <div><strong>Entry Price:</strong> {{ entry_price or 1.08875 }}</div>
+                    <div><strong>Stop Loss:</strong> {{ stop_loss or 1.08675 }}</div>
+                    <div><strong>Take Profit:</strong> {{ take_profit or 1.09125 }}</div>
+                    <div><strong>Risk Distance:</strong> {{ stop_pips or 20 }} pips</div>
+                </div>
+                
+                <h4>📊 Position Size Calculation:</h4>
+                <div style="background: rgba(76, 175, 80, 0.1); padding: 15px; border-radius: 8px;">
+                    <div>Account Balance: ${{ user_stats.balance or account_balance or 1000 }}</div>
+                    <div>Max Risk (2%): ${{ ((user_stats.balance or account_balance or 1000) * 0.02)|round(2) }}</div>
+                    <div>Risk per Pip: ${{ (((user_stats.balance or account_balance or 1000) * 0.02) / (stop_pips or 20))|round(2) }}</div>
+                    <div style="color: #FFD93D; font-size: 18px; font-weight: bold; margin-top: 10px;">
+                        Position Size: {{ ((((user_stats.balance or account_balance or 1000) * 0.02) / (stop_pips or 20)) / 10)|round(2) }} lots
+                    </div>
+                </div>
+            </div>
+            
+            <div class="athena-wisdom">
+                <div class="athena-avatar">🧠</div>
+                <h3 style="margin-left: 80px; color: #8A2BE2;">ATHENA'S TACTICAL WISDOM</h3>
+                <div style="margin-left: 80px;">
+                    <p><em>"Recruit, I've analyzed thousands of market campaigns. The traders who survive aren't the ones who make the most profit per trade - they're the ones who never risk their entire army on a single battle."</em></p>
+                    
+                    <p><strong>Current Mission Assessment:</strong></p>
+                    <ul style="color: #ccc;">
+                        <li>Pattern Confidence: {{ confidence or 85 }}% - High probability engagement</li>
+                        <li>Risk/Reward: 1:{{ (target_pips / stop_pips) if target_pips and stop_pips else 1.25 }} - Favorable tactical advantage</li>
+                        <li>Session Timing: {{ session or 'LONDON' }} - Optimal liquidity conditions</li>
+                        <li>Position Size: Conservative but profitable - textbook BITTEN protocol</li>
+                    </ul>
+                    
+                    <p style="color: #FFD93D;"><strong>Recommendation:</strong> Execute with confidence, soldier. Your risk is contained, your reward is substantial.</p>
+                </div>
+            </div>
+            
+            <div class="position-sizing">
+                <div class="size-example">
+                    <h4>🥉 NIBBLER</h4>
+                    <div>Base Position</div>
+                    <div style="color: #4CAF50; font-size: 20px; font-weight: bold;">{{ ((((user_stats.balance or account_balance or 1000) * 0.02) / (stop_pips or 20)) / 10)|round(2) }} lots</div>
+                </div>
+                
+                <div class="size-example">
+                    <h4>🥈 FANG</h4>
+                    <div>1.5x Multiplier</div>
+                    <div style="color: #FFD93D; font-size: 20px; font-weight: bold;">{{ (((((user_stats.balance or account_balance or 1000) * 0.02) / (stop_pips or 20)) / 10) * 1.5)|round(2) }} lots</div>
+                </div>
+                
+                <div class="size-example">
+                    <h4>🏆 COMMANDER</h4>
+                    <div>2x Multiplier</div>
+                    <div style="color: #FF6B6B; font-size: 20px; font-weight: bold;">{{ (((((user_stats.balance or account_balance or 1000) * 0.02) / (stop_pips or 20)) / 10) * 2)|round(2) }} lots</div>
+                </div>
+            </div>
+            
+            <div class="fire-section">
+                <h3>🔫 EXECUTE BITTEN PROTOCOL</h3>
+                <p><strong>Your position has been calculated using BITTEN protocols.</strong> All safety measures are in place. Your maximum loss is exactly ${{ ((user_stats.balance or account_balance or 1000) * 0.02)|round(2) }}, your potential profit is ${{ (((user_stats.balance or account_balance or 1000) * 0.02) * ((target_pips / stop_pips) if target_pips and stop_pips else 1.25))|round(2) }}.</p>
+                
+                <div style="background: rgba(0, 217, 255, 0.1); padding: 15px; border-radius: 8px; margin: 20px 0;">
+                    <strong>🛡️ BITTEN SAFETY PROTOCOL ACTIVE:</strong><br>
+                    ✓ Risk limited to 2% of account<br>
+                    ✓ Position size auto-calculated<br>
+                    ✓ Stop loss pre-programmed<br>
+                    ✓ Take profit optimized<br>
+                    ✓ Athena monitoring execution
+                </div>
+                
+                <button class="fire-button" onclick="executeBittenProtocol()">
+                    🛡️ EXECUTE BITTEN PROTOCOL
+                </button>
+                
+                <p style="color: #8A2BE2; font-size: 14px;">Athena is standing by to monitor your execution</p>
+            </div>
+        </div>
+        
+        <div class="progress-tracker">
+            <div>
+                <div style="color: #FFD93D; font-size: 18px; font-weight: bold;">🎖️ RECRUIT - Day 3 of 10</div>
+                <div style="font-size: 14px; color: #999;">Next: Day 4 - Pattern Recognition & Smart Money Concepts</div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 30%;"></div>
+            </div>
+            <div style="text-align: right;">
+                <div style="color: #4CAF50; font-weight: bold;">Training Missions: {{ training_academy.total_lesson_missions or 3 }}</div>
+                <div style="font-size: 14px; color: #999;">Risk Management: MASTERED</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function executeBittenProtocol() {
+            const button = document.querySelector('.fire-button');
+            button.style.background = 'linear-gradient(45deg, #4CAF50, #45a049)';
+            button.innerHTML = '🛡️ BITTEN PROTOCOL EXECUTING...';
+            button.disabled = true;
+            
+            setTimeout(() => {
+                button.innerHTML = '✅ PROTOCOL COMPLETE';
+                alert('🎖️ Outstanding, soldier! You\'ve successfully executed the BITTEN Protocol. Your risk is contained, your position is optimized. Athena approves of your discipline.');
+            }, 2500);
+        }
+    </script>
+</body>
+</html>

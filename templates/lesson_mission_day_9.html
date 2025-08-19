@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BASIC TRAINING - Day 9: Performance Analytics</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #00D9FF;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .mission-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(0, 0, 0, 0.95);
+            border: 3px solid #FF6B6B;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 0 40px rgba(255, 107, 107, 0.4);
+        }
+        
+        .analytics-dashboard {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            padding: 30px;
+        }
+        
+        .metric-card {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #4ECDC4;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .metric-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #4CAF50;
+            margin: 10px 0;
+        }
+        
+        .metric-label {
+            color: #ccc;
+            font-size: 14px;
+        }
+        
+        .performance-analysis {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(156, 204, 101, 0.1));
+            border: 2px solid #4CAF50;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+        
+        .improvement-areas {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 20px 0;
+        }
+        
+        .area-card {
+            background: rgba(0, 0, 0, 0.6);
+            border-left: 4px solid #FFD93D;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        
+        .fire-button {
+            background: linear-gradient(45deg, #FF6B6B, #FF8E53);
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            border-radius: 10px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            margin: 20px auto;
+            display: block;
+            width: 400px;
+        }
+    </style>
+</head>
+<body>
+    <div class="mission-container">
+        <div class="training-header" style="background: linear-gradient(45deg, #FF6B6B, #FFD93D); color: #000; padding: 20px; text-align: center;">
+            <div style="position: absolute; top: 10px; left: 20px; background: #000; color: #FF6B6B; padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: bold;">BASIC TRAINING</div>
+            <div style="font-size: 28px; font-weight: bold; margin: 10px 0; text-transform: uppercase;">DAY 9: PERFORMANCE ANALYTICS</div>
+            <div style="font-size: 16px; font-weight: bold;">Reading Your Stats & Continuous Improvement</div>
+        </div>
+        
+        <div class="analytics-dashboard">
+            <div class="metric-card">
+                <div class="metric-value">{{ training_academy.total_lesson_missions or 9 }}</div>
+                <div class="metric-label">Training Missions</div>
+            </div>
+            
+            <div class="metric-card">
+                <div class="metric-value">88%</div>
+                <div class="metric-label">Win Rate</div>
+            </div>
+            
+            <div class="metric-card">
+                <div class="metric-value">+15.2%</div>
+                <div class="metric-label">Account Growth</div>
+            </div>
+            
+            <div class="metric-card">
+                <div class="metric-value">1.3:1</div>
+                <div class="metric-label">Avg Risk/Reward</div>
+            </div>
+            
+            <div class="performance-analysis">
+                <h3>📊 YOUR TRAINING PERFORMANCE ANALYSIS</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                    <div>
+                        <h4>🎯 Strengths Identified</h4>
+                        <div style="background: rgba(76, 175, 80, 0.1); padding: 15px; border-radius: 8px;">
+                            <div>✓ <strong>Risk Management:</strong> Perfect 2% compliance</div>
+                            <div>✓ <strong>Pattern Recognition:</strong> 91% accuracy</div>
+                            <div>✓ <strong>Session Timing:</strong> Optimal entry timing</div>
+                            <div>✓ <strong>Exit Discipline:</strong> Follows stop/target rules</div>
+                            <div>✓ <strong>Emotional Control:</strong> System-based decisions</div>
+                        </div>
+                    </div>
+                    <div>
+                        <h4>⚡ Improvement Opportunities</h4>
+                        <div style="background: rgba(255, 193, 7, 0.1); padding: 15px; border-radius: 8px;">
+                            <div>• <strong>Position Sizing:</strong> Can optimize for higher R:R</div>
+                            <div>• <strong>Session Selection:</strong> Focus on LONDON/OVERLAP</div>
+                            <div>• <strong>Pattern Preference:</strong> VCB breakouts performing best</div>
+                            <div>• <strong>Trade Frequency:</strong> Quality over quantity approach</div>
+                            <div>• <strong>Market Adaptation:</strong> Adjust to volatility changes</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <h4>📈 Performance Trends</h4>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 20px 0;">
+                    <div style="background: rgba(0, 0, 0, 0.6); padding: 15px; border-radius: 8px; text-align: center;">
+                        <div style="color: #4CAF50; font-size: 20px; font-weight: bold;">IMPROVING</div>
+                        <div style="font-size: 12px;">Win rate trending upward</div>
+                    </div>
+                    <div style="background: rgba(0, 0, 0, 0.6); padding: 15px; border-radius: 8px; text-align: center;">
+                        <div style="color: #4CAF50; font-size: 20px; font-weight: bold;">STABLE</div>
+                        <div style="font-size: 12px;">Risk management consistent</div>
+                    </div>
+                    <div style="background: rgba(0, 0, 0, 0.6); padding: 15px; border-radius: 8px; text-align: center;">
+                        <div style="color: #FFD93D; font-size: 20px; font-weight: bold;">OPTIMIZING</div>
+                        <div style="font-size: 12px;">Pattern selection refining</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="improvement-areas">
+                <div class="area-card">
+                    <h4>🎖️ XP & Progression System</h4>
+                    <div style="margin: 15px 0;">
+                        <div><strong>Current XP:</strong> 2,480 points</div>
+                        <div><strong>Level:</strong> 12 (Sergeant)</div>
+                        <div><strong>Next Milestone:</strong> 520 XP to Lieutenant</div>
+                    </div>
+                    <div style="background: rgba(255, 255, 255, 0.1); border-radius: 10px; height: 10px; overflow: hidden;">
+                        <div style="background: linear-gradient(90deg, #4ECDC4, #00D9FF); height: 100%; width: 82%;"></div>
+                    </div>
+                    <div style="font-size: 12px; color: #ccc; margin-top: 10px;">
+                        Earn XP through: Successful trades (+100), Pattern variety (+20), Win streaks (+50)
+                    </div>
+                </div>
+                
+                <div class="area-card">
+                    <h4>🏆 Achievement Progress</h4>
+                    <div style="margin: 15px 0;">
+                        <div>✅ <strong>First Strike:</strong> Complete first trade</div>
+                        <div>✅ <strong>Pattern Hunter:</strong> Identify 5 different patterns</div>
+                        <div>✅ <strong>Risk Manager:</strong> 10 trades without rule violation</div>
+                        <div>🔒 <strong>Streak Master:</strong> 5 wins in a row (Progress: 3/5)</div>
+                        <div>🔒 <strong>Elite Trader:</strong> 90%+ win rate over 50 trades</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="grid-column: 1 / -1; background: rgba(138, 43, 226, 0.1); border: 2px solid #8A2BE2; border-radius: 15px; padding: 25px; margin: 20px 0;">
+                <h3>🧠 ATHENA'S PERFORMANCE INSIGHTS</h3>
+                <div style="margin-left: 20px;">
+                    <p><em>"Excellent progress, soldier. Your performance metrics indicate strong foundational skills and disciplined execution. You're showing the hallmarks of a professional trader."</em></p>
+                    
+                    <h4>🎯 Personalized Recommendations:</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0;">
+                        <div>
+                            <h5>📈 Optimize Strengths</h5>
+                            <p style="font-size: 14px; color: #ccc;">Focus on LONDON session VCB breakouts. Your 94% win rate on this combination suggests natural aptitude.</p>
+                        </div>
+                        <div>
+                            <h5>⚡ Address Weaknesses</h5>
+                            <p style="font-size: 14px; color: #ccc;">Consider slight position size increases during high-confidence OVERLAP periods to maximize R:R potential.</p>
+                        </div>
+                    </div>
+                    
+                    <div style="background: rgba(233, 30, 99, 0.1); padding: 15px; border-radius: 8px; margin-top: 15px;">
+                        <strong>🎖️ PROMOTION RECOMMENDATION:</strong> Ready for advanced strategies after graduation
+                    </div>
+                </div>
+            </div>
+            
+            <div style="grid-column: 1 / -1; background: rgba(255, 107, 107, 0.1); border: 2px solid #FF6B6B; border-radius: 10px; padding: 25px; text-align: center;">
+                <h3>🔫 EXECUTE PERFORMANCE OPTIMIZATION</h3>
+                <p><strong>Your analytics are impressive, soldier!</strong> You've developed the self-awareness to read your own performance and identify areas for improvement.</p>
+                
+                <div style="background: rgba(76, 175, 80, 0.1); padding: 15px; border-radius: 8px; margin: 20px 0;">
+                    <strong>🎖️ ANALYTICS MASTERY ACHIEVED:</strong><br>
+                    ✓ Performance tracking understood<br>
+                    ✓ Strength/weakness analysis complete<br>
+                    ✓ XP and progression systems mastered<br>
+                    ✓ Continuous improvement mindset developed<br>
+                    ✓ Ready for advanced trading concepts
+                </div>
+                
+                <button class="fire-button" onclick="executeAnalyticsMastery()">
+                    📊 EXECUTE PERFORMANCE OPTIMIZATION
+                </button>
+                
+                <p style="color: #8A2BE2; font-size: 14px;">Athena's analytics engine - Know thyself, improve thyself</p>
+            </div>
+        </div>
+        
+        <div style="background: rgba(0, 0, 0, 0.9); padding: 20px; border-top: 3px solid #FF6B6B; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <div style="color: #FFD93D; font-size: 18px; font-weight: bold;">🎖️ MAJOR - Day 9 of 10</div>
+                <div style="font-size: 14px; color: #999;">Next: Day 10 - Final Exam & Graduation</div>
+            </div>
+            <div style="background: rgba(255, 255, 255, 0.1); border-radius: 10px; height: 25px; width: 300px; overflow: hidden;">
+                <div style="background: linear-gradient(90deg, #FF6B6B, #FFD93D); height: 100%; width: 90%; transition: width 0.3s ease;"></div>
+            </div>
+            <div style="text-align: right;">
+                <div style="color: #4CAF50; font-weight: bold;">Training Missions: {{ training_academy.total_lesson_missions or 9 }}</div>
+                <div style="font-size: 14px; color: #999;">Analytics: MASTERED</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function executeAnalyticsMastery() {
+            alert('🎖️ Outstanding, Major! You\'ve mastered performance analytics and self-improvement. Your ability to read and optimize your own trading performance is now at elite level. Tomorrow, you graduate!');
+        }
+    </script>
+</body>
+</html>

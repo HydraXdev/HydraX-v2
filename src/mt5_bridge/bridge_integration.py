@@ -11,7 +11,7 @@ from typing import Dict, Any, Optional, List
 from decimal import Decimal
 
 from src.mt5_bridge.result_parser import MT5ResultParser
-from src.mt5_bridge.trade_result_model import TradeResult, TradeResultBatch
+from src.mt5_bridge.mt5_bridge_adapter import TradeResult
 from src.database.connection import get_db_manager
 from src.database.models import User, Trade, RiskSession, XPTransaction
 # TODO: Import these when implemented

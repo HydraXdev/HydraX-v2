@@ -19,6 +19,7 @@ from collections import defaultdict, deque
 import numpy as np
 from citadel_lite import CitadelProtection
 from src.bitten_core.news_api_client import NewsAPIClient
+import statistics
 
 # Setup logging
 logging.basicConfig(
@@ -38,6 +39,220 @@ class PatternSignal:
     quality_score: float = 0  # NEW: Shows relative quality
     momentum_score: float = 0
     volume_quality: float = 0
+
+class DynamicThresholdManager:
+    """Manages dynamic thresholds per pattern based on session, volatility, and signal flow"""
+    
+    def __init__(self):
+        # Base thresholds for each pattern - QUALITY focused
+        self.thresholds = {
+            'LIQUIDITY_SWEEP_REVERSAL': {
+                'pip_sweep': 1.0,  # Moderate sweep requirement
+                'min_conf': 75,    # Minimum 75% confidence
+                'vol_gate': 1.3,
+                'rejection_required': True  # Require rejection candle
+            },
+            'ORDER_BLOCK_BOUNCE': {
+                'body_ratio': 0.6,  # Strong body requirement
+                'min_conf': 70,     # Minimum 70% confidence
+                'vol_gate': 1.2,
+                'zone_tolerance': 0.3  # Tighter zone
+            },
+            'FAIR_VALUE_GAP_FILL': {
+                'gap_size': 0.5,
+                'min_conf': 65,     # Lower base
+                'vol_gate': 1.1,
+                'fill_ratio': 0.5
+            },
+            'VCB_BREAKOUT': {
+                'compression_ratio': 0.7,
+                'min_conf': 70,     # Start at 70
+                'vol_gate': 1.5,
+                'breakout_mult': 1.0
+            },
+            'SWEEP_RETURN': {
+                'wick_ratio': 0.7,
+                'min_conf': 72,     # Start at 72
+                'vol_gate': 1.3,
+                'sweep_pips': 2.0
+            },
+            'MOMENTUM_BURST': {
+                'breakout_pips': 1.0,
+                'min_conf': 68,     # Start at 68
+                'vol_gate': 1.2,
+                'momentum_mult': 1.0
+            }
+        }
+        
+        # Track signals per pattern per 15-min window
+        self.signal_counts = {pattern: 0 for pattern in self.thresholds}
+        self.tradeable_count = 0  # Track 70%+ signals
+        self.scout_count = 0      # Track <70% scout signals
+        self.last_adjust_time = datetime.now()
+        self.current_session = self.get_session()
+        self.last_atr = 0.0005  # Default ATR
+        self.adjustment_history = []
+        self.scout_mode_active = True  # Start in scout mode for quiet periods
+        self.last_hour_tradeables = []  # Track hourly tradeable rate
+        
+    def get_session(self):
+        """Determine current trading session based on UTC time"""
+        hour = datetime.utcnow().hour
+        if 22 <= hour or hour < 7:
+            return 'ASIAN'  # Low volatility session
+        elif 7 <= hour < 12:
+            return 'LONDON'  # Medium-high volatility
+        elif 12 <= hour < 17:
+            return 'NY'  # High volatility
+        elif 17 <= hour < 22:
+            return 'LATE_NY'  # Medium volatility
+        else:
+            return 'OVERLAP'  # Highest volatility
+    
+    def update_volatility(self, atr_value):
+        """Update current market volatility (ATR)"""
+        self.last_atr = atr_value
+        
+    def record_signal(self, pattern):
+        """Record that a signal was generated for tracking"""
+        if pattern in self.signal_counts:
+            self.signal_counts[pattern] += 1
+            
+    def adjust_thresholds(self):
+        """Adjust thresholds based on session, volatility, and signal flow"""
+        now = datetime.now()
+        
+        # Only adjust every 15 minutes
+        if (now - self.last_adjust_time).total_seconds() < 900:
+            return
+            
+        self.last_adjust_time = now
+        session = self.get_session()
+        
+        # Calculate hourly tradeable rate
+        self.last_hour_tradeables = [t for t in self.last_hour_tradeables if (now - t).total_seconds() < 3600]
+        hourly_rate = len(self.last_hour_tradeables)
+        
+        # Phase out scout mode when we have 2+ tradeables per hour
+        if hourly_rate >= 2:
+            self.scout_mode_active = False
+            logger.info(f"📈 Scout mode DISABLED - {hourly_rate} tradeables/hr")
+        elif hourly_rate < 1:
+            self.scout_mode_active = True
+            logger.info(f"🔍 Scout mode ENABLED - {hourly_rate} tradeables/hr")
+        
+        # Log adjustment
+        logger.info(f"🎯 Adjusting thresholds - Session: {session}, ATR: {self.last_atr:.5f}, Scout: {self.scout_mode_active}")
+        
+        for pattern in self.thresholds:
+            th = self.thresholds[pattern]
+            signals = self.signal_counts[pattern]
+            
+            # Base adjustment based on signal flow
+            if signals == 0:
+                # No signals - loosen thresholds by 10%
+                self._loosen_thresholds(th, 0.10)
+                logger.info(f"  {pattern}: No signals - loosening 10%")
+            elif signals > 5:
+                # Too many signals - tighten by 15%
+                self._tighten_thresholds(th, 0.15)
+                logger.info(f"  {pattern}: {signals} signals - tightening 15%")
+            elif signals > 3:
+                # Good flow - slight tightening
+                self._tighten_thresholds(th, 0.05)
+                logger.info(f"  {pattern}: {signals} signals - tightening 5%")
+            # 1-3 signals is ideal, no adjustment
+            
+            # Session-based override
+            if session == 'ASIAN':
+                # Asian session - loosen for low volatility
+                self._loosen_thresholds(th, 0.20)
+                logger.debug(f"  {pattern}: Asian session - extra 20% looser")
+            elif session in ['LONDON', 'NY']:
+                # Active sessions - slight tightening for quality
+                self._tighten_thresholds(th, 0.10)
+                logger.debug(f"  {pattern}: Active session - 10% tighter")
+            elif session == 'OVERLAP':
+                # Highest volatility - tighten more
+                self._tighten_thresholds(th, 0.15)
+                logger.debug(f"  {pattern}: Overlap session - 15% tighter")
+            
+            # Volatility-based override
+            if self.last_atr < 0.0003:
+                # Very low volatility - aggressive loosening
+                self._loosen_thresholds(th, 0.25)
+                logger.debug(f"  {pattern}: Very low ATR - 25% looser")
+            elif self.last_atr < 0.0005:
+                # Low volatility - moderate loosening
+                self._loosen_thresholds(th, 0.15)
+                logger.debug(f"  {pattern}: Low ATR - 15% looser")
+            elif self.last_atr > 0.001:
+                # High volatility - tighten for quality
+                self._tighten_thresholds(th, 0.20)
+                logger.debug(f"  {pattern}: High ATR - 20% tighter")
+            
+            # Apply bounds to prevent extreme values
+            self._apply_bounds(th, pattern)
+            
+            # Reset signal count for next period
+            self.signal_counts[pattern] = 0
+            
+    def _loosen_thresholds(self, thresholds, factor):
+        """Loosen thresholds by given factor"""
+        for key, value in thresholds.items():
+            if key == 'rejection_required':
+                continue  # Skip boolean
+            elif 'pip' in key or 'ratio' in key or 'size' in key or 'mult' in key:
+                thresholds[key] *= (1 - factor)  # Reduce requirement
+            elif 'conf' in key:
+                thresholds[key] = max(20, value - (factor * 20))  # Lower min confidence
+            elif 'vol' in key:
+                thresholds[key] *= (1 - factor)  # Lower volume gate
+                
+    def _tighten_thresholds(self, thresholds, factor):
+        """Tighten thresholds by given factor"""
+        for key, value in thresholds.items():
+            if key == 'rejection_required':
+                continue  # Skip boolean
+            elif 'pip' in key or 'ratio' in key or 'size' in key or 'mult' in key:
+                thresholds[key] *= (1 + factor)  # Increase requirement
+            elif 'conf' in key:
+                thresholds[key] = min(85, value + (factor * 20))  # Raise min confidence
+            elif 'vol' in key:
+                thresholds[key] *= (1 + factor)  # Raise volume gate
+                
+    def _apply_bounds(self, thresholds, pattern):
+        """Apply reasonable bounds to prevent extreme threshold values"""
+        bounds = {
+            'pip_sweep': (0.05, 5.0),
+            'min_conf': (20, 85),
+            'vol_gate': (0.5, 2.0),
+            'body_ratio': (0.1, 0.8),
+            'compression_ratio': (0.3, 0.9),
+            'wick_ratio': (0.3, 0.9),
+            'gap_size': (0.1, 2.0),
+            'breakout_pips': (0.5, 5.0)
+        }
+        
+        for key, value in thresholds.items():
+            if key in bounds:
+                min_val, max_val = bounds[key]
+                thresholds[key] = max(min_val, min(max_val, value))
+                
+    def get_threshold(self, pattern, key):
+        """Get current threshold value for pattern and key"""
+        if pattern in self.thresholds and key in self.thresholds[pattern]:
+            return self.thresholds[pattern][key]
+        return None
+        
+    def get_status(self):
+        """Get current status of thresholds"""
+        return {
+            'session': self.current_session,
+            'atr': self.last_atr,
+            'signal_counts': self.signal_counts.copy(),
+            'thresholds': self.thresholds.copy()
+        }
     final_score: float = 0
 
 class EliteGuardBalanced:
@@ -92,6 +307,9 @@ class EliteGuardBalanced:
         
         # Quality tracking
         self.pattern_performance = defaultdict(lambda: {'wins': 0, 'losses': 0})
+        
+        # Initialize Dynamic Threshold Manager
+        self.threshold_manager = DynamicThresholdManager()
         
         # Balanced thresholds (less strict than optimized)
         # Trading pairs already defined above (before load_candles)
@@ -305,8 +523,10 @@ class EliteGuardBalanced:
             # Low volatility (ATR <= 5 pips): allow 0.5 pip sweep
             volatility_threshold = 5 * pip_size  # 5 pips
             is_high_volatility = atr > volatility_threshold
-            # ULTRA LOW thresholds for more signals
-            sweep_requirement = 0.1  # Any tiny movement counts as sweep
+            # Use dynamic threshold from manager
+            sweep_requirement = self.threshold_manager.get_threshold('LIQUIDITY_SWEEP_REVERSAL', 'pip_sweep')
+            if sweep_requirement is None:
+                sweep_requirement = 1.0  # Default to 1 pip for quality
             
             # Find recent high/low from all but last candle
             recent_high = max(c['high'] for c in recent_candles[:-1])
@@ -328,19 +548,19 @@ class EliteGuardBalanced:
                 
                 # if rejection:  # DISABLED - accept all sweeps
                 if True:  # Always detect sweep patterns
-                    # Skip momentum check for now - generate signals
+                    # Check momentum - RE-ENABLED for quality
                     momentum = self.calculate_momentum_score(symbol, "BUY")
-                    # if momentum < self.MIN_MOMENTUM:
-                    #     return None  # DISABLED for more signals
+                    if momentum < 15:  # Minimum momentum requirement
+                        return None
                     
-                    # Skip volume check for now - generate signals
+                    # Check volume - RE-ENABLED for quality
                     volume_quality = self.analyze_volume_profile(symbol)
-                    # if volume_quality < self.MIN_VOLUME:
-                    #     return None  # DISABLED for more signals
+                    if volume_quality < 10:  # Minimum volume requirement
+                        return None
                     
                     entry_price = current_candle['close'] + pip_size  # Entry above close
                     
-                    confidence = 65 + (momentum * 0.2) + (volume_quality * 0.1)  # LOWERED base
+                    confidence = 75 + (momentum * 0.05) + (volume_quality * 0.02)  # 75% base
                     
                     signal = PatternSignal(
                         pattern="LIQUIDITY_SWEEP_REVERSAL",
@@ -372,7 +592,7 @@ class EliteGuardBalanced:
                     
                     entry_price = current_candle['close'] - pip_size
                     
-                    confidence = 65 + (momentum * 0.2) + (volume_quality * 0.1)  # LOWERED base
+                    confidence = 75 + (momentum * 0.05) + (volume_quality * 0.02)  # 75% base
                     
                     signal = PatternSignal(
                         pattern="LIQUIDITY_SWEEP_REVERSAL",
@@ -437,7 +657,7 @@ class EliteGuardBalanced:
                             pip_size = 0.01 if 'JPY' in symbol else 0.0001
                             entry_price = current_price + pip_size
                             
-                            confidence = 60 + (momentum * 0.2) + (volume_quality * 0.1)  # LOWERED
+                            confidence = 72 + (momentum * 0.05) + (volume_quality * 0.02)  # 72% base
                             
                             signal = PatternSignal(
                                 pattern="ORDER_BLOCK_BOUNCE",
@@ -467,7 +687,7 @@ class EliteGuardBalanced:
                             pip_size = 0.01 if 'JPY' in symbol else 0.0001
                             entry_price = current_price - pip_size
                             
-                            confidence = 60 + (momentum * 0.2) + (volume_quality * 0.1)  # LOWERED
+                            confidence = 72 + (momentum * 0.05) + (volume_quality * 0.02)  # 72% base
                             
                             signal = PatternSignal(
                                 pattern="ORDER_BLOCK_BOUNCE",
@@ -521,7 +741,7 @@ class EliteGuardBalanced:
                             return None
                         
                         volume_quality = self.analyze_volume_profile(symbol)
-                        confidence = 70 + (momentum * 0.15) + (volume_quality * 0.1)
+                        confidence = 73 + (momentum * 0.05) + (volume_quality * 0.02)  # 73% base
                         
                         signal = PatternSignal(
                             pattern="SWEEP_RETURN",
@@ -550,7 +770,7 @@ class EliteGuardBalanced:
                             return None
                         
                         volume_quality = self.analyze_volume_profile(symbol)
-                        confidence = 70 + (momentum * 0.15) + (volume_quality * 0.1)
+                        confidence = 73 + (momentum * 0.05) + (volume_quality * 0.02)  # 73% base
                         
                         signal = PatternSignal(
                             pattern="SWEEP_RETURN",
@@ -630,7 +850,7 @@ class EliteGuardBalanced:
                     print(f"🔍 VCB {symbol}: Volume too low ({volume_quality} < 5)")
                     return None
                 
-                confidence = 65 + (momentum * 0.2) + (volume_quality * 0.15)
+                confidence = 74 + (momentum * 0.05) + (volume_quality * 0.02)  # 74% base
                 
                 signal = PatternSignal(
                     pattern="VCB_BREAKOUT",
@@ -657,7 +877,7 @@ class EliteGuardBalanced:
                 if volume_quality < 5:  # Lowered from 10
                     return None
                 
-                confidence = 65 + (momentum * 0.2) + (volume_quality * 0.15)
+                confidence = 74 + (momentum * 0.05) + (volume_quality * 0.02)  # 74% base
                 
                 signal = PatternSignal(
                     pattern="VCB_BREAKOUT",
@@ -704,7 +924,7 @@ class EliteGuardBalanced:
                 
                 volume_quality = self.analyze_volume_profile(symbol)
                 
-                confidence = 60 + (momentum * 0.15) + (volume_quality * 0.1)
+                confidence = 71 + (momentum * 0.05) + (volume_quality * 0.02)  # 71% base
                 
                 signal = PatternSignal(
                     pattern="MOMENTUM_BREAKOUT",
@@ -727,7 +947,7 @@ class EliteGuardBalanced:
                 
                 volume_quality = self.analyze_volume_profile(symbol)
                 
-                confidence = 60 + (momentum * 0.15) + (volume_quality * 0.1)
+                confidence = 71 + (momentum * 0.05) + (volume_quality * 0.02)  # 71% base
                 
                 signal = PatternSignal(
                     pattern="MOMENTUM_BREAKOUT",
@@ -777,7 +997,7 @@ class EliteGuardBalanced:
                     
                     # Check if price is approaching gap from above
                     if current_price > gap_mid and current_price <= current_low + (gap_size * 0.3):
-                        confidence = 68 + min(15, gap_size / pip_size)  # Base + gap size bonus
+                        confidence = 72 + min(3, gap_size / pip_size)  # 72% base + small bonus
                         signal = PatternSignal(
                             pattern="FAIR_VALUE_GAP_FILL",
                             direction="SELL",
@@ -796,7 +1016,7 @@ class EliteGuardBalanced:
                     
                     # Check if price is approaching gap from below
                     if current_price < gap_mid and current_price >= current_high - (gap_size * 0.3):
-                        confidence = 68 + min(15, gap_size / pip_size)
+                        confidence = 72 + min(3, gap_size / pip_size)  # 72% base
                         signal = PatternSignal(
                             pattern="FAIR_VALUE_GAP_FILL",
                             direction="BUY",
@@ -1456,13 +1676,13 @@ class EliteGuardBalanced:
         signals_per_15min = len(recent_signals)
         projected_hourly_rate = signals_per_15min * 4
         
-        # Adjust threshold dynamically
+        # Adjust threshold dynamically - QUALITY FOCUSED
         if projected_hourly_rate > 10:  # Too many signals
-            min_confidence = 50.0  # Raise gate to reduce flow
+            min_confidence = 55.0  # Raise gate to reduce flow
         elif projected_hourly_rate < 5:  # Too few signals
-            min_confidence = 40.0  # Lower gate to increase flow
+            min_confidence = 50.0  # Moderate gate
         else:  # Perfect range (5-10)
-            min_confidence = 45.0  # Maintain balance
+            min_confidence = 52.5  # Maintain quality balance
         
         print(f"📊 Signal rate: {signals_per_15min} in 15min = {projected_hourly_rate}/hr projected, ML gate={min_confidence}%")
         
@@ -1686,8 +1906,8 @@ class EliteGuardBalanced:
                     signals_per_15min = len(recent_signals)
                     projected_hourly_rate = signals_per_15min * 4
                     
-                    # Dynamic CITADEL threshold based on signal rate - ULTRA LOW
-                    citadel_threshold = 25.0 if projected_hourly_rate > 10 else 20.0 if projected_hourly_rate < 5 else 22.5
+                    # Dynamic CITADEL threshold based on signal rate - QUALITY FOCUSED
+                    citadel_threshold = 55.0 if projected_hourly_rate > 10 else 50.0 if projected_hourly_rate < 5 else 52.5
                     
                     if protected_signal and protected_signal.get('confidence', 0) >= citadel_threshold:
                         # Signal passed CITADEL protection and meets final threshold

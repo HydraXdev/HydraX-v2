@@ -475,18 +475,19 @@ class EliteGuardBalanced:
             # Use the stronger of the two
             momentum_pips = max(abs(avg_pip_movement), abs(momentum_3bar_pips))
             
-            # Score based on pip movement (10 pips = score of 20, 20 pips = score of 40)
-            score = momentum_pips * 2
+            # Score based on pip movement - proper scaling for real trading
+            # 1 pip = 10 score, 5 pips = 50 score, 10 pips = 100 score
+            score = momentum_pips * 10
             
             print(f"🔍 Momentum {symbol} {direction}: Avg={avg_pip_movement:.1f}pips, 3bar={momentum_3bar_pips:.1f}pips, Score={score:.1f}")
             
-            # Direction check
+            # Direction check - return real score for prime time trading
             if direction == "BUY" and momentum_3bar_pips > 0:
-                return max(15, score)  # Minimum 15 for any positive movement
+                return score  # Return actual calculated score
             elif direction == "SELL" and momentum_3bar_pips < 0:
-                return max(15, score)  # Minimum 15 for any negative movement
+                return score  # Return actual calculated score
             
-            return 5  # Wrong direction but still some movement
+            return 0  # Wrong direction = no momentum
             
         except Exception as e:
             print(f"❌ Momentum calc error for {symbol}: {e}")
@@ -529,13 +530,15 @@ class EliteGuardBalanced:
             
             if avg_vol > 0:
                 vol_ratio = current_vol / avg_vol
-                # ULTRA LOW THRESHOLDS FOR LOW-VOL MARKET
-                if vol_ratio > 1.02:  # Just 2% above average triggers
-                    return min(50, vol_ratio * 25)
-                elif vol_ratio > 1.0:  # Any increase counts
-                    return min_volume_score + 10
-                elif vol_ratio > 0.95:  # Even slightly below average
-                    return min_volume_score + 5
+                # PRIME TIME VOLUME SCORING
+                if vol_ratio > 1.5:  # 50% above average = strong volume
+                    return min(50, vol_ratio * 30)
+                elif vol_ratio > 1.2:  # 20% above average = good volume
+                    return 30
+                elif vol_ratio > 1.0:  # Above average
+                    return 20
+                else:  # Below average but still trading
+                    return 15
             
             return min_volume_score
             
@@ -1871,11 +1874,14 @@ class EliteGuardBalanced:
             # 4. VCB Breakout
             signal = self.detect_vcb_breakout(symbol)
             if signal:
+                print(f"📍 VCB signal returned for {symbol}: conf={signal.confidence}, dir={signal.direction}")
                 should_publish, tier_reason, ml_score = self.apply_ml_filter(signal, session)
                 if should_publish:
+                    print(f"✅ VCB BREAKOUT on {symbol} - {tier_reason} - Publishing!")
                     logger.info(f"✅ VCB BREAKOUT on {symbol} - {tier_reason}")
                     patterns.append(signal)
                 else:
+                    print(f"🚫 VCB BREAKOUT on {symbol} filtered: {tier_reason}")
                     logger.debug(f"🚫 VCB BREAKOUT on {symbol} filtered: {tier_reason}")
             
             # 5. Sweep and Return

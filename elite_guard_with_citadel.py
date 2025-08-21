@@ -321,10 +321,11 @@ class EliteGuardBalanced:
             
             # BULLISH: Sweep below low with volatility-based threshold
             if bullish_sweep >= sweep_requirement:
-                rejection = current_candle['close'] > recent_low  # Close back above swept level
+                # Relaxed rejection: just need close not at the extreme low
+                rejection = current_candle['close'] > current_candle['low'] + pip_size
                 print(f"🔍 LSR {symbol}: BULLISH SWEEP {bullish_sweep:.1f} pips! Rejection={rejection}")
                 
-                if rejection:  # Must have rejection candle
+                if rejection:  # Relaxed rejection requirement for trending markets
                     # Check momentum
                     momentum = self.calculate_momentum_score(symbol, "BUY")
                     if momentum < self.MIN_MOMENTUM:

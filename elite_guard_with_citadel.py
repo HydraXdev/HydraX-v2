@@ -47,7 +47,7 @@ class DynamicThresholdManager:
         # Base thresholds for each pattern - QUALITY focused
         self.thresholds = {
             'LIQUIDITY_SWEEP_REVERSAL': {
-                'pip_sweep': 1.0,  # Moderate sweep requirement
+                'pip_sweep': 3.0,  # HIGH sweep requirement for quality
                 'min_conf': 75,    # Minimum 75% confidence
                 'vol_gate': 1.3,
                 'rejection_required': True  # Require rejection candle
@@ -283,16 +283,15 @@ class EliteGuardBalanced:
         
         # Define trading pairs FIRST (before load_candles)
         self.trading_pairs = [
-            # Major Forex Pairs
+            # Major Forex Pairs ONLY - Quality focus
             "EURUSD", "GBPUSD", "USDJPY", "USDCHF", "USDCAD", "AUDUSD", "NZDUSD",
-            # Cross Pairs
-            "EURJPY", "GBPJPY", "EURGBP", "EURAUD", "GBPCAD", "AUDJPY", "NZDJPY",
-            # Exotic Pairs
-            "USDCNH", "USDSEK", "USDMXN",
-            # Metals
-            "XAUUSD", "XAGUSD",
-            # Crypto (if needed)
-            "BTCUSD", "ETHUSD", "XRPUSD"
+            # Cross Pairs - Selected quality
+            "EURJPY", "GBPJPY",
+            # Exotic Pairs - Limited
+            "USDCNH", "USDSEK",
+            # Precious Metals
+            "XAUUSD"
+            # NO CRYPTO - Too noisy for quality signals
         ]
         
         # Load candle cache on startup (AFTER trading_pairs defined)
@@ -526,7 +525,7 @@ class EliteGuardBalanced:
             # Use dynamic threshold from manager
             sweep_requirement = self.threshold_manager.get_threshold('LIQUIDITY_SWEEP_REVERSAL', 'pip_sweep')
             if sweep_requirement is None:
-                sweep_requirement = 1.0  # Default to 1 pip for quality
+                sweep_requirement = 3.0  # Default to 3 pips for REAL sweeps
             
             # Find recent high/low from all but last candle
             recent_high = max(c['high'] for c in recent_candles[:-1])
@@ -546,16 +545,15 @@ class EliteGuardBalanced:
                 rejection = current_candle['close'] > current_candle['low'] + pip_size
                 print(f"🔍 LSR {symbol}: BULLISH SWEEP {bullish_sweep:.1f} pips! Rejection={rejection}")
                 
-                # if rejection:  # DISABLED - accept all sweeps
-                if True:  # Always detect sweep patterns
-                    # Check momentum - RE-ENABLED for quality
+                if rejection:  # REQUIRE rejection candle for quality
+                    # Check momentum - STRICT for quality
                     momentum = self.calculate_momentum_score(symbol, "BUY")
-                    if momentum < 15:  # Minimum momentum requirement
+                    if momentum < 30:  # HIGH momentum requirement
                         return None
                     
-                    # Check volume - RE-ENABLED for quality
+                    # Check volume - STRICT for quality
                     volume_quality = self.analyze_volume_profile(symbol)
-                    if volume_quality < 10:  # Minimum volume requirement
+                    if volume_quality < 20:  # HIGH volume requirement
                         return None
                     
                     entry_price = current_candle['close'] + pip_size  # Entry above close
@@ -580,14 +578,13 @@ class EliteGuardBalanced:
                 rejection = current_candle['close'] < recent_high  # Close back below swept level
                 print(f"🔍 LSR {symbol}: BEARISH SWEEP {bearish_sweep:.1f} pips! Rejection={rejection}")
                 
-                # if rejection:  # DISABLED - accept all sweeps
-                if True:  # Always detect sweep patterns
+                if rejection:  # REQUIRE rejection candle for quality
                     momentum = self.calculate_momentum_score(symbol, "SELL")
-                    # if momentum < self.MIN_MOMENTUM:
-                    #     return None  # DISABLED for more signals
+                    if momentum < 30:  # HIGH momentum requirement
+                        return None
                     
                     volume_quality = self.analyze_volume_profile(symbol)
-                    if volume_quality < self.MIN_VOLUME:
+                    if volume_quality < 20:  # HIGH volume requirement
                         return None
                     
                     entry_price = current_candle['close'] - pip_size

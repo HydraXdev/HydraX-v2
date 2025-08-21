@@ -1948,6 +1948,129 @@ class EliteGuardBalanced:
             print(f"Error in optimized tracking: {e}")
             import traceback
             traceback.print_exc()
+    
+    def analyze_initial_data(self):
+        """Analyze initial tracking data for optimization insights"""
+        try:
+            # Read all tracking data
+            signals = []
+            tracking_file = '/root/HydraX-v2/optimized_tracking.jsonl'
+            
+            if os.path.exists(tracking_file):
+                with open(tracking_file, 'r') as f:
+                    for line in f:
+                        try:
+                            signals.append(json.loads(line.strip()))
+                        except json.JSONDecodeError:
+                            continue
+            
+            if not signals:
+                print("📊 No signals tracked yet")
+                return
+            
+            # Calculate metrics
+            total_signals = len(signals)
+            wins = sum(1 for s in signals if s.get('win', False))
+            win_rate = (wins / total_signals * 100) if total_signals else 0
+            
+            # Average metrics
+            avg_conf = sum(s.get('confidence', 0) for s in signals) / total_signals
+            avg_quality = sum(s.get('quality_score', 0) for s in signals) / total_signals
+            avg_rr = sum(s.get('risk_reward', 0) for s in signals) / total_signals
+            avg_lifespan = sum(s.get('lifespan', 0) for s in signals) / total_signals
+            
+            # Pattern distribution
+            patterns = {}
+            for s in signals:
+                p = s.get('pattern', 'UNKNOWN')
+                patterns[p] = patterns.get(p, 0) + 1
+            
+            # Pair distribution
+            pairs = {}
+            for s in signals:
+                pair = s.get('pair', 'UNKNOWN')
+                pairs[pair] = pairs.get(pair, 0) + 1
+            
+            # Session distribution
+            sessions = {}
+            for s in signals:
+                sess = s.get('session', 'UNKNOWN')
+                sessions[sess] = sessions.get(sess, 0) + 1
+            
+            # Direction analysis
+            directions = {'BUY': 0, 'SELL': 0}
+            for s in signals:
+                d = s.get('direction', 'UNKNOWN')
+                if d in directions:
+                    directions[d] += 1
+            
+            # Print comprehensive analysis
+            print("=" * 60)
+            print("📊 OPTIMIZATION TRACKING ANALYSIS")
+            print("=" * 60)
+            print(f"📈 SUMMARY: {total_signals} signals tracked")
+            print(f"   Win Rate: {win_rate:.1f}% ({wins}/{total_signals}) {'🎯 TARGET: 65%+' if win_rate < 65 else '✅ ABOVE TARGET'}")
+            print(f"   Avg Confidence: {avg_conf:.1f}% {'✅ IN RANGE' if 70 <= avg_conf <= 95 else '⚠️ OUT OF RANGE'}")
+            print(f"   Avg Quality: {avg_quality:.1f}% {'✅ IN RANGE' if 55 <= avg_quality <= 85 else '⚠️ OUT OF RANGE'}")
+            print(f"   Avg R:R: {avg_rr:.2f} {'✅ GOOD' if avg_rr >= 1.2 else '⚠️ LOW'}")
+            print(f"   Avg Lifespan: {avg_lifespan:.1f}s")
+            
+            print(f"\n🎯 PATTERN PERFORMANCE:")
+            for pattern, count in sorted(patterns.items(), key=lambda x: x[1], reverse=True):
+                pattern_signals = [s for s in signals if s.get('pattern') == pattern]
+                pattern_wins = sum(1 for s in pattern_signals if s.get('win', False))
+                pattern_wr = (pattern_wins / len(pattern_signals) * 100) if pattern_signals else 0
+                print(f"   {pattern}: {count} signals, {pattern_wr:.1f}% win rate")
+            
+            print(f"\n💱 TOP PAIRS:")
+            for pair, count in sorted(pairs.items(), key=lambda x: x[1], reverse=True)[:5]:
+                pair_signals = [s for s in signals if s.get('pair') == pair]
+                pair_wins = sum(1 for s in pair_signals if s.get('win', False))
+                pair_wr = (pair_wins / len(pair_signals) * 100) if pair_signals else 0
+                print(f"   {pair}: {count} signals, {pair_wr:.1f}% win rate")
+            
+            print(f"\n🌍 SESSION BREAKDOWN:")
+            for session, count in sorted(sessions.items(), key=lambda x: x[1], reverse=True):
+                sess_pct = (count / total_signals * 100)
+                print(f"   {session}: {count} ({sess_pct:.1f}%)")
+            
+            print(f"\n📊 DIRECTION BIAS:")
+            print(f"   BUY: {directions['BUY']} ({directions['BUY']/total_signals*100:.1f}%)")
+            print(f"   SELL: {directions['SELL']} ({directions['SELL']/total_signals*100:.1f}%)")
+            
+            # Time analysis
+            if signals:
+                first_time = datetime.fromisoformat(signals[0]['timestamp'])
+                last_time = datetime.fromisoformat(signals[-1]['timestamp'])
+                time_span = (last_time - first_time).total_seconds() / 3600  # hours
+                if time_span > 0:
+                    signals_per_hour = total_signals / time_span
+                    print(f"\n⏱️ SIGNAL RATE: {signals_per_hour:.1f} signals/hour")
+                    if signals_per_hour < 5:
+                        print("   ⚠️ Below target (5-10/hr) - Consider lowering thresholds")
+                    elif signals_per_hour > 10:
+                        print("   ⚠️ Above target (5-10/hr) - Consider raising thresholds")
+                    else:
+                        print("   ✅ In target range (5-10/hr)")
+            
+            print("=" * 60)
+            
+            # Return summary dict for programmatic use
+            return {
+                'total_signals': total_signals,
+                'win_rate': win_rate,
+                'avg_confidence': avg_conf,
+                'avg_quality': avg_quality,
+                'avg_rr': avg_rr,
+                'patterns': patterns,
+                'top_pair': max(pairs.items(), key=lambda x: x[1])[0] if pairs else None
+            }
+            
+        except Exception as e:
+            print(f"Error analyzing data: {e}")
+            import traceback
+            traceback.print_exc()
+            return None
 
     def scan_for_patterns(self):
         """Scan all symbols for patterns"""

@@ -2242,3 +2242,5 @@
 {"bot": "athena", "chat_id": "-1002581996861", "message_id": 7268, "signal_id": "ELITE_SNIPER_EURAUD_1755798783", "sent_at": "2025-08-21T17:53:04.614971", "delete_at": "2025-08-22T01:53:04.614976"}
 {"bot": "athena", "chat_id": "-1002581996861", "message_id": 7269, "signal_id": "ELITE_SNIPER_USDSEK_1755798783", "sent_at": "2025-08-21T17:53:05.197734", "delete_at": "2025-08-22T01:53:05.197740"}
 {"bot": "athena", "chat_id": "-1002581996861", "message_id": 7270, "signal_id": "ELITE_SNIPER_USDMXN_1755799084", "sent_at": "2025-08-21T17:58:05.038865", "delete_at": "2025-08-22T01:58:05.038869"}
+{"bot": "athena", "chat_id": "-1002581996861", "message_id": 7271, "signal_id": "ELITE_SNIPER_USDSEK_1755799388", "sent_at": "2025-08-21T18:03:09.483030", "delete_at": "2025-08-22T02:03:09.483039"}
+{"bot": "athena", "chat_id": "-1002581996861", "message_id": 7272, "signal_id": "ELITE_SNIPER_XAGUSD_1755799388", "sent_at": "2025-08-21T18:03:10.174685", "delete_at": "2025-08-22T02:03:10.174691"}

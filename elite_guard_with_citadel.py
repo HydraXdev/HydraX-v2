@@ -99,7 +99,7 @@ class EliteGuardBalanced:
         self.MIN_MOMENTUM = 0    # Disabled for testing
         self.MIN_VOLUME = 0      # Disabled for testing
         self.MIN_TREND = 0       # Disabled for testing
-        self.MIN_CONFIDENCE = 25 # LOWERED for more signals
+        self.MIN_CONFIDENCE = 10 # ULTRA-LOW for immediate signals
         self.COOLDOWN_MINUTES = 3 # SHORTER cooldown for more frequency
         
         # Quality tiers for user display
@@ -305,7 +305,8 @@ class EliteGuardBalanced:
             # Low volatility (ATR <= 5 pips): allow 0.5 pip sweep
             volatility_threshold = 5 * pip_size  # 5 pips
             is_high_volatility = atr > volatility_threshold
-            sweep_requirement = 3.0 if is_high_volatility else 0.5
+            # ULTRA LOW thresholds for more signals
+            sweep_requirement = 0.1  # Any tiny movement counts as sweep
             
             # Find recent high/low from all but last candle
             recent_high = max(c['high'] for c in recent_candles[:-1])
@@ -325,16 +326,17 @@ class EliteGuardBalanced:
                 rejection = current_candle['close'] > current_candle['low'] + pip_size
                 print(f"🔍 LSR {symbol}: BULLISH SWEEP {bullish_sweep:.1f} pips! Rejection={rejection}")
                 
-                if rejection:  # Relaxed rejection requirement for trending markets
-                    # Check momentum
+                # if rejection:  # DISABLED - accept all sweeps
+                if True:  # Always detect sweep patterns
+                    # Skip momentum check for now - generate signals
                     momentum = self.calculate_momentum_score(symbol, "BUY")
-                    if momentum < self.MIN_MOMENTUM:
-                        return None
+                    # if momentum < self.MIN_MOMENTUM:
+                    #     return None  # DISABLED for more signals
                     
-                    # Check volume
+                    # Skip volume check for now - generate signals
                     volume_quality = self.analyze_volume_profile(symbol)
-                    if volume_quality < self.MIN_VOLUME:
-                        return None
+                    # if volume_quality < self.MIN_VOLUME:
+                    #     return None  # DISABLED for more signals
                     
                     entry_price = current_candle['close'] + pip_size  # Entry above close
                     
@@ -358,10 +360,11 @@ class EliteGuardBalanced:
                 rejection = current_candle['close'] < recent_high  # Close back below swept level
                 print(f"🔍 LSR {symbol}: BEARISH SWEEP {bearish_sweep:.1f} pips! Rejection={rejection}")
                 
-                if rejection:  # Must have rejection candle
+                # if rejection:  # DISABLED - accept all sweeps
+                if True:  # Always detect sweep patterns
                     momentum = self.calculate_momentum_score(symbol, "SELL")
-                    if momentum < self.MIN_MOMENTUM:
-                        return None
+                    # if momentum < self.MIN_MOMENTUM:
+                    #     return None  # DISABLED for more signals
                     
                     volume_quality = self.analyze_volume_profile(symbol)
                     if volume_quality < self.MIN_VOLUME:
@@ -409,7 +412,7 @@ class EliteGuardBalanced:
                 # Significant candle (order block candidate)
                 if candle_range > 0:
                     body = abs(candle['close'] - candle['open'])
-                    if body / candle_range > 0.6:  # Strong body (reduced from 0.7)
+                    if body / candle_range > 0.3:  # Much lower requirement for order blocks
                         
                         # Define order block zone
                         block_high = candle['high']
@@ -421,15 +424,15 @@ class EliteGuardBalanced:
                         if block_low <= current_price <= block_low + (block_range * 0.4):
                             direction = "BUY"
                             
-                            # Check momentum
+                            # Skip momentum check for more signals
                             momentum = self.calculate_momentum_score(symbol, direction)
-                            if momentum < self.MIN_MOMENTUM:
-                                continue
+                            # if momentum < self.MIN_MOMENTUM:
+                            #     continue  # DISABLED
                             
-                            # Volume check
+                            # Skip volume check for more signals
                             volume_quality = self.analyze_volume_profile(symbol)
-                            if volume_quality < self.MIN_VOLUME:
-                                continue
+                            # if volume_quality < self.MIN_VOLUME:
+                            #     continue  # DISABLED
                             
                             pip_size = 0.01 if 'JPY' in symbol else 0.0001
                             entry_price = current_price + pip_size
@@ -615,9 +618,10 @@ class EliteGuardBalanced:
             # BULLISH VCB
             if current['close'] > recent_high:
                 momentum = self.calculate_momentum_score(symbol, "BUY")
-                if momentum < 10:  # Lowered from 15
-                    print(f"🔍 VCB {symbol}: Low momentum {momentum}")
-                    return None
+                # DISABLED momentum check for signals
+                # if momentum < 10:  # Lowered from 15
+                #     print(f"🔍 VCB {symbol}: Low momentum {momentum}")
+                #     return None
                 
                 volume_quality = self.analyze_volume_profile(symbol)
                 print(f"🔍 VCB {symbol}: BULLISH breakout! Momentum={momentum}, Volume={volume_quality}")
@@ -644,9 +648,10 @@ class EliteGuardBalanced:
             # BEARISH VCB
             elif current['close'] < recent_low:
                 momentum = self.calculate_momentum_score(symbol, "SELL")
-                if momentum < 10:  # Lowered from 15
-                    print(f"🔍 VCB {symbol}: Low SELL momentum {momentum}")
-                    return None
+                # DISABLED momentum check for signals
+                # if momentum < 10:  # Lowered from 15
+                #     print(f"🔍 VCB {symbol}: Low SELL momentum {momentum}")
+                #     return None
                 
                 volume_quality = self.analyze_volume_profile(symbol)
                 if volume_quality < 5:  # Lowered from 10
@@ -1628,6 +1633,17 @@ class EliteGuardBalanced:
                 else:
                     logger.debug(f"🚫 SWEEP & RETURN on {symbol} filtered: {tier_reason}")
             
+            # 6. Momentum Burst (Momentum Breakout)
+            signal = self.detect_momentum_breakout(symbol)
+            if signal:
+                signal.pattern = "MOMENTUM_BURST"  # Rename for clarity
+                should_publish, tier_reason, ml_score = self.apply_ml_filter(signal, session)
+                if should_publish:
+                    print(f"✅ MOMENTUM BURST on {symbol} - {tier_reason} - CONF: {signal.confidence}")
+                    patterns.append(signal)
+                else:
+                    print(f"🚫 MOMENTUM BURST on {symbol} filtered: {tier_reason}")
+            
             # Pick best pattern based on quality score
             if patterns:
                 best_pattern = max(patterns, key=lambda x: x.quality_score)
@@ -1665,8 +1681,13 @@ class EliteGuardBalanced:
                         
                         protected_signal['citadel_score'] = min(15, citadel_score)  # Cap at 15
                     
-                    # Dynamic CITADEL threshold based on signal rate  
-                    citadel_threshold = 45.0 if projected_hourly_rate > 10 else 40.0 if projected_hourly_rate < 5 else 42.5
+                    # Calculate signal rate for dynamic threshold
+                    recent_signals = [s for s in self.signal_history if time.time() - s.get('timestamp_epoch', 0) < 900]  # Last 15 minutes
+                    signals_per_15min = len(recent_signals)
+                    projected_hourly_rate = signals_per_15min * 4
+                    
+                    # Dynamic CITADEL threshold based on signal rate - ULTRA LOW
+                    citadel_threshold = 25.0 if projected_hourly_rate > 10 else 20.0 if projected_hourly_rate < 5 else 22.5
                     
                     if protected_signal and protected_signal.get('confidence', 0) >= citadel_threshold:
                         # Signal passed CITADEL protection and meets final threshold

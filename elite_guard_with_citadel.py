@@ -1700,9 +1700,12 @@ class EliteGuardBalanced:
     def apply_ml_filter(self, signal, session: str) -> tuple[bool, str, float]:
         """Apply ML filtering with dynamic threshold for 5-10 signals/hour target"""
         # QUALITY GATE #1: Minimum quality score requirement
-        min_quality_score = 60.0  # No junk signals below 60% quality
+        min_quality_score = 50.0  # TEMPORARY: Lowered to 50% for London session volume
+        print(f"🔍 Quality check: {signal.quality_score:.1f}% vs {min_quality_score}%")
         if hasattr(signal, 'quality_score') and signal.quality_score < min_quality_score:
+            print(f"⚠️ Quality FAIL: {signal.quality_score:.1f}% < {min_quality_score}%")
             return False, f"Quality score too low ({signal.quality_score:.1f}% < {min_quality_score}%)", signal.confidence
+        print(f"✅ Quality PASSED: {signal.quality_score:.1f}%")
         
         # Dynamic ML threshold based on recent signal rate
         # Track signals in last 15 minutes

@@ -793,7 +793,18 @@ class EliteGuardBalanced:
                     base_quality += rejection_ratio * 10  # +10% for perfect rejection
                     base_quality += min(actual_rr - 1.5, 0.5) * 10  # Bonus for R:R > 1.5
                     
-                    print(f"🔍 LSR {symbol}: Pattern quality = {base_quality:.1f}% (Base 50 + Sweep + Rejection + R:R bonus)")
+                    # SMA TREND CHECK for better accuracy
+                    sma = self.calculate_sma(symbol, period=60)
+                    current_price = current_candle['close']
+                    trend_bonus = 0
+                    if current_price < sma:  # SELL signal below SMA is good
+                        trend_bonus = 10
+                    else:
+                        trend_bonus = -5  # Counter-trend penalty
+                    
+                    base_quality += trend_bonus
+                    print(f"🔍 LSR {symbol}: SMA={sma:.5f}, Price={current_price:.5f}, Trend Bonus={trend_bonus:+d}%")
+                    print(f"🔍 LSR {symbol}: Final quality = {base_quality:.1f}%")
                     
                     # Return signal with base quality
                     return PatternSignal(
@@ -842,7 +853,18 @@ class EliteGuardBalanced:
                     base_quality += rejection_ratio * 10  # +10% for perfect rejection
                     base_quality += min(actual_rr - 1.5, 0.5) * 10  # Bonus for R:R > 1.5
                     
-                    print(f"🔍 LSR {symbol}: Pattern quality = {base_quality:.1f}% (Base 50 + Sweep + Rejection + R:R bonus)")
+                    # SMA TREND CHECK for better accuracy
+                    sma = self.calculate_sma(symbol, period=60)
+                    current_price = current_candle['close']
+                    trend_bonus = 0
+                    if current_price < sma:  # SELL signal below SMA is good
+                        trend_bonus = 10
+                    else:
+                        trend_bonus = -5  # Counter-trend penalty
+                    
+                    base_quality += trend_bonus
+                    print(f"🔍 LSR {symbol}: SMA={sma:.5f}, Price={current_price:.5f}, Trend Bonus={trend_bonus:+d}%")
+                    print(f"🔍 LSR {symbol}: Final quality = {base_quality:.1f}%")
                     
                     # Return signal with base quality
                     return PatternSignal(
@@ -950,8 +972,21 @@ class EliteGuardBalanced:
                 base_quality += min(actual_rr - 1.5, 0.5) * 10  # Bonus for R:R > 1.5
                 base_quality = min(base_quality, 85)  # Cap at 85%
                 
+                # SMA TREND CHECK for better accuracy
+                sma = self.calculate_sma(symbol, period=60)
+                current_price = current_candle['close']
+                trend_bonus = 0
+                if direction == 'BUY' and current_price > sma:
+                    trend_bonus = 10  # Strong trend alignment
+                elif direction == 'SELL' and current_price < sma:
+                    trend_bonus = 10  # Strong trend alignment
+                elif sma > 0:
+                    trend_bonus = -5  # Counter-trend penalty
+                
+                base_quality += trend_bonus
+                print(f"🔍 OBB {symbol}: SMA={sma:.5f}, Price={current_price:.5f}, Trend Bonus={trend_bonus:+d}%")
                 print(f"🔍 OBB {symbol}: {direction} BOUNCE DETECTED!")
-                print(f"   Quality = {base_quality:.1f}% (Base 50 + Body {body_ratio*30:.1f}% + Precision {precision*10:.1f}% + R:R bonus)")
+                print(f"   Final quality = {base_quality:.1f}%")
                 print(f"   Entry: {entry:.5f}")
                 
                 # Return signal with base quality
@@ -1203,11 +1238,23 @@ class EliteGuardBalanced:
                 base_quality += (1 - min(atr/compression_threshold, 1)) * 30  # Tighter compression = higher quality (up to +30%)
                 base_quality += min(volume_ratio - 1.5, 1) * 20  # Volume surge bonus (up to +20% for 2.5x+ volume)
                 base_quality += min(actual_rr - 1.5, 0.5) * 10  # Bonus for R:R > 1.5
+                
+                # MTF CHECK: M15 ATR vs M5 ATR for compression confirmation
+                m5_atr = self.calculate_atr(symbol, 'M5')
+                m15_atr = self.calculate_atr(symbol, 'M15')
+                mtf_bonus = 0
+                if m15_atr < m5_atr and m15_atr < 1000:  # M15 tighter = stronger setup
+                    mtf_bonus = 10
+                elif m15_atr > m5_atr * 1.5:  # M15 expanding = weaker setup
+                    mtf_bonus = -5
+                
+                base_quality += mtf_bonus
                 base_quality = min(base_quality, 85)  # Cap at 85%
                 
+                print(f"🔍 VCB {symbol}: M15 ATR={m15_atr:.2f}, M5 ATR={m5_atr:.2f}, MTF Bonus={mtf_bonus:+d}%")
                 print(f"🔍 VCB {symbol}: {direction} BREAKOUT DETECTED!")
                 print(f"   ATR={atr:.2f}p, Volume={volume_ratio:.1f}x")
-                print(f"   Quality = {base_quality:.1f}% (includes R:R bonus)")
+                print(f"   Final Quality = {base_quality:.1f}% (includes MTF bonus)")
                 print(f"   Entry: {entry:.5f}")
                 
                 # Return signal with base quality

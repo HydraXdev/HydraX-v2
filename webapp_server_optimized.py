@@ -399,9 +399,9 @@ def api_signals():
                     else:
                         logger.debug(f"🚫 ML BLOCKED FROM DISPLAY: {signal_id} @ {signal_confidence}% - {ml_reason}")
                     
-                    # AUTO fire logic - AI EXCELLENCE MODE: 90% threshold for high quality
-                    print(f"[DEBUG] AUTO fire check: {signal_id} @ {signal_confidence}% (threshold: 90.0%)")
-                    if signal_confidence >= 90.0:  # Raised to 90% for AI excellence testing
+                    # AUTO fire logic - AI EXCELLENCE MODE: 80% threshold for high quality
+                    print(f"[DEBUG] AUTO fire check: {signal_id} @ {signal_confidence}% (threshold: 80.0%)")
+                    if signal_confidence >= 80.0:  # Lowered to 80% per user requirement
                         print(f"[DEBUG] HIGH CONFIDENCE - checking AUTO fire users")
                         logger.info(f"🎯 HIGH CONFIDENCE SIGNAL: {signal_id} @ {signal_confidence}% - Checking AUTO fire users")
                         

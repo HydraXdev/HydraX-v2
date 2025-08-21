@@ -37,6 +37,14 @@ class DelayedSignal:
     delayed_at: datetime
     liquidity_zone: LiquidityZone
     expiry: datetime
+    # Store critical trading parameters
+    stop_loss: Optional[float] = None
+    take_profit: Optional[float] = None
+    entry_price: Optional[float] = None
+    stop_pips: Optional[float] = None
+    target_pips: Optional[float] = None
+    pattern_type: Optional[str] = None
+    signal_type: Optional[str] = None
 
 class CitadelProtection:
     """
@@ -342,7 +350,15 @@ class CitadelProtection:
                 delay_reason=f"Near {risk_zone.zone_type} @ {risk_zone.level:.5f}",
                 delayed_at=datetime.now(),
                 liquidity_zone=risk_zone,
-                expiry=datetime.now() + timedelta(minutes=self.MAX_DELAY_MINUTES)
+                expiry=datetime.now() + timedelta(minutes=self.MAX_DELAY_MINUTES),
+                # Preserve critical trading parameters
+                stop_loss=signal.get('stop_loss'),
+                take_profit=signal.get('take_profit'),
+                entry_price=signal.get('entry_price'),
+                stop_pips=signal.get('stop_pips'),
+                target_pips=signal.get('target_pips'),
+                pattern_type=signal.get('pattern_type'),
+                signal_type=signal.get('signal_type')
             )
             self.delayed_signals.append(delayed)
             self.stats['signals_delayed'] += 1
@@ -378,7 +394,15 @@ class CitadelProtection:
                         'confidence': delayed.original_confidence + self.POST_SWEEP_BOOST,
                         'citadel_protected': True,
                         'citadel_boost': 'SWEEP_AVOIDED',
-                        'delay_time': (current_time - delayed.delayed_at).seconds
+                        'delay_time': (current_time - delayed.delayed_at).seconds,
+                        # Include all the critical trading parameters
+                        'stop_loss': delayed.stop_loss,
+                        'take_profit': delayed.take_profit,
+                        'entry_price': delayed.entry_price,
+                        'stop_pips': delayed.stop_pips,
+                        'target_pips': delayed.target_pips,
+                        'pattern_type': delayed.pattern_type,
+                        'signal_type': delayed.signal_type
                     }
                     released_signals.append(signal)
                     self.delayed_signals.remove(delayed)

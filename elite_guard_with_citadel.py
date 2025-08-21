@@ -1857,9 +1857,80 @@ class EliteGuardBalanced:
             # Write to truth log
             with open('/root/HydraX-v2/truth_log.jsonl', 'a') as f:
                 f.write(json.dumps(truth_entry) + '\n')
+            
+            # NEW: Write to optimized tracking log with enhanced metrics
+            self.log_optimized_tracking(signal_data)
                 
         except Exception as e:
             logger.error(f"Error logging to truth tracker: {e}")
+    
+    def log_optimized_tracking(self, signal_data: Dict):
+        """Enhanced tracking for pattern optimization with next candle win analysis"""
+        try:
+            symbol = signal_data.get('pair', '')
+            
+            # Calculate next candle win (if we have M1 data)
+            win = False
+            if symbol in self.m1_data and len(self.m1_data[symbol]) > 0:
+                last_candle = self.m1_data[symbol][-1]
+                if last_candle and 'close' in last_candle and 'open' in last_candle:
+                    # For BUY: win if close > open, for SELL: win if close < open
+                    direction = signal_data.get('direction', 'BUY')
+                    if direction == 'BUY':
+                        win = last_candle['close'] > last_candle['open']
+                    else:
+                        win = last_candle['close'] < last_candle['open']
+            
+            # Calculate Risk:Reward ratio
+            entry = signal_data.get('entry_price', 0)
+            sl = signal_data.get('stop_loss', 0)
+            tp = signal_data.get('take_profit', 0)
+            
+            rr = 1.0  # Default
+            if sl != 0 and entry != 0 and sl != entry:
+                risk = abs(entry - sl)
+                reward = abs(tp - entry)
+                if risk > 0:
+                    rr = round(reward / risk, 2)
+            
+            # Calculate lifespan (time since signal creation)
+            timestamp_str = signal_data.get('timestamp', datetime.utcnow().isoformat() + 'Z')
+            try:
+                # Handle both formats: with and without 'Z'
+                if timestamp_str.endswith('Z'):
+                    signal_time = datetime.fromisoformat(timestamp_str[:-1])
+                else:
+                    signal_time = datetime.fromisoformat(timestamp_str)
+                lifespan = round((datetime.utcnow() - signal_time).total_seconds(), 1)
+            except:
+                lifespan = 0
+            
+            # Create optimized tracking entry
+            entry = {
+                'timestamp': datetime.utcnow().isoformat(),
+                'pair': symbol,
+                'pattern': signal_data.get('pattern_type', 'UNKNOWN'),
+                'confidence': signal_data.get('confidence', 0),
+                'quality': signal_data.get('quality_score', signal_data.get('confidence', 0)),
+                'win': win,
+                'risk_reward': rr,
+                'lifespan': lifespan,
+                'session': signal_data.get('session', self.get_current_session()),
+                'signal_id': signal_data.get('signal_id', '')
+            }
+            
+            # Write to optimized tracking log
+            with open('/root/HydraX-v2/optimized_tracking.jsonl', 'a') as f:
+                f.write(json.dumps(entry) + '\n')
+            
+            # Debug output
+            print(f"📝 Optimized Track: {signal_data.get('signal_id', 'UNKNOWN')}")
+            print(f"   Pair={symbol}, Pattern={entry['pattern']}")
+            print(f"   Conf={entry['confidence']}%, Quality={entry['quality']}%")
+            print(f"   Win={win}, R:R={rr}, Lifespan={lifespan}s")
+            
+        except Exception as e:
+            print(f"Error in optimized tracking: {e}")
 
     def scan_for_patterns(self):
         """Scan all symbols for patterns"""

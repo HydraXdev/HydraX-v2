@@ -896,25 +896,39 @@ class EliteGuardBalanced:
             
             # BULLISH VCB
             if current['close'] > recent_high:
-                # First check if we have actual bullish momentum
-                if len(self.m1_data[symbol]) >= 3:
-                    recent_m1 = list(self.m1_data[symbol])[-3:]
-                    actual_direction = recent_m1[-1]['close'] - recent_m1[-2]['close']
-                    if actual_direction <= 0:
-                        print(f"🔍 VCB {symbol}: Skipping - price not rising (delta={actual_direction:.5f})")
+                print(f"🔍 VCB {symbol}: Price broke above high ({current['close']:.5f} > {recent_high:.5f})")
+                
+                # Check actual momentum direction from M1 candles
+                if len(self.m1_data[symbol]) >= 5:
+                    recent_m1 = list(self.m1_data[symbol])[-5:]
+                    momentum_1bar = recent_m1[-1]['close'] - recent_m1[-2]['close']
+                    momentum_3bar = recent_m1[-1]['close'] - recent_m1[-3]['close']
+                    pip_size_calc = 0.01 if 'JPY' in symbol else (0.1 if symbol == 'XAUUSD' else 0.0001)
+                    momentum_1bar_pips = momentum_1bar / pip_size_calc
+                    momentum_3bar_pips = momentum_3bar / pip_size_calc
+                    
+                    print(f"🔍 VCB {symbol} BUY: 1-bar={momentum_1bar_pips:.2f}p, 3-bar={momentum_3bar_pips:.2f}p")
+                    
+                    # Require positive momentum for bullish signal
+                    if momentum_3bar_pips <= 0:
+                        print(f"❌ VCB {symbol}: REJECTED - Bearish momentum ({momentum_3bar_pips:.2f}p) for bullish breakout")
                         return None
                 
                 momentum = self.calculate_momentum_score(symbol, "BUY")
+                print(f"🔍 VCB {symbol}: Momentum score={momentum}")
+                
                 if momentum < 5:  # LOWERED: 5 for low-vol market (was 30)
-                    print(f"🔍 VCB {symbol}: Low momentum {momentum}")
+                    print(f"❌ VCB {symbol}: REJECTED - Momentum too low ({momentum} < 5)")
                     return None
                 
                 volume_quality = self.analyze_volume_profile(symbol)
-                print(f"🔍 VCB {symbol}: BULLISH breakout! Momentum={momentum}, Volume={volume_quality}")
+                print(f"🔍 VCB {symbol}: Volume quality={volume_quality}")
                 
                 if volume_quality < 5:  # LOWERED: 5 for low-vol market (was 20)
-                    print(f"🔍 VCB {symbol}: Volume too low ({volume_quality} < 5)")
+                    print(f"❌ VCB {symbol}: REJECTED - Volume too low ({volume_quality} < 5)")
                     return None
+                
+                print(f"✅ VCB {symbol}: BULLISH SIGNAL CREATED! Momentum={momentum}, Volume={volume_quality}")
                 
                 confidence = 74 + (momentum * 0.05) + (volume_quality * 0.02)  # 74% base
                 
@@ -933,22 +947,39 @@ class EliteGuardBalanced:
             
             # BEARISH VCB
             elif current['close'] < recent_low:
-                # First check if we have actual bearish momentum
-                if len(self.m1_data[symbol]) >= 3:
-                    recent_m1 = list(self.m1_data[symbol])[-3:]
-                    actual_direction = recent_m1[-1]['close'] - recent_m1[-2]['close']
-                    if actual_direction >= 0:
-                        print(f"🔍 VCB {symbol}: Skipping SELL - price not falling (delta={actual_direction:.5f})")
+                print(f"🔍 VCB {symbol}: Price broke below low ({current['close']:.5f} < {recent_low:.5f})")
+                
+                # Check actual momentum direction from M1 candles
+                if len(self.m1_data[symbol]) >= 5:
+                    recent_m1 = list(self.m1_data[symbol])[-5:]
+                    momentum_1bar = recent_m1[-1]['close'] - recent_m1[-2]['close']
+                    momentum_3bar = recent_m1[-1]['close'] - recent_m1[-3]['close']
+                    pip_size_calc = 0.01 if 'JPY' in symbol else (0.1 if symbol == 'XAUUSD' else 0.0001)
+                    momentum_1bar_pips = momentum_1bar / pip_size_calc
+                    momentum_3bar_pips = momentum_3bar / pip_size_calc
+                    
+                    print(f"🔍 VCB {symbol} SELL: 1-bar={momentum_1bar_pips:.2f}p, 3-bar={momentum_3bar_pips:.2f}p")
+                    
+                    # Require negative momentum for bearish signal
+                    if momentum_3bar_pips >= 0:
+                        print(f"❌ VCB {symbol}: REJECTED - Bullish momentum ({momentum_3bar_pips:.2f}p) for bearish breakout")
                         return None
                 
                 momentum = self.calculate_momentum_score(symbol, "SELL")
+                print(f"🔍 VCB {symbol}: Momentum score={momentum}")
+                
                 if momentum < 5:  # LOWERED: 5 for low-vol market (was 30)
-                    print(f"🔍 VCB {symbol}: Low SELL momentum {momentum}")
+                    print(f"❌ VCB {symbol}: REJECTED - Momentum too low ({momentum} < 5)")
                     return None
                 
                 volume_quality = self.analyze_volume_profile(symbol)
+                print(f"🔍 VCB {symbol}: Volume quality={volume_quality}")
+                
                 if volume_quality < 5:  # LOWERED: 5 for low-vol market (was 20)
+                    print(f"❌ VCB {symbol}: REJECTED - Volume too low ({volume_quality} < 5)")
                     return None
+                
+                print(f"✅ VCB {symbol}: BEARISH SIGNAL CREATED! Momentum={momentum}, Volume={volume_quality}")
                 
                 confidence = 74 + (momentum * 0.05) + (volume_quality * 0.02)  # 74% base
                 

@@ -114,16 +114,23 @@ class EliteGuardBalanced:
     def setup_zmq(self):
         """Setup ZMQ connections"""
         try:
-            # Subscribe to market data
+            # Subscribe to market data (ticks)
             self.subscriber = self.context.socket(zmq.SUB)
             self.subscriber.connect("tcp://127.0.0.1:5560")
             self.subscriber.setsockopt_string(zmq.SUBSCRIBE, "")
+            
+            # Subscribe to OHLC data directly from EA (port 5556)
+            # The EA sends M1/M5/M15 OHLC data to 5556
+            self.ohlc_subscriber = self.context.socket(zmq.SUB)
+            self.ohlc_subscriber.connect("tcp://127.0.0.1:5556")
+            self.ohlc_subscriber.setsockopt_string(zmq.SUBSCRIBE, "")  # Subscribe to ALL messages to debug
+            self.ohlc_subscriber.setsockopt(zmq.RCVTIMEO, 100)  # 100ms timeout for non-blocking
             
             # Publisher for signals
             self.publisher = self.context.socket(zmq.PUB)
             self.publisher.bind("tcp://*:5557")
             
-            logger.info("✅ ZMQ connections established")
+            logger.info("✅ ZMQ connections established (5560 for ticks, 5556 for OHLC, 5557 for signals)")
             return True
         except Exception as e:
             logger.error(f"❌ ZMQ setup failed: {e}")
@@ -905,12 +912,160 @@ class EliteGuardBalanced:
         except Exception as e:
             logger.debug(f"Tick processing error: {e}")
     
-    def build_candles_from_tick(self, symbol: str, tick_data: dict):
-        """Build M1 candles from ticks, then aggregate to M5 and M15 - PROPER METHOD"""
+    def fetch_ohlc_data(self):
+        """Fetch OHLC data from telemetry bridge (EA messages republished)"""
+        try:
+            while True:
+                try:
+                    # Non-blocking receive from telemetry bridge
+                    message = self.ohlc_subscriber.recv_string(zmq.DONTWAIT)
+                    
+                    # Parse different message types - look for OHLC type
+                    try:
+                        data = json.loads(message)
+                        msg_type = data.get('type', '')
+                        
+                        if msg_type == 'OHLC':
+                            symbol = data.get('symbol', '')
+                            timeframe = data.get('timeframe', '')
+                            
+                            # Only process our trading pairs
+                            if symbol not in self.trading_pairs:
+                                continue
+                                
+                            # Create candle data structure
+                            candle = {
+                                'timestamp': float(data.get('time', 0)),
+                                'open': float(data.get('open', 0)),
+                                'high': float(data.get('high', 0)),
+                                'low': float(data.get('low', 0)),
+                                'close': float(data.get('close', 0)),
+                                'volume': 1  # EA doesn't send volume for OHLC
+                            }
+                            
+                            # Store in appropriate timeframe buffer
+                            if timeframe == "M1":
+                                self.m1_data[symbol].append(candle)
+                                print(f"📊 {symbol} M1 OHLC: {len(self.m1_data[symbol])} candles")
+                            elif timeframe == "M5":
+                                self.m5_data[symbol].append(candle)
+                                print(f"📊 {symbol} M5 OHLC: {len(self.m5_data[symbol])} candles")
+                            elif timeframe == "M15":
+                                self.m15_data[symbol].append(candle)
+                                print(f"📊 {symbol} M15 OHLC: {len(self.m15_data[symbol])} candles")
+                                
+                    except json.JSONDecodeError:
+                        # Not JSON, skip
+                        continue
+                            
+                except zmq.Again:
+                    # No message available, break the loop
+                    break
+                    
+        except Exception as e:
+            print(f"❌ OHLC fetch error: {e}")
+    
+    def build_candles_from_tick(self, symbol: str, tick_data: dict = None):
+        """Fetch OHLC data from ZMQ port 5556 and store candles - ENHANCED VERSION"""
         # ONLY process symbols in our trading pairs list
         if symbol not in self.trading_pairs:
             return
             
+        import json
+        import time
+        
+        # Track last OHLC receipt time for fallback logic
+        if not hasattr(self, 'last_ohlc_time'):
+            self.last_ohlc_time = {}
+        
+        current_time = time.time()
+        ohlc_received = False
+        
+        try:
+            # Check for OHLC messages from EA on port 5556
+            message_count = 0
+            while True:
+                try:
+                    message = self.ohlc_subscriber.recv_string(zmq.DONTWAIT)
+                    message_count += 1
+                    
+                    # Debug: Log raw message reception
+                    if message_count == 1:
+                        print(f"🔵 OHLC Socket Active: Received {len(message)} bytes")
+                    
+                    if message.startswith("OHLC "):
+                        # Parse OHLC message: "OHLC {json_data}"
+                        ohlc_data = json.loads(message[5:])  # Remove "OHLC " prefix
+                        
+                        # Extract data from EA format
+                        msg_symbol = ohlc_data.get('symbol', '')
+                        timeframe = ohlc_data.get('timeframe', '')
+                        timestamp = ohlc_data.get('time', 0)
+                        open_price = float(ohlc_data.get('open', 0))
+                        high_price = float(ohlc_data.get('high', 0))
+                        low_price = float(ohlc_data.get('low', 0))
+                        close_price = float(ohlc_data.get('close', 0))
+                        volume = int(ohlc_data.get('volume', 1))
+                        
+                        # Enhanced debug logging
+                        print(f"🟢 OHLC [{msg_symbol}] {timeframe}: O={open_price:.5f} H={high_price:.5f} L={low_price:.5f} C={close_price:.5f} V={volume}")
+                        
+                        # Store in appropriate buffer based on timeframe
+                        if msg_symbol in self.trading_pairs:
+                            candle = {
+                                'open': open_price,
+                                'high': high_price,
+                                'low': low_price,
+                                'close': close_price,
+                                'volume': volume,
+                                'timestamp': timestamp
+                            }
+                            
+                            # Update last OHLC time for this symbol
+                            self.last_ohlc_time[msg_symbol] = current_time
+                            ohlc_received = True
+                            
+                            if timeframe == 'M1':
+                                self.m1_data[msg_symbol].append(candle)
+                                print(f"📈 {msg_symbol} M1: {len(self.m1_data[msg_symbol])} candles stored")
+                            elif timeframe == 'M5':
+                                self.m5_data[msg_symbol].append(candle)
+                                print(f"📊 {msg_symbol} M5: {len(self.m5_data[msg_symbol])} candles stored")
+                            elif timeframe == 'M15':
+                                self.m15_data[msg_symbol].append(candle)
+                                print(f"📉 {msg_symbol} M15: {len(self.m15_data[msg_symbol])} candles stored")
+                        else:
+                            print(f"⚠️ {msg_symbol} not in trading pairs, skipping")
+                    else:
+                        # Non-OHLC message received
+                        print(f"🔸 Non-OHLC message: {message[:50]}...")
+                        
+                except zmq.Again:
+                    # No more messages available
+                    if message_count > 0:
+                        print(f"✅ Processed {message_count} OHLC messages")
+                    break
+                except Exception as e:
+                    print(f"❌ OHLC parsing error: {e}")
+                    break
+        
+        except Exception as e:
+            print(f"❌ OHLC fetch error for {symbol}: {e}")
+        
+        # Fallback logic: Use tick data if no OHLC for 5 seconds
+        last_time = self.last_ohlc_time.get(symbol, 0)
+        if current_time - last_time > 5 and tick_data:
+            if current_time - last_time > 10:  # Only log after 10s to reduce spam
+                print(f"🟡 {symbol}: No OHLC for {current_time - last_time:.1f}s, using tick fallback")
+            self._process_tick_fallback(symbol, tick_data)
+        elif ohlc_received:
+            print(f"✨ {symbol}: Using direct OHLC data (last update {current_time - last_time:.1f}s ago)")
+        elif tick_data:
+            # Always use tick data if available and no OHLC
+            self._process_tick_fallback(symbol, tick_data)
+    
+    def _process_tick_fallback(self, symbol: str, tick_data: dict):
+        """Fallback tick processing for backwards compatibility"""
         try:
             bid = float(tick_data.get('bid', 0))
             ask = float(tick_data.get('ask', 0))
@@ -944,6 +1099,7 @@ class EliteGuardBalanced:
                     'volume': 1,
                     'timestamp': current_minute
                 }
+                print(f"🕯️ {symbol}: New M1 candle at {current_minute} (tick fallback)")
             else:
                 # Update existing candle
                 candle = self.current_candles[symbol][current_minute]
@@ -957,76 +1113,95 @@ class EliteGuardBalanced:
             for minute in completed_minutes:
                 completed_candle = self.current_candles[symbol].pop(minute)
                 self.m1_data[symbol].append(completed_candle)
+                print(f"📊 {symbol}: M1 added, total: {len(self.m1_data[symbol])} (tick fallback)")
                 
-                # Aggregate M1 → M5 (every time we have 5+ M1 candles)
-                if len(self.m1_data[symbol]) >= 5:
-                    self.aggregate_m1_to_m5(symbol)
+                # Force M5 aggregation every 5 M1 candles
+                if len(self.m1_data[symbol]) % 5 == 0:
+                    self.force_aggregate_m5(symbol)
                 
-                # Aggregate M5 → M15 (every time we have 3+ M5 candles)
-                if len(self.m5_data[symbol]) >= 3:
-                    self.aggregate_m5_to_m15(symbol)
-                
-                # Debug logging for candle building
-                if len(self.m1_data[symbol]) % 10 == 0:  # Every 10 M1 candles
-                    print(f"🕯️ {symbol}: {len(self.m1_data[symbol])} M1, {len(self.m5_data[symbol])} M5, {len(self.m15_data[symbol])} M15 candles")
-            
-            # ALSO add current forming candle for real-time pattern detection
-            if current_minute in self.current_candles[symbol]:
-                current_forming_candle = self.current_candles[symbol][current_minute].copy()
-                # Remove the existing current candle from M1 buffer first (if any)
-                if self.m1_data[symbol] and self.m1_data[symbol][-1]['timestamp'] == current_minute:
-                    self.m1_data[symbol].pop()
-                # Add updated current forming candle
-                self.m1_data[symbol].append(current_forming_candle)
+                # Force M15 aggregation every 15 M1 candles
+                if len(self.m1_data[symbol]) % 15 == 0:
+                    self.force_aggregate_m15(symbol)
                     
         except Exception as e:
-            logger.debug(f"Candle building error: {e}")
+            print(f"❌ Fallback candle building error for {symbol}: {e}")
+    
+    def force_aggregate_m5(self, symbol: str):
+        """Force create M5 candle from last 5 M1 candles"""
+        if len(self.m1_data[symbol]) >= 5:
+            last_5 = list(self.m1_data[symbol])[-5:]
+            m5_candle = {
+                'open': last_5[0]['open'],
+                'high': max(c['high'] for c in last_5),
+                'low': min(c['low'] for c in last_5),
+                'close': last_5[-1]['close'],
+                'volume': sum(c['volume'] for c in last_5),
+                'timestamp': last_5[0]['timestamp']
+            }
+            self.m5_data[symbol].append(m5_candle)
+            print(f"📊 {symbol}: M5 created from 5 M1, total M5: {len(self.m5_data[symbol])}")
+    
+    def force_aggregate_m15(self, symbol: str):
+        """Force create M15 candle from last 15 M1 candles"""
+        if len(self.m1_data[symbol]) >= 15:
+            last_15 = list(self.m1_data[symbol])[-15:]
+            m15_candle = {
+                'open': last_15[0]['open'],
+                'high': max(c['high'] for c in last_15),
+                'low': min(c['low'] for c in last_15),
+                'close': last_15[-1]['close'],
+                'volume': sum(c['volume'] for c in last_15),
+                'timestamp': last_15[0]['timestamp']
+            }
+            self.m15_data[symbol].append(m15_candle)
+            print(f"📊 {symbol}: M15 created from 15 M1, total M15: {len(self.m15_data[symbol])}")
     
     def aggregate_m1_to_m5(self, symbol: str):
         """Build M5 candle from last 5 M1 candles - AGGRESSIVE"""
         if len(self.m1_data[symbol]) >= 5:
             # Build M5 from every complete set of 5 M1 candles
-            while len(self.m1_data[symbol]) >= 5:
-                last_5 = list(self.m1_data[symbol])[-5:]
+            last_5 = list(self.m1_data[symbol])[-5:]
+            
+            # Calculate M5 timestamp from first M1 timestamp rounded to 5-minute boundary
+            first_timestamp = last_5[0]['timestamp']
+            m5_timestamp = int(first_timestamp / 300) * 300  # Round to 5-minute boundary
+            
+            # Check if we already have this M5 timestamp
+            if self.m5_data[symbol] and self.m5_data[symbol][-1]['timestamp'] == m5_timestamp:
+                return  # Already have this M5
                 
-                # Check if we already have this M5 timestamp
-                m5_timestamp = last_5[0]['timestamp']
-                if self.m5_data[symbol] and self.m5_data[symbol][-1]['timestamp'] == m5_timestamp:
-                    break  # Already have this M5
-                    
-                m5_candle = {
-                    'open': last_5[0]['open'],
-                    'high': max(c['high'] for c in last_5),
-                    'low': min(c['low'] for c in last_5),
-                    'close': last_5[-1]['close'],
-                    'volume': sum(c['volume'] for c in last_5),
-                    'timestamp': m5_timestamp
-                }
-                self.m5_data[symbol].append(m5_candle)
-                break  # Only build one at a time
+            m5_candle = {
+                'open': last_5[0]['open'],
+                'high': max(c['high'] for c in last_5),
+                'low': min(c['low'] for c in last_5),
+                'close': last_5[-1]['close'],
+                'volume': sum(c['volume'] for c in last_5),
+                'timestamp': m5_timestamp
+            }
+            self.m5_data[symbol].append(m5_candle)
+            print(f"📊 {symbol}: Created M5 candle from {len(last_5)} M1 candles, timestamp {m5_timestamp}")
 
     def aggregate_m5_to_m15(self, symbol: str):
         """Build M15 candle from last 3 M5 candles - AGGRESSIVE"""
         if len(self.m5_data[symbol]) >= 3:
             # Build M15 from every complete set of 3 M5 candles
-            while len(self.m5_data[symbol]) >= 3:
-                last_3 = list(self.m5_data[symbol])[-3:]
+            last_3 = list(self.m5_data[symbol])[-3:]
+            
+            # Check if we already have this M15 timestamp
+            m15_timestamp = last_3[0]['timestamp']
+            if self.m15_data[symbol] and self.m15_data[symbol][-1]['timestamp'] == m15_timestamp:
+                return  # Already have this M15
                 
-                # Check if we already have this M15 timestamp
-                m15_timestamp = last_3[0]['timestamp']
-                if self.m15_data[symbol] and self.m15_data[symbol][-1]['timestamp'] == m15_timestamp:
-                    break  # Already have this M15
-                    
-                m15_candle = {
-                    'open': last_3[0]['open'],
-                    'high': max(c['high'] for c in last_3),
-                    'low': min(c['low'] for c in last_3),
-                    'close': last_3[-1]['close'],
-                    'volume': sum(c['volume'] for c in last_3),
-                    'timestamp': m15_timestamp
-                }
-                self.m15_data[symbol].append(m15_candle)
-                break  # Only build one at a time
+            m15_candle = {
+                'open': last_3[0]['open'],
+                'high': max(c['high'] for c in last_3),
+                'low': min(c['low'] for c in last_3),
+                'close': last_3[-1]['close'],
+                'volume': sum(c['volume'] for c in last_3),
+                'timestamp': m15_timestamp
+            }
+            self.m15_data[symbol].append(m15_candle)
+            print(f"📊 {symbol}: Created M15 candle from {len(last_3)} M5 candles")
     
     def save_candles(self):
         """Save candle data to cache file"""
@@ -1062,17 +1237,50 @@ class EliteGuardBalanced:
                 with open('/root/HydraX-v2/candle_cache.json', 'r') as f:
                     cache_data = json.load(f)
                 
-                # Restore candles from cache
+                # Restore M1 candles from cache and aggregate M5/M15
                 for symbol in self.trading_pairs:
                     if symbol in cache_data.get('m1_data', {}):
                         candles = cache_data['m1_data'][symbol]
                         self.m1_data[symbol] = deque(candles, maxlen=500)
-                    if symbol in cache_data.get('m5_data', {}):
-                        candles = cache_data['m5_data'][symbol]
-                        self.m5_data[symbol] = deque(candles, maxlen=300)
-                    if symbol in cache_data.get('m15_data', {}):
-                        candles = cache_data['m15_data'][symbol]
-                        self.m15_data[symbol] = deque(candles, maxlen=200)
+                        
+                        # Aggregate M5 candles from M1 (every 5 M1 candles)
+                        m5_candles = []
+                        for i in range(0, len(candles), 5):
+                            chunk = candles[i:i+5]
+                            if len(chunk) >= 5:  # Only create M5 if we have full 5 M1 candles
+                                m5_candle = {
+                                    'open': chunk[0]['open'],
+                                    'high': max(c['high'] for c in chunk),
+                                    'low': min(c['low'] for c in chunk),
+                                    'close': chunk[-1]['close'],
+                                    'volume': sum(c['volume'] for c in chunk),
+                                    'timestamp': chunk[0]['timestamp']  # Use first M1 timestamp
+                                }
+                                m5_candles.append(m5_candle)
+                        self.m5_data[symbol] = deque(m5_candles, maxlen=300)
+                        
+                        # Aggregate M15 candles from M5 (every 3 M5 candles)  
+                        m15_candles = []
+                        for i in range(0, len(m5_candles), 3):
+                            chunk = m5_candles[i:i+3]
+                            if len(chunk) >= 3:  # Only create M15 if we have full 3 M5 candles
+                                m15_candle = {
+                                    'open': chunk[0]['open'],
+                                    'high': max(c['high'] for c in chunk),
+                                    'low': min(c['low'] for c in chunk),
+                                    'close': chunk[-1]['close'],
+                                    'volume': sum(c['volume'] for c in chunk),
+                                    'timestamp': chunk[0]['timestamp']  # Use first M5 timestamp
+                                }
+                                m15_candles.append(m15_candle)
+                        self.m15_data[symbol] = deque(m15_candles, maxlen=200)
+                        
+                        print(f"📂 {symbol}: Loaded {len(candles)} M1 → Aggregated {len(m5_candles)} M5 → {len(m15_candles)} M15")
+                    else:
+                        # Initialize empty deques if no cached data
+                        self.m1_data[symbol] = deque(maxlen=500)
+                        self.m5_data[symbol] = deque(maxlen=300)
+                        self.m15_data[symbol] = deque(maxlen=200)
                 
                 total_m1 = sum(len(self.m1_data[s]) for s in self.trading_pairs)
                 total_m5 = sum(len(self.m5_data[s]) for s in self.trading_pairs)
@@ -1457,6 +1665,9 @@ class EliteGuardBalanced:
         while self.running:
             try:
                 current_time = time.time()
+                
+                # Fetch OHLC data continuously
+                self.fetch_ohlc_data()
                 
                 # Scan for patterns every 30 seconds
                 if current_time - last_scan >= 30:

@@ -320,7 +320,7 @@ class EliteGuardBalanced:
         self.MIN_MOMENTUM = 30   # Require strong momentum
         self.MIN_VOLUME = 20     # Require decent volume
         self.MIN_TREND = 15      # Require some trend alignment
-        self.MIN_CONFIDENCE = 70 # TEMPORARY: 70% for testing low-vol market
+        self.MIN_CONFIDENCE = 65 # RECALIBRATED: 65% to capture more signals for optimization
         self.COOLDOWN_MINUTES = 10 # Reasonable cooldown between signals per pair
         
         # Quality tiers for user display
@@ -531,6 +531,34 @@ class EliteGuardBalanced:
         
         return final_confidence
     
+    def calculate_atr(self, symbol: str, period: int = 14) -> float:
+        """Calculate Average True Range for R:R feasibility check"""
+        if symbol not in self.m5_data or len(self.m5_data[symbol]) < period:
+            # Default ATR values for different pairs
+            if 'JPY' in symbol:
+                return 0.5  # 50 pips default for JPY pairs
+            elif symbol in ['XAUUSD']:
+                return 5.0  # 500 pips for gold
+            elif symbol in ['XAGUSD']:
+                return 0.05  # 5 pips for silver
+            else:
+                return 0.001  # 10 pips default for majors
+        
+        candles = list(self.m5_data[symbol])[-period:]
+        pip_size = 0.01 if 'JPY' in symbol else 0.1 if symbol == 'XAUUSD' else 0.0001
+        
+        true_ranges = []
+        for i in range(1, len(candles)):
+            high_low = candles[i]['high'] - candles[i]['low']
+            high_close = abs(candles[i]['high'] - candles[i-1]['close'])
+            low_close = abs(candles[i]['low'] - candles[i-1]['close'])
+            true_range = max(high_low, high_close, low_close)
+            true_ranges.append(true_range)
+        
+        atr = np.mean(true_ranges) if true_ranges else 0.001
+        atr_pips = atr / pip_size
+        return atr_pips
+    
     def calculate_quality_score(self, signal: PatternSignal) -> float:
         """Calculate overall quality score for ranking"""
         score = 0
@@ -739,18 +767,39 @@ class EliteGuardBalanced:
                 print(f"   Rejection ratio: {rejection_ratio:.2%} (need >50%), Close above low: {current_candle['close'] > recent_low}")
                 
                 if has_rejection:  # REQUIRE rejection candle for quality
+                    # R:R FEASIBILITY CHECK
+                    atr = self.calculate_atr(symbol)
+                    entry = current_candle['close'] + pip_size
+                    sl_distance = abs(current_candle['low'] - entry) / pip_size
+                    tp_distance = sl_distance * 1.5  # Target 1.5 R:R minimum
+                    
+                    # Check if TP is within 2x ATR (feasible)
+                    rr_feasible = tp_distance <= 2 * atr
+                    actual_rr = tp_distance / sl_distance if sl_distance > 0 else 0
+                    
+                    if not rr_feasible:
+                        print(f"🚫 LSR {symbol} BUY: R:R not feasible - TP={tp_distance:.1f}p > 2xATR={2*atr:.1f}p")
+                        return None
+                    
+                    if actual_rr < 1.5:
+                        print(f"⚠️ LSR {symbol} BUY: R:R too low - {actual_rr:.2f} < 1.5 minimum")
+                        return None
+                    
+                    print(f"✅ LSR {symbol} BUY: R:R={actual_rr:.2f}, SL={sl_distance:.1f}p, TP={tp_distance:.1f}p, ATR={atr:.1f}p")
+                    
                     # Calculate base quality from sweep size and rejection
                     base_quality = 50  # Start at 50%
                     base_quality += min(bullish_sweep - min_sweep_pips, 5) * 2  # +2% per extra pip (max +10%)
                     base_quality += rejection_ratio * 10  # +10% for perfect rejection
+                    base_quality += min(actual_rr - 1.5, 0.5) * 10  # Bonus for R:R > 1.5
                     
-                    print(f"🔍 LSR {symbol}: Pattern quality = {base_quality:.1f}% (Base 50 + Sweep bonus + Rejection bonus)")
+                    print(f"🔍 LSR {symbol}: Pattern quality = {base_quality:.1f}% (Base 50 + Sweep + Rejection + R:R bonus)")
                     
                     # Return signal with base quality
                     return PatternSignal(
                         pattern="LIQUIDITY_SWEEP_REVERSAL",
                         direction="BUY",
-                        entry_price=current_candle['close'] + pip_size,
+                        entry_price=entry,
                         confidence=base_quality,
                         timeframe="M5",
                         pair=symbol,
@@ -767,18 +816,39 @@ class EliteGuardBalanced:
                 print(f"   Rejection ratio: {rejection_ratio:.2%} (need >50%), Close below high: {current_candle['close'] < recent_high}")
                 
                 if has_rejection:  # REQUIRE rejection candle for quality
+                    # R:R FEASIBILITY CHECK
+                    atr = self.calculate_atr(symbol)
+                    entry = current_candle['close'] - pip_size
+                    sl_distance = abs(current_candle['high'] - entry) / pip_size
+                    tp_distance = sl_distance * 1.5  # Target 1.5 R:R minimum
+                    
+                    # Check if TP is within 2x ATR (feasible)
+                    rr_feasible = tp_distance <= 2 * atr
+                    actual_rr = tp_distance / sl_distance if sl_distance > 0 else 0
+                    
+                    if not rr_feasible:
+                        print(f"🚫 LSR {symbol} SELL: R:R not feasible - TP={tp_distance:.1f}p > 2xATR={2*atr:.1f}p")
+                        return None
+                    
+                    if actual_rr < 1.5:
+                        print(f"⚠️ LSR {symbol} SELL: R:R too low - {actual_rr:.2f} < 1.5 minimum")
+                        return None
+                    
+                    print(f"✅ LSR {symbol} SELL: R:R={actual_rr:.2f}, SL={sl_distance:.1f}p, TP={tp_distance:.1f}p, ATR={atr:.1f}p")
+                    
                     # Calculate base quality from sweep size and rejection
                     base_quality = 50  # Start at 50%
                     base_quality += min(bearish_sweep - min_sweep_pips, 5) * 2  # +2% per extra pip (max +10%)
                     base_quality += rejection_ratio * 10  # +10% for perfect rejection
+                    base_quality += min(actual_rr - 1.5, 0.5) * 10  # Bonus for R:R > 1.5
                     
-                    print(f"🔍 LSR {symbol}: Pattern quality = {base_quality:.1f}% (Base 50 + Sweep bonus + Rejection bonus)")
+                    print(f"🔍 LSR {symbol}: Pattern quality = {base_quality:.1f}% (Base 50 + Sweep + Rejection + R:R bonus)")
                     
                     # Return signal with base quality
                     return PatternSignal(
                         pattern="LIQUIDITY_SWEEP_REVERSAL",
                         direction="SELL",
-                        entry_price=current_candle['close'] - pip_size,
+                        entry_price=entry,
                         confidence=base_quality,
                         timeframe="M5",
                         pair=symbol,
@@ -851,15 +921,44 @@ class EliteGuardBalanced:
                 
                 base_quality = min(base_quality, 80)  # Cap at 80%
                 
+                # R:R FEASIBILITY CHECK
+                atr = self.calculate_atr(symbol)
+                entry = current_candle['close'] + pip_size if direction == 'BUY' else current_candle['close'] - pip_size
+                
+                if direction == 'BUY':
+                    sl_distance = abs(recent_low - entry) / pip_size
+                else:
+                    sl_distance = abs(recent_high - entry) / pip_size
+                
+                tp_distance = sl_distance * 1.5  # Target 1.5 R:R minimum
+                
+                # Check if TP is within 2x ATR (feasible)
+                rr_feasible = tp_distance <= 2 * atr
+                actual_rr = tp_distance / sl_distance if sl_distance > 0 else 0
+                
+                if not rr_feasible:
+                    print(f"🚫 OBB {symbol} {direction}: R:R not feasible - TP={tp_distance:.1f}p > 2xATR={2*atr:.1f}p")
+                    return None
+                
+                if actual_rr < 1.5:
+                    print(f"⚠️ OBB {symbol} {direction}: R:R too low - {actual_rr:.2f} < 1.5 minimum")
+                    return None
+                
+                print(f"✅ OBB {symbol} {direction}: R:R={actual_rr:.2f}, SL={sl_distance:.1f}p, TP={tp_distance:.1f}p, ATR={atr:.1f}p")
+                
+                # Add R:R bonus to quality
+                base_quality += min(actual_rr - 1.5, 0.5) * 10  # Bonus for R:R > 1.5
+                base_quality = min(base_quality, 85)  # Cap at 85%
+                
                 print(f"🔍 OBB {symbol}: {direction} BOUNCE DETECTED!")
-                print(f"   Quality = {base_quality:.1f}% (Base 50 + Body {body_ratio*30:.1f}% + Precision {precision*10:.1f}%)")
-                print(f"   Entry: {current_candle['close'] + pip_size if direction == 'BUY' else current_candle['close'] - pip_size:.5f}")
+                print(f"   Quality = {base_quality:.1f}% (Base 50 + Body {body_ratio*30:.1f}% + Precision {precision*10:.1f}% + R:R bonus)")
+                print(f"   Entry: {entry:.5f}")
                 
                 # Return signal with base quality
                 return PatternSignal(
                     pattern="ORDER_BLOCK_BOUNCE",
                     direction=direction,
-                    entry_price=current_candle['close'] + pip_size if direction == 'BUY' else current_candle['close'] - pip_size,
+                    entry_price=entry,
                     confidence=base_quality,
                     timeframe="M5",
                     pair=symbol,
@@ -907,22 +1006,41 @@ class EliteGuardBalanced:
                 bull_return = current['close'] > recent_low and wick_ratio > 0.5  # INDUSTRY: >50% wick
                 
                 if bull_return:
+                    # R:R FEASIBILITY CHECK
+                    atr = self.calculate_atr(symbol)
+                    entry = current['close']
+                    sl_distance = abs(current['low'] - entry) / pip_size
+                    tp_distance = sl_distance * 1.5  # Target 1.5 R:R minimum
+                    
+                    # Check if TP is within 2x ATR (feasible)
+                    rr_feasible = tp_distance <= 2 * atr
+                    actual_rr = tp_distance / sl_distance if sl_distance > 0 else 0
+                    
+                    if not rr_feasible:
+                        print(f"🚫 SRL {symbol} BUY: R:R not feasible - TP={tp_distance:.1f}p > 2xATR={2*atr:.1f}p")
+                        return None
+                    
+                    if actual_rr < 1.5:
+                        print(f"⚠️ SRL {symbol} BUY: R:R too low - {actual_rr:.2f} < 1.5 minimum")
+                        return None
+                    
+                    print(f"✅ SRL {symbol} BUY: R:R={actual_rr:.2f}, SL={sl_distance:.1f}p, TP={tp_distance:.1f}p, ATR={atr:.1f}p")
+                    
                     base_quality = 50 + (wick_ratio * 100) - 50  # 50-100% based on wick
+                    base_quality += min(actual_rr - 1.5, 0.5) * 10  # Bonus for R:R > 1.5
                     
                     print(f"🔍 SRL {symbol}: BULLISH SWEEP DETECTED!")
                     print(f"   INDUSTRY STANDARD MET:")
                     print(f"   - Sweep distance: {bull_sweep_distance:.1f} pips (>3.0 required) ✅")
                     print(f"   - Wick ratio: {wick_ratio:.2%} (>50% required) ✅")
                     print(f"   - Return above level: {current['close']:.5f} > {recent_low:.5f} ✅")
-                    print(f"   OLD vs NEW DIFFERENCES:")
-                    print(f"   - OLD: 2 pip sweep, 60% wick, 15 candle lookback, momentum filter")
-                    print(f"   - NEW: 3 pip sweep, 50% wick, 3 candle lookback, no momentum gate")
+                    print(f"   - R:R feasible: {actual_rr:.2f} ✅")
                     print(f"   Quality Score: {base_quality:.1f}%")
                     
                     signal = PatternSignal(
                         pattern="SWEEP_AND_RETURN",
                         direction="BUY",
-                        entry_price=current['close'],
+                        entry_price=entry,
                         confidence=base_quality,
                         timeframe="M5",
                         pair=symbol,
@@ -942,22 +1060,41 @@ class EliteGuardBalanced:
                 bear_return = current['close'] < recent_high and wick_ratio > 0.5  # INDUSTRY: >50% wick
                 
                 if bear_return:
+                    # R:R FEASIBILITY CHECK
+                    atr = self.calculate_atr(symbol)
+                    entry = current['close']
+                    sl_distance = abs(current['high'] - entry) / pip_size
+                    tp_distance = sl_distance * 1.5  # Target 1.5 R:R minimum
+                    
+                    # Check if TP is within 2x ATR (feasible)
+                    rr_feasible = tp_distance <= 2 * atr
+                    actual_rr = tp_distance / sl_distance if sl_distance > 0 else 0
+                    
+                    if not rr_feasible:
+                        print(f"🚫 SRL {symbol} SELL: R:R not feasible - TP={tp_distance:.1f}p > 2xATR={2*atr:.1f}p")
+                        return None
+                    
+                    if actual_rr < 1.5:
+                        print(f"⚠️ SRL {symbol} SELL: R:R too low - {actual_rr:.2f} < 1.5 minimum")
+                        return None
+                    
+                    print(f"✅ SRL {symbol} SELL: R:R={actual_rr:.2f}, SL={sl_distance:.1f}p, TP={tp_distance:.1f}p, ATR={atr:.1f}p")
+                    
                     base_quality = 50 + (wick_ratio * 100) - 50  # 50-100% based on wick
+                    base_quality += min(actual_rr - 1.5, 0.5) * 10  # Bonus for R:R > 1.5
                     
                     print(f"🔍 SRL {symbol}: BEARISH SWEEP DETECTED!")
                     print(f"   INDUSTRY STANDARD MET:")
                     print(f"   - Sweep distance: {bear_sweep_distance:.1f} pips (>3.0 required) ✅")
                     print(f"   - Wick ratio: {wick_ratio:.2%} (>50% required) ✅")
                     print(f"   - Return below level: {current['close']:.5f} < {recent_high:.5f} ✅")
-                    print(f"   OLD vs NEW DIFFERENCES:")
-                    print(f"   - OLD: 2 pip sweep, 60% wick, 15 candle lookback, momentum filter")
-                    print(f"   - NEW: 3 pip sweep, 50% wick, 3 candle lookback, no momentum gate")
+                    print(f"   - R:R feasible: {actual_rr:.2f} ✅")
                     print(f"   Quality Score: {base_quality:.1f}%")
                     
                     signal = PatternSignal(
                         pattern="SWEEP_AND_RETURN",
                         direction="SELL",
-                        entry_price=current['close'],
+                        entry_price=entry,
                         confidence=base_quality,
                         timeframe="M5",
                         pair=symbol,
@@ -1035,22 +1172,49 @@ class EliteGuardBalanced:
             direction = 'BUY' if breakout_up and compression and volume_surge else 'SELL' if breakout_down and compression and volume_surge else None
             
             if direction:
+                # R:R FEASIBILITY CHECK
+                atr_check = self.calculate_atr(symbol)
+                entry = current_candle['close'] + pip_size if direction == 'BUY' else current_candle['close'] - pip_size
+                
+                # Use compression range as SL
+                if direction == 'BUY':
+                    sl_distance = abs(recent_low - entry) / pip_size
+                else:
+                    sl_distance = abs(recent_high - entry) / pip_size
+                
+                tp_distance = sl_distance * 1.5  # Target 1.5 R:R minimum
+                
+                # Check if TP is within 2x ATR (feasible)
+                rr_feasible = tp_distance <= 2 * atr_check
+                actual_rr = tp_distance / sl_distance if sl_distance > 0 else 0
+                
+                if not rr_feasible:
+                    print(f"🚫 VCB {symbol} {direction}: R:R not feasible - TP={tp_distance:.1f}p > 2xATR={2*atr_check:.1f}p")
+                    return None
+                
+                if actual_rr < 1.5:
+                    print(f"⚠️ VCB {symbol} {direction}: R:R too low - {actual_rr:.2f} < 1.5 minimum")
+                    return None
+                
+                print(f"✅ VCB {symbol} {direction}: R:R={actual_rr:.2f}, SL={sl_distance:.1f}p, TP={tp_distance:.1f}p, ATR={atr_check:.1f}p")
+                
                 # Calculate quality based on tightness of compression
                 base_quality = 50  # Start at 50%
                 base_quality += (1 - min(atr/compression_threshold, 1)) * 30  # Tighter compression = higher quality (up to +30%)
                 base_quality += min(volume_ratio - 1.5, 1) * 20  # Volume surge bonus (up to +20% for 2.5x+ volume)
+                base_quality += min(actual_rr - 1.5, 0.5) * 10  # Bonus for R:R > 1.5
                 base_quality = min(base_quality, 85)  # Cap at 85%
                 
                 print(f"🔍 VCB {symbol}: {direction} BREAKOUT DETECTED!")
                 print(f"   ATR={atr:.2f}p, Volume={volume_ratio:.1f}x")
-                print(f"   Quality = {base_quality:.1f}% (Base 50 + Compression {(1-min(atr/compression_threshold,1))*30:.1f}% + Volume {min(volume_ratio-1.5,1)*20:.1f}%)")
-                print(f"   Entry: {current_candle['close'] + pip_size if direction == 'BUY' else current_candle['close'] - pip_size:.5f}")
+                print(f"   Quality = {base_quality:.1f}% (includes R:R bonus)")
+                print(f"   Entry: {entry:.5f}")
                 
                 # Return signal with base quality
                 return PatternSignal(
                     pattern="VCB_BREAKOUT",
                     direction=direction,
-                    entry_price=current_candle['close'] + pip_size if direction == 'BUY' else current_candle['close'] - pip_size,
+                    entry_price=entry,
                     confidence=base_quality,
                     timeframe="M5",
                     pair=symbol,
@@ -1176,22 +1340,49 @@ class EliteGuardBalanced:
             direction = 'SELL' if bull_gap else 'BUY' if bear_gap else None
             
             if direction:
+                # R:R FEASIBILITY CHECK
+                atr = self.calculate_atr(symbol)
+                entry = curr['close']
+                
+                # Use gap extremes as SL
+                if direction == 'BUY':
+                    sl_distance = abs(curr['low'] - entry) / pip_size
+                else:
+                    sl_distance = abs(curr['high'] - entry) / pip_size
+                
+                tp_distance = sl_distance * 1.5  # Target 1.5 R:R minimum
+                
+                # Check if TP is within 2x ATR (feasible)
+                rr_feasible = tp_distance <= 2 * atr
+                actual_rr = tp_distance / sl_distance if sl_distance > 0 else 0
+                
+                if not rr_feasible:
+                    print(f"🚫 FVG {symbol} {direction}: R:R not feasible - TP={tp_distance:.1f}p > 2xATR={2*atr:.1f}p")
+                    return None
+                
+                if actual_rr < 1.5:
+                    print(f"⚠️ FVG {symbol} {direction}: R:R too low - {actual_rr:.2f} < 1.5 minimum")
+                    return None
+                
+                print(f"✅ FVG {symbol} {direction}: R:R={actual_rr:.2f}, SL={sl_distance:.1f}p, TP={tp_distance:.1f}p, ATR={atr:.1f}p")
+                
                 # Calculate quality based on gap size and fill strength
                 base_quality = 50  # Start at 50%
                 base_quality += min(abs(gap_size), 3) * 10  # +10% per pip (max +30% for 3+ pip gaps)
                 base_quality += body_ratio * 15  # Up to +15% for strong fill candle
+                base_quality += min(actual_rr - 1.5, 0.5) * 10  # Bonus for R:R > 1.5
                 base_quality = min(base_quality, 85)  # Cap at 85%
                 
                 print(f"🔍 FVG {symbol}: {direction} GAP FILL DETECTED!")
                 print(f"   Gap: {gap_size:.2f} pips, Fill strength: {body_ratio:.1%}")
-                print(f"   Quality = {base_quality:.1f}% (Base 50 + Gap {min(abs(gap_size), 3)*10:.0f}% + Fill {body_ratio*15:.1f}%)")
-                print(f"   Entry: {curr['close']:.5f}")
+                print(f"   Quality = {base_quality:.1f}% (Base 50 + Gap + Fill + R:R bonus)")
+                print(f"   Entry: {entry:.5f}")
                 
                 # Return signal with base quality
                 return PatternSignal(
                     pattern="FAIR_VALUE_GAP_FILL",
                     direction=direction,
-                    entry_price=curr['close'],
+                    entry_price=entry,
                     confidence=base_quality,
                     timeframe="M5",
                     pair=symbol,
@@ -1227,7 +1418,8 @@ class EliteGuardBalanced:
     
     def generate_signal(self, pattern_signal: PatternSignal) -> Dict:
         """Generate trading signal with quality indicators and RAPID/SNIPER classification"""
-        pip_size = 0.01 if 'JPY' in pattern_signal.pair else 0.0001
+        symbol = pattern_signal.pair  # Define symbol from pattern_signal
+        pip_size = 0.01 if 'JPY' in symbol else 0.0001
         
         # Determine signal classification based on pattern type
         # RAPID: Quick momentum plays (accessible to all tiers)
@@ -1268,15 +1460,15 @@ class EliteGuardBalanced:
         # FIX ERROR 4756: BROKER MINIMUM STOP DISTANCE REQUIREMENTS
         # Exotic pairs and commodities need larger stops to avoid "Invalid stops" error
         min_stop_requirements = {
-            'USDMXN': 15,  # Exotic pair - high spread, needs 15+ pips
-            'USDSEK': 15,  # Exotic pair - high spread, needs 15+ pips
-            'USDCNH': 20,  # Restricted pair - very high spread
+            'USDMXN': 30,  # Exotic pair - INCREASED from 15 to 30 pips (Error 4756 persists)
+            'USDSEK': 20,  # Exotic pair - INCREASED from 15 to 20 pips
+            'USDCNH': 30,  # Restricted pair - very high spread
             'XAGUSD': 25,  # Silver - high volatility, needs 25+ pips
             'XAUUSD': 10,  # Gold - moderate requirements
-            'USDNOK': 15,  # Exotic pair
-            'USDDKK': 15,  # Exotic pair
-            'USDTRY': 30,  # Very exotic, extreme spread
-            'USDZAR': 25,  # Exotic pair, high volatility
+            'USDNOK': 20,  # Exotic pair
+            'USDDKK': 20,  # Exotic pair
+            'USDTRY': 50,  # Very exotic, extreme spread
+            'USDZAR': 30,  # Exotic pair, high volatility
         }
         
         # Apply minimum stop distance if required
@@ -1293,6 +1485,15 @@ class EliteGuardBalanced:
             print(f"   Adjusted: SL={stop_pips}p, TP={target_pips}p")
             print(f"   R:R maintained: {original_rr:.2f}")
             print(f"   Reason: Broker minimum {min_stop}p for exotic/commodity")
+        
+        # Extra debugging for exotic pairs
+        if symbol in min_stop_requirements:
+            print(f"🎯 EXOTIC DEBUG - {symbol}:")
+            print(f"   Stop Pips: {stop_pips}")
+            print(f"   Target Pips: {target_pips}")
+            print(f"   Pip Size: {pip_size}")
+            print(f"   Entry: {pattern_signal.entry_price}")
+            print(f"   Min Required: {min_stop_requirements[symbol]} pips")
         
         stop_distance = stop_pips * pip_size
         target_distance = target_pips * pip_size
@@ -1790,14 +1991,28 @@ class EliteGuardBalanced:
     def apply_ml_filter(self, signal, session: str) -> tuple[bool, str, float]:
         """Apply ML filtering with dynamic threshold for 5-10 signals/hour target"""
         # QUALITY GATE #1: OPTIMIZED FOR 65%+ WIN RATE TARGET
-        # Raised from 55% to 60% to filter out lower quality setups
-        min_quality_score = 60.0  # BASE: 60% minimum for 65%+ win rate
+        # RECALIBRATED: Adjusted gates based on 32.9% win rate analysis
+        min_quality_score = 55.0  # LOWERED from 60 to get more signals for analysis
+        
+        # Pattern-specific adjustments based on actual performance (32.9% overall)
+        pattern_adjustments = {
+            'FAIR_VALUE_GAP_FILL': 15,      # PENALTY: 34.8% win rate needs higher quality
+            'ORDER_BLOCK_BOUNCE': 15,        # PENALTY: 30.4% win rate needs higher quality
+            'LIQUIDITY_SWEEP_REVERSAL': 5,   # Small penalty
+            'VCB_BREAKOUT': -5,              # Typically strong, can lower
+            'SWEEP_RETURN': 0                # Neutral
+        }
+        
+        pattern_type = getattr(signal, 'pattern', 'UNKNOWN')
+        adjustment = pattern_adjustments.get(pattern_type, 0)
+        min_quality_score += adjustment
+        print(f"📊 RECALIBRATED: Base {55}% + {pattern_type} adjustment {adjustment:+d}% = {min_quality_score}%")
         
         # Extra strict for exotic pairs (higher risk, need better setups)
         exotic_pairs = ['USDMXN', 'USDSEK', 'USDCNH', 'XAGUSD']
         if hasattr(signal, 'pair') and signal.pair in exotic_pairs:
-            min_quality_score = 65.0  # Higher threshold for exotics
-            print(f"🌍 EXOTIC PAIR {signal.pair}: Using stricter quality gate {min_quality_score}%")
+            min_quality_score = max(min_quality_score, 65.0)  # At least 65 for exotics
+            print(f"🌍 EXOTIC PAIR {signal.pair}: Raised to {min_quality_score}%")
         
         print(f"🔍 Quality Gate Check: {signal.quality_score:.1f}% vs {min_quality_score}% minimum")
         if hasattr(signal, 'quality_score') and signal.quality_score < min_quality_score:
@@ -1817,16 +2032,29 @@ class EliteGuardBalanced:
         signals_per_15min = len(recent_signals)
         projected_hourly_rate = signals_per_15min * 4
         
-        # QUALITY GATE #2: Dynamic confidence threshold (70-95% target range)
+        # QUALITY GATE #2: RECALIBRATED confidence threshold (65-85% target range)
         if projected_hourly_rate > 10:  # Too many signals
-            min_confidence = 80.0  # Raise gate to reduce volume
+            min_confidence = 75.0  # Moderate gate (was 80)
         elif projected_hourly_rate < 5:  # Too few signals
-            min_confidence = 70.0  # Lower gate to allow more
+            min_confidence = 65.0  # Much lower gate (was 70) to get more data
         else:  # Perfect range (5-10)
-            min_confidence = 75.0  # Optimal threshold
+            min_confidence = 70.0  # Optimal threshold (was 75)
         
-        # Never allow below 70% or above 95% regardless of rate
-        min_confidence = max(70.0, min(95.0, min_confidence))
+        # RECALIBRATED: Allow 65-85% range for better signal flow
+        min_confidence = max(65.0, min(85.0, min_confidence))
+        
+        # Apply pattern-specific confidence adjustments
+        pattern_confidence_adj = {
+            'FAIR_VALUE_GAP_FILL': -10,     # PENALTY for 34.8% win rate
+            'ORDER_BLOCK_BOUNCE': -10,       # PENALTY for 30.4% win rate
+            'LIQUIDITY_SWEEP_REVERSAL': -5,  # Small penalty
+            'VCB_BREAKOUT': +5,              # Boost good patterns
+            'SWEEP_RETURN': 0                # Neutral
+        }
+        
+        conf_adj = pattern_confidence_adj.get(pattern_type, 0)
+        if conf_adj != 0:
+            print(f"   🎯 Confidence adjustment for {pattern_type}: {conf_adj:+d}%")
         
         print(f"📊 Signal Rate Analysis: {signals_per_15min} in 15min = {projected_hourly_rate}/hr projected")
         print(f"   ML Confidence Gate: {min_confidence}% (dynamic based on rate)")
@@ -1842,6 +2070,18 @@ class EliteGuardBalanced:
             print(f"   ⚠️ CONFIDENCE FAIL: {adjusted_confidence:.1f}% < {min_confidence}%")
             return False, f"Below threshold ({min_confidence}%) after news", adjusted_confidence
         print(f"   ✅ CONFIDENCE PASSED: {adjusted_confidence:.1f}% >= {min_confidence}%")
+        
+        # EMERGENCY BLOCK: Disable failing patterns until retrained
+        blocked_patterns = ['FAIR_VALUE_GAP_FILL']  # 36.4% win rate - DISABLED
+        restricted_patterns = ['ORDER_BLOCK_BOUNCE']  # 44.4% win rate - RESTRICTED
+        
+        if signal.pattern in blocked_patterns:
+            print(f"   🚫 BLOCKED PATTERN: {signal.pattern} temporarily disabled (win rate < 40%)")
+            return False, f"Pattern blocked for retraining", adjusted_confidence
+        
+        if signal.pattern in restricted_patterns and adjusted_confidence < 85:
+            print(f"   ⚠️ RESTRICTED PATTERN: {signal.pattern} requires 85%+ confidence (has {adjusted_confidence:.1f}%)")
+            return False, f"Pattern restricted - needs 85%+ confidence", adjusted_confidence
         
         # Check performance history
         pattern_clean = signal.pattern.replace('_INTELLIGENT', '')

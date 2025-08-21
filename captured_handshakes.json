@@ -2,17 +2,17 @@
   "COMMANDER_DEV_001": {
     "user_uuid": "COMMANDER_DEV_001",
     "account": 843859,
-    "balance": 9332.44,
-    "equity": 9393.73,
-    "free_margin": 3165.77,
-    "margin_level": 150.83,
+    "balance": 9116.73,
+    "equity": 9607.52,
+    "free_margin": 3379.56,
+    "margin_level": 154.26,
     "broker": "",
     "server": "",
     "currency": "USD",
     "leverage": 500,
     "message_type": "heartbeat",
     "source": "tick_stream",
-    "captured_at": "2025-08-21T17:53:21.531997",
+    "captured_at": "2025-08-21T18:18:33.142470",
     "status": "captured"
   }
 }

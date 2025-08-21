@@ -1265,6 +1265,29 @@ class EliteGuardBalanced:
                 stop_pips = 3
                 target_pips = 4   # 1:1.33 RR
         
+        # FIX ERROR 4756: BROKER MINIMUM STOP DISTANCE REQUIREMENTS
+        # Exotic pairs and commodities need larger stops to avoid "Invalid stops" error
+        min_stop_requirements = {
+            'USDMXN': 15,  # Exotic pair - high spread, needs 15+ pips
+            'USDSEK': 15,  # Exotic pair - high spread, needs 15+ pips
+            'USDCNH': 20,  # Restricted pair - very high spread
+            'XAGUSD': 25,  # Silver - high volatility, needs 25+ pips
+            'XAUUSD': 10,  # Gold - moderate requirements
+            'USDNOK': 15,  # Exotic pair
+            'USDDKK': 15,  # Exotic pair
+            'USDTRY': 30,  # Very exotic, extreme spread
+            'USDZAR': 25,  # Exotic pair, high volatility
+        }
+        
+        # Apply minimum stop distance if required
+        min_stop = min_stop_requirements.get(symbol, 0)
+        if min_stop > 0 and stop_pips < min_stop:
+            # Maintain risk/reward ratio when adjusting
+            original_rr = target_pips / stop_pips if stop_pips > 0 else 1.5
+            stop_pips = min_stop
+            target_pips = int(min_stop * original_rr)
+            print(f"📏 {symbol}: Adjusted stops to {stop_pips}/{target_pips} pips (broker minimum for exotic/commodity)")
+        
         stop_distance = stop_pips * pip_size
         target_distance = target_pips * pip_size
         

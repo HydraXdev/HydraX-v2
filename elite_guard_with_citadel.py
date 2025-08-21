@@ -536,13 +536,15 @@ class EliteGuardBalanced:
         """Detect Volatility Compression Breakout (VCB) pattern"""
         try:
             if len(self.m5_data[symbol]) < 2:  # LOWERED
+                print(f"🔍 VCB {symbol}: Need 2+ M5 candles, have {len(self.m5_data[symbol])}")
                 return None
                 
             candles = list(self.m5_data[symbol])
             if len(candles) < 5:  # Reduced from 20 for faster signals
+                print(f"🔍 VCB {symbol}: Need 5+ candles for history, have {len(candles)}")
                 return None
                 
-            recent = list(candles.values())[-20:]
+            recent = candles[-20:] if len(candles) >= 20 else candles  # Fixed: candles is already a list
             current = recent[-1]
             
             # Calculate ATR for volatility
@@ -560,9 +562,10 @@ class EliteGuardBalanced:
             atr = sum(atr_values) / len(atr_values)
             pip_size = 0.01 if 'JPY' in symbol else 0.0001
             
-            # Check for compression (current range < 50% of ATR)
+            # Check for compression (current range < 70% of ATR) - RELAXED
             current_range = current['high'] - current['low']
-            if current_range > atr * 0.5:
+            if current_range > atr * 0.7:  # Relaxed from 0.5
+                print(f"🔍 VCB {symbol}: Not compressed, range {current_range:.5f} > {atr*0.7:.5f}")
                 return None  # Not compressed enough
             
             # Check for breakout
@@ -572,11 +575,13 @@ class EliteGuardBalanced:
             # BULLISH VCB
             if current['close'] > recent_high:
                 momentum = self.calculate_momentum_score(symbol, "BUY")
-                if momentum < 15:
+                if momentum < 10:  # Lowered from 15
+                    print(f"🔍 VCB {symbol}: Low momentum {momentum}")
                     return None
                 
                 volume_quality = self.analyze_volume_profile(symbol)
-                if volume_quality < 10:
+                if volume_quality < 5:  # Lowered from 10
+                    print(f"🔍 VCB {symbol}: Low volume {volume_quality}")
                     return None
                 
                 confidence = 65 + (momentum * 0.2) + (volume_quality * 0.15)
@@ -597,11 +602,12 @@ class EliteGuardBalanced:
             # BEARISH VCB
             elif current['close'] < recent_low:
                 momentum = self.calculate_momentum_score(symbol, "SELL")
-                if momentum < 15:
+                if momentum < 10:  # Lowered from 15
+                    print(f"🔍 VCB {symbol}: Low SELL momentum {momentum}")
                     return None
                 
                 volume_quality = self.analyze_volume_profile(symbol)
-                if volume_quality < 10:
+                if volume_quality < 5:  # Lowered from 10
                     return None
                 
                 confidence = 65 + (momentum * 0.2) + (volume_quality * 0.15)
@@ -1360,6 +1366,9 @@ class EliteGuardBalanced:
 
     def get_news_impact(self, symbol: str) -> int:
         """Get news impact adjustment for confidence (-10 for high impact)"""
+        # DISABLED for testing - always return 0
+        return 0
+        
         self.fetch_news_events()  # Ensure we have fresh events
         
         now = datetime.now(pytz.UTC)
@@ -1390,7 +1399,7 @@ class EliteGuardBalanced:
 
     def apply_ml_filter(self, signal, session: str) -> tuple[bool, str, float]:
         """Apply ML filtering for 5-10 signals/hour target"""
-        min_confidence = 68.0  # LOWERED for more signals
+        min_confidence = 50.0  # LOWERED to 50 for 5-10 signals/hour
         
         # Apply news impact adjustment to confidence
         news_adjustment = self.get_news_impact(signal.pair)
@@ -1576,7 +1585,7 @@ class EliteGuardBalanced:
                     # Apply CITADEL protection
                     protected_signal = self.citadel.protect_signal(signal)
                     
-                    if protected_signal and protected_signal.get('confidence', 0) >= 50:  # LOWERED
+                    if protected_signal and protected_signal.get('confidence', 0) >= 45:  # LOWERED to 45 for 5-10 signals/hr
                         # Signal passed CITADEL protection and meets final threshold
                         signals_generated.append(protected_signal)
                         

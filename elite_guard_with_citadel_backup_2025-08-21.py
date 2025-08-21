@@ -296,10 +296,6 @@ class EliteGuardBalanced:
         
         # Load candle cache on startup (AFTER trading_pairs defined)
         self.load_candles()
-        
-        # Test candle building (for debugging)
-        self.test_candle_building()
-        
         self.hourly_signal_count = defaultdict(int)  # Track signals per hour
         self.current_hour = datetime.now().hour
         
@@ -2092,45 +2088,6 @@ class EliteGuardBalanced:
                 time.sleep(5)
         
         self.cleanup()
-    
-    def test_candle_building(self):
-        """Test candle building functionality"""
-        print("🔍 Testing candle building...")
-        
-        # Initialize candle storage for all trading pairs if not present
-        for symbol in self.trading_pairs:
-            if symbol not in self.m1_data:
-                self.m1_data[symbol] = deque(maxlen=500)
-            if symbol not in self.m5_data:
-                self.m5_data[symbol] = deque(maxlen=300)
-            if symbol not in self.m15_data:
-                self.m15_data[symbol] = deque(maxlen=200)
-        
-        # Create a test tick
-        test_tick = {
-            "symbol": "EURUSD",
-            "bid": 1.1647,
-            "ask": 1.1649,
-            "timestamp": time.time()
-        }
-        
-        # Process the test tick
-        self.process_tick(test_tick)
-        
-        # Report candle counts
-        print(f"✅ EURUSD M1: {len(self.m1_data.get('EURUSD', []))} candles")
-        print(f"✅ EURUSD M5: {len(self.m5_data.get('EURUSD', []))} candles")
-        print(f"✅ EURUSD M15: {len(self.m15_data.get('EURUSD', []))} candles")
-        
-        # Check all pairs
-        print("\n📊 All pairs candle counts:")
-        for symbol in self.trading_pairs[:5]:  # Show first 5 for brevity
-            m1_count = len(self.m1_data.get(symbol, []))
-            m5_count = len(self.m5_data.get(symbol, []))
-            m15_count = len(self.m15_data.get(symbol, []))
-            print(f"  {symbol}: M1={m1_count}, M5={m5_count}, M15={m15_count}")
-        
-        print("✅ Candle building test complete!")
     
     def cleanup(self):
         """Clean shutdown"""

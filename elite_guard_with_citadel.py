@@ -641,15 +641,15 @@ class EliteGuardBalanced:
                         if block_low <= current_price <= block_low + (block_range * 0.4):
                             direction = "BUY"
                             
-                            # Skip momentum check for more signals
+                            # Check momentum - STRICT for quality
                             momentum = self.calculate_momentum_score(symbol, direction)
-                            # if momentum < self.MIN_MOMENTUM:
-                            #     continue  # DISABLED
+                            if momentum < 30:  # HIGH requirement
+                                continue
                             
-                            # Skip volume check for more signals
+                            # Check volume - STRICT for quality
                             volume_quality = self.analyze_volume_profile(symbol)
-                            # if volume_quality < self.MIN_VOLUME:
-                            #     continue  # DISABLED
+                            if volume_quality < 20:  # HIGH requirement
+                                continue
                             
                             pip_size = 0.01 if 'JPY' in symbol else 0.0001
                             entry_price = current_price + pip_size
@@ -674,11 +674,11 @@ class EliteGuardBalanced:
                             direction = "SELL"
                             
                             momentum = self.calculate_momentum_score(symbol, direction)
-                            if momentum < self.MIN_MOMENTUM:
+                            if momentum < 30:  # HIGH requirement for quality
                                 continue
                             
                             volume_quality = self.analyze_volume_profile(symbol)
-                            if volume_quality < self.MIN_VOLUME:
+                            if volume_quality < 20:  # HIGH requirement for quality
                                 continue
                             
                             pip_size = 0.01 if 'JPY' in symbol else 0.0001
@@ -835,16 +835,15 @@ class EliteGuardBalanced:
             # BULLISH VCB
             if current['close'] > recent_high:
                 momentum = self.calculate_momentum_score(symbol, "BUY")
-                # DISABLED momentum check for signals
-                # if momentum < 10:  # Lowered from 15
-                #     print(f"🔍 VCB {symbol}: Low momentum {momentum}")
-                #     return None
+                if momentum < 30:  # HIGH momentum requirement for quality
+                    print(f"🔍 VCB {symbol}: Low momentum {momentum}")
+                    return None
                 
                 volume_quality = self.analyze_volume_profile(symbol)
                 print(f"🔍 VCB {symbol}: BULLISH breakout! Momentum={momentum}, Volume={volume_quality}")
                 
-                if volume_quality < 5:  # Volume check
-                    print(f"🔍 VCB {symbol}: Volume too low ({volume_quality} < 5)")
+                if volume_quality < 20:  # HIGH volume requirement for quality
+                    print(f"🔍 VCB {symbol}: Volume too low ({volume_quality} < 20)")
                     return None
                 
                 confidence = 74 + (momentum * 0.05) + (volume_quality * 0.02)  # 74% base
@@ -865,13 +864,12 @@ class EliteGuardBalanced:
             # BEARISH VCB
             elif current['close'] < recent_low:
                 momentum = self.calculate_momentum_score(symbol, "SELL")
-                # DISABLED momentum check for signals
-                # if momentum < 10:  # Lowered from 15
-                #     print(f"🔍 VCB {symbol}: Low SELL momentum {momentum}")
-                #     return None
+                if momentum < 30:  # HIGH momentum requirement for quality
+                    print(f"🔍 VCB {symbol}: Low SELL momentum {momentum}")
+                    return None
                 
                 volume_quality = self.analyze_volume_profile(symbol)
-                if volume_quality < 5:  # Lowered from 10
+                if volume_quality < 20:  # HIGH volume requirement for quality
                     return None
                 
                 confidence = 74 + (momentum * 0.05) + (volume_quality * 0.02)  # 74% base

@@ -755,3 +755,14 @@
 {"timestamp": "2025-08-21T11:04:24.435516+00:00", "signal_id": "ELITE_SNIPER_EURUSD_1755774264", "event": "signal_generated", "quality_score": 35.6, "quality_tier": "ACCEPTABLE", "pattern": "LIQUIDITY_SWEEP_REVERSAL"}
 {"timestamp": "2025-08-21T11:05:24.521419+00:00", "signal_id": "ELITE_SNIPER_EURJPY_1755774324", "event": "signal_generated", "quality_score": 35.6, "quality_tier": "ACCEPTABLE", "pattern": "LIQUIDITY_SWEEP_REVERSAL"}
 {"timestamp": "2025-08-21T11:06:24.600108+00:00", "signal_id": "ELITE_SNIPER_GBPJPY_1755774384", "event": "signal_generated", "quality_score": 35.6, "quality_tier": "ACCEPTABLE", "pattern": "LIQUIDITY_SWEEP_REVERSAL"}
+{"timestamp": "2025-08-21T11:07:20.034258+00:00", "signal_id": "ELITE_RAPID_EURUSD_1755774440", "event": "signal_generated", "quality_score": 35.3, "quality_tier": "ACCEPTABLE", "pattern": "VCB_BREAKOUT"}
+{"timestamp": "2025-08-21T11:10:20.196360+00:00", "signal_id": "ELITE_RAPID_EURUSD_1755774620", "event": "signal_generated", "quality_score": 35.3, "quality_tier": "ACCEPTABLE", "pattern": "VCB_BREAKOUT"}
+{"timestamp": "2025-08-21T11:12:20.320404+00:00", "signal_id": "ELITE_RAPID_AUDUSD_1755774740", "event": "signal_generated", "quality_score": 35.3, "quality_tier": "ACCEPTABLE", "pattern": "VCB_BREAKOUT"}
+{"timestamp": "2025-08-21T11:12:20.324946+00:00", "signal_id": "ELITE_RAPID_NZDUSD_1755774740", "event": "signal_generated", "quality_score": 35.3, "quality_tier": "ACCEPTABLE", "pattern": "VCB_BREAKOUT"}
+{"timestamp": "2025-08-21T11:12:20.327382+00:00", "signal_id": "ELITE_RAPID_USDSEK_1755774740", "event": "signal_generated", "quality_score": 20.3, "quality_tier": "ACCEPTABLE", "pattern": "VCB_BREAKOUT"}
+{"timestamp": "2025-08-21T11:12:20.330109+00:00", "signal_id": "ELITE_RAPID_XAUUSD_1755774740", "event": "signal_generated", "quality_score": 20.3, "quality_tier": "ACCEPTABLE", "pattern": "VCB_BREAKOUT"}
+{"timestamp": "2025-08-21T11:13:20.377893+00:00", "signal_id": "ELITE_RAPID_EURUSD_1755774800", "event": "signal_generated", "quality_score": 35.3, "quality_tier": "ACCEPTABLE", "pattern": "VCB_BREAKOUT"}
+{"timestamp": "2025-08-21T11:13:20.378470+00:00", "signal_id": "ELITE_RAPID_USDJPY_1755774800", "event": "signal_generated", "quality_score": 35.3, "quality_tier": "ACCEPTABLE", "pattern": "VCB_BREAKOUT"}
+{"timestamp": "2025-08-21T11:13:20.379008+00:00", "signal_id": "ELITE_RAPID_EURJPY_1755774800", "event": "signal_generated", "quality_score": 35.3, "quality_tier": "ACCEPTABLE", "pattern": "VCB_BREAKOUT"}
+{"timestamp": "2025-08-21T11:13:20.379390+00:00", "signal_id": "ELITE_RAPID_GBPJPY_1755774800", "event": "signal_generated", "quality_score": 35.3, "quality_tier": "ACCEPTABLE", "pattern": "VCB_BREAKOUT"}
+{"timestamp": "2025-08-21T11:13:20.379801+00:00", "signal_id": "ELITE_RAPID_USDCNH_1755774800", "event": "signal_generated", "quality_score": 20.3, "quality_tier": "ACCEPTABLE", "pattern": "VCB_BREAKOUT"}

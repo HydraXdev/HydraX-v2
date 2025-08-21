@@ -2153,3 +2153,12 @@
 {"bot": "athena", "chat_id": "-1002581996861", "message_id": 7178, "signal_id": "ELITE_SNIPER_EURUSD_1755774264", "sent_at": "2025-08-21T11:04:25.048878", "delete_at": "2025-08-21T19:04:25.048884"}
 {"bot": "athena", "chat_id": "-1002581996861", "message_id": 7179, "signal_id": "ELITE_SNIPER_EURJPY_1755774324", "sent_at": "2025-08-21T11:05:25.053021", "delete_at": "2025-08-21T19:05:25.053024"}
 {"bot": "athena", "chat_id": "-1002581996861", "message_id": 7180, "signal_id": "ELITE_SNIPER_GBPJPY_1755774384", "sent_at": "2025-08-21T11:06:25.144029", "delete_at": "2025-08-21T19:06:25.144036"}
+{"bot": "athena", "chat_id": "-1002581996861", "message_id": 7181, "signal_id": "ELITE_RAPID_EURUSD_1755774620", "sent_at": "2025-08-21T11:10:20.740511", "delete_at": "2025-08-21T19:10:20.740515"}
+{"bot": "athena", "chat_id": "-1002581996861", "message_id": 7182, "signal_id": "ELITE_RAPID_AUDUSD_1755774740", "sent_at": "2025-08-21T11:12:20.848084", "delete_at": "2025-08-21T19:12:20.848088"}
+{"bot": "athena", "chat_id": "-1002581996861", "message_id": 7183, "signal_id": "ELITE_RAPID_NZDUSD_1755774740", "sent_at": "2025-08-21T11:12:21.383997", "delete_at": "2025-08-21T19:12:21.384005"}
+{"bot": "athena", "chat_id": "-1002581996861", "message_id": 7184, "signal_id": "ELITE_RAPID_USDSEK_1755774740", "sent_at": "2025-08-21T11:12:21.978531", "delete_at": "2025-08-21T19:12:21.978537"}
+{"bot": "athena", "chat_id": "-1002581996861", "message_id": 7185, "signal_id": "ELITE_RAPID_EURUSD_1755774800", "sent_at": "2025-08-21T11:13:20.929069", "delete_at": "2025-08-21T19:13:20.929073"}
+{"bot": "athena", "chat_id": "-1002581996861", "message_id": 7186, "signal_id": "ELITE_RAPID_USDJPY_1755774800", "sent_at": "2025-08-21T11:13:21.454447", "delete_at": "2025-08-21T19:13:21.454450"}
+{"bot": "athena", "chat_id": "-1002581996861", "message_id": 7187, "signal_id": "ELITE_RAPID_EURJPY_1755774800", "sent_at": "2025-08-21T11:13:21.963186", "delete_at": "2025-08-21T19:13:21.963189"}
+{"bot": "athena", "chat_id": "-1002581996861", "message_id": 7188, "signal_id": "ELITE_RAPID_GBPJPY_1755774800", "sent_at": "2025-08-21T11:13:22.456865", "delete_at": "2025-08-21T19:13:22.456868"}
+{"bot": "athena", "chat_id": "-1002581996861", "message_id": 7189, "signal_id": "ELITE_RAPID_USDCNH_1755774800", "sent_at": "2025-08-21T11:13:22.993641", "delete_at": "2025-08-21T19:13:22.993649"}

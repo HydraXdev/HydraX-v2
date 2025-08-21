@@ -896,6 +896,14 @@ class EliteGuardBalanced:
             
             # BULLISH VCB
             if current['close'] > recent_high:
+                # First check if we have actual bullish momentum
+                if len(self.m1_data[symbol]) >= 3:
+                    recent_m1 = list(self.m1_data[symbol])[-3:]
+                    actual_direction = recent_m1[-1]['close'] - recent_m1[-2]['close']
+                    if actual_direction <= 0:
+                        print(f"🔍 VCB {symbol}: Skipping - price not rising (delta={actual_direction:.5f})")
+                        return None
+                
                 momentum = self.calculate_momentum_score(symbol, "BUY")
                 if momentum < 5:  # LOWERED: 5 for low-vol market (was 30)
                     print(f"🔍 VCB {symbol}: Low momentum {momentum}")
@@ -925,6 +933,14 @@ class EliteGuardBalanced:
             
             # BEARISH VCB
             elif current['close'] < recent_low:
+                # First check if we have actual bearish momentum
+                if len(self.m1_data[symbol]) >= 3:
+                    recent_m1 = list(self.m1_data[symbol])[-3:]
+                    actual_direction = recent_m1[-1]['close'] - recent_m1[-2]['close']
+                    if actual_direction >= 0:
+                        print(f"🔍 VCB {symbol}: Skipping SELL - price not falling (delta={actual_direction:.5f})")
+                        return None
+                
                 momentum = self.calculate_momentum_score(symbol, "SELL")
                 if momentum < 5:  # LOWERED: 5 for low-vol market (was 30)
                     print(f"🔍 VCB {symbol}: Low SELL momentum {momentum}")
@@ -2005,7 +2021,7 @@ class EliteGuardBalanced:
         
         for signal in released_signals:
             # These are post-sweep golden opportunities
-            if signal.get('confidence', 0) >= 65:  # Quality threshold restored
+            if signal.get('confidence', 0) >= 70:  # Match MIN_CONFIDENCE threshold
                 self.publish_signal(signal)
                 logger.info(f"🏆 CITADEL RELEASE: {signal['symbol']} {signal['direction']} "
                           f"(delayed {signal.get('delay_time', 0)}s, confidence: {signal['confidence']}%)")

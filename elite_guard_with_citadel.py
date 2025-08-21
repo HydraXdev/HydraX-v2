@@ -622,7 +622,7 @@ class EliteGuardBalanced:
             return 20  # Default volume for prime time
     
     def detect_liquidity_sweep_reversal(self, symbol: str) -> Optional[PatternSignal]:
-        """Detect liquidity sweep with volatility-based threshold"""
+        """INDUSTRY STANDARD: Price sweeps >3 pips beyond recent high/low to grab liquidity, reverses with rejection candle"""
         try:
             # Check if symbol exists in m5_data
             if symbol not in self.m5_data:
@@ -633,113 +633,98 @@ class EliteGuardBalanced:
                 print(f"🔍 LSR {symbol}: Only {len(self.m5_data[symbol])} M5 candles, need 3+")
                 return None
                 
-            recent_candles = list(self.m5_data[symbol])[-10:]
+            recent_candles = list(self.m5_data[symbol])[-3:]  # Just last 3 candles for industry standard
             
-            # Calculate ATR for volatility-based threshold
-            atr_values = []
-            for i in range(1, min(len(recent_candles), 5)):
-                high_low = recent_candles[i]['high'] - recent_candles[i]['low']
-                atr_values.append(high_low)
+            # Get pip size for this symbol
+            if 'JPY' in symbol:
+                pip_size = 0.01
+            elif symbol == 'XAUUSD':
+                pip_size = 0.1
+            else:
+                pip_size = 0.0001
             
-            atr = sum(atr_values) / len(atr_values) if atr_values else 0
-            pip_size = 0.01 if 'JPY' in symbol else 0.0001
-            
-            # Volatility-based sweep threshold
-            # High volatility (ATR > 5 pips): require 3.0 pip sweep
-            # Low volatility (ATR <= 5 pips): allow 0.5 pip sweep
-            volatility_threshold = 5 * pip_size  # 5 pips
-            is_high_volatility = atr > volatility_threshold
-            # Use dynamic threshold from manager
-            sweep_requirement = self.threshold_manager.get_threshold('LIQUIDITY_SWEEP_REVERSAL', 'pip_sweep')
-            if sweep_requirement is None:
-                sweep_requirement = 1.5  # REDUCED: 1.5 pips for more signals
-            
-            # Find recent high/low from all but last candle
+            # INDUSTRY STANDARD: Find recent high/low from candles BEFORE the sweep
             recent_high = max(c['high'] for c in recent_candles[:-1])
             recent_low = min(c['low'] for c in recent_candles[:-1])
             current_candle = recent_candles[-1]
             
-            # Calculate sweep size
+            # Calculate sweep size in pips (how far beyond recent high/low)
             bullish_sweep = (recent_low - current_candle['low']) / pip_size if current_candle['low'] < recent_low else 0
             bearish_sweep = (current_candle['high'] - recent_high) / pip_size if current_candle['high'] > recent_high else 0
             
-            print(f"🔍 LSR {symbol}: ATR={atr:.5f}, Volatility={'HIGH' if is_high_volatility else 'LOW'}, Sweep req={sweep_requirement:.1f}p")
-            print(f"🔍 LSR {symbol}: Bullish sweep={bullish_sweep:.1f}p, Bearish sweep={bearish_sweep:.1f}p")
+            # INDUSTRY STANDARD: Minimum 3 pip sweep for major pairs (adjust for gold)
+            min_sweep_pips = 3.0  # Standard 3 pip minimum sweep
+            if symbol == 'XAUUSD':
+                min_sweep_pips = 30.0  # Gold needs bigger moves (30 pip = $3)
             
-            # BULLISH: Sweep below low with volatility-based threshold
-            if bullish_sweep >= sweep_requirement:
-                # Relaxed rejection: just need close not at the extreme low
-                rejection = current_candle['close'] > current_candle['low'] + pip_size
-                print(f"🔍 LSR {symbol}: BULLISH SWEEP {bullish_sweep:.1f} pips! Rejection={rejection}")
+            # Calculate rejection candle characteristics
+            candle_range = (current_candle['high'] - current_candle['low']) / pip_size
+            upper_wick = (current_candle['high'] - max(current_candle['open'], current_candle['close'])) / pip_size
+            lower_wick = (min(current_candle['open'], current_candle['close']) - current_candle['low']) / pip_size
+            
+            # Debug logging with differences from old logic
+            print(f"🔍 LSR {symbol}: INDUSTRY STANDARD CHECK")
+            print(f"   Recent High={recent_high:.5f}, Low={recent_low:.5f}")
+            print(f"   Current: High={current_candle['high']:.5f}, Low={current_candle['low']:.5f}, Close={current_candle['close']:.5f}")
+            print(f"   Sweep: Bullish={bullish_sweep:.1f}p, Bearish={bearish_sweep:.1f}p (Min req: {min_sweep_pips}p)")
+            print(f"   Candle: Range={candle_range:.1f}p, Upper wick={upper_wick:.1f}p, Lower wick={lower_wick:.1f}p")
+            print(f"   OLD vs NEW: Was using ATR-based (1.5p), now fixed 3p standard")
+            
+            # BULLISH SWEEP: Price swept below low by >3 pips with rejection candle
+            if bullish_sweep >= min_sweep_pips:
+                # INDUSTRY STANDARD: Rejection = lower wick > 50% of candle range
+                rejection_ratio = lower_wick / candle_range if candle_range > 0 else 0
+                has_rejection = rejection_ratio > 0.5 and current_candle['close'] > recent_low
                 
-                if rejection:  # REQUIRE rejection candle for quality
-                    # Check momentum - STRICT for quality
-                    momentum = self.calculate_momentum_score(symbol, "BUY")
-                    print(f"🔍 LSR {symbol}: BUY momentum={momentum:.1f} (need 10+)")
-                    if momentum < 10:  # REDUCED: 10 momentum for more signals
-                        print(f"🚫 LSR {symbol}: Low BUY momentum {momentum:.1f} < 10")
-                        return None
+                print(f"🔍 LSR {symbol}: BULLISH SWEEP DETECTED! {bullish_sweep:.1f} pips")
+                print(f"   Rejection ratio: {rejection_ratio:.2%} (need >50%), Close above low: {current_candle['close'] > recent_low}")
+                
+                if has_rejection:  # REQUIRE rejection candle for quality
+                    # Calculate base quality from sweep size and rejection
+                    base_quality = 50  # Start at 50%
+                    base_quality += min(bullish_sweep - min_sweep_pips, 5) * 2  # +2% per extra pip (max +10%)
+                    base_quality += rejection_ratio * 10  # +10% for perfect rejection
                     
-                    # Check volume - STRICT for quality
-                    volume_quality = self.analyze_volume_profile(symbol)
-                    if volume_quality < 5:  # REDUCED: 5 volume for more signals
-                        print(f"🚫 LSR {symbol}: Low volume {volume_quality:.1f} < 5")
-                        return None
+                    print(f"🔍 LSR {symbol}: Pattern quality = {base_quality:.1f}% (Base 50 + Sweep bonus + Rejection bonus)")
                     
-                    entry_price = current_candle['close'] + pip_size  # Entry above close
-                    
-                    # Use dynamic confidence calculation
-                    base_pattern_score = 80  # LSR high quality pattern
-                    confidence = self.calculate_dynamic_confidence(symbol, base_pattern_score, momentum, volume_quality)
-                    
-                    signal = PatternSignal(
+                    # Return signal with base quality
+                    return PatternSignal(
                         pattern="LIQUIDITY_SWEEP_REVERSAL",
                         direction="BUY",
-                        entry_price=entry_price,
-                        confidence=confidence,
+                        entry_price=current_candle['close'] + pip_size,
+                        confidence=base_quality,
                         timeframe="M5",
                         pair=symbol,
-                        momentum_score=momentum,
-                        volume_quality=volume_quality
+                        quality_score=base_quality
                     )
-                    signal.quality_score = self.calculate_quality_score(signal)
-                    return signal
             
-            # BEARISH: Sweep above high with volatility-based threshold
-            elif bearish_sweep >= sweep_requirement:
-                rejection = current_candle['close'] < recent_high  # Close back below swept level
-                print(f"🔍 LSR {symbol}: BEARISH SWEEP {bearish_sweep:.1f} pips! Rejection={rejection}")
+            # BEARISH SWEEP: Price swept above high by >3 pips with rejection candle
+            elif bearish_sweep >= min_sweep_pips:
+                # INDUSTRY STANDARD: Rejection = upper wick > 50% of candle range
+                rejection_ratio = upper_wick / candle_range if candle_range > 0 else 0
+                has_rejection = rejection_ratio > 0.5 and current_candle['close'] < recent_high
                 
-                if rejection:  # REQUIRE rejection candle for quality
-                    momentum = self.calculate_momentum_score(symbol, "SELL")
-                    if momentum < 5:  # OPTIMIZED: 5 momentum threshold for more signals
-                        print(f"🚫 LSR {symbol}: Low SELL momentum {momentum:.1f} < 5")
-                        return None
+                print(f"🔍 LSR {symbol}: BEARISH SWEEP DETECTED! {bearish_sweep:.1f} pips")
+                print(f"   Rejection ratio: {rejection_ratio:.2%} (need >50%), Close below high: {current_candle['close'] < recent_high}")
+                
+                if has_rejection:  # REQUIRE rejection candle for quality
+                    # Calculate base quality from sweep size and rejection
+                    base_quality = 50  # Start at 50%
+                    base_quality += min(bearish_sweep - min_sweep_pips, 5) * 2  # +2% per extra pip (max +10%)
+                    base_quality += rejection_ratio * 10  # +10% for perfect rejection
                     
-                    volume_quality = self.analyze_volume_profile(symbol)
-                    if volume_quality < 5:  # REDUCED: 5 volume for more signals
-                        print(f"🚫 LSR {symbol}: Low volume {volume_quality:.1f} < 5")
-                        return None
+                    print(f"🔍 LSR {symbol}: Pattern quality = {base_quality:.1f}% (Base 50 + Sweep bonus + Rejection bonus)")
                     
-                    entry_price = current_candle['close'] - pip_size
-                    
-                    # Use dynamic confidence calculation
-                    base_pattern_score = 80  # LSR high quality pattern
-                    confidence = self.calculate_dynamic_confidence(symbol, base_pattern_score, momentum, volume_quality)
-                    
-                    signal = PatternSignal(
+                    # Return signal with base quality
+                    return PatternSignal(
                         pattern="LIQUIDITY_SWEEP_REVERSAL",
                         direction="SELL",
-                        entry_price=entry_price,
-                        confidence=confidence,
+                        entry_price=current_candle['close'] - pip_size,
+                        confidence=base_quality,
                         timeframe="M5",
                         pair=symbol,
-                        momentum_score=momentum,
-                        volume_quality=volume_quality
+                        quality_score=base_quality
                     )
-                    signal.quality_score = self.calculate_quality_score(signal)
-                    return signal
-                    
         except Exception as e:
             logger.debug(f"Error in liquidity sweep: {e}")
         

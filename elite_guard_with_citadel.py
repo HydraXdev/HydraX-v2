@@ -66,7 +66,15 @@ class EliteGuardBalanced:
         self.last_signal_time = defaultdict(float)  # Per-pair cooldown
         self.signal_history = deque(maxlen=100)  # Track recent signals
         
-        # Load candle cache on startup
+        # Define trading pairs FIRST (before load_candles)
+        self.trading_pairs = [
+            # ACTUAL symbols from ZMQ feed
+            "EURUSD", "GBPUSD", "USDJPY", "USDCHF", "USDCAD", "AUDUSD", "NZDUSD",
+            "EURJPY", "GBPJPY", "USDCNH", "USDSEK", "XAUUSD"
+            # Skip crypto (BTCUSD, ETHUSD, XRPUSD) - forex only
+        ]
+        
+        # Load candle cache on startup (AFTER trading_pairs defined)
         self.load_candles()
         self.hourly_signal_count = defaultdict(int)  # Track signals per hour
         self.current_hour = datetime.now().hour
@@ -80,13 +88,7 @@ class EliteGuardBalanced:
         self.pattern_performance = defaultdict(lambda: {'wins': 0, 'losses': 0})
         
         # Balanced thresholds (less strict than optimized)
-        # Define trading pairs to monitor (FOREX ONLY + Gold)
-        self.trading_pairs = [
-            # ACTUAL symbols from ZMQ feed
-            "EURUSD", "GBPUSD", "USDJPY", "USDCHF", "USDCAD", "AUDUSD", "NZDUSD",
-            "EURJPY", "GBPJPY", "USDCNH", "USDSEK", "XAUUSD"
-            # Skip crypto (BTCUSD, ETHUSD, XRPUSD) - forex only
-        ]
+        # Trading pairs already defined above (before load_candles)
         
         self.MIN_MOMENTUM = 0    # Disabled for testing
         self.MIN_VOLUME = 0      # Disabled for testing

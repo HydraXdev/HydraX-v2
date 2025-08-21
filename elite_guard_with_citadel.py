@@ -731,104 +731,81 @@ class EliteGuardBalanced:
         return None
     
     def detect_order_block_bounce(self, symbol: str) -> Optional[PatternSignal]:
-        """Detect order block patterns with balanced requirements"""
+        """INDUSTRY STANDARD: Price bounces from institutional order blocks (10-candle accumulation zones, bounce within 25% of range)"""
         try:
-            print(f"🔍 OBB {symbol}: Starting check")
-            if len(self.m5_data[symbol]) < 2:  # LOWERED
-                print(f"🔍 OBB {symbol}: Only {len(self.m5_data[symbol])} M5 candles, need 2+")
+            print(f"🔍 OBB {symbol}: INDUSTRY STANDARD CHECK")
+            if len(self.m5_data[symbol]) < 10:  # INDUSTRY STANDARD: Need 10 candles
+                print(f"🔍 OBB {symbol}: Only {len(self.m5_data[symbol])} M5 candles, need 10+")
                 return None
                 
-            candles = list(self.m5_data[symbol])
-            if len(candles) < 4:  # Reduced from 15 for faster signals
-                print(f"🔍 OBB {symbol}: Only {len(candles)} candles, need 4+")
-                return None
+            candles = list(self.m5_data[symbol])[-10:]  # INDUSTRY STANDARD: Last 10 candles for order blocks
             
-            print(f"🔍 OBB {symbol}: Checking {len(candles)} candles for order blocks")
-            recent_candles = list(candles.values())[-15:]
+            # Get pip size for this symbol
+            if 'JPY' in symbol:
+                pip_size = 0.01
+            elif symbol == 'XAUUSD':
+                pip_size = 0.1
+            else:
+                pip_size = 0.0001
             
-            # Find strong moves (order blocks)
-            for i in range(5, 12):  # Look back 5-12 candles
-                candle = recent_candles[i]
-                candle_range = candle['high'] - candle['low']
+            # INDUSTRY STANDARD: Find order block zones from past accumulation
+            recent_low = min(c['low'] for c in candles[:-1])  # Exclude current candle
+            recent_high = max(c['high'] for c in candles[:-1])
+            block_range = recent_high - recent_low
+            current_candle = candles[-1]
+            
+            # Calculate body and range for current candle
+            candle_body = abs(current_candle['close'] - current_candle['open'])
+            candle_range = current_candle['high'] - current_candle['low']
+            body_ratio = candle_body / candle_range if candle_range > 0 else 0
+            
+            # INDUSTRY STANDARD: Bounce must be within 25% of order block range
+            distance_from_low = (current_candle['low'] - recent_low) / block_range if block_range > 0 else 0
+            distance_from_high = (recent_high - current_candle['high']) / block_range if block_range > 0 else 0
+            
+            # Debug logging with differences from old logic
+            print(f"   Order Block: High={recent_high:.5f}, Low={recent_low:.5f}, Range={block_range/pip_size:.1f}p")
+            print(f"   Current: High={current_candle['high']:.5f}, Low={current_candle['low']:.5f}, Close={current_candle['close']:.5f}")
+            print(f"   Distance from low: {distance_from_low:.2%}, Distance from high: {distance_from_high:.2%}")
+            print(f"   Body ratio: {body_ratio:.2%} (strong body = high ratio)")
+            print(f"   OLD vs NEW: Was using 15 candles with 30% body req, now 10 candles with 25% bounce zone")
+            
+            # BULLISH BOUNCE: Price touches within 25% of recent low and bounces
+            bull_bounce = (0 <= distance_from_low <= 0.25) and current_candle['close'] > recent_low + (block_range * 0.1)
+            
+            # BEARISH BOUNCE: Price touches within 25% of recent high and bounces
+            bear_bounce = (0 <= distance_from_high <= 0.25) and current_candle['close'] < recent_high - (block_range * 0.1)
+            
+            direction = 'BUY' if bull_bounce else 'SELL' if bear_bounce else None
+            
+            if direction:
+                # Calculate quality based on body strength and bounce precision
+                base_quality = 50  # Start at 50%
+                base_quality += body_ratio * 30  # Up to +30% for strong body (full body candle)
                 
-                # Significant candle (order block candidate)
-                if candle_range > 0:
-                    body = abs(candle['close'] - candle['open'])
-                    if body / candle_range > 0.3:  # Much lower requirement for order blocks
-                        
-                        # Define order block zone
-                        block_high = candle['high']
-                        block_low = candle['low']
-                        block_range = block_high - block_low
-                        current_price = recent_candles[-1]['close']
-                        
-                        # BULLISH: Price at support zone
-                        if block_low <= current_price <= block_low + (block_range * 0.4):
-                            direction = "BUY"
-                            print(f"🔍 OBB {symbol}: BUY zone hit! Price={current_price:.5f} in block {block_low:.5f}-{block_low + block_range*0.4:.5f}")
-                            
-                            # Check momentum - STRICT for quality
-                            momentum = self.calculate_momentum_score(symbol, direction)
-                            print(f"🔍 OBB {symbol}: BUY momentum={momentum:.1f} (need 30+)")
-                            if momentum < 30:  # HIGH requirement
-                                continue
-                            
-                            # Check volume - STRICT for quality
-                            volume_quality = self.analyze_volume_profile(symbol)
-                            if volume_quality < 20:  # HIGH requirement
-                                continue
-                            
-                            pip_size = 0.01 if 'JPY' in symbol else 0.0001
-                            entry_price = current_price + pip_size
-                            
-                            # Use dynamic confidence calculation
-                            base_pattern_score = 72  # OBB base strength
-                            confidence = self.calculate_dynamic_confidence(symbol, base_pattern_score, momentum, volume_quality)
-                            
-                            signal = PatternSignal(
-                                pattern="ORDER_BLOCK_BOUNCE",
-                                direction=direction,
-                                entry_price=entry_price,
-                                confidence=confidence,
-                                timeframe="M5",
-                                pair=symbol,
-                                momentum_score=momentum,
-                                volume_quality=volume_quality
-                            )
-                            signal.quality_score = self.calculate_quality_score(signal)
-                            return signal
-                        
-                        # BEARISH: Price at resistance zone
-                        elif block_high - (block_range * 0.4) <= current_price <= block_high:
-                            direction = "SELL"
-                            
-                            momentum = self.calculate_momentum_score(symbol, direction)
-                            if momentum < 30:  # HIGH requirement for quality
-                                continue
-                            
-                            volume_quality = self.analyze_volume_profile(symbol)
-                            if volume_quality < 20:  # HIGH requirement for quality
-                                continue
-                            
-                            pip_size = 0.01 if 'JPY' in symbol else 0.0001
-                            entry_price = current_price - pip_size
-                            
-                            # Use dynamic confidence calculation
-                            base_pattern_score = 72  # OBB base strength
-                            confidence = self.calculate_dynamic_confidence(symbol, base_pattern_score, momentum, volume_quality)
-                            
-                            signal = PatternSignal(
-                                pattern="ORDER_BLOCK_BOUNCE",
-                                direction=direction,
-                                entry_price=entry_price,
-                                confidence=confidence,
-                                timeframe="M5",
-                                pair=symbol,
-                                momentum_score=momentum,
-                                volume_quality=volume_quality
-                            )
-                            signal.quality_score = self.calculate_quality_score(signal)
-                            return signal
+                # Add precision bonus (closer to exact support/resistance = better)
+                if direction == 'BUY':
+                    precision = 1 - (distance_from_low / 0.25)  # Closer to low = higher precision
+                else:
+                    precision = 1 - (distance_from_high / 0.25)  # Closer to high = higher precision
+                base_quality += precision * 10  # Up to +10% for precise bounce
+                
+                base_quality = min(base_quality, 80)  # Cap at 80%
+                
+                print(f"🔍 OBB {symbol}: {direction} BOUNCE DETECTED!")
+                print(f"   Quality = {base_quality:.1f}% (Base 50 + Body {body_ratio*30:.1f}% + Precision {precision*10:.1f}%)")
+                print(f"   Entry: {current_candle['close'] + pip_size if direction == 'BUY' else current_candle['close'] - pip_size:.5f}")
+                
+                # Return signal with base quality
+                return PatternSignal(
+                    pattern="ORDER_BLOCK_BOUNCE",
+                    direction=direction,
+                    entry_price=current_candle['close'] + pip_size if direction == 'BUY' else current_candle['close'] - pip_size,
+                    confidence=base_quality,
+                    timeframe="M5",
+                    pair=symbol,
+                    quality_score=base_quality
+                )
                             
         except Exception as e:
             logger.debug(f"Error in order block: {e}")

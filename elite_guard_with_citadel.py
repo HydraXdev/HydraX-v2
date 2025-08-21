@@ -2133,12 +2133,9 @@ class EliteGuardBalanced:
                 "pips_result": None
             }
             
-            # Write to truth log
-            with open('/root/HydraX-v2/truth_log.jsonl', 'a') as f:
-                f.write(json.dumps(truth_entry) + '\n')
-            
-            # NEW: Write to optimized tracking log with enhanced metrics
+            # ONLY write to optimized tracking - single source of truth
             self.log_optimized_tracking(signal_data)
+            print(f"📝 ONLY optimized_tracking.jsonl: {signal_data.get('signal_id', 'unknown')}")
                 
         except Exception as e:
             logger.error(f"Error logging to truth tracker: {e}")
@@ -2229,55 +2226,75 @@ class EliteGuardBalanced:
             traceback.print_exc()
     
     def analyze_initial_data(self):
-        """Analyze initial tracking data for optimization insights"""
+        """Analyze ONLY optimized_tracking.jsonl with detailed breakdowns"""
         try:
-            # Read all tracking data
-            signals = []
             tracking_file = '/root/HydraX-v2/optimized_tracking.jsonl'
             
-            if os.path.exists(tracking_file):
-                with open(tracking_file, 'r') as f:
-                    for line in f:
-                        try:
-                            signals.append(json.loads(line.strip()))
-                        except json.JSONDecodeError:
-                            continue
-            
-            if not signals:
-                print("📊 No signals tracked yet")
+            if not os.path.exists(tracking_file):
+                print("📊 No optimized_tracking.jsonl yet")
                 return
-            
-            # Calculate metrics
-            total_signals = len(signals)
+                
+            with open(tracking_file, 'r') as f:
+                signals = [json.loads(line) for line in f if line.strip()]
+                
+            if not signals:
+                print("📊 No data in optimized_tracking.jsonl yet")
+                return
+                
+            # Overall stats
+            total = len(signals)
             wins = sum(1 for s in signals if s.get('win', False))
-            win_rate = (wins / total_signals * 100) if total_signals else 0
+            win_rate = (wins / total * 100) if total > 0 else 0
             
-            # Average metrics
-            avg_conf = sum(s.get('confidence', 0) for s in signals) / total_signals
-            avg_quality = sum(s.get('quality_score', 0) for s in signals) / total_signals
-            avg_rr = sum(s.get('risk_reward', 0) for s in signals) / total_signals
-            avg_lifespan = sum(s.get('lifespan', 0) for s in signals) / total_signals
+            # Pattern breakdown with win rates
+            patterns = set(s['pattern'] for s in signals if 'pattern' in s)
+            pattern_stats = {}
+            for p in patterns:
+                p_signals = [s for s in signals if s.get('pattern') == p]
+                if p_signals:
+                    p_wins = sum(1 for s in p_signals if s.get('win', False))
+                    pattern_stats[p] = f"{p_wins}/{len(p_signals)} ({p_wins/len(p_signals)*100:.1f}%)"
             
-            # Pattern distribution
-            patterns = {}
+            # Session breakdown
+            session_stats = {}
+            for sess in ['Asian', 'London', 'NY', 'Overlap']:
+                sess_signals = [s for s in signals if s.get('session') == sess]
+                if sess_signals:
+                    sess_wins = sum(1 for s in sess_signals if s.get('win', False))
+                    session_stats[sess] = f"{sess_wins}/{len(sess_signals)} ({sess_wins/len(sess_signals)*100:.1f}%)"
+            
+            # Confidence bins
+            conf_stats = {}
+            for bin_name, (low, high) in [('70-75', (70, 75)), ('75-85', (75, 85)), ('85-95', (85, 95))]:
+                bin_signals = [s for s in signals if low <= s.get('confidence', 0) < high]
+                if bin_signals:
+                    bin_wins = sum(1 for s in bin_signals if s.get('win', False))
+                    conf_stats[bin_name] = f"{bin_wins}/{len(bin_signals)} ({bin_wins/len(bin_signals)*100:.1f}%)"
+            
+            # Last 30 min stats
+            now = datetime.now()
+            last_30 = []
             for s in signals:
-                p = s.get('pattern', 'UNKNOWN')
-                patterns[p] = patterns.get(p, 0) + 1
+                try:
+                    ts = datetime.fromisoformat(s['timestamp'].replace('Z', '+00:00'))
+                    if (now - ts).total_seconds() < 1800:
+                        last_30.append(s)
+                except:
+                    pass
             
-            # Pair distribution
-            pairs = {}
-            for s in signals:
-                pair = s.get('pair', 'UNKNOWN')
-                pairs[pair] = pairs.get(pair, 0) + 1
-            
-            # Session distribution
-            sessions = {}
-            for s in signals:
-                sess = s.get('session', 'UNKNOWN')
-                sessions[sess] = sessions.get(sess, 0) + 1
-            
-            # Direction analysis
-            directions = {'BUY': 0, 'SELL': 0}
+            print(f"\n📊 OPTIMIZED TRACKING ANALYSIS (ONLY SOURCE):")
+            print(f"   Total: {total} signals, Win Rate: {win_rate:.1f}%")
+            print(f"   Patterns: {pattern_stats}")
+            print(f"   Sessions: {session_stats}")
+            print(f"   Conf Bins: {conf_stats}")
+            print(f"   Last 30min: {len(last_30)} signals")
+            if last_30:
+                print(f"   - Avg Conf: {sum(s.get('confidence', 0) for s in last_30)/len(last_30):.1f}%")
+                print(f"   - Avg Quality: {sum(s.get('quality_score', 0) for s in last_30)/len(last_30):.1f}%")
+                print(f"   - Avg R:R: {sum(s.get('risk_reward', 0) for s in last_30)/len(last_30):.2f}")
+                
+        except Exception as e:
+            print(f"Error analyzing optimized_tracking.jsonl: {e}")
             for s in signals:
                 d = s.get('direction', 'UNKNOWN')
                 if d in directions:

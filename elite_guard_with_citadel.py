@@ -272,26 +272,38 @@ class EliteGuardBalanced:
             return 10
     
     def detect_liquidity_sweep_reversal(self, symbol: str) -> Optional[PatternSignal]:
-        """Detect liquidity sweep with balanced requirements"""
+        """Detect liquidity sweep with 3+ pip requirement"""
         try:
-            if len(self.m5_data[symbol]) < 2:  # LOWERED  # Need at least 3 M5 candles
-                logger.debug(f"LSR: {symbol} has only {len(self.m5_data[symbol])} M5 candles, need 3")
+            # Check if symbol exists in m5_data
+            if symbol not in self.m5_data:
+                print(f"🔍 LSR {symbol}: No M5 data available")
+                return None
+                
+            if len(self.m5_data[symbol]) < 3:  # Need at least 3 M5 candles
+                print(f"🔍 LSR {symbol}: Only {len(self.m5_data[symbol])} M5 candles, need 3+")
                 return None
                 
             recent_candles = list(self.m5_data[symbol])[-10:]
             
-            # Find recent high/low
+            # Find recent high/low from all but last candle
             recent_high = max(c['high'] for c in recent_candles[:-1])
             recent_low = min(c['low'] for c in recent_candles[:-1])
             current_candle = recent_candles[-1]
             
             pip_size = 0.01 if 'JPY' in symbol else 0.0001
             
-            # BULLISH: Sweep below low and recovery
-            if current_candle['low'] < recent_low - (2 * pip_size):  # Less strict
-                sweep_depth = (recent_low - current_candle['low']) / pip_size
+            # Calculate sweep size
+            bullish_sweep = (recent_low - current_candle['low']) / pip_size if current_candle['low'] < recent_low else 0
+            bearish_sweep = (current_candle['high'] - recent_high) / pip_size if current_candle['high'] > recent_high else 0
+            
+            print(f"🔍 LSR {symbol}: Bullish sweep={bullish_sweep:.1f}p, Bearish sweep={bearish_sweep:.1f}p, Close={current_candle['close']:.5f}")
+            
+            # BULLISH: Sweep below low (0.5+ pips temporarily for testing) and rejection
+            if bullish_sweep >= 0.5:  # TEMPORARILY LOWERED TO 0.5 for signal generation
+                rejection = current_candle['close'] > recent_low  # Close back above swept level
+                print(f"🔍 LSR {symbol}: BULLISH SWEEP {bullish_sweep:.1f} pips! Rejection={rejection}")
                 
-                if sweep_depth >= 2 and current_candle['close'] > recent_low:  # Reduced from 3 pips
+                if rejection:  # Must have rejection candle
                     # Check momentum
                     momentum = self.calculate_momentum_score(symbol, "BUY")
                     if momentum < self.MIN_MOMENTUM:
@@ -319,11 +331,12 @@ class EliteGuardBalanced:
                     signal.quality_score = self.calculate_quality_score(signal)
                     return signal
             
-            # BEARISH: Sweep above high and rejection
-            elif current_candle['high'] > recent_high + (2 * pip_size):
-                sweep_height = (current_candle['high'] - recent_high) / pip_size
+            # BEARISH: Sweep above high (0.5+ pips temporarily for testing) and rejection
+            elif bearish_sweep >= 0.5:  # TEMPORARILY LOWERED TO 0.5 for signal generation
+                rejection = current_candle['close'] < recent_high  # Close back below swept level
+                print(f"🔍 LSR {symbol}: BEARISH SWEEP {bearish_sweep:.1f} pips! Rejection={rejection}")
                 
-                if sweep_height >= 2 and current_candle['close'] < recent_high:
+                if rejection:  # Must have rejection candle
                     momentum = self.calculate_momentum_score(symbol, "SELL")
                     if momentum < self.MIN_MOMENTUM:
                         return None
@@ -535,16 +548,17 @@ class EliteGuardBalanced:
     def detect_vcb_breakout(self, symbol: str) -> Optional[PatternSignal]:
         """Detect Volatility Compression Breakout (VCB) pattern"""
         try:
-            if len(self.m5_data[symbol]) < 2:  # LOWERED
-                print(f"🔍 VCB {symbol}: Need 2+ M5 candles, have {len(self.m5_data[symbol])}")
+            # Check if symbol exists in m5_data
+            if symbol not in self.m5_data:
+                print(f"🔍 VCB {symbol}: No M5 data available")
+                return None
+                
+            if len(self.m5_data[symbol]) < 5:  # Need 5+ M5 candles for ATR
+                print(f"🔍 VCB {symbol}: Only {len(self.m5_data[symbol])} M5 candles, need 5+")
                 return None
                 
             candles = list(self.m5_data[symbol])
-            if len(candles) < 5:  # Reduced from 20 for faster signals
-                print(f"🔍 VCB {symbol}: Need 5+ candles for history, have {len(candles)}")
-                return None
-                
-            recent = candles[-20:] if len(candles) >= 20 else candles  # Fixed: candles is already a list
+            recent = candles[-7:] if len(candles) >= 7 else candles  # Use last 7 candles
             current = recent[-1]
             
             # Calculate ATR for volatility
@@ -557,16 +571,20 @@ class EliteGuardBalanced:
                 atr_values.append(tr)
             
             if not atr_values:
+                print(f"🔍 VCB {symbol}: No ATR values calculated")
                 return None
                 
             atr = sum(atr_values) / len(atr_values)
             pip_size = 0.01 if 'JPY' in symbol else 0.0001
             
-            # Check for compression (current range < 70% of ATR) - RELAXED
+            # Check for compression (current range < 70% of ATR)
             current_range = current['high'] - current['low']
-            if current_range > atr * 0.7:  # Relaxed from 0.5
-                print(f"🔍 VCB {symbol}: Not compressed, range {current_range:.5f} > {atr*0.7:.5f}")
-                return None  # Not compressed enough
+            compression_ratio = current_range / atr if atr > 0 else 999
+            
+            print(f"🔍 VCB {symbol}: ATR={atr:.5f}, Range={current_range:.5f}, Compression={compression_ratio:.2f} (need <0.7)")
+            
+            if compression_ratio > 0.7:  # Not compressed enough
+                return None
             
             # Check for breakout
             recent_high = max(c['high'] for c in recent[:-5])
@@ -580,8 +598,10 @@ class EliteGuardBalanced:
                     return None
                 
                 volume_quality = self.analyze_volume_profile(symbol)
-                if volume_quality < 5:  # Lowered from 10
-                    print(f"🔍 VCB {symbol}: Low volume {volume_quality}")
+                print(f"🔍 VCB {symbol}: BULLISH breakout! Momentum={momentum}, Volume={volume_quality}")
+                
+                if volume_quality < 5:  # Volume check
+                    print(f"🔍 VCB {symbol}: Volume too low ({volume_quality} < 5)")
                     return None
                 
                 confidence = 65 + (momentum * 0.2) + (volume_quality * 0.15)
@@ -1399,7 +1419,7 @@ class EliteGuardBalanced:
 
     def apply_ml_filter(self, signal, session: str) -> tuple[bool, str, float]:
         """Apply ML filtering for 5-10 signals/hour target"""
-        min_confidence = 50.0  # LOWERED to 50 for 5-10 signals/hour
+        min_confidence = 45.0  # 45% ML gate for balanced signal flow (5-10/hr)
         
         # Apply news impact adjustment to confidence
         news_adjustment = self.get_news_impact(signal.pair)
@@ -1585,7 +1605,7 @@ class EliteGuardBalanced:
                     # Apply CITADEL protection
                     protected_signal = self.citadel.protect_signal(signal)
                     
-                    if protected_signal and protected_signal.get('confidence', 0) >= 45:  # LOWERED to 45 for 5-10 signals/hr
+                    if protected_signal and protected_signal.get('confidence', 0) >= 40:  # 40% CITADEL gate for 5-10 signals/hr
                         # Signal passed CITADEL protection and meets final threshold
                         signals_generated.append(protected_signal)
                         

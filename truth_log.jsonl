@@ -801,3 +801,4 @@
 {"timestamp": "2025-08-21T14:14:23.560053+00:00", "signal_id": "ELITE_RAPID_GBPJPY_1755785663", "event": "signal_generated", "quality_score": 52.5, "quality_tier": "ACCEPTABLE", "pattern": "VCB_BREAKOUT"}
 {"timestamp": "2025-08-21T14:18:44.862632+00:00", "signal_id": "ELITE_SNIPER_USDSEK_1755785924", "event": "signal_generated", "quality_score": 63.5, "quality_tier": "ACCEPTABLE", "pattern": "FAIR_VALUE_GAP_FILL"}
 {"timestamp": "2025-08-21T15:14:49.511205+00:00", "signal_id": "ELITE_SNIPER_USDSEK_1755789289", "event": "signal_generated", "quality_score": 57.5, "quality_tier": "ACCEPTABLE", "pattern": "LIQUIDITY_SWEEP_REVERSAL"}
+{"timestamp": "2025-08-21T15:30:50.738533+00:00", "signal_id": "ELITE_SNIPER_USDSEK_1755790250", "event": "signal_generated", "quality_score": 58.4, "quality_tier": "ACCEPTABLE", "pattern": "LIQUIDITY_SWEEP_REVERSAL"}

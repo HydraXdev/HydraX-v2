@@ -905,158 +905,81 @@ class EliteGuardBalanced:
         return None
     
     def detect_vcb_breakout(self, symbol: str) -> Optional[PatternSignal]:
-        """Detect Volatility Compression Breakout (VCB) pattern"""
+        """INDUSTRY STANDARD: Tight ATR compression <0.7 over 10 candles, breakout with >1.5x volume"""
         try:
-            # Check if symbol exists in m5_data
-            if symbol not in self.m5_data:
-                print(f"🔍 VCB {symbol}: No M5 data available")
+            print(f"🔍 VCB {symbol}: INDUSTRY STANDARD CHECK")
+            if len(self.m5_data[symbol]) < 10:  # INDUSTRY STANDARD: Need 10 candles
+                print(f"🔍 VCB {symbol}: Only {len(self.m5_data[symbol])} M5 candles, need 10+")
                 return None
                 
-            if len(self.m5_data[symbol]) < 5:  # Need 5+ M5 candles for ATR
-                print(f"🔍 VCB {symbol}: Only {len(self.m5_data[symbol])} M5 candles, need 5+")
-                return None
-                
-            candles = list(self.m5_data[symbol])
-            recent = candles[-7:] if len(candles) >= 7 else candles  # Use last 7 candles
-            current = recent[-1]
+            candles = list(self.m5_data[symbol])[-10:]  # INDUSTRY STANDARD: Last 10 candles
             
-            # Calculate ATR for volatility
-            atr_values = []
-            for i in range(1, len(recent)):
-                high_low = recent[i]['high'] - recent[i]['low']
-                high_close = abs(recent[i]['high'] - recent[i-1]['close'])
-                low_close = abs(recent[i]['low'] - recent[i-1]['close'])
-                tr = max(high_low, high_close, low_close)
-                atr_values.append(tr)
+            # Get pip size for this symbol
+            if 'JPY' in symbol:
+                pip_size = 0.01
+            elif symbol == 'XAUUSD':
+                pip_size = 0.1
+            else:
+                pip_size = 0.0001
             
-            if not atr_values:
-                print(f"🔍 VCB {symbol}: No ATR values calculated")
-                return None
-                
-            atr = sum(atr_values) / len(atr_values)
-            pip_size = 0.01 if 'JPY' in symbol else 0.0001
+            # INDUSTRY STANDARD: Calculate ATR compression in pips
+            atr_sum = 0
+            for c in candles:
+                atr_sum += (c['high'] - c['low'])
+            atr = (atr_sum / len(candles)) / pip_size  # Average range in pips
             
-            # Check for compression (current range < 70% of ATR)
-            current_range = current['high'] - current['low']
-            compression_ratio = current_range / atr if atr > 0 else 999
+            # INDUSTRY STANDARD: Check if ATR < 0.7 pips (tight compression)
+            # For XAUUSD, use 7 pips instead of 0.7
+            compression_threshold = 7.0 if symbol == 'XAUUSD' else 0.7
+            compression = atr < compression_threshold
             
-            print(f"🔍 VCB {symbol}: ATR={atr:.5f}, Range={current_range:.5f}, Compression={compression_ratio:.2f} (need <1.2)")
+            # Calculate volume ratio for current candle vs average
+            volumes = [c.get('tick_volume', 0) for c in candles[:-1]]
+            avg_volume = sum(volumes) / len(volumes) if volumes else 1
+            current_volume = candles[-1].get('tick_volume', 0)
+            volume_ratio = current_volume / avg_volume if avg_volume > 0 else 0
             
-            if compression_ratio > 1.2:  # RELAXED: Allow more VCB patterns
-                return None
+            # Check for breakout above/below recent range
+            recent_high = max(c['high'] for c in candles[:-1])
+            recent_low = min(c['low'] for c in candles[:-1])
+            current_candle = candles[-1]
             
-            # Check for breakout
-            recent_high = max(c['high'] for c in recent[:-5])
-            recent_low = min(c['low'] for c in recent[:-5])
+            breakout_up = current_candle['close'] > recent_high
+            breakout_down = current_candle['close'] < recent_low
+            volume_surge = volume_ratio > 1.5  # INDUSTRY STANDARD: 1.5x volume
             
-            # BULLISH VCB
-            if current['close'] > recent_high:
-                print(f"🔍 VCB {symbol}: Price broke above high ({current['close']:.5f} > {recent_high:.5f})")
+            # Debug logging with differences from old logic
+            print(f"   ATR: {atr:.2f} pips (need <{compression_threshold} for compression)")
+            print(f"   Compression: {'YES' if compression else 'NO'}")
+            print(f"   Volume ratio: {volume_ratio:.2f}x (need >1.5x)")
+            print(f"   Breakout: UP={breakout_up}, DOWN={breakout_down}")
+            print(f"   OLD vs NEW: Was 7 candles with 1.2 ratio, now 10 candles with 0.7 pip ATR + 1.5x volume")
+            
+            # INDUSTRY STANDARD: Direction based on compression + breakout + volume
+            direction = 'BUY' if breakout_up and compression and volume_surge else 'SELL' if breakout_down and compression and volume_surge else None
+            
+            if direction:
+                # Calculate quality based on tightness of compression
+                base_quality = 50  # Start at 50%
+                base_quality += (1 - min(atr/compression_threshold, 1)) * 30  # Tighter compression = higher quality (up to +30%)
+                base_quality += min(volume_ratio - 1.5, 1) * 20  # Volume surge bonus (up to +20% for 2.5x+ volume)
+                base_quality = min(base_quality, 85)  # Cap at 85%
                 
-                # Check actual momentum direction from M1 candles
-                if len(self.m1_data[symbol]) >= 5:
-                    recent_m1 = list(self.m1_data[symbol])[-5:]
-                    momentum_1bar = recent_m1[-1]['close'] - recent_m1[-2]['close']
-                    momentum_3bar = recent_m1[-1]['close'] - recent_m1[-3]['close']
-                    pip_size_calc = 0.01 if 'JPY' in symbol else (0.1 if symbol == 'XAUUSD' else 0.0001)
-                    momentum_1bar_pips = momentum_1bar / pip_size_calc
-                    momentum_3bar_pips = momentum_3bar / pip_size_calc
-                    
-                    print(f"🔍 VCB {symbol} BUY: 1-bar={momentum_1bar_pips:.2f}p, 3-bar={momentum_3bar_pips:.2f}p")
-                    
-                    # Require positive momentum for bullish signal
-                    if momentum_3bar_pips <= 0:
-                        print(f"❌ VCB {symbol}: REJECTED - Bearish momentum ({momentum_3bar_pips:.2f}p) for bullish breakout")
-                        return None
+                print(f"🔍 VCB {symbol}: {direction} BREAKOUT DETECTED!")
+                print(f"   ATR={atr:.2f}p, Volume={volume_ratio:.1f}x")
+                print(f"   Quality = {base_quality:.1f}% (Base 50 + Compression {(1-min(atr/compression_threshold,1))*30:.1f}% + Volume {min(volume_ratio-1.5,1)*20:.1f}%)")
+                print(f"   Entry: {current_candle['close'] + pip_size if direction == 'BUY' else current_candle['close'] - pip_size:.5f}")
                 
-                momentum = self.calculate_momentum_score(symbol, "BUY")
-                print(f"🔍 VCB {symbol}: Momentum score={momentum}")
-                
-                if momentum < 5:  # LOWERED: 5 for low-vol market (was 30)
-                    print(f"❌ VCB {symbol}: REJECTED - Momentum too low ({momentum} < 5)")
-                    return None
-                
-                volume_quality = self.analyze_volume_profile(symbol)
-                print(f"🔍 VCB {symbol}: Volume quality={volume_quality}")
-                
-                if volume_quality < 5:  # LOWERED: 5 for low-vol market (was 20)
-                    print(f"❌ VCB {symbol}: REJECTED - Volume too low ({volume_quality} < 5)")
-                    return None
-                
-                print(f"✅ VCB {symbol}: BULLISH SIGNAL CREATED! Momentum={momentum}, Volume={volume_quality}")
-                
-                # Calculate dynamic confidence based on quality components
-                print(f"🔍 VCB {symbol}: Calculating dynamic confidence...")
-                # Get actual pip movement for momentum
-                momentum_pips = momentum / 10  # Convert score back to pips
-                confidence = self.calculate_dynamic_confidence(symbol, 70.0, momentum_pips, volume_quality)
-                
-                signal = PatternSignal(
+                # Return signal with base quality
+                return PatternSignal(
                     pattern="VCB_BREAKOUT",
-                    direction="BUY",
-                    entry_price=current['close'] + pip_size,
-                    confidence=confidence,
+                    direction=direction,
+                    entry_price=current_candle['close'] + pip_size if direction == 'BUY' else current_candle['close'] - pip_size,
+                    confidence=base_quality,
                     timeframe="M5",
                     pair=symbol,
-                    momentum_score=momentum,
-                    volume_quality=volume_quality
+                    quality_score=base_quality
                 )
-                signal.quality_score = self.calculate_quality_score(signal)
-                return signal
-            
-            # BEARISH VCB
-            elif current['close'] < recent_low:
-                print(f"🔍 VCB {symbol}: Price broke below low ({current['close']:.5f} < {recent_low:.5f})")
-                
-                # Check actual momentum direction from M1 candles
-                if len(self.m1_data[symbol]) >= 5:
-                    recent_m1 = list(self.m1_data[symbol])[-5:]
-                    momentum_1bar = recent_m1[-1]['close'] - recent_m1[-2]['close']
-                    momentum_3bar = recent_m1[-1]['close'] - recent_m1[-3]['close']
-                    pip_size_calc = 0.01 if 'JPY' in symbol else (0.1 if symbol == 'XAUUSD' else 0.0001)
-                    momentum_1bar_pips = momentum_1bar / pip_size_calc
-                    momentum_3bar_pips = momentum_3bar / pip_size_calc
-                    
-                    print(f"🔍 VCB {symbol} SELL: 1-bar={momentum_1bar_pips:.2f}p, 3-bar={momentum_3bar_pips:.2f}p")
-                    
-                    # Require negative momentum for bearish signal
-                    if momentum_3bar_pips >= 0:
-                        print(f"❌ VCB {symbol}: REJECTED - Bullish momentum ({momentum_3bar_pips:.2f}p) for bearish breakout")
-                        return None
-                
-                momentum = self.calculate_momentum_score(symbol, "SELL")
-                print(f"🔍 VCB {symbol}: Momentum score={momentum}")
-                
-                if momentum < 5:  # LOWERED: 5 for low-vol market (was 30)
-                    print(f"❌ VCB {symbol}: REJECTED - Momentum too low ({momentum} < 5)")
-                    return None
-                
-                volume_quality = self.analyze_volume_profile(symbol)
-                print(f"🔍 VCB {symbol}: Volume quality={volume_quality}")
-                
-                if volume_quality < 5:  # LOWERED: 5 for low-vol market (was 20)
-                    print(f"❌ VCB {symbol}: REJECTED - Volume too low ({volume_quality} < 5)")
-                    return None
-                
-                print(f"✅ VCB {symbol}: BEARISH SIGNAL CREATED! Momentum={momentum}, Volume={volume_quality}")
-                
-                # Calculate dynamic confidence based on quality components
-                print(f"🔍 VCB {symbol}: Calculating dynamic confidence...")
-                momentum_pips = momentum / 10  # Convert score back to pips
-                confidence = self.calculate_dynamic_confidence(symbol, 70.0, momentum_pips, volume_quality)
-                
-                signal = PatternSignal(
-                    pattern="VCB_BREAKOUT",
-                    direction="SELL",
-                    entry_price=current['close'] - pip_size,
-                    confidence=confidence,
-                    timeframe="M5",
-                    pair=symbol,
-                    momentum_score=momentum,
-                    volume_quality=volume_quality
-                )
-                signal.quality_score = self.calculate_quality_score(signal)
-                return signal
                 
         except Exception as e:
             logger.debug(f"Error in VCB detection: {e}")

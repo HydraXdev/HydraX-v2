@@ -68,10 +68,16 @@ class EliteGuardBalanced:
         
         # Define trading pairs FIRST (before load_candles)
         self.trading_pairs = [
-            # ACTUAL symbols from ZMQ feed
+            # Major Forex Pairs
             "EURUSD", "GBPUSD", "USDJPY", "USDCHF", "USDCAD", "AUDUSD", "NZDUSD",
-            "EURJPY", "GBPJPY", "USDCNH", "USDSEK", "XAUUSD"
-            # Skip crypto (BTCUSD, ETHUSD, XRPUSD) - forex only
+            # Cross Pairs
+            "EURJPY", "GBPJPY", "EURGBP", "EURAUD", "GBPCAD", "AUDJPY", "NZDJPY",
+            # Exotic Pairs
+            "USDCNH", "USDSEK", "USDMXN",
+            # Metals
+            "XAUUSD", "XAGUSD",
+            # Crypto (if needed)
+            "BTCUSD", "ETHUSD", "XRPUSD"
         ]
         
         # Load candle cache on startup (AFTER trading_pairs defined)

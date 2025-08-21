@@ -446,7 +446,7 @@ class EliteGuardBalanced:
             if symbol not in self.m1_data or len(self.m1_data[symbol]) < 5:
                 return 0
                 
-            candles = self.m1_data[symbol]
+            candles = list(self.m1_data[symbol])  # Convert deque to list for slicing
             if len(candles) < 5:
                 return 0
             
@@ -479,7 +479,7 @@ class EliteGuardBalanced:
             if symbol not in self.m1_data or len(self.m1_data[symbol]) < 10:
                 return 10  # Default minimum score
                 
-            candles = self.m1_data[symbol]
+            candles = list(self.m1_data[symbol])  # Convert deque to list for slicing
             if len(candles) < 10:
                 return 10
             
@@ -627,13 +627,17 @@ class EliteGuardBalanced:
     def detect_order_block_bounce(self, symbol: str) -> Optional[PatternSignal]:
         """Detect order block patterns with balanced requirements"""
         try:
+            print(f"🔍 OBB {symbol}: Starting check")
             if len(self.m5_data[symbol]) < 2:  # LOWERED
+                print(f"🔍 OBB {symbol}: Only {len(self.m5_data[symbol])} M5 candles, need 2+")
                 return None
                 
             candles = list(self.m5_data[symbol])
             if len(candles) < 4:  # Reduced from 15 for faster signals
+                print(f"🔍 OBB {symbol}: Only {len(candles)} candles, need 4+")
                 return None
-                
+            
+            print(f"🔍 OBB {symbol}: Checking {len(candles)} candles for order blocks")
             recent_candles = list(candles.values())[-15:]
             
             # Find strong moves (order blocks)
@@ -655,9 +659,11 @@ class EliteGuardBalanced:
                         # BULLISH: Price at support zone
                         if block_low <= current_price <= block_low + (block_range * 0.4):
                             direction = "BUY"
+                            print(f"🔍 OBB {symbol}: BUY zone hit! Price={current_price:.5f} in block {block_low:.5f}-{block_low + block_range*0.4:.5f}")
                             
                             # Check momentum - STRICT for quality
                             momentum = self.calculate_momentum_score(symbol, direction)
+                            print(f"🔍 OBB {symbol}: BUY momentum={momentum:.1f} (need 30+)")
                             if momentum < 30:  # HIGH requirement
                                 continue
                             
@@ -722,7 +728,9 @@ class EliteGuardBalanced:
     def detect_sweep_and_return(self, symbol: str) -> Optional[PatternSignal]:
         """Detect Sweep and Return (SRL) pattern - liquidity grab followed by reversal"""
         try:
+            print(f"🔍 SRL {symbol}: Starting check")
             if len(self.m5_data[symbol]) < 2:  # LOWERED
+                print(f"🔍 SRL {symbol}: Only {len(self.m5_data[symbol])} M5 candles, need 2+")
                 return None
                 
             candles = list(self.m5_data[symbol])
@@ -739,6 +747,7 @@ class EliteGuardBalanced:
             
             # BULLISH SRL: Sweep below low, then strong recovery
             if recent[-2]['low'] < swing_low - (2 * pip_size):  # Previous candle swept
+                print(f"🔍 SRL {symbol}: BULLISH sweep detected! Low={recent[-2]['low']:.5f} < SwingLow={swing_low:.5f}")
                 wick_size = recent[-2]['low'] - min(recent[-2]['open'], recent[-2]['close'])
                 body_size = abs(recent[-2]['open'] - recent[-2]['close'])
                 
@@ -979,7 +988,9 @@ class EliteGuardBalanced:
     
     def detect_fair_value_gap_fill(self, symbol: str) -> Optional[PatternSignal]:
         """Detect fair value gap fill pattern"""
+        print(f"🔍 FVG {symbol}: Starting check")
         if len(self.m5_data[symbol]) < 5:  # LOWERED for faster signals
+            print(f"🔍 FVG {symbol}: Only {len(self.m5_data[symbol])} M5 candles, need 5+")
             return None
             
         try:
@@ -1004,6 +1015,7 @@ class EliteGuardBalanced:
                 if prev_high < current_low:
                     gap_size = current_low - prev_high
                     gap_mid = (current_low + prev_high) / 2
+                    print(f"🔍 FVG {symbol}: Bullish gap found! Size={gap_size/pip_size:.1f}p, Mid={gap_mid:.5f}, Price={current_price:.5f}")
                     
                     # Check if price is approaching gap from above
                     if current_price > gap_mid and current_price <= current_low + (gap_size * 0.3):

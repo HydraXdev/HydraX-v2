@@ -454,6 +454,7 @@ class EliteGuardBalanced:
             
             # 3-bar momentum
             momentum_3 = (recent[-1]['close'] - recent[-3]['close']) / recent[-3]['close'] * 100
+            print(f"🔍 Momentum {symbol} {direction}: 3-bar={momentum_3:.3f}%, Close[-1]={recent[-1]['close']:.5f}, Close[-3]={recent[-3]['close']:.5f}")
             
             # Direction check (less strict)
             if direction == "BUY" and momentum_3 > 0:
@@ -559,6 +560,7 @@ class EliteGuardBalanced:
                 if rejection:  # REQUIRE rejection candle for quality
                     # Check momentum - STRICT for quality
                     momentum = self.calculate_momentum_score(symbol, "BUY")
+                    print(f"🔍 LSR {symbol}: BUY momentum={momentum:.1f} (need 10+)")
                     if momentum < 10:  # REDUCED: 10 momentum for more signals
                         print(f"🚫 LSR {symbol}: Low BUY momentum {momentum:.1f} < 10")
                         return None

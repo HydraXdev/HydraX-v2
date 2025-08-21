@@ -1134,86 +1134,71 @@ class EliteGuardBalanced:
         return None
     
     def detect_fair_value_gap_fill(self, symbol: str) -> Optional[PatternSignal]:
-        """Detect fair value gap fill pattern"""
-        print(f"🔍 FVG {symbol}: Starting check")
-        if len(self.m5_data[symbol]) < 5:  # LOWERED for faster signals
-            print(f"🔍 FVG {symbol}: Only {len(self.m5_data[symbol])} M5 candles, need 5+")
-            return None
-            
+        """INDUSTRY STANDARD: Price gap >0.5 pip from unbalanced buying/selling, filled as price returns to fair value"""
         try:
-            recent_candles = list(self.m5_data[symbol])[-10:]
-            closes = [c.get('close', 0) for c in recent_candles]
-            highs = [c.get('high', 0) for c in recent_candles]
-            lows = [c.get('low', 0) for c in recent_candles]
-            current_price = closes[-1]
-            pip_size = 0.01 if 'JPY' in symbol else 0.0001
+            print(f"🔍 FVG {symbol}: INDUSTRY STANDARD CHECK")
+            if len(self.m5_data[symbol]) < 2:  # INDUSTRY STANDARD: Only need 2 candles for gap
+                print(f"🔍 FVG {symbol}: Only {len(self.m5_data[symbol])} M5 candles, need 2+")
+                return None
             
-            # Look for fair value gaps
-            for i in range(len(recent_candles) - 8, len(recent_candles) - 2):
-                if i <= 0:
-                    continue
-                    
-                prev_high = highs[i-1]
-                current_low = lows[i]
-                next_high = highs[i+1]
-                next_low = lows[i+1]
+            # Get last 2 candles for gap detection
+            prev = list(self.m5_data[symbol])[-2]
+            curr = list(self.m5_data[symbol])[-1]
+            
+            # Get pip size for this symbol
+            if 'JPY' in symbol:
+                pip_size = 0.01
+            elif symbol == 'XAUUSD':
+                pip_size = 0.1
+            else:
+                pip_size = 0.0001
+            
+            # INDUSTRY STANDARD: Calculate gap size between candles
+            gap_size = (curr['open'] - prev['close']) / pip_size
+            
+            # Calculate fill percentage (how much gap is being filled)
+            candle_body = abs(curr['close'] - curr['open'])
+            candle_range = curr['high'] - curr['low']
+            body_ratio = candle_body / candle_range if candle_range > 0 else 0
+            
+            # Debug logging with differences from old logic
+            print(f"   Previous: Close={prev['close']:.5f}")
+            print(f"   Current: Open={curr['open']:.5f}, Close={curr['close']:.5f}")
+            print(f"   Gap size: {gap_size:.2f} pips (min 0.5p required)")
+            print(f"   Body ratio: {body_ratio:.2%}")
+            print(f"   OLD vs NEW: Was complex 10-candle scan, now simple 2-candle gap detection")
+            
+            # BULLISH GAP FILL: Up gap (>0.5p) being filled down
+            bull_gap = gap_size > 0.5 and curr['close'] < curr['open']  # Gap up, filling down
+            
+            # BEARISH GAP FILL: Down gap (<-0.5p) being filled up  
+            bear_gap = gap_size < -0.5 and curr['close'] > curr['open']  # Gap down, filling up
+            
+            direction = 'SELL' if bull_gap else 'BUY' if bear_gap else None
+            
+            if direction:
+                # Calculate quality based on gap size and fill strength
+                base_quality = 50  # Start at 50%
+                base_quality += min(abs(gap_size), 3) * 10  # +10% per pip (max +30% for 3+ pip gaps)
+                base_quality += body_ratio * 15  # Up to +15% for strong fill candle
+                base_quality = min(base_quality, 85)  # Cap at 85%
                 
-                # Bullish gap (price jumped up, leaving unfilled space)
-                if prev_high < current_low:
-                    gap_size = current_low - prev_high
-                    gap_mid = (current_low + prev_high) / 2
-                    print(f"🔍 FVG {symbol}: Bullish gap found! Size={gap_size/pip_size:.1f}p, Mid={gap_mid:.5f}, Price={current_price:.5f}")
-                    
-                    # Check if price is approaching gap from above
-                    if current_price > gap_mid and current_price <= current_low + (gap_size * 0.3):
-                        # Calculate momentum and volume for quality scoring
-                        momentum = self.calculate_momentum_score(symbol, "SELL")
-                        volume_quality = self.analyze_volume_profile(symbol)
-                        
-                        # Use dynamic confidence calculation
-                        base_pattern_score = 72  # FVG base strength
-                        confidence = self.calculate_dynamic_confidence(symbol, base_pattern_score, momentum, volume_quality)
-                        
-                        signal = PatternSignal(
-                            pattern="FAIR_VALUE_GAP_FILL",
-                            direction="SELL",
-                            entry_price=current_price,
-                            confidence=confidence,
-                            timeframe="M5",
-                            pair=symbol,
-                            momentum_score=momentum,
-                            volume_quality=volume_quality
-                        )
-                        signal.quality_score = self.calculate_quality_score(signal)
-                        return signal
+                print(f"🔍 FVG {symbol}: {direction} GAP FILL DETECTED!")
+                print(f"   Gap: {gap_size:.2f} pips, Fill strength: {body_ratio:.1%}")
+                print(f"   Quality = {base_quality:.1f}% (Base 50 + Gap {min(abs(gap_size), 3)*10:.0f}% + Fill {body_ratio*15:.1f}%)")
+                print(f"   Entry: {curr['close']:.5f}")
                 
-                # Bearish gap (price gapped down)
-                if prev_low > current_high:
-                    gap_size = prev_low - current_high
-                    gap_mid = (prev_low + current_high) / 2
-                    
-                    # Check if price is approaching gap from below
-                    if current_price < gap_mid and current_price >= current_high - (gap_size * 0.3):
-                        # Calculate momentum and volume for quality scoring
-                        momentum = self.calculate_momentum_score(symbol, "BUY")
-                        volume_quality = self.analyze_volume_profile(symbol)
-                        
-                        # Use dynamic confidence calculation
-                        base_pattern_score = 72  # FVG base strength
-                        confidence = self.calculate_dynamic_confidence(symbol, base_pattern_score, momentum, volume_quality)
-                        
-                        signal = PatternSignal(
-                            pattern="FAIR_VALUE_GAP_FILL",
-                            direction="BUY",
-                            entry_price=current_price,
-                            confidence=confidence,
-                            timeframe="M5",
-                            pair=symbol,
-                            momentum_score=momentum,
-                            volume_quality=volume_quality
-                        )
-                        signal.quality_score = self.calculate_quality_score(signal)
-                        return signal
+                # Return signal with base quality
+                return PatternSignal(
+                    pattern="FAIR_VALUE_GAP_FILL",
+                    direction=direction,
+                    entry_price=curr['close'],
+                    confidence=base_quality,
+                    timeframe="M5",
+                    pair=symbol,
+                    quality_score=base_quality
+                )
+                
         except Exception as e:
             logger.debug(f"FVG detection error for {symbol}: {e}")
         

@@ -1995,6 +1995,14 @@ class EliteGuardBalanced:
                     # Apply CITADEL protection
                     protected_signal = self.citadel.protect_signal(signal)
                     
+                    # Ensure protected_signal preserves all original fields if not None
+                    if protected_signal and signal:
+                        # CITADEL might return None or modified signal
+                        # Make sure critical fields are preserved
+                        for key in ['stop_pips', 'target_pips', 'stop_loss', 'take_profit', 'entry_price']:
+                            if key in signal and key not in protected_signal:
+                                protected_signal[key] = signal[key]
+                    
                     # Calculate CITADEL score (0-15 range)
                     if protected_signal:
                         citadel_score = 0
@@ -2037,6 +2045,12 @@ class EliteGuardBalanced:
                         self.last_signal_time[symbol] = time.time()
                         self.hourly_signal_count[symbol] += 1
                         self.signal_history.append(protected_signal)
+                        
+                        # Debug: Check if SL/TP present before publishing
+                        if not protected_signal.get('stop_pips') or not protected_signal.get('target_pips'):
+                            print(f"⚠️ WARNING: Missing SL/TP in signal: stop_pips={protected_signal.get('stop_pips')}, target_pips={protected_signal.get('target_pips')}")
+                            print(f"   Original signal keys: {list(signal.keys())}")
+                            print(f"   Protected signal keys: {list(protected_signal.keys())}")
                         
                         # Publish
                         self.publish_signal(protected_signal)

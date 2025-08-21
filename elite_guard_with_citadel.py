@@ -340,6 +340,65 @@ class EliteGuardBalanced:
         
         self.running = False
         
+    def analyze_signal_quality(self):
+        """Analyze signal quality from last 30 minutes of truth log"""
+        try:
+            with open('/root/HydraX-v2/truth_log.jsonl', 'r') as f:
+                lines = f.readlines()
+                
+            recent = []
+            cutoff_time = datetime.now() - timedelta(seconds=1800)  # 30 minutes
+            
+            for line in lines[-200:]:  # Check last 200 lines for efficiency
+                try:
+                    data = json.loads(line)
+                    timestamp_str = data.get('timestamp', '')
+                    if timestamp_str:
+                        # Parse ISO format timestamp
+                        ts = datetime.fromisoformat(timestamp_str.replace('Z', '+00:00').replace('+00:00', ''))
+                        if ts > cutoff_time:
+                            recent.append(data)
+                except:
+                    continue
+            
+            # Calculate metrics
+            total_signals = len(recent)
+            
+            # For win rate, we'd need to check if next candle closed higher
+            # This is a simplified version - in reality we'd track actual outcomes
+            wins = 0
+            for sig in recent:
+                # Simplified win check - would need actual outcome tracking
+                if sig.get('quality_score', 0) > 70:  # Proxy for win
+                    wins += 1
+            
+            win_rate = (wins / total_signals * 100) if total_signals else 0
+            avg_conf = sum(s.get('confidence', s.get('quality_score', 0)) for s in recent) / total_signals if total_signals else 0
+            avg_quality = sum(s.get('quality_score', 0) for s in recent) / total_signals if total_signals else 0
+            
+            # Pattern breakdown
+            pattern_counts = defaultdict(int)
+            for s in recent:
+                pattern = s.get('pattern', 'UNKNOWN')
+                pattern_counts[pattern] += 1
+            
+            print(f"\n📊 SIGNAL QUALITY ANALYSIS (Last 30 min)")
+            print(f"="*50)
+            print(f"Total Signals: {total_signals} ({total_signals*2}/hr projected)")
+            print(f"Win Rate: {win_rate:.1f}% (proxy based on quality>70)")
+            print(f"Avg Confidence: {avg_conf:.1f}%")
+            print(f"Avg Quality: {avg_quality:.1f}%")
+            print(f"\nPattern Distribution:")
+            for pattern, count in pattern_counts.items():
+                print(f"  {pattern}: {count}")
+            print(f"="*50)
+            
+            return total_signals, win_rate, avg_conf, avg_quality
+            
+        except Exception as e:
+            print(f"Error analyzing signals: {e}")
+            return 0, 0, 0, 0
+        
     def setup_zmq(self):
         """Setup ZMQ connections"""
         try:
@@ -1701,13 +1760,13 @@ class EliteGuardBalanced:
 
     def apply_ml_filter(self, signal, session: str) -> tuple[bool, str, float]:
         """Apply ML filtering with dynamic threshold for 5-10 signals/hour target"""
-        # QUALITY GATE #1: Minimum quality score requirement
-        min_quality_score = 50.0  # TEMPORARY: Lowered to 50% for London session volume
-        print(f"🔍 Quality check: {signal.quality_score:.1f}% vs {min_quality_score}%")
+        # QUALITY GATE #1: Minimum quality score requirement (55-100% uncapped)
+        min_quality_score = 55.0  # OPTIMAL: 55% minimum for quality signals
+        print(f"🔍 Quality Gate Check: {signal.quality_score:.1f}% vs {min_quality_score}% minimum")
         if hasattr(signal, 'quality_score') and signal.quality_score < min_quality_score:
-            print(f"⚠️ Quality FAIL: {signal.quality_score:.1f}% < {min_quality_score}%")
+            print(f"   ⚠️ QUALITY FAIL: {signal.quality_score:.1f}% < {min_quality_score}%")
             return False, f"Quality score too low ({signal.quality_score:.1f}% < {min_quality_score}%)", signal.confidence
-        print(f"✅ Quality PASSED: {signal.quality_score:.1f}%")
+        print(f"   ✅ QUALITY PASSED: {signal.quality_score:.1f}% (no upper cap)")
         
         # Dynamic ML threshold based on recent signal rate
         # Track signals in last 15 minutes
@@ -1719,15 +1778,19 @@ class EliteGuardBalanced:
         signals_per_15min = len(recent_signals)
         projected_hourly_rate = signals_per_15min * 4
         
-        # QUALITY GATE #2: Dynamic confidence threshold - LOWERED FOR LOW-VOL
+        # QUALITY GATE #2: Dynamic confidence threshold (70-95% target range)
         if projected_hourly_rate > 10:  # Too many signals
-            min_confidence = 75.0  # Was 80, lowered for testing
+            min_confidence = 80.0  # Raise gate to reduce volume
         elif projected_hourly_rate < 5:  # Too few signals
-            min_confidence = 70.0  # Keep at 70 for minimum activity
+            min_confidence = 70.0  # Lower gate to allow more
         else:  # Perfect range (5-10)
-            min_confidence = 72.0  # Was 75, lowered to 72
+            min_confidence = 75.0  # Optimal threshold
         
-        print(f"📊 Signal rate: {signals_per_15min} in 15min = {projected_hourly_rate}/hr projected, ML gate={min_confidence}%")
+        # Never allow below 70% or above 95% regardless of rate
+        min_confidence = max(70.0, min(95.0, min_confidence))
+        
+        print(f"📊 Signal Rate Analysis: {signals_per_15min} in 15min = {projected_hourly_rate}/hr projected")
+        print(f"   ML Confidence Gate: {min_confidence}% (dynamic based on rate)")
         
         # Apply news impact adjustment to confidence
         news_adjustment = self.get_news_impact(signal.pair)
@@ -1737,15 +1800,19 @@ class EliteGuardBalanced:
             print(f"📰 {signal.pair}: News impact {news_adjustment} → Confidence {signal.confidence:.1f}% → {adjusted_confidence:.1f}%")
         
         if adjusted_confidence < min_confidence:
+            print(f"   ⚠️ CONFIDENCE FAIL: {adjusted_confidence:.1f}% < {min_confidence}%")
             return False, f"Below threshold ({min_confidence}%) after news", adjusted_confidence
+        print(f"   ✅ CONFIDENCE PASSED: {adjusted_confidence:.1f}% >= {min_confidence}%")
         
         # Check performance history
         pattern_clean = signal.pattern.replace('_INTELLIGENT', '')
         combo_key = f"{signal.pair}_{pattern_clean}_{session}"
         perf = self.performance_history.get(combo_key, {})
         if perf.get('enabled') == False:
+            print(f"   ⚠️ PERFORMANCE FAIL: {combo_key} disabled due to poor history")
             return False, f"Disabled: poor performance", adjusted_confidence
         
+        print(f"   ✅✅ SIGNAL APPROVED: {signal.pair} {signal.pattern} @ {adjusted_confidence:.1f}%")
         return True, f"PASS @ {adjusted_confidence:.1f}%", adjusted_confidence
 
     def log_signal_to_truth_tracker(self, signal_data: Dict):

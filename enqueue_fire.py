@@ -158,19 +158,47 @@ if __name__ == "__main__":
             raise Exception(f"Missing required signal data: symbol={symbol}, direction={direction}, entry={entry_price}, sl={sl_price}, tp={tp_price}")
         
         # Calculate lot size based on 5% risk
-        # Get stop loss distance in pips
-        stop_pips = float(signal.get('stop_pips', 10))
+        # Get stop loss distance - calculate from actual prices for accuracy
+        entry_price = float(signal.get('entry_price', 0))
+        stop_loss = float(signal.get('stop_loss', 0))
         
-        # Get pip value based on symbol
-        pip_value = 10.0  # Default pip value for majors
+        # Calculate actual pip distance based on symbol
+        if symbol == 'XAUUSD':
+            # For XAUUSD, 1 pip = 0.01 price movement
+            stop_pips = abs(entry_price - stop_loss) / 0.01
+        elif 'JPY' in symbol:
+            # For JPY pairs, 1 pip = 0.01 price movement
+            stop_pips = abs(entry_price - stop_loss) / 0.01
+        else:
+            # For other pairs, 1 pip = 0.0001 price movement
+            stop_pips = abs(entry_price - stop_loss) / 0.0001
+        
+        # Get pip value based on symbol (value of 1 pip movement per standard lot)
+        pip_value = 10.0  # Default pip value for majors (EURUSD, GBPUSD, etc.)
         if 'JPY' in symbol:
             pip_value = 9.5  # Approximate for JPY pairs
         elif symbol == 'XAUUSD':
-            pip_value = 1.0  # Gold uses different pip value
+            # For XAUUSD, 1 pip (0.01 movement) = $1 per standard lot
+            pip_value = 1.0  # Gold pip value per standard lot
         
         # Calculate risk amount (5% of balance)
-        balance = 850.0  # Using known balance for user 7176191872
+        # Get user's actual balance from database - REQUIRED
+        import sqlite3
+        conn = sqlite3.connect('/root/HydraX-v2/bitten.db')
+        cursor = conn.cursor()
+        cursor.execute("SELECT last_balance FROM ea_instances WHERE user_id = ? ORDER BY last_seen DESC LIMIT 1", (user_id,))
+        result = cursor.fetchone()
+        conn.close()
+        
+        if not result or not result[0]:
+            print(f"❌ ERROR: No balance found for user {user_id}")
+            sys.exit(1)
+        
+        balance = float(result[0])
         risk_amount = balance * 0.05  # 5% risk
+        
+        print(f"💰 Account balance: ${balance:.2f}")
+        print(f"📊 Risk amount (5%): ${risk_amount:.2f}")
         
         # Calculate lot size: Risk Amount / (Stop Loss in Pips × Pip Value per Lot)
         if stop_pips > 0:

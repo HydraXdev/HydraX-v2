@@ -57,6 +57,9 @@ class EliteGuardBalanced:
         # CITADEL Protection System
         self.citadel = CitadelProtection()
         
+        # ML Performance tracking
+        self.performance_history = {}
+        
         # Pattern detection state
         self.last_signal_time = defaultdict(float)  # Per-pair cooldown
         self.signal_history = deque(maxlen=100)  # Track recent signals
@@ -671,6 +674,71 @@ class EliteGuardBalanced:
         
         return None
     
+    def detect_fair_value_gap_fill(self, symbol: str) -> Optional[PatternSignal]:
+        """Detect fair value gap fill pattern"""
+        if len(self.m5_data[symbol]) < 10:
+            return None
+            
+        try:
+            recent_candles = list(self.m5_data[symbol])[-10:]
+            closes = [c.get('close', 0) for c in recent_candles]
+            highs = [c.get('high', 0) for c in recent_candles]
+            lows = [c.get('low', 0) for c in recent_candles]
+            current_price = closes[-1]
+            pip_size = 0.01 if 'JPY' in symbol else 0.0001
+            
+            # Look for fair value gaps
+            for i in range(len(recent_candles) - 8, len(recent_candles) - 2):
+                if i <= 0:
+                    continue
+                    
+                prev_high = highs[i-1]
+                current_low = lows[i]
+                next_high = highs[i+1]
+                next_low = lows[i+1]
+                
+                # Bullish gap (price jumped up, leaving unfilled space)
+                if prev_high < current_low:
+                    gap_size = current_low - prev_high
+                    gap_mid = (current_low + prev_high) / 2
+                    
+                    # Check if price is approaching gap from above
+                    if current_price > gap_mid and current_price <= current_low + (gap_size * 0.3):
+                        confidence = 68 + min(15, gap_size / pip_size)  # Base + gap size bonus
+                        signal = PatternSignal(
+                            pattern="FAIR_VALUE_GAP_FILL",
+                            direction="SELL",
+                            entry_price=current_price,
+                            confidence=min(85, confidence),
+                            timeframe="M5",
+                            pair=symbol
+                        )
+                        signal.quality_score = self.calculate_quality_score(signal)
+                        return signal
+                
+                # Bearish gap (price gapped down)
+                if prev_low > current_high:
+                    gap_size = prev_low - current_high
+                    gap_mid = (prev_low + current_high) / 2
+                    
+                    # Check if price is approaching gap from below
+                    if current_price < gap_mid and current_price >= current_high - (gap_size * 0.3):
+                        confidence = 68 + min(15, gap_size / pip_size)
+                        signal = PatternSignal(
+                            pattern="FAIR_VALUE_GAP_FILL",
+                            direction="BUY",
+                            entry_price=current_price,
+                            confidence=min(85, confidence),
+                            timeframe="M5",
+                            pair=symbol
+                        )
+                        signal.quality_score = self.calculate_quality_score(signal)
+                        return signal
+        except Exception as e:
+            logger.debug(f"FVG detection error for {symbol}: {e}")
+        
+        return None
+    
     def should_generate_signal(self, symbol: str) -> bool:
         """Check if we should generate a signal for this pair"""
         current_time = time.time()
@@ -934,17 +1002,80 @@ class EliteGuardBalanced:
             }
             self.m15_data[symbol].append(m15_candle)
     
+    def apply_ml_filter(self, signal, session: str) -> tuple[bool, str, float]:
+        """Apply ML filtering for balanced signal generation"""
+        min_confidence = 72.0  # Balanced for 5-10 signals/hour
+        
+        if signal.confidence < min_confidence:
+            return False, f"Below threshold ({min_confidence}%)", signal.confidence
+        
+        # Check performance history
+        pattern_clean = signal.pattern.replace('_INTELLIGENT', '')
+        combo_key = f"{signal.pair}_{pattern_clean}_{session}"
+        perf = self.performance_history.get(combo_key, {})
+        if perf.get('enabled') == False:
+            return False, f"Disabled: poor performance", signal.confidence
+        
+        return True, f"PASS @ {signal.confidence:.1f}%", signal.confidence
+
+    def log_signal_to_truth_tracker(self, signal_data: Dict):
+        """Log signal with comprehensive metrics to truth tracker"""
+        try:
+            # Enhanced truth tracking with all metrics
+            truth_entry = {
+                "signal_id": signal_data.get('signal_id', ''),
+                "pattern": signal_data.get('pattern_type', ''),
+                "symbol": signal_data.get('pair', ''),
+                "direction": signal_data.get('direction', ''),
+                "entry": signal_data.get('entry_price', 0),
+                "sl": signal_data.get('stop_loss', 0),
+                "tp": signal_data.get('take_profit', 0),
+                "sl_pips": signal_data.get('sl_pips', 0),
+                "tp_pips": signal_data.get('tp_pips', 0),
+                "confidence": signal_data.get('confidence', 0),
+                "base_conf": signal_data.get('base_confidence', 0),
+                "bonuses": {
+                    "session": signal_data.get('session_bonus', 0),
+                    "volume": signal_data.get('volume_bonus', 0),
+                    "spread": signal_data.get('spread_bonus', 0)
+                },
+                "timestamp": signal_data.get('timestamp', datetime.utcnow().isoformat() + 'Z'),
+                "session": signal_data.get('session', self.get_current_session()),
+                "vol_actual": signal_data.get('volume_actual', 0),
+                "vol_avg": signal_data.get('volume_average', 0),
+                "vol_ratio": signal_data.get('volume_ratio', 0),
+                "pattern_age": signal_data.get('pattern_age_minutes', 0),
+                "expectancy": signal_data.get('expectancy', 0),
+                "rr_proj": signal_data.get('risk_reward', 0),
+                "citadel": signal_data.get('citadel_score', 0),
+                "quarantine": signal_data.get('quarantine_status', 0),
+                "convergence": signal_data.get('convergence_score', 0),
+                "outcome": "OPEN",
+                "lifespan": None,
+                "rr_actual": None,
+                "pips_result": None
+            }
+            
+            # Write to truth log
+            with open('/root/HydraX-v2/truth_log.jsonl', 'a') as f:
+                f.write(json.dumps(truth_entry) + '\n')
+                
+        except Exception as e:
+            logger.error(f"Error logging to truth tracker: {e}")
+
     def scan_for_patterns(self):
         """Scan all symbols for patterns"""
         # ONLY scan our defined forex pairs
         symbols_to_scan = [s for s in self.trading_pairs if s in self.tick_data]
         logger.info(f"🔍 Starting pattern scan for {len(symbols_to_scan)} forex symbols")
         
-        # Log candle status
+        # Log candle status with tick reception
         for symbol in symbols_to_scan[:5]:
             m1_count = len(self.m1_data[symbol])
             m5_count = len(self.m5_data[symbol])
-            logger.info(f"  {symbol}: {m1_count} M1, {m5_count} M5 candles built")
+            tick_count = len(self.tick_data[symbol])
+            time_since_tick = time.time() - self.last_tick_time.get(symbol, 0)
+            logger.info(f"  {symbol}: {tick_count} ticks, {m1_count} M1, {m5_count} M5 candles (last tick {time_since_tick:.1f}s ago)")
         
         signals_generated = []
         
@@ -959,30 +1090,58 @@ class EliteGuardBalanced:
             # Try all pattern detectors
             patterns = []
             
-            # Core SMC patterns
+            # ALL 5 CORE PATTERNS WITH ML FILTERING
+            session = self.get_current_session()
+            
+            # 1. Liquidity Sweep Reversal (highest priority)
             signal = self.detect_liquidity_sweep_reversal(symbol)
             if signal:
-                logger.info(f"🎯 LSR pattern for {symbol}: confidence={signal.confidence}, quality={signal.quality_score}")
-                patterns.append(signal)
+                should_publish, tier_reason, ml_score = self.apply_ml_filter(signal, session)
+                if should_publish:
+                    logger.info(f"✅ LIQUIDITY SWEEP on {symbol} - {tier_reason}")
+                    patterns.append(signal)
+                else:
+                    logger.debug(f"🚫 LIQUIDITY SWEEP on {symbol} filtered: {tier_reason}")
             
+            # 2. Order Block Bounce
             signal = self.detect_order_block_bounce(symbol)
             if signal:
-                patterns.append(signal)
+                should_publish, tier_reason, ml_score = self.apply_ml_filter(signal, session)
+                if should_publish:
+                    logger.info(f"✅ ORDER BLOCK on {symbol} - {tier_reason}")
+                    patterns.append(signal)
+                else:
+                    logger.debug(f"🚫 ORDER BLOCK on {symbol} filtered: {tier_reason}")
             
-            # Sweep and Return pattern (formerly SRL guard)
-            signal = self.detect_sweep_and_return(symbol)
+            # 3. Fair Value Gap Fill
+            signal = self.detect_fair_value_gap_fill(symbol)
             if signal:
-                patterns.append(signal)
+                should_publish, tier_reason, ml_score = self.apply_ml_filter(signal, session)
+                if should_publish:
+                    logger.info(f"✅ FAIR VALUE GAP on {symbol} - {tier_reason}")
+                    patterns.append(signal)
+                else:
+                    logger.debug(f"🚫 FAIR VALUE GAP on {symbol} filtered: {tier_reason}")
             
-            # VCB pattern (formerly VCB guard)
+            # 4. VCB Breakout
             signal = self.detect_vcb_breakout(symbol)
             if signal:
-                patterns.append(signal)
+                should_publish, tier_reason, ml_score = self.apply_ml_filter(signal, session)
+                if should_publish:
+                    logger.info(f"✅ VCB BREAKOUT on {symbol} - {tier_reason}")
+                    patterns.append(signal)
+                else:
+                    logger.debug(f"🚫 VCB BREAKOUT on {symbol} filtered: {tier_reason}")
             
-            # Additional pattern for more signals
-            signal = self.detect_momentum_breakout(symbol)
+            # 5. Sweep and Return
+            signal = self.detect_sweep_and_return(symbol)
             if signal:
-                patterns.append(signal)
+                should_publish, tier_reason, ml_score = self.apply_ml_filter(signal, session)
+                if should_publish:
+                    logger.info(f"✅ SWEEP & RETURN on {symbol} - {tier_reason}")
+                    patterns.append(signal)
+                else:
+                    logger.debug(f"🚫 SWEEP & RETURN on {symbol} filtered: {tier_reason}")
             
             # Pick best pattern based on quality score
             if patterns:

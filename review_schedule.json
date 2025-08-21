@@ -1,0 +1,180 @@
+{
+  "pattern_schedules": {
+    "ORDER_BLOCK_BOUNCE": {
+      "frequency_analysis": {
+        "pattern_type": "ORDER_BLOCK_BOUNCE",
+        "frequency_category": "MEDIUM",
+        "signals_per_day": 2.0,
+        "total_signals": 2,
+        "analysis_period_days": 7,
+        "recommended_review_hours": 72,
+        "recommendation": "Medium activity pattern (2.0/day) - Review every 3-5 days"
+      },
+      "risk_schedule": {
+        "pattern_type": "ORDER_BLOCK_BOUNCE",
+        "base_review_hours": 72,
+        "risk_adjusted_hours": 64.8,
+        "adjustment_factors": [
+          0.9
+        ],
+        "adjustment_reasons": [
+          "Insufficient sample size"
+        ],
+        "review_priority": "MEDIUM",
+        "performance_context": {
+          "sample_size": 2,
+          "win_rate": 1.0,
+          "expectancy": 37.5,
+          "avg_win": 37.5,
+          "avg_loss": 0,
+          "confidence_variance": 0.004225
+        }
+      },
+      "next_review_timestamp": 1755963500.0,
+      "next_review_datetime": "2025-08-23T15:38:20",
+      "last_updated": 1755730220,
+      "review_count": 21
+    },
+    "LIQUIDITY_SWEEP_REVERSAL": {
+      "frequency_analysis": {
+        "pattern_type": "LIQUIDITY_SWEEP_REVERSAL",
+        "frequency_category": "MEDIUM",
+        "signals_per_day": 2.0,
+        "total_signals": 2,
+        "analysis_period_days": 7,
+        "recommended_review_hours": 72,
+        "recommendation": "Medium activity pattern (2.0/day) - Review every 3-5 days"
+      },
+      "risk_schedule": {
+        "pattern_type": "LIQUIDITY_SWEEP_REVERSAL",
+        "base_review_hours": 72,
+        "risk_adjusted_hours": 64.8,
+        "adjustment_factors": [
+          0.9
+        ],
+        "adjustment_reasons": [
+          "Insufficient sample size"
+        ],
+        "review_priority": "MEDIUM",
+        "performance_context": {
+          "sample_size": 2,
+          "win_rate": 0.5,
+          "expectancy": 7.5,
+          "avg_win": 30.0,
+          "avg_loss": 15.0,
+          "confidence_variance": 0.0003999999999999985
+        }
+      },
+      "next_review_timestamp": 1755963500.0,
+      "next_review_datetime": "2025-08-23T15:38:20",
+      "last_updated": 1755730220,
+      "review_count": 21
+    },
+    "VCB_BREAKOUT": {
+      "frequency_analysis": {
+        "pattern_type": "VCB_BREAKOUT",
+        "frequency_category": "MEDIUM",
+        "signals_per_day": 1.0,
+        "total_signals": 1,
+        "analysis_period_days": 7,
+        "recommended_review_hours": 72,
+        "recommendation": "Medium activity pattern (1.0/day) - Review every 3-5 days"
+      },
+      "risk_schedule": {
+        "pattern_type": "VCB_BREAKOUT",
+        "base_review_hours": 72,
+        "risk_adjusted_hours": 64.8,
+        "adjustment_factors": [
+          0.9
+        ],
+        "adjustment_reasons": [
+          "Insufficient sample size"
+        ],
+        "review_priority": "MEDIUM",
+        "performance_context": {
+          "sample_size": 1,
+          "win_rate": 1.0,
+          "expectancy": 45.0,
+          "avg_win": 45.0,
+          "avg_loss": 0,
+          "confidence_variance": 0
+        }
+      },
+      "next_review_timestamp": 1755963500.0,
+      "next_review_datetime": "2025-08-23T15:38:20",
+      "last_updated": 1755730220,
+      "review_count": 21
+    },
+    "FAIR_VALUE_GAP_FILL": {
+      "frequency_analysis": {
+        "pattern_type": "FAIR_VALUE_GAP_FILL",
+        "frequency_category": "MEDIUM",
+        "signals_per_day": 1.0,
+        "total_signals": 1,
+        "analysis_period_days": 7,
+        "recommended_review_hours": 72,
+        "recommendation": "Medium activity pattern (1.0/day) - Review every 3-5 days"
+      },
+      "risk_schedule": {
+        "pattern_type": "FAIR_VALUE_GAP_FILL",
+        "base_review_hours": 72,
+        "risk_adjusted_hours": 36.3,
+        "adjustment_factors": [
+          0.7,
+          0.8,
+          0.9
+        ],
+        "adjustment_reasons": [
+          "Poor expectancy performance",
+          "Low win rate",
+          "Insufficient sample size"
+        ],
+        "review_priority": "MEDIUM",
+        "performance_context": {
+          "sample_size": 1,
+          "win_rate": 0.0,
+          "expectancy": -25.0,
+          "avg_win": 0,
+          "avg_loss": 25.0,
+          "confidence_variance": 0
+        }
+      },
+      "next_review_timestamp": 1755860900.0,
+      "next_review_datetime": "2025-08-22T11:08:20",
+      "last_updated": 1755730220,
+      "review_count": 21
+    },
+    "": {
+      "frequency_analysis": {
+        "pattern_type": "",
+        "frequency_category": "FAST",
+        "signals_per_day": 20.0,
+        "total_signals": 20,
+        "analysis_period_days": 7,
+        "recommended_review_hours": 24,
+        "recommendation": "High activity pattern (20.0/day) - Review every 1-2 days"
+      },
+      "risk_schedule": {
+        "pattern_type": "",
+        "base_review_hours": 24,
+        "risk_adjusted_hours": 21.6,
+        "adjustment_factors": [
+          0.9
+        ],
+        "adjustment_reasons": [
+          "Insufficient sample size"
+        ],
+        "review_priority": "HIGH",
+        "performance_context": {
+          "sample_size": 0
+        }
+      },
+      "next_review_timestamp": 1755807979.0,
+      "next_review_datetime": "2025-08-21T20:26:19",
+      "last_updated": 1755730219,
+      "review_count": 1
+    }
+  },
+  "last_updated": 1755730220,
+  "version": "1.0"
+}

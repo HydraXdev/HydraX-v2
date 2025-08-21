@@ -44,12 +44,19 @@ def fmt(ev):
     stop_pips = ev.get('stop_pips', 0)
     target_pips = ev.get('target_pips', 0)
     pattern = ev.get('pattern_type', ev.get('pattern', ''))  # Get pattern name
+    signal_mode = ev.get('signal_mode', '')  # New dual-mode field
     
     # Format pattern name for display
     pattern_display = pattern.replace('_', ' ').title() if pattern else ''
     
-    # Line 1 with distinct emojis (⚡ for RAPID, 🎯 for SNIPER)
-    if pclass == "SNIPER":
+    # Line 1 with distinct emojis - check signal_mode first, then target_pips, then pattern_class
+    if signal_mode == "SNIPER" or target_pips >= 30:
+        emoji = "🎯"
+        tag = "SNIPER"
+    elif signal_mode == "RAPID" or (target_pips > 0 and target_pips < 30):
+        emoji = "⚡"
+        tag = "RAPID"
+    elif pclass == "SNIPER":
         emoji = "🎯"
         tag = "SNIPER"
     else:

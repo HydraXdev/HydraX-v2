@@ -226,7 +226,7 @@ class FreshFireBuilder:
         if 'JPY' in symbol:
             return 100
         elif symbol in ['XAUUSD']:
-            return 10
+            return 100  # For XAUUSD: 0.01 price movement = 1 pip
         elif symbol in ['BTCUSD', 'ETHUSD']:
             return 1
         elif symbol == 'XRPUSD':

@@ -119,11 +119,11 @@ class EliteGuardBalanced:
             self.subscriber.connect("tcp://127.0.0.1:5560")
             self.subscriber.setsockopt_string(zmq.SUBSCRIBE, "")
             
-            # Subscribe to OHLC data directly from EA (port 5556)
-            # The EA sends M1/M5/M15 OHLC data to 5556
+            # Subscribe to OHLC data from telemetry bridge on 5560
+            # Bridge now republishes OHLC messages from 5556
             self.ohlc_subscriber = self.context.socket(zmq.SUB)
-            self.ohlc_subscriber.connect("tcp://127.0.0.1:5556")
-            self.ohlc_subscriber.setsockopt_string(zmq.SUBSCRIBE, "")  # Subscribe to ALL messages to debug
+            self.ohlc_subscriber.connect("tcp://127.0.0.1:5560")
+            self.ohlc_subscriber.setsockopt_string(zmq.SUBSCRIBE, "OHLC")  # Subscribe to OHLC messages
             self.ohlc_subscriber.setsockopt(zmq.RCVTIMEO, 100)  # 100ms timeout for non-blocking
             
             # Publisher for signals

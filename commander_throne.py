@@ -2086,10 +2086,16 @@ def api_signal_completion_stats():
             "error": str(e)
         })
 
+@app.route('/throne/performance_dashboard')
+@require_auth("OBSERVER") 
+def performance_dashboard_v2():
+    """Redirect to the new performance dashboard v2"""
+    return redirect('http://localhost:8891')
+
 @app.route('/throne/api/elite_guard_analytics')
 @require_auth("OBSERVER")
 def api_elite_guard_analytics():
-    """Elite Guard specific signal performance analytics"""
+    """Elite Guard specific signal performance analytics - NOW ENHANCED"""
     try:
         import json
         from datetime import datetime, timedelta

@@ -22,6 +22,27 @@ class SignalOutcomeMonitor:
         self.truth_file = "/root/HydraX-v2/truth_log.jsonl"
         self.outcome_file = "/root/HydraX-v2/signal_outcomes.jsonl"
         self.freshness_file = "/root/HydraX-v2/signal_freshness.jsonl"
+        self.dual_mode_stats_file = "/root/HydraX-v2/dual_mode_stats.jsonl"
+        
+        # DUAL MODE TRACKING SYSTEM
+        self.rapid_stats = {
+            'signals_generated': 0,
+            'signals_completed': 0, 
+            'wins': 0,
+            'losses': 0,
+            'total_time_to_tp': 0,
+            'total_rr_achieved': 0.0,
+            'avg_confidence': 0.0
+        }
+        self.sniper_stats = {
+            'signals_generated': 0,
+            'signals_completed': 0,
+            'wins': 0, 
+            'losses': 0,
+            'total_time_to_tp': 0,
+            'total_rr_achieved': 0.0,
+            'avg_confidence': 0.0
+        }
         
         # FRESHNESS TRACKING SYSTEM
         self.freshness_snapshots = {}  # signal_id -> {30s, 1m, 2m, 5m snapshots}
@@ -34,9 +55,11 @@ class SignalOutcomeMonitor:
             'SWEEP_RETURN': self.check_srl_invalidation
         }
         
-        print("📊 Signal Outcome Monitor started with FRESHNESS TRACKING")
-        print("   Monitoring tick data to track SL/TP hits + signal decay")
+        print("📊 Signal Outcome Monitor started with DUAL MODE TRACKING")
+        print("   Monitoring RAPID vs SNIPER signals separately")
+        print("   Tracking time-to-TP, win rates, and R:R performance")
         self.load_active_signals()
+        self.load_dual_mode_stats()
         
     def load_active_signals(self):
         """Load active signals from truth log"""
@@ -59,7 +82,10 @@ class SignalOutcomeMonitor:
                                     'ticks_processed': 0,
                                     'max_favorable': 0,
                                     'max_adverse': 0,
-                                    'current_price': signal['entry_price']
+                                    'current_price': signal['entry_price'],
+                                    'signal_mode': signal.get('signal_type', 'UNKNOWN'),
+                                    'estimated_time_to_tp': self.estimate_time_to_tp(signal),
+                                    'start_timestamp': time.time()
                                 }
                         except:
                             continue
@@ -71,6 +97,35 @@ class SignalOutcomeMonitor:
                 
         except FileNotFoundError:
             print("   No truth log found, starting fresh")
+            
+    def load_dual_mode_stats(self):
+        """Load existing dual mode statistics"""
+        try:
+            with open(self.dual_mode_stats_file, 'r') as f:
+                lines = f.readlines()
+                if lines:
+                    last_line = lines[-1].strip()
+                    if last_line:
+                        stats = json.loads(last_line)
+                        self.rapid_stats = stats.get('rapid_stats', self.rapid_stats)
+                        self.sniper_stats = stats.get('sniper_stats', self.sniper_stats)
+                        print(f"   Loaded dual mode stats: RAPID {self.rapid_stats['wins']}/{self.rapid_stats['signals_completed']}, SNIPER {self.sniper_stats['wins']}/{self.sniper_stats['signals_completed']}")
+        except FileNotFoundError:
+            print("   No dual mode stats found, starting fresh")
+            
+    def estimate_time_to_tp(self, signal: dict) -> int:
+        """Estimate time to TP based on signal mode and market conditions"""
+        signal_mode = signal.get('signal_type', 'UNKNOWN')
+        target_pips = signal.get('target_pips', 10)
+        
+        if signal_mode == 'RAPID_ASSAULT':
+            # Rapid signals: 6-10 pips, estimated 30-90 seconds per pip
+            return int(target_pips * 60)  # 1 minute per pip
+        elif signal_mode == 'PRECISION_STRIKE': 
+            # Sniper signals: 20-30+ pips, estimated 2-5 minutes per pip
+            return int(target_pips * 180)  # 3 minutes per pip
+        else:
+            return int(target_pips * 120)  # 2 minutes per pip default
     
     def track_signal_freshness(self, signal_id: str, current_price: float, timestamp: float):
         """Track signal freshness at key intervals"""
@@ -465,6 +520,24 @@ class SignalOutcomeMonitor:
             signal_id = completion['signal_id']
             data = self.active_signals[signal_id]
             
+            # Calculate actual time to completion
+            actual_time_to_completion = int(time.time() - data.get('start_timestamp', time.time()))
+            estimated_time = data.get('estimated_time_to_tp', 300)
+            
+            # Calculate achieved R:R ratio
+            entry_price = data['signal']['entry_price']
+            sl_price = data['signal']['sl']
+            exit_price = completion['exit_price']
+            
+            if data['signal']['direction'] == 'BUY':
+                risk_pips = abs(entry_price - sl_price) * self.get_pip_multiplier(data['signal']['symbol'])
+                reward_pips = abs(exit_price - entry_price) * self.get_pip_multiplier(data['signal']['symbol'])
+            else:
+                risk_pips = abs(sl_price - entry_price) * self.get_pip_multiplier(data['signal']['symbol'])
+                reward_pips = abs(entry_price - exit_price) * self.get_pip_multiplier(data['signal']['symbol'])
+                
+            achieved_rr = reward_pips / risk_pips if risk_pips > 0 else 0
+            
             # Create outcome record
             outcome_record = {
                 'signal_id': signal_id,
@@ -472,9 +545,13 @@ class SignalOutcomeMonitor:
                 'direction': data['signal']['direction'],
                 'pattern': data['signal'].get('pattern_type'),
                 'signal_type': data['signal'].get('signal_type'),
-                'confidence': data['signal'].get('confidence', 0),  # Track confidence
-                'session': data['signal'].get('session', ''),  # Track session
-                'risk_reward': data['signal'].get('risk_reward', 1.0),  # Track R:R
+                'signal_mode': data.get('signal_mode', 'UNKNOWN'),
+                'confidence': data['signal'].get('confidence', 0),
+                'session': data['signal'].get('session', ''),
+                'risk_reward': data['signal'].get('risk_reward', 1.0),
+                'achieved_rr_ratio': achieved_rr,
+                'estimated_time_to_tp': estimated_time,
+                'actual_time_to_tp': actual_time_to_completion,
                 'entry_price': data['signal']['entry_price'],
                 'sl': data['signal']['sl'],
                 'tp': data['signal']['tp'],
@@ -488,6 +565,9 @@ class SignalOutcomeMonitor:
                 'completed_at': datetime.now().isoformat(),
                 'monitoring_started': data['monitoring_started']
             }
+            
+            # Update dual mode statistics
+            self.update_dual_mode_stats(outcome_record)
             
             # Save outcome
             self.save_outcome(outcome_record)
@@ -516,6 +596,99 @@ class SignalOutcomeMonitor:
         except Exception as e:
             print(f"Error saving outcome: {e}")
     
+    def update_dual_mode_stats(self, outcome: Dict):
+        """Update statistics for RAPID vs SNIPER modes"""
+        signal_mode = outcome.get('signal_mode', 'UNKNOWN')
+        
+        if signal_mode == 'RAPID_ASSAULT':
+            stats = self.rapid_stats
+        elif signal_mode == 'PRECISION_STRIKE':
+            stats = self.sniper_stats
+        else:
+            return  # Unknown mode, skip stats update
+            
+        stats['signals_completed'] += 1
+        
+        if outcome['outcome'] == 'WIN':
+            stats['wins'] += 1
+            if outcome.get('actual_time_to_tp'):
+                stats['total_time_to_tp'] += outcome['actual_time_to_tp']
+                
+        elif outcome['outcome'] == 'LOSS':
+            stats['losses'] += 1
+            
+        # Update R:R tracking
+        if outcome.get('achieved_rr_ratio'):
+            stats['total_rr_achieved'] += outcome['achieved_rr_ratio']
+            
+        # Update confidence tracking
+        confidence = outcome.get('confidence', 0)
+        if confidence > 0:
+            # Running average update
+            total_signals = stats['wins'] + stats['losses']
+            stats['avg_confidence'] = ((stats['avg_confidence'] * (total_signals - 1)) + confidence) / total_signals
+            
+        # Save updated stats
+        self.save_dual_mode_stats()
+        
+        # Print mode-specific update
+        mode_name = "RAPID" if signal_mode == 'RAPID_ASSAULT' else "SNIPER"
+        win_rate = (stats['wins'] / stats['signals_completed'] * 100) if stats['signals_completed'] > 0 else 0
+        print(f"   📊 {mode_name} MODE: {outcome['outcome']} - Win Rate: {win_rate:.1f}% ({stats['wins']}/{stats['signals_completed']})")
+        
+    def save_dual_mode_stats(self):
+        """Save dual mode statistics to file"""
+        try:
+            stats_data = {
+                'timestamp': datetime.now().isoformat(),
+                'rapid_stats': self.rapid_stats,
+                'sniper_stats': self.sniper_stats
+            }
+            
+            with open(self.dual_mode_stats_file, 'a') as f:
+                f.write(json.dumps(stats_data) + '\n')
+                
+        except Exception as e:
+            print(f"Error saving dual mode stats: {e}")
+            
+    def get_dual_mode_performance(self) -> Dict:
+        """Get current dual mode performance metrics"""
+        def calculate_metrics(stats):
+            completed = stats.get('signals_completed', 0)
+            wins = stats.get('wins', 0)
+            losses = stats.get('losses', 0)
+            
+            if completed == 0:
+                return {
+                    'win_rate': 0.0,
+                    'avg_time_to_tp': 0,
+                    'avg_rr_achieved': 0.0,
+                    'total_signals': 0,
+                    'wins': 0,
+                    'losses': 0,
+                    'avg_confidence': 0.0
+                }
+                
+            win_rate = (wins / completed) * 100 if completed > 0 else 0
+            avg_time_to_tp = (stats.get('total_time_to_tp', 0) / wins) if wins > 0 else 0
+            avg_rr = (stats.get('total_rr_achieved', 0.0) / completed) if completed > 0 else 0
+            
+            return {
+                'win_rate': round(win_rate, 1),
+                'avg_time_to_tp': int(avg_time_to_tp),
+                'avg_rr_achieved': round(avg_rr, 2),
+                'total_signals': completed,
+                'wins': wins,
+                'losses': losses,
+                'avg_confidence': round(stats.get('avg_confidence', 0.0), 1)
+            }
+            
+        return {
+            'rapid_assault': calculate_metrics(self.rapid_stats),
+            'precision_strike': calculate_metrics(self.sniper_stats),
+            'active_signals': len(self.active_signals)
+        }
+    
     def send_outcome_to_ml(self, outcome: Dict):
         """Send outcome to ML system for performance tracking"""
         try:
@@ -529,10 +702,14 @@ class SignalOutcomeMonitor:
                 'signal_id': outcome['signal_id'],
                 'outcome': outcome['outcome'],  # WIN or LOSS
                 'pattern': outcome['pattern'],
+                'signal_mode': outcome.get('signal_mode', 'UNKNOWN'),
                 'confidence': outcome.get('confidence', 0),
                 'symbol': outcome['symbol'],
                 'session': outcome.get('session', ''),
                 'runtime_minutes': round(runtime_minutes, 2),
+                'actual_time_to_tp': outcome.get('actual_time_to_tp', 0),
+                'estimated_time_to_tp': outcome.get('estimated_time_to_tp', 0),
+                'achieved_rr_ratio': outcome.get('achieved_rr_ratio', 0.0),
                 'pips_result': outcome['pips_result'],
                 'max_favorable_pips': outcome['max_favorable'],
                 'max_adverse_pips': outcome['max_adverse'],
@@ -546,42 +723,66 @@ class SignalOutcomeMonitor:
                 f.write(json.dumps(tracking_data) + '\n')
             
             # Also update ML signal filter directly
-            from ml_signal_filter import report_trade_outcome
-            report_trade_outcome(
-                signal_id=outcome['signal_id'],
-                outcome='WIN' if outcome['outcome'] == 'WIN' else 'LOSS',
-                pips=outcome['pips_result']
-            )
+            try:
+                from ml_signal_filter import report_trade_outcome
+                report_trade_outcome(
+                    signal_id=outcome['signal_id'],
+                    outcome='WIN' if outcome['outcome'] == 'WIN' else 'LOSS',
+                    pips=outcome['pips_result']
+                )
+            except ImportError:
+                pass  # ML filter not available
             
-            print(f"   📈 ML TRACKING: {outcome['symbol']} {outcome['pattern']} - "
+            mode_name = "RAPID" if outcome.get('signal_mode') == 'RAPID_ASSAULT' else "SNIPER"
+            print(f"   📈 {mode_name} TRACKING: {outcome['symbol']} {outcome['pattern']} - "
                   f"{outcome['outcome']} after {runtime_minutes:.1f} mins")
             
         except Exception as e:
             print(f"   ⚠️ ML tracking error: {e}")
     
     def print_statistics(self):
-        """Print current monitoring statistics"""
-        print(f"\n📊 OUTCOME MONITOR STATISTICS:")
-        print(f"   Active Signals: {len(self.active_signals)}")
-        print(f"   Completed: {len(self.completed_signals)}")
+        """Print current monitoring statistics with dual mode breakdown"""
+        print(f"\n📊 DUAL MODE OUTCOME MONITOR STATISTICS:")
         
-        if self.completed_signals:
-            wins = [s for s in self.completed_signals if s['outcome'] == 'WIN']
-            losses = [s for s in self.completed_signals if s['outcome'] == 'LOSS']
+        # Get current performance metrics
+        performance = self.get_dual_mode_performance()
+        
+        print(f"   Active Signals: {performance['active_signals']}")
+        print(f"   Total Completed: {len(self.completed_signals)}")
+        
+        # RAPID ASSAULT Stats
+        rapid = performance['rapid_assault']
+        print(f"\n   🏃 RAPID ASSAULT MODE:")
+        print(f"   • Win Rate: {rapid['win_rate']:.1f}% ({rapid['wins']}/{rapid['total_signals']})")
+        print(f"   • Avg Time to TP: {rapid['avg_time_to_tp']}s")
+        print(f"   • Avg R:R Achieved: {rapid['avg_rr_achieved']:.2f}")
+        print(f"   • Avg Confidence: {rapid['avg_confidence']:.1f}%")
+        
+        # PRECISION STRIKE Stats
+        sniper = performance['precision_strike']
+        print(f"\n   🎯 PRECISION STRIKE MODE:")
+        print(f"   • Win Rate: {sniper['win_rate']:.1f}% ({sniper['wins']}/{sniper['total_signals']})")
+        print(f"   • Avg Time to TP: {sniper['avg_time_to_tp']}s")
+        print(f"   • Avg R:R Achieved: {sniper['avg_rr_achieved']:.2f}")
+        print(f"   • Avg Confidence: {sniper['avg_confidence']:.1f}%")
+        
+        # Active signals breakdown
+        if self.active_signals:
+            print(f"\n   Currently Monitoring:")
+            rapid_active = 0
+            sniper_active = 0
             
-            print(f"   Wins: {len(wins)}")
-            print(f"   Losses: {len(losses)}")
-            if wins or losses:
-                win_rate = len(wins) / (len(wins) + len(losses)) * 100
-                print(f"   Win Rate: {win_rate:.1f}%")
+            for sid, data in self.active_signals.items():
+                sig = data['signal']
+                mode = data.get('signal_mode', 'UNKNOWN')
+                if mode == 'RAPID_ASSAULT':
+                    rapid_active += 1
+                elif mode == 'PRECISION_STRIKE': 
+                    sniper_active += 1
+                    
+                print(f"   • {sig['symbol']} {sig['direction']} ({mode}) - {data['ticks_processed']} ticks")
                 
-                total_pips = sum(s['pips_result'] for s in self.completed_signals)
-                print(f"   Total Pips: {total_pips:+.1f}")
-        
-        print(f"\n   Currently Monitoring:")
-        for sid, data in self.active_signals.items():
-            sig = data['signal']
-            print(f"   • {sig['symbol']} {sig['direction']} - {data['ticks_processed']} ticks")
+            print(f"\n   Mode Breakdown: {rapid_active} RAPID, {sniper_active} SNIPER")
     
     def run(self):
         """Main monitoring loop"""

@@ -1,0 +1,49 @@
+{
+  "evaluation_timestamp": 1755691425,
+  "patterns_evaluated": 4,
+  "pattern_results": {
+    "LIQUIDITY_SWEEP_REVERSAL": {
+      "pattern_type": "LIQUIDITY_SWEEP_REVERSAL",
+      "symbol": null,
+      "action": "MONITOR",
+      "reason": "Insufficient data for evaluation",
+      "current_status": "ACTIVE",
+      "sample_size": 2
+    },
+    "ORDER_BLOCK_BOUNCE": {
+      "pattern_type": "ORDER_BLOCK_BOUNCE",
+      "symbol": null,
+      "action": "MONITOR",
+      "reason": "Insufficient data for evaluation",
+      "current_status": "ACTIVE",
+      "sample_size": 2
+    },
+    "FAIR_VALUE_GAP_FILL": {
+      "pattern_type": "FAIR_VALUE_GAP_FILL",
+      "symbol": null,
+      "action": "MONITOR",
+      "reason": "Insufficient data for evaluation",
+      "current_status": "ACTIVE",
+      "sample_size": 1
+    },
+    "VCB_BREAKOUT": {
+      "pattern_type": "VCB_BREAKOUT",
+      "symbol": null,
+      "action": "MONITOR",
+      "reason": "Insufficient data for evaluation",
+      "current_status": "ACTIVE",
+      "sample_size": 1
+    }
+  },
+  "system_status": {
+    "timestamp": 1755691425,
+    "patterns": {},
+    "summary": {
+      "total_patterns": 0,
+      "active": 0,
+      "quarantined": 0,
+      "killed": 0,
+      "recovering": 0
+    }
+  }
+}

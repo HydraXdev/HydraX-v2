@@ -16,6 +16,17 @@ class CleanTruthWriter:
     def write_signal(self, signal: Dict) -> bool:
         """Write signal directly to truth_log.jsonl - NO CORRUPTION"""
         try:
+            # Calculate estimated time to TP based on signal type
+            signal_type = signal.get('signal_type', 'PRECISION_STRIKE')
+            target_pips = signal.get('target_pips', 10)
+            
+            if signal_type == 'RAPID_ASSAULT':
+                # Rapid signals: 6-10 pips, estimated 1 minute per pip
+                estimated_time_to_tp = int(target_pips * 60)
+            else:
+                # Sniper signals: 20-30+ pips, estimated 3 minutes per pip  
+                estimated_time_to_tp = int(target_pips * 180)
+            
             # Ensure the signal has required fields
             clean_signal = {
                 'signal_id': signal.get('signal_id'),
@@ -29,10 +40,14 @@ class CleanTruthWriter:
                 'generated_at': datetime.now().isoformat(),
                 'citadel_score': signal.get('shield_score', signal.get('consensus_confidence', 0)),
                 'risk_reward': signal.get('risk_reward', 1.0),
-                'target_pips': signal.get('target_pips', 10),
+                'target_pips': target_pips,
                 'status': 'pending',
                 'completed': False,
-                'signal_type': signal.get('signal_type', 'PRECISION_STRIKE'),
+                'signal_type': signal_type,
+                'signal_mode': signal_type,  # Dual mode tracking field
+                'estimated_time_to_tp': estimated_time_to_tp,  # Dual mode tracking field
+                'actual_time_to_tp': None,  # Will be filled when signal completes
+                'achieved_rr_ratio': None,  # Will be calculated on completion
                 'session': signal.get('session', 'UNKNOWN'),
                 'xp_reward': signal.get('xp_reward', 10)
             }

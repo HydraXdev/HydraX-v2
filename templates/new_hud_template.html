@@ -335,12 +335,16 @@
                     <div class="stat-value">${{ "%.2f"|format(account_balance) }}</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-label">Risk Amount</div>
+                    <div class="stat-label">Risk ({{ user_risk_percentage }}%)</div>
                     <div class="stat-value warning">${{ sl_dollars }}</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">Potential Profit</div>
                     <div class="stat-value success">${{ tp_dollars }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Position Size</div>
+                    <div class="stat-value">{{ "%.2f"|format(position_size) }} lots</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">Win Rate</div>

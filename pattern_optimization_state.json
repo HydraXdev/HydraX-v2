@@ -1,0 +1,12 @@
+{
+  "pattern_status": {
+    "LIQUIDITY_SWEEP_REVERSAL": "ACTIVE",
+    "SUPPORT_RESISTANCE_BOUNCE": "ACTIVE",
+    "BREAKOUT_MOMENTUM": "ACTIVE",
+    "FAIR_VALUE_GAP_FILL": "ACTIVE",
+    "VOLUME_CLIMAX_REVERSAL": "ACTIVE"
+  },
+  "performance_multipliers": {},
+  "optimization_log": [],
+  "timestamp": "2025-08-21T01:44:17.868904"
+}

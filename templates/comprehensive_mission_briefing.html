@@ -256,6 +256,35 @@
             line-height: 1.6;
         }
 
+        /* Signal Mode Styling */
+        .signal-mode-rapid {
+            color: #f59e0b;
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+        
+        .signal-mode-sniper {
+            color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+        
+        .mode-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-left: 8px;
+        }
+        
+        .time-estimation {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 2px;
+        }
+
         /* Risk Management */
         .risk-management {
             background: var(--panel-bg);
@@ -578,8 +607,12 @@
                     <div class="meta-value">{{ mission_id[:12] }}...</div>
                 </div>
                 <div class="meta-box">
-                    <div class="meta-label">Signal Type</div>
-                    <div class="meta-value">{{ briefing.operation_header.mission_type if briefing else 'PRECISION' }}</div>
+                    <div class="meta-label">Signal Mode</div>
+                    <div class="meta-value">
+                        {{ signal_mode_icon }} {{ signal_mode }}
+                        <span class="mode-badge signal-mode-{{ signal_mode.lower() }}">{{ signal_mode }}</span>
+                        <div class="time-estimation">Est. {{ '%.1f'|format(estimated_time_to_tp) }}h to TP</div>
+                    </div>
                 </div>
                 <div class="meta-box">
                     <div class="meta-label">Confidence</div>

@@ -1,259 +1,269 @@
 {
-  "generated_at": "2025-08-19T16:26:49.488023",
+  "generated_at": "2025-08-21T01:47:37.445595",
   "summary": {
-    "total_trades": 20422,
-    "wins": 9789,
-    "losses": 10633,
-    "win_rate": 47.93,
-    "pending": 390
+    "total_trades": 1219338,
+    "wins": 595489,
+    "losses": 623849,
+    "win_rate": 48.84,
+    "pending": 620
   },
   "by_confidence": {
     "95": {
-      "wins": 5635,
+      "wins": 364225,
       "losses": 0,
-      "total": 11986
+      "total": 733499
     },
     "75": {
-      "wins": 275,
+      "wins": 19076,
       "losses": 0,
-      "total": 870
+      "total": 52011
     },
     "85": {
-      "wins": 2684,
+      "wins": 139015,
       "losses": 0,
-      "total": 5058
+      "total": 285341
     },
     "90": {
-      "wins": 903,
+      "wins": 54297,
       "losses": 0,
-      "total": 1991
+      "total": 115211
     },
     "80": {
-      "wins": 231,
+      "wins": 15387,
       "losses": 0,
-      "total": 340
+      "total": 22821
     },
     "70": {
-      "wins": 61,
+      "wins": 3489,
       "losses": 0,
-      "total": 177
+      "total": 10455
     }
   },
   "by_pattern": {
     "UNKNOWN": {
-      "wins": 9755,
+      "wins": 593480,
       "losses": 0,
-      "total": 9755
+      "total": 593480
     },
     "TEST_PATTERN": {
-      "wins": 34,
+      "wins": 2009,
       "losses": 0,
-      "total": 34
+      "total": 2009
     }
   },
   "by_symbol": {
     "XAUUSD": {
-      "wins": 937,
+      "wins": 60480,
       "losses": 0,
-      "total": 937
+      "total": 60480
     },
     "USDCAD": {
-      "wins": 418,
+      "wins": 27083,
       "losses": 0,
-      "total": 418
+      "total": 27083
     },
     "EURJPY": {
-      "wins": 2199,
+      "wins": 155935,
       "losses": 0,
-      "total": 2199
+      "total": 155935
     },
     "EURUSD": {
-      "wins": 1851,
+      "wins": 117438,
       "losses": 0,
-      "total": 1851
+      "total": 117438
     },
     "USDJPY": {
-      "wins": 1465,
+      "wins": 59965,
       "losses": 0,
-      "total": 1465
+      "total": 59965
     },
     "GBPJPY": {
-      "wins": 1692,
+      "wins": 110751,
       "losses": 0,
-      "total": 1692
+      "total": 110751
     },
     "GBPUSD": {
-      "wins": 1227,
+      "wins": 63837,
       "losses": 0,
-      "total": 1227
+      "total": 63837
     }
   },
   "by_session": {
     "LONDON": {
-      "wins": 3809,
+      "wins": 221080,
       "losses": 0,
-      "total": 3809
+      "total": 221080
     },
     "OVERLAP": {
-      "wins": 3979,
+      "wins": 271396,
       "losses": 0,
-      "total": 3979
+      "total": 271396
     },
     "NY": {
-      "wins": 613,
+      "wins": 38468,
       "losses": 0,
-      "total": 613
+      "total": 38468
     },
     "ASIAN": {
-      "wins": 1388,
+      "wins": 64545,
       "losses": 0,
-      "total": 1388
+      "total": 64545
     }
   },
   "by_hour": {
     "10": {
-      "wins": 435,
+      "wins": 27267,
       "losses": 0,
-      "total": 435
+      "total": 27267
     },
     "9": {
-      "wins": 1144,
+      "wins": 67977,
       "losses": 0,
-      "total": 1144
+      "total": 67977
     },
     "14": {
-      "wins": 675,
+      "wins": 58494,
       "losses": 0,
-      "total": 675
+      "total": 58494
     },
     "17": {
-      "wins": 373,
+      "wins": 23661,
       "losses": 0,
-      "total": 373
+      "total": 23661
     },
     "15": {
-      "wins": 812,
+      "wins": 62967,
       "losses": 0,
-      "total": 812
+      "total": 62967
     },
     "11": {
-      "wins": 434,
+      "wins": 27845,
       "losses": 0,
-      "total": 434
+      "total": 27845
     },
     "13": {
-      "wins": 944,
+      "wins": 53755,
       "losses": 0,
-      "total": 944
+      "total": 53755
     },
     "8": {
-      "wins": 1232,
+      "wins": 69545,
       "losses": 0,
-      "total": 1232
+      "total": 69545
     },
     "7": {
-      "wins": 530,
+      "wins": 26437,
       "losses": 0,
-      "total": 530
+      "total": 26437
     },
     "1": {
-      "wins": 75,
+      "wins": 4080,
       "losses": 0,
-      "total": 75
+      "total": 4080
     },
     "0": {
-      "wins": 34,
+      "wins": 2009,
       "losses": 0,
-      "total": 34
+      "total": 2009
     },
     "12": {
-      "wins": 824,
+      "wins": 38649,
       "losses": 0,
-      "total": 824
+      "total": 38649
     },
     "6": {
-      "wins": 634,
+      "wins": 24882,
       "losses": 0,
-      "total": 634
+      "total": 24882
     },
     "5": {
-      "wins": 562,
+      "wins": 23394,
       "losses": 0,
-      "total": 562
+      "total": 23394
     },
     "21": {
-      "wins": 61,
+      "wins": 3771,
       "losses": 0,
-      "total": 61
+      "total": 3771
     },
     "16": {
-      "wins": 724,
+      "wins": 57531,
       "losses": 0,
-      "total": 724
+      "total": 57531
     },
     "18": {
-      "wins": 118,
+      "wins": 5543,
       "losses": 0,
-      "total": 118
+      "total": 5543
     },
     "22": {
-      "wins": 61,
+      "wins": 4532,
       "losses": 0,
-      "total": 61
+      "total": 4532
     },
     "2": {
-      "wins": 72,
+      "wins": 8688,
       "losses": 0,
-      "total": 72
+      "total": 8688
     },
     "3": {
-      "wins": 45,
+      "wins": 3501,
       "losses": 0,
-      "total": 45
+      "total": 3501
+    },
+    "19": {
+      "wins": 961,
+      "losses": 0,
+      "total": 961
     }
   },
   "by_day": {
     "Tuesday": {
-      "wins": 1383,
+      "wins": 91603,
       "losses": 0,
-      "total": 1383
+      "total": 91603
     },
     "Monday": {
-      "wins": 1350,
+      "wins": 78037,
       "losses": 0,
-      "total": 1350
+      "total": 78037
     },
     "Friday": {
-      "wins": 7056,
+      "wins": 411049,
       "losses": 0,
-      "total": 7056
+      "total": 411049
+    },
+    "Wednesday": {
+      "wins": 14800,
+      "losses": 0,
+      "total": 14800
     }
   },
   "by_risk_reward": {
     "2": {
-      "wins": 295,
+      "wins": 17973,
       "losses": 0,
-      "total": 295
+      "total": 17973
     },
     "0": {
-      "wins": 3108,
+      "wins": 226679,
       "losses": 0,
-      "total": 3108
+      "total": 226679
     },
     "1": {
-      "wins": 6386,
+      "wins": 350837,
       "losses": 0,
-      "total": 6386
+      "total": 350837
     }
   },
   "pip_analysis": {
-    "avg_win_pips": 17941.391679436103,
-    "avg_loss_pips": 20994.836128091792,
-    "total_pips": -47609809.400000244
+    "avg_win_pips": 14242.830366639859,
+    "avg_loss_pips": 17172.445742719792,
+    "total_pips": -2231564291.950845
   },
   "extremes": {
-    "max_drawdown": -10.45,
-    "max_runup": 252050.0,
-    "avg_time_to_outcome": 465.42911260939155
+    "max_drawdown": -17350.0,
+    "max_runup": 325750.0,
+    "avg_time_to_outcome": 685.9705013582674
   }
 }

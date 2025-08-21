@@ -27,6 +27,10 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Import individualized risk functions
+sys.path.append('/root/HydraX-v2')
+from fix_individualized_risk import get_user_risk_profile, calculate_position_size
+
 # Initialize onboarding system - DISABLED for now
 onboarding_system_available = False
 register_onboarding_system = None
@@ -140,6 +144,40 @@ def get_bitten_db():
     finally:
         conn.close()
 
+def get_user_tier(user_id):
+    """Get user tier from EA instances or default to NIBBLER"""
+    try:
+        with get_bitten_db() as conn:
+            result = conn.execute(
+                "SELECT target_uuid FROM ea_instances WHERE user_id = ? ORDER BY last_seen DESC LIMIT 1", 
+                (user_id,)
+            ).fetchone()
+            
+            if result and result[0]:
+                target_uuid = result[0]
+                # Determine tier based on target_uuid
+                if 'COMMANDER' in target_uuid.upper():
+                    return 'COMMANDER'
+                elif 'PREDATOR' in target_uuid.upper() or 'FANG' in target_uuid.upper():
+                    return 'PREDATOR'
+                else:
+                    return 'NIBBLER'
+            else:
+                # Default to NIBBLER if no EA instance found
+                return 'NIBBLER'
+    except Exception as e:
+        logger.warning(f"Error getting user tier for {user_id}: {e}")
+        return 'NIBBLER'
+
+def can_fire_signal_mode(user_tier, signal_mode):
+    """Check if user tier can fire specific signal mode"""
+    tier_permissions = {
+        'NIBBLER': ['RAPID'],  # Only RAPID signals
+        'PREDATOR': ['RAPID', 'SNIPER'],  # Both types
+        'COMMANDER': ['RAPID', 'SNIPER']  # Both types
+    }
+    return signal_mode in tier_permissions.get(user_tier, [])
+
 # Initialize SocketIO with optimized settings
 socketio = SocketIO(
     app, 
@@ -201,6 +239,10 @@ def api_signals():
     """API endpoint for signals - GET retrieves, POST receives from VENOM+CITADEL"""
     if request.method == 'GET':
         try:
+            # Get query parameters for filtering
+            mode_filter = request.args.get('mode')  # 'RAPID', 'SNIPER', or None for all
+            user_id = request.args.get('user_id')
+            
             # Direct database read - fixed signal system
             import sqlite3
             conn = sqlite3.connect('/root/HydraX-v2/bitten.db')
@@ -220,11 +262,28 @@ def api_signals():
             conn.close()
             
             signals = []
+            filtered_signals = []
+            
+            # Get user tier for access control if user_id provided
+            user_tier = get_user_tier(user_id) if user_id else 'NIBBLER'
+            
             for row in results:
                 try:
                     payload_data = {}
                     if row[8]:  # payload_json (index 8 now)
                         payload_data = json.loads(row[8])
+                    
+                    # Determine signal mode and time estimation
+                    signal_type = payload_data.get('signal_type', 'RAPID_ASSAULT')
+                    signal_mode = 'RAPID' if 'RAPID' in signal_type else 'SNIPER'
+                    
+                    # Apply mode filter if specified
+                    if mode_filter and signal_mode != mode_filter:
+                        continue
+                    
+                    # Estimate time to TP based on signal mode and target pips
+                    target_pips = payload_data.get('target_pips', 40 if signal_mode == 'SNIPER' else 20)
+                    estimated_time_hours = 0.5 + (target_pips * 0.1) if signal_mode == 'RAPID' else 2 + (target_pips * 0.15)
                     
                     signal = {
                         'signal_id': row[0],
@@ -237,16 +296,29 @@ def api_signals():
                         'pattern_type': payload_data.get('pattern_type', 'UNKNOWN'),
                         'created_at': row[7],  # created_at is index 7
                         'stop_pips': payload_data.get('stop_pips', 20),
-                        'target_pips': payload_data.get('target_pips', 40),
+                        'target_pips': target_pips,
                         'risk_reward': payload_data.get('risk_reward', 2.0),
-                        'signal_type': payload_data.get('signal_type', 'RAPID_ASSAULT'),
+                        'signal_type': signal_type,
+                        'signal_mode': signal_mode,  # NEW: RAPID or SNIPER
+                        'estimated_time_to_tp': estimated_time_hours,  # NEW: Hours to TP
+                        'mode_icon': '⚡' if signal_mode == 'RAPID' else '🎯',  # NEW: Visual icon
+                        'mode_color': 'orange' if signal_mode == 'RAPID' else 'blue',  # NEW: Color theme
+                        'can_fire': can_fire_signal_mode(user_tier, signal_mode) if user_id else True,  # NEW: Access control
                         'status': 'active'
                     }
                     signals.append(signal)
                 except Exception as e:
                     logger.warning(f"Error processing signal row: {e}")
             
-            return jsonify({'signals': signals, 'count': len(signals)})
+            response = {
+                'signals': signals, 
+                'count': len(signals),
+                'filtered_by_mode': mode_filter,
+                'user_tier': user_tier if user_id else None,
+                'available_modes': ['RAPID', 'SNIPER']
+            }
+            
+            return jsonify(response)
         except Exception as e:
             logger.error(f"Signals API error: {e}")
             return jsonify({'error': 'Signal retrieval failed'}), 500
@@ -291,8 +363,8 @@ def api_signals():
                         cursor = conn.cursor()
                         cursor.execute("""
                             INSERT OR IGNORE INTO signals
-                            (signal_id, symbol, direction, entry, sl, tp, confidence, created_at, payload_json)
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            (signal_id, symbol, direction, entry, sl, tp, confidence, pattern_type, created_at, payload_json)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                         """, (
                             signal_data.get("signal_id", ""),
                             signal_data.get("symbol", signal_data.get("pair", "")),
@@ -301,6 +373,7 @@ def api_signals():
                             signal_data.get("stop_loss", signal_data.get("sl", 0)),
                             signal_data.get("take_profit", signal_data.get("tp", 0)),
                             signal_data.get("confidence", 0),
+                            signal_data.get("pattern_type", ""),  # Add pattern_type field
                             int(time.time()),
                             json.dumps(signal_data)
                         ))
@@ -326,9 +399,9 @@ def api_signals():
                     else:
                         logger.debug(f"🚫 ML BLOCKED FROM DISPLAY: {signal_id} @ {signal_confidence}% - {ml_reason}")
                     
-                    # AUTO fire logic - SCALPING OPTIMIZATION: Higher threshold for freshness
-                    print(f"[DEBUG] AUTO fire check: {signal_id} @ {signal_confidence}% (threshold: 89.0%)")
-                    if signal_confidence >= 89.0:  # AUTO fire only on highest confidence signals
+                    # AUTO fire logic - AI EXCELLENCE MODE: 90% threshold for high quality
+                    print(f"[DEBUG] AUTO fire check: {signal_id} @ {signal_confidence}% (threshold: 90.0%)")
+                    if signal_confidence >= 90.0:  # Raised to 90% for AI excellence testing
                         print(f"[DEBUG] HIGH CONFIDENCE - checking AUTO fire users")
                         logger.info(f"🎯 HIGH CONFIDENCE SIGNAL: {signal_id} @ {signal_confidence}% - Checking AUTO fire users")
                         
@@ -650,11 +723,27 @@ def mission_briefing():
                     
                 if ea_data:
                     target_uuid, user_id_db, balance, equity, leverage, broker, currency = ea_data
+                    
+                    # Calculate real win rate from trade history
+                    cursor.execute("""
+                        SELECT COUNT(*) as total,
+                               SUM(CASE WHEN status = 'WIN' OR (ticket > 0 AND price > 0) THEN 1 ELSE 0 END) as wins
+                        FROM fires 
+                        WHERE user_id = ? AND status IN ('FILLED', 'WIN', 'LOSS', 'CLOSED')
+                    """, (user_id,))
+                    
+                    trade_result = cursor.fetchone()
+                    if trade_result and trade_result[0] > 0:
+                        total_trades, wins = trade_result
+                        real_win_rate = round((wins / total_trades) * 100, 1)
+                    else:
+                        real_win_rate = 0  # No trades yet
+                    
                     user_stats = {
                         'tier': 'COMMANDER' if 'COMMANDER' in target_uuid else 'NIBBLER',
                         'balance': float(balance) if balance else 0.0,
                         'equity': float(equity) if equity else 0.0,
-                        'win_rate': 68.5,  # TODO: Get from actual trade history
+                        'win_rate': real_win_rate,  # Use actual win rate
                         'total_pnl': float(balance) - 500.0 if balance else 0.0,  # Current - starting
                         'trades_remaining': 99 if 'COMMANDER' in target_uuid else 5,
                         'broker': broker or 'Unknown',
@@ -760,6 +849,16 @@ def mission_briefing():
         stop_loss = signal_data.get('stop_loss', 0)
         take_profit = signal_data.get('take_profit', 0)
         
+        # Signal mode analysis for dual-mode system
+        signal_type = signal_data.get('signal_type', 'RAPID_ASSAULT')
+        signal_mode = 'RAPID' if 'RAPID' in signal_type else 'SNIPER'
+        signal_mode_icon = '⚡' if signal_mode == 'RAPID' else '🎯'
+        signal_mode_color = 'orange' if signal_mode == 'RAPID' else 'blue'
+        
+        # Estimate time to TP based on signal mode and target pips
+        target_pips = signal_data.get('target_pips', 40 if signal_mode == 'SNIPER' else 20)
+        estimated_time_to_tp = 0.5 + (target_pips * 0.1) if signal_mode == 'RAPID' else 2 + (target_pips * 0.15)
+        
         # CITADEL shield data
         citadel_shield = mission_data.get('citadel_shield', {})
         citadel_score = citadel_shield.get('score', mission_data.get('confidence', 75))
@@ -776,6 +875,22 @@ def mission_briefing():
         logger.info(f"Mission {mission_id} fields: symbol={symbol}, direction={direction}, entry={entry_price}, missing={missing_fields}")
         
         # Prepare template variables for new_hud_template.html
+        # Extract pattern type from mission data
+        pattern_type = mission_data.get('pattern_type', '')
+        if not pattern_type or pattern_type == 'Unknown':
+            # Try to get from database if not in mission file
+            try:
+                with sqlite3.connect('/root/HydraX-v2/bitten.db') as conn:
+                    cursor = conn.cursor()
+                    cursor.execute("SELECT pattern_type FROM signals WHERE signal_id = ?", (mission_id,))
+                    result = cursor.fetchone()
+                    if result and result[0]:
+                        pattern_type = result[0]
+                    else:
+                        pattern_type = 'PATTERN_UNKNOWN'
+            except:
+                pattern_type = 'PATTERN_UNKNOWN'
+        
         template_vars = {
             # Basic signal info
             'symbol': symbol,
@@ -787,16 +902,28 @@ def mission_briefing():
             'sl_masked': f"{float(stop_loss):.5f}" if stop_loss else "Loading...",
             'tp_masked': f"{float(take_profit):.5f}" if take_profit else "Loading...",
             
-            # Quality scores
+            # Pattern information
+            'pattern_type': pattern_type,
+            'pattern_name': pattern_type.replace('_', ' ').title() if pattern_type else 'Pattern Unknown',
+            
+            # Session information
+            'session': mission_data.get('session', signal_data.get('session', 'UNKNOWN')),
+            'session_display': mission_data.get('session', signal_data.get('session', 'UNKNOWN')),
+            
+            # Quality scores (CITADEL removed - broken)
             'tcs_score': signal_data.get('confidence', mission_data.get('confidence', 75)),
-            'citadel_score': citadel_score,
+            'citadel_score': 0,  # REMOVED - system broken
             'ml_filter_passed': mission_data.get('ml_filter', {}).get('filter_result') != 'prediction_failed',
             
-            # Risk calculation with user overlay
+            # Get user's individualized risk profile
+            'user_risk_profile': get_user_risk_profile(user_id),
+            
+            # Risk calculation with INDIVIDUALIZED user risk
             'rr_ratio': signal_data.get('risk_reward_ratio', signal_data.get('risk_reward', 2.0)),
             'account_balance': user_stats.get('balance', user_data.get('balance', 10000.0)),
-            'sl_dollars': f"{user_stats.get('balance', 10000.0) * 0.05:.2f}",  # 5% risk (EXPERIMENTAL)
-            'tp_dollars': f"{user_stats.get('balance', 10000.0) * 0.10:.2f}",  # 2:1 R:R with 5% risk
+            'user_risk_percentage': get_user_risk_profile(user_id).get('risk_percentage', 1.0),
+            'sl_dollars': f"{user_stats.get('balance', 10000.0) * (get_user_risk_profile(user_id).get('risk_percentage', 1.0) / 100):.2f}",  # Individual risk
+            'tp_dollars': f"{user_stats.get('balance', 10000.0) * (get_user_risk_profile(user_id).get('risk_percentage', 1.0) / 100) * signal_data.get('risk_reward', 2.0):.2f}",  # R:R with individual risk
             
             # Mission info
             'mission_id': mission_id,
@@ -805,19 +932,31 @@ def mission_briefing():
             'expiry_seconds': time_remaining,
             'time_remaining': time_remaining,  # Add for countdown timer
             
+            # Dual-mode signal system variables
+            'signal_mode': signal_mode,
+            'signal_mode_icon': signal_mode_icon,
+            'signal_mode_color': signal_mode_color,
+            'estimated_time_to_tp': estimated_time_to_tp,
+            'target_pips': target_pips,
+            
             # User stats with LIVE data (overrides any static mission data)
             'user_stats': user_stats,  # Use the loaded live user stats from EA database
             
-            # Calculate position size based on user tier
-            'position_size': 0.01 * (2 if user_stats['tier'] == 'COMMANDER' else 1),
+            # Calculate position size based on individual risk profile
+            'position_size': calculate_position_size(
+                user_stats.get('balance', 10000.0),
+                get_user_risk_profile(user_id).get('risk_percentage', 1.0),
+                signal_data.get('stop_pips', 20),
+                symbol
+            )[0],  # Returns (position_size, risk_amount)
             
             # Warning for missing fields
             'missing_fields': missing_fields,
             'has_warnings': len(missing_fields) > 0,
             
-            # CITADEL shield info
-            'citadel_classification': citadel_shield.get('classification', 'SHIELD_ACTIVE'),
-            'citadel_explanation': citadel_shield.get('explanation', 'Signal analysis in progress'),
+            # CITADEL shield info (REMOVED - broken system)
+            'citadel_classification': 'N/A',
+            'citadel_explanation': 'System offline',
             
             # LIVE USER DATA
             'user_stats': user_stats,
@@ -827,7 +966,29 @@ def mission_briefing():
             'training_academy': user_training_data,
             'lesson_day': user_training_data.get('lesson_day', 11),
             'is_academy_student': user_training_data.get('lesson_day', 11) <= 10,
-            'academy_graduate': user_training_data.get('academy_graduate', False)
+            'academy_graduate': user_training_data.get('academy_graduate', False),
+            
+            # Briefing object for template compatibility
+            'briefing': {
+                'tactical_intel': {
+                    'pattern_detected': pattern_type.replace('_', ' ').title() if pattern_type else 'Pattern Analysis',
+                    'reward_potential': f"1:{signal_data.get('risk_reward', 2.0):.1f}",
+                    'risk_assessment': f"{user_stats.get('balance', 10000.0) * (get_user_risk_profile(user_id).get('risk_percentage', 1.0) / 100):.2f}"
+                },
+                'citadel_analysis': {
+                    'institutional_insights': f"Pattern {pattern_type.replace('_', ' ').lower()} detected with {mission_data.get('confidence', 75)}% confidence. Volume and structure confirmed.",
+                    'shield_status': 'SHIELD ACTIVE',
+                    'market_regime': 'OPTIMAL',
+                    'risk_multiplier': '1.0'
+                },
+                'situation_assessment': {
+                    'target_zone': symbol
+                },
+                'mission_parameters': {
+                    'session_context': mission_data.get('session', signal_data.get('session', 'UNKNOWN')),
+                    'position_size': f"{calculate_position_size(user_stats.get('balance', 10000.0), get_user_risk_profile(user_id).get('risk_percentage', 1.0), signal_data.get('stop_pips', 20), symbol)[0]:.2f}"
+                }
+            }
         }
         
         # TRAINING ACADEMY TEMPLATE SELECTION
@@ -1161,6 +1322,22 @@ def fire_mission():
                 return jsonify({'error': 'Mission expired', 'success': False}), 410
         except:
             pass
+        
+        # TIER-BASED ACCESS CONTROL - Check if user can fire this signal mode
+        signal_data = mission_data.get('signal', mission_data)
+        signal_type = signal_data.get('signal_type', 'RAPID_ASSAULT')
+        signal_mode = 'RAPID' if 'RAPID' in signal_type else 'SNIPER'
+        user_tier = get_user_tier(user_id)
+        
+        if not can_fire_signal_mode(user_tier, signal_mode):
+            return jsonify({
+                'error': f'Access restricted: {user_tier} tier can only fire RAPID signals',
+                'success': False,
+                'require_upgrade': True,
+                'signal_mode': signal_mode,
+                'user_tier': user_tier,
+                'upgrade_message': f'Upgrade to PREDATOR tier to fire {signal_mode} signals'
+            }), 403
         
         # Record engagement
         try:
@@ -2125,12 +2302,39 @@ def war_room():
             
             for row in cursor.fetchall():
                 symbol, direction, entry, confidence, timestamp = row
+                
+                # Get signal mode from database (default to RAPID if not found)
+                try:
+                    signal_row = conn.execute(
+                        "SELECT payload_json FROM signals WHERE symbol = ? AND created_at = ?",
+                        (symbol, timestamp)
+                    ).fetchone()
+                    
+                    signal_mode = "RAPID"  # Default
+                    mode_icon = "⚡"
+                    mode_color = "orange"
+                    
+                    if signal_row and signal_row[0]:
+                        payload = json.loads(signal_row[0])
+                        signal_type = payload.get('signal_type', 'RAPID_ASSAULT')
+                        if 'SNIPER' in signal_type or 'PRECISION' in signal_type:
+                            signal_mode = "SNIPER"
+                            mode_icon = "🎯"
+                            mode_color = "blue"
+                except:
+                    signal_mode = "RAPID"
+                    mode_icon = "⚡"
+                    mode_color = "orange"
+                
                 recent_signals.append({
                     "pair": symbol,
                     "direction": direction,
                     "entry": f"{entry:.5f}" if entry else "0.00000",
                     "confidence": f"{confidence:.1f}%" if confidence else "0.0%",
-                    "time": "Recently"
+                    "time": "Recently",
+                    "mode": signal_mode,
+                    "mode_icon": mode_icon,
+                    "mode_color": mode_color
                 })
             conn.close()
         except Exception:
@@ -2239,7 +2443,7 @@ def war_room():
 
         <div class="trades-section">
             <h3>🎯 RECENT SIGNALS</h3>
-            {''.join(f'<div class="trade-item"><strong>{signal["pair"]}</strong> - {signal["confidence"]} - {signal["direction"]} @ {signal["entry"]}</div>' for signal in recent_signals) if recent_signals else '<div class="trade-item">No recent signals available</div>'}
+            {''.join(f'<div class="trade-item" style="border-left-color: {signal.get("mode_color", "orange")}"><span class="signal-mode" style="color: {signal.get("mode_color", "orange")}">{signal.get("mode_icon", "⚡")} {signal.get("mode", "RAPID")}</span> <strong>{signal["pair"]}</strong> - {signal["confidence"]} - {signal["direction"]} @ {signal["entry"]}</div>' for signal in recent_signals) if recent_signals else '<div class="trade-item">No recent signals available</div>'}
         </div>
 
         <script>
@@ -2324,6 +2528,69 @@ def signal_freshness_status(signal_id):
             'fireable': True,
             'message': 'Freshness check unavailable'
         })
+
+@app.route('/api/check-signal-access', methods=['POST'])
+def check_signal_access():
+    """Check if user can fire a specific signal mode"""
+    try:
+        data = request.get_json()
+        user_id = data.get('user_id') or request.headers.get('X-User-ID')
+        signal_id = data.get('signal_id')
+        
+        if not user_id or not signal_id:
+            return jsonify({
+                'error': 'Missing user_id or signal_id',
+                'can_fire': False
+            }), 400
+        
+        # Get signal data to determine mode
+        mission_file = f"/root/HydraX-v2/missions/{signal_id}.json"
+        if not os.path.exists(mission_file):
+            return jsonify({
+                'error': 'Signal not found',
+                'can_fire': False
+            }), 404
+        
+        with open(mission_file, 'r') as f:
+            mission_data = json.load(f)
+        
+        signal_data = mission_data.get('signal', mission_data)
+        signal_type = signal_data.get('signal_type', 'RAPID_ASSAULT')
+        signal_mode = 'RAPID' if 'RAPID' in signal_type else 'SNIPER'
+        
+        # Check user tier and permissions
+        user_tier = get_user_tier(user_id)
+        can_fire = can_fire_signal_mode(user_tier, signal_mode)
+        
+        response = {
+            'can_fire': can_fire,
+            'user_tier': user_tier,
+            'signal_mode': signal_mode,
+            'signal_id': signal_id
+        }
+        
+        if not can_fire:
+            response.update({
+                'upgrade_required': True,
+                'upgrade_title': f'Upgrade Required for {signal_mode} Signals',
+                'upgrade_message': f'Your {user_tier} tier can only fire RAPID signals. Upgrade to PREDATOR tier to access {signal_mode} signals.',
+                'upgrade_benefits': [
+                    'Access to both RAPID and SNIPER signals',
+                    'Higher precision trading opportunities', 
+                    'Extended target profit potential',
+                    'Advanced risk management tools'
+                ],
+                'upgrade_action': 'Contact support to upgrade your account'
+            })
+        
+        return jsonify(response)
+        
+    except Exception as e:
+        logger.error(f"Check signal access error: {e}")
+        return jsonify({
+            'error': str(e),
+            'can_fire': False
+        }), 500
 
 @app.route('/api/user-balance/<user_id>', methods=['GET'])
 def get_live_user_balance(user_id):

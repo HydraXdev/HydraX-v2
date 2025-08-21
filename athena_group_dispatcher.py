@@ -81,9 +81,26 @@ class AthenaGroupDispatcher:
             # Generate tactical line based on TCS confidence
             tactical_line = self._get_tactical_line(confidence)
             
-            # Create short tactical message
-            message = f"""🧠 *ATHENA UPLINK*
-🎯 {symbol} {direction} | Confidence: *{confidence}%*
+            # Get signal mode and determine icon
+            signal_mode = signal_data.get('signal_mode', '')
+            target_pips = signal_data.get('target_pips', 0)
+            pattern_type = signal_data.get('pattern_type', '').replace('_', ' ').title()
+            
+            # Determine mode icon based on signal_mode or target pips
+            if signal_mode in ['RAPID', 'RAPID_ASSAULT'] or (target_pips > 0 and target_pips < 30):
+                mode_icon = "⚡"
+                mode_tag = "RAPID"
+            elif signal_mode in ['SNIPER', 'PRECISION_STRIKE'] or target_pips >= 30:
+                mode_icon = "🎯"
+                mode_tag = "SNIPER"
+            else:
+                # Default based on confidence for backwards compatibility
+                mode_icon = "⚡" if confidence < 85 else "🎯"
+                mode_tag = "RAPID" if confidence < 85 else "SNIPER"
+            
+            # Create short tactical message with mode icon
+            message = f"""{mode_icon} *{mode_tag} SIGNAL*
+📊 {symbol} {direction} | {confidence}% | {pattern_type}
 ⚔️ {tactical_line}
 📥 [MISSION BRIEF]({hud_url})"""
             

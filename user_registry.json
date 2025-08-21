@@ -10,11 +10,11 @@
     "fire_eligible": true,
     "tier": "COMMANDER",
     "ready_for_fire": true,
-    "account_balance": 447.5,
-    "account_equity": 391.41,
+    "account_balance": 978.85,
+    "account_equity": 770.29,
     "account_currency": "USD",
     "user_uuid": "COMMANDER_DEV_001",
-    "last_update": "2025-08-19T16:06:20.191443",
+    "last_update": "2025-08-20T22:18:30.513253",
     "handshake_received": true,
     "server": "",
     "handshake_captured": true,
@@ -27,7 +27,13 @@
       "total_lesson_missions": 47,
       "academy_graduate": true
     },
-    "capture_source": "tick_stream"
+    "capture_source": "tick_stream",
+    "risk_profile": {
+      "risk_percentage": 2.0,
+      "max_daily_risk": 10.0,
+      "max_concurrent_trades": 3,
+      "risk_mode": "MODERATE"
+    }
   },
   "999888777": {
     "user_id": "999888777",
@@ -46,6 +52,12 @@
       "academy_start_date": "2025-08-17T21:54:00",
       "total_lesson_missions": 0,
       "academy_graduate": false
+    },
+    "risk_profile": {
+      "risk_percentage": 1.0,
+      "max_daily_risk": 5.0,
+      "max_concurrent_trades": 1,
+      "risk_mode": "CONSERVATIVE"
     }
   },
   "users": {
@@ -62,6 +74,12 @@
       "last_update": "2025-08-08T17:27:40.329770",
       "handshake_received": true,
       "broker": "Coinexx-Demo"
+    },
+    "risk_profile": {
+      "risk_percentage": 1.0,
+      "max_daily_risk": 5.0,
+      "max_concurrent_trades": 1,
+      "risk_mode": "CONSERVATIVE"
     }
   }
 }

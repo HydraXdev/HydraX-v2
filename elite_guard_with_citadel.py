@@ -1783,13 +1783,23 @@ class EliteGuardBalanced:
 
     def apply_ml_filter(self, signal, session: str) -> tuple[bool, str, float]:
         """Apply ML filtering with dynamic threshold for 5-10 signals/hour target"""
-        # QUALITY GATE #1: Minimum quality score requirement (55-100% uncapped)
-        min_quality_score = 55.0  # OPTIMAL: 55% minimum for quality signals
+        # QUALITY GATE #1: OPTIMIZED FOR 65%+ WIN RATE TARGET
+        # Raised from 55% to 60% to filter out lower quality setups
+        min_quality_score = 60.0  # BASE: 60% minimum for 65%+ win rate
+        
+        # Extra strict for exotic pairs (higher risk, need better setups)
+        exotic_pairs = ['USDMXN', 'USDSEK', 'USDCNH', 'XAGUSD']
+        if hasattr(signal, 'pair') and signal.pair in exotic_pairs:
+            min_quality_score = 65.0  # Higher threshold for exotics
+            print(f"🌍 EXOTIC PAIR {signal.pair}: Using stricter quality gate {min_quality_score}%")
+        
         print(f"🔍 Quality Gate Check: {signal.quality_score:.1f}% vs {min_quality_score}% minimum")
         if hasattr(signal, 'quality_score') and signal.quality_score < min_quality_score:
             print(f"   ⚠️ QUALITY FAIL: {signal.quality_score:.1f}% < {min_quality_score}%")
+            # Track quality failures for optimization
+            print(f"   📊 WIN RATE OPTIMIZATION: Rejecting to improve from current 38.5% → 65%+ target")
             return False, f"Quality score too low ({signal.quality_score:.1f}% < {min_quality_score}%)", signal.confidence
-        print(f"   ✅ QUALITY PASSED: {signal.quality_score:.1f}% (no upper cap)")
+        print(f"   ✅ QUALITY PASSED: {signal.quality_score:.1f}% (targeting 65%+ win rate)")
         
         # Dynamic ML threshold based on recent signal rate
         # Track signals in last 15 minutes
@@ -2288,6 +2298,14 @@ class EliteGuardBalanced:
                         
                         # Publish
                         self.publish_signal(protected_signal)
+                        
+                        # EXOTIC PAIR EXECUTION TRACKING
+                        exotic_pairs = ['USDMXN', 'USDSEK', 'USDCNH', 'XAGUSD']
+                        if protected_signal.get('symbol') in exotic_pairs:
+                            print(f"🚀 EXOTIC EXECUTED: {protected_signal['symbol']} @ {protected_signal.get('confidence', 0):.1f}%")
+                            print(f"   SL: {protected_signal.get('stop_pips', 0)} pips, TP: {protected_signal.get('target_pips', 0)} pips")
+                            print(f"   Entry: {protected_signal.get('entry', 0):.5f}")
+                            print(f"   Signal ID: {protected_signal.get('signal_id', 'UNKNOWN')}")
                         
                         # Use emoji based on signal class
                         emoji = "⚡" if protected_signal['signal_class'] == 'RAPID' else "🎯"

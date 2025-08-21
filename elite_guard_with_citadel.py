@@ -441,7 +441,7 @@ class EliteGuardBalanced:
         return min(100, max(0, score))
     
     def calculate_momentum_score(self, symbol: str, direction: str) -> float:
-        """Session-aware momentum calculation for low-volatility periods"""
+        """FIXED: Calculate momentum in PIPS not percentage"""
         try:
             if symbol not in self.m1_data or len(self.m1_data[symbol]) < 5:
                 return 0
@@ -452,39 +452,41 @@ class EliteGuardBalanced:
             
             recent = candles[-5:]
             
-            # 3-bar momentum
-            momentum_3 = (recent[-1]['close'] - recent[-3]['close']) / recent[-3]['close'] * 100
-            
-            # LOW VOLATILITY OVERRIDE - TEMPORARY FOR TESTING
-            from datetime import datetime
-            current_hour = datetime.utcnow().hour
-            
-            # FORCE LOW THRESHOLDS FOR ALL SESSIONS TO GENERATE SIGNALS
-            min_momentum = 5  # Ultra low for current low-vol market
-            
-            # Session detection for logging only
-            if current_hour >= 22 or current_hour < 7:
-                session_name = "ASIAN"
-            elif current_hour >= 7 and current_hour < 8:
-                session_name = "PRE-LONDON"
+            # Calculate pip size for this symbol
+            if 'JPY' in symbol:
+                pip_size = 0.01
+            elif symbol == 'XAUUSD':
+                pip_size = 0.1
             else:
-                session_name = "LONDON/NY"
-                
-            print(f"🔍 Momentum {symbol} {direction} [{session_name}]: 3-bar={momentum_3:.3f}%, Min={min_momentum}, Close[-1]={recent[-1]['close']:.5f}")
+                pip_size = 0.0001
             
-            # Direction check with session-aware minimums
-            if direction == "BUY" and momentum_3 > 0:
-                score = abs(momentum_3) * 10
-                if score < min_momentum:  # Session-aware boost
-                    score = min_momentum
-                return score
-            elif direction == "SELL" and momentum_3 < 0:
-                score = abs(momentum_3) * 10
-                if score < min_momentum:  # Session-aware boost
-                    score = min_momentum
-                return score
+            # Calculate average pip movement over last 5 candles
+            pip_changes = []
+            for i in range(1, len(recent)):
+                pip_change = (recent[i]['close'] - recent[i-1]['close']) / pip_size
+                pip_changes.append(pip_change)
             
-            return min_momentum / 2  # Base score adjusted by session
+            # Average pip movement (directional)
+            avg_pip_movement = sum(pip_changes) / len(pip_changes)
+            
+            # 3-bar momentum in pips for stronger signal
+            momentum_3bar_pips = (recent[-1]['close'] - recent[-3]['close']) / pip_size
+            
+            # Use the stronger of the two
+            momentum_pips = max(abs(avg_pip_movement), abs(momentum_3bar_pips))
+            
+            # Score based on pip movement (10 pips = score of 20, 20 pips = score of 40)
+            score = momentum_pips * 2
+            
+            print(f"🔍 Momentum {symbol} {direction}: Avg={avg_pip_movement:.1f}pips, 3bar={momentum_3bar_pips:.1f}pips, Score={score:.1f}")
+            
+            # Direction check
+            if direction == "BUY" and momentum_3bar_pips > 0:
+                return max(15, score)  # Minimum 15 for any positive movement
+            elif direction == "SELL" and momentum_3bar_pips < 0:
+                return max(15, score)  # Minimum 15 for any negative movement
+            
+            return 5  # Wrong direction but still some movement
             
         except Exception as e:
             print(f"❌ Momentum calc error for {symbol}: {e}")
@@ -895,15 +897,15 @@ class EliteGuardBalanced:
             # BULLISH VCB
             if current['close'] > recent_high:
                 momentum = self.calculate_momentum_score(symbol, "BUY")
-                if momentum < 30:  # HIGH momentum requirement for quality
+                if momentum < 5:  # LOWERED: 5 for low-vol market (was 30)
                     print(f"🔍 VCB {symbol}: Low momentum {momentum}")
                     return None
                 
                 volume_quality = self.analyze_volume_profile(symbol)
                 print(f"🔍 VCB {symbol}: BULLISH breakout! Momentum={momentum}, Volume={volume_quality}")
                 
-                if volume_quality < 20:  # HIGH volume requirement for quality
-                    print(f"🔍 VCB {symbol}: Volume too low ({volume_quality} < 20)")
+                if volume_quality < 5:  # LOWERED: 5 for low-vol market (was 20)
+                    print(f"🔍 VCB {symbol}: Volume too low ({volume_quality} < 5)")
                     return None
                 
                 confidence = 74 + (momentum * 0.05) + (volume_quality * 0.02)  # 74% base
@@ -924,12 +926,12 @@ class EliteGuardBalanced:
             # BEARISH VCB
             elif current['close'] < recent_low:
                 momentum = self.calculate_momentum_score(symbol, "SELL")
-                if momentum < 30:  # HIGH momentum requirement for quality
+                if momentum < 5:  # LOWERED: 5 for low-vol market (was 30)
                     print(f"🔍 VCB {symbol}: Low SELL momentum {momentum}")
                     return None
                 
                 volume_quality = self.analyze_volume_profile(symbol)
-                if volume_quality < 20:  # HIGH volume requirement for quality
+                if volume_quality < 5:  # LOWERED: 5 for low-vol market (was 20)
                     return None
                 
                 confidence = 74 + (momentum * 0.05) + (volume_quality * 0.02)  # 74% base

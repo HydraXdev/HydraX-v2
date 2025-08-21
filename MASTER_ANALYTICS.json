@@ -1,11 +1,11 @@
 {
-  "generated_at": "2025-08-21T23:21:18.882854",
+  "generated_at": "2025-08-21T23:36:29.752881",
   "summary": {
     "total_trades": 1219338,
     "wins": 595489,
     "losses": 623849,
     "win_rate": 48.84,
-    "pending": 656
+    "pending": 659
   },
   "by_confidence": {
     "95": {

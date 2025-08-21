@@ -2037,26 +2037,26 @@ class EliteGuardBalanced:
 
     def apply_ml_filter(self, signal, session: str) -> tuple[bool, str, float]:
         """Apply ML filtering with dynamic threshold for 5-10 signals/hour target"""
-        # QUALITY GATE #1: RAISED TO 75% BASE (80% FOR EXOTICS) - MAXIMUM QUALITY
+        # QUALITY GATE #1: ADJUSTED TO 70% BASE (75% FOR EXOTICS) FOR MORE SIGNALS
         # Extra strict for exotic pairs (higher risk, need better setups)
         exotic_pairs = ['USDMXN', 'USDSEK', 'USDCNH', 'XAGUSD', 'XAUUSD']
         symbol = getattr(signal, 'pair', getattr(signal, 'symbol', ''))
-        min_quality_score = 80.0 if symbol in exotic_pairs else 75.0
+        min_quality_score = 75.0 if symbol in exotic_pairs else 70.0
         
-        # Pattern adjustments for further refinement
+        # Pattern adjustments for optimal performance
         pattern_adjustments = {
-            'FAIR_VALUE_GAP_FILL': 5,        # Penalty: 36.1% win rate needs 80% quality
-            'ORDER_BLOCK_BOUNCE': 0,          # Neutral: best at 38.7%
+            'FAIR_VALUE_GAP_FILL': 5,        # Small penalty: needs 75% quality
+            'ORDER_BLOCK_BOUNCE': 0,          # Neutral: best performer
             'LIQUIDITY_SWEEP_REVERSAL': -5,  # BONUS: Premium pattern
             'VCB_BREAKOUT': -5,              # BONUS: High potential
-            'SWEEP_RETURN': 15,              # BIG PENALTY: 0% win rate
-            'SWEEP_AND_RETURN': 15           # BIG PENALTY: 0% win rate
+            'SWEEP_RETURN': 20,              # BLOCKED: 0% win rate
+            'SWEEP_AND_RETURN': 20           # BLOCKED: 0% win rate
         }
         
         pattern_type = getattr(signal, 'pattern', 'UNKNOWN')
         adjustment = pattern_adjustments.get(pattern_type, 0)
         min_quality_score += adjustment
-        base_quality = 80.0 if symbol in exotic_pairs else 75.0
+        base_quality = 75.0 if symbol in exotic_pairs else 70.0
         print(f"🔍 Quality check: {signal.quality_score:.1f}% vs {min_quality_score}% (base {base_quality}% + {pattern_type} adj {adjustment:+d}%)")
         
         if symbol in exotic_pairs:

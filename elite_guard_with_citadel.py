@@ -1284,9 +1284,15 @@ class EliteGuardBalanced:
         if min_stop > 0 and stop_pips < min_stop:
             # Maintain risk/reward ratio when adjusting
             original_rr = target_pips / stop_pips if stop_pips > 0 else 1.5
+            original_sl = stop_pips
+            original_tp = target_pips
             stop_pips = min_stop
             target_pips = int(min_stop * original_rr)
-            print(f"📏 {symbol}: Adjusted stops to {stop_pips}/{target_pips} pips (broker minimum for exotic/commodity)")
+            print(f"📏 {symbol}: STOP ADJUSTMENT for Error 4756 prevention")
+            print(f"   Original: SL={original_sl}p, TP={original_tp}p")
+            print(f"   Adjusted: SL={stop_pips}p, TP={target_pips}p")
+            print(f"   R:R maintained: {original_rr:.2f}")
+            print(f"   Reason: Broker minimum {min_stop}p for exotic/commodity")
         
         stop_distance = stop_pips * pip_size
         target_distance = target_pips * pip_size
@@ -2299,13 +2305,36 @@ class EliteGuardBalanced:
                         # Publish
                         self.publish_signal(protected_signal)
                         
-                        # EXOTIC PAIR EXECUTION TRACKING
+                        # EXOTIC PAIR EXECUTION DEBUGGING (Error 4756 investigation)
                         exotic_pairs = ['USDMXN', 'USDSEK', 'USDCNH', 'XAGUSD']
                         if protected_signal.get('symbol') in exotic_pairs:
-                            print(f"🚀 EXOTIC EXECUTED: {protected_signal['symbol']} @ {protected_signal.get('confidence', 0):.1f}%")
-                            print(f"   SL: {protected_signal.get('stop_pips', 0)} pips, TP: {protected_signal.get('target_pips', 0)} pips")
-                            print(f"   Entry: {protected_signal.get('entry', 0):.5f}")
-                            print(f"   Signal ID: {protected_signal.get('signal_id', 'UNKNOWN')}")
+                            symbol = protected_signal['symbol']
+                            sl_pips = protected_signal.get('stop_pips', 0)
+                            tp_pips = protected_signal.get('target_pips', 0)
+                            entry = protected_signal.get('entry', 0)
+                            sl = protected_signal.get('stop_loss', 0)
+                            tp = protected_signal.get('take_profit', 0)
+                            
+                            print(f"🚀 EXOTIC ATTEMPT: {symbol} @ {protected_signal.get('confidence', 0):.1f}%")
+                            print(f"   📏 Pips: SL={sl_pips}, TP={tp_pips}")
+                            print(f"   💰 Prices: Entry={entry:.5f}, SL={sl:.5f}, TP={tp:.5f}")
+                            
+                            # Calculate actual pip distances for verification
+                            pip_size = self.get_pip_size(symbol)
+                            actual_sl_pips = abs(entry - sl) / pip_size if pip_size > 0 else 0
+                            actual_tp_pips = abs(tp - entry) / pip_size if pip_size > 0 else 0
+                            
+                            print(f"   ✅ Actual distances: SL={actual_sl_pips:.1f}p, TP={actual_tp_pips:.1f}p")
+                            print(f"   🔍 Signal ID: {protected_signal.get('signal_id', 'UNKNOWN')}")
+                            
+                            # Check if distances meet minimum requirements
+                            min_required = {'USDMXN': 15, 'USDSEK': 15, 'USDCNH': 20, 'XAGUSD': 25}
+                            min_stop = min_required.get(symbol, 10)
+                            if actual_sl_pips < min_stop:
+                                print(f"   ⚠️ WARNING: SL too tight! {actual_sl_pips:.1f}p < {min_stop}p minimum")
+                                print(f"   🔧 MT5 Error 4756 likely - adjusting stops needed!")
+                            else:
+                                print(f"   ✅ Stops OK: {actual_sl_pips:.1f}p >= {min_stop}p minimum")
                         
                         # Use emoji based on signal class
                         emoji = "⚡" if protected_signal['signal_class'] == 'RAPID' else "🎯"

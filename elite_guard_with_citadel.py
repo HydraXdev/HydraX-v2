@@ -141,6 +141,9 @@ class EliteGuardBalanced:
     
     def is_active_session(self) -> bool:
         """Check if we're in an active trading session"""
+        # TEMPORARY: Always active for testing
+        return True
+        
         current_hour = datetime.now(pytz.UTC).hour
         
         # Most active during overlaps
@@ -1213,17 +1216,26 @@ class EliteGuardBalanced:
     def save_candles(self):
         """Save candle and tick data to cache file"""
         try:
+            # First, load existing cache to preserve data we haven't collected yet
+            existing_cache = {}
+            if os.path.exists('/root/HydraX-v2/candle_cache.json'):
+                try:
+                    with open('/root/HydraX-v2/candle_cache.json', 'r') as f:
+                        existing_cache = json.load(f)
+                except:
+                    pass
+            
             cache_data = {
-                'm1_data': {},
-                'm5_data': {},
-                'm15_data': {},
-                'tick_data': {},
+                'm1_data': existing_cache.get('m1_data', {}),
+                'm5_data': existing_cache.get('m5_data', {}),
+                'm15_data': existing_cache.get('m15_data', {}),
+                'tick_data': existing_cache.get('tick_data', {}),
                 'last_update': time.time()
             }
             
-            # Convert deques to lists for JSON serialization
+            # Update with current data (don't overwrite with empty)
             for symbol in self.trading_pairs:
-                # Save candles
+                # Only update if we have data
                 if symbol in self.m1_data and len(self.m1_data[symbol]) > 0:
                     cache_data['m1_data'][symbol] = list(self.m1_data[symbol])
                 if symbol in self.m5_data and len(self.m5_data[symbol]) > 0:
@@ -1611,21 +1623,39 @@ class EliteGuardBalanced:
     def data_listener(self):
         """Listen for market data"""
         logger.info("📡 Starting data listener")
+        print("📡 Data listener started, waiting for ticks...")
         
         while self.running:
             try:
                 if self.subscriber.poll(timeout=100):
                     message = self.subscriber.recv_string()
                     
-                    # Handle "tick {json}" format from telemetry bridge
-                    if message.startswith("tick "):
+                    # Handle pure JSON format from telemetry bridge
+                    if message.startswith("{"):
+                        try:
+                            tick_data = json.loads(message)
+                            # Process tick if it's a TICK type message
+                            if tick_data.get('type') == 'TICK' and 'symbol' in tick_data and 'bid' in tick_data:
+                                symbol = tick_data.get('symbol')
+                                if symbol and symbol in self.trading_pairs:
+                                    self.tick_data[symbol].append(tick_data)
+                                    self.last_tick_time[symbol] = time.time()
+                                    self.build_candles_from_tick(symbol, tick_data)
+                                    
+                                    # Log every 100th tick for debugging
+                                    tick_count = len(self.tick_data[symbol])
+                                    if tick_count % 100 == 0:
+                                        print(f"📈 {symbol}: {tick_count} ticks, {len(self.m1_data.get(symbol, []))} M1 candles")
+                        except json.JSONDecodeError as e:
+                            logger.debug(f"Failed to parse JSON: {e}")
+                    # Handle old "tick " prefix format (backward compatibility)
+                    elif message.startswith("tick "):
                         json_data = message[5:]  # Skip "tick " prefix
                         try:
                             tick_data = json.loads(json_data)
-                            # Process tick directly with proper data
                             if 'symbol' in tick_data and 'bid' in tick_data:
                                 symbol = tick_data.get('symbol')
-                                if symbol:
+                                if symbol and symbol in self.trading_pairs:
                                     self.tick_data[symbol].append(tick_data)
                                     self.last_tick_time[symbol] = time.time()
                                     self.build_candles_from_tick(symbol, tick_data)

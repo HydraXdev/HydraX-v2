@@ -1211,41 +1211,68 @@ class EliteGuardBalanced:
             print(f"📊 {symbol}: Created M15 candle from {len(last_3)} M5 candles")
     
     def save_candles(self):
-        """Save candle data to cache file"""
+        """Save candle and tick data to cache file"""
         try:
             cache_data = {
                 'm1_data': {},
                 'm5_data': {},
                 'm15_data': {},
+                'tick_data': {},
                 'last_update': time.time()
             }
             
             # Convert deques to lists for JSON serialization
             for symbol in self.trading_pairs:
-                if symbol in self.m1_data:
+                # Save candles
+                if symbol in self.m1_data and len(self.m1_data[symbol]) > 0:
                     cache_data['m1_data'][symbol] = list(self.m1_data[symbol])
-                if symbol in self.m5_data:
+                if symbol in self.m5_data and len(self.m5_data[symbol]) > 0:
                     cache_data['m5_data'][symbol] = list(self.m5_data[symbol])
-                if symbol in self.m15_data:
+                if symbol in self.m15_data and len(self.m15_data[symbol]) > 0:
                     cache_data['m15_data'][symbol] = list(self.m15_data[symbol])
+                
+                # Save recent ticks (last 100)
+                if symbol in self.tick_data and len(self.tick_data[symbol]) > 0:
+                    cache_data['tick_data'][symbol] = list(self.tick_data[symbol])[-100:]
             
             with open('/root/HydraX-v2/candle_cache.json', 'w') as f:
-                json.dump(cache_data, f)
+                json.dump(cache_data, f, indent=2)
                 
-            print(f"💾 Saved candles: {sum(len(self.m1_data[s]) for s in self.trading_pairs)} M1, {sum(len(self.m5_data[s]) for s in self.trading_pairs)} M5, {sum(len(self.m15_data[s]) for s in self.trading_pairs)} M15")
+            total_ticks = sum(len(self.tick_data.get(s, [])) for s in self.trading_pairs)
+            total_m1 = sum(len(self.m1_data.get(s, [])) for s in self.trading_pairs)
+            total_m5 = sum(len(self.m5_data.get(s, [])) for s in self.trading_pairs)
+            total_m15 = sum(len(self.m15_data.get(s, [])) for s in self.trading_pairs)
+            
+            print(f"💾 Saved: {total_ticks} ticks, {total_m1} M1, {total_m5} M5, {total_m15} M15 candles")
+            
+            # Log per-symbol stats for debugging
+            if total_m1 > 0:
+                for symbol in ['EURUSD', 'GBPUSD', 'USDJPY']:
+                    if symbol in self.m1_data:
+                        print(f"  {symbol}: {len(self.tick_data.get(symbol, []))} ticks, {len(self.m1_data[symbol])} M1, {len(self.m5_data.get(symbol, []))} M5")
             
         except Exception as e:
             print(f"❌ Error saving candles: {e}")
 
     def load_candles(self):
-        """Load candle data from cache file"""
+        """Load candle and tick data from cache file"""
         try:
             if os.path.exists('/root/HydraX-v2/candle_cache.json'):
                 with open('/root/HydraX-v2/candle_cache.json', 'r') as f:
                     cache_data = json.load(f)
                 
-                # Restore M1 candles from cache and aggregate M5/M15
+                total_ticks_loaded = 0
+                
+                # Restore ticks first
                 for symbol in self.trading_pairs:
+                    if symbol in cache_data.get('tick_data', {}):
+                        ticks = cache_data['tick_data'][symbol]
+                        self.tick_data[symbol] = deque(ticks, maxlen=1000)
+                        total_ticks_loaded += len(ticks)
+                        if ticks:
+                            self.last_tick_time[symbol] = time.time()  # Mark as recent
+                    
+                    # Restore M1 candles from cache
                     if symbol in cache_data.get('m1_data', {}):
                         candles = cache_data['m1_data'][symbol]
                         self.m1_data[symbol] = deque(candles, maxlen=500)
@@ -1289,11 +1316,20 @@ class EliteGuardBalanced:
                         self.m5_data[symbol] = deque(maxlen=300)
                         self.m15_data[symbol] = deque(maxlen=200)
                 
-                total_m1 = sum(len(self.m1_data[s]) for s in self.trading_pairs)
-                total_m5 = sum(len(self.m5_data[s]) for s in self.trading_pairs)
-                total_m15 = sum(len(self.m15_data[s]) for s in self.trading_pairs)
+                total_m1 = sum(len(self.m1_data.get(s, [])) for s in self.trading_pairs)
+                total_m5 = sum(len(self.m5_data.get(s, [])) for s in self.trading_pairs)
+                total_m15 = sum(len(self.m15_data.get(s, [])) for s in self.trading_pairs)
                 
-                print(f"📂 Loaded candles: {total_m1} M1, {total_m5} M5, {total_m15} M15")
+                print(f"📂 Loaded: {total_ticks_loaded} ticks, {total_m1} M1, {total_m5} M5, {total_m15} M15")
+                
+                # Log per-symbol for debugging
+                if total_ticks_loaded > 0 or total_m1 > 0:
+                    for symbol in ['EURUSD', 'GBPUSD', 'USDJPY']:
+                        tick_count = len(self.tick_data.get(symbol, []))
+                        m1_count = len(self.m1_data.get(symbol, []))
+                        m5_count = len(self.m5_data.get(symbol, []))
+                        if tick_count > 0 or m1_count > 0:
+                            print(f"  {symbol}: {tick_count} ticks, {m1_count} M1, {m5_count} M5")
                 
         except Exception as e:
             print(f"❌ Error loading candles: {e}")
@@ -1411,9 +1447,17 @@ class EliteGuardBalanced:
 
     def scan_for_patterns(self):
         """Scan all symbols for patterns"""
-        # ONLY scan our defined forex pairs
-        symbols_to_scan = [s for s in self.trading_pairs if s in self.tick_data]
-        logger.info(f"🔍 Starting pattern scan for {len(symbols_to_scan)} forex symbols")
+        # Always scan ALL trading pairs, not just those with tick data
+        symbols_to_scan = self.trading_pairs
+        symbols_with_data = [s for s in self.trading_pairs if s in self.tick_data and len(self.m1_data.get(s, [])) > 0]
+        
+        logger.info(f"🔍 Starting pattern scan for {len(symbols_to_scan)} symbols ({len(symbols_with_data)} have M1 data)")
+        
+        # Log total candle counts
+        total_m1 = sum(len(self.m1_data.get(s, [])) for s in symbols_to_scan)
+        total_m5 = sum(len(self.m5_data.get(s, [])) for s in symbols_to_scan)
+        if total_m1 > 0:
+            logger.info(f"📈 Total candles: {total_m1} M1, {total_m5} M5")
         
         # Log candle status with tick reception
         for symbol in symbols_to_scan[:5]:
@@ -1426,9 +1470,14 @@ class EliteGuardBalanced:
         signals_generated = []
         
         for symbol in symbols_to_scan:
-            # Check if data is fresh
-            if time.time() - self.last_tick_time[symbol] > 60:
+            # Check if we have enough data (skip if no M1 candles)
+            if len(self.m1_data.get(symbol, [])) < 2:
                 continue
+            
+            # Check if data is fresh (only for symbols with tick data)
+            if symbol in self.last_tick_time:
+                if time.time() - self.last_tick_time[symbol] > 60:
+                    continue
             
             if not self.should_generate_signal(symbol):
                 continue

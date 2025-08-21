@@ -119,12 +119,13 @@ class EliteGuardBalanced:
             self.subscriber.connect("tcp://127.0.0.1:5560")
             self.subscriber.setsockopt_string(zmq.SUBSCRIBE, "")
             
-            # Subscribe to OHLC data from telemetry bridge on 5560
-            # Bridge now republishes OHLC messages from 5556
+            # Subscribe DIRECTLY to port 5556 where EA sends OHLC data
+            # EA's PushOHLCData sends M1/M5/M15 OHLC to this port
             self.ohlc_subscriber = self.context.socket(zmq.SUB)
-            self.ohlc_subscriber.connect("tcp://127.0.0.1:5560")
-            self.ohlc_subscriber.setsockopt_string(zmq.SUBSCRIBE, "OHLC")  # Subscribe to OHLC messages
+            self.ohlc_subscriber.connect("tcp://127.0.0.1:5556")
+            self.ohlc_subscriber.setsockopt_string(zmq.SUBSCRIBE, "")  # Subscribe to ALL messages
             self.ohlc_subscriber.setsockopt(zmq.RCVTIMEO, 100)  # 100ms timeout for non-blocking
+            print(f"🔌 OHLC SUB connected to 5556 for direct EA OHLC data")
             
             # Publisher for signals
             self.publisher = self.context.socket(zmq.PUB)
@@ -991,7 +992,7 @@ class EliteGuardBalanced:
                     
                     # Debug: Log raw message reception
                     if message_count == 1:
-                        print(f"🔵 OHLC Socket Active: Received {len(message)} bytes")
+                        print(f"🔵 Port 5556 Active: Received {len(message)} bytes from EA")
                     
                     if message.startswith("OHLC "):
                         # Parse OHLC message: "OHLC {json_data}"
@@ -1007,8 +1008,9 @@ class EliteGuardBalanced:
                         close_price = float(ohlc_data.get('close', 0))
                         volume = int(ohlc_data.get('volume', 1))
                         
-                        # Enhanced debug logging
-                        print(f"🟢 OHLC [{msg_symbol}] {timeframe}: O={open_price:.5f} H={high_price:.5f} L={low_price:.5f} C={close_price:.5f} V={volume}")
+                        # Enhanced debug logging for EURUSD especially
+                        if msg_symbol == "EURUSD" or message_count <= 5:
+                            print(f"🟢 OHLC [{msg_symbol}] {timeframe}: O={open_price:.5f} H={high_price:.5f} L={low_price:.5f} C={close_price:.5f} T={timestamp}")
                         
                         # Store in appropriate buffer based on timeframe
                         if msg_symbol in self.trading_pairs:
@@ -1027,13 +1029,16 @@ class EliteGuardBalanced:
                             
                             if timeframe == 'M1':
                                 self.m1_data[msg_symbol].append(candle)
-                                print(f"📈 {msg_symbol} M1: {len(self.m1_data[msg_symbol])} candles stored")
+                                if msg_symbol == "EURUSD":
+                                    print(f"📈 EURUSD M1: {len(self.m1_data[msg_symbol])} candles stored")
                             elif timeframe == 'M5':
                                 self.m5_data[msg_symbol].append(candle)
-                                print(f"📊 {msg_symbol} M5: {len(self.m5_data[msg_symbol])} candles stored")
+                                if msg_symbol == "EURUSD":
+                                    print(f"📊 EURUSD M5: {len(self.m5_data[msg_symbol])} candles stored")
                             elif timeframe == 'M15':
                                 self.m15_data[msg_symbol].append(candle)
-                                print(f"📉 {msg_symbol} M15: {len(self.m15_data[msg_symbol])} candles stored")
+                                if msg_symbol == "EURUSD":
+                                    print(f"📉 EURUSD M15: {len(self.m15_data[msg_symbol])} candles stored")
                         else:
                             print(f"⚠️ {msg_symbol} not in trading pairs, skipping")
                     else:
@@ -1043,7 +1048,7 @@ class EliteGuardBalanced:
                 except zmq.Again:
                     # No more messages available
                     if message_count > 0:
-                        print(f"✅ Processed {message_count} OHLC messages")
+                        print(f"✅ Processed {message_count} OHLC messages from port 5556")
                     break
                 except Exception as e:
                     print(f"❌ OHLC parsing error: {e}")

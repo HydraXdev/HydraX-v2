@@ -404,15 +404,15 @@ class EliteGuardBalanced:
         score += signal.confidence * 0.3
         
         # Momentum contribution
-        if signal.momentum_score > 25:
+        if signal.momentum_score >= 25:
             score += 20
-        elif signal.momentum_score > 15:
+        elif signal.momentum_score >= 15:
             score += 10
         
         # Volume quality
-        if signal.volume_quality > 20:
+        if signal.volume_quality >= 20:
             score += 15
-        elif signal.volume_quality > 10:
+        elif signal.volume_quality >= 10:
             score += 8
         
         # Session bonus

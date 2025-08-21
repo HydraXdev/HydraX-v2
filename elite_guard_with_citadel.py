@@ -396,6 +396,61 @@ class EliteGuardBalanced:
         else:
             return 5
     
+    def calculate_dynamic_confidence(self, symbol: str, base_pattern_score: float, momentum: float, volume: float) -> float:
+        """Calculate confidence based on quality components (0-100%)"""
+        confidence = 0
+        
+        # Base from pattern strength (30-50% contribution)
+        confidence += base_pattern_score * 0.5
+        print(f"  📊 Base pattern: {base_pattern_score:.1f} * 0.5 = {base_pattern_score * 0.5:.1f}%")
+        
+        # Momentum bonus: +0.1% per pip of movement
+        momentum_bonus = momentum * 0.1
+        confidence += momentum_bonus
+        print(f"  📊 Momentum: {momentum:.1f} pips * 0.1 = +{momentum_bonus:.1f}%")
+        
+        # Volume bonus: +0.2% per 1% above average (ratio-based)
+        if volume >= 20:  # Good volume
+            volume_bonus = 5.0
+        elif volume >= 15:  # Average volume
+            volume_bonus = 3.0
+        elif volume >= 10:  # Below average
+            volume_bonus = 1.0
+        else:
+            volume_bonus = 0
+        confidence += volume_bonus
+        print(f"  📊 Volume: score={volume:.0f} = +{volume_bonus:.1f}%")
+        
+        # Session bonus (5-15%)
+        session_bonus = self.get_session_bonus()
+        confidence += session_bonus
+        print(f"  📊 Session bonus: +{session_bonus:.0f}%")
+        
+        # Spread adjustment (-2 to +2%)
+        spread_adjustment = 0
+        if symbol in self.tick_data:
+            recent_ticks = list(self.tick_data[symbol])[-10:]
+            if recent_ticks:
+                spreads = [(t.get('ask', 0) - t.get('bid', 0)) for t in recent_ticks if t.get('ask') and t.get('bid')]
+                if spreads:
+                    avg_spread = np.mean(spreads)
+                    pip_size = 0.01 if 'JPY' in symbol else 0.0001
+                    spread_pips = avg_spread / pip_size
+                    if spread_pips < 1:
+                        spread_adjustment = 2  # Tight spread bonus
+                    elif spread_pips < 2:
+                        spread_adjustment = 0  # Normal
+                    else:
+                        spread_adjustment = -2  # Wide spread penalty
+        confidence += spread_adjustment
+        print(f"  📊 Spread adjustment: {spread_adjustment:+.0f}%")
+        
+        # Cap at 100%
+        final_confidence = min(100, max(0, confidence))
+        print(f"  📊 FINAL CONFIDENCE: {final_confidence:.1f}%")
+        
+        return final_confidence
+    
     def calculate_quality_score(self, signal: PatternSignal) -> float:
         """Calculate overall quality score for ranking"""
         score = 0
@@ -612,13 +667,15 @@ class EliteGuardBalanced:
                     
                     entry_price = current_candle['close'] + pip_size  # Entry above close
                     
-                    confidence = 75 + (momentum * 0.05) + (volume_quality * 0.02)  # 75% base
+                    # Use dynamic confidence calculation
+                    base_pattern_score = 75  # LSR base strength
+                    confidence = self.calculate_dynamic_confidence(symbol, base_pattern_score, momentum, volume_quality)
                     
                     signal = PatternSignal(
                         pattern="LIQUIDITY_SWEEP_REVERSAL",
                         direction="BUY",
                         entry_price=entry_price,
-                        confidence=min(85, confidence),  # Cap at 85
+                        confidence=confidence,
                         timeframe="M5",
                         pair=symbol,
                         momentum_score=momentum,
@@ -645,13 +702,15 @@ class EliteGuardBalanced:
                     
                     entry_price = current_candle['close'] - pip_size
                     
-                    confidence = 75 + (momentum * 0.05) + (volume_quality * 0.02)  # 75% base
+                    # Use dynamic confidence calculation
+                    base_pattern_score = 75  # LSR base strength
+                    confidence = self.calculate_dynamic_confidence(symbol, base_pattern_score, momentum, volume_quality)
                     
                     signal = PatternSignal(
                         pattern="LIQUIDITY_SWEEP_REVERSAL",
                         direction="SELL",
                         entry_price=entry_price,
-                        confidence=min(85, confidence),
+                        confidence=confidence,
                         timeframe="M5",
                         pair=symbol,
                         momentum_score=momentum,
@@ -716,13 +775,15 @@ class EliteGuardBalanced:
                             pip_size = 0.01 if 'JPY' in symbol else 0.0001
                             entry_price = current_price + pip_size
                             
-                            confidence = 72 + (momentum * 0.05) + (volume_quality * 0.02)  # 72% base
+                            # Use dynamic confidence calculation
+                            base_pattern_score = 72  # OBB base strength
+                            confidence = self.calculate_dynamic_confidence(symbol, base_pattern_score, momentum, volume_quality)
                             
                             signal = PatternSignal(
                                 pattern="ORDER_BLOCK_BOUNCE",
                                 direction=direction,
                                 entry_price=entry_price,
-                                confidence=min(80, confidence),
+                                confidence=confidence,
                                 timeframe="M5",
                                 pair=symbol,
                                 momentum_score=momentum,
@@ -746,13 +807,15 @@ class EliteGuardBalanced:
                             pip_size = 0.01 if 'JPY' in symbol else 0.0001
                             entry_price = current_price - pip_size
                             
-                            confidence = 72 + (momentum * 0.05) + (volume_quality * 0.02)  # 72% base
+                            # Use dynamic confidence calculation
+                            base_pattern_score = 72  # OBB base strength
+                            confidence = self.calculate_dynamic_confidence(symbol, base_pattern_score, momentum, volume_quality)
                             
                             signal = PatternSignal(
                                 pattern="ORDER_BLOCK_BOUNCE",
                                 direction=direction,
                                 entry_price=entry_price,
-                                confidence=min(80, confidence),
+                                confidence=confidence,
                                 timeframe="M5",
                                 pair=symbol,
                                 momentum_score=momentum,
@@ -803,13 +866,16 @@ class EliteGuardBalanced:
                             return None
                         
                         volume_quality = self.analyze_volume_profile(symbol)
-                        confidence = 73 + (momentum * 0.05) + (volume_quality * 0.02)  # 73% base
+                        
+                        # Use dynamic confidence calculation
+                        base_pattern_score = 73  # SRL base strength
+                        confidence = self.calculate_dynamic_confidence(symbol, base_pattern_score, momentum, volume_quality)
                         
                         signal = PatternSignal(
                             pattern="SWEEP_RETURN",
                             direction="BUY",
                             entry_price=current['close'] + pip_size,
-                            confidence=min(85, confidence),
+                            confidence=confidence,
                             timeframe="M5",
                             pair=symbol,
                             momentum_score=momentum,
@@ -832,7 +898,10 @@ class EliteGuardBalanced:
                             return None
                         
                         volume_quality = self.analyze_volume_profile(symbol)
-                        confidence = 73 + (momentum * 0.05) + (volume_quality * 0.02)  # 73% base
+                        
+                        # Use dynamic confidence calculation
+                        base_pattern_score = 73  # SRL base strength
+                        confidence = self.calculate_dynamic_confidence(symbol, base_pattern_score, momentum, volume_quality)
                         
                         signal = PatternSignal(
                             pattern="SWEEP_RETURN",
@@ -933,13 +1002,17 @@ class EliteGuardBalanced:
                 
                 print(f"✅ VCB {symbol}: BULLISH SIGNAL CREATED! Momentum={momentum}, Volume={volume_quality}")
                 
-                confidence = 74 + (momentum * 0.05) + (volume_quality * 0.02)  # 74% base
+                # Calculate dynamic confidence based on quality components
+                print(f"🔍 VCB {symbol}: Calculating dynamic confidence...")
+                # Get actual pip movement for momentum
+                momentum_pips = momentum / 10  # Convert score back to pips
+                confidence = self.calculate_dynamic_confidence(symbol, 70.0, momentum_pips, volume_quality)
                 
                 signal = PatternSignal(
                     pattern="VCB_BREAKOUT",
                     direction="BUY",
                     entry_price=current['close'] + pip_size,
-                    confidence=min(85, confidence),
+                    confidence=confidence,
                     timeframe="M5",
                     pair=symbol,
                     momentum_score=momentum,
@@ -984,13 +1057,16 @@ class EliteGuardBalanced:
                 
                 print(f"✅ VCB {symbol}: BEARISH SIGNAL CREATED! Momentum={momentum}, Volume={volume_quality}")
                 
-                confidence = 74 + (momentum * 0.05) + (volume_quality * 0.02)  # 74% base
+                # Calculate dynamic confidence based on quality components
+                print(f"🔍 VCB {symbol}: Calculating dynamic confidence...")
+                momentum_pips = momentum / 10  # Convert score back to pips
+                confidence = self.calculate_dynamic_confidence(symbol, 70.0, momentum_pips, volume_quality)
                 
                 signal = PatternSignal(
                     pattern="VCB_BREAKOUT",
                     direction="SELL",
                     entry_price=current['close'] - pip_size,
-                    confidence=min(85, confidence),
+                    confidence=confidence,
                     timeframe="M5",
                     pair=symbol,
                     momentum_score=momentum,
@@ -1107,14 +1183,23 @@ class EliteGuardBalanced:
                     
                     # Check if price is approaching gap from above
                     if current_price > gap_mid and current_price <= current_low + (gap_size * 0.3):
-                        confidence = 72 + min(3, gap_size / pip_size)  # 72% base + small bonus
+                        # Calculate momentum and volume for quality scoring
+                        momentum = self.calculate_momentum_score(symbol, "SELL")
+                        volume_quality = self.analyze_volume_profile(symbol)
+                        
+                        # Use dynamic confidence calculation
+                        base_pattern_score = 72  # FVG base strength
+                        confidence = self.calculate_dynamic_confidence(symbol, base_pattern_score, momentum, volume_quality)
+                        
                         signal = PatternSignal(
                             pattern="FAIR_VALUE_GAP_FILL",
                             direction="SELL",
                             entry_price=current_price,
-                            confidence=min(85, confidence),
+                            confidence=confidence,
                             timeframe="M5",
-                            pair=symbol
+                            pair=symbol,
+                            momentum_score=momentum,
+                            volume_quality=volume_quality
                         )
                         signal.quality_score = self.calculate_quality_score(signal)
                         return signal
@@ -1126,14 +1211,23 @@ class EliteGuardBalanced:
                     
                     # Check if price is approaching gap from below
                     if current_price < gap_mid and current_price >= current_high - (gap_size * 0.3):
-                        confidence = 72 + min(3, gap_size / pip_size)  # 72% base
+                        # Calculate momentum and volume for quality scoring
+                        momentum = self.calculate_momentum_score(symbol, "BUY")
+                        volume_quality = self.analyze_volume_profile(symbol)
+                        
+                        # Use dynamic confidence calculation
+                        base_pattern_score = 72  # FVG base strength
+                        confidence = self.calculate_dynamic_confidence(symbol, base_pattern_score, momentum, volume_quality)
+                        
                         signal = PatternSignal(
                             pattern="FAIR_VALUE_GAP_FILL",
                             direction="BUY",
                             entry_price=current_price,
-                            confidence=min(85, confidence),
+                            confidence=confidence,
                             timeframe="M5",
-                            pair=symbol
+                            pair=symbol,
+                            momentum_score=momentum,
+                            volume_quality=volume_quality
                         )
                         signal.quality_score = self.calculate_quality_score(signal)
                         return signal

@@ -2146,17 +2146,55 @@ class EliteGuardBalanced:
             # Map field names correctly
             symbol = signal_data.get('symbol', signal_data.get('pair', ''))
             
-            # Calculate next candle win (if we have M1 data)
+            # Check for REAL trade outcomes from MT5 execution
+            signal_id = signal_data.get('signal_id', '')
             win = False
-            if symbol in self.m1_data and len(self.m1_data[symbol]) > 0:
-                last_candle = self.m1_data[symbol][-1]
-                if last_candle and 'close' in last_candle and 'open' in last_candle:
-                    # For BUY: win if close > open, for SELL: win if close < open
-                    direction = signal_data.get('direction', 'BUY')
-                    if direction == 'BUY':
-                        win = last_candle['close'] > last_candle['open']
+            outcome_source = 'PENDING'
+            
+            # First check fires database for execution result
+            try:
+                import sqlite3
+                conn = sqlite3.connect('/root/HydraX-v2/bitten.db')
+                cursor = conn.cursor()
+                
+                # Check if signal was executed
+                cursor.execute("SELECT status, ticket FROM fires WHERE fire_id = ?", (signal_id,))
+                fire_result = cursor.fetchone()
+                
+                if fire_result and fire_result[0] == 'FILLED':
+                    # Signal was executed, check for outcome
+                    cursor.execute("SELECT outcome, pips FROM signal_outcomes WHERE signal_id = ?", (signal_id,))
+                    outcome_result = cursor.fetchone()
+                    
+                    if outcome_result:
+                        # We have real outcome!
+                        outcome = outcome_result[0]
+                        pips = outcome_result[1] or 0
+                        win = (outcome == 'WIN' or pips > 0)
+                        outcome_source = f'MT5_OUTCOME_{outcome}'
                     else:
-                        win = last_candle['close'] < last_candle['open']
+                        # Executed but no outcome yet
+                        outcome_source = 'MT5_EXECUTING'
+                        win = False  # Don't assume until confirmed
+                elif fire_result:
+                    outcome_source = f'FIRE_{fire_result[0]}'
+                    win = False  # Failed fires are losses
+                else:
+                    # Not executed, use candle projection
+                    outcome_source = 'PROJECTION'
+                    if symbol in self.m1_data and len(self.m1_data[symbol]) > 0:
+                        last_candle = self.m1_data[symbol][-1]
+                        if last_candle and 'close' in last_candle and 'open' in last_candle:
+                            direction = signal_data.get('direction', 'BUY')
+                            if direction == 'BUY':
+                                win = last_candle['close'] > last_candle['open']
+                            else:
+                                win = last_candle['close'] < last_candle['open']
+                
+                conn.close()
+            except Exception as e:
+                print(f"   ⚠️ Could not check MT5 outcomes: {e}")
+                outcome_source = 'ERROR'
             
             # Calculate Risk:Reward ratio using correct field names
             entry = signal_data.get('entry', signal_data.get('entry_price', 0))
@@ -2213,11 +2251,14 @@ class EliteGuardBalanced:
             with open('/root/HydraX-v2/optimized_tracking.jsonl', 'a') as f:
                 f.write(json.dumps(entry) + '\n')
             
-            # Enhanced debug output
-            print(f"📝 Tracked: {signal_data.get('signal_id', 'UNKNOWN')}")
+            # Add outcome source to entry
+            entry['outcome_source'] = outcome_source
+            
+            # Enhanced debug output with outcome source
+            print(f"📝 Tracked to optimized_tracking.jsonl: {signal_data.get('signal_id', 'UNKNOWN')}")
             print(f"   Pair={symbol}, Pattern={entry['pattern']}, Class={entry['signal_class']}")
             print(f"   Conf={entry['confidence']}%, Quality={entry['quality_score']}%")
-            print(f"   Win={win}, R:R={rr}, Lifespan={lifespan}s")
+            print(f"   Win={win}, R:R={rr}, Source={outcome_source}")
             print(f"   Session={entry['session']}, Direction={entry['direction']}")
             
         except Exception as e:

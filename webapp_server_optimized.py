@@ -457,7 +457,7 @@ def api_signals():
                                                     entry=entry_price,
                                                     stop_loss=stop_loss,
                                                     balance=float(balance) if balance else 458.88,
-                                                    risk_percent=5.0
+                                                    risk_percent=3.0  # Reduced from 5% to 3% for margin management
                                                 )
                                                 
                                                 # Create and send AUTO fire command
@@ -1419,7 +1419,7 @@ def fire_mission():
                     entry=entry_price,
                     stop_loss=stop_loss,
                     balance=current_balance,
-                    risk_percent=5.0  # 5% risk - higher lots via shorter TP distances
+                    risk_percent=3.0  # Reduced to 3% risk for better margin management
                 )
                 
                 logger.info(f"💰 Calculated lot size: {calculated_lot} for balance ${current_balance} with 5% risk")

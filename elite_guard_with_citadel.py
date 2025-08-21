@@ -2037,26 +2037,26 @@ class EliteGuardBalanced:
 
     def apply_ml_filter(self, signal, session: str) -> tuple[bool, str, float]:
         """Apply ML filtering with dynamic threshold for 5-10 signals/hour target"""
-        # QUALITY GATE #1: ULTRA-TIGHT 85% BASE (90% FOR EXOTICS) FOR 65%+ WIN RATE
+        # QUALITY GATE #1: OPTIMAL 80% BASE (85% FOR EXOTICS) FOR 65%+ WIN RATE
         # Extra strict for exotic pairs (higher risk, need better setups)
         exotic_pairs = ['USDMXN', 'USDSEK', 'USDCNH', 'XAGUSD', 'XAUUSD']
         symbol = getattr(signal, 'pair', getattr(signal, 'symbol', ''))
-        min_quality_score = 90.0 if symbol in exotic_pairs else 85.0
+        min_quality_score = 85.0 if symbol in exotic_pairs else 80.0
         
         # Pattern adjustments for 65%+ win rate target
         pattern_adjustments = {
-            'FAIR_VALUE_GAP_FILL': 5,        # Penalty: needs 80% quality minimum
-            'ORDER_BLOCK_BOUNCE': 0,          # Neutral: 38.7% win rate
-            'LIQUIDITY_SWEEP_REVERSAL': -5,  # BONUS: Premium pattern
-            'VCB_BREAKOUT': -5,              # BONUS: High potential
-            'SWEEP_RETURN': 25,              # BLOCKED: 0% win rate
-            'SWEEP_AND_RETURN': 25           # BLOCKED: 0% win rate
+            'FAIR_VALUE_GAP_FILL': 50,       # BLOCKED: 14% win rate - terrible
+            'ORDER_BLOCK_BOUNCE': -5,         # BONUS: 50% win rate - decent
+            'LIQUIDITY_SWEEP_REVERSAL': -10,  # BIG BONUS: Premium pattern
+            'VCB_BREAKOUT': -10,              # BIG BONUS: High potential
+            'SWEEP_RETURN': 50,              # BLOCKED: 0% win rate
+            'SWEEP_AND_RETURN': 50           # BLOCKED: 0% win rate
         }
         
         pattern_type = getattr(signal, 'pattern', 'UNKNOWN')
         adjustment = pattern_adjustments.get(pattern_type, 0)
         min_quality_score += adjustment
-        base_quality = 90.0 if symbol in exotic_pairs else 85.0
+        base_quality = 85.0 if symbol in exotic_pairs else 80.0
         print(f"🔍 Quality check: {signal.quality_score:.1f}% vs {min_quality_score}%")
         
         if hasattr(signal, 'quality_score') and signal.quality_score < min_quality_score:
@@ -2074,14 +2074,14 @@ class EliteGuardBalanced:
         signals_per_15min = len(recent_signals)
         projected_hourly_rate = signals_per_15min * 4
         
-        # QUALITY GATE #2: ULTRA-TIGHT 83-85% CONFIDENCE (NARROW SWEET SPOT)
+        # QUALITY GATE #2: OPTIMAL 80-85% CONFIDENCE (PROVEN SWEET SPOT)
         if signal.confidence <= 85.0:  # In or below sweet spot
-            min_confidence = 83.0  # RAISED from 80 to 83 for ultra quality
+            min_confidence = 80.0  # Sweet spot 80-85% for best win rate
         else:  # Above 85% (worse performance historically)
-            min_confidence = 88.0  # Must be 88%+ to pass if above sweet spot
+            min_confidence = 85.0  # Must be exactly 85%+ to pass
         
-        # Enforce 83-85% sweet spot for maximum win rate
-        min_confidence = max(83.0, min_confidence)
+        # Enforce 80-85% sweet spot for maximum win rate
+        min_confidence = max(80.0, min_confidence)
         
         # Apply pattern-specific confidence adjustments
         pattern_confidence_adj = {

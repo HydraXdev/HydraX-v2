@@ -272,7 +272,7 @@ class EliteGuardBalanced:
             return 10
     
     def detect_liquidity_sweep_reversal(self, symbol: str) -> Optional[PatternSignal]:
-        """Detect liquidity sweep with 3+ pip requirement"""
+        """Detect liquidity sweep with volatility-based threshold"""
         try:
             # Check if symbol exists in m5_data
             if symbol not in self.m5_data:
@@ -285,21 +285,36 @@ class EliteGuardBalanced:
                 
             recent_candles = list(self.m5_data[symbol])[-10:]
             
+            # Calculate ATR for volatility-based threshold
+            atr_values = []
+            for i in range(1, min(len(recent_candles), 5)):
+                high_low = recent_candles[i]['high'] - recent_candles[i]['low']
+                atr_values.append(high_low)
+            
+            atr = sum(atr_values) / len(atr_values) if atr_values else 0
+            pip_size = 0.01 if 'JPY' in symbol else 0.0001
+            
+            # Volatility-based sweep threshold
+            # High volatility (ATR > 5 pips): require 3.0 pip sweep
+            # Low volatility (ATR <= 5 pips): allow 0.5 pip sweep
+            volatility_threshold = 5 * pip_size  # 5 pips
+            is_high_volatility = atr > volatility_threshold
+            sweep_requirement = 3.0 if is_high_volatility else 0.5
+            
             # Find recent high/low from all but last candle
             recent_high = max(c['high'] for c in recent_candles[:-1])
             recent_low = min(c['low'] for c in recent_candles[:-1])
             current_candle = recent_candles[-1]
             
-            pip_size = 0.01 if 'JPY' in symbol else 0.0001
-            
             # Calculate sweep size
             bullish_sweep = (recent_low - current_candle['low']) / pip_size if current_candle['low'] < recent_low else 0
             bearish_sweep = (current_candle['high'] - recent_high) / pip_size if current_candle['high'] > recent_high else 0
             
-            print(f"🔍 LSR {symbol}: Bullish sweep={bullish_sweep:.1f}p, Bearish sweep={bearish_sweep:.1f}p, Close={current_candle['close']:.5f}")
+            print(f"🔍 LSR {symbol}: ATR={atr:.5f}, Volatility={'HIGH' if is_high_volatility else 'LOW'}, Sweep req={sweep_requirement:.1f}p")
+            print(f"🔍 LSR {symbol}: Bullish sweep={bullish_sweep:.1f}p, Bearish sweep={bearish_sweep:.1f}p")
             
-            # BULLISH: Sweep below low (0.5+ pips temporarily for testing) and rejection
-            if bullish_sweep >= 0.5:  # TEMPORARILY LOWERED TO 0.5 for signal generation
+            # BULLISH: Sweep below low with volatility-based threshold
+            if bullish_sweep >= sweep_requirement:
                 rejection = current_candle['close'] > recent_low  # Close back above swept level
                 print(f"🔍 LSR {symbol}: BULLISH SWEEP {bullish_sweep:.1f} pips! Rejection={rejection}")
                 
@@ -331,8 +346,8 @@ class EliteGuardBalanced:
                     signal.quality_score = self.calculate_quality_score(signal)
                     return signal
             
-            # BEARISH: Sweep above high (0.5+ pips temporarily for testing) and rejection
-            elif bearish_sweep >= 0.5:  # TEMPORARILY LOWERED TO 0.5 for signal generation
+            # BEARISH: Sweep above high with volatility-based threshold
+            elif bearish_sweep >= sweep_requirement:
                 rejection = current_candle['close'] < recent_high  # Close back below swept level
                 print(f"🔍 LSR {symbol}: BEARISH SWEEP {bearish_sweep:.1f} pips! Rejection={rejection}")
                 
@@ -1418,8 +1433,26 @@ class EliteGuardBalanced:
         return impact_adjustment
 
     def apply_ml_filter(self, signal, session: str) -> tuple[bool, str, float]:
-        """Apply ML filtering for 5-10 signals/hour target"""
-        min_confidence = 45.0  # 45% ML gate for balanced signal flow (5-10/hr)
+        """Apply ML filtering with dynamic threshold for 5-10 signals/hour target"""
+        # Dynamic ML threshold based on recent signal rate
+        # Track signals in last 15 minutes
+        current_time = time.time()
+        recent_signals = getattr(self, 'recent_signal_times', [])
+        recent_signals = [t for t in recent_signals if current_time - t < 900]  # Last 15 min
+        
+        # Calculate hourly rate projection
+        signals_per_15min = len(recent_signals)
+        projected_hourly_rate = signals_per_15min * 4
+        
+        # Adjust threshold dynamically
+        if projected_hourly_rate > 10:  # Too many signals
+            min_confidence = 50.0  # Raise gate to reduce flow
+        elif projected_hourly_rate < 5:  # Too few signals
+            min_confidence = 40.0  # Lower gate to increase flow
+        else:  # Perfect range (5-10)
+            min_confidence = 45.0  # Maintain balance
+        
+        print(f"📊 Signal rate: {signals_per_15min} in 15min = {projected_hourly_rate}/hr projected, ML gate={min_confidence}%")
         
         # Apply news impact adjustment to confidence
         news_adjustment = self.get_news_impact(signal.pair)
@@ -1605,9 +1638,38 @@ class EliteGuardBalanced:
                     # Apply CITADEL protection
                     protected_signal = self.citadel.protect_signal(signal)
                     
-                    if protected_signal and protected_signal.get('confidence', 0) >= 40:  # 40% CITADEL gate for 5-10 signals/hr
+                    # Calculate CITADEL score (0-15 range)
+                    if protected_signal:
+                        citadel_score = 0
+                        
+                        # Base score from protection status
+                        if protected_signal.get('citadel_protected', False):
+                            citadel_score += 5  # Protected signal
+                        
+                        # Boost from post-sweep opportunity
+                        if protected_signal.get('citadel_boost') == 'POST_SWEEP':
+                            citadel_score += 10  # Maximum boost for post-sweep
+                        elif protected_signal.get('citadel_status') == 'VERIFIED':
+                            citadel_score += 3  # Verified safe signal
+                        
+                        # Add sweep avoidance score
+                        if hasattr(self.citadel, 'stats') and self.citadel.stats.get('sweeps_avoided', 0) > 0:
+                            citadel_score += 2  # Bonus for active sweep protection
+                        
+                        protected_signal['citadel_score'] = min(15, citadel_score)  # Cap at 15
+                    
+                    # Dynamic CITADEL threshold based on signal rate  
+                    citadel_threshold = 45.0 if projected_hourly_rate > 10 else 40.0 if projected_hourly_rate < 5 else 42.5
+                    
+                    if protected_signal and protected_signal.get('confidence', 0) >= citadel_threshold:
                         # Signal passed CITADEL protection and meets final threshold
+                        print(f"✅ Signal passed CITADEL gate ({protected_signal.get('confidence', 0):.1f}% >= {citadel_threshold}%)")
                         signals_generated.append(protected_signal)
+                        
+                        # Track signal time for rate calculation
+                        if not hasattr(self, 'recent_signal_times'):
+                            self.recent_signal_times = []
+                        self.recent_signal_times.append(time.time())
                         
                         # Update tracking
                         self.last_signal_time[symbol] = time.time()

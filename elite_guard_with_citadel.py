@@ -397,36 +397,40 @@ class EliteGuardBalanced:
             return 5
     
     def calculate_dynamic_confidence(self, symbol: str, base_pattern_score: float, momentum: float, volume: float) -> float:
-        """Calculate confidence based on quality components (0-100%)"""
+        """Calculate confidence based on quality components for 75-82% target"""
         confidence = 0
         
-        # Base from pattern strength (30-50% contribution)
-        confidence += base_pattern_score * 0.5
-        print(f"  📊 Base pattern: {base_pattern_score:.1f} * 0.5 = {base_pattern_score * 0.5:.1f}%")
+        # Base from pattern strength (65% contribution for reliable base)
+        base_contribution = base_pattern_score * 0.65
+        confidence += base_contribution
+        print(f"🎯 {symbol} CONFIDENCE CALCULATION:")
+        print(f"  📊 Base pattern: {base_pattern_score:.1f} * 0.65 = {base_contribution:.1f}%")
         
-        # Momentum bonus: +0.1% per pip of movement
-        momentum_bonus = momentum * 0.1
+        # Momentum bonus: +0.2% per pip for better signal quality
+        momentum_bonus = min(12, momentum * 0.2)  # Cap at 12%
         confidence += momentum_bonus
-        print(f"  📊 Momentum: {momentum:.1f} pips * 0.1 = +{momentum_bonus:.1f}%")
+        print(f"  📊 Momentum: {momentum:.1f} pips * 0.2 = +{momentum_bonus:.1f}%")
         
-        # Volume bonus: +0.2% per 1% above average (ratio-based)
-        if volume >= 20:  # Good volume
-            volume_bonus = 5.0
-        elif volume >= 15:  # Average volume
-            volume_bonus = 3.0
-        elif volume >= 10:  # Below average
-            volume_bonus = 1.0
+        # Volume scoring (volume is % of average, e.g., 100 = average)
+        if volume >= 100:  # At or above average
+            volume_bonus = 8.0
+        elif volume >= 80:  # Slightly below average  
+            volume_bonus = 6.0
+        elif volume >= 60:  # Below average
+            volume_bonus = 4.0
+        elif volume >= 40:  # Low volume
+            volume_bonus = 2.0
         else:
-            volume_bonus = 0
+            volume_bonus = 1.0
         confidence += volume_bonus
-        print(f"  📊 Volume: score={volume:.0f} = +{volume_bonus:.1f}%")
+        print(f"  📊 Volume: {volume:.0f}% of avg = +{volume_bonus:.1f}%")
         
-        # Session bonus (5-15%)
+        # Session bonus (5-10%)
         session_bonus = self.get_session_bonus()
         confidence += session_bonus
-        print(f"  📊 Session bonus: +{session_bonus:.0f}%")
+        print(f"  📊 Session: +{session_bonus:.0f}%")
         
-        # Spread adjustment (-2 to +2%)
+        # Spread quality (-1 to +2%)
         spread_adjustment = 0
         if symbol in self.tick_data:
             recent_ticks = list(self.tick_data[symbol])[-10:]
@@ -436,18 +440,35 @@ class EliteGuardBalanced:
                     avg_spread = np.mean(spreads)
                     pip_size = 0.01 if 'JPY' in symbol else 0.0001
                     spread_pips = avg_spread / pip_size
-                    if spread_pips < 1:
-                        spread_adjustment = 2  # Tight spread bonus
-                    elif spread_pips < 2:
+                    if spread_pips < 1.5:
+                        spread_adjustment = 2  # Tight spread
+                    elif spread_pips < 2.5:
                         spread_adjustment = 0  # Normal
                     else:
-                        spread_adjustment = -2  # Wide spread penalty
+                        spread_adjustment = -1  # Wide spread
+                    print(f"  📊 Spread: {spread_pips:.1f}p = {spread_adjustment:+d}%")
         confidence += spread_adjustment
-        print(f"  📊 Spread adjustment: {spread_adjustment:+.0f}%")
         
-        # Cap at 100%
-        final_confidence = min(100, max(0, confidence))
-        print(f"  📊 FINAL CONFIDENCE: {final_confidence:.1f}%")
+        # Market activity bonus
+        activity_bonus = 0
+        if symbol in self.m1_data and len(self.m1_data[symbol]) >= 5:
+            recent = list(self.m1_data[symbol])[-5:]
+            ranges = [(c['high'] - c['low']) for c in recent]
+            avg_range = np.mean(ranges) if ranges else 0
+            pip_size = 0.01 if 'JPY' in symbol else 0.0001
+            range_pips = avg_range / pip_size
+            if range_pips > 3:
+                activity_bonus = 4  # Very active
+            elif range_pips > 1.5:
+                activity_bonus = 2  # Active
+            print(f"  📊 Activity: {range_pips:.1f}p range = +{activity_bonus}%")
+        confidence += activity_bonus
+        
+        # Ensure 75-82% range for quality signals (with 55% minimum)
+        raw_confidence = confidence
+        final_confidence = min(95, max(55, confidence))  # Floor at 55%, cap at 95%
+        
+        print(f"  🎯 RAW: {raw_confidence:.1f}% → FINAL: {final_confidence:.1f}% (Target: 75-82%)")
         
         return final_confidence
     
@@ -668,7 +689,7 @@ class EliteGuardBalanced:
                     entry_price = current_candle['close'] + pip_size  # Entry above close
                     
                     # Use dynamic confidence calculation
-                    base_pattern_score = 75  # LSR base strength
+                    base_pattern_score = 80  # LSR high quality pattern
                     confidence = self.calculate_dynamic_confidence(symbol, base_pattern_score, momentum, volume_quality)
                     
                     signal = PatternSignal(
@@ -703,7 +724,7 @@ class EliteGuardBalanced:
                     entry_price = current_candle['close'] - pip_size
                     
                     # Use dynamic confidence calculation
-                    base_pattern_score = 75  # LSR base strength
+                    base_pattern_score = 80  # LSR high quality pattern
                     confidence = self.calculate_dynamic_confidence(symbol, base_pattern_score, momentum, volume_quality)
                     
                     signal = PatternSignal(

@@ -283,15 +283,15 @@ class EliteGuardBalanced:
         
         # Define trading pairs FIRST (before load_candles)
         self.trading_pairs = [
-            # Major Forex Pairs ONLY - Quality focus
-            "EURUSD", "GBPUSD", "USDJPY", "USDCHF", "USDCAD", "AUDUSD", "NZDUSD",
-            # Cross Pairs - Selected quality
-            "EURJPY", "GBPJPY",
-            # Exotic Pairs - Limited
-            "USDCNH", "USDSEK",
-            # Precious Metals
-            "XAUUSD"
-            # NO CRYPTO - Too noisy for quality signals
+            # Major Forex Pairs (7)
+            "EURUSD", "GBPUSD", "USDCHF", "USDJPY", "USDCAD", "AUDUSD", "NZDUSD",
+            # Cross Pairs (7)
+            "EURJPY", "GBPJPY", "EURGBP", "EURAUD", "GBPCAD", "AUDJPY", "NZDJPY",
+            # Additional & Exotics (3)
+            "USDCNH", "USDSEK", "USDMXN",
+            # Precious Metals (2)
+            "XAUUSD", "XAGUSD"
+            # Total: 19 pairs (NO CRYPTO)
         ]
         
         # Load candle cache on startup (AFTER trading_pairs defined)
@@ -813,93 +813,110 @@ class EliteGuardBalanced:
         return None
     
     def detect_sweep_and_return(self, symbol: str) -> Optional[PatternSignal]:
-        """Detect Sweep and Return (SRL) pattern - liquidity grab followed by reversal"""
+        """INDUSTRY STANDARD: Sweep >3 pips beyond level, return with >50% wick of candle range"""
         try:
-            print(f"🔍 SRL {symbol}: Starting check")
-            if len(self.m5_data[symbol]) < 2:  # LOWERED
-                print(f"🔍 SRL {symbol}: Only {len(self.m5_data[symbol])} M5 candles, need 2+")
+            print(f"🔍 SRL {symbol}: INDUSTRY STANDARD CHECK")
+            if len(self.m5_data[symbol]) < 3:  # INDUSTRY: Need 3 candles minimum
+                print(f"🔍 SRL {symbol}: Only {len(self.m5_data[symbol])} M5 candles, need 3+")
                 return None
                 
-            candles = list(self.m5_data[symbol])
-            if len(candles) < 4:  # Reduced from 15 for faster signals
-                return None
-                
-            recent = list(candles.values())[-15:]
-            current = recent[-1]
-            pip_size = 0.01 if 'JPY' in symbol else 0.0001
+            candles = list(self.m5_data[symbol])[-3:]  # INDUSTRY: Last 3 candles for recent action
             
-            # Find swing highs and lows
-            swing_high = max(c['high'] for c in recent[:-3])
-            swing_low = min(c['low'] for c in recent[:-3])
+            # Get pip size for this symbol
+            if 'JPY' in symbol:
+                pip_size = 0.01
+            elif symbol == 'XAUUSD':
+                pip_size = 0.1
+            else:
+                pip_size = 0.0001
             
-            # BULLISH SRL: Sweep below low, then strong recovery
-            if recent[-2]['low'] < swing_low - (2 * pip_size):  # Previous candle swept
-                print(f"🔍 SRL {symbol}: BULLISH sweep detected! Low={recent[-2]['low']:.5f} < SwingLow={swing_low:.5f}")
-                wick_size = recent[-2]['low'] - min(recent[-2]['open'], recent[-2]['close'])
-                body_size = abs(recent[-2]['open'] - recent[-2]['close'])
+            # Find recent swing levels (from first 2 candles)
+            recent_high = max(candles[0]['high'], candles[1]['high'])
+            recent_low = min(candles[0]['low'], candles[1]['low'])
+            
+            # Current candle (the sweep candle)
+            current = candles[-1]
+            candle_range = current['high'] - current['low']
+            
+            # INDUSTRY STANDARD: Check for BULLISH sweep & return
+            bull_sweep_distance = (recent_low - current['low']) / pip_size
+            if bull_sweep_distance > 3.0:  # INDUSTRY: >3 pip sweep below level
+                # Calculate wick ratio (lower wick for bullish)
+                lower_wick = current['low'] - min(current['open'], current['close'])
+                wick_ratio = lower_wick / candle_range if candle_range > 0 else 0
                 
-                # Check for strong wick (60%+ of range)
-                if wick_size > 0 and body_size > 0:
-                    wick_ratio = wick_size / (wick_size + body_size)
+                bull_return = current['close'] > recent_low and wick_ratio > 0.5  # INDUSTRY: >50% wick
+                
+                if bull_return:
+                    base_quality = 50 + (wick_ratio * 100) - 50  # 50-100% based on wick
                     
-                    if wick_ratio > 0.6 and current['close'] > swing_low:
-                        # Confirmed sweep and return
-                        momentum = self.calculate_momentum_score(symbol, "BUY")
-                        if momentum < 20:
-                            return None
-                        
-                        volume_quality = self.analyze_volume_profile(symbol)
-                        
-                        # Use dynamic confidence calculation
-                        base_pattern_score = 73  # SRL base strength
-                        confidence = self.calculate_dynamic_confidence(symbol, base_pattern_score, momentum, volume_quality)
-                        
-                        signal = PatternSignal(
-                            pattern="SWEEP_RETURN",
-                            direction="BUY",
-                            entry_price=current['close'] + pip_size,
-                            confidence=confidence,
-                            timeframe="M5",
-                            pair=symbol,
-                            momentum_score=momentum,
-                            volume_quality=volume_quality
-                        )
-                        signal.quality_score = self.calculate_quality_score(signal)
-                        return signal
-            
-            # BEARISH SRL: Sweep above high, then rejection
-            elif recent[-2]['high'] > swing_high + (2 * pip_size):  # Previous candle swept
-                wick_size = recent[-2]['high'] - max(recent[-2]['open'], recent[-2]['close'])
-                body_size = abs(recent[-2]['open'] - recent[-2]['close'])
-                
-                if wick_size > 0 and body_size > 0:
-                    wick_ratio = wick_size / (wick_size + body_size)
+                    print(f"🔍 SRL {symbol}: BULLISH SWEEP DETECTED!")
+                    print(f"   INDUSTRY STANDARD MET:")
+                    print(f"   - Sweep distance: {bull_sweep_distance:.1f} pips (>3.0 required) ✅")
+                    print(f"   - Wick ratio: {wick_ratio:.2%} (>50% required) ✅")
+                    print(f"   - Return above level: {current['close']:.5f} > {recent_low:.5f} ✅")
+                    print(f"   OLD vs NEW DIFFERENCES:")
+                    print(f"   - OLD: 2 pip sweep, 60% wick, 15 candle lookback, momentum filter")
+                    print(f"   - NEW: 3 pip sweep, 50% wick, 3 candle lookback, no momentum gate")
+                    print(f"   Quality Score: {base_quality:.1f}%")
                     
-                    if wick_ratio > 0.6 and current['close'] < swing_high:
-                        momentum = self.calculate_momentum_score(symbol, "SELL")
-                        if momentum < 20:
-                            return None
-                        
-                        volume_quality = self.analyze_volume_profile(symbol)
-                        
-                        # Use dynamic confidence calculation
-                        base_pattern_score = 73  # SRL base strength
-                        confidence = self.calculate_dynamic_confidence(symbol, base_pattern_score, momentum, volume_quality)
-                        
-                        signal = PatternSignal(
-                            pattern="SWEEP_RETURN",
-                            direction="SELL",
-                            entry_price=current['close'] - pip_size,
-                            confidence=min(85, confidence),
-                            timeframe="M5",
-                            pair=symbol,
-                            momentum_score=momentum,
-                            volume_quality=volume_quality
-                        )
-                        signal.quality_score = self.calculate_quality_score(signal)
-                        return signal
+                    signal = PatternSignal(
+                        pattern="SWEEP_AND_RETURN",
+                        direction="BUY",
+                        entry_price=current['close'],
+                        confidence=base_quality,
+                        timeframe="M5",
+                        pair=symbol,
+                        quality_score=base_quality,
+                        momentum_score=0,  # Not used in industry standard
+                        volume_quality=0   # Not used in industry standard
+                    )
+                    return signal
+            
+            # INDUSTRY STANDARD: Check for BEARISH sweep & return
+            bear_sweep_distance = (current['high'] - recent_high) / pip_size
+            if bear_sweep_distance > 3.0:  # INDUSTRY: >3 pip sweep above level
+                # Calculate wick ratio (upper wick for bearish)
+                upper_wick = current['high'] - max(current['open'], current['close'])
+                wick_ratio = upper_wick / candle_range if candle_range > 0 else 0
+                
+                bear_return = current['close'] < recent_high and wick_ratio > 0.5  # INDUSTRY: >50% wick
+                
+                if bear_return:
+                    base_quality = 50 + (wick_ratio * 100) - 50  # 50-100% based on wick
+                    
+                    print(f"🔍 SRL {symbol}: BEARISH SWEEP DETECTED!")
+                    print(f"   INDUSTRY STANDARD MET:")
+                    print(f"   - Sweep distance: {bear_sweep_distance:.1f} pips (>3.0 required) ✅")
+                    print(f"   - Wick ratio: {wick_ratio:.2%} (>50% required) ✅")
+                    print(f"   - Return below level: {current['close']:.5f} < {recent_high:.5f} ✅")
+                    print(f"   OLD vs NEW DIFFERENCES:")
+                    print(f"   - OLD: 2 pip sweep, 60% wick, 15 candle lookback, momentum filter")
+                    print(f"   - NEW: 3 pip sweep, 50% wick, 3 candle lookback, no momentum gate")
+                    print(f"   Quality Score: {base_quality:.1f}%")
+                    
+                    signal = PatternSignal(
+                        pattern="SWEEP_AND_RETURN",
+                        direction="SELL",
+                        entry_price=current['close'],
+                        confidence=base_quality,
+                        timeframe="M5",
+                        pair=symbol,
+                        quality_score=base_quality,
+                        momentum_score=0,  # Not used in industry standard
+                        volume_quality=0   # Not used in industry standard
+                    )
+                    return signal
+            
+            # Debug when no pattern found
+            print(f"🔍 SRL {symbol}: No sweep detected")
+            print(f"   Bull sweep: {bull_sweep_distance:.1f} pips (need >3.0)")
+            print(f"   Bear sweep: {bear_sweep_distance:.1f} pips (need >3.0)")
+            print(f"   Recent High: {recent_high:.5f}, Low: {recent_low:.5f}")
+            print(f"   Current: High={current['high']:.5f}, Low={current['low']:.5f}, Close={current['close']:.5f}")
                         
         except Exception as e:
+            print(f"🔍 SRL {symbol}: Error - {e}")
             logger.debug(f"Error in SRL detection: {e}")
         
         return None
@@ -2058,9 +2075,24 @@ class EliteGuardBalanced:
         logger.info("📊 ELITE GUARD BALANCED v7.0 STATUS")
         logger.info("="*60)
         
-        # Signal stats
-        recent_signals = [s for s in self.signal_history 
-                         if time.time() - float(s.get('timestamp', 0)) < 3600]
+        # Signal stats - handle both timestamp formats
+        recent_signals = []
+        for s in self.signal_history:
+            try:
+                # Try to parse as float first (unix timestamp)
+                ts = s.get('timestamp', 0)
+                if isinstance(ts, (int, float)):
+                    ts_float = float(ts)
+                else:
+                    # If it's a string datetime, parse it
+                    from datetime import datetime
+                    dt = datetime.fromisoformat(ts.replace('Z', '+00:00'))
+                    ts_float = dt.timestamp()
+                    
+                if time.time() - ts_float < 3600:
+                    recent_signals.append(s)
+            except:
+                continue
         
         logger.info(f"\n📈 SIGNAL METRICS (Last Hour):")
         logger.info(f"  Total Signals: {len(recent_signals)}")

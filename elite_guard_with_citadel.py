@@ -691,8 +691,8 @@ class EliteGuardBalanced:
                 
                 if rejection:  # REQUIRE rejection candle for quality
                     momentum = self.calculate_momentum_score(symbol, "SELL")
-                    if momentum < 10:  # REDUCED: 10 momentum for more signals
-                        print(f"🚫 LSR {symbol}: Low SELL momentum {momentum:.1f} < 10")
+                    if momentum < 5:  # OPTIMIZED: 5 momentum threshold for more signals
+                        print(f"🚫 LSR {symbol}: Low SELL momentum {momentum:.1f} < 5")
                         return None
                     
                     volume_quality = self.analyze_volume_profile(symbol)
@@ -1892,6 +1892,7 @@ class EliteGuardBalanced:
         symbols_to_scan = self.trading_pairs
         symbols_with_data = [s for s in self.trading_pairs if s in self.tick_data and len(self.m1_data.get(s, [])) > 0]
         
+        print(f"🔍 PATTERN SCAN: Starting for {len(symbols_to_scan)} symbols ({len(symbols_with_data)} have M1 data)")
         logger.info(f"🔍 Starting pattern scan for {len(symbols_to_scan)} symbols ({len(symbols_with_data)} have M1 data)")
         
         # Log total candle counts
@@ -2232,9 +2233,10 @@ class EliteGuardBalanced:
                 # Fetch OHLC data continuously
                 self.fetch_ohlc_data()
                 
-                # Scan for patterns every 30 seconds
-                if current_time - last_scan >= 30:
-                    logger.info(f"⏰ 30-second scan trigger, active_session={self.is_active_session()}")
+                # Scan for patterns every 15 seconds for more frequent signals
+                if current_time - last_scan >= 15:
+                    print(f"⏰ SCAN TRIGGER: 15-second interval reached, active_session={self.is_active_session()}")
+                    logger.info(f"⏰ 15-second scan trigger, active_session={self.is_active_session()}")
                     if self.is_active_session():
                         self.scan_for_patterns()
                     # Check CITADEL delayed signals

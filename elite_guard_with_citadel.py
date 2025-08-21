@@ -1395,8 +1395,7 @@ class EliteGuardBalanced:
     def OLD_REMOVED_CODE_PLACEHOLDER(self):
         """Removed old broken code"""
         if False:  # Never execute
-                self.current_candles[symbol] = {}
-            
+            self.current_candles[symbol] = {}
             pass  # Old broken code removed
     
     # Force aggregate functions removed - using proper M1->M5->M15 aggregation
@@ -1451,52 +1450,51 @@ class EliteGuardBalanced:
     def save_candles(self):
         """Save candle and tick data to cache file"""
         try:
-            # First, load existing cache to preserve data we haven't collected yet
-            existing_cache = {}
-            if os.path.exists('/root/HydraX-v2/candle_cache.json'):
-                try:
-                    with open('/root/HydraX-v2/candle_cache.json', 'r') as f:
-                        existing_cache = json.load(f)
-                except:
-                    pass
-            
+            # Build data structure with M1/M5/M15 data
             cache_data = {
-                'm1_data': existing_cache.get('m1_data', {}),
-                'm5_data': existing_cache.get('m5_data', {}),
-                'm15_data': existing_cache.get('m15_data', {}),
-                'tick_data': existing_cache.get('tick_data', {}),
+                'm1_data': {},
+                'm5_data': {},
+                'm15_data': {},
+                'tick_data': {},
                 'last_update': time.time()
             }
             
-            # Update with current data (don't overwrite with empty)
+            # Save all candle data for each symbol
+            total_m1 = 0
+            total_m5 = 0
+            total_m15 = 0
+            
             for symbol in self.trading_pairs:
-                # Only update if we have data
+                # Save M1 data
                 if symbol in self.m1_data and len(self.m1_data[symbol]) > 0:
                     cache_data['m1_data'][symbol] = list(self.m1_data[symbol])
+                    total_m1 += len(self.m1_data[symbol])
+                
+                # Save M5 data
                 if symbol in self.m5_data and len(self.m5_data[symbol]) > 0:
                     cache_data['m5_data'][symbol] = list(self.m5_data[symbol])
+                    total_m5 += len(self.m5_data[symbol])
+                
+                # Save M15 data
                 if symbol in self.m15_data and len(self.m15_data[symbol]) > 0:
                     cache_data['m15_data'][symbol] = list(self.m15_data[symbol])
+                    total_m15 += len(self.m15_data[symbol])
                 
                 # Save recent ticks (last 100)
                 if symbol in self.tick_data and len(self.tick_data[symbol]) > 0:
                     cache_data['tick_data'][symbol] = list(self.tick_data[symbol])[-100:]
             
+            # Write to file
             with open('/root/HydraX-v2/candle_cache.json', 'w') as f:
-                json.dump(cache_data, f, indent=2)
-                
-            total_ticks = sum(len(self.tick_data.get(s, [])) for s in self.trading_pairs)
-            total_m1 = sum(len(self.m1_data.get(s, [])) for s in self.trading_pairs)
-            total_m5 = sum(len(self.m5_data.get(s, [])) for s in self.trading_pairs)
-            total_m15 = sum(len(self.m15_data.get(s, [])) for s in self.trading_pairs)
+                json.dump(cache_data, f)
             
-            print(f"💾 Saved: {total_ticks} ticks, {total_m1} M1, {total_m5} M5, {total_m15} M15 candles")
+            # Log saved counts for verification
+            print(f"💾 Saved candles to cache:")
+            print(f"   Total M1: {total_m1}, M5: {total_m5}, M15: {total_m15}")
             
-            # Log per-symbol stats for debugging
-            if total_m1 > 0:
-                for symbol in ['EURUSD', 'GBPUSD', 'USDJPY']:
-                    if symbol in self.m1_data:
-                        print(f"  {symbol}: {len(self.tick_data.get(symbol, []))} ticks, {len(self.m1_data[symbol])} M1, {len(self.m5_data.get(symbol, []))} M5")
+            # Show EURUSD specifically as requested
+            if 'EURUSD' in self.m1_data:
+                print(f"   EURUSD: M1={len(self.m1_data['EURUSD'])}, M5={len(self.m5_data.get('EURUSD', []))}, M15={len(self.m15_data.get('EURUSD', []))}")
             
         except Exception as e:
             print(f"❌ Error saving candles: {e}")
@@ -1508,75 +1506,48 @@ class EliteGuardBalanced:
                 with open('/root/HydraX-v2/candle_cache.json', 'r') as f:
                     cache_data = json.load(f)
                 
-                total_ticks_loaded = 0
+                total_m1 = 0
+                total_m5 = 0
+                total_m15 = 0
                 
-                # Restore ticks first
+                # Load all candle data for each symbol
                 for symbol in self.trading_pairs:
-                    if symbol in cache_data.get('tick_data', {}):
-                        ticks = cache_data['tick_data'][symbol]
-                        self.tick_data[symbol] = deque(ticks, maxlen=1000)
-                        total_ticks_loaded += len(ticks)
-                        if ticks:
-                            self.last_tick_time[symbol] = time.time()  # Mark as recent
-                    
-                    # Restore M1 candles from cache
+                    # Load M1 data
                     if symbol in cache_data.get('m1_data', {}):
-                        candles = cache_data['m1_data'][symbol]
-                        self.m1_data[symbol] = deque(candles, maxlen=500)
-                        
-                        # Aggregate M5 candles from M1 (every 5 M1 candles)
-                        m5_candles = []
-                        for i in range(0, len(candles), 5):
-                            chunk = candles[i:i+5]
-                            if len(chunk) >= 5:  # Only create M5 if we have full 5 M1 candles
-                                m5_candle = {
-                                    'open': chunk[0]['open'],
-                                    'high': max(c['high'] for c in chunk),
-                                    'low': min(c['low'] for c in chunk),
-                                    'close': chunk[-1]['close'],
-                                    'volume': sum(c['volume'] for c in chunk),
-                                    'timestamp': chunk[0]['timestamp']  # Use first M1 timestamp
-                                }
-                                m5_candles.append(m5_candle)
-                        self.m5_data[symbol] = deque(m5_candles, maxlen=300)
-                        
-                        # Aggregate M15 candles from M5 (every 3 M5 candles)  
-                        m15_candles = []
-                        for i in range(0, len(m5_candles), 3):
-                            chunk = m5_candles[i:i+3]
-                            if len(chunk) >= 3:  # Only create M15 if we have full 3 M5 candles
-                                m15_candle = {
-                                    'open': chunk[0]['open'],
-                                    'high': max(c['high'] for c in chunk),
-                                    'low': min(c['low'] for c in chunk),
-                                    'close': chunk[-1]['close'],
-                                    'volume': sum(c['volume'] for c in chunk),
-                                    'timestamp': chunk[0]['timestamp']  # Use first M5 timestamp
-                                }
-                                m15_candles.append(m15_candle)
-                        self.m15_data[symbol] = deque(m15_candles, maxlen=200)
-                        
-                        print(f"📂 {symbol}: Loaded {len(candles)} M1 → Aggregated {len(m5_candles)} M5 → {len(m15_candles)} M15")
+                        self.m1_data[symbol] = deque(cache_data['m1_data'][symbol], maxlen=500)
+                        total_m1 += len(self.m1_data[symbol])
                     else:
-                        # Initialize empty deques if no cached data
                         self.m1_data[symbol] = deque(maxlen=500)
+                    
+                    # Load M5 data
+                    if symbol in cache_data.get('m5_data', {}):
+                        self.m5_data[symbol] = deque(cache_data['m5_data'][symbol], maxlen=300)
+                        total_m5 += len(self.m5_data[symbol])
+                    else:
                         self.m5_data[symbol] = deque(maxlen=300)
+                    
+                    # Load M15 data  
+                    if symbol in cache_data.get('m15_data', {}):
+                        self.m15_data[symbol] = deque(cache_data['m15_data'][symbol], maxlen=200)
+                        total_m15 += len(self.m15_data[symbol])
+                    else:
                         self.m15_data[symbol] = deque(maxlen=200)
+                    
+                    # Load tick data
+                    if symbol in cache_data.get('tick_data', {}):
+                        self.tick_data[symbol] = deque(cache_data['tick_data'][symbol], maxlen=1000)
+                        if cache_data['tick_data'][symbol]:
+                            self.last_tick_time[symbol] = time.time()
                 
-                total_m1 = sum(len(self.m1_data.get(s, [])) for s in self.trading_pairs)
-                total_m5 = sum(len(self.m5_data.get(s, [])) for s in self.trading_pairs)
-                total_m15 = sum(len(self.m15_data.get(s, [])) for s in self.trading_pairs)
+                # Log loaded counts for verification
+                print(f"🔍 Loaded candles from cache:")
+                print(f"   Total M1: {total_m1}, M5: {total_m5}, M15: {total_m15}")
                 
-                print(f"📂 Loaded: {total_ticks_loaded} ticks, {total_m1} M1, {total_m5} M5, {total_m15} M15")
-                
-                # Log per-symbol for debugging
-                if total_ticks_loaded > 0 or total_m1 > 0:
-                    for symbol in ['EURUSD', 'GBPUSD', 'USDJPY']:
-                        tick_count = len(self.tick_data.get(symbol, []))
-                        m1_count = len(self.m1_data.get(symbol, []))
-                        m5_count = len(self.m5_data.get(symbol, []))
-                        if tick_count > 0 or m1_count > 0:
-                            print(f"  {symbol}: {tick_count} ticks, {m1_count} M1, {m5_count} M5")
+                # Show EURUSD specifically as requested
+                if 'EURUSD' in self.m1_data:
+                    print(f"   EURUSD: M1={len(self.m1_data['EURUSD'])}, M5={len(self.m5_data.get('EURUSD', []))}, M15={len(self.m15_data.get('EURUSD', []))}")
+            else:
+                print("⚠️ No candle cache file found, starting fresh")
                 
         except Exception as e:
             print(f"❌ Error loading candles: {e}")

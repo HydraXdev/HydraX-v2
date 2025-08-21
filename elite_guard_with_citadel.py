@@ -499,8 +499,8 @@ class EliteGuardBalanced:
             from datetime import datetime
             current_hour = datetime.utcnow().hour
             
-            # FORCE LOW VOLUME THRESHOLDS FOR LOW-VOL MARKET
-            min_volume_score = 5  # Ultra low for all sessions temporarily
+            # PROPER VOLUME SCORING FOR PRIME TIME
+            min_volume_score = 10  # Base volume score for active trading
             
             # Session detection for logging
             if current_hour >= 22 or current_hour < 7:
@@ -510,17 +510,17 @@ class EliteGuardBalanced:
             else:
                 session = "LONDON/NY"
             if symbol not in self.m1_data or len(self.m1_data[symbol]) < 10:
-                return min_volume_score  # Session-aware minimum
+                return 20  # Default to decent volume for prime time
                 
             candles = list(self.m1_data[symbol])  # Convert deque to list for slicing
             if len(candles) < 10:
-                return min_volume_score
+                return 20  # Default to decent volume for prime time
             
             recent = candles[-10:]
             volumes = [c.get('tick_volume', 0) for c in recent]
             
             if not volumes or np.mean(volumes) == 0:
-                return min_volume_score
+                return 20  # Default to decent volume for prime time
             
             # Current vs average
             current_vol = volumes[-1]
@@ -540,10 +540,10 @@ class EliteGuardBalanced:
                 else:  # Below average but still trading
                     return 15
             
-            return min_volume_score
+            return 20  # Default volume for prime time
             
         except:
-            return 10
+            return 20  # Default volume for prime time
     
     def detect_liquidity_sweep_reversal(self, symbol: str) -> Optional[PatternSignal]:
         """Detect liquidity sweep with volatility-based threshold"""

@@ -1990,37 +1990,34 @@ class EliteGuardBalanced:
 
     def apply_ml_filter(self, signal, session: str) -> tuple[bool, str, float]:
         """Apply ML filtering with dynamic threshold for 5-10 signals/hour target"""
-        # QUALITY GATE #1: OPTIMIZED FOR 65%+ WIN RATE TARGET
-        # RECALIBRATED: Adjusted gates based on 32.9% win rate analysis
-        min_quality_score = 55.0  # LOWERED from 60 to get more signals for analysis
+        # QUALITY GATE #1: RAISED TO 70% FOR QUALITY OVER QUANTITY
+        min_quality_score = 70.0  # RAISED from 55 to focus on quality
         
-        # Pattern-specific adjustments based on actual performance (32.9% overall)
+        # Pattern adjustments based on 75-85% sweet spot performance
         pattern_adjustments = {
-            'FAIR_VALUE_GAP_FILL': 15,      # PENALTY: 34.8% win rate needs higher quality
-            'ORDER_BLOCK_BOUNCE': 15,        # PENALTY: 30.4% win rate needs higher quality
-            'LIQUIDITY_SWEEP_REVERSAL': 5,   # Small penalty
-            'VCB_BREAKOUT': -5,              # Typically strong, can lower
-            'SWEEP_RETURN': 0                # Neutral
+            'FAIR_VALUE_GAP_FILL': 5,        # Small penalty: needs 75% quality
+            'ORDER_BLOCK_BOUNCE': 0,          # Neutral: best performer at 37.9%
+            'LIQUIDITY_SWEEP_REVERSAL': -5,  # BONUS: Premium pattern
+            'VCB_BREAKOUT': -5,              # BONUS: High potential pattern
+            'SWEEP_RETURN': 10,              # PENALTY: 0% win rate currently
+            'SWEEP_AND_RETURN': 10           # PENALTY: 0% win rate currently
         }
         
         pattern_type = getattr(signal, 'pattern', 'UNKNOWN')
         adjustment = pattern_adjustments.get(pattern_type, 0)
         min_quality_score += adjustment
-        print(f"📊 RECALIBRATED: Base {55}% + {pattern_type} adjustment {adjustment:+d}% = {min_quality_score}%")
+        print(f"🔍 Quality check: {signal.quality_score:.1f}% vs {min_quality_score}% (base 70% + {pattern_type} adj {adjustment:+d}%)")
         
         # Extra strict for exotic pairs (higher risk, need better setups)
         exotic_pairs = ['USDMXN', 'USDSEK', 'USDCNH', 'XAGUSD']
         if hasattr(signal, 'pair') and signal.pair in exotic_pairs:
-            min_quality_score = max(min_quality_score, 65.0)  # At least 65 for exotics
-            print(f"🌍 EXOTIC PAIR {signal.pair}: Raised to {min_quality_score}%")
+            min_quality_score = max(min_quality_score, 75.0)  # Higher bar for exotics
+            print(f"🌍 EXOTIC: {signal.pair} raised to {min_quality_score}%")
         
-        print(f"🔍 Quality Gate Check: {signal.quality_score:.1f}% vs {min_quality_score}% minimum")
         if hasattr(signal, 'quality_score') and signal.quality_score < min_quality_score:
-            print(f"   ⚠️ QUALITY FAIL: {signal.quality_score:.1f}% < {min_quality_score}%")
-            # Track quality failures for optimization
-            print(f"   📊 WIN RATE OPTIMIZATION: Rejecting to improve from current 38.5% → 65%+ target")
-            return False, f"Quality score too low ({signal.quality_score:.1f}% < {min_quality_score}%)", signal.confidence
-        print(f"   ✅ QUALITY PASSED: {signal.quality_score:.1f}% (targeting 65%+ win rate)")
+            print(f"⚠️ Quality fail: {signal.quality_score:.1f}% < {min_quality_score}%")
+            return False, f"Quality {signal.quality_score:.1f}% < {min_quality_score}%", signal.confidence
+        print(f"✅ Quality passed: {signal.quality_score:.1f}% >= {min_quality_score}%")
         
         # Dynamic ML threshold based on recent signal rate
         # Track signals in last 15 minutes
@@ -2032,16 +2029,14 @@ class EliteGuardBalanced:
         signals_per_15min = len(recent_signals)
         projected_hourly_rate = signals_per_15min * 4
         
-        # QUALITY GATE #2: RECALIBRATED confidence threshold (65-85% target range)
-        if projected_hourly_rate > 10:  # Too many signals
-            min_confidence = 75.0  # Moderate gate (was 80)
-        elif projected_hourly_rate < 5:  # Too few signals
-            min_confidence = 65.0  # Much lower gate (was 70) to get more data
-        else:  # Perfect range (5-10)
-            min_confidence = 70.0  # Optimal threshold (was 75)
+        # QUALITY GATE #2: TARGET 75-85% CONFIDENCE SWEET SPOT (45.2% win rate)
+        if signal.confidence <= 85.0:  # In or below sweet spot
+            min_confidence = 75.0  # Accept 75-85% range
+        else:  # Above 85% (25.8% win rate - worse performance)
+            min_confidence = 86.0  # Only accept truly exceptional >85%
         
-        # RECALIBRATED: Allow 65-85% range for better signal flow
-        min_confidence = max(65.0, min(85.0, min_confidence))
+        # Enforce 75-85% sweet spot for optimal win rate
+        min_confidence = max(75.0, min_confidence)
         
         # Apply pattern-specific confidence adjustments
         pattern_confidence_adj = {
@@ -2056,8 +2051,8 @@ class EliteGuardBalanced:
         if conf_adj != 0:
             print(f"   🎯 Confidence adjustment for {pattern_type}: {conf_adj:+d}%")
         
-        print(f"📊 Signal Rate Analysis: {signals_per_15min} in 15min = {projected_hourly_rate}/hr projected")
-        print(f"   ML Confidence Gate: {min_confidence}% (dynamic based on rate)")
+        print(f"📊 Rate: {signals_per_15min} in 15min = {projected_hourly_rate}/hr projected")
+        print(f"🔍 ML check: {signal.confidence}% vs {min_confidence}% min")
         
         # Apply news impact adjustment to confidence
         news_adjustment = self.get_news_impact(signal.pair)
@@ -2067,13 +2062,13 @@ class EliteGuardBalanced:
             print(f"📰 {signal.pair}: News impact {news_adjustment} → Confidence {signal.confidence:.1f}% → {adjusted_confidence:.1f}%")
         
         if adjusted_confidence < min_confidence:
-            print(f"   ⚠️ CONFIDENCE FAIL: {adjusted_confidence:.1f}% < {min_confidence}%")
-            return False, f"Below threshold ({min_confidence}%) after news", adjusted_confidence
-        print(f"   ✅ CONFIDENCE PASSED: {adjusted_confidence:.1f}% >= {min_confidence}%")
+            print(f"⚠️ ML fail: {adjusted_confidence:.1f}% < {min_confidence}%")
+            return False, f"Confidence {adjusted_confidence:.1f}% < {min_confidence}%", adjusted_confidence
+        print(f"✅ ML passed: {adjusted_confidence:.1f}% >= {min_confidence}%")
         
-        # EMERGENCY BLOCK: Disable failing patterns until retrained
-        blocked_patterns = ['FAIR_VALUE_GAP_FILL']  # 36.4% win rate - DISABLED
-        restricted_patterns = ['ORDER_BLOCK_BOUNCE']  # 44.4% win rate - RESTRICTED
+        # Pattern restrictions based on performance
+        blocked_patterns = []  # Re-enabled all patterns with tighter gates
+        restricted_patterns = ['SWEEP_AND_RETURN', 'SWEEP_RETURN']  # 0% win rate - needs 85%+
         
         if signal.pattern in blocked_patterns:
             print(f"   🚫 BLOCKED PATTERN: {signal.pattern} temporarily disabled (win rate < 40%)")

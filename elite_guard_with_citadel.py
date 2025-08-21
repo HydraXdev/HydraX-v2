@@ -1867,7 +1867,8 @@ class EliteGuardBalanced:
     def log_optimized_tracking(self, signal_data: Dict):
         """Enhanced tracking for pattern optimization with next candle win analysis"""
         try:
-            symbol = signal_data.get('pair', '')
+            # Map field names correctly
+            symbol = signal_data.get('symbol', signal_data.get('pair', ''))
             
             # Calculate next candle win (if we have M1 data)
             win = False
@@ -1881,17 +1882,28 @@ class EliteGuardBalanced:
                     else:
                         win = last_candle['close'] < last_candle['open']
             
-            # Calculate Risk:Reward ratio
-            entry = signal_data.get('entry_price', 0)
-            sl = signal_data.get('stop_loss', 0)
-            tp = signal_data.get('take_profit', 0)
+            # Calculate Risk:Reward ratio using correct field names
+            entry = signal_data.get('entry', signal_data.get('entry_price', 0))
+            sl = signal_data.get('stop_loss', signal_data.get('sl', 0))
+            tp = signal_data.get('take_profit', signal_data.get('tp', 0))
             
-            rr = 1.0  # Default
-            if sl != 0 and entry != 0 and sl != entry:
-                risk = abs(entry - sl)
-                reward = abs(tp - entry)
-                if risk > 0:
-                    rr = round(reward / risk, 2)
+            # Alternative calculation using pips if prices not available
+            if sl == 0 or tp == 0:
+                sl_pips = signal_data.get('stop_pips', signal_data.get('sl_pips', 20))
+                tp_pips = signal_data.get('target_pips', signal_data.get('tp_pips', 20))
+                if sl_pips != 0:
+                    rr = round(tp_pips / sl_pips, 2)
+                else:
+                    rr = 1.0
+            else:
+                # Price-based calculation
+                if sl != 0 and entry != 0 and sl != entry:
+                    risk = abs(entry - sl)
+                    reward = abs(tp - entry)
+                    if risk > 0:
+                        rr = round(reward / risk, 2)
+                else:
+                    rr = 1.0
             
             # Calculate lifespan (time since signal creation)
             timestamp_str = signal_data.get('timestamp', datetime.utcnow().isoformat() + 'Z')
@@ -1905,32 +1917,37 @@ class EliteGuardBalanced:
             except:
                 lifespan = 0
             
-            # Create optimized tracking entry
+            # Create optimized tracking entry with correct field mappings
             entry = {
                 'timestamp': datetime.utcnow().isoformat(),
                 'pair': symbol,
-                'pattern': signal_data.get('pattern_type', 'UNKNOWN'),
-                'confidence': signal_data.get('confidence', 0),
-                'quality': signal_data.get('quality_score', signal_data.get('confidence', 0)),
+                'pattern': signal_data.get('pattern', signal_data.get('pattern_type', 'UNKNOWN')),
+                'confidence': signal_data.get('confidence', signal_data.get('quality_score', 0)),
+                'quality_score': signal_data.get('quality_score', signal_data.get('confidence', 0)),
                 'win': win,
                 'risk_reward': rr,
                 'lifespan': lifespan,
                 'session': signal_data.get('session', self.get_current_session()),
-                'signal_id': signal_data.get('signal_id', '')
+                'signal_id': signal_data.get('signal_id', ''),
+                'direction': signal_data.get('direction', 'UNKNOWN'),
+                'signal_class': signal_data.get('signal_class', 'UNKNOWN')
             }
             
             # Write to optimized tracking log
             with open('/root/HydraX-v2/optimized_tracking.jsonl', 'a') as f:
                 f.write(json.dumps(entry) + '\n')
             
-            # Debug output
-            print(f"📝 Optimized Track: {signal_data.get('signal_id', 'UNKNOWN')}")
-            print(f"   Pair={symbol}, Pattern={entry['pattern']}")
-            print(f"   Conf={entry['confidence']}%, Quality={entry['quality']}%")
+            # Enhanced debug output
+            print(f"📝 Tracked: {signal_data.get('signal_id', 'UNKNOWN')}")
+            print(f"   Pair={symbol}, Pattern={entry['pattern']}, Class={entry['signal_class']}")
+            print(f"   Conf={entry['confidence']}%, Quality={entry['quality_score']}%")
             print(f"   Win={win}, R:R={rr}, Lifespan={lifespan}s")
+            print(f"   Session={entry['session']}, Direction={entry['direction']}")
             
         except Exception as e:
             print(f"Error in optimized tracking: {e}")
+            import traceback
+            traceback.print_exc()
 
     def scan_for_patterns(self):
         """Scan all symbols for patterns"""
@@ -2154,6 +2171,9 @@ class EliteGuardBalanced:
                         'pattern': signal['pattern']
                     }
                     f.write(json.dumps(truth_entry) + '\n')
+                
+                # ENHANCED: Call optimized tracking
+                self.log_signal_to_truth_tracker(signal)
                     
             except Exception as e:
                 logger.error(f"Failed to publish signal: {e}")

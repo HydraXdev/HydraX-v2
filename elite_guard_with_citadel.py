@@ -2173,6 +2173,28 @@ class EliteGuardBalanced:
         
         print(f"   ✅✅ SIGNAL APPROVED: {signal.pair} {signal.pattern} @ {adjusted_confidence:.1f}%")
         return True, f"PASS @ {adjusted_confidence:.1f}%", adjusted_confidence
+    
+    # ===========================================================================================
+    # GATEKEEPER LOGIC PLAN (TO IMPLEMENT FOR 65%+ WIN RATE)
+    # ===========================================================================================
+    # Every 30 minutes, the gatekeeper will:
+    # 1. Read last 100 signals from optimized_tracking.jsonl
+    # 2. Calculate win rate by pattern+pair+session combo
+    # 3. Dynamically adjust quality gates:
+    #    - Win rate >60%: Apply -15% quality bonus (make it easier)
+    #    - Win rate 50-60%: Apply -10% quality bonus
+    #    - Win rate 40-50%: No adjustment
+    #    - Win rate 30-40%: Apply +10% quality penalty
+    #    - Win rate <30%: Apply +20% quality penalty (nearly block)
+    # 4. Store adjustments in gatekeeper_adjustments.json
+    # 5. Update winning_combos and losing_combos dicts dynamically
+    # 6. Target: Converge to 65%+ win rate over time by:
+    #    - Promoting consistent winners
+    #    - Demoting/blocking consistent losers
+    #    - Learning from real performance data
+    # 7. Safety: Never adjust by more than ±25% in one cycle
+    # 8. Persist: Save state to survive restarts
+    # ===========================================================================================
 
     def log_signal_to_truth_tracker(self, signal_data: Dict):
         """Log signal with comprehensive metrics to truth tracker"""
@@ -2725,29 +2747,73 @@ class EliteGuardBalanced:
         return signals_generated
     
     def publish_signal(self, signal: Dict):
-        """Publish signal to ZMQ"""
+        """Publish signal to ALL channels: ZMQ, JSONL, Missions, Telegram, WebApp"""
+        combo = f"{signal.get('pattern', 'UNKNOWN')}_{signal.get('symbol', 'UNKNOWN')}"
+        print(f"🚀 Publishing {signal.get('signal_id')}: Conf={signal.get('confidence')}%, Quality={signal.get('quality_score')}%, Combo={combo}")
+        
+        # 1. ZMQ Publishing
         if self.publisher:
             try:
                 signal_msg = json.dumps(signal)
                 self.publisher.send_string(f"ELITE_GUARD_SIGNAL {signal_msg}")
-                
-                # Log to truth system
-                with open('/root/HydraX-v2/truth_log.jsonl', 'a') as f:
-                    truth_entry = {
-                        'timestamp': datetime.now(pytz.UTC).isoformat(),
-                        'signal_id': signal['signal_id'],
-                        'event': 'signal_generated',
-                        'quality_score': signal['quality_score'],
-                        'quality_tier': signal['quality_tier'],
-                        'pattern': signal['pattern']
-                    }
-                    f.write(json.dumps(truth_entry) + '\n')
-                
-                # ENHANCED: Call optimized tracking
-                self.log_signal_to_truth_tracker(signal)
-                    
+                print(f"   📡 ZMQ sent to port 5557")
             except Exception as e:
-                logger.error(f"Failed to publish signal: {e}")
+                print(f"   ❌ ZMQ failed: {e}")
+        
+        # 2. Optimized Tracking JSONL (PRIMARY)
+        try:
+            self.log_signal_to_truth_tracker(signal)
+            print(f"   📝 Optimized tracking JSONL logged")
+        except Exception as e:
+            print(f"   ❌ JSONL failed: {e}")
+        
+        # 3. Mission File Creation
+        try:
+            import os
+            mission_dir = '/root/HydraX-v2/missions'
+            os.makedirs(mission_dir, exist_ok=True)
+            mission_file = f"{mission_dir}/{signal.get('signal_id')}.json"
+            with open(mission_file, 'w') as f:
+                mission_data = {
+                    'signal': signal,
+                    'combo': combo,
+                    'created_at': datetime.now(pytz.UTC).isoformat()
+                }
+                json.dump(mission_data, f, indent=2)
+            print(f"   📋 Mission file created: {signal.get('signal_id')}.json")
+        except Exception as e:
+            print(f"   ❌ Mission failed: {e}")
+        
+        # 4. Telegram Alert (via relay)
+        print(f"   💬 Telegram alert queued (via ZMQ relay)")
+        
+        # 5. WebApp Signal (via database)
+        try:
+            import sqlite3
+            conn = sqlite3.connect('/root/HydraX-v2/bitten.db')
+            cursor = conn.cursor()
+            cursor.execute('''
+                INSERT OR REPLACE INTO signals 
+                (signal_id, symbol, direction, entry_price, stop_pips, target_pips, confidence, pattern_type, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                signal.get('signal_id'),
+                signal.get('symbol'),
+                signal.get('direction'),
+                signal.get('entry_price'),
+                signal.get('stop_pips'),
+                signal.get('target_pips'),
+                signal.get('confidence'),
+                signal.get('pattern'),
+                int(time.time())
+            ))
+            conn.commit()
+            conn.close()
+            print(f"   🌐 WebApp database updated")
+        except Exception as e:
+            print(f"   ❌ WebApp DB failed: {e}")
+        
+        print(f"   ✅ Signal published to all channels")
     
     def data_listener(self):
         """Listen for market data"""

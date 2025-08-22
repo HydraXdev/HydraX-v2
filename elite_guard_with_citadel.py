@@ -300,6 +300,14 @@ class EliteGuardBalanced:
         # Test candle building (for debugging)
         self.test_candle_building()
         
+        # Run initial analysis on startup
+        print("\n" + "="*60)
+        print("🔍 RUNNING INITIAL 6-HOUR ANALYSIS ON STARTUP")
+        print("="*60)
+        self.analyze_initial_data()
+        self.verify_rr_ratio()
+        print("="*60 + "\n")
+        
         self.hourly_signal_count = defaultdict(int)  # Track signals per hour
         self.current_hour = datetime.now().hour
         
@@ -3245,6 +3253,7 @@ class EliteGuardBalanced:
         last_scan = 0
         last_stats = 0
         last_save = 0  # Auto-save candles
+        last_analysis = 0  # Periodic analysis
         
         while self.running:
             try:
@@ -3272,6 +3281,16 @@ class EliteGuardBalanced:
                 if current_time - last_save >= 60:
                     self.save_candles()
                     last_save = current_time
+                
+                # Run analysis every 30 minutes
+                if current_time - last_analysis >= 1800:
+                    print("\n" + "="*60)
+                    print(f"📊 PERIODIC ANALYSIS - {datetime.now().strftime('%H:%M:%S')}")
+                    print("="*60)
+                    self.analyze_initial_data()
+                    self.verify_rr_ratio()
+                    print("="*60 + "\n")
+                    last_analysis = current_time
                 
                 time.sleep(1)
                 

@@ -77,6 +77,41 @@ def create_fire_command(mission_id: str, user_id: str, symbol: str = None, direc
     except Exception:
         target_uuid = "COMMANDER_DEV_001"  # Fallback if DB lookup fails
     
+    # SAFETY CHECK: Ensure we have valid SL and TP before proceeding
+    if sl == 0 or tp == 0 or entry == 0:
+        print(f"⚠️ WARNING: Missing critical values - Entry: {entry}, SL: {sl}, TP: {tp}")
+        # Use sensible defaults based on symbol type
+        if sl == 0 or tp == 0:
+            if 'JPY' in symbol:
+                default_sl_pips = 20
+                pip_size = 0.01
+            elif symbol in ['XAUUSD']:
+                default_sl_pips = 30
+                pip_size = 0.1
+            elif symbol in ['XAGUSD']:
+                default_sl_pips = 50
+                pip_size = 0.01
+            elif symbol in ['USDMXN', 'USDSEK', 'USDCNH']:
+                default_sl_pips = 50
+                pip_size = 0.0001
+            else:
+                default_sl_pips = 15
+                pip_size = 0.0001
+            
+            # Calculate missing SL/TP from defaults
+            if direction.upper() == "BUY":
+                if sl == 0:
+                    sl = entry - (default_sl_pips * pip_size)
+                if tp == 0:
+                    tp = entry + (default_sl_pips * pip_size)  # 1:1 R:R by default
+            else:  # SELL
+                if sl == 0:
+                    sl = entry + (default_sl_pips * pip_size)
+                if tp == 0:
+                    tp = entry - (default_sl_pips * pip_size)  # 1:1 R:R by default
+            
+            print(f"   Applied defaults: SL={sl:.5f}, TP={tp:.5f} ({default_sl_pips} pips each)")
+    
     # CRITICAL FIX: Adjust SL/TP for late entry to maintain risk-reward ratio
     # Determine pip size correctly for all pairs
     if 'JPY' in symbol:
@@ -125,8 +160,43 @@ def create_fire_command(mission_id: str, user_id: str, symbol: str = None, direc
     sl = adjusted_sl
     tp = adjusted_tp
     
+    # FINAL VALIDATION: Ensure SL and TP are valid numbers and not 0
+    if sl == 0 or tp == 0 or not isinstance(sl, (int, float)) or not isinstance(tp, (int, float)):
+        print(f"❌ CRITICAL ERROR: Invalid SL ({sl}) or TP ({tp}) after adjustment!")
+        # Emergency fallback - use safe defaults
+        if direction.upper() == "BUY":
+            sl = current_market_price * 0.995  # 0.5% below entry
+            tp = current_market_price * 1.005  # 0.5% above entry
+        else:
+            sl = current_market_price * 1.005  # 0.5% above entry
+            tp = current_market_price * 0.995  # 0.5% below entry
+        print(f"   Emergency fix applied: SL={sl:.5f}, TP={tp:.5f}")
+    
+    # Additional validation for exotic pairs with extreme values
+    if symbol in ['XAUUSD', 'XAGUSD']:
+        # Ensure reasonable pip distances for metals
+        metal_pip = 0.1 if symbol == 'XAUUSD' else 0.01
+        sl_distance = abs(current_market_price - sl) / metal_pip
+        tp_distance = abs(tp - current_market_price) / metal_pip
+        
+        if sl_distance > 1000 or tp_distance > 1000:
+            print(f"⚠️ Extreme pip distance detected for {symbol}: SL={sl_distance:.0f}p, TP={tp_distance:.0f}p")
+            # Cap at 100 pips for safety
+            if direction.upper() == "BUY":
+                sl = current_market_price - (100 * metal_pip)
+                tp = current_market_price + (100 * metal_pip)
+            else:
+                sl = current_market_price + (100 * metal_pip)
+                tp = current_market_price - (100 * metal_pip)
+            print(f"   Capped at 100 pips: SL={sl:.5f}, TP={tp:.5f}")
+    
     # Round lot size to 2 decimal places for MT5 compatibility
     lot = round(lot, 2)
+    
+    # Final rounding for price precision
+    sl = round(sl, 5) if symbol not in ['XAUUSD', 'XAGUSD'] else round(sl, 2)
+    tp = round(tp, 5) if symbol not in ['XAUUSD', 'XAGUSD'] else round(tp, 2)
+    entry_rounded = round(current_market_price, 5) if symbol not in ['XAUUSD', 'XAGUSD'] else round(current_market_price, 2)
     
     return {
         "type": "fire",
@@ -134,7 +204,7 @@ def create_fire_command(mission_id: str, user_id: str, symbol: str = None, direc
         "target_uuid": target_uuid,
         "symbol": symbol,
         "direction": direction,
-        "entry": current_market_price,  # Current market price as entry
+        "entry": entry_rounded,  # Current market price as entry
         "sl": sl,        # Adjusted SL maintaining pip distance
         "tp": tp,        # Adjusted TP maintaining pip distance 
         "lot": lot,

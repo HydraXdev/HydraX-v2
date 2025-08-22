@@ -82,6 +82,10 @@ def create_fire_command(mission_id: str, user_id: str, symbol: str = None, direc
     original_sl_pips = abs(entry - sl) / pip_size
     original_tp_pips = abs(tp - entry) / pip_size
     
+    # COMMANDER OVERRIDE: Force 1:1 R:R for all trades
+    # Changed per commander request - use SL distance for TP
+    original_tp_pips = original_sl_pips  # Force 1:1 R:R
+    
     # Get current market price (simulated - in production would get real price)
     # For now, assume we're entering at the original entry price
     # But calculate what the adjustment would be if we entered late
@@ -90,19 +94,19 @@ def create_fire_command(mission_id: str, user_id: str, symbol: str = None, direc
     # Calculate price movement since signal
     price_movement_pips = abs(current_market_price - entry) / pip_size
     
-    # Adjust SL/TP to maintain original pip distances from CURRENT price
+    # Adjust SL/TP to maintain 1:1 R:R from CURRENT price
     if direction.upper() == "BUY":
         adjusted_sl = current_market_price - (original_sl_pips * pip_size)
-        adjusted_tp = current_market_price + (original_tp_pips * pip_size)
+        adjusted_tp = current_market_price + (original_tp_pips * pip_size)  # Now 1:1 with SL
     else:  # SELL
         adjusted_sl = current_market_price + (original_sl_pips * pip_size)
-        adjusted_tp = current_market_price - (original_tp_pips * pip_size)
+        adjusted_tp = current_market_price - (original_tp_pips * pip_size)  # Now 1:1 with SL
     
-    print(f"🔧 LATE ENTRY FIX: {symbol} {direction}")
+    print(f"🔧 FIRE PACKAGE FIX: {symbol} {direction} [1:1 R:R ENFORCED]")
     print(f"   Original entry: {entry}")
     print(f"   Current price: {current_market_price} (moved {price_movement_pips:.1f}p)")
     print(f"   Adjusted SL: {adjusted_sl} ({original_sl_pips:.1f}p from current)")
-    print(f"   Adjusted TP: {adjusted_tp} ({original_tp_pips:.1f}p from current)")
+    print(f"   Adjusted TP: {adjusted_tp} ({original_tp_pips:.1f}p from current) [1:1 R:R]")
     
     # Use adjusted levels
     sl = adjusted_sl

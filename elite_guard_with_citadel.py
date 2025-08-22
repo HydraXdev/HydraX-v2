@@ -2055,19 +2055,28 @@ class EliteGuardBalanced:
         pattern_type = getattr(signal, 'pattern', 'UNKNOWN')
         combo_key = f"{pattern_type}_{symbol}"
         
-        # WINNING COMBOS: Big bonuses
+        # WINNING COMBOS: Big bonuses (proven performers)
         winning_combos = {
             'ORDER_BLOCK_BOUNCE_USDCAD': -15,    # 100% win rate
             'ORDER_BLOCK_BOUNCE_NZDUSD': -12,    # 75% win rate
             'FAIR_VALUE_GAP_FILL_EURJPY': -10,   # 75% win rate
+            'ORDER_BLOCK_BOUNCE_XAUUSD': -8,     # Good on XAUUSD
             'FAIR_VALUE_GAP_FILL_XAUUSD': -5,    # 50% win rate
+            'ORDER_BLOCK_BOUNCE_USDJPY': -5,     # 50% win rate
+            'ORDER_BLOCK_BOUNCE_GBPUSD': -5,     # 50% win rate
+            'FAIR_VALUE_GAP_FILL_AUDJPY': -3,    # 50% win rate
         }
         
-        # LOSING COMBOS: Penalties
+        # LOSING COMBOS: Heavy penalties (proven losers)
         losing_combos = {
-            'FAIR_VALUE_GAP_FILL_XAGUSD': 20,    # Block it
-            'ORDER_BLOCK_BOUNCE_XAGUSD': 20,     # Block it
-            'FAIR_VALUE_GAP_FILL_USDMXN': 15,    # Nearly block
+            'FAIR_VALUE_GAP_FILL_XAGUSD': 50,    # BLOCK completely
+            'ORDER_BLOCK_BOUNCE_XAGUSD': 50,     # BLOCK completely  
+            'FAIR_VALUE_GAP_FILL_USDMXN': 50,    # BLOCK completely
+            'ORDER_BLOCK_BOUNCE_EURJPY': 20,     # 0% win rate
+            'ORDER_BLOCK_BOUNCE_GBPJPY': 20,     # 0% win rate
+            'FAIR_VALUE_GAP_FILL_GBPJPY': 20,    # 0% win rate
+            'ORDER_BLOCK_BOUNCE_EURAUD': 15,     # 0% win rate
+            'ORDER_BLOCK_BOUNCE_EURUSD': 15,     # 0% win rate
         }
         
         # Apply combo adjustment if exists, else pattern-only adjustment

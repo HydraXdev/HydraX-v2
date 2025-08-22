@@ -1489,30 +1489,30 @@ class EliteGuardBalanced:
         # RAPID: Designed to complete within 1 hour (shorter TPs)
         # SNIPER: Designed to complete within 2 hours (larger TPs but still reasonable)
         
-        # ADJUSTED TP STRATEGY: 1.05-1.1x SL for higher win rate
-        # Shorter TP = More winners = Better user experience
+        # OPTIMIZED STRATEGY: 30% shorter SL/TP with 1.5 R:R for balance
+        # Shorter distances = Faster completion, 1.5 R:R = Good profit potential
         if signal_class == 'SNIPER':
-            # SNIPER trades - precision setups, quick completion
+            # SNIPER trades - precision setups, 30% tighter stops
             if pattern_signal.quality_score >= 75:  # Premium
-                stop_pips = 10
-                target_pips = 11  # 1:1.1 RR (quick wins)
+                stop_pips = 7   # Was 10, now 30% less
+                target_pips = 10.5  # 1:1.5 RR maintained
             elif pattern_signal.quality_score >= 65:  # Standard
-                stop_pips = 9
-                target_pips = 10  # 1:1.11 RR
+                stop_pips = 6   # Was 9, now ~30% less
+                target_pips = 9   # 1:1.5 RR
             else:  # Acceptable
-                stop_pips = 8
-                target_pips = 8.5  # 1:1.06 RR
+                stop_pips = 5.5   # Was 8, now ~30% less
+                target_pips = 8.25  # 1:1.5 RR
         else:
-            # RAPID trades - ultra-quick scalps
+            # RAPID trades - ultra-quick scalps, 30% tighter
             if pattern_signal.quality_score >= 75:  # Premium
-                stop_pips = 6
-                target_pips = 6.6  # 1:1.1 RR (very quick wins)
+                stop_pips = 4   # Was 6, now ~30% less
+                target_pips = 6  # 1:1.5 RR
             elif pattern_signal.quality_score >= 65:  # Standard
-                stop_pips = 5
-                target_pips = 5.5  # 1:1.1 RR
+                stop_pips = 3.5   # Was 5, now 30% less
+                target_pips = 5.25  # 1:1.5 RR
             else:  # Acceptable
-                stop_pips = 4
-                target_pips = 4.2  # 1:1.05 RR
+                stop_pips = 3   # Was 4, now 25% less
+                target_pips = 4.5  # 1:1.5 RR
         
         # FIX ERROR 4756: BROKER MINIMUM STOP DISTANCE REQUIREMENTS
         # Exotic pairs and commodities need larger stops to avoid "Invalid stops" error
@@ -1586,11 +1586,15 @@ class EliteGuardBalanced:
         lot_size = risk_amount / (stop_pips * pip_value_per_lot)
         lot_size = round(lot_size, 2)  # Round to 2 decimals for MT5
         
-        print(f"💰 LOT SIZE CALC: {symbol}")
+        print(f"💰 LOT SIZE CALC: {symbol} {pattern_signal.direction}")
         print(f"   Risk: {risk_percent*100}% = ${risk_amount}")
-        print(f"   SL: {stop_pips} pips")
-        print(f"   TP: {target_pips} pips (R:R {target_pips/stop_pips:.2f})")
-        print(f"   Lot Size: {lot_size}")
+        print(f"   SL: {stop_pips:.1f} pips (30% reduced)")
+        print(f"   TP: {target_pips:.1f} pips (1.5x SL)")
+        print(f"   R:R Ratio: 1:{target_pips/stop_pips:.2f}")
+        print(f"   Lot Size: {lot_size:.2f} lots")
+        print(f"   Entry: {entry_price:.5f}")
+        print(f"   Stop Loss: {stop_loss:.5f}")
+        print(f"   Take Profit: {take_profit:.5f}")
         
         # Get news impact for this symbol
         news_impact = self.get_news_impact(pattern_signal.pair)

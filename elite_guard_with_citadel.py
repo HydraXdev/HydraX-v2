@@ -328,8 +328,8 @@ class EliteGuardBalanced:
         self.MIN_MOMENTUM = 30   # Require strong momentum
         self.MIN_VOLUME = 20     # Require decent volume
         self.MIN_TREND = 15      # Require some trend alignment
-        self.MIN_CONFIDENCE = 65 # RECALIBRATED: 65% to capture more signals for optimization
-        self.COOLDOWN_MINUTES = 10 # Reasonable cooldown between signals per pair
+        self.MIN_CONFIDENCE = 80 # TARGET: 80-85% confidence for quality signals
+        self.COOLDOWN_MINUTES = 5 # Reduced cooldown to allow more signals (5-10/hr target)
         
         # Quality tiers for user display
         self.QUALITY_TIERS = {
@@ -1489,28 +1489,30 @@ class EliteGuardBalanced:
         # RAPID: Designed to complete within 1 hour (shorter TPs)
         # SNIPER: Designed to complete within 2 hours (larger TPs but still reasonable)
         
+        # ADJUSTED TP STRATEGY: 1.05-1.1x SL for higher win rate
+        # Shorter TP = More winners = Better user experience
         if signal_class == 'SNIPER':
-            # SNIPER trades - precision setups, 1-2 hour completion target
+            # SNIPER trades - precision setups, quick completion
             if pattern_signal.quality_score >= 75:  # Premium
+                stop_pips = 10
+                target_pips = 11  # 1:1.1 RR (quick wins)
+            elif pattern_signal.quality_score >= 65:  # Standard
+                stop_pips = 9
+                target_pips = 10  # 1:1.11 RR
+            else:  # Acceptable
                 stop_pips = 8
-                target_pips = 12  # 1:1.5 RR (achievable in 1-2 hours)
-            elif pattern_signal.quality_score >= 65:  # Standard
-                stop_pips = 7
-                target_pips = 10  # 1:1.43 RR
-            else:  # Acceptable
-                stop_pips = 6
-                target_pips = 8   # 1:1.33 RR
+                target_pips = 8.5  # 1:1.06 RR
         else:
-            # RAPID trades - quick scalps, under 1 hour completion
+            # RAPID trades - ultra-quick scalps
             if pattern_signal.quality_score >= 75:  # Premium
-                stop_pips = 4
-                target_pips = 6   # 1:1.5 RR (quick 30-45 min trades)
+                stop_pips = 6
+                target_pips = 6.6  # 1:1.1 RR (very quick wins)
             elif pattern_signal.quality_score >= 65:  # Standard
-                stop_pips = 3
-                target_pips = 5   # 1:1.67 RR
+                stop_pips = 5
+                target_pips = 5.5  # 1:1.1 RR
             else:  # Acceptable
-                stop_pips = 3
-                target_pips = 4   # 1:1.33 RR
+                stop_pips = 4
+                target_pips = 4.2  # 1:1.05 RR
         
         # FIX ERROR 4756: BROKER MINIMUM STOP DISTANCE REQUIREMENTS
         # Exotic pairs and commodities need larger stops to avoid "Invalid stops" error
@@ -1562,6 +1564,34 @@ class EliteGuardBalanced:
             stop_loss = entry_price + stop_distance
             take_profit = entry_price - target_distance
         
+        # Calculate lot size for 3% risk (testing phase)
+        account_balance = 1000.0  # Default account, will be overridden by actual balance
+        risk_percent = 0.03  # 3% risk per trade for testing
+        risk_amount = account_balance * risk_percent  # $30 on $1000 account
+        
+        # Calculate pip value (simplified - would need actual pip value calculation)
+        if 'JPY' in symbol:
+            pip_value = 0.01  # Approximate for JPY pairs
+        elif symbol in ['XAUUSD']:
+            pip_value = 0.1  # Gold pip value
+        elif symbol in ['XAGUSD']:
+            pip_value = 0.05  # Silver pip value  
+        else:
+            pip_value = 0.0001  # Standard forex pairs
+            
+        # Lot size calculation for 3% risk
+        # Formula: Risk Amount / (SL pips * pip value per lot)
+        # Assuming standard lot pip values: $10 for forex, varies for metals
+        pip_value_per_lot = 10.0 if symbol not in ['XAUUSD', 'XAGUSD'] else (1.0 if symbol == 'XAUUSD' else 0.5)
+        lot_size = risk_amount / (stop_pips * pip_value_per_lot)
+        lot_size = round(lot_size, 2)  # Round to 2 decimals for MT5
+        
+        print(f"💰 LOT SIZE CALC: {symbol}")
+        print(f"   Risk: {risk_percent*100}% = ${risk_amount}")
+        print(f"   SL: {stop_pips} pips")
+        print(f"   TP: {target_pips} pips (R:R {target_pips/stop_pips:.2f})")
+        print(f"   Lot Size: {lot_size}")
+        
         # Get news impact for this symbol
         news_impact = self.get_news_impact(pattern_signal.pair)
         
@@ -1592,6 +1622,8 @@ class EliteGuardBalanced:
             'stop_pips': stop_pips,
             'target_pips': target_pips,
             'risk_reward': round(target_pips / stop_pips, 2),
+            'lot_size': lot_size,  # Added lot size for 3% risk
+            'risk_percent': risk_percent * 100,  # Show risk percentage
             'timestamp': datetime.now(pytz.UTC).isoformat(),
             'session': self.get_current_session(),
             'tier_required': 'PRESS_PASS' if signal_class == 'RAPID' else 'FANG',

@@ -124,9 +124,9 @@ def create_fire_command(mission_id: str, user_id: str, symbol: str = None, direc
     original_sl_pips = abs(entry - sl) / pip_size
     original_tp_pips = abs(tp - entry) / pip_size
     
-    # COMMANDER OVERRIDE: Force 1:1 R:R for all trades
-    # Changed per commander request - use SL distance for TP
-    original_tp_pips = original_sl_pips  # Force 1:1 R:R
+    # COMMANDER OVERRIDE: Force 1:1.5 R:R for all trades
+    # Changed per commander request - use 1.5x SL distance for TP
+    original_tp_pips = original_sl_pips * 1.5  # Force 1:1.5 R:R
     
     print(f"📊 R:R Override Debug:")
     print(f"   Symbol: {symbol}, Pip size: {pip_size}")

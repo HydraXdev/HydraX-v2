@@ -2369,7 +2369,295 @@ class EliteGuardBalanced:
             traceback.print_exc()
     
     def analyze_initial_data(self):
-        """Analyze ONLY optimized_tracking.jsonl with detailed breakdowns"""
+        """Analyze last 6 hours from optimized_tracking.jsonl with detailed breakdowns"""
+        try:
+            tracking_file = '/root/HydraX-v2/optimized_tracking.jsonl'
+            
+            if not os.path.exists(tracking_file):
+                print("📊 No optimized_tracking.jsonl yet")
+                return
+                
+            # Read and filter for last 6 hours (360 minutes)
+            from datetime import datetime, timedelta
+            now = datetime.now()
+            six_hours_ago = now - timedelta(hours=6)
+            
+            recent = []
+            with open(tracking_file, 'r') as f:
+                for line in f:
+                    if line.strip():
+                        signal = json.loads(line)
+                        # Parse timestamp properly
+                        if 'timestamp' in signal:
+                            ts_str = signal['timestamp']
+                            # Handle ISO format timestamps
+                            if 'T' in ts_str:
+                                # Remove microseconds if present and parse
+                                ts_str = ts_str.split('.')[0] if '.' in ts_str else ts_str.replace('Z', '')
+                                signal_time = datetime.fromisoformat(ts_str)
+                            else:
+                                signal_time = datetime.strptime(ts_str, '%Y-%m-%d %H:%M:%S')
+                            
+                            if signal_time >= six_hours_ago:
+                                recent.append(signal)
+            
+            if not recent:
+                print("📊 No data in last 6 hours from optimized_tracking.jsonl")
+                return
+            
+            # Overall stats for last 6 hours
+            total = len(recent)
+            wins = sum(1 for s in recent if s.get('win', False))
+            losses = total - wins
+            win_rate = (wins / total * 100) if total > 0 else 0
+            
+            print(f"\n📊 6-HOUR ANALYSIS from optimized_tracking.jsonl")
+            print(f"   Total Signals: {total}")
+            print(f"   Wins: {wins} | Losses: {losses}")
+            print(f"   Win Rate: {win_rate:.1f}%")
+            
+            # Pattern breakdown with win rates
+            patterns = set(s['pattern'] for s in recent if 'pattern' in s)
+            pattern_stats = {}
+            print(f"\n📈 PATTERN PERFORMANCE:")
+            for p in sorted(patterns):
+                p_signals = [s for s in recent if s.get('pattern') == p]
+                if p_signals:
+                    p_wins = sum(1 for s in p_signals if s.get('win', False))
+                    p_wr = (p_wins/len(p_signals)*100) if len(p_signals) > 0 else 0
+                    pattern_stats[p] = {
+                        'total': len(p_signals),
+                        'wins': p_wins,
+                        'win_rate': p_wr
+                    }
+                    print(f"   {p}: {p_wins}/{len(p_signals)} ({p_wr:.1f}%)")
+            
+            # Pair breakdown
+            pairs = set(s['pair'] for s in recent if 'pair' in s)
+            print(f"\n💱 PAIR PERFORMANCE:")
+            pair_stats = {}
+            for pair in sorted(pairs):
+                pair_signals = [s for s in recent if s.get('pair') == pair]
+                if pair_signals:
+                    pair_wins = sum(1 for s in pair_signals if s.get('win', False))
+                    pair_wr = (pair_wins/len(pair_signals)*100) if len(pair_signals) > 0 else 0
+                    pair_stats[pair] = {
+                        'total': len(pair_signals),
+                        'wins': pair_wins,
+                        'win_rate': pair_wr
+                    }
+                    print(f"   {pair}: {pair_wins}/{len(pair_signals)} ({pair_wr:.1f}%)")
+            
+            # Confidence bins with detailed breakdown
+            conf_stats = {}
+            print(f"\n🎯 CONFIDENCE BINS:")
+            for bin_name, (low, high) in [('70-75%', (70, 75)), ('75-85%', (75, 85)), ('85-95%', (85, 95))]:
+                bin_signals = [s for s in recent if low <= s.get('confidence', 0) < high]
+                if bin_signals:
+                    bin_wins = sum(1 for s in bin_signals if s.get('win', False))
+                    bin_wr = (bin_wins/len(bin_signals)*100) if len(bin_signals) > 0 else 0
+                    conf_stats[bin_name] = {
+                        'total': len(bin_signals),
+                        'wins': bin_wins,
+                        'win_rate': bin_wr
+                    }
+                    print(f"   {bin_name}: {bin_wins}/{len(bin_signals)} ({bin_wr:.1f}%)")
+            
+            # Session breakdown
+            session_stats = {}
+            sessions = set(s.get('session', 'UNKNOWN') for s in recent)
+            if len(sessions) > 1 or 'UNKNOWN' not in sessions:
+                print(f"\n⏰ SESSION PERFORMANCE:")
+                for sess in sorted(sessions):
+                    sess_signals = [s for s in recent if s.get('session') == sess]
+                    if sess_signals:
+                        sess_wins = sum(1 for s in sess_signals if s.get('win', False))
+                        sess_wr = (sess_wins/len(sess_signals)*100) if len(sess_signals) > 0 else 0
+                        session_stats[sess] = {
+                            'total': len(sess_signals),
+                            'wins': sess_wins,
+                            'win_rate': sess_wr
+                        }
+                        print(f"   {sess}: {sess_wins}/{len(sess_signals)} ({sess_wr:.1f}%)")
+            
+            # Time distribution
+            print(f"\n⏱️ TIME DISTRIBUTION:")
+            hourly = {}
+            for s in recent:
+                if 'timestamp' in s:
+                    ts_str = s['timestamp']
+                    if 'T' in ts_str:
+                        ts_str = ts_str.split('.')[0] if '.' in ts_str else ts_str.replace('Z', '')
+                        signal_time = datetime.fromisoformat(ts_str)
+                    else:
+                        signal_time = datetime.strptime(ts_str, '%Y-%m-%d %H:%M:%S')
+                    
+                    hour_key = signal_time.strftime('%H:00')
+                    if hour_key not in hourly:
+                        hourly[hour_key] = {'total': 0, 'wins': 0}
+                    hourly[hour_key]['total'] += 1
+                    if s.get('win', False):
+                        hourly[hour_key]['wins'] += 1
+            
+            for hour in sorted(hourly.keys()):
+                h_wr = (hourly[hour]['wins']/hourly[hour]['total']*100) if hourly[hour]['total'] > 0 else 0
+                print(f"   {hour}: {hourly[hour]['wins']}/{hourly[hour]['total']} ({h_wr:.1f}%)")
+                
+            return {
+                'total': total,
+                'wins': wins,
+                'win_rate': win_rate,
+                'patterns': pattern_stats,
+                'pairs': pair_stats,
+                'confidence': conf_stats,
+                'sessions': session_stats
+            }
+            
+        except Exception as e:
+            print(f"❌ Error analyzing data: {e}")
+            import traceback
+            traceback.print_exc()
+            
+    def verify_rr_ratio(self):
+        """Verify R:R ratio for last 6 hours from optimized_tracking.jsonl"""
+        try:
+            tracking_file = '/root/HydraX-v2/optimized_tracking.jsonl'
+            
+            if not os.path.exists(tracking_file):
+                print("📊 No optimized_tracking.jsonl for R:R analysis")
+                return
+                
+            # Read and filter for last 6 hours
+            from datetime import datetime, timedelta
+            now = datetime.now()
+            six_hours_ago = now - timedelta(hours=6)
+            
+            recent = []
+            with open(tracking_file, 'r') as f:
+                for line in f:
+                    if line.strip():
+                        signal = json.loads(line)
+                        if 'timestamp' in signal:
+                            ts_str = signal['timestamp']
+                            if 'T' in ts_str:
+                                ts_str = ts_str.split('.')[0] if '.' in ts_str else ts_str.replace('Z', '')
+                                signal_time = datetime.fromisoformat(ts_str)
+                            else:
+                                signal_time = datetime.strptime(ts_str, '%Y-%m-%d %H:%M:%S')
+                            
+                            if signal_time >= six_hours_ago:
+                                recent.append(signal)
+            
+            if not recent:
+                print("📊 No R:R data in last 6 hours")
+                return
+            
+            # Calculate R:R statistics
+            rr_values = [s.get('risk_reward', 0) for s in recent if s.get('risk_reward', 0) > 0]
+            avg_rr = sum(rr_values) / len(rr_values) if rr_values else 0
+            
+            # Group by pattern and calculate average R:R
+            patterns = set(s['pattern'] for s in recent if 'pattern' in s)
+            pattern_rr = {}
+            for p in patterns:
+                p_signals = [s for s in recent if s.get('pattern') == p]
+                p_rr_values = [s.get('risk_reward', 0) for s in p_signals if s.get('risk_reward', 0) > 0]
+                if p_rr_values:
+                    pattern_rr[p] = sum(p_rr_values) / len(p_rr_values)
+            
+            # Check for TP misses (if we have entry/TP data)
+            tp_misses = 0
+            tp_hits = 0
+            for s in recent:
+                if s.get('win', False):
+                    tp_hits += 1
+                    # Note: We don't have actual entry/TP prices in tracking, just win/loss
+            
+            # R:R distribution
+            rr_distribution = {
+                '1.0-1.25': 0,
+                '1.25-1.5': 0,
+                '1.5-2.0': 0,
+                '2.0+': 0
+            }
+            
+            for rr in rr_values:
+                if rr <= 1.25:
+                    rr_distribution['1.0-1.25'] += 1
+                elif rr <= 1.5:
+                    rr_distribution['1.25-1.5'] += 1
+                elif rr <= 2.0:
+                    rr_distribution['1.5-2.0'] += 1
+                else:
+                    rr_distribution['2.0+'] += 1
+            
+            print(f"\n📊 R:R RATIO ANALYSIS (Last 6 Hours)")
+            print(f"   Total Signals: {len(recent)}")
+            print(f"   Average R:R: {avg_rr:.2f}")
+            print(f"   TP Hits (Wins): {tp_hits}/{len(recent)}")
+            
+            print(f"\n📈 R:R BY PATTERN:")
+            for p in sorted(pattern_rr.keys()):
+                print(f"   {p}: {pattern_rr[p]:.2f}")
+            
+            print(f"\n📊 R:R DISTRIBUTION:")
+            for range_name, count in rr_distribution.items():
+                pct = (count/len(rr_values)*100) if rr_values else 0
+                print(f"   {range_name}: {count} ({pct:.1f}%)")
+            
+            # Analyze win rate by R:R ratio
+            print(f"\n🎯 WIN RATE BY R:R:")
+            rr_bins = [(1.0, 1.25), (1.25, 1.5), (1.5, 2.0)]
+            for low, high in rr_bins:
+                bin_signals = [s for s in recent if low <= s.get('risk_reward', 0) < high]
+                if bin_signals:
+                    bin_wins = sum(1 for s in bin_signals if s.get('win', False))
+                    bin_wr = (bin_wins/len(bin_signals)*100) if len(bin_signals) > 0 else 0
+                    print(f"   R:R {low}-{high}: {bin_wins}/{len(bin_signals)} wins ({bin_wr:.1f}%)")
+            
+            # Check if current R:R settings are optimal
+            print(f"\n💡 R:R OPTIMIZATION INSIGHTS:")
+            if avg_rr < 1.3:
+                print("   ⚠️ Average R:R is LOW - Consider increasing TP targets")
+            elif avg_rr > 2.0:
+                print("   ⚠️ Average R:R is HIGH - May be missing profitable trades")
+            else:
+                print("   ✅ Average R:R is BALANCED (1.3-2.0 range)")
+            
+            # Find optimal R:R based on win rate
+            optimal_rr = None
+            best_expectancy = -float('inf')
+            for low, high in rr_bins:
+                bin_signals = [s for s in recent if low <= s.get('risk_reward', 0) < high]
+                if len(bin_signals) >= 5:  # Need minimum samples
+                    bin_wins = sum(1 for s in bin_signals if s.get('win', False))
+                    win_rate = bin_wins / len(bin_signals)
+                    avg_bin_rr = (low + high) / 2
+                    # Expected value = (win_rate * avg_rr) - (loss_rate * 1)
+                    expectancy = (win_rate * avg_bin_rr) - ((1 - win_rate) * 1)
+                    if expectancy > best_expectancy:
+                        best_expectancy = expectancy
+                        optimal_rr = (low, high)
+            
+            if optimal_rr:
+                print(f"\n🎯 OPTIMAL R:R RANGE: {optimal_rr[0]:.2f}-{optimal_rr[1]:.2f}")
+                print(f"   Expected Value: {best_expectancy:.3f} per trade")
+            
+            return {
+                'avg_rr': avg_rr,
+                'tp_hits': tp_hits,
+                'total': len(recent),
+                'pattern_rr': pattern_rr,
+                'distribution': rr_distribution
+            }
+            
+        except Exception as e:
+            print(f"❌ Error verifying R:R ratio: {e}")
+            import traceback
+            traceback.print_exc()
+            
+    def analyze_initial_data_old(self):
+        """Old analyze method - kept for compatibility"""
         try:
             tracking_file = '/root/HydraX-v2/optimized_tracking.jsonl'
             

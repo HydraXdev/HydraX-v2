@@ -86,10 +86,10 @@ def create_fire_command(mission_id: str, user_id: str, symbol: str = None, direc
                 default_sl_pips = 20
                 pip_size = 0.01
             elif symbol in ['XAUUSD']:
-                default_sl_pips = 30
+                default_sl_pips = 100  # Changed from 30 to 100 ($10 move)
                 pip_size = 0.1
             elif symbol in ['XAGUSD']:
-                default_sl_pips = 50
+                default_sl_pips = 100  # Changed from 50 to 100 ($1.00 move)
                 pip_size = 0.01
             elif symbol in ['USDMXN', 'USDSEK', 'USDCNH']:
                 default_sl_pips = 50

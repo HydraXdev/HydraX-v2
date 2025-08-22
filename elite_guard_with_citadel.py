@@ -1510,8 +1510,8 @@ class EliteGuardBalanced:
             'USDMXN': 30,  # Exotic pair - INCREASED from 15 to 30 pips (Error 4756 persists)
             'USDSEK': 20,  # Exotic pair - INCREASED from 15 to 20 pips
             'USDCNH': 30,  # Restricted pair - very high spread
-            'XAGUSD': 25,  # Silver - high volatility, needs 25+ pips
-            'XAUUSD': 10,  # Gold - moderate requirements
+            'XAGUSD': 100,  # Silver - INCREASED to 100 pips ($1.00 move) for volatility
+            'XAUUSD': 100,  # Gold - INCREASED to 100 pips ($10 move) for volatility
             'USDNOK': 20,  # Exotic pair
             'USDDKK': 20,  # Exotic pair
             'USDTRY': 50,  # Very exotic, extreme spread

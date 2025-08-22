@@ -78,13 +78,26 @@ def create_fire_command(mission_id: str, user_id: str, symbol: str = None, direc
         target_uuid = "COMMANDER_DEV_001"  # Fallback if DB lookup fails
     
     # CRITICAL FIX: Adjust SL/TP for late entry to maintain risk-reward ratio
-    pip_size = 0.01 if 'JPY' in symbol else 0.0001
+    # Determine pip size correctly for all pairs
+    if 'JPY' in symbol:
+        pip_size = 0.01
+    elif symbol in ['XAUUSD', 'XAGUSD']:
+        pip_size = 0.1 if symbol == 'XAUUSD' else 0.01  # Gold uses 0.1, Silver uses 0.01
+    else:
+        pip_size = 0.0001
+        
     original_sl_pips = abs(entry - sl) / pip_size
     original_tp_pips = abs(tp - entry) / pip_size
     
     # COMMANDER OVERRIDE: Force 1:1 R:R for all trades
     # Changed per commander request - use SL distance for TP
     original_tp_pips = original_sl_pips  # Force 1:1 R:R
+    
+    print(f"📊 R:R Override Debug:")
+    print(f"   Symbol: {symbol}, Pip size: {pip_size}")
+    print(f"   Original SL pips: {original_sl_pips:.1f}")
+    print(f"   Original TP pips (before override): {abs(tp - entry) / pip_size:.1f}")
+    print(f"   New TP pips (1:1 R:R): {original_tp_pips:.1f}")
     
     # Get current market price (simulated - in production would get real price)
     # For now, assume we're entering at the original entry price

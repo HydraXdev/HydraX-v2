@@ -2037,26 +2037,58 @@ class EliteGuardBalanced:
 
     def apply_ml_filter(self, signal, session: str) -> tuple[bool, str, float]:
         """Apply ML filtering with dynamic threshold for 5-10 signals/hour target"""
-        # QUALITY GATE #1: OPTIMAL 80% BASE (85% FOR EXOTICS) FOR 65%+ WIN RATE
-        # Extra strict for exotic pairs (higher risk, need better setups)
-        exotic_pairs = ['USDMXN', 'USDSEK', 'USDCNH', 'XAGUSD', 'XAUUSD']
+        # QUALITY GATE #1: PAIR-SPECIFIC FOR 65%+ WIN RATE TARGET
         symbol = getattr(signal, 'pair', getattr(signal, 'symbol', ''))
-        min_quality_score = 85.0 if symbol in exotic_pairs else 80.0
         
-        # Pattern adjustments for 65%+ win rate target
-        pattern_adjustments = {
-            'FAIR_VALUE_GAP_FILL': 50,       # BLOCKED: 14% win rate - terrible
-            'ORDER_BLOCK_BOUNCE': -5,         # BONUS: 50% win rate - decent
-            'LIQUIDITY_SWEEP_REVERSAL': -10,  # BIG BONUS: Premium pattern
-            'VCB_BREAKOUT': -10,              # BIG BONUS: High potential
-            'SWEEP_RETURN': 50,              # BLOCKED: 0% win rate
-            'SWEEP_AND_RETURN': 50           # BLOCKED: 0% win rate
+        # TOP PERFORMERS (>40% win rate): Lower threshold
+        # WORST PERFORMERS (<30% win rate): Block completely
+        if symbol in ['NZDUSD', 'XAUUSD']:  # 75%, 53% win rates
+            min_quality_score = 75.0  # EASIER entry for winners
+        elif symbol in ['AUDJPY', 'EURJPY']:  # 50%, 43% win rates
+            min_quality_score = 78.0  # Slightly easier
+        elif symbol in ['XAGUSD', 'USDMXN', 'USDCNH', 'USDSEK']:  # <30% win rate
+            min_quality_score = 95.0  # EFFECTIVELY BLOCKED
+        else:
+            min_quality_score = 82.0  # Standard pairs
+        
+        # Pattern+Pair combo adjustments (based on actual performance)
+        pattern_type = getattr(signal, 'pattern', 'UNKNOWN')
+        combo_key = f"{pattern_type}_{symbol}"
+        
+        # WINNING COMBOS: Big bonuses
+        winning_combos = {
+            'ORDER_BLOCK_BOUNCE_USDCAD': -15,    # 100% win rate
+            'ORDER_BLOCK_BOUNCE_NZDUSD': -12,    # 75% win rate
+            'FAIR_VALUE_GAP_FILL_EURJPY': -10,   # 75% win rate
+            'FAIR_VALUE_GAP_FILL_XAUUSD': -5,    # 50% win rate
         }
         
-        pattern_type = getattr(signal, 'pattern', 'UNKNOWN')
-        adjustment = pattern_adjustments.get(pattern_type, 0)
+        # LOSING COMBOS: Penalties
+        losing_combos = {
+            'FAIR_VALUE_GAP_FILL_XAGUSD': 20,    # Block it
+            'ORDER_BLOCK_BOUNCE_XAGUSD': 20,     # Block it
+            'FAIR_VALUE_GAP_FILL_USDMXN': 15,    # Nearly block
+        }
+        
+        # Apply combo adjustment if exists, else pattern-only adjustment
+        if combo_key in winning_combos:
+            adjustment = winning_combos[combo_key]
+        elif combo_key in losing_combos:
+            adjustment = losing_combos[combo_key]
+        else:
+            # Default pattern adjustments
+            pattern_adjustments = {
+                'ORDER_BLOCK_BOUNCE': -3,         # Overall decent
+                'FAIR_VALUE_GAP_FILL': 0,         # Mixed results
+                'LIQUIDITY_SWEEP_REVERSAL': -8,   # Likely good
+                'VCB_BREAKOUT': -8,               # Likely good
+                'SWEEP_RETURN': 50,               # BLOCKED
+                'SWEEP_AND_RETURN': 50            # BLOCKED
+            }
+            adjustment = pattern_adjustments.get(pattern_type, 0)
+        
         min_quality_score += adjustment
-        base_quality = 85.0 if symbol in exotic_pairs else 80.0
+        base_quality = min_quality_score  # Use calculated value
         print(f"🔍 Quality check: {signal.quality_score:.1f}% vs {min_quality_score}%")
         
         if hasattr(signal, 'quality_score') and signal.quality_score < min_quality_score:

@@ -1,0 +1,25 @@
+{
+  "test_timestamp": "2025-07-13T04:49:46.861444",
+  "engine_version": "AAA_v3.0_mathematical_fixed",
+  "overall_performance": {
+    "total_signals": 0,
+    "daily_projection": 0,
+    "average_tcs": 0,
+    "pairs_active": 0,
+    "success_rate": "0/6 pairs"
+  },
+  "pair_breakdown": {},
+  "mathematical_advantages": {
+    "models_active": 0,
+    "timeframes_used": 0,
+    "quality_ratio": 0,
+    "tcs_variance": 0
+  },
+  "success_criteria": {
+    "frequency_met": false,
+    "quality_met": false,
+    "coverage_met": false,
+    "overall_success": false
+  },
+  "sample_signals": []
+}

@@ -1,0 +1,43 @@
+{
+  "generated_at": "2025-08-19T23:01:03.770260",
+  "generator": "ConfidenceCalibrator",
+  "calibration_analysis": {
+    "analysis_period_days": 30,
+    "overall_statistics": {
+      "total_signals": 6,
+      "overall_win_rate": 0.6666666666666666,
+      "avg_confidence": 0.7999999999999999
+    },
+    "bucket_analysis": {},
+    "calibration_metrics": {
+      "expected_calibration_error": 0.38,
+      "average_confidence": 0.8,
+      "average_accuracy": 0.6667,
+      "overconfidence": 0.1333,
+      "reliability_diagram": [
+        {
+          "bin_center": 0.72,
+          "accuracy": 0.0,
+          "count": 1,
+          "calibration_error": -0.72
+        },
+        {
+          "bin_center": 0.765,
+          "accuracy": 1.0,
+          "count": 2,
+          "calibration_error": 0.235
+        },
+        {
+          "bin_center": 0.82,
+          "accuracy": 0.0,
+          "count": 1,
+          "calibration_error": -0.82
+        },
+        {
+          "bin_center": 0.865,
+          "accuracy": 1.0,
+          "count": 2,
+          "calibration_error": 0.135
+        }
+      ],
+      "is_well_calibrated": 

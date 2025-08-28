@@ -142,6 +142,11 @@ class EliteGuardZMQRelay:
                 # Convert to WebApp format
                 webapp_signal = self._convert_to_webapp_format(signal_data)
                 
+                # Skip if safety check failed
+                if webapp_signal is None:
+                    logger.error(f"Skipping signal relay due to missing SL/TP")
+                    continue
+                
                 # Relay to WebApp
                 success = self._send_to_webapp(webapp_signal)
                 if success:
@@ -182,6 +187,17 @@ class EliteGuardZMQRelay:
     def _convert_to_webapp_format(self, elite_signal: Dict) -> Dict:
         """Convert Elite Guard format to WebApp /api/signals format"""
         
+        # DEBUG: Log what fields we received
+        logger.info(f"🔍 Signal received with fields: {list(elite_signal.keys())}")
+        if 'stop_loss' in elite_signal:
+            logger.info(f"   stop_loss: {elite_signal['stop_loss']}")
+        if 'take_profit' in elite_signal:
+            logger.info(f"   take_profit: {elite_signal['take_profit']}")
+        if 'sl' in elite_signal:
+            logger.info(f"   sl: {elite_signal['sl']}")
+        if 'tp' in elite_signal:
+            logger.info(f"   tp: {elite_signal['tp']}")
+        
         # Get current timestamp
         current_time = time.time()
         
@@ -201,10 +217,10 @@ class EliteGuardZMQRelay:
             'tcs_score': elite_signal.get('confidence', 0),  # WebApp expects this
             'base_confidence': elite_signal.get('base_confidence', elite_signal.get('confidence', 0)),
             
-            # Price levels - provide intelligent defaults for missing data
+            # Price levels - CRITICAL: Never default SL/TP to 0!
             'entry_price': elite_signal.get('entry_price') or 1.0000,  # Default entry for validation
-            'stop_loss': elite_signal.get('stop_loss', 0),
-            'take_profit': elite_signal.get('take_profit', 0),
+            'stop_loss': elite_signal.get('stop_loss') or elite_signal.get('sl') or 0,  # Check both field names
+            'take_profit': elite_signal.get('take_profit') or elite_signal.get('tp') or 0,  # Check both field names
             'stop_pips': elite_signal.get('stop_pips') or 10,  # Default 10 pips SL
             'target_pips': elite_signal.get('target_pips') or 20,  # Default 20 pips TP
             'risk_reward': elite_signal.get('risk_reward') or 2.0,  # Default 1:2 R:R
@@ -231,6 +247,14 @@ class EliteGuardZMQRelay:
             'volatility': elite_signal.get('volatility', 'NORMAL'),
             'signal_strength': self._determine_strength(elite_signal.get('confidence', 0))
         }
+        
+        # CRITICAL SAFETY CHECK: Never send signals without SL/TP
+        if (webapp_signal.get('stop_loss') is None or webapp_signal.get('stop_loss') == 0) or \
+           (webapp_signal.get('take_profit') is None or webapp_signal.get('take_profit') == 0):
+            logger.error(f"🚨 CRITICAL: Refusing to relay signal {webapp_signal['signal_id']} - Missing SL/TP!")
+            logger.error(f"   Entry: {webapp_signal.get('entry_price')}, SL: {webapp_signal.get('stop_loss')}, TP: {webapp_signal.get('take_profit')}")
+            logger.error(f"   Original signal had: stop_loss={elite_signal.get('stop_loss')}, take_profit={elite_signal.get('take_profit')}")
+            return None  # Return None to prevent relaying
         
         return webapp_signal
     

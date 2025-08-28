@@ -1,0 +1,32 @@
+{
+  "tier_account_requirements": {
+    "nibbler": 250.0,
+    "fang": 1250.0,
+    "commander": 2500.0,
+    "apex": 5000.0
+  },
+  "monthly_gains": {
+    "nibbler": 577,
+    "fang": 6546,
+    "commander": 24809,
+    "apex": 62219
+  },
+  "risk_management": {
+    "max_risk_per_trade": "2% of account",
+    "recommended_risk": "1% of account",
+    "average_stop_loss": "25 pips",
+    "leverage_assumed": "100:1"
+  },
+  "lot_sizes": {
+    "nibbler": 0.01,
+    "fang": 0.05,
+    "commander": 0.1,
+    "apex": 0.2
+  },
+  "pip_values": {
+    "nibbler": 0.1,
+    "fang": 0.5,
+    "commander": 1.0,
+    "apex": 2.0
+  }
+}

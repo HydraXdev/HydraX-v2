@@ -1,0 +1,14 @@
+{
+  "generated_at": "2025-08-20T12:03:45.163326",
+  "generator": "ExpectancyCalculator",
+  "safety_zone_threshold": 0.05,
+  "rolling_window_size": 50,
+  "extended_window_size": 100,
+  "pattern_analysis": {},
+  "summary": {
+    "total_patterns_analyzed": 0,
+    "profitable_patterns": 0,
+    "safe_zone_patterns": 0,
+    "unprofitable_patterns": 0
+  }
+}

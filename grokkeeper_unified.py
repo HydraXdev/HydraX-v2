@@ -1,0 +1,386 @@
+#!/usr/bin/env python3
+"""
+Grokkeeper ML Integration with Unified Logging
+Reads from comprehensive_tracking.jsonl for ML analysis
+"""
+
+import pandas as pd
+import numpy as np
+import json
+import zmq
+import time
+from datetime import datetime, timedelta
+import logging
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+import joblib
+import os
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+class GrokkeeperML:
+    def __init__(self):
+        self.log_file = "/root/HydraX-v2/logs/comprehensive_tracking.jsonl"
+        self.preprocessed_file = "/root/HydraX-v2/logs/ml_preprocessed_data.csv"
+        self.predictions_file = "/root/HydraX-v2/logs/grokkeeper_predictions.jsonl"
+        self.model_file = "/root/HydraX-v2/grokkeeper_model.pkl"
+        self.context = zmq.Context()
+        self.publisher = self.context.socket(zmq.PUB)
+        self.publisher.bind("tcp://*:5565")  # ML predictions port
+        
+        self.model = None
+        self.last_train_time = None
+        self.min_samples = 20  # Lowered for testing phase
+        
+    def load_data(self):
+        """Load data from unified log"""
+        data = []
+        
+        if not os.path.exists(self.log_file):
+            logger.warning(f"Log file not found: {self.log_file}")
+            return pd.DataFrame()
+        
+        try:
+            with open(self.log_file, 'r') as f:
+                for line in f:
+                    try:
+                        data.append(json.loads(line))
+                    except json.JSONDecodeError:
+                        continue
+        except Exception as e:
+            logger.error(f"Error loading data: {e}")
+            return pd.DataFrame()
+        
+        return pd.DataFrame(data)
+    
+    def prepare_features(self, df):
+        """Prepare features for ML"""
+        
+        if df.empty:
+            return None, None
+        
+        # Feature engineering
+        features = pd.DataFrame()
+        
+        # Numeric features
+        features['confidence'] = df['confidence'].fillna(0)
+        
+        # Handle different shield score field names
+        if 'shield_score' in df.columns:
+            features['shield_score'] = df['shield_score'].fillna(0)
+        elif 'citadel' in df.columns:
+            features['shield_score'] = df['citadel'].fillna(0)
+        else:
+            features['shield_score'] = 0
+            
+        features['rsi'] = df['rsi'].fillna(50) 
+        
+        # Handle different volume ratio field names
+        if 'volume_ratio' in df.columns:
+            features['volume_ratio'] = df['volume_ratio'].fillna(1.0)
+        elif 'vol_ratio' in df.columns:
+            features['volume_ratio'] = df['vol_ratio'].fillna(1.0)
+        else:
+            features['volume_ratio'] = 1.0
+        
+        # Handle different data formats for SL/TP
+        # Format 1: Has sl_pips, tp_pips directly
+        # Format 2: Has sl_price, tp_price, entry_price (calculate pips)
+        # Format 3: Has risk_reward ratio directly
+        
+        if 'sl_pips' in df.columns and df['sl_pips'].notna().any():
+            features['sl_pips'] = df['sl_pips'].fillna(10)
+            features['tp_pips'] = df['tp_pips'].fillna(15)
+        elif 'sl_price' in df.columns and 'tp_price' in df.columns and 'entry_price' in df.columns:
+            # Calculate pips from prices
+            pip_multiplier = df['pair'].apply(lambda x: 10000 if 'JPY' not in str(x) else 100).fillna(10000)
+            features['sl_pips'] = abs(df['entry_price'] - df['sl_price']) * pip_multiplier
+            features['tp_pips'] = abs(df['tp_price'] - df['entry_price']) * pip_multiplier
+            features['sl_pips'] = features['sl_pips'].fillna(10)
+            features['tp_pips'] = features['tp_pips'].fillna(15)
+        else:
+            # Fallback defaults
+            features['sl_pips'] = 10
+            features['tp_pips'] = 15
+        
+        # Calculate risk reward ratio
+        if 'risk_reward' in df.columns:
+            features['risk_reward'] = df['risk_reward'].fillna(1.5)
+        else:
+            features['risk_reward'] = (features['tp_pips'] / features['sl_pips'].replace(0, 1))
+        
+        # Categorical encoding
+        features['pattern_encoded'] = pd.Categorical(df['pattern'].fillna('UNKNOWN')).codes
+        features['session_encoded'] = pd.Categorical(df['session'].fillna('OVERLAP')).codes
+        features['direction_encoded'] = df['direction'].map({'BUY': 1, 'SELL': -1}).fillna(0)
+        
+        # Time features
+        df['timestamp'] = pd.to_datetime(df['timestamp'], errors='coerce')
+        features['hour'] = df['timestamp'].dt.hour.fillna(12)
+        features['day_of_week'] = df['timestamp'].dt.dayofweek.fillna(0)
+        
+        # Target variable - handle different formats
+        if 'win' in df.columns:
+            target = df['win'].fillna(False).astype(int)
+        elif 'outcome' in df.columns:
+            # Convert outcome to win/loss (True if outcome is positive)
+            target = df['outcome'].apply(lambda x: 1 if x in ['WIN', 'TP', 'PROFIT'] else 0 if x in ['LOSS', 'SL', 'STOP'] else None)
+            target = target.fillna(0).astype(int)
+        else:
+            # No target available, use dummy data for training
+            target = pd.Series([0] * len(df))
+        
+        # Remove any infinite values
+        features.replace([np.inf, -np.inf], np.nan, inplace=True)
+        features.fillna(0, inplace=True)
+        
+        return features, target
+    
+    def train_model(self, force=False):
+        """Train ML model on historical data"""
+        
+        # Check if we need to retrain
+        if not force and self.last_train_time:
+            if datetime.now() - self.last_train_time < timedelta(hours=1):
+                logger.info("Model recently trained, skipping...")
+                return False
+        
+        # Load data
+        df = self.load_data()
+        
+        if len(df) < self.min_samples:
+            logger.warning(f"Not enough samples for training: {len(df)} < {self.min_samples}")
+            return False
+        
+        # Prepare features
+        X, y = self.prepare_features(df)
+        
+        if X is None or len(X) < self.min_samples:
+            logger.warning("Not enough valid features for training")
+            return False
+        
+        # Split data
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=0.2, random_state=42, stratify=y if len(np.unique(y)) > 1 else None
+        )
+        
+        # Train model
+        self.model = RandomForestClassifier(
+            n_estimators=100,
+            max_depth=10,
+            min_samples_split=5,
+            random_state=42
+        )
+        
+        self.model.fit(X_train, y_train)
+        
+        # Evaluate
+        train_score = self.model.score(X_train, y_train)
+        test_score = self.model.score(X_test, y_test)
+        
+        logger.info(f"Model trained - Train: {train_score:.2%}, Test: {test_score:.2%}")
+        
+        # Save model
+        joblib.dump(self.model, self.model_file)
+        self.last_train_time = datetime.now()
+        
+        # Feature importance
+        importances = pd.DataFrame({
+            'feature': X.columns,
+            'importance': self.model.feature_importances_
+        }).sort_values('importance', ascending=False)
+        
+        logger.info(f"Top features:\n{importances.head()}")
+        
+        return True
+    
+    def predict_signal(self, signal_data):
+        """Predict outcome for a signal"""
+        
+        if self.model is None:
+            # Try to load existing model
+            if os.path.exists(self.model_file):
+                self.model = joblib.load(self.model_file)
+            else:
+                logger.warning("No model available for prediction")
+                return None
+        
+        # Prepare single signal features
+        df = pd.DataFrame([signal_data])
+        X, _ = self.prepare_features(df)
+        
+        if X is None or X.empty:
+            return None
+        
+        # Predict
+        try:
+            win_probability = self.model.predict_proba(X)[0][1]
+            prediction = {
+                'signal_id': signal_data.get('signal_id'),
+                'win_probability': float(win_probability),
+                'recommended': win_probability > 0.65,
+                'confidence_boost': max(0, (win_probability - 0.5) * 20),
+                'ml_score': float(win_probability)
+            }
+            
+            return prediction
+            
+        except Exception as e:
+            logger.error(f"Prediction error: {e}")
+            return None
+    
+    def calculate_pattern_performance(self):
+        """Calculate win rate per pattern from REAL tracking data"""
+        stats = {}
+        
+        # Use the REAL comprehensive tracking file with actual win/loss data
+        tracking_file = '/root/HydraX-v2/comprehensive_tracking.jsonl'
+        
+        try:
+            with open(tracking_file, 'r') as f:
+                for line in f:
+                    try:
+                        data = json.loads(line)
+                        pattern = data.get('pattern')  # Field is 'pattern' not 'pattern_type'
+                        win = data.get('win')  # Boolean true/false not string 'WIN/LOSS'
+                        
+                        if pattern and pattern != 'UNKNOWN' and win is not None:
+                            if pattern not in stats:
+                                stats[pattern] = {'total': 0, 'wins': 0}
+                            
+                            stats[pattern]['total'] += 1
+                            
+                            if win == True:  # Boolean comparison
+                                stats[pattern]['wins'] += 1
+                                
+                    except json.JSONDecodeError:
+                        continue
+                        
+        except Exception as e:
+            logger.error(f"Error calculating pattern performance: {e}")
+        
+        logger.info(f"Pattern performance calculated: {stats}")
+        return stats
+    
+    def publish_threshold_adjustments(self, pattern_stats):
+        """Publish threshold adjustments based on win rates"""
+        for pattern, stats in pattern_stats.items():
+            if stats['total'] < 10:  # Need minimum samples
+                continue
+                
+            win_rate = (stats['wins'] / stats['total']) * 100 if stats['total'] > 0 else 0
+            
+            # Calculate new threshold based on performance
+            if win_rate >= 40:  # Good performer
+                new_threshold = 55  # Lower threshold to get more
+            elif win_rate >= 35:  # Marginal
+                new_threshold = 65  # Keep moderate
+            elif win_rate >= 30:  # Poor
+                new_threshold = 75  # Raise threshold
+            else:  # Terrible
+                new_threshold = 90  # Effectively disable
+            
+            adjustment = {
+                'pattern': pattern,
+                'threshold': new_threshold,
+                'win_rate': win_rate,
+                'total_signals': stats['total']
+            }
+            
+            msg = f"PATTERN_ADJUSTMENT {json.dumps(adjustment)}"
+            self.publisher.send_string(msg)
+            logger.info(f"Published: {pattern} threshold → {new_threshold}% (WR: {win_rate:.1f}%)")
+    
+    def publish_prediction(self, prediction):
+        """Publish ML prediction via ZMQ and save to file"""
+        
+        if prediction:
+            # Add timestamp
+            prediction['timestamp'] = datetime.now().isoformat()
+            
+            # Save to predictions file
+            try:
+                with open(self.predictions_file, 'a') as f:
+                    f.write(json.dumps(prediction) + '\n')
+            except Exception as e:
+                logger.error(f"Failed to save prediction: {e}")
+            
+            # Publish via ZMQ
+            if self.publisher:
+                msg = json.dumps(prediction)
+                self.publisher.send_string(f"ML_PREDICTION {msg}")
+                logger.info(f"Published prediction: {prediction['signal_id']} - Win prob: {prediction['win_probability']:.2%}")
+    
+    def run(self):
+        """Main loop"""
+        
+        logger.info("🤖 Grokkeeper ML starting...")
+        
+        # Initial training
+        self.train_model(force=True)
+        
+        # IMMEDIATE threshold adjustments based on real data
+        logger.info("📊 Calculating initial pattern performance...")
+        pattern_stats = self.calculate_pattern_performance()
+        if pattern_stats:
+            logger.info(f"📊 Publishing threshold adjustments for {len(pattern_stats)} patterns")
+            self.publish_threshold_adjustments(pattern_stats)
+        
+        # Subscribe to signals
+        subscriber = self.context.socket(zmq.SUB)
+        subscriber.connect("tcp://localhost:5557")
+        subscriber.setsockopt_string(zmq.SUBSCRIBE, "ELITE_")
+        
+        last_retrain = time.time()
+        last_adjustment = time.time()
+        
+        while True:
+            try:
+                # Check for new signals
+                try:
+                    message = subscriber.recv_string(zmq.NOBLOCK)
+                    
+                    if message.startswith("ELITE_"):
+                        parts = message.split(' ', 1)
+                        if len(parts) > 1:
+                            signal_data = json.loads(parts[1])
+                            
+                            # Make prediction
+                            prediction = self.predict_signal(signal_data)
+                            
+                            if prediction:
+                                self.publish_prediction(prediction)
+                                
+                except zmq.Again:
+                    pass
+                
+                # Periodic threshold adjustments (every 5 minutes)
+                if time.time() - last_adjustment > 300:  # Every 5 minutes
+                    pattern_stats = self.calculate_pattern_performance()
+                    if pattern_stats:
+                        self.publish_threshold_adjustments(pattern_stats)
+                    last_adjustment = time.time()
+                
+                # Periodic retraining (every hour)
+                if time.time() - last_retrain > 3600:  # Every hour
+                    if self.train_model():
+                        last_retrain = time.time()
+                
+                time.sleep(0.1)
+                
+            except KeyboardInterrupt:
+                break
+            except Exception as e:
+                logger.error(f"Main loop error: {e}")
+                time.sleep(1)
+        
+        # Cleanup
+        subscriber.close()
+        self.publisher.close()
+        self.context.term()
+        logger.info("Grokkeeper ML stopped")
+
+if __name__ == "__main__":
+    grokkeeper = GrokkeeperML()
+    grokkeeper.run()

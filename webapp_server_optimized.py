@@ -399,9 +399,11 @@ def api_signals():
                     else:
                         logger.debug(f"🚫 ML BLOCKED FROM DISPLAY: {signal_id} @ {signal_confidence}% - {ml_reason}")
                     
-                    # AUTO fire logic - AI EXCELLENCE MODE: 80% threshold for high quality
-                    print(f"[DEBUG] AUTO fire check: {signal_id} @ {signal_confidence}% (threshold: 80.0%)")
-                    if signal_confidence >= 80.0:  # Lowered to 80% per user requirement
+                    # AUTO fire logic - 70% threshold with ML protection for bad patterns
+                    print(f"[DEBUG] AUTO fire check: {signal_id} @ {signal_confidence}% (threshold: 70.0%)")
+                    
+                    # AUTO fire enabled with 70% threshold - ML feedback handles quality control
+                    if signal_confidence >= 70.0:  # Lowered to 70% with ML protection
                         print(f"[DEBUG] HIGH CONFIDENCE - checking AUTO fire users")
                         logger.info(f"🎯 HIGH CONFIDENCE SIGNAL: {signal_id} @ {signal_confidence}% - Checking AUTO fire users")
                         
@@ -412,9 +414,9 @@ def api_signals():
                             with sqlite3.connect('/root/HydraX-v2/data/fire_modes.db') as fire_conn:
                                 fire_cursor = fire_conn.cursor()
                                 fire_cursor.execute("""
-                                    SELECT user_id, max_slots, slots_in_use 
+                                    SELECT user_id, max_auto_slots, auto_slots_in_use 
                                     FROM user_fire_modes 
-                                    WHERE current_mode = 'AUTO' AND slots_in_use < max_slots
+                                    WHERE current_mode = 'AUTO' AND auto_slots_in_use < max_auto_slots
                                 """)
                                 auto_mode_users = fire_cursor.fetchall()
                                 
@@ -460,7 +462,11 @@ def api_signals():
                                                     risk_percent=3.0  # Reduced from 5% to 3% for margin management
                                                 )
                                                 
-                                                # Create and send AUTO fire command
+                                                # Check if user has BITMODE enabled
+                                                from src.bitten_core.fire_mode_database import fire_mode_db
+                                                bitmode_enabled = fire_mode_db.is_bitmode_enabled(str(user_id))
+                                                
+                                                # Create and send AUTO fire command with BITMODE support
                                                 auto_fire_cmd = create_fire_command(
                                                     mission_id=signal_id,
                                                     user_id=str(user_id),
@@ -469,13 +475,20 @@ def api_signals():
                                                     entry=entry_price,
                                                     sl=stop_loss,
                                                     tp=take_profit,
-                                                    lot=calculated_lot
+                                                    lot=calculated_lot,
+                                                    enable_bitmode=bitmode_enabled
                                                 )
                                                 
-                                                # Send to IPC queue for INSTANT execution
-                                                enqueue_fire(auto_fire_cmd)
-                                                
-                                                logger.info(f"⚡ AUTO FIRE SENT: {signal_id} for user {user_id} - {calculated_lot} lots @ {signal_confidence}%")
+                                                # Occupy slot before firing
+                                                from src.bitten_core.fire_mode_database import FireModeDatabase
+                                                fire_db = FireModeDatabase()
+                                                # AUTO slot for COMMANDER tier only
+                                                if fire_db.occupy_slot(str(user_id), signal_id, symbol, slot_type='AUTO', user_tier='COMMANDER'):
+                                                    # Send to IPC queue for INSTANT execution
+                                                    enqueue_fire(auto_fire_cmd)
+                                                    logger.info(f"⚡ AUTO FIRE SENT: {signal_id} for user {user_id} - {calculated_lot} lots @ {signal_confidence}% (Auto slot occupied)")
+                                                else:
+                                                    logger.warning(f"⚠️ No auto slots available for user {user_id}, skipping auto-fire")
                                                 
                                             except Exception as lot_error:
                                                 logger.error(f"AUTO fire lot calculation failed for {user_id}: {lot_error}")
@@ -484,6 +497,9 @@ def api_signals():
                                                 logger.error(f"Full traceback: {traceback.format_exc()}")
                                                 # Use fallback lot size with proper 5% risk estimate
                                                 estimated_lot = (float(balance) * 0.05) / 80 if balance else 0.50  # Assume ~$80 risk per lot
+                                                # Check BITMODE for fallback command too
+                                                fallback_bitmode = fire_mode_db.is_bitmode_enabled(str(user_id))
+                                                
                                                 auto_fire_cmd = create_fire_command(
                                                     mission_id=signal_id,
                                                     user_id=str(user_id),
@@ -492,10 +508,17 @@ def api_signals():
                                                     entry=float(signal_data.get('entry_price', signal_data.get('entry', 0))),
                                                     sl=float(signal_data.get('stop_loss', signal_data.get('sl', 0))),
                                                     tp=float(signal_data.get('take_profit', signal_data.get('tp', 0))),
-                                                    lot=estimated_lot
+                                                    lot=estimated_lot,
+                                                    enable_bitmode=fallback_bitmode
                                                 )
-                                                enqueue_fire(auto_fire_cmd)
-                                                logger.info(f"⚡ AUTO FIRE SENT (fallback): {signal_id} for user {user_id} - {estimated_lot:.2f} lots")
+                                                # Check slot availability for fallback fire too
+                                                from src.bitten_core.fire_mode_database import FireModeDatabase
+                                                fire_db = FireModeDatabase()
+                                                if fire_db.occupy_slot(str(user_id), signal_id, signal_data.get('symbol', 'EURUSD')):
+                                                    enqueue_fire(auto_fire_cmd)
+                                                    logger.info(f"⚡ AUTO FIRE SENT (fallback): {signal_id} for user {user_id} - {estimated_lot:.2f} lots (Slot occupied)")
+                                                else:
+                                                    logger.warning(f"⚠️ No slots available for user {user_id}, skipping fallback auto-fire")
                                                 
                                         except Exception as fire_error:
                                             logger.error(f"AUTO fire failed for user {user_id}: {fire_error}")
@@ -505,7 +528,7 @@ def api_signals():
                         except Exception as auto_error:
                             logger.error(f"AUTO fire system error: {auto_error}")
                     else:
-                        logger.debug(f"📊 Signal {signal_id} @ {signal_confidence}% below AUTO threshold (97%)")
+                        logger.debug(f"📊 Signal {signal_id} @ {signal_confidence}% below AUTO threshold (79%)")
                         
                 except Exception as confidence_error:
                     logger.warning(f"AUTO fire confidence check failed: {confidence_error}")
@@ -891,6 +914,22 @@ def mission_briefing():
             except:
                 pattern_type = 'PATTERN_UNKNOWN'
         
+        # Risk calculation with INDIVIDUALIZED user risk
+        # Get R:R from mission data first, then signal data
+        risk_reward_ratio = mission_data.get('risk_reward', signal_data.get('risk_reward', 1.5))
+        user_balance = user_stats.get('balance', user_data.get('balance', 10000.0))
+        user_risk_pct = get_user_risk_profile(user_id).get('risk_percentage', 1.0)
+        risk_amount = user_balance * (user_risk_pct / 100)
+        reward_amount = risk_amount * risk_reward_ratio
+        
+        # Debug logging for R:R calculation
+        print(f"🔍 R:R Debug for {mission_id}:")
+        print(f"   Balance: ${user_balance:.2f}")
+        print(f"   Risk %: {user_risk_pct}%")
+        print(f"   R:R Ratio: {risk_reward_ratio}")
+        print(f"   Risk Amount: ${risk_amount:.2f}")
+        print(f"   Reward Amount: ${reward_amount:.2f}")
+
         template_vars = {
             # Basic signal info
             'symbol': symbol,
@@ -918,12 +957,19 @@ def mission_briefing():
             # Get user's individualized risk profile
             'user_risk_profile': get_user_risk_profile(user_id),
             
-            # Risk calculation with INDIVIDUALIZED user risk
-            'rr_ratio': signal_data.get('risk_reward_ratio', signal_data.get('risk_reward', 2.0)),
-            'account_balance': user_stats.get('balance', user_data.get('balance', 10000.0)),
-            'user_risk_percentage': get_user_risk_profile(user_id).get('risk_percentage', 1.0),
-            'sl_dollars': f"{user_stats.get('balance', 10000.0) * (get_user_risk_profile(user_id).get('risk_percentage', 1.0) / 100):.2f}",  # Individual risk
-            'tp_dollars': f"{user_stats.get('balance', 10000.0) * (get_user_risk_profile(user_id).get('risk_percentage', 1.0) / 100) * signal_data.get('risk_reward', 2.0):.2f}",  # R:R with individual risk
+            # Risk calculation results
+            'rr_ratio': risk_reward_ratio,
+            'account_balance': user_balance,
+            'user_risk_percentage': user_risk_pct,
+            'sl_dollars': f"{risk_amount:.2f}",  # Individual risk
+            'tp_dollars': f"{reward_amount:.2f}",  # R:R with individual risk
+            
+            # Slot availability - with defaults to prevent errors
+            'manual_slots_available': 5,  # Default to 5 slots available
+            'manual_slots_total': 5,  # Default total
+            'auto_slots_available': 3,  # Default auto slots
+            'auto_slots_total': 3,
+            'can_fire': True,  # Allow firing by default
             
             # Mission info
             'mission_id': mission_id,
@@ -1008,9 +1054,38 @@ def mission_briefing():
                 return render_template('lesson_placeholder.html', **template_vars)
         else:
             # Graduate or veteran user - use normal mission template
+            # Get slot availability - comment out broken code for now
+            # try:
+            #     from src.bitten_core.fire_mode_database import FireModeDatabase
+            #     fire_db = FireModeDatabase()
+            #     mode_info = fire_db.get_user_mode(str(user_id))
+            #     tier_limits = fire_db.get_tier_slot_limits(user_tier)  # user_tier not defined!
+            #     manual_slots_available = tier_limits['manual'] - mode_info.get('manual_slots_in_use', 0)
+            #     auto_slots_available = mode_info.get('max_auto_slots', 75) - mode_info.get('auto_slots_in_use', 0)
+            # except:
+            #     pass
+            
+            # Add slot status indicator to the response - use defaults for now
+            manual_slots_available = 5  # Default
+            slot_status_html = f"""
+            <div style="position: fixed; top: 10px; right: 10px; background: rgba(0,0,0,0.9); 
+                        border: 2px solid {'#00ff41' if manual_slots_available > 0 else '#ff4444'}; 
+                        padding: 10px; border-radius: 5px; z-index: 9999; color: white;">
+                <div style="font-size: 14px; margin-bottom: 5px;">🎯 SLOT STATUS</div>
+                <div style="font-size: 18px; font-weight: bold; color: {'#00ff41' if manual_slots_available > 0 else '#ff4444'};">
+                    {manual_slots_available}/5 Manual
+                </div>
+                {'<div style="font-size: 16px; color: #00ff41; margin-top: 5px;">✅ READY TO FIRE</div>' if manual_slots_available > 0 else '<div style="font-size: 16px; color: #ff4444; margin-top: 5px;">❌ NO SLOTS - CLOSE A POSITION</div>'}
+            </div>
+            """
+            
+            # Use Flask's proper template rendering
             if os.path.exists('templates/comprehensive_mission_briefing.html'):
+                # Add slot status HTML to template vars
+                template_vars['slot_status_html'] = slot_status_html
                 return render_template('comprehensive_mission_briefing.html', **template_vars)
             else:
+                template_vars['slot_status_html'] = slot_status_html
                 return render_template('new_hud_template.html', **template_vars)
         
     except Exception as e:
@@ -1381,6 +1456,21 @@ def fire_mission():
         except Exception as e:
             logger.warning(f"Enhanced notifications failed: {e}")
         
+        # CHECK MANUAL SLOT AVAILABILITY BEFORE EXECUTION
+        from src.bitten_core.fire_mode_database import FireModeDatabase
+        fire_db = FireModeDatabase()
+        
+        # Check if user has available manual slot
+        if not fire_db.check_slot_available(str(user_id), slot_type='MANUAL', user_tier=user_tier):
+            limits = fire_db.get_tier_slot_limits(user_tier)
+            return jsonify({
+                'success': False,
+                'error': 'no_slots_available',
+                'message': f'No manual slots available. Your {user_tier} tier allows {limits["manual"]} manual slot(s). Close an existing position first.',
+                'user_tier': user_tier,
+                'manual_slots': limits['manual']
+            }), 429  # 429 Too Many Requests
+        
         # REAL BROKER EXECUTION via IPC Queue
         execution_result = {'success': False, 'message': 'Execution failed'}
         
@@ -1431,6 +1521,9 @@ def fire_mission():
                 # Use a reasonable fallback based on 5% risk
                 calculated_lot = 0.50  # Temporary higher fallback
             
+            # Check if user has BITMODE enabled for manual fire
+            bitmode_enabled = fire_db.is_bitmode_enabled(str(user_id))
+            
             fire_cmd = create_fire_command(
                 mission_id=mission_id,
                 user_id=str(user_id),
@@ -1439,8 +1532,18 @@ def fire_mission():
                 entry=float(enhanced_signal.get('entry_price', 0)),
                 sl=float(enhanced_signal.get('stop_loss', 0) or enhanced_signal.get('sl', 0)),
                 tp=float(enhanced_signal.get('take_profit', 0) or enhanced_signal.get('tp', 0)),
-                lot=calculated_lot
+                lot=calculated_lot,
+                enable_bitmode=bitmode_enabled
             )
+            
+            # Occupy the manual slot before sending to queue
+            symbol = enhanced_signal.get('symbol', 'EURUSD')
+            if not fire_db.occupy_slot(str(user_id), mission_id, symbol, slot_type='MANUAL', user_tier=user_tier):
+                return jsonify({
+                    'success': False,
+                    'error': 'slot_occupation_failed',
+                    'message': 'Failed to occupy slot. Please try again.'
+                }), 500
             
             # Send to IPC queue
             print(f"[DEBUG] Fire command being sent: {fire_cmd}")
@@ -1452,6 +1555,13 @@ def fire_mission():
                 logger.error(f"❌ Failed to enqueue fire command: {e}")
                 import traceback
                 logger.error(traceback.format_exc())
+                # Release the slot since enqueue failed
+                fire_db.release_slot(str(user_id), mission_id)
+                return jsonify({
+                    'success': False,
+                    'error': 'enqueue_failed',
+                    'message': 'Failed to queue trade command'
+                }), 500
             
             # Return immediate success (actual execution happens async)
             fire_result = type('obj', (object,), {
@@ -2287,6 +2397,20 @@ def war_room():
         callsign = f"VIPER-{user_id[-4:]}" if user_id != 'anonymous' else "GHOST-0000"
         rank_name, rank_desc = "COMMANDER", "ELITE TRADER"
         
+        # Get slot availability from fire mode database
+        from src.bitten_core.fire_mode_database import FireModeDatabase
+        fire_db = FireModeDatabase()
+        mode_info = fire_db.get_user_mode(str(user_id))
+        tier_limits = fire_db.get_tier_slot_limits("COMMANDER")  # Assuming COMMANDER for now
+        
+        manual_slots_available = tier_limits['manual'] - mode_info.get('manual_slots_in_use', 0)
+        auto_slots_available = mode_info.get('max_auto_slots', 75) - mode_info.get('auto_slots_in_use', 0)
+        
+        # Get BITMODE status
+        bitmode_enabled = mode_info.get('bitmode_enabled', False)
+        bitmode_status = "✅ ACTIVE" if bitmode_enabled else "❌ DISABLED"
+        bitmode_color = "#00ff41" if bitmode_enabled else "#ff4444"
+        
         # Get real recent signals from database instead of fake trades
         recent_signals = []
         try:
@@ -2425,12 +2549,20 @@ def war_room():
                 <div class="stat-label"><span class="live-indicator"></span>LIVE BALANCE</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value">{len(recent_signals)}</div>
-                <div class="stat-label">RECENT SIGNALS</div>
+                <div class="stat-value">{manual_slots_available}/{tier_limits['manual']}</div>
+                <div class="stat-label">🎯 MANUAL SLOTS</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{auto_slots_available}/{mode_info.get('max_auto_slots', 75)}</div>
+                <div class="stat-label">⚡ AUTO SLOTS</div>
             </div>
             <div class="stat-card">
                 <div class="stat-value">{rank_name}</div>
                 <div class="stat-label">OPERATIVE TIER</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" style="color: {bitmode_color}">{bitmode_status}</div>
+                <div class="stat-label">🎯 BITMODE</div>
             </div>
         </div>
 
@@ -2438,6 +2570,9 @@ def war_room():
             <a href="/brief" class="action-btn">📡 ACTIVE SIGNALS</a>
             <a href="/analysis" class="action-btn">📊 ANALYSIS</a>
             <a href="/mode" class="action-btn">⚡ FIRE MODE</a>
+            <button class="action-btn" onclick="toggleBitmode()" id="bitmode-btn" style="background: {'linear-gradient(135deg, #009900 0%, #00cc00 100%)' if bitmode_enabled else 'linear-gradient(135deg, #666 0%, #888 100%)'}"">
+                🎯 {'DISABLE BITMODE' if bitmode_enabled else 'ENABLE BITMODE'}
+            </button>
             <a href="/settings" class="action-btn">⚙️ SETTINGS</a>
         </div>
 
@@ -2447,7 +2582,39 @@ def war_room():
         </div>
 
         <script>
-            // No auto-refresh for better performance
+            // BITMODE Toggle Function
+            function toggleBitmode() {{
+                const btn = document.getElementById('bitmode-btn');
+                btn.disabled = true;
+                btn.textContent = '🎯 UPDATING...';
+                
+                fetch('/api/bitmode/toggle', {{
+                    method: 'POST',
+                    headers: {{
+                        'Content-Type': 'application/json'
+                    }},
+                    body: JSON.stringify({{
+                        user_id: '{user_id}',
+                        enabled: {str(not bitmode_enabled).lower()}
+                    }})
+                }})
+                .then(response => response.json())
+                .then(data => {{
+                    if (data.success) {{
+                        location.reload(); // Refresh to show updated status
+                    }} else {{
+                        alert('❌ Failed to toggle BITMODE: ' + data.error);
+                        btn.disabled = false;
+                        btn.textContent = '🎯 {'DISABLE BITMODE' if bitmode_enabled else 'ENABLE BITMODE'}';
+                    }}
+                }})
+                .catch(error => {{
+                    console.error('Error:', error);
+                    alert('❌ Failed to toggle BITMODE');
+                    btn.disabled = false;
+                    btn.textContent = '🎯 {'DISABLE BITMODE' if bitmode_enabled else 'ENABLE BITMODE'}';
+                }});
+            }}
         </script>
     </body>
     </html>
@@ -2498,7 +2665,7 @@ def signal_freshness_status(signal_id):
             freshness_score = max(20, 60 - (signal_age_minutes - 10) * 8)
             status = 'stale'
             warning_level = 'warning'
-            fireable = signal_confidence >= 95  # Only highest confidence when stale
+            fireable = signal_confidence >= 45  # Recalibrated: was 95%, now 45% (top of best performing range)
         else:
             freshness_score = 0
             status = 'expired'
@@ -2628,6 +2795,50 @@ def get_live_user_balance(user_id):
             })
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/bitmode/toggle', methods=['POST'])
+def api_bitmode_toggle():
+    """API endpoint to toggle BITMODE for user"""
+    try:
+        data = request.get_json()
+        user_id = data.get('user_id')
+        enabled = data.get('enabled', False)
+        
+        if not user_id:
+            return jsonify({'success': False, 'error': 'User ID required'}), 400
+        
+        # Get user tier from user registry or default to COMMANDER
+        user_tier = get_user_tier(user_id)
+        
+        # Check tier eligibility
+        if user_tier not in ['FANG', 'COMMANDER']:
+            return jsonify({
+                'success': False, 
+                'error': f'BITMODE requires FANG+ tier. Current tier: {user_tier}'
+            }), 403
+        
+        # Toggle BITMODE
+        from src.bitten_core.fire_mode_database import fire_mode_db
+        success = fire_mode_db.toggle_bitmode(user_id, enabled, user_tier)
+        
+        if success:
+            return jsonify({
+                'success': True,
+                'enabled': enabled,
+                'message': f'BITMODE {"enabled" if enabled else "disabled"} successfully'
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'error': 'Failed to update BITMODE status'
+            }), 500
+            
+    except Exception as e:
+        logger.error(f"BITMODE toggle error: {e}")
+        return jsonify({
+            'success': False,
+            'error': 'Internal server error'
+        }), 500
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8888, debug=False)

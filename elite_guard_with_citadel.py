@@ -21,12 +21,46 @@ from citadel_lite import CitadelProtection
 from src.bitten_core.news_api_client import NewsAPIClient
 import statistics
 
+# Add unified logging support
+import sys
+sys.path.insert(0, '/root/HydraX-v2')
+from comprehensive_tracking_layer import log_trade
+
 # Setup logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+# TRADING CONFIGURATION CONSTANTS
+class TradingConfig:
+    # Pip sizes for different symbol types - SCALPING OPTIMIZED
+    PIP_SIZES = {
+        'JPY': 0.01,
+        'GOLD': 0.1,  # XAUUSD - $0.10 = 1 pip (2510.50 to 2510.60 = 1 pip)
+        'SILVER': 0.001,  # XAGUSD - $0.001 = 1 pip (38.500 to 38.501 = 1 pip)
+        'DEFAULT': 0.0001
+    }
+    
+    # Minimum stop requirements to prevent broker errors - SCALPING OPTIMIZED
+    MIN_STOP_REQUIREMENTS = {
+        'USDMXN': 60, 'USDSEK': 20, 'USDCNH': 30,
+        'XAGUSD': 25, # Silver - Increased to 25 cents for better risk management
+        'XAUUSD': 30, # Gold - Increased to $30 move for safer stops
+        'USDNOK': 20, 'USDDKK': 20, 'USDTRY': 50, 'USDZAR': 30,
+        # JPY pairs need larger stops due to their pip value (0.01 = 1 pip)
+        'USDJPY': 15, 'EURJPY': 18, 'GBPJPY': 20, 'AUDJPY': 15, 'NZDJPY': 15
+    }
+    
+    # Session quality bonuses
+    SESSION_BONUSES = {
+        'LONDON': 10, 'OVERLAP': 8, 'NEWYORK': 6, 'ASIAN': 2
+    }
+    
+    # Risk management settings
+    DEFAULT_RISK_PERCENT = 0.03  # 3% risk per trade
+    DEFAULT_ACCOUNT_BALANCE = 1000.0
 
 @dataclass
 class PatternSignal:
@@ -255,6 +289,17 @@ class DynamicThresholdManager:
         }
     final_score: float = 0
 
+def get_pip_size(symbol: str) -> float:
+    """Centralized pip size calculation for all patterns"""
+    if 'JPY' in symbol:
+        return TradingConfig.PIP_SIZES['JPY']
+    elif symbol == 'XAUUSD':
+        return TradingConfig.PIP_SIZES['GOLD']
+    elif symbol == 'XAGUSD':
+        return TradingConfig.PIP_SIZES['SILVER']
+    else:
+        return TradingConfig.PIP_SIZES['DEFAULT']
+
 class EliteGuardBalanced:
     """Balanced signal generation for optimal user engagement"""
     
@@ -287,11 +332,14 @@ class EliteGuardBalanced:
             "EURUSD", "GBPUSD", "USDCHF", "USDJPY", "USDCAD", "AUDUSD", "NZDUSD",
             # Cross Pairs (7)
             "EURJPY", "GBPJPY", "EURGBP", "EURAUD", "GBPCAD", "AUDJPY", "NZDJPY",
-            # Additional & Exotics (3)
-            "USDCNH", "USDSEK", "USDMXN",
-            # Precious Metals (2)
-            "XAUUSD", "XAGUSD"
-            # Total: 19 pairs (NO CRYPTO)
+            # Additional & Exotics (1) 
+            "USDCNH",
+            # "USDSEK",  # DISABLED - High spread causes consistent losses
+            # "USDMXN",  # DISABLED - Wide spreads, unprofitable
+            # Precious Metals (2) - RE-ENABLED with fixed pip sizes
+            "XAUUSD",  # GOLD - Re-enabled with scalping pip config
+            "XAGUSD"   # SILVER - Re-enabled with corrected pip values and stops
+            # Total: 17 pairs
         ]
         
         # Load candle cache on startup (AFTER trading_pairs defined)
@@ -328,7 +376,7 @@ class EliteGuardBalanced:
         self.MIN_MOMENTUM = 30   # Require strong momentum
         self.MIN_VOLUME = 20     # Require decent volume
         self.MIN_TREND = 15      # Require some trend alignment
-        self.MIN_CONFIDENCE = 80 # TARGET: 80-85% confidence for quality signals
+        self.MIN_CONFIDENCE = float(os.getenv('MIN_CONFIDENCE', '70'))  # Lowered to 70% for more data collection
         self.COOLDOWN_MINUTES = 5 # Reduced cooldown to allow more signals (5-10/hr target)
         
         # Quality tiers for user display
@@ -427,11 +475,51 @@ class EliteGuardBalanced:
             self.publisher = self.context.socket(zmq.PUB)
             self.publisher.bind("tcp://*:5557")
             
-            logger.info("✅ ZMQ connections established (5560 for ticks, 5556 for OHLC, 5557 for signals)")
+            # Subscribe to Grokkeeper ML adjustments on port 5565
+            self.ml_subscriber = self.context.socket(zmq.SUB)
+            self.ml_subscriber.connect("tcp://127.0.0.1:5565")
+            self.ml_subscriber.setsockopt_string(zmq.SUBSCRIBE, "PATTERN_ADJUSTMENT")
+            self.ml_subscriber.setsockopt(zmq.RCVTIMEO, 100)  # Non-blocking
+            print("🤖 Connected to Grokkeeper ML feedback on port 5565")
+            
+            logger.info("✅ ZMQ connections established (5560 for ticks, 5556 for OHLC, 5557 for signals, 5565 for ML)")
             return True
         except Exception as e:
             logger.error(f"❌ ZMQ setup failed: {e}")
             return False
+    
+    def update_pattern_thresholds_from_ml(self):
+        """Check for ML threshold updates from Grokkeeper"""
+        try:
+            if not hasattr(self, 'ml_subscriber'):
+                return
+                
+            message = self.ml_subscriber.recv_string(zmq.NOBLOCK)
+            if message.startswith("PATTERN_ADJUSTMENT"):
+                adjustment = json.loads(message.split(" ", 1)[1])
+                pattern = adjustment['pattern']
+                new_threshold = adjustment['threshold']
+                win_rate = adjustment['win_rate']
+                
+                # Initialize pattern_thresholds if not exists
+                if not hasattr(self, 'pattern_thresholds'):
+                    self.pattern_thresholds = {
+                        'VCB_BREAKOUT': 65,
+                        'SWEEP_RETURN': 70,
+                        'MOMENTUM_BURST': 70,
+                        'LIQUIDITY_SWEEP_REVERSAL': 75,
+                        'ORDER_BLOCK_BOUNCE': 80,
+                        'FAIR_VALUE_GAP_FILL': 85
+                    }
+                
+                old_threshold = self.pattern_thresholds.get(pattern, 70)
+                self.pattern_thresholds[pattern] = new_threshold
+                print(f"🎯 ML ADJUSTMENT: {pattern} threshold {old_threshold}% → {new_threshold}% (WR: {win_rate:.1f}%)")
+                
+        except zmq.Again:
+            pass  # No message available
+        except Exception as e:
+            print(f"ML update error: {e}")
     
     def is_active_session(self) -> bool:
         """Check if we're in an active trading session"""
@@ -505,7 +593,7 @@ class EliteGuardBalanced:
                 spreads = [(t.get('ask', 0) - t.get('bid', 0)) for t in recent_ticks if t.get('ask') and t.get('bid')]
                 if spreads:
                     avg_spread = np.mean(spreads)
-                    pip_size = 0.01 if 'JPY' in symbol else 0.0001
+                    pip_size = get_pip_size(symbol)
                     spread_pips = avg_spread / pip_size
                     if spread_pips < 1.5:
                         spread_adjustment = 2  # Tight spread
@@ -522,7 +610,7 @@ class EliteGuardBalanced:
             recent = list(self.m1_data[symbol])[-5:]
             ranges = [(c['high'] - c['low']) for c in recent]
             avg_range = np.mean(ranges) if ranges else 0
-            pip_size = 0.01 if 'JPY' in symbol else 0.0001
+            pip_size = get_pip_size(symbol)
             range_pips = avg_range / pip_size
             if range_pips > 3:
                 activity_bonus = 4  # Very active
@@ -531,13 +619,35 @@ class EliteGuardBalanced:
             print(f"  📊 Activity: {range_pips:.1f}p range = +{activity_bonus}%")
         confidence += activity_bonus
         
-        # Ensure 75-82% range for quality signals (with 55% minimum)
+        # Apply recalibration based on actual performance data
         raw_confidence = confidence
-        final_confidence = min(95, max(55, confidence))  # Floor at 55%, cap at 95%
+        pre_calibration = min(95, max(55, confidence))  # Floor at 55%, cap at 95%
         
-        print(f"  🎯 RAW: {raw_confidence:.1f}% → FINAL: {final_confidence:.1f}% (Target: 75-82%)")
+        # RECALIBRATION: Fix overconfident 85%+ signals (actual 32.4% win rate)
+        if pre_calibration >= 85:
+            # 85%+ severely overconfident (32.4% actual vs 85%+ claimed)
+            final_confidence = 30 + (pre_calibration - 85) * 0.5
+            final_confidence = min(35, max(30, final_confidence))
+        elif pre_calibration >= 80:
+            # 80-84% is optimal range (43.4% actual) - slight adjustment
+            final_confidence = 40 + (pre_calibration - 80) * 1.25
+            final_confidence = min(45, max(40, final_confidence))
+        elif pre_calibration >= 75:
+            # 75-79% performs at 39.6%
+            final_confidence = 35 + (pre_calibration - 75) * 1.0
+            final_confidence = min(40, max(35, final_confidence))
+        elif pre_calibration >= 70:
+            # 70-74% performs at 37.4%
+            final_confidence = 32 + (pre_calibration - 70) * 1.25
+            final_confidence = min(37, max(32, final_confidence))
+        else:
+            # Below 70% - conservative mapping
+            final_confidence = max(20, pre_calibration * 0.5)
         
-        return final_confidence
+        print(f"  🎯 RAW: {raw_confidence:.1f}% → PRE: {pre_calibration:.1f}% → CALIBRATED: {final_confidence:.1f}%")
+        print(f"  🔧 RECALIBRATION: Based on actual win rate performance (80-84% = best at 43.4%)")
+        
+        return round(final_confidence, 1)
     
     def calculate_atr(self, symbol: str, period: int = 14) -> float:
         """Calculate Average True Range for R:R feasibility check"""
@@ -546,14 +656,14 @@ class EliteGuardBalanced:
             if 'JPY' in symbol:
                 return 0.5  # 50 pips default for JPY pairs
             elif symbol in ['XAUUSD']:
-                return 5.0  # 500 pips for gold
+                return 0.5  # 50 pips for gold (adjusted for 0.01 pip size)
             elif symbol in ['XAGUSD']:
                 return 0.05  # 5 pips for silver
             else:
                 return 0.001  # 10 pips default for majors
         
         candles = list(self.m5_data[symbol])[-period:]
-        pip_size = 0.01 if 'JPY' in symbol else 0.1 if symbol == 'XAUUSD' else 0.0001
+        pip_size = get_pip_size(symbol)
         
         true_ranges = []
         for i in range(1, len(candles)):
@@ -601,7 +711,7 @@ class EliteGuardBalanced:
             if recent_ticks:
                 spreads = [abs(t.get('ask', 0) - t.get('bid', 0)) for t in recent_ticks]
                 avg_spread = np.mean(spreads) if spreads else 0
-                pip_size = 0.01 if 'JPY' in signal.pair else 0.0001
+                pip_size = 0.01 if 'JPY' in signal.pair else 0.01 if signal.pair == 'XAUUSD' else 0.001 if signal.pair == 'XAGUSD' else 0.0001
                 spread_pips = avg_spread / pip_size
                 
                 if spread_pips < 2:
@@ -628,6 +738,8 @@ class EliteGuardBalanced:
                 pip_size = 0.01
             elif symbol == 'XAUUSD':
                 pip_size = 0.1
+            elif symbol == 'XAGUSD':
+                pip_size = 0.001  # Silver: 0.001 = 1 pip (38.500 to 38.501 = 1 pip)
             else:
                 pip_size = 0.0001
             
@@ -717,737 +829,715 @@ class EliteGuardBalanced:
             return 20  # Default volume for prime time
     
     def detect_liquidity_sweep_reversal(self, symbol: str) -> Optional[PatternSignal]:
-        """INDUSTRY STANDARD: Price sweeps >3 pips beyond recent high/low to grab liquidity, reverses with rejection candle"""
+        """
+        SCALPING LIQUIDITY SWEEP REVERSAL: Professional SMC pattern for <1hr scalps
+        Price sweeps liquidity pools beyond key levels, then reverses with institutional rejection
+        """
         try:
-            # Check if symbol exists in m5_data
-            if symbol not in self.m5_data:
-                print(f"🔍 LSR {symbol}: No M5 data available")
-                return None
-                
-            if len(self.m5_data[symbol]) < 3:  # Need at least 3 M5 candles
-                print(f"🔍 LSR {symbol}: Only {len(self.m5_data[symbol])} M5 candles, need 3+")
-                return None
-                
-            recent_candles = list(self.m5_data[symbol])[-3:]  # Just last 3 candles for industry standard
+            print(f"🔍 LSR {symbol}: SCALPING LIQUIDITY SWEEP ANALYSIS")
             
-            # Get pip size for this symbol
+            # Need sufficient data for proper sweep detection
+            if len(self.m5_data[symbol]) < 10:
+                print(f"🔍 LSR {symbol}: Need 10+ M5 candles, have {len(self.m5_data[symbol])}")
+                return None
+                
+            candles = list(self.m5_data[symbol])[-10:]  # Last 10 candles for context
+            current = candles[-1]
+            
+            # Professional pip size calculation
             if 'JPY' in symbol:
                 pip_size = 0.01
             elif symbol == 'XAUUSD':
-                pip_size = 0.1
+                pip_size = 0.1  # Gold: 0.1 = 1 pip
+            elif symbol == 'XAGUSD':
+                pip_size = 0.001  # Silver
             else:
                 pip_size = 0.0001
             
-            # INDUSTRY STANDARD: Find recent high/low from candles BEFORE the sweep
-            recent_high = max(c['high'] for c in recent_candles[:-1])
-            recent_low = min(c['low'] for c in recent_candles[:-1])
-            current_candle = recent_candles[-1]
+            print(f"🔍 LSR {symbol}: Using pip_size={pip_size}")
             
-            # Calculate sweep size in pips (how far beyond recent high/low)
-            bullish_sweep = (recent_low - current_candle['low']) / pip_size if current_candle['low'] < recent_low else 0
-            bearish_sweep = (current_candle['high'] - recent_high) / pip_size if current_candle['high'] > recent_high else 0
+            # STEP 1: IDENTIFY LIQUIDITY POOLS
+            # Look for recent swing highs/lows that form liquidity clusters
+            swing_lookback = 5  # 5 candles for swing identification
+            recent_highs = []
+            recent_lows = []
             
-            # INDUSTRY STANDARD: Minimum 3 pip sweep for major pairs (adjust for gold)
-            min_sweep_pips = 3.0  # Standard 3 pip minimum sweep
+            for i in range(swing_lookback, len(candles) - 1):  # Don't include current candle
+                candle = candles[i]
+                
+                # Check if it's a swing high (higher than surrounding candles)
+                is_swing_high = all(candle['high'] >= candles[j]['high'] 
+                                  for j in range(i-2, i+3) if j != i and 0 <= j < len(candles)-1)
+                if is_swing_high:
+                    recent_highs.append(candle['high'])
+                
+                # Check if it's a swing low
+                is_swing_low = all(candle['low'] <= candles[j]['low'] 
+                                 for j in range(i-2, i+3) if j != i and 0 <= j < len(candles)-1)
+                if is_swing_low:
+                    recent_lows.append(candle['low'])
+            
+            if not recent_highs and not recent_lows:
+                print(f"🔍 LSR {symbol}: No swing highs/lows found")
+                return None
+            
+            print(f"🔍 LSR {symbol}: Found {len(recent_highs)} swing highs, {len(recent_lows)} swing lows")
+            
+            # STEP 2: DETECT LIQUIDITY SWEEP
+            # Check if current candle swept above/below key levels
+            # TIGHTENED: Require minimum 3 pip sweep for real liquidity grab
+            sweep_threshold_pips = 3.0  # Raised from 2.5 to 3.0 (more selective)
             if symbol == 'XAUUSD':
-                min_sweep_pips = 30.0  # Gold needs bigger moves (30 pip = $3)
+                sweep_threshold_pips = 300  # Gold needs bigger moves (raised from 250)
+            elif 'JPY' in symbol:
+                sweep_threshold_pips = 4.0  # JPY pairs need more (raised from 3.0)
             
-            # Calculate rejection candle characteristics
-            candle_range = (current_candle['high'] - current_candle['low']) / pip_size
-            upper_wick = (current_candle['high'] - max(current_candle['open'], current_candle['close'])) / pip_size
-            lower_wick = (min(current_candle['open'], current_candle['close']) - current_candle['low']) / pip_size
+            bullish_sweep_strength = 0
+            bearish_sweep_strength = 0
+            swept_level = 0
             
-            # Debug logging with differences from old logic
-            print(f"🔍 LSR {symbol}: INDUSTRY STANDARD CHECK")
-            print(f"   Recent High={recent_high:.5f}, Low={recent_low:.5f}")
-            print(f"   Current: High={current_candle['high']:.5f}, Low={current_candle['low']:.5f}, Close={current_candle['close']:.5f}")
-            print(f"   Sweep: Bullish={bullish_sweep:.1f}p, Bearish={bearish_sweep:.1f}p (Min req: {min_sweep_pips}p)")
-            print(f"   Candle: Range={candle_range:.1f}p, Upper wick={upper_wick:.1f}p, Lower wick={lower_wick:.1f}p")
-            print(f"   OLD vs NEW: Was using ATR-based (1.5p), now fixed 3p standard")
+            # Check for bearish liquidity sweep (swept above recent high)
+            if recent_highs:
+                highest_high = max(recent_highs)
+                if current['high'] > highest_high:
+                    sweep_pips = (current['high'] - highest_high) / pip_size
+                    if sweep_pips >= sweep_threshold_pips:
+                        bearish_sweep_strength = sweep_pips
+                        swept_level = highest_high
+                        print(f"🔍 LSR {symbol}: BEARISH SWEEP! {sweep_pips:.1f}p above {highest_high:.5f}")
             
-            # BULLISH SWEEP: Price swept below low by >3 pips with rejection candle
-            if bullish_sweep >= min_sweep_pips:
-                # INDUSTRY STANDARD: Rejection = lower wick > 50% of candle range
-                rejection_ratio = lower_wick / candle_range if candle_range > 0 else 0
-                has_rejection = rejection_ratio > 0.5 and current_candle['close'] > recent_low
-                
-                print(f"🔍 LSR {symbol}: BULLISH SWEEP DETECTED! {bullish_sweep:.1f} pips")
-                print(f"   Rejection ratio: {rejection_ratio:.2%} (need >50%), Close above low: {current_candle['close'] > recent_low}")
-                
-                if has_rejection:  # REQUIRE rejection candle for quality
-                    # R:R FEASIBILITY CHECK
-                    atr = self.calculate_atr(symbol)
-                    entry = current_candle['close'] + pip_size
-                    sl_distance = abs(current_candle['low'] - entry) / pip_size
-                    tp_distance = sl_distance * 1.5  # Target 1.5 R:R minimum
-                    
-                    # Check if TP is within 2x ATR (feasible)
-                    rr_feasible = tp_distance <= 2 * atr
-                    actual_rr = tp_distance / sl_distance if sl_distance > 0 else 0
-                    
-                    if not rr_feasible:
-                        print(f"🚫 LSR {symbol} BUY: R:R not feasible - TP={tp_distance:.1f}p > 2xATR={2*atr:.1f}p")
-                        return None
-                    
-                    if actual_rr < 1.5:
-                        print(f"⚠️ LSR {symbol} BUY: R:R too low - {actual_rr:.2f} < 1.5 minimum")
-                        return None
-                    
-                    print(f"✅ LSR {symbol} BUY: R:R={actual_rr:.2f}, SL={sl_distance:.1f}p, TP={tp_distance:.1f}p, ATR={atr:.1f}p")
-                    
-                    # Calculate base quality from sweep size and rejection
-                    base_quality = 50  # Start at 50%
-                    base_quality += min(bullish_sweep - min_sweep_pips, 5) * 2  # +2% per extra pip (max +10%)
-                    base_quality += rejection_ratio * 10  # +10% for perfect rejection
-                    base_quality += min(actual_rr - 1.5, 0.5) * 10  # Bonus for R:R > 1.5
-                    
-                    # SMA TREND CHECK for better accuracy
-                    sma = self.calculate_sma(symbol, period=60)
-                    current_price = current_candle['close']
-                    trend_bonus = 0
-                    if current_price < sma:  # SELL signal below SMA is good
-                        trend_bonus = 10
-                    else:
-                        trend_bonus = -5  # Counter-trend penalty
-                    
-                    base_quality += trend_bonus
-                    print(f"🔍 LSR {symbol}: SMA={sma:.5f}, Price={current_price:.5f}, Trend Bonus={trend_bonus:+d}%")
-                    print(f"🔍 LSR {symbol}: Final quality = {base_quality:.1f}%")
-                    
-                    # Return signal with base quality
-                    return PatternSignal(
-                        pattern="LIQUIDITY_SWEEP_REVERSAL",
-                        direction="BUY",
-                        entry_price=entry,
-                        confidence=base_quality,
-                        timeframe="M5",
-                        pair=symbol,
-                        quality_score=base_quality
-                    )
+            # Check for bullish liquidity sweep (swept below recent low)  
+            if recent_lows:
+                lowest_low = min(recent_lows)
+                if current['low'] < lowest_low:
+                    sweep_pips = (lowest_low - current['low']) / pip_size
+                    if sweep_pips >= sweep_threshold_pips:
+                        bullish_sweep_strength = sweep_pips
+                        swept_level = lowest_low
+                        print(f"🔍 LSR {symbol}: BULLISH SWEEP! {sweep_pips:.1f}p below {lowest_low:.5f}")
             
-            # BEARISH SWEEP: Price swept above high by >3 pips with rejection candle
-            elif bearish_sweep >= min_sweep_pips:
-                # INDUSTRY STANDARD: Rejection = upper wick > 50% of candle range
-                rejection_ratio = upper_wick / candle_range if candle_range > 0 else 0
-                has_rejection = rejection_ratio > 0.5 and current_candle['close'] < recent_high
+            # STEP 3: REJECTION CANDLE ANALYSIS
+            candle_body = abs(current['close'] - current['open'])
+            candle_range = current['high'] - current['low']
+            upper_wick = current['high'] - max(current['open'], current['close'])
+            lower_wick = min(current['open'], current['close']) - current['low']
+            
+            body_ratio = candle_body / candle_range if candle_range > 0 else 0
+            upper_wick_ratio = upper_wick / candle_range if candle_range > 0 else 0
+            lower_wick_ratio = lower_wick / candle_range if candle_range > 0 else 0
+            
+            print(f"🔍 LSR {symbol}: Candle analysis:")
+            print(f"   Range: {candle_range/pip_size:.1f}p, Body: {body_ratio:.2%}")
+            print(f"   Upper wick: {upper_wick_ratio:.2%}, Lower wick: {lower_wick_ratio:.2%}")
+            
+            direction = None
+            confidence_score = 0
+            entry_price = 0
+            
+            # BEARISH SETUP: Swept highs, strong rejection downward
+            if bearish_sweep_strength > 0:
+                # TIGHTENED: Require stronger rejection (60% wick minimum)
+                has_rejection = (upper_wick_ratio > 0.6 and  # RAISED from 40% to 60% wick
+                               current['close'] < swept_level and  # Closed below swept level
+                               body_ratio < 0.3)  # ADDED: Small body requirement
                 
-                print(f"🔍 LSR {symbol}: BEARISH SWEEP DETECTED! {bearish_sweep:.1f} pips")
-                print(f"   Rejection ratio: {rejection_ratio:.2%} (need >50%), Close below high: {current_candle['close'] < recent_high}")
+                if has_rejection:
+                    direction = 'SELL'
+                    entry_price = current['close'] - pip_size  # Enter below close
+                    
+                    # Calculate scalping-focused confidence (55-90% range)
+                    base_confidence = 55.0
+                    
+                    # Sweep strength bonus (max +15)
+                    sweep_bonus = min(15, bearish_sweep_strength * 2)  # 2% per pip swept
+                    
+                    # Rejection quality bonus (max +12) 
+                    rejection_quality = upper_wick_ratio * 30  # Scale 40% wick = 12 points
+                    rejection_bonus = min(12, rejection_quality)
+                    
+                    # Close position bonus (max +8)
+                    close_below_swept = (swept_level - current['close']) / pip_size
+                    close_bonus = min(8, close_below_swept)
+                    
+                    # Volume confirmation (max +10) - TIGHTENED: Require 1.5x volume
+                    volume_ratio = current.get('volume', 1000) / max(1, sum(c.get('volume', 1000) for c in candles[-5:-1]) / 4)
+                    volume_bonus = min(10, (volume_ratio - 1.0) * 5) if volume_ratio >= 1.5 else 0  # RAISED from 1.2x to 1.5x
+                    
+                    confidence_score = base_confidence + sweep_bonus + rejection_bonus + close_bonus + volume_bonus
+                    confidence_score = min(90.0, max(60.0, confidence_score))
+                    
+                    print(f"🔍 LSR {symbol}: BEARISH CONFIDENCE BREAKDOWN:")
+                    print(f"   Base: {base_confidence:.1f}%")
+                    print(f"   Sweep: +{sweep_bonus:.1f}% ({bearish_sweep_strength:.1f}p)")
+                    print(f"   Rejection: +{rejection_bonus:.1f}% ({upper_wick_ratio:.1%} wick)")
+                    print(f"   Close position: +{close_bonus:.1f}% ({close_below_swept:.1f}p below)")
+                    print(f"   Volume: +{volume_bonus:.1f}% ({volume_ratio:.2f}x)")
+                    print(f"   FINAL: {confidence_score:.1f}%")
+            
+            # BULLISH SETUP: Swept lows, strong rejection upward
+            elif bullish_sweep_strength > 0:
+                # TIGHTENED: Require stronger rejection (60% wick minimum)
+                has_rejection = (lower_wick_ratio > 0.6 and  # RAISED from 40% to 60% wick
+                               current['close'] > swept_level and  # Closed above swept level
+                               body_ratio < 0.3)  # ADDED: Small body requirement
                 
-                if has_rejection:  # REQUIRE rejection candle for quality
-                    # R:R FEASIBILITY CHECK
-                    atr = self.calculate_atr(symbol)
-                    entry = current_candle['close'] - pip_size
-                    sl_distance = abs(current_candle['high'] - entry) / pip_size
-                    tp_distance = sl_distance * 1.5  # Target 1.5 R:R minimum
+                if has_rejection:
+                    direction = 'BUY'
+                    entry_price = current['close'] + pip_size  # Enter above close
                     
-                    # Check if TP is within 2x ATR (feasible)
-                    rr_feasible = tp_distance <= 2 * atr
-                    actual_rr = tp_distance / sl_distance if sl_distance > 0 else 0
+                    # Calculate scalping-focused confidence
+                    base_confidence = 55.0
                     
-                    if not rr_feasible:
-                        print(f"🚫 LSR {symbol} SELL: R:R not feasible - TP={tp_distance:.1f}p > 2xATR={2*atr:.1f}p")
-                        return None
+                    # Sweep strength bonus (max +15)
+                    sweep_bonus = min(15, bullish_sweep_strength * 2)
                     
-                    if actual_rr < 1.5:
-                        print(f"⚠️ LSR {symbol} SELL: R:R too low - {actual_rr:.2f} < 1.5 minimum")
-                        return None
+                    # Rejection quality bonus (max +12)
+                    rejection_quality = lower_wick_ratio * 30
+                    rejection_bonus = min(12, rejection_quality)
                     
-                    print(f"✅ LSR {symbol} SELL: R:R={actual_rr:.2f}, SL={sl_distance:.1f}p, TP={tp_distance:.1f}p, ATR={atr:.1f}p")
+                    # Close position bonus (max +8)  
+                    close_above_swept = (current['close'] - swept_level) / pip_size
+                    close_bonus = min(8, close_above_swept)
                     
-                    # Calculate base quality from sweep size and rejection
-                    base_quality = 50  # Start at 50%
-                    base_quality += min(bearish_sweep - min_sweep_pips, 5) * 2  # +2% per extra pip (max +10%)
-                    base_quality += rejection_ratio * 10  # +10% for perfect rejection
-                    base_quality += min(actual_rr - 1.5, 0.5) * 10  # Bonus for R:R > 1.5
+                    # Volume confirmation (max +10) - TIGHTENED: Require 1.5x volume
+                    volume_ratio = current.get('volume', 1000) / max(1, sum(c.get('volume', 1000) for c in candles[-5:-1]) / 4)
+                    volume_bonus = min(10, (volume_ratio - 1.0) * 5) if volume_ratio >= 1.5 else 0  # RAISED from 1.2x to 1.5x
                     
-                    # SMA TREND CHECK for better accuracy
-                    sma = self.calculate_sma(symbol, period=60)
-                    current_price = current_candle['close']
-                    trend_bonus = 0
-                    if current_price < sma:  # SELL signal below SMA is good
-                        trend_bonus = 10
-                    else:
-                        trend_bonus = -5  # Counter-trend penalty
+                    confidence_score = base_confidence + sweep_bonus + rejection_bonus + close_bonus + volume_bonus
+                    confidence_score = min(90.0, max(60.0, confidence_score))
                     
-                    base_quality += trend_bonus
-                    print(f"🔍 LSR {symbol}: SMA={sma:.5f}, Price={current_price:.5f}, Trend Bonus={trend_bonus:+d}%")
-                    print(f"🔍 LSR {symbol}: Final quality = {base_quality:.1f}%")
-                    
-                    # Return signal with base quality
-                    return PatternSignal(
-                        pattern="LIQUIDITY_SWEEP_REVERSAL",
-                        direction="SELL",
-                        entry_price=entry,
-                        confidence=base_quality,
-                        timeframe="M5",
-                        pair=symbol,
-                        quality_score=base_quality
-                    )
+                    print(f"🔍 LSR {symbol}: BULLISH CONFIDENCE BREAKDOWN:")
+                    print(f"   Base: {base_confidence:.1f}%")
+                    print(f"   Sweep: +{sweep_bonus:.1f}% ({bullish_sweep_strength:.1f}p)")
+                    print(f"   Rejection: +{rejection_bonus:.1f}% ({lower_wick_ratio:.1%} wick)")
+                    print(f"   Close position: +{close_bonus:.1f}% ({close_above_swept:.1f}p above)")
+                    print(f"   Volume: +{volume_bonus:.1f}% ({volume_ratio:.2f}x)")
+                    print(f"   FINAL: {confidence_score:.1f}%")
+            
+            if not direction:
+                print(f"🔍 LSR {symbol}: No quality sweep+rejection setup found")
+                return None
+            
+            # STEP 4: SCALPING VIABILITY CHECK
+            # Ensure tight stops and reasonable targets for <1hr scalps
+            if direction == 'SELL':
+                sl_distance = (current['high'] - entry_price) / pip_size
+            else:
+                sl_distance = (entry_price - current['low']) / pip_size
+            
+            # Scalping-appropriate stop distances (tight for quick moves)
+            max_sl_pips = {'EURUSD': 12, 'GBPUSD': 15, 'USDJPY': 15, 'XAUUSD': 400}.get(symbol, 12)
+            
+            if sl_distance > max_sl_pips:
+                print(f"🔍 LSR {symbol}: Stop too wide for scalping ({sl_distance:.1f}p > {max_sl_pips}p)")
+                return None
+                
+            # Target 1.5-2.0 R:R for scalping
+            target_rr = 1.75  # Sweet spot for scalping
+            tp_distance = sl_distance * target_rr
+            
+            print(f"✅ LSR {symbol}: SCALPING SETUP CONFIRMED!")
+            print(f"   Direction: {direction}")
+            print(f"   Entry: {entry_price:.5f}")
+            print(f"   SL Distance: {sl_distance:.1f}p")
+            print(f"   TP Distance: {tp_distance:.1f}p (R:R {target_rr})")
+            print(f"   Confidence: {confidence_score:.1f}%")
+            print(f"   Expected duration: 15-45 minutes")
+            
+            return PatternSignal(
+                pattern="LIQUIDITY_SWEEP_REVERSAL",
+                direction=direction,
+                entry_price=entry_price,
+                confidence=confidence_score,
+                timeframe="M5",
+                pair=symbol,
+                quality_score=confidence_score
+            )
+            
         except Exception as e:
-            logger.debug(f"Error in liquidity sweep: {e}")
-        
-        return None
+            print(f"❌ LSR {symbol}: Error in detection: {str(e)}")
+            logger.exception(f"LSR pattern detection error for {symbol}")
+            traceback.print_exc()
+            return None
     
     def detect_order_block_bounce(self, symbol: str) -> Optional[PatternSignal]:
-        """INDUSTRY STANDARD: Price bounces from institutional order blocks (10-candle accumulation zones, bounce within 25% of range)"""
+        """
+        SCALPING ORDER BLOCK BOUNCE: Price bounces off institutional accumulation zones
+        Simplified for <1hr scalps with tight stops and quick targets
+        """
         try:
-            print(f"🔍 OBB {symbol}: INDUSTRY STANDARD CHECK")
-            if len(self.m5_data[symbol]) < 10:  # INDUSTRY STANDARD: Need 10 candles
-                print(f"🔍 OBB {symbol}: Only {len(self.m5_data[symbol])} M5 candles, need 10+")
+            print(f"🔍 OBB {symbol}: SCALPING ORDER BLOCK CHECK")
+            
+            if len(self.m5_data[symbol]) < 8:
                 return None
                 
-            candles = list(self.m5_data[symbol])[-10:]  # INDUSTRY STANDARD: Last 10 candles for order blocks
-            
-            # Get pip size for this symbol
-            if 'JPY' in symbol:
-                pip_size = 0.01
-            elif symbol == 'XAUUSD':
-                pip_size = 0.1
-            else:
-                pip_size = 0.0001
-            
-            # INDUSTRY STANDARD: Find order block zones from past accumulation
-            recent_low = min(c['low'] for c in candles[:-1])  # Exclude current candle
-            recent_high = max(c['high'] for c in candles[:-1])
-            block_range = recent_high - recent_low
-            current_candle = candles[-1]
-            
-            # Calculate body and range for current candle
-            candle_body = abs(current_candle['close'] - current_candle['open'])
-            candle_range = current_candle['high'] - current_candle['low']
-            body_ratio = candle_body / candle_range if candle_range > 0 else 0
-            
-            # INDUSTRY STANDARD: Bounce must be within 25% of order block range
-            distance_from_low = (current_candle['low'] - recent_low) / block_range if block_range > 0 else 0
-            distance_from_high = (recent_high - current_candle['high']) / block_range if block_range > 0 else 0
-            
-            # Debug logging with differences from old logic
-            print(f"   Order Block: High={recent_high:.5f}, Low={recent_low:.5f}, Range={block_range/pip_size:.1f}p")
-            print(f"   Current: High={current_candle['high']:.5f}, Low={current_candle['low']:.5f}, Close={current_candle['close']:.5f}")
-            print(f"   Distance from low: {distance_from_low:.2%}, Distance from high: {distance_from_high:.2%}")
-            print(f"   Body ratio: {body_ratio:.2%} (strong body = high ratio)")
-            print(f"   OLD vs NEW: Was using 15 candles with 30% body req, now 10 candles with 25% bounce zone")
-            
-            # BULLISH BOUNCE: Price touches within 25% of recent low and bounces
-            bull_bounce = (0 <= distance_from_low <= 0.25) and current_candle['close'] > recent_low + (block_range * 0.1)
-            
-            # BEARISH BOUNCE: Price touches within 25% of recent high and bounces
-            bear_bounce = (0 <= distance_from_high <= 0.25) and current_candle['close'] < recent_high - (block_range * 0.1)
-            
-            direction = 'BUY' if bull_bounce else 'SELL' if bear_bounce else None
-            
-            if direction:
-                # Calculate quality based on body strength and bounce precision
-                base_quality = 50  # Start at 50%
-                base_quality += body_ratio * 30  # Up to +30% for strong body (full body candle)
-                
-                # Add precision bonus (closer to exact support/resistance = better)
-                if direction == 'BUY':
-                    precision = 1 - (distance_from_low / 0.25)  # Closer to low = higher precision
-                else:
-                    precision = 1 - (distance_from_high / 0.25)  # Closer to high = higher precision
-                base_quality += precision * 10  # Up to +10% for precise bounce
-                
-                base_quality = min(base_quality, 80)  # Cap at 80%
-                
-                # R:R FEASIBILITY CHECK
-                atr = self.calculate_atr(symbol)
-                entry = current_candle['close'] + pip_size if direction == 'BUY' else current_candle['close'] - pip_size
-                
-                if direction == 'BUY':
-                    sl_distance = abs(recent_low - entry) / pip_size
-                else:
-                    sl_distance = abs(recent_high - entry) / pip_size
-                
-                tp_distance = sl_distance * 1.5  # Target 1.5 R:R minimum
-                
-                # Check if TP is within 2x ATR (feasible)
-                rr_feasible = tp_distance <= 2 * atr
-                actual_rr = tp_distance / sl_distance if sl_distance > 0 else 0
-                
-                if not rr_feasible:
-                    print(f"🚫 OBB {symbol} {direction}: R:R not feasible - TP={tp_distance:.1f}p > 2xATR={2*atr:.1f}p")
-                    return None
-                
-                if actual_rr < 1.5:
-                    print(f"⚠️ OBB {symbol} {direction}: R:R too low - {actual_rr:.2f} < 1.5 minimum")
-                    return None
-                
-                print(f"✅ OBB {symbol} {direction}: R:R={actual_rr:.2f}, SL={sl_distance:.1f}p, TP={tp_distance:.1f}p, ATR={atr:.1f}p")
-                
-                # Add R:R bonus to quality
-                base_quality += min(actual_rr - 1.5, 0.5) * 10  # Bonus for R:R > 1.5
-                base_quality = min(base_quality, 85)  # Cap at 85%
-                
-                # SMA TREND CHECK for better accuracy
-                sma = self.calculate_sma(symbol, period=60)
-                current_price = current_candle['close']
-                trend_bonus = 0
-                if direction == 'BUY' and current_price > sma:
-                    trend_bonus = 10  # Strong trend alignment
-                elif direction == 'SELL' and current_price < sma:
-                    trend_bonus = 10  # Strong trend alignment
-                elif sma > 0:
-                    trend_bonus = -5  # Counter-trend penalty
-                
-                base_quality += trend_bonus
-                print(f"🔍 OBB {symbol}: SMA={sma:.5f}, Price={current_price:.5f}, Trend Bonus={trend_bonus:+d}%")
-                print(f"🔍 OBB {symbol}: {direction} BOUNCE DETECTED!")
-                print(f"   Final quality = {base_quality:.1f}%")
-                print(f"   Entry: {entry:.5f}")
-                
-                # Return signal with base quality
-                return PatternSignal(
-                    pattern="ORDER_BLOCK_BOUNCE",
-                    direction=direction,
-                    entry_price=entry,
-                    confidence=base_quality,
-                    timeframe="M5",
-                    pair=symbol,
-                    quality_score=base_quality
-                )
-                            
-        except Exception as e:
-            logger.debug(f"Error in order block: {e}")
-        
-        return None
-    
-    def detect_sweep_and_return(self, symbol: str) -> Optional[PatternSignal]:
-        """INDUSTRY STANDARD: Sweep >3 pips beyond level, return with >50% wick of candle range"""
-        try:
-            print(f"🔍 SRL {symbol}: INDUSTRY STANDARD CHECK")
-            if len(self.m5_data[symbol]) < 3:  # INDUSTRY: Need 3 candles minimum
-                print(f"🔍 SRL {symbol}: Only {len(self.m5_data[symbol])} M5 candles, need 3+")
-                return None
-                
-            candles = list(self.m5_data[symbol])[-3:]  # INDUSTRY: Last 3 candles for recent action
-            
-            # Get pip size for this symbol
-            if 'JPY' in symbol:
-                pip_size = 0.01
-            elif symbol == 'XAUUSD':
-                pip_size = 0.1
-            else:
-                pip_size = 0.0001
-            
-            # Find recent swing levels (from first 2 candles)
-            recent_high = max(candles[0]['high'], candles[1]['high'])
-            recent_low = min(candles[0]['low'], candles[1]['low'])
-            
-            # Current candle (the sweep candle)
+            candles = list(self.m5_data[symbol])[-8:]
             current = candles[-1]
-            candle_range = current['high'] - current['low']
             
-            # INDUSTRY STANDARD: Check for BULLISH sweep & return
-            bull_sweep_distance = (recent_low - current['low']) / pip_size
-            if bull_sweep_distance > 3.0:  # INDUSTRY: >3 pip sweep below level
-                # Calculate wick ratio (lower wick for bullish)
-                lower_wick = current['low'] - min(current['open'], current['close'])
-                wick_ratio = lower_wick / candle_range if candle_range > 0 else 0
-                
-                bull_return = current['close'] > recent_low and wick_ratio > 0.5  # INDUSTRY: >50% wick
-                
-                if bull_return:
-                    # R:R FEASIBILITY CHECK
-                    atr = self.calculate_atr(symbol)
-                    entry = current['close']
-                    sl_distance = abs(current['low'] - entry) / pip_size
-                    tp_distance = sl_distance * 1.5  # Target 1.5 R:R minimum
-                    
-                    # Check if TP is within 2x ATR (feasible)
-                    rr_feasible = tp_distance <= 2 * atr
-                    actual_rr = tp_distance / sl_distance if sl_distance > 0 else 0
-                    
-                    if not rr_feasible:
-                        print(f"🚫 SRL {symbol} BUY: R:R not feasible - TP={tp_distance:.1f}p > 2xATR={2*atr:.1f}p")
-                        return None
-                    
-                    if actual_rr < 1.5:
-                        print(f"⚠️ SRL {symbol} BUY: R:R too low - {actual_rr:.2f} < 1.5 minimum")
-                        return None
-                    
-                    print(f"✅ SRL {symbol} BUY: R:R={actual_rr:.2f}, SL={sl_distance:.1f}p, TP={tp_distance:.1f}p, ATR={atr:.1f}p")
-                    
-                    base_quality = 50 + (wick_ratio * 100) - 50  # 50-100% based on wick
-                    base_quality += min(actual_rr - 1.5, 0.5) * 10  # Bonus for R:R > 1.5
-                    
-                    print(f"🔍 SRL {symbol}: BULLISH SWEEP DETECTED!")
-                    print(f"   INDUSTRY STANDARD MET:")
-                    print(f"   - Sweep distance: {bull_sweep_distance:.1f} pips (>3.0 required) ✅")
-                    print(f"   - Wick ratio: {wick_ratio:.2%} (>50% required) ✅")
-                    print(f"   - Return above level: {current['close']:.5f} > {recent_low:.5f} ✅")
-                    print(f"   - R:R feasible: {actual_rr:.2f} ✅")
-                    print(f"   Quality Score: {base_quality:.1f}%")
-                    
-                    signal = PatternSignal(
-                        pattern="SWEEP_AND_RETURN",
-                        direction="BUY",
-                        entry_price=entry,
-                        confidence=base_quality,
-                        timeframe="M5",
-                        pair=symbol,
-                        quality_score=base_quality,
-                        momentum_score=0,  # Not used in industry standard
-                        volume_quality=0   # Not used in industry standard
-                    )
-                    return signal
+            # Professional pip size
+            pip_size = get_pip_size(symbol)
             
-            # INDUSTRY STANDARD: Check for BEARISH sweep & return
-            bear_sweep_distance = (current['high'] - recent_high) / pip_size
-            if bear_sweep_distance > 3.0:  # INDUSTRY: >3 pip sweep above level
-                # Calculate wick ratio (upper wick for bearish)
-                upper_wick = current['high'] - max(current['open'], current['close'])
-                wick_ratio = upper_wick / candle_range if candle_range > 0 else 0
+            # STEP 1: IDENTIFY ORDER BLOCK ZONES
+            # Look for recent consolidation followed by strong move
+            for i in range(2, 6):  # Check last 2-5 candles ago
+                test_candle = candles[-i]
                 
-                bear_return = current['close'] < recent_high and wick_ratio > 0.5  # INDUSTRY: >50% wick
+                # Strong move candle = range > 8 pips, good volume
+                candle_range = (test_candle['high'] - test_candle['low']) / pip_size
+                if candle_range < 8:  # Need significant move
+                    continue
                 
-                if bear_return:
-                    # R:R FEASIBILITY CHECK
-                    atr = self.calculate_atr(symbol)
-                    entry = current['close']
-                    sl_distance = abs(current['high'] - entry) / pip_size
-                    tp_distance = sl_distance * 1.5  # Target 1.5 R:R minimum
-                    
-                    # Check if TP is within 2x ATR (feasible)
-                    rr_feasible = tp_distance <= 2 * atr
-                    actual_rr = tp_distance / sl_distance if sl_distance > 0 else 0
-                    
-                    if not rr_feasible:
-                        print(f"🚫 SRL {symbol} SELL: R:R not feasible - TP={tp_distance:.1f}p > 2xATR={2*atr:.1f}p")
-                        return None
-                    
-                    if actual_rr < 1.5:
-                        print(f"⚠️ SRL {symbol} SELL: R:R too low - {actual_rr:.2f} < 1.5 minimum")
-                        return None
-                    
-                    print(f"✅ SRL {symbol} SELL: R:R={actual_rr:.2f}, SL={sl_distance:.1f}p, TP={tp_distance:.1f}p, ATR={atr:.1f}p")
-                    
-                    base_quality = 50 + (wick_ratio * 100) - 50  # 50-100% based on wick
-                    base_quality += min(actual_rr - 1.5, 0.5) * 10  # Bonus for R:R > 1.5
-                    
-                    print(f"🔍 SRL {symbol}: BEARISH SWEEP DETECTED!")
-                    print(f"   INDUSTRY STANDARD MET:")
-                    print(f"   - Sweep distance: {bear_sweep_distance:.1f} pips (>3.0 required) ✅")
-                    print(f"   - Wick ratio: {wick_ratio:.2%} (>50% required) ✅")
-                    print(f"   - Return below level: {current['close']:.5f} < {recent_high:.5f} ✅")
-                    print(f"   - R:R feasible: {actual_rr:.2f} ✅")
-                    print(f"   Quality Score: {base_quality:.1f}%")
-                    
-                    signal = PatternSignal(
-                        pattern="SWEEP_AND_RETURN",
-                        direction="SELL",
-                        entry_price=entry,
-                        confidence=base_quality,
-                        timeframe="M5",
-                        pair=symbol,
-                        quality_score=base_quality,
-                        momentum_score=0,  # Not used in industry standard
-                        volume_quality=0   # Not used in industry standard
-                    )
-                    return signal
+                # Order block zone = body of the strong move candle
+                ob_high = max(test_candle['open'], test_candle['close'])
+                ob_low = min(test_candle['open'], test_candle['close'])
+                ob_mid = (ob_high + ob_low) / 2
+                
+                # STEP 2: CHECK FOR BOUNCE SETUP
+                # Price should approach and bounce off order block
+                
+                # For BULLISH order block (price bounces UP from support)
+                if test_candle['close'] > test_candle['open']:  # Bullish OB
+                    # Current price near/in the order block?
+                    if ob_low <= current['low'] <= ob_high:
+                        # Bounce confirmation: close above OB mid
+                        if current['close'] > ob_mid:
+                            # Calculate scalping confidence
+                            base_conf = 65.0
+                            
+                            # Proximity bonus (closer to OB = better)
+                            distance_pips = abs(current['close'] - ob_mid) / pip_size
+                            proximity_bonus = max(0, 10 - distance_pips)  # Max +10
+                            
+                            # Volume bonus
+                            test_volume = test_candle.get('volume', 1000)
+                            if test_volume == 0:
+                                test_volume = 1000  # Use default if zero
+                            volume_ratio = current.get('volume', 1000) / test_volume
+                            volume_bonus = min(8, volume_ratio * 4) if volume_ratio >= 1.0 else 0
+                            
+                            # Session bonus
+                            session = self.get_current_session()
+                            session_bonus = {'LONDON': 7, 'OVERLAP': 5, 'NEWYORK': 3}.get(session, 0)
+                            
+                            confidence = base_conf + proximity_bonus + volume_bonus + session_bonus
+                            confidence = min(85.0, max(65.0, confidence))
+                            
+                            # Scalping stop: below order block
+                            entry = current['close'] + pip_size
+                            sl_distance = (entry - ob_low) / pip_size
+                            
+                            # Keep stops tight for scalping
+                            if sl_distance <= 15:  # Max 15 pip stop
+                                print(f"✅ OBB {symbol}: BULLISH BOUNCE - Conf:{confidence:.1f}%, SL:{sl_distance:.1f}p")
+                                return PatternSignal(
+                                    pattern="ORDER_BLOCK_BOUNCE",
+                                    direction="BUY",
+                                    entry_price=entry,
+                                    confidence=confidence,
+                                    timeframe="M5",
+                                    pair=symbol,
+                                    quality_score=confidence
+                                )
+                
+                # For BEARISH order block (price bounces DOWN from resistance)
+                elif test_candle['close'] < test_candle['open']:  # Bearish OB
+                    # Current price near/in the order block?
+                    if ob_low <= current['high'] <= ob_high:
+                        # Bounce confirmation: close below OB mid
+                        if current['close'] < ob_mid:
+                            # Calculate confidence
+                            base_conf = 65.0
+                            
+                            distance_pips = abs(current['close'] - ob_mid) / pip_size
+                            proximity_bonus = max(0, 10 - distance_pips)
+                            
+                            test_volume = test_candle.get('volume', 1000)
+                            if test_volume == 0:
+                                test_volume = 1000  # Use default if zero
+                            volume_ratio = current.get('volume', 1000) / test_volume
+                            volume_bonus = min(8, volume_ratio * 4) if volume_ratio >= 1.0 else 0
+                            
+                            session = self.get_current_session()
+                            session_bonus = {'LONDON': 7, 'OVERLAP': 5, 'NEWYORK': 3}.get(session, 0)
+                            
+                            confidence = base_conf + proximity_bonus + volume_bonus + session_bonus
+                            confidence = min(85.0, max(65.0, confidence))
+                            
+                            # Scalping stop: above order block
+                            entry = current['close'] - pip_size
+                            sl_distance = (ob_high - entry) / pip_size
+                            
+                            if sl_distance <= 15:  # Max 15 pip stop
+                                print(f"✅ OBB {symbol}: BEARISH BOUNCE - Conf:{confidence:.1f}%, SL:{sl_distance:.1f}p")
+                                return PatternSignal(
+                                    pattern="ORDER_BLOCK_BOUNCE",
+                                    direction="SELL",
+                                    entry_price=entry,
+                                    confidence=confidence,
+                                    timeframe="M5",
+                                    pair=symbol,
+                                    quality_score=confidence
+                                )
             
-            # Debug when no pattern found
-            print(f"🔍 SRL {symbol}: No sweep detected")
-            print(f"   Bull sweep: {bull_sweep_distance:.1f} pips (need >3.0)")
-            print(f"   Bear sweep: {bear_sweep_distance:.1f} pips (need >3.0)")
-            print(f"   Recent High: {recent_high:.5f}, Low: {recent_low:.5f}")
-            print(f"   Current: High={current['high']:.5f}, Low={current['low']:.5f}, Close={current['close']:.5f}")
-                        
+            return None
+            
         except Exception as e:
-            print(f"🔍 SRL {symbol}: Error - {e}")
-            logger.debug(f"Error in SRL detection: {e}")
-        
-        return None
+            print(f"❌ OBB {symbol}: Error - {str(e)}")
+            logger.exception(f"Order Block Bounce pattern detection error for {symbol}")
+            return None
+    def detect_sweep_and_return(self, symbol: str) -> Optional[PatternSignal]:
+        """
+        SCALPING SWEEP & RETURN: Stop hunt reversals for quick scalps
+        Price sweeps stops, fails, returns to key level for scalping entry
+        """
+        try:
+            if len(self.m5_data[symbol]) < 6:
+                return None
+                
+            candles = list(self.m5_data[symbol])[-6:]
+            current = candles[-1]
+            
+            # Pip size - using centralized calculation
+            pip_size = get_pip_size(symbol)
+            
+            # STEP 1: Find recent key level (high/low from 3-5 candles ago)
+            key_levels = []
+            for i in range(2, 5):
+                if i >= len(candles) - 1:
+                    continue
+                candle = candles[-i]
+                key_levels.append(('high', candle['high']))
+                key_levels.append(('low', candle['low']))
+            
+            # STEP 2: Check for sweep and return pattern
+            for level_type, level_price in key_levels:
+                if level_type == 'high':
+                    # Bearish sweep & return: price swept above high, now returning down
+                    sweep_distance = (current['high'] - level_price) / pip_size
+                    if sweep_distance >= 2.0:  # At least 2 pip sweep
+                        # Return check: current close below the swept level
+                        if current['close'] < level_price:
+                            return_distance = (level_price - current['close']) / pip_size
+                            if return_distance >= 1.0:  # Returned at least 1 pip
+                                # Calculate confidence for SELL signal
+                                base_conf = 70.0
+                                sweep_bonus = min(10, sweep_distance)  # More sweep = better
+                                return_bonus = min(8, return_distance)  # More return = better
+                                confidence = base_conf + sweep_bonus + return_bonus
+                                confidence = min(88.0, confidence)
+                                
+                                entry = current['close'] - pip_size
+                                print(f"✅ SRL {symbol}: BEARISH SWEEP&RETURN - Conf:{confidence:.1f}%")
+                                return PatternSignal(
+                                    pattern="SWEEP_RETURN",
+                                    direction="SELL",
+                                    entry_price=entry,
+                                    confidence=confidence,
+                                    timeframe="M5",
+                                    pair=symbol,
+                                    quality_score=confidence
+                                )
+                
+                elif level_type == 'low':
+                    # Bullish sweep & return: price swept below low, now returning up
+                    sweep_distance = (level_price - current['low']) / pip_size
+                    if sweep_distance >= 2.0:
+                        # Return check: current close above the swept level
+                        if current['close'] > level_price:
+                            return_distance = (current['close'] - level_price) / pip_size
+                            if return_distance >= 1.0:
+                                # Calculate confidence for BUY signal
+                                base_conf = 70.0
+                                sweep_bonus = min(10, sweep_distance)
+                                return_bonus = min(8, return_distance)
+                                confidence = base_conf + sweep_bonus + return_bonus
+                                confidence = min(88.0, confidence)
+                                
+                                entry = current['close'] + pip_size
+                                print(f"✅ SRL {symbol}: BULLISH SWEEP&RETURN - Conf:{confidence:.1f}%")
+                                return PatternSignal(
+                                    pattern="SWEEP_RETURN",
+                                    direction="BUY",
+                                    entry_price=entry,
+                                    confidence=confidence,
+                                    timeframe="M5",
+                                    pair=symbol,
+                                    quality_score=confidence
+                                )
+            
+            return None
+            
+        except Exception as e:
+            print(f"❌ SRL {symbol}: Error - {str(e)}")
+            logger.exception(f"Sweep & Return pattern detection error for {symbol}")
+            return None
     
     def detect_vcb_breakout(self, symbol: str) -> Optional[PatternSignal]:
-        """INDUSTRY STANDARD: Tight ATR compression <0.7 over 10 candles, breakout with >1.5x volume"""
+        """
+        PROFESSIONAL VCB BREAKOUT: Volatility Compression Breakout with institutional logic
+        Uses true ATR compression analysis, volume confirmation, and multi-timeframe validation
+        """
         try:
-            print(f"🔍 VCB {symbol}: INDUSTRY STANDARD CHECK")
-            if len(self.m5_data[symbol]) < 10:  # INDUSTRY STANDARD: Need 10 candles
-                print(f"🔍 VCB {symbol}: Only {len(self.m5_data[symbol])} M5 candles, need 10+")
+            print(f"🔍 VCB {symbol}: PROFESSIONAL VCB ANALYSIS")
+            
+            # Need sufficient candles for proper ATR and compression analysis
+            if len(self.m5_data[symbol]) < 20:
+                print(f"🔍 VCB {symbol}: Need 20+ M5 candles, have {len(self.m5_data[symbol])}")
                 return None
                 
-            candles = list(self.m5_data[symbol])[-10:]  # INDUSTRY STANDARD: Last 10 candles
+            candles = list(self.m5_data[symbol])[-20:]
+            current = candles[-1]
             
-            # Get pip size for this symbol
+            # Professional pip size calculation
             if 'JPY' in symbol:
                 pip_size = 0.01
             elif symbol == 'XAUUSD':
-                pip_size = 0.1
+                pip_size = 0.1  # Gold: 0.1 = 1 pip
+            elif symbol == 'XAGUSD':
+                pip_size = 0.001  # Silver: 0.001 = 1 pip
             else:
                 pip_size = 0.0001
             
-            # INDUSTRY STANDARD: Calculate ATR compression in pips
-            atr_sum = 0
-            for c in candles:
-                atr_sum += (c['high'] - c['low'])
-            atr = (atr_sum / len(candles)) / pip_size  # Average range in pips
+            print(f"🔍 VCB {symbol}: Using pip_size={pip_size}")
             
-            # INDUSTRY STANDARD: Check if ATR < 0.7 pips (tight compression)
-            # For XAUUSD, use 7 pips instead of 0.7
-            compression_threshold = 7.0 if symbol == 'XAUUSD' else 0.7
-            compression = atr < compression_threshold
-            
-            # Calculate volume ratio for current candle vs average
-            volumes = [c.get('tick_volume', 0) for c in candles[:-1]]
-            avg_volume = sum(volumes) / len(volumes) if volumes else 1
-            current_volume = candles[-1].get('tick_volume', 0)
-            volume_ratio = current_volume / avg_volume if avg_volume > 0 else 0
-            
-            # Check for breakout above/below recent range
-            recent_high = max(c['high'] for c in candles[:-1])
-            recent_low = min(c['low'] for c in candles[:-1])
-            current_candle = candles[-1]
-            
-            breakout_up = current_candle['close'] > recent_high
-            breakout_down = current_candle['close'] < recent_low
-            volume_surge = volume_ratio > 1.5  # INDUSTRY STANDARD: 1.5x volume
-            
-            # Debug logging with differences from old logic
-            print(f"   ATR: {atr:.2f} pips (need <{compression_threshold} for compression)")
-            print(f"   Compression: {'YES' if compression else 'NO'}")
-            print(f"   Volume ratio: {volume_ratio:.2f}x (need >1.5x)")
-            print(f"   Breakout: UP={breakout_up}, DOWN={breakout_down}")
-            print(f"   OLD vs NEW: Was 7 candles with 1.2 ratio, now 10 candles with 0.7 pip ATR + 1.5x volume")
-            
-            # INDUSTRY STANDARD: Direction based on compression + breakout + volume
-            direction = 'BUY' if breakout_up and compression and volume_surge else 'SELL' if breakout_down and compression and volume_surge else None
-            
-            if direction:
-                # R:R FEASIBILITY CHECK
-                atr_check = self.calculate_atr(symbol)
-                entry = current_candle['close'] + pip_size if direction == 'BUY' else current_candle['close'] - pip_size
+            # STEP 1: VOLATILITY COMPRESSION ANALYSIS
+            # Calculate ATR for last 14 periods (industry standard)
+            atr_values = []
+            for i in range(6, len(candles)):  # Start from index 6 to have lookback
+                high = candles[i]['high']
+                low = candles[i]['low']
+                prev_close = candles[i-1]['close']
                 
-                # Use compression range as SL
-                if direction == 'BUY':
-                    sl_distance = abs(recent_low - entry) / pip_size
-                else:
-                    sl_distance = abs(recent_high - entry) / pip_size
-                
-                tp_distance = sl_distance * 1.5  # Target 1.5 R:R minimum
-                
-                # Check if TP is within 2x ATR (feasible)
-                rr_feasible = tp_distance <= 2 * atr_check
-                actual_rr = tp_distance / sl_distance if sl_distance > 0 else 0
-                
-                if not rr_feasible:
-                    print(f"🚫 VCB {symbol} {direction}: R:R not feasible - TP={tp_distance:.1f}p > 2xATR={2*atr_check:.1f}p")
-                    return None
-                
-                if actual_rr < 1.5:
-                    print(f"⚠️ VCB {symbol} {direction}: R:R too low - {actual_rr:.2f} < 1.5 minimum")
-                    return None
-                
-                print(f"✅ VCB {symbol} {direction}: R:R={actual_rr:.2f}, SL={sl_distance:.1f}p, TP={tp_distance:.1f}p, ATR={atr_check:.1f}p")
-                
-                # Calculate quality based on tightness of compression
-                base_quality = 50  # Start at 50%
-                base_quality += (1 - min(atr/compression_threshold, 1)) * 30  # Tighter compression = higher quality (up to +30%)
-                base_quality += min(volume_ratio - 1.5, 1) * 20  # Volume surge bonus (up to +20% for 2.5x+ volume)
-                base_quality += min(actual_rr - 1.5, 0.5) * 10  # Bonus for R:R > 1.5
-                
-                # MTF CHECK: M15 ATR vs M5 ATR for compression confirmation
-                m5_atr = self.calculate_atr(symbol, 'M5')
-                m15_atr = self.calculate_atr(symbol, 'M15')
-                mtf_bonus = 0
-                if m15_atr < m5_atr and m15_atr < 1000:  # M15 tighter = stronger setup
-                    mtf_bonus = 10
-                elif m15_atr > m5_atr * 1.5:  # M15 expanding = weaker setup
-                    mtf_bonus = -5
-                
-                base_quality += mtf_bonus
-                base_quality = min(base_quality, 85)  # Cap at 85%
-                
-                print(f"🔍 VCB {symbol}: M15 ATR={m15_atr:.2f}, M5 ATR={m5_atr:.2f}, MTF Bonus={mtf_bonus:+d}%")
-                print(f"🔍 VCB {symbol}: {direction} BREAKOUT DETECTED!")
-                print(f"   ATR={atr:.2f}p, Volume={volume_ratio:.1f}x")
-                print(f"   Final Quality = {base_quality:.1f}% (includes MTF bonus)")
-                print(f"   Entry: {entry:.5f}")
-                
-                # Return signal with base quality
-                return PatternSignal(
-                    pattern="VCB_BREAKOUT",
-                    direction=direction,
-                    entry_price=entry,
-                    confidence=base_quality,
-                    timeframe="M5",
-                    pair=symbol,
-                    quality_score=base_quality
+                true_range = max(
+                    high - low,
+                    abs(high - prev_close),
+                    abs(low - prev_close)
                 )
+                atr_values.append(true_range)
+            
+            if len(atr_values) < 14:
+                print(f"🔍 VCB {symbol}: Need 14+ ATR values, have {len(atr_values)}")
+                return None
                 
+            current_atr = sum(atr_values[-14:]) / 14
+            historical_atr = sum(atr_values) / len(atr_values)
+            
+            # Compression ratio - current ATR vs historical average
+            compression_ratio = current_atr / historical_atr if historical_atr > 0 else 1.0
+            print(f"🔍 VCB {symbol}: ATR compression ratio: {compression_ratio:.3f}")
+            
+            # INDUSTRY STANDARD: Compression below 0.7 indicates squeeze
+            if compression_ratio > 0.7:
+                print(f"🔍 VCB {symbol}: No compression (ratio {compression_ratio:.3f} > 0.7)")
+                return None
+            
+            # STEP 2: RANGE ANALYSIS 
+            # Look for tight consolidation in recent 8 candles
+            recent_candles = candles[-8:]
+            recent_high = max(c['high'] for c in recent_candles)
+            recent_low = min(c['low'] for c in recent_candles)
+            range_pips = (recent_high - recent_low) / pip_size
+            
+            print(f"🔍 VCB {symbol}: Recent 8-candle range: {range_pips:.1f} pips")
+            
+            # Range should be compressed (symbol-specific thresholds)
+            max_range_pips = {
+                'EURUSD': 25, 'GBPUSD': 30, 'USDJPY': 35, 'USDCAD': 25,
+                'AUDUSD': 25, 'NZDUSD': 25, 'USDCHF': 25,
+                'EURJPY': 40, 'GBPJPY': 45, 'AUDJPY': 40,
+                'XAUUSD': 80, 'XAGUSD': 40
+            }.get(symbol, 30)
+            
+            if range_pips > max_range_pips:
+                print(f"🔍 VCB {symbol}: Range too wide ({range_pips:.1f} > {max_range_pips} pips)")
+                return None
+            
+            # STEP 3: VOLUME CONFIRMATION
+            # Calculate average volume for comparison
+            volumes = [c.get('volume', 1000) for c in candles[-10:]]  # Last 10 candles
+            avg_volume = sum(volumes) / len(volumes)
+            current_volume = current.get('volume', 1000)
+            volume_ratio = current_volume / avg_volume if avg_volume > 0 else 1.0
+            
+            print(f"🔍 VCB {symbol}: Volume ratio: {volume_ratio:.2f}")
+            
+            # STEP 4: BREAKOUT DETECTION
+            # Need significant breakout beyond recent range
+            breakout_threshold_pips = max(3, range_pips * 0.3)  # 30% of recent range or 3 pips minimum
+            
+            direction = None
+            breakout_strength = 0
+            
+            # Check for upside breakout
+            if current['close'] > recent_high:
+                breakout_pips = (current['close'] - recent_high) / pip_size
+                if breakout_pips >= breakout_threshold_pips:
+                    direction = 'BUY'
+                    breakout_strength = breakout_pips
+                    print(f"🔍 VCB {symbol}: UPSIDE breakout: {breakout_pips:.1f} pips (threshold: {breakout_threshold_pips:.1f})")
+            
+            # Check for downside breakout  
+            elif current['close'] < recent_low:
+                breakout_pips = (recent_low - current['close']) / pip_size
+                if breakout_pips >= breakout_threshold_pips:
+                    direction = 'SELL'
+                    breakout_strength = breakout_pips
+                    print(f"🔍 VCB {symbol}: DOWNSIDE breakout: {breakout_pips:.1f} pips (threshold: {breakout_threshold_pips:.1f})")
+            
+            if not direction:
+                print(f"🔍 VCB {symbol}: No significant breakout detected")
+                return None
+            
+            # STEP 5: CONFIDENCE CALCULATION (Professional Multi-Factor)
+            base_confidence = 50.0
+            
+            # Compression quality bonus (max +25)
+            compression_bonus = (0.7 - compression_ratio) * 35.7  # Scale so 0.7->0.5 gives +7 to +25
+            compression_bonus = min(25, max(0, compression_bonus))
+            
+            # Volume confirmation bonus (max +15)
+            volume_bonus = 0
+            if volume_ratio >= 1.5:
+                volume_bonus = min(15, (volume_ratio - 1.0) * 10)
+            
+            # Range compression bonus (max +10)
+            range_quality = 1 - (range_pips / max_range_pips)
+            range_bonus = range_quality * 10
+            
+            # Breakout strength bonus (max +15)
+            breakout_bonus = min(15, breakout_strength * 2)  # 2 points per pip of breakout
+            
+            # Session timing bonus (max +10)
+            session = self.get_current_session()
+            session_bonus = TradingConfig.SESSION_BONUSES.get(session, 0)
+            
+            final_confidence = base_confidence + compression_bonus + volume_bonus + range_bonus + breakout_bonus + session_bonus
+            final_confidence = min(92.0, max(55.0, final_confidence))  # Cap between 55-92%
+            
+            print(f"🔍 VCB {symbol}: CONFIDENCE BREAKDOWN:")
+            print(f"   Base: {base_confidence:.1f}%")
+            print(f"   Compression: +{compression_bonus:.1f}% (ratio: {compression_ratio:.3f})")
+            print(f"   Volume: +{volume_bonus:.1f}% (ratio: {volume_ratio:.2f})")
+            print(f"   Range Quality: +{range_bonus:.1f}% (tight: {range_pips:.1f}p)")
+            print(f"   Breakout: +{breakout_bonus:.1f}% (strength: {breakout_strength:.1f}p)")
+            print(f"   Session ({session}): +{session_bonus:.1f}%")
+            print(f"   FINAL: {final_confidence:.1f}%")
+            
+            # Quality threshold - only publish quality setups
+            if final_confidence < 65:
+                print(f"🔍 VCB {symbol}: Confidence {final_confidence:.1f}% below 65% threshold")
+                return None
+            
+            # Calculate entry price with proper offset
+            if direction == 'BUY':
+                entry_price = current['close'] + (pip_size * 0.5)  # 0.5 pip above breakout
+            else:
+                entry_price = current['close'] - (pip_size * 0.5)  # 0.5 pip below breakout
+            
+            print(f"✅ VCB {symbol}: HIGH-QUALITY BREAKOUT DETECTED!")
+            print(f"   Direction: {direction}")
+            print(f"   Entry: {entry_price}")
+            print(f"   Confidence: {final_confidence:.1f}%")
+            print(f"   Compression: {compression_ratio:.3f}, Range: {range_pips:.1f}p, Volume: {volume_ratio:.2f}x")
+            
+            return PatternSignal(
+                pattern="VCB_BREAKOUT",
+                direction=direction,
+                entry_price=entry_price,
+                confidence=final_confidence,
+                timeframe="M5",
+                pair=symbol,
+                quality_score=final_confidence
+            )
+            
         except Exception as e:
-            logger.debug(f"Error in VCB detection: {e}")
-        
-        return None
-    
+            print(f"❌ VCB {symbol}: Error in detection: {str(e)}")
+            logger.exception(f"VCB pattern detection error for {symbol}")
+            traceback.print_exc()
+            return None
+
     def detect_momentum_breakout(self, symbol: str) -> Optional[PatternSignal]:
-        """New pattern: Simple momentum breakout for more signals"""
+        """
+        SCALPING MOMENTUM BURST: Quick momentum breakouts for scalping
+        """
         try:
-            if len(self.m1_data[symbol]) < 2:
+            if len(self.m5_data[symbol]) < 5:
                 return None
-                
-            candles = list(self.m1_data[symbol])
-            if len(candles) < 10:
-                return None
-                
-            recent = list(candles.values())[-10:]
-            current = recent[-1]
-            
-            # Calculate range
-            recent_high = max(c['high'] for c in recent[:-1])
-            recent_low = min(c['low'] for c in recent[:-1])
-            pip_size = 0.01 if 'JPY' in symbol else 0.0001
-            
-            # BULLISH BREAKOUT
-            if current['close'] > recent_high + pip_size:
-                # Check if momentum supports it
-                momentum = self.calculate_momentum_score(symbol, "BUY")
-                if momentum < 10:  # Very low threshold for this pattern
-                    return None
-                
-                volume_quality = self.analyze_volume_profile(symbol)
-                
-                confidence = 71 + (momentum * 0.05) + (volume_quality * 0.02)  # 71% base
-                
-                signal = PatternSignal(
-                    pattern="MOMENTUM_BREAKOUT",
-                    direction="BUY",
-                    entry_price=current['close'] + pip_size,
-                    confidence=min(75, confidence),
-                    timeframe="M1",
-                    pair=symbol,
-                    momentum_score=momentum,
-                    volume_quality=volume_quality
-                )
-                signal.quality_score = self.calculate_quality_score(signal)
-                return signal
-            
-            # BEARISH BREAKOUT
-            elif current['close'] < recent_low - pip_size:
-                momentum = self.calculate_momentum_score(symbol, "SELL")
-                if momentum < 10:
-                    return None
-                
-                volume_quality = self.analyze_volume_profile(symbol)
-                
-                confidence = 71 + (momentum * 0.05) + (volume_quality * 0.02)  # 71% base
-                
-                signal = PatternSignal(
-                    pattern="MOMENTUM_BREAKOUT",
-                    direction="SELL",
-                    entry_price=current['close'] - pip_size,
-                    confidence=min(75, confidence),
-                    timeframe="M1",
-                    pair=symbol,
-                    momentum_score=momentum,
-                    volume_quality=volume_quality
-                )
-                signal.quality_score = self.calculate_quality_score(signal)
-                return signal
-                
-        except Exception as e:
-            logger.debug(f"Error in momentum breakout: {e}")
-        
-        return None
-    
-    def detect_fair_value_gap_fill(self, symbol: str) -> Optional[PatternSignal]:
-        """INDUSTRY STANDARD: Price gap >0.5 pip from unbalanced buying/selling, filled as price returns to fair value"""
-        try:
-            print(f"🔍 FVG {symbol}: INDUSTRY STANDARD CHECK")
-            if len(self.m5_data[symbol]) < 2:  # INDUSTRY STANDARD: Only need 2 candles for gap
-                print(f"🔍 FVG {symbol}: Only {len(self.m5_data[symbol])} M5 candles, need 2+")
-                return None
-            
-            # Get last 2 candles for gap detection
-            prev = list(self.m5_data[symbol])[-2]
-            curr = list(self.m5_data[symbol])[-1]
-            
-            # Get pip size for this symbol
-            if 'JPY' in symbol:
+            candles = list(self.m5_data[symbol])[-5:]
+            current = candles[-1]
+            if "JPY" in symbol:
                 pip_size = 0.01
-            elif symbol == 'XAUUSD':
+            elif symbol == "XAUUSD":
                 pip_size = 0.1
+            elif symbol == "XAGUSD":
+                pip_size = 0.001  # Silver: 0.001 = 1 pip
             else:
                 pip_size = 0.0001
+            range_candles = candles[-4:-1]
+            recent_high = max(c["high"] for c in range_candles)
+            recent_low = min(c["low"] for c in range_candles)
+            candle_range = (current["high"] - current["low"]) / pip_size
+            candle_body = abs(current["close"] - current["open"]) / pip_size
+            # Adjust thresholds for silver's higher volatility
+            min_range = 10 if symbol == "XAGUSD" else 5  # Silver needs bigger candles
+            min_body = 6 if symbol == "XAGUSD" else 3
+            min_breakout = 4.0 if symbol == "XAGUSD" else 2.0  # Silver needs stronger breakouts
             
-            # INDUSTRY STANDARD: Calculate gap size between candles
-            gap_size = (curr['open'] - prev['close']) / pip_size
-            
-            # Calculate fill percentage (how much gap is being filled)
-            candle_body = abs(curr['close'] - curr['open'])
-            candle_range = curr['high'] - curr['low']
-            body_ratio = candle_body / candle_range if candle_range > 0 else 0
-            
-            # Debug logging with differences from old logic
-            print(f"   Previous: Close={prev['close']:.5f}")
-            print(f"   Current: Open={curr['open']:.5f}, Close={curr['close']:.5f}")
-            print(f"   Gap size: {gap_size:.2f} pips (min 0.5p required)")
-            print(f"   Body ratio: {body_ratio:.2%}")
-            print(f"   OLD vs NEW: Was complex 10-candle scan, now simple 2-candle gap detection")
-            
-            # BULLISH GAP FILL: Up gap (>0.5p) being filled down
-            bull_gap = gap_size > 0.5 and curr['close'] < curr['open']  # Gap up, filling down
-            
-            # BEARISH GAP FILL: Down gap (<-0.5p) being filled up  
-            bear_gap = gap_size < -0.5 and curr['close'] > curr['open']  # Gap down, filling up
-            
-            direction = 'SELL' if bull_gap else 'BUY' if bear_gap else None
-            
-            if direction:
-                # R:R FEASIBILITY CHECK
-                atr = self.calculate_atr(symbol)
-                entry = curr['close']
-                
-                # Use gap extremes as SL
-                if direction == 'BUY':
-                    sl_distance = abs(curr['low'] - entry) / pip_size
-                else:
-                    sl_distance = abs(curr['high'] - entry) / pip_size
-                
-                tp_distance = sl_distance * 1.5  # Target 1.5 R:R minimum
-                
-                # Check if TP is within 2x ATR (feasible)
-                rr_feasible = tp_distance <= 2 * atr
-                actual_rr = tp_distance / sl_distance if sl_distance > 0 else 0
-                
-                if not rr_feasible:
-                    print(f"🚫 FVG {symbol} {direction}: R:R not feasible - TP={tp_distance:.1f}p > 2xATR={2*atr:.1f}p")
-                    return None
-                
-                if actual_rr < 1.5:
-                    print(f"⚠️ FVG {symbol} {direction}: R:R too low - {actual_rr:.2f} < 1.5 minimum")
-                    return None
-                
-                print(f"✅ FVG {symbol} {direction}: R:R={actual_rr:.2f}, SL={sl_distance:.1f}p, TP={tp_distance:.1f}p, ATR={atr:.1f}p")
-                
-                # Calculate quality based on gap size and fill strength
-                base_quality = 50  # Start at 50%
-                base_quality += min(abs(gap_size), 3) * 10  # +10% per pip (max +30% for 3+ pip gaps)
-                base_quality += body_ratio * 15  # Up to +15% for strong fill candle
-                base_quality += min(actual_rr - 1.5, 0.5) * 10  # Bonus for R:R > 1.5
-                base_quality = min(base_quality, 85)  # Cap at 85%
-                
-                print(f"🔍 FVG {symbol}: {direction} GAP FILL DETECTED!")
-                print(f"   Gap: {gap_size:.2f} pips, Fill strength: {body_ratio:.1%}")
-                print(f"   Quality = {base_quality:.1f}% (Base 50 + Gap + Fill + R:R bonus)")
-                print(f"   Entry: {entry:.5f}")
-                
-                # Return signal with base quality
-                return PatternSignal(
-                    pattern="FAIR_VALUE_GAP_FILL",
-                    direction=direction,
-                    entry_price=entry,
-                    confidence=base_quality,
-                    timeframe="M5",
-                    pair=symbol,
-                    quality_score=base_quality
-                )
-                
+            if candle_range < min_range or candle_body < min_body:
+                return None
+            direction = None
+            breakout_strength = 0
+            if current["close"] > recent_high and current["close"] > current["open"]:
+                breakout_strength = (current["close"] - recent_high) / pip_size
+                if breakout_strength >= min_breakout:
+                    direction = "BUY"
+            elif current["close"] < recent_low and current["close"] < current["open"]:
+                breakout_strength = (recent_low - current["close"]) / pip_size
+                if breakout_strength >= min_breakout:
+                    direction = "SELL"
+            if not direction:
+                return None
+            # Lower confidence for XAGUSD to reduce false signals
+            if symbol == "XAGUSD":
+                confidence = 70.0 + min(5, breakout_strength * 0.5)  # More conservative
+                confidence = min(75.0, confidence)  # Cap at 75% for silver
+            else:
+                confidence = 75.0 + min(10, breakout_strength)
+                confidence = min(88.0, confidence)
+            entry = current["close"] + pip_size if direction == "BUY" else current["close"] - pip_size
+            print(f"✅ MOM {symbol}: MOMENTUM BREAKOUT - {direction}, Conf:{confidence:.1f}%")
+            return PatternSignal(
+                pattern="MOMENTUM_BURST",
+                direction=direction,
+                entry_price=entry,
+                confidence=confidence,
+                timeframe="M5",
+                pair=symbol,
+                quality_score=confidence
+            )
         except Exception as e:
-            logger.debug(f"FVG detection error for {symbol}: {e}")
-        
-        return None
+            return None
+    def detect_fair_value_gap_fill(self, symbol: str) -> Optional[PatternSignal]:
+        """SCALPING FAIR VALUE GAP: Quick gap fills"""
+        try:
+            if len(self.m5_data[symbol]) < 4: return None
+            candles = list(self.m5_data[symbol])[-4:]
+            current = candles[-1]
+            pip_size = get_pip_size(symbol)
+            for i in range(len(candles) - 2):
+                c1, c2, c3 = candles[i], candles[i+1], candles[i+2]
+                if c1["low"] > c3["high"]:
+                    gap_size = (c1["low"] - c3["high"]) / pip_size
+                    if gap_size >= 3 and c3["high"] <= current["low"] <= c1["low"]:
+                        confidence = min(85.0, 70.0 + gap_size)
+                        return PatternSignal("FAIR_VALUE_GAP_FILL", "BUY", current["close"] + pip_size, confidence, "M5", symbol, confidence)
+                elif c1["high"] < c3["low"]:
+                    gap_size = (c3["low"] - c1["high"]) / pip_size
+                    if gap_size >= 3 and c1["high"] <= current["high"] <= c3["low"]:
+                        confidence = min(85.0, 70.0 + gap_size)
+                        return PatternSignal("FAIR_VALUE_GAP_FILL", "SELL", current["close"] - pip_size, confidence, "M5", symbol, confidence)
+            return None
+        except: return None
     
     def should_generate_signal(self, symbol: str) -> bool:
         """Check if we should generate a signal for this pair"""
@@ -1474,7 +1564,8 @@ class EliteGuardBalanced:
     def generate_signal(self, pattern_signal: PatternSignal) -> Dict:
         """Generate trading signal with quality indicators and RAPID/SNIPER classification"""
         symbol = pattern_signal.pair  # Define symbol from pattern_signal
-        pip_size = 0.01 if 'JPY' in symbol else 0.0001
+        # Fixed pip_size calculation to include XAUUSD and XAGUSD
+        pip_size = get_pip_size(symbol)
         
         # Determine signal classification based on pattern type
         # RAPID: Quick momentum plays (accessible to all tiers)
@@ -1491,42 +1582,36 @@ class EliteGuardBalanced:
         
         # OPTIMIZED STRATEGY: 30% shorter SL/TP with 1.5 R:R for balance
         # Shorter distances = Faster completion, 1.5 R:R = Good profit potential
+        # JPY pairs need special handling due to different pip structure
+        is_jpy_pair = 'JPY' in symbol
+        jpy_multiplier = 2.5 if is_jpy_pair else 1.0  # JPY pairs need 2.5x wider stops
+        
         if signal_class == 'SNIPER':
-            # SNIPER trades - precision setups, 30% tighter stops
+            # SNIPER trades - precision setups
             if pattern_signal.quality_score >= 75:  # Premium
-                stop_pips = 7   # Was 10, now 30% less
-                target_pips = 10.5  # 1:1.5 RR maintained
+                stop_pips = 7 * jpy_multiplier   # 17.5 pips for JPY pairs
+                target_pips = 10.5 * jpy_multiplier  # 26.25 pips for JPY pairs
             elif pattern_signal.quality_score >= 65:  # Standard
-                stop_pips = 6   # Was 9, now ~30% less
-                target_pips = 9   # 1:1.5 RR
+                stop_pips = 6 * jpy_multiplier   # 15 pips for JPY pairs
+                target_pips = 9 * jpy_multiplier   # 22.5 pips for JPY pairs
             else:  # Acceptable
-                stop_pips = 5.5   # Was 8, now ~30% less
-                target_pips = 8.25  # 1:1.5 RR
+                stop_pips = 5.5 * jpy_multiplier   # 13.75 pips for JPY pairs
+                target_pips = 8.25 * jpy_multiplier  # 20.6 pips for JPY pairs
         else:
-            # RAPID trades - ultra-quick scalps, 30% tighter
+            # RAPID trades - but JPY still needs reasonable stops
             if pattern_signal.quality_score >= 75:  # Premium
-                stop_pips = 4   # Was 6, now ~30% less
-                target_pips = 6  # 1:1.5 RR
+                stop_pips = 4 * jpy_multiplier   # 10 pips for JPY pairs
+                target_pips = 6 * jpy_multiplier  # 15 pips for JPY pairs
             elif pattern_signal.quality_score >= 65:  # Standard
-                stop_pips = 3.5   # Was 5, now 30% less
-                target_pips = 5.25  # 1:1.5 RR
+                stop_pips = 3.5 * jpy_multiplier   # 8.75 pips for JPY pairs
+                target_pips = 5.25 * jpy_multiplier  # 13.1 pips for JPY pairs
             else:  # Acceptable
-                stop_pips = 3   # Was 4, now 25% less
-                target_pips = 4.5  # 1:1.5 RR
+                stop_pips = 3 * jpy_multiplier   # 7.5 pips for JPY pairs
+                target_pips = 4.5 * jpy_multiplier  # 11.25 pips for JPY pairs
         
         # FIX ERROR 4756: BROKER MINIMUM STOP DISTANCE REQUIREMENTS
-        # Exotic pairs and commodities need larger stops to avoid "Invalid stops" error
-        min_stop_requirements = {
-            'USDMXN': 30,  # Exotic pair - INCREASED from 15 to 30 pips (Error 4756 persists)
-            'USDSEK': 20,  # Exotic pair - INCREASED from 15 to 20 pips
-            'USDCNH': 30,  # Restricted pair - very high spread
-            'XAGUSD': 100,  # Silver - INCREASED to 100 pips ($1.00 move) for volatility
-            'XAUUSD': 100,  # Gold - INCREASED to 100 pips ($10 move) for volatility
-            'USDNOK': 20,  # Exotic pair
-            'USDDKK': 20,  # Exotic pair
-            'USDTRY': 50,  # Very exotic, extreme spread
-            'USDZAR': 30,  # Exotic pair, high volatility
-        }
+        # Use centralized configuration for minimum stop requirements
+        min_stop_requirements = TradingConfig.MIN_STOP_REQUIREMENTS
         
         # Apply minimum stop distance if required
         min_stop = min_stop_requirements.get(symbol, 0)
@@ -1564,25 +1649,31 @@ class EliteGuardBalanced:
             stop_loss = entry_price + stop_distance
             take_profit = entry_price - target_distance
         
-        # Calculate lot size for 3% risk (testing phase)
-        account_balance = 1000.0  # Default account, will be overridden by actual balance
-        risk_percent = 0.03  # 3% risk per trade for testing
+        # Calculate lot size for testing phase - using centralized config
+        account_balance = TradingConfig.DEFAULT_ACCOUNT_BALANCE
+        risk_percent = TradingConfig.DEFAULT_RISK_PERCENT
         risk_amount = account_balance * risk_percent  # $30 on $1000 account
         
         # Calculate pip value (simplified - would need actual pip value calculation)
         if 'JPY' in symbol:
             pip_value = 0.01  # Approximate for JPY pairs
         elif symbol in ['XAUUSD']:
-            pip_value = 0.1  # Gold pip value
+            pip_value = 0.01  # Gold pip value (standard pips)
         elif symbol in ['XAGUSD']:
-            pip_value = 0.05  # Silver pip value  
+            pip_value = 0.001  # Silver: 0.001 price = 1 pip  
         else:
             pip_value = 0.0001  # Standard forex pairs
             
         # Lot size calculation for 3% risk
         # Formula: Risk Amount / (SL pips * pip value per lot)
         # Assuming standard lot pip values: $10 for forex, varies for metals
-        pip_value_per_lot = 10.0 if symbol not in ['XAUUSD', 'XAGUSD'] else (1.0 if symbol == 'XAUUSD' else 0.5)
+        # Corrected pip values for proper risk calculation
+        if symbol == 'XAUUSD':
+            pip_value_per_lot = 1.0  # Gold: $1 per pip per 0.01 lot
+        elif symbol == 'XAGUSD':
+            pip_value_per_lot = 0.5  # Silver: $0.50 per pip per 0.01 lot (corrected from $5)
+        else:
+            pip_value_per_lot = 10.0  # Forex pairs: $10 per pip per standard lot
         lot_size = risk_amount / (stop_pips * pip_value_per_lot)
         lot_size = round(lot_size, 2)  # Round to 2 decimals for MT5
         
@@ -2084,16 +2175,16 @@ class EliteGuardBalanced:
         # QUALITY GATE #1: PAIR-SPECIFIC FOR 65%+ WIN RATE TARGET
         symbol = getattr(signal, 'pair', getattr(signal, 'symbol', ''))
         
-        # TOP PERFORMERS (>40% win rate): Lower threshold
-        # WORST PERFORMERS (<30% win rate): Block completely
+        # EMERGENCY TESTING: Much lower thresholds to verify system is working
+        # Standard pairs should generate signals during peak trading hours
         if symbol in ['NZDUSD', 'XAUUSD']:  # 75%, 53% win rates
-            min_quality_score = 75.0  # EASIER entry for winners
+            min_quality_score = 45.0  # TESTING: was 65.0
         elif symbol in ['AUDJPY', 'EURJPY']:  # 50%, 43% win rates
-            min_quality_score = 78.0  # Slightly easier
+            min_quality_score = 48.0  # TESTING: was 68.0
         elif symbol in ['XAGUSD', 'USDMXN', 'USDCNH', 'USDSEK']:  # <30% win rate
-            min_quality_score = 95.0  # EFFECTIVELY BLOCKED
+            min_quality_score = 55.0  # TESTING: was 75.0
         else:
-            min_quality_score = 82.0  # Standard pairs
+            min_quality_score = 50.0  # TESTING: was 70.0 - major pairs should fire
         
         # Pattern+Pair combo adjustments (based on actual performance)
         pattern_type = getattr(signal, 'pattern', 'UNKNOWN')
@@ -2111,16 +2202,16 @@ class EliteGuardBalanced:
             'FAIR_VALUE_GAP_FILL_AUDJPY': -3,    # 50% win rate
         }
         
-        # LOSING COMBOS: Heavy penalties (proven losers)
+        # LOSING COMBOS: Reduced penalties for ML learning
         losing_combos = {
-            'FAIR_VALUE_GAP_FILL_XAGUSD': 50,    # BLOCK completely
-            'ORDER_BLOCK_BOUNCE_XAGUSD': 50,     # BLOCK completely  
-            'FAIR_VALUE_GAP_FILL_USDMXN': 50,    # BLOCK completely
-            'ORDER_BLOCK_BOUNCE_EURJPY': 20,     # 0% win rate
-            'ORDER_BLOCK_BOUNCE_GBPJPY': 20,     # 0% win rate
-            'FAIR_VALUE_GAP_FILL_GBPJPY': 20,    # 0% win rate
-            'ORDER_BLOCK_BOUNCE_EURAUD': 15,     # 0% win rate
-            'ORDER_BLOCK_BOUNCE_EURUSD': 15,     # 0% win rate
+            'FAIR_VALUE_GAP_FILL_XAGUSD': 10,    # Was 50, now just harder
+            'ORDER_BLOCK_BOUNCE_XAGUSD': 10,     # Was 50, now just harder  
+            'FAIR_VALUE_GAP_FILL_USDMXN': 10,    # Was 50, now just harder
+            'ORDER_BLOCK_BOUNCE_EURJPY': 5,      # Was 20, slight penalty
+            'ORDER_BLOCK_BOUNCE_GBPJPY': 5,      # Was 20, slight penalty
+            'FAIR_VALUE_GAP_FILL_GBPJPY': 5,     # Was 20, slight penalty
+            'ORDER_BLOCK_BOUNCE_EURAUD': 3,      # Was 15, minimal penalty
+            'ORDER_BLOCK_BOUNCE_EURUSD': 3,      # Was 15, minimal penalty
         }
         
         # Apply combo adjustment if exists, else pattern-only adjustment
@@ -2129,14 +2220,14 @@ class EliteGuardBalanced:
         elif combo_key in losing_combos:
             adjustment = losing_combos[combo_key]
         else:
-            # Default pattern adjustments
+            # Default pattern adjustments - OPENED UP for diversity testing
             pattern_adjustments = {
-                'ORDER_BLOCK_BOUNCE': -3,         # Overall decent
-                'FAIR_VALUE_GAP_FILL': 0,         # Mixed results
-                'LIQUIDITY_SWEEP_REVERSAL': -8,   # Likely good
-                'VCB_BREAKOUT': -8,               # Likely good
-                'SWEEP_RETURN': 50,               # BLOCKED
-                'SWEEP_AND_RETURN': 50            # BLOCKED
+                'ORDER_BLOCK_BOUNCE': 0,          # Neutral - let it prove itself
+                'FAIR_VALUE_GAP_FILL': 0,         # Neutral - has 43% win rate
+                'LIQUIDITY_SWEEP_REVERSAL': 0,    # Neutral - let data decide
+                'VCB_BREAKOUT': 0,                # Neutral - let data decide
+                'SWEEP_RETURN': 0,                # Opened up - was blocked
+                'SWEEP_AND_RETURN': 0             # Opened up - was blocked
             }
             adjustment = pattern_adjustments.get(pattern_type, 0)
         
@@ -2159,22 +2250,27 @@ class EliteGuardBalanced:
         signals_per_15min = len(recent_signals)
         projected_hourly_rate = signals_per_15min * 4
         
-        # QUALITY GATE #2: OPTIMAL 80-85% CONFIDENCE (PROVEN SWEET SPOT)
-        if signal.confidence <= 85.0:  # In or below sweet spot
-            min_confidence = 80.0  # Sweet spot 80-85% for best win rate
-        else:  # Above 85% (worse performance historically)
-            min_confidence = 85.0  # Must be exactly 85%+ to pass
+        # QUALITY GATE #2: PATTERN-SPECIFIC THRESHOLDS - LOWERED for diversity
+        pattern_thresholds = {
+            'FAIR_VALUE_GAP_FILL': 65.0,      # LOWERED: was 72% - too high
+            'ORDER_BLOCK_BOUNCE': 60.0,       # LOWERED: was 70% - too high
+            'LIQUIDITY_SWEEP_REVERSAL': 60.0, # LOWERED: was 70% - too high
+            'VCB_BREAKOUT': 55.0,              # LOWERED: was 65% - try lower
+            'SWEEP_RETURN': 60.0,              # LOWERED: was 68% - too high
+            'MOMENTUM_BURST': 72.0,            # Raised back up for better quality
+            'MOMENTUM_BREAKOUT': 55.0         # LOWERED: was 68% - way too high
+        }
         
-        # Enforce 80-85% sweet spot for maximum win rate
-        min_confidence = max(80.0, min_confidence)
+        # Get pattern-specific threshold
+        min_confidence = pattern_thresholds.get(pattern_type, 79.0)
         
-        # Apply pattern-specific confidence adjustments
+        # Apply pattern-specific confidence adjustments - REMOVED PENALTIES for testing
         pattern_confidence_adj = {
-            'FAIR_VALUE_GAP_FILL': -10,     # PENALTY for 34.8% win rate
-            'ORDER_BLOCK_BOUNCE': -10,       # PENALTY for 30.4% win rate
-            'LIQUIDITY_SWEEP_REVERSAL': -5,  # Small penalty
-            'VCB_BREAKOUT': +5,              # Boost good patterns
-            'SWEEP_RETURN': 0                # Neutral
+            'FAIR_VALUE_GAP_FILL': 0,        # Neutral - let actual performance decide
+            'ORDER_BLOCK_BOUNCE': 0,         # Neutral - let actual performance decide
+            'LIQUIDITY_SWEEP_REVERSAL': 0,   # Neutral - let actual performance decide
+            'VCB_BREAKOUT': 0,                # Neutral - was +5, now neutral for fairness
+            'SWEEP_RETURN': 0                 # Neutral
         }
         
         conf_adj = pattern_confidence_adj.get(pattern_type, 0)
@@ -2195,8 +2291,8 @@ class EliteGuardBalanced:
             return False, f"Confidence {adjusted_confidence:.1f}% < {min_confidence}%", adjusted_confidence
         print(f"✅ ML passed")
         
-        # Pattern restrictions based on performance
-        blocked_patterns = ['SWEEP_AND_RETURN', 'SWEEP_RETURN']  # BLOCKED: 0% win rate
+        # Pattern restrictions based on performance - REMOVED for testing
+        blocked_patterns = []  # OPENED UP - let ML decide based on real performance
         restricted_patterns = []  # Using quality gates instead
         
         if signal.pattern in blocked_patterns:
@@ -2869,6 +2965,9 @@ class EliteGuardBalanced:
         signals_generated = []
         
         for symbol in symbols_to_scan:
+            # XAUUSD now re-enabled with corrected pip calculations
+            # Previously skipped due to R:R issues - now fixed
+                
             # Check if we have enough data (skip if no M1 candles)
             if len(self.m1_data.get(symbol, [])) < 2:
                 continue
@@ -2969,6 +3068,12 @@ class EliteGuardBalanced:
                     # Generate signal
                     signal = self.generate_signal(best_pattern)
                     
+                    # DEBUG: Check signal has critical fields BEFORE CITADEL
+                    if not signal.get('stop_loss') or not signal.get('take_profit'):
+                        print(f"⚠️ CRITICAL: Signal missing SL/TP BEFORE CITADEL!")
+                        print(f"   Signal keys: {list(signal.keys())}")
+                        print(f"   stop_loss: {signal.get('stop_loss')}, take_profit: {signal.get('take_profit')}")
+                    
                     # Update CITADEL with market structure
                     if len(self.m5_data[symbol]) > 0:
                         candles_list = list(self.m5_data[symbol])
@@ -2977,13 +3082,33 @@ class EliteGuardBalanced:
                     # Apply CITADEL protection
                     protected_signal = self.citadel.protect_signal(signal)
                     
-                    # Ensure protected_signal preserves all original fields if not None
+                    # CRITICAL FIX: If CITADEL returns None (delayed), still publish with warning
+                    if protected_signal is None:
+                        # CITADEL delayed the signal - but we need to publish anyway for ML learning
+                        print(f"⚠️ CITADEL delayed signal - publishing anyway with sweep warning")
+                        protected_signal = signal.copy()  # Use original signal
+                        protected_signal['citadel_status'] = 'DELAYED_SWEEP_RISK'
+                        protected_signal['citadel_protected'] = False
+                        protected_signal['citadel_warning'] = 'SWEEP_RISK_DETECTED'
+                        # Slightly reduce confidence for sweep risk
+                        protected_signal['confidence'] = max(70, signal['confidence'] - 5)
+                    
+                    # CRITICAL FIX: CITADEL returns a partial signal, preserve ALL trading fields
                     if protected_signal and signal:
                         # CITADEL might return None or modified signal
                         # Make sure critical fields are preserved
-                        for key in ['stop_pips', 'target_pips', 'stop_loss', 'take_profit', 'entry_price']:
-                            if key in signal and key not in protected_signal:
+                        critical_fields = ['stop_pips', 'target_pips', 'stop_loss', 'take_profit', 'entry_price', 
+                                         'entry', 'sl', 'tp', 'risk_reward', 'lot_size']
+                        for key in critical_fields:
+                            if key in signal and (key not in protected_signal or protected_signal.get(key) is None):
                                 protected_signal[key] = signal[key]
+                        
+                        # DEBUG: Log what fields are missing
+                        missing = [k for k in ['stop_loss', 'take_profit'] if k not in protected_signal or protected_signal.get(k) is None]
+                        if missing:
+                            print(f"⚠️ WARNING: Protected signal missing critical fields: {missing}")
+                            print(f"   Original signal had: {list(signal.keys())}")
+                            print(f"   Protected signal has: {list(protected_signal.keys())}")
                     
                     # Calculate CITADEL score (0-15 range)
                     if protected_signal:
@@ -3011,7 +3136,17 @@ class EliteGuardBalanced:
                     projected_hourly_rate = signals_per_15min * 4
                     
                     # Dynamic CITADEL threshold based on signal rate - QUALITY FOCUSED
-                    citadel_threshold = 55.0 if projected_hourly_rate > 10 else 50.0 if projected_hourly_rate < 5 else 52.5
+                    # Can be overridden by environment variable for testing
+                    citadel_override = os.getenv('CITADEL_THRESHOLD')
+                    if citadel_override and citadel_override.lower() != 'disabled':
+                        citadel_threshold = float(citadel_override)
+                        print(f"📊 Using CITADEL override threshold: {citadel_threshold}%")
+                    elif citadel_override and citadel_override.lower() == 'disabled':
+                        citadel_threshold = 0.0  # Disable CITADEL filtering
+                        print(f"⚠️ CITADEL filtering DISABLED for testing")
+                    else:
+                        # Default dynamic thresholds - lowered for more signals
+                        citadel_threshold = 50.0 if projected_hourly_rate > 10 else 45.0 if projected_hourly_rate < 5 else 47.5
                     
                     if protected_signal and protected_signal.get('confidence', 0) >= citadel_threshold:
                         # Signal passed CITADEL protection and meets final threshold
@@ -3052,7 +3187,7 @@ class EliteGuardBalanced:
                             print(f"   💰 Prices: Entry={entry:.5f}, SL={sl:.5f}, TP={tp:.5f}")
                             
                             # Calculate actual pip distances for verification
-                            pip_size = self.get_pip_size(symbol)
+                            pip_size = get_pip_size(symbol)
                             actual_sl_pips = abs(entry - sl) / pip_size if pip_size > 0 else 0
                             actual_tp_pips = abs(tp - entry) / pip_size if pip_size > 0 else 0
                             
@@ -3083,21 +3218,113 @@ class EliteGuardBalanced:
         combo = f"{signal.get('pattern', 'UNKNOWN')}_{signal.get('symbol', 'UNKNOWN')}"
         print(f"🚀 Publishing {signal.get('signal_id')}: Conf={signal.get('confidence')}%, Quality={signal.get('quality_score')}%, Combo={combo}")
         
-        # 1. ZMQ Publishing
+        # CRITICAL FIX: Ensure stop_loss and take_profit price levels exist
+        if ('stop_loss' not in signal or signal.get('stop_loss') is None) and 'entry_price' in signal and 'stop_pips' in signal:
+            entry = signal['entry_price']
+            symbol = signal.get('symbol', '')
+            pip_size = get_pip_size(symbol)
+            
+            if signal.get('direction') == 'BUY':
+                signal['stop_loss'] = round(entry - (signal['stop_pips'] * pip_size), 5)
+            else:
+                signal['stop_loss'] = round(entry + (signal['stop_pips'] * pip_size), 5)
+            print(f"   ✅ Reconstructed stop_loss: {signal['stop_loss']} from {signal['stop_pips']} pips")
+        
+        if ('take_profit' not in signal or signal.get('take_profit') is None) and 'entry_price' in signal and 'target_pips' in signal:
+            entry = signal['entry_price']
+            symbol = signal.get('symbol', '')
+            pip_size = get_pip_size(symbol)
+            
+            if signal.get('direction') == 'BUY':
+                signal['take_profit'] = round(entry + (signal['target_pips'] * pip_size), 5)
+            else:
+                signal['take_profit'] = round(entry - (signal['target_pips'] * pip_size), 5)
+            print(f"   ✅ Reconstructed take_profit: {signal['take_profit']} from {signal['target_pips']} pips")
+        
+        # Ensure ZMQ publisher exists
+        if not self.publisher:
+            print("⚠️ WARNING: ZMQ publisher not initialized! Attempting to create...")
+            try:
+                self.publisher = self.context.socket(zmq.PUB)
+                self.publisher.bind("tcp://*:5557")
+                print("✅ ZMQ publisher created on port 5557")
+                time.sleep(0.1)  # Give subscribers time to connect
+            except Exception as e:
+                print(f"❌ Failed to create ZMQ publisher: {e}")
+        
+        # Calculate additional metrics for unified logging
+        symbol = signal.get('symbol', '')
+        pip_multiplier = 100 if 'JPY' in symbol else (1 if symbol == 'XAUUSD' else 10000)
+        
+        entry = float(signal.get('entry_price', 0) or signal.get('entry', 0))
+        sl = float(signal.get('sl', 0) or signal.get('stop_loss', 0))
+        tp = float(signal.get('tp', 0) or signal.get('take_profit', 0))
+        
+        sl_pips = abs(entry - sl) * pip_multiplier if entry and sl else signal.get('stop_pips', 0)
+        tp_pips = abs(tp - entry) * pip_multiplier if entry and tp else signal.get('target_pips', 0)
+        
+        # Prepare comprehensive trade data for unified logging
+        trade_data = {
+            'signal_id': signal.get('signal_id'),
+            'pair': symbol,
+            'pattern': signal.get('pattern'),
+            'confidence': signal.get('confidence', 0),
+            'entry_price': entry,
+            'sl_price': sl,
+            'tp_price': tp,
+            'sl_pips': sl_pips,
+            'tp_pips': tp_pips,
+            'lot_size': signal.get('lot_size', 0.01),
+            'direction': signal.get('direction'),
+            'session': signal.get('session', self.get_current_session()),
+            'shield_score': signal.get('citadel_score', signal.get('shield_score', 0)),
+            'rsi': signal.get('rsi', 50),
+            'volume_ratio': signal.get('volume_ratio', 1.0),
+            'timestamp': datetime.now(pytz.UTC).isoformat(),
+            'executed': signal.get('confidence', 0) >= 70,  # Lowered to 70 with ML protection
+            'user_id': '7176191872',
+            'signal_type': signal.get('signal_type', 'PRECISION_STRIKE')
+        }
+        
+        # Log to unified tracking system FIRST
+        try:
+            log_trade(trade_data)
+            print(f"   ✅ Unified tracking logged to comprehensive_tracking.jsonl")
+        except Exception as e:
+            print(f"   ❌ Unified logging failed: {e}")
+        
+        # CRITICAL FIX: Ensure stop_pips and target_pips are in signal for ML learning
+        if 'stop_pips' not in signal or signal.get('stop_pips') == 0:
+            signal['stop_pips'] = sl_pips
+        if 'target_pips' not in signal or signal.get('target_pips') == 0:
+            signal['target_pips'] = tp_pips
+        
+        # 1. ZMQ Publishing (with debug logging)
         if self.publisher:
             try:
+                # DEBUG: Check what we're actually sending
+                if 'stop_loss' not in signal or signal.get('stop_loss') is None:
+                    print(f"   🔴 WARNING: Publishing signal WITHOUT stop_loss!")
+                    print(f"      Signal keys: {list(signal.keys())}")
+                if 'take_profit' not in signal or signal.get('take_profit') is None:
+                    print(f"   🔴 WARNING: Publishing signal WITHOUT take_profit!")
+                
                 signal_msg = json.dumps(signal)
                 self.publisher.send_string(f"ELITE_GUARD_SIGNAL {signal_msg}")
-                print(f"   📡 ZMQ sent to port 5557")
+                print(f"   📡 ZMQ sent to port 5557 - has SL: {signal.get('stop_loss') is not None}, has TP: {signal.get('take_profit') is not None}")
+                
+                # ZMQ debug logging
+                self.log_zmq_debug('PUBLISH', signal.get('signal_id'), signal_msg)
             except Exception as e:
                 print(f"   ❌ ZMQ failed: {e}")
+                self.log_zmq_debug('PUBLISH_ERROR', signal.get('signal_id'), str(e))
         
-        # 2. Optimized Tracking JSONL (PRIMARY)
+        # 2. Optimized Tracking JSONL (SECONDARY - for backward compatibility)
         try:
             self.log_signal_to_truth_tracker(signal)
-            print(f"   📝 Optimized tracking JSONL logged")
+            print(f"   📝 Legacy truth_log.jsonl logged")
         except Exception as e:
-            print(f"   ❌ JSONL failed: {e}")
+            print(f"   ❌ Legacy JSONL failed: {e}")
         
         # 3. Mission File Creation
         try:
@@ -3146,6 +3373,23 @@ class EliteGuardBalanced:
             print(f"   ❌ WebApp DB failed: {e}")
         
         print(f"   ✅ Signal published to all channels")
+    
+    def log_zmq_debug(self, action: str, signal_id: str, data: str):
+        """Log ZMQ debug information for diagnosing MT5 communication issues"""
+        try:
+            debug_file = '/root/HydraX-v2/logs/zmq_debug.log'
+            os.makedirs(os.path.dirname(debug_file), exist_ok=True)
+            
+            with open(debug_file, 'a') as f:
+                log_entry = {
+                    'timestamp': datetime.now(pytz.UTC).isoformat(),
+                    'action': action,
+                    'signal_id': signal_id,
+                    'data': data[:500] if len(data) > 500 else data  # Truncate long data
+                }
+                f.write(json.dumps(log_entry) + '\n')
+        except Exception as e:
+            print(f"ZMQ debug logging error: {e}")
     
     def data_listener(self):
         """Listen for market data"""
@@ -3205,7 +3449,7 @@ class EliteGuardBalanced:
         
         for signal in released_signals:
             # These are post-sweep golden opportunities
-            if signal.get('confidence', 0) >= 70:  # Match MIN_CONFIDENCE threshold
+            if signal.get('confidence', 0) >= 79:  # Match raised MIN_CONFIDENCE threshold
                 self.publish_signal(signal)
                 logger.info(f"🏆 CITADEL RELEASE: {signal['symbol']} {signal['direction']} "
                           f"(delayed {signal.get('delay_time', 0)}s, confidence: {signal['confidence']}%)")
@@ -3297,6 +3541,9 @@ class EliteGuardBalanced:
                 
                 # Fetch OHLC data continuously
                 self.fetch_ohlc_data()
+                
+                # Check for ML threshold updates from Grokkeeper
+                self.update_pattern_thresholds_from_ml()
                 
                 # Scan for patterns every 15 seconds for more frequent signals
                 if current_time - last_scan >= 15:

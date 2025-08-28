@@ -1,0 +1,17 @@
+{
+  "generated_at": "2025-08-20T14:03:45.603925",
+  "generator": "DynamicOutcomeTracker",
+  "tracking_settings": {
+    "base_timeout_minutes": 60,
+    "atr_multiplier": 3.0,
+    "max_tracking_hours": 4,
+    "min_tracking_minutes": 15
+  },
+  "statistics": {
+    "error": "no such column: tracking_duration"
+  },
+  "active_signals": {
+    "count": 0,
+    "signals": {}
+  }
+}

@@ -811,6 +811,152 @@ void SendPingResponse(string json_command)
 }
 
 //+------------------------------------------------------------------+
+//| Execute BITMODE hybrid position management                       |
+//+------------------------------------------------------------------+
+void ExecuteHybridPosition(string json_command, string fire_id, string symbol, string direction, 
+                          double entry, double sl, double tp, double total_lot)
+{
+    // Extract hybrid parameters using simple string search
+    int p1_trigger = 8, p1_percent = 25;  // defaults
+    int p2_trigger = 12, p2_percent = 25; // defaults  
+    int trail_dist = 8;                   // default
+    
+    // Parse trigger values from JSON
+    int pos = StringFind(json_command, "\"trigger\":");
+    if (pos >= 0) {
+        string temp = StringSubstr(json_command, pos + 10, 5);
+        p1_trigger = (int)StringToInteger(temp);
+    }
+    
+    pos = StringFind(json_command, "\"trigger\":", pos + 1);
+    if (pos >= 0) {
+        string temp = StringSubstr(json_command, pos + 10, 5);
+        p2_trigger = (int)StringToInteger(temp);
+    }
+    
+    pos = StringFind(json_command, "\"distance\":");
+    if (pos >= 0) {
+        string temp = StringSubstr(json_command, pos + 11, 5);
+        trail_dist = (int)StringToInteger(temp);
+    }
+    
+    // Calculate position sizes
+    double p1_lot = NormalizeDouble(total_lot * 0.25, 2);  // 25%
+    double p2_lot = NormalizeDouble(total_lot * 0.25, 2);  // 25% 
+    double trail_lot = NormalizeDouble(total_lot - p1_lot - p2_lot, 2); // remaining 50%
+    
+    Print("🎯 HYBRID EXECUTION: ", symbol, " ", direction, " Total: ", DoubleToString(total_lot,2));
+    Print("   P1: ", DoubleToString(p1_lot,2), " lots @ +", p1_trigger, "pips");
+    Print("   P2: ", DoubleToString(p2_lot,2), " lots @ +", p2_trigger, "pips"); 
+    Print("   Trail: ", DoubleToString(trail_lot,2), " lots, trail: ", trail_dist, "pips");
+    
+    bool is_buy = (direction == "BUY" || direction == "buy");
+    double bid = SymbolInfoDouble(symbol, SYMBOL_BID);
+    double ask = SymbolInfoDouble(symbol, SYMBOL_ASK);
+    double pip_size = SymbolInfoDouble(symbol, SYMBOL_POINT);
+    
+    // Adjust pip size for different symbol types
+    if (StringFind(symbol, "JPY") >= 0) pip_size = 0.01;
+    else if (symbol == "XAUUSD") pip_size = 0.1;
+    
+    int tickets_opened = 0;
+    long main_ticket = 0;
+    double avg_price = 0;
+    
+    // Execute Position 1 - Early profit taking
+    MqlTradeRequest rq1; MqlTradeResult rs1; ZeroMemory(rq1); ZeroMemory(rs1);
+    rq1.action = TRADE_ACTION_DEAL;
+    rq1.symbol = symbol;
+    rq1.volume = p1_lot;
+    rq1.deviation = 3;
+    rq1.magic = 7176191872;
+    rq1.comment = fire_id + "_P1";
+    rq1.type = is_buy ? ORDER_TYPE_BUY : ORDER_TYPE_SELL;
+    rq1.price = is_buy ? ask : bid;
+    
+    // Calculate P1 TP
+    if (is_buy) {
+        rq1.tp = rq1.price + (p1_trigger * pip_size);
+        rq1.sl = (sl > 0 && sl < rq1.price) ? sl : 0;
+    } else {
+        rq1.tp = rq1.price - (p1_trigger * pip_size);
+        rq1.sl = (sl > 0 && sl > rq1.price) ? sl : 0;
+    }
+    
+    if (OrderSend(rq1, rs1) && rs1.retcode == TRADE_RETCODE_DONE) {
+        tickets_opened++;
+        main_ticket = rs1.order;
+        avg_price += rs1.price;
+        Print("✅ P1 opened: Ticket ", rs1.order, " TP @ ", DoubleToString(rq1.tp, 5));
+    }
+    
+    // Execute Position 2 - Medium profit taking
+    MqlTradeRequest rq2; MqlTradeResult rs2; ZeroMemory(rq2); ZeroMemory(rs2);
+    rq2.action = TRADE_ACTION_DEAL;
+    rq2.symbol = symbol;
+    rq2.volume = p2_lot;
+    rq2.deviation = 3;
+    rq2.magic = 7176191872;
+    rq2.comment = fire_id + "_P2";
+    rq2.type = is_buy ? ORDER_TYPE_BUY : ORDER_TYPE_SELL;
+    rq2.price = is_buy ? ask : bid;
+    
+    // Calculate P2 TP
+    if (is_buy) {
+        rq2.tp = rq2.price + (p2_trigger * pip_size);
+        rq2.sl = (sl > 0 && sl < rq2.price) ? sl : 0;
+    } else {
+        rq2.tp = rq2.price - (p2_trigger * pip_size);
+        rq2.sl = (sl > 0 && sl > rq2.price) ? sl : 0;
+    }
+    
+    if (OrderSend(rq2, rs2) && rs2.retcode == TRADE_RETCODE_DONE) {
+        tickets_opened++;
+        if (main_ticket == 0) main_ticket = rs2.order;
+        avg_price += rs2.price;
+        Print("✅ P2 opened: Ticket ", rs2.order, " TP @ ", DoubleToString(rq2.tp, 5));
+    }
+    
+    // Execute Trail Position - No initial TP, will use trailing SL
+    MqlTradeRequest rq3; MqlTradeResult rs3; ZeroMemory(rq3); ZeroMemory(rs3);
+    rq3.action = TRADE_ACTION_DEAL;
+    rq3.symbol = symbol;
+    rq3.volume = trail_lot;
+    rq3.deviation = 3;
+    rq3.magic = 7176191872;
+    rq3.comment = fire_id + "_TRAIL";
+    rq3.type = is_buy ? ORDER_TYPE_BUY : ORDER_TYPE_SELL;
+    rq3.price = is_buy ? ask : bid;
+    
+    // Trail position: SL only, no TP initially
+    if (is_buy) {
+        rq3.sl = (sl > 0 && sl < rq3.price) ? sl : 0;
+        rq3.tp = 0; // No TP - will trail
+    } else {
+        rq3.sl = (sl > 0 && sl > rq3.price) ? sl : 0;
+        rq3.tp = 0; // No TP - will trail
+    }
+    
+    if (OrderSend(rq3, rs3) && rs3.retcode == TRADE_RETCODE_DONE) {
+        tickets_opened++;
+        if (main_ticket == 0) main_ticket = rs3.order;
+        avg_price += rs3.price;
+        Print("✅ Trail opened: Ticket ", rs3.order, " - will trail at ", trail_dist, " pips");
+    }
+    
+    // Calculate average price and send confirmation
+    if (tickets_opened > 0) {
+        avg_price = avg_price / tickets_opened;
+        string msg = "HYBRID: " + IntegerToString(tickets_opened) + "/3 positions opened";
+        SendCommandConfirmation("fire", true, main_ticket, avg_price, total_lot, msg, fire_id);
+        Print("✅ HYBRID COMPLETE: ", tickets_opened, " positions opened for [", fire_id, "]");
+    } else {
+        SendCommandConfirmation("fire", false, 0, 0, total_lot, "HYBRID failed: No positions opened", fire_id);
+        Print("❌ HYBRID FAILED: No positions opened for [", fire_id, "]");
+    }
+}
+
+//+------------------------------------------------------------------+
 //| Execute fire command - WITH FIRE_ID TRACKING                    |
 //+------------------------------------------------------------------+
 void ExecuteFireCommand(string json_command)
@@ -828,7 +974,18 @@ void ExecuteFireCommand(string json_command)
     double tp = StringToDouble(ExtractJsonValue(json_command, "tp"));
     double lot = StringToDouble(ExtractJsonValue(json_command, "lot"));
     
-    Print("🔥 Executing FIRE [", fire_id, "] for UUID ", g_user_uuid, ": ", symbol, " Direction: ", direction, " Lot: ", lot, " Entry: ", entry, " SL: ", sl, " TP: ", tp);
+    // *** BITMODE HYBRID DETECTION - FIXED JSON PARSING ***
+    bool is_hybrid = false;
+    if (StringFind(json_command, "\"hybrid\":{\"enabled\":true") >= 0) {
+        is_hybrid = true;
+        Print("🎯 BITMODE HYBRID DETECTED for [", fire_id, "]");
+        
+        // Execute hybrid position management instead of standard trade
+        ExecuteHybridPosition(json_command, fire_id, symbol, direction, entry, sl, tp, lot);
+        return;
+    }
+    
+    Print("🔥 Executing STANDARD FIRE [", fire_id, "] for UUID ", g_user_uuid, ": ", symbol, " Direction: ", direction, " Lot: ", lot, " Entry: ", entry, " SL: ", sl, " TP: ", tp);
     
     // Verify symbol is available in MarketWatch
     if (!SymbolSelect(symbol, true)) {

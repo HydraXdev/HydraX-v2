@@ -30,21 +30,23 @@ class FireModeDatabase:
             CREATE TABLE IF NOT EXISTS user_fire_modes (
                 user_id TEXT PRIMARY KEY,
                 current_mode TEXT DEFAULT 'SELECT',
-                max_slots INTEGER DEFAULT 1,
-                slots_in_use INTEGER DEFAULT 0,
+                max_auto_slots INTEGER DEFAULT 75,
+                auto_slots_in_use INTEGER DEFAULT 0,
+                manual_slots_in_use INTEGER DEFAULT 0,
                 last_mode_change TIMESTAMP,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         ''')
         
-        # Slot tracking for AUTO mode
+        # Slot tracking for both AUTO and MANUAL trades
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS active_slots (
                 slot_id INTEGER PRIMARY KEY AUTOINCREMENT,
                 user_id TEXT NOT NULL,
                 mission_id TEXT NOT NULL,
                 symbol TEXT NOT NULL,
+                slot_type TEXT NOT NULL DEFAULT 'MANUAL',  -- MANUAL or AUTO
                 opened_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 closed_at TIMESTAMP,
                 status TEXT DEFAULT 'OPEN',
@@ -91,6 +93,40 @@ class FireModeDatabase:
             )
         ''')
         
+        # Migration: Add new columns if they don't exist
+        try:
+            cursor.execute("ALTER TABLE user_fire_modes ADD COLUMN max_auto_slots INTEGER DEFAULT 75")
+        except sqlite3.OperationalError:
+            pass  # Column already exists
+            
+        try:
+            cursor.execute("ALTER TABLE user_fire_modes ADD COLUMN auto_slots_in_use INTEGER DEFAULT 0")
+        except sqlite3.OperationalError:
+            pass
+            
+        try:
+            cursor.execute("ALTER TABLE user_fire_modes ADD COLUMN manual_slots_in_use INTEGER DEFAULT 0")
+        except sqlite3.OperationalError:
+            pass
+            
+        try:
+            cursor.execute("ALTER TABLE active_slots ADD COLUMN slot_type TEXT DEFAULT 'MANUAL'")
+        except sqlite3.OperationalError:
+            pass
+            
+        # BITMODE Migration: Add BITMODE column
+        try:
+            cursor.execute("ALTER TABLE user_fire_modes ADD COLUMN bitmode_enabled BOOLEAN DEFAULT FALSE")
+        except sqlite3.OperationalError:
+            pass
+            
+        # Migrate old slots_in_use to auto_slots_in_use
+        cursor.execute('''
+            UPDATE user_fire_modes 
+            SET auto_slots_in_use = slots_in_use 
+            WHERE auto_slots_in_use = 0 AND slots_in_use > 0
+        ''')
+        
         conn.commit()
         conn.close()
         logger.info("Fire mode database initialized")
@@ -102,7 +138,7 @@ class FireModeDatabase:
         
         try:
             cursor.execute('''
-                SELECT current_mode, max_slots, slots_in_use, last_mode_change
+                SELECT current_mode, max_auto_slots, auto_slots_in_use, manual_slots_in_use, last_mode_change, bitmode_enabled
                 FROM user_fire_modes
                 WHERE user_id = ?
             ''', (user_id,))
@@ -113,24 +149,34 @@ class FireModeDatabase:
                 conn.close()
                 return {
                     'current_mode': result[0],
+                    'max_auto_slots': result[1],
+                    'auto_slots_in_use': result[2],
+                    'manual_slots_in_use': result[3],
+                    'last_mode_change': result[4],
+                    'bitmode_enabled': bool(result[5]) if len(result) > 5 else False,
+                    # For backward compatibility
                     'max_slots': result[1],
-                    'slots_in_use': result[2],
-                    'last_mode_change': result[3]
+                    'slots_in_use': result[2]
                 }
             else:
                 # Create default entry - CRITICAL FIX: Keep connection open
                 logger.info(f"Creating default fire mode entry for new user {user_id}")
                 cursor.execute('''
-                    INSERT INTO user_fire_modes (user_id, current_mode, max_slots, slots_in_use)
-                    VALUES (?, 'SELECT', 1, 0)
+                    INSERT INTO user_fire_modes (user_id, current_mode, max_auto_slots, auto_slots_in_use, manual_slots_in_use)
+                    VALUES (?, 'SELECT', 75, 0, 0)
                 ''', (user_id,))
                 conn.commit()
                 conn.close()
                 return {
                     'current_mode': 'SELECT',
-                    'max_slots': 1,
-                    'slots_in_use': 0,
-                    'last_mode_change': None
+                    'max_auto_slots': 75,
+                    'auto_slots_in_use': 0,
+                    'manual_slots_in_use': 0,
+                    'last_mode_change': None,
+                    'bitmode_enabled': False,
+                    # For backward compatibility
+                    'max_slots': 75,
+                    'slots_in_use': 0
                 }
         except Exception as e:
             logger.error(f"Critical error in get_user_mode for user {user_id}: {e}")
@@ -178,10 +224,27 @@ class FireModeDatabase:
             conn.close()
             return False
     
-    def set_max_slots(self, user_id: str, max_slots: int) -> bool:
-        """Set user's maximum AUTO mode slots"""
-        if max_slots < 1 or max_slots > 3:
-            logger.error(f"Invalid max_slots value: {max_slots}")
+    @staticmethod
+    def get_tier_slot_limits(tier: str) -> Dict[str, int]:
+        """Get maximum allowed slots based on user tier"""
+        tier_limits = {
+            'NIBBLER': {'manual': 1, 'auto': 0},      # 1 manual slot only, no auto
+            'FANG': {'manual': 2, 'auto': 0},         # 2 manual slots only, no auto
+            'COMMANDER': {'manual': 10, 'auto': 5}    # 10 manual slots, 5 auto slots (testing)
+        }
+        return tier_limits.get(tier.upper(), {'manual': 1, 'auto': 0})
+    
+    def set_max_auto_slots(self, user_id: str, max_slots: int, user_tier: str = 'COMMANDER') -> bool:
+        """Set user's maximum auto slots (only for COMMANDER tier)"""
+        limits = self.get_tier_slot_limits(user_tier)
+        max_allowed = limits['auto']
+        
+        if user_tier != 'COMMANDER':
+            logger.error(f"Only COMMANDER tier can set auto slots")
+            return False
+            
+        if max_slots < 1 or max_slots > max_allowed:
+            logger.error(f"Invalid max_slots value: {max_slots} (max allowed for {user_tier}: {max_allowed})")
             return False
             
         conn = sqlite3.connect(self.db_path)
@@ -190,7 +253,7 @@ class FireModeDatabase:
         try:
             cursor.execute('''
                 UPDATE user_fire_modes 
-                SET max_slots = ?, updated_at = CURRENT_TIMESTAMP
+                SET max_auto_slots = ?, updated_at = CURRENT_TIMESTAMP
                 WHERE user_id = ?
             ''', (max_slots, user_id))
             
@@ -203,33 +266,50 @@ class FireModeDatabase:
             conn.close()
             return False
     
-    def check_slot_available(self, user_id: str) -> bool:
-        """Check if user has available slot for AUTO mode"""
+    def check_slot_available(self, user_id: str, slot_type: str = 'AUTO', user_tier: str = 'COMMANDER') -> bool:
+        """Check if user has available slot for specified type"""
         mode_info = self.get_user_mode(user_id)
-        return mode_info['slots_in_use'] < mode_info['max_slots']
+        limits = self.get_tier_slot_limits(user_tier)
+        
+        if slot_type == 'AUTO':
+            # Auto slots only for COMMANDER in AUTO mode
+            if user_tier != 'COMMANDER' or mode_info['current_mode'] != 'AUTO':
+                return False
+            return mode_info['auto_slots_in_use'] < mode_info['max_auto_slots']
+        else:  # MANUAL
+            # Check manual slot limit based on tier
+            return mode_info['manual_slots_in_use'] < limits['manual']
     
-    def occupy_slot(self, user_id: str, mission_id: str, symbol: str) -> bool:
-        """Occupy a slot for AUTO mode trade"""
-        if not self.check_slot_available(user_id):
+    def occupy_slot(self, user_id: str, mission_id: str, symbol: str, slot_type: str = 'AUTO', user_tier: str = 'COMMANDER') -> bool:
+        """Occupy a slot for trade (AUTO or MANUAL)"""
+        if not self.check_slot_available(user_id, slot_type, user_tier):
             return False
             
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
         
         try:
-            # Add active slot
+            # Add active slot with type
             cursor.execute('''
-                INSERT INTO active_slots (user_id, mission_id, symbol)
-                VALUES (?, ?, ?)
-            ''', (user_id, mission_id, symbol))
+                INSERT INTO active_slots (user_id, mission_id, symbol, slot_type)
+                VALUES (?, ?, ?, ?)
+            ''', (user_id, mission_id, symbol, slot_type))
             
-            # Increment slots in use
-            cursor.execute('''
-                UPDATE user_fire_modes 
-                SET slots_in_use = slots_in_use + 1,
-                    updated_at = CURRENT_TIMESTAMP
-                WHERE user_id = ?
-            ''', (user_id,))
+            # Increment appropriate slot counter
+            if slot_type == 'AUTO':
+                cursor.execute('''
+                    UPDATE user_fire_modes 
+                    SET auto_slots_in_use = auto_slots_in_use + 1,
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE user_id = ?
+                ''', (user_id,))
+            else:  # MANUAL
+                cursor.execute('''
+                    UPDATE user_fire_modes 
+                    SET manual_slots_in_use = manual_slots_in_use + 1,
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE user_id = ?
+                ''', (user_id,))
             
             conn.commit()
             conn.close()
@@ -246,6 +326,20 @@ class FireModeDatabase:
         cursor = conn.cursor()
         
         try:
+            # First get the slot type before closing
+            cursor.execute('''
+                SELECT slot_type FROM active_slots
+                WHERE user_id = ? AND mission_id = ? AND status = 'OPEN'
+            ''', (user_id, mission_id))
+            
+            result = cursor.fetchone()
+            if not result:
+                logger.warning(f"No open slot found for user {user_id}, mission {mission_id}")
+                conn.close()
+                return False
+                
+            slot_type = result[0]
+            
             # Mark slot as closed
             cursor.execute('''
                 UPDATE active_slots 
@@ -253,13 +347,21 @@ class FireModeDatabase:
                 WHERE user_id = ? AND mission_id = ? AND status = 'OPEN'
             ''', (user_id, mission_id))
             
-            # Decrement slots in use
-            cursor.execute('''
-                UPDATE user_fire_modes 
-                SET slots_in_use = MAX(0, slots_in_use - 1),
-                    updated_at = CURRENT_TIMESTAMP
-                WHERE user_id = ?
-            ''', (user_id,))
+            # Decrement appropriate slot counter
+            if slot_type == 'AUTO':
+                cursor.execute('''
+                    UPDATE user_fire_modes 
+                    SET auto_slots_in_use = MAX(0, auto_slots_in_use - 1),
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE user_id = ?
+                ''', (user_id,))
+            else:  # MANUAL
+                cursor.execute('''
+                    UPDATE user_fire_modes 
+                    SET manual_slots_in_use = MAX(0, manual_slots_in_use - 1),
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE user_id = ?
+                ''', (user_id,))
             
             conn.commit()
             conn.close()
@@ -276,7 +378,7 @@ class FireModeDatabase:
         cursor = conn.cursor()
         
         cursor.execute('''
-            SELECT slot_id, mission_id, symbol, opened_at
+            SELECT slot_id, mission_id, symbol, opened_at, slot_type
             FROM active_slots
             WHERE user_id = ? AND status = 'OPEN'
             ORDER BY opened_at DESC
@@ -288,7 +390,8 @@ class FireModeDatabase:
                 'slot_id': row[0],
                 'mission_id': row[1],
                 'symbol': row[2],
-                'opened_at': row[3]
+                'opened_at': row[3],
+                'slot_type': row[4] if len(row) > 4 else 'MANUAL'
             })
         
         conn.close()
@@ -332,6 +435,43 @@ class FireModeDatabase:
             logger.error(f"Error awarding chaingun: {e}")
             conn.close()
             return False
+    
+    def toggle_bitmode(self, user_id: str, enabled: bool, user_tier: str = 'COMMANDER') -> bool:
+        """Toggle BITMODE for user (FANG+ tiers only)"""
+        # Only FANG+ tiers can use BITMODE
+        allowed_tiers = ['FANG', 'COMMANDER']
+        if user_tier not in allowed_tiers:
+            logger.error(f"BITMODE not available for tier {user_tier} - FANG+ required")
+            return False
+            
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        
+        try:
+            cursor.execute('''
+                INSERT OR REPLACE INTO user_fire_modes 
+                (user_id, bitmode_enabled, updated_at)
+                VALUES (?, ?, CURRENT_TIMESTAMP)
+                ON CONFLICT(user_id) DO UPDATE SET
+                    bitmode_enabled = excluded.bitmode_enabled,
+                    updated_at = CURRENT_TIMESTAMP
+            ''', (user_id, enabled))
+            
+            conn.commit()
+            conn.close()
+            
+            logger.info(f"User {user_id} BITMODE {'enabled' if enabled else 'disabled'}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error toggling BITMODE: {e}")
+            conn.close()
+            return False
+    
+    def is_bitmode_enabled(self, user_id: str) -> bool:
+        """Check if BITMODE is enabled for user"""
+        user_mode = self.get_user_mode(user_id)
+        return user_mode.get('bitmode_enabled', False)
 
 # Create singleton instance
 fire_mode_db = FireModeDatabase()

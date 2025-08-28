@@ -1,8 +1,71 @@
 # BITTEN PRODUCTION SYSTEM - ACTUAL STATE
 
-**Last Updated**: August 19, 2025 23:25 UTC  
-**Agent**: Claude Code (Default Model)  
-**Session**: AI Excellence System Deployed - Comprehensive Tracking Active
+**Last Updated**: August 27, 2025 12:20 UTC  
+**Agent**: Claude Code (Sonnet 4)  
+**Session**: Pattern Optimization Complete - All 6 Patterns Enhanced
+
+## 🚨 CRITICAL: SIGNAL TRACKING LOCATIONS - READ THIS FIRST 🚨
+
+### **ACTIVE SIGNAL LOGS (August 2025)**
+⚠️ **NEVER assume `truth_log.jsonl` is current** - Check ALL these locations:
+
+**PRIMARY ACTIVE LOGS:**
+- `/root/HydraX-v2/comprehensive_tracking.jsonl` - **CURRENT ACTIVE LOG** (Real-time signals)
+- `/root/HydraX-v2/optimized_tracking.jsonl` - **CURRENT ACTIVE LOG** (ML tracking)
+- `/root/HydraX-v2/logs/comprehensive_tracking.jsonl` - **CURRENT ACTIVE LOG** (Backup location)
+
+**LEGACY/INACTIVE LOGS:**
+- `/root/HydraX-v2/truth_log.jsonl` - **STOPPED UPDATING AUG 22, 2025** ❌ DO NOT USE
+- Various `signal_outcomes.jsonl` files - **ARCHIVED** ❌ Outdated
+
+### **SIGNAL STATUS CHECK COMMANDS:**
+```bash
+# Check for recent signals (ALWAYS use these first)
+tail -5 /root/HydraX-v2/comprehensive_tracking.jsonl
+ls -la /root/HydraX-v2/*tracking*.jsonl | sort -k6,7
+
+# Find ANY recent signal logs
+find /root -name "*.jsonl" -mmin -120 | grep -E "(signal|track)" | head -5
+
+# NEVER rely on truth_log.jsonl timestamp without verification
+```
+
+### **SYSTEM STATUS REALITY CHECK:**
+- **6 Enhanced Patterns**: ALL optimized with industry-standard logic
+- **16+ Trading Pairs**: Active monitoring
+- **Prime Trading Hours**: Should generate 3-10 signals/hour
+- **If no signals in 2+ hours**: Check process health, NOT log files first
+
+---
+
+## ✅ PATTERN OPTIMIZATION COMPLETE - AUGUST 27, 2025 ✅
+
+### **ALL 6 PATTERNS NOW ENHANCED WITH INDUSTRY-STANDARD LOGIC**
+
+**Completed Today (August 27, 2025):**
+- **Pattern #6: MOMENTUM_BREAKOUT → MOMENTUM_BURST** - **ENHANCED** ✅
+  - Multi-timeframe validation (M5 instead of M1)
+  - Momentum acceleration detection (increasing velocity over 3 candles)
+  - Volume confirmation (1.3x volume surge requirement)  
+  - Range breakout validation (2+ pip breakout requirement)
+  - R:R feasibility (1.5:1 minimum risk/reward)
+  - Industry-standard confidence (68% base, capped at 82%)
+
+**Complete Pattern Status:**
+1. ✅ **Liquidity Sweep Reversal** - INDUSTRY STANDARD (3+ pip sweeps, rejection candles)
+2. ✅ **VCB Breakout** - INDUSTRY STANDARD (<0.7 pip ATR compression, 1.5x volume)
+3. ✅ **Order Block Bounce** - ENHANCED (real institutional zones)
+4. ✅ **Fair Value Gap Fill** - ENHANCED (multi-candle validation)
+5. ✅ **Sweep and Return** - ENHANCED (multi-touch validation)
+6. ✅ **Momentum Breakout** - ENHANCED (momentum + volume + R:R validation)
+
+**Signal Generation Status:**
+- **System**: FULLY OPERATIONAL ✅
+- **Recent Activity**: Signals generated within last hour ✅
+- **Active Logging**: `/root/HydraX-v2/comprehensive_tracking.jsonl` ✅
+- **Pattern Quality**: Enhanced selectivity for better win rates ✅
+
+---
 
 ## 🎯 AI EXCELLENCE SYSTEM DEPLOYED - AUGUST 19, 2025 🎯
 

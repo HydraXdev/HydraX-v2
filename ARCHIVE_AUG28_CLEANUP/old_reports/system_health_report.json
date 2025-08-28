@@ -1,0 +1,77 @@
+{
+  "healthy": false,
+  "issues": [
+    "Market Watchdog is not running",
+    "\u274c Market Data Receiver not responding at http://localhost:8001/market-data/health"
+  ],
+  "warnings": [
+    "\u26a0\ufe0f WebApp Health returned 404",
+    "Threshold too high: 67.5% (should be ~50%)",
+    "Orphaned process: market_receiver"
+  ],
+  "processes": {
+    "Elite Guard": {
+      "pid": "2183423",
+      "cpu": "0.1",
+      "mem": "1.8",
+      "running": true,
+      "command": "python3 elite_guard_with_citadel.py"
+    },
+    "Fire Publisher": {
+      "pid": "2254126",
+      "cpu": "0.1",
+      "mem": "0.4",
+      "running": true,
+      "command": "python3 safe_fire_publisher_fix.py"
+    },
+    "Production Bot": {
+      "pid": "2253712",
+      "cpu": "0.3",
+      "mem": "2.0",
+      "running": true,
+      "command": "python3 bitten_production_bot.py"
+    },
+    "WebApp Server": {
+      "pid": "2171089",
+      "cpu": "0.0",
+      "mem": "3.0",
+      "running": true,
+      "command": "/usr/bin/python3 /root/HydraX-v2/webapp_server_optimized.py"
+    },
+    "Telemetry Bridge": {
+      "pid": "2164483",
+      "cpu": "0.0",
+      "mem": "0.4",
+      "running": true,
+      "command": "python3 zmq_telemetry_bridge_debug.py"
+    },
+    "Market Watchdog": {
+      "running": false
+    },
+    "Venom Watchdog": {
+      "pid": "2021242",
+      "cpu": "0.1",
+      "mem": "0.7",
+      "running": true,
+      "command": "/usr/bin/python3 /root/HydraX-v2/venom_stream_watchdog_production.py"
+    }
+  },
+  "ports": {
+    "5555": {
+      "status": "LISTENING",
+      "description": "Fire Commands to EA"
+    },
+    "5556": {
+      "status": "LISTENING",
+      "description": "Market Data from EA"
+    },
+    "5557": {
+      "status": "LISTENING",
+      "description": "Elite Guard Signals"
+    },
+    "5560": {
+      "status": "LISTENING",
+      "description": "Telemetry Relay"
+    }
+  }
+}

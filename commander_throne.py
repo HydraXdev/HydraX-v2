@@ -56,7 +56,9 @@ class ThroneSignalOutcomeMonitor:
         self.active_signals = {}
         self.completed_signals = []
         self.monitoring_active = False
-        self.truth_file = "/root/HydraX-v2/truth_log.jsonl"
+        # Updated to use comprehensive tracking that follows signals from birth to death
+        self.truth_file = "/root/HydraX-v2/comprehensive_tracking.jsonl"
+        self.ml_performance_file = "/root/HydraX-v2/optimized_tracking.jsonl"
         
         # Load active signals
         self.load_active_signals()
@@ -1522,10 +1524,10 @@ def api_venom_risk_status():
 @app.route('/throne/api/truth_stats')
 @require_auth("OBSERVER")
 def api_truth_stats():
-    """Get Black Box Truth Metrics from truth_log.jsonl"""
+    """Get Black Box Truth Metrics from comprehensive_tracking.jsonl"""
     try:
         import json
-        truth_file = "/root/HydraX-v2/truth_log.jsonl"
+        truth_file = "/root/HydraX-v2/comprehensive_tracking.jsonl"
         
         if not os.path.exists(truth_file):
             return jsonify({
@@ -1608,10 +1610,10 @@ def api_truth_stats():
 @app.route('/throne/api/live_trade_feed')
 @require_auth("OBSERVER")
 def api_live_trade_feed():
-    """Get live trade feed from truth_log.jsonl (last 15 completed trades)"""
+    """Get live trade feed from comprehensive_tracking.jsonl (last 15 completed trades)"""
     try:
         import json
-        truth_file = "/root/HydraX-v2/truth_log.jsonl"
+        truth_file = "/root/HydraX-v2/comprehensive_tracking.jsonl"
         
         if not os.path.exists(truth_file):
             return jsonify({"trades": []})
@@ -1791,7 +1793,7 @@ def get_retrain_log():
 @app.route('/throne/api/signal_timeline')
 @require_auth("OBSERVER")
 def get_signal_timeline():
-    """Get 24-hour signal timeline data from truth_log.jsonl"""
+    """Get 24-hour signal timeline data from comprehensive_tracking.jsonl"""
     try:
         # Initialize 24-hour array (0-23)
         hourly_counts = [0] * 24
@@ -1800,7 +1802,7 @@ def get_signal_timeline():
         now = datetime.now()
         yesterday = now - timedelta(hours=24)
         
-        truth_log_path = '/root/HydraX-v2/truth_log.jsonl'
+        truth_log_path = '/root/HydraX-v2/comprehensive_tracking.jsonl'
         
         if os.path.exists(truth_log_path):
             with open(truth_log_path, 'r') as f:
@@ -1886,13 +1888,13 @@ def get_hud_access_logs():
 @app.route('/throne/api/trade_of_the_day')
 @require_auth("OBSERVER")
 def get_trade_of_the_day():
-    """Get the best trade of the day from truth_log.jsonl"""
+    """Get the best trade of the day from comprehensive_tracking.jsonl"""
     try:
         # Get current time for 24h window
         now = datetime.now()
         yesterday = now - timedelta(hours=24)
         
-        truth_log_path = '/root/HydraX-v2/truth_log.jsonl'
+        truth_log_path = '/root/HydraX-v2/comprehensive_tracking.jsonl'
         best_trade = None
         best_pips = 0
         
@@ -1976,8 +1978,8 @@ def api_signal_completion_stats():
         fire_count = 0
         multi_fire_signals = 0
         
-        # Parse truth log for signal data
-        truth_file = "/root/HydraX-v2/truth_log.jsonl"
+        # Parse comprehensive tracking for complete signal lifecycle data
+        truth_file = "/root/HydraX-v2/comprehensive_tracking.jsonl"
         if os.path.exists(truth_file):
             with open(truth_file, 'r') as f:
                 for line in f:
@@ -2122,7 +2124,7 @@ def api_elite_guard_analytics():
         total_elite_fired = 0
         
         # Parse truth log for Elite Guard signals
-        truth_file = "/root/HydraX-v2/truth_log.jsonl"
+        truth_file = "/root/HydraX-v2/comprehensive_tracking.jsonl"
         if os.path.exists(truth_file):
             with open(truth_file, 'r') as f:
                 for line in f:
@@ -2316,7 +2318,7 @@ def api_expiring_signals():
         expired_signals = 0
         high_quality_expired = 0
         
-        truth_file = "/root/HydraX-v2/truth_log.jsonl"
+        truth_file = "/root/HydraX-v2/comprehensive_tracking.jsonl"
         if os.path.exists(truth_file):
             with open(truth_file, 'r') as f:
                 for line in f:
@@ -2519,6 +2521,98 @@ def api_fire_command_analytics():
             "failure_analysis": {},
             "error": str(e)
         })
+
+@app.route('/throne/api/ml_performance')
+def ml_performance():
+    """Get ML performance metrics from optimized tracking"""
+    try:
+        ml_stats = {}
+        pattern_performance = {}
+        
+        # Read optimized tracking for ML performance data
+        ml_file = "/root/HydraX-v2/optimized_tracking.jsonl"
+        if os.path.exists(ml_file):
+            with open(ml_file, 'r') as f:
+                signals = []
+                for line in f:
+                    try:
+                        signal = json.loads(line.strip())
+                        signals.append(signal)
+                        
+                        # Group by pattern and session
+                        key = f"{signal.get('pattern', 'UNKNOWN')}_{signal.get('session', 'UNKNOWN')}"
+                        if key not in pattern_performance:
+                            pattern_performance[key] = {
+                                'total': 0,
+                                'wins': 0,
+                                'losses': 0,
+                                'win_rate': 0,
+                                'risk_reward': signal.get('risk_reward', 1.5),
+                                'expected_value': 0
+                            }
+                        
+                        pattern_performance[key]['total'] += 1
+                        if signal.get('win', False):
+                            pattern_performance[key]['wins'] += 1
+                        else:
+                            pattern_performance[key]['losses'] += 1
+                    except:
+                        continue
+                
+                # Calculate win rates and expected values
+                for key, stats in pattern_performance.items():
+                    if stats['total'] > 0:
+                        stats['win_rate'] = stats['wins'] / stats['total']
+                        # Expected Value = (Win% × RR) - Loss%
+                        stats['expected_value'] = (stats['win_rate'] * stats['risk_reward']) - (1 - stats['win_rate'])
+                
+                # Sort by expected value
+                sorted_patterns = sorted(pattern_performance.items(), 
+                                       key=lambda x: x[1]['expected_value'], 
+                                       reverse=True)
+                
+                # Get top and bottom performers
+                top_performers = sorted_patterns[:5]
+                bottom_performers = sorted_patterns[-5:] if len(sorted_patterns) > 5 else []
+                
+                ml_stats = {
+                    'total_signals': len(signals),
+                    'patterns_tracked': len(pattern_performance),
+                    'top_performers': [
+                        {
+                            'pattern': k,
+                            'win_rate': f"{v['win_rate']*100:.1f}%",
+                            'expected_value': f"{v['expected_value']:.3f}",
+                            'sample_size': v['total']
+                        } for k, v in top_performers
+                    ],
+                    'bottom_performers': [
+                        {
+                            'pattern': k,
+                            'win_rate': f"{v['win_rate']*100:.1f}%",
+                            'expected_value': f"{v['expected_value']:.3f}",
+                            'sample_size': v['total']
+                        } for k, v in bottom_performers
+                    ]
+                }
+        
+        # Check gate adjustments
+        gate_file = sorted([f for f in os.listdir('/root/elite_guard') 
+                          if f.startswith('active_gates_')], reverse=True)
+        if gate_file:
+            with open(f'/root/elite_guard/{gate_file[0]}', 'r') as f:
+                gates_data = json.load(f)
+                ml_stats['active_gates'] = len(gates_data.get('gates', {}))
+                ml_stats['last_gate_update'] = gates_data.get('timestamp', 'Unknown')
+        
+        return jsonify({
+            'ml_performance': ml_stats,
+            'last_updated': datetime.now().strftime("%H:%M:%S")
+        })
+        
+    except Exception as e:
+        logger.error(f"Error getting ML performance: {e}")
+        return jsonify({'error': str(e)})
 
 @app.route('/static/<path:filename>')
 def serve_static(filename):

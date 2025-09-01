@@ -171,8 +171,8 @@ class MasterOutcomeTracker:
         slippage = abs(fill_price - signal_entry) * pip_multiplier if signal_entry else 0
         
         # Distance calculations
-        sl_distance = abs(fill_price - sl) * pip_multiplier
-        tp_distance = abs(tp - fill_price) * pip_multiplier
+        sl_distance = abs(fill_price - sl) * pip_multiplier if sl else 0
+        tp_distance = abs(tp - fill_price) * pip_multiplier if tp else 0
         actual_rr = tp_distance / sl_distance if sl_distance > 0 else 0
         
         # Time analysis

@@ -43,10 +43,10 @@ class FireModeExecutor:
         if user_tier not in ["COMMANDER"]:
             return False, "Tier doesn't support AUTO"
         
-        # Check TCS threshold (80% for AUTO - sleep mode trading)
+        # Check TCS threshold (79% for AUTO - high quality trading)
         tcs = mission.get('tcs', 0)
-        if tcs < 80:
-            return False, f"TCS {tcs}% < 80% threshold"
+        if tcs < 79:
+            return False, f"TCS {tcs}% < 79% threshold"
         
         # Check if slot available
         if not fire_mode_db.check_slot_available(user_id):

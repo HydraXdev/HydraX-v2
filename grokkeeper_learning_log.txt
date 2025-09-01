@@ -1,0 +1,1 @@
+Tue Aug 26 15:02:14 UTC 2025: Demo burn test day - feeding maximum loss data to GrokKeeper for ML training. Current: 4/26 wins, -400. FAIR_VALUE_GAP_FILL pattern dominance (99/100 signals) identified as primary issue.

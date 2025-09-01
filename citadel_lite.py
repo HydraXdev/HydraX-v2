@@ -66,11 +66,11 @@ class CitadelProtection:
         self.delayed_signals = []
         self.protected_signals = []
         
-        # Configuration
-        self.SWEEP_ZONE_PIPS = 5  # How close to zone = risk
-        self.SWEEP_COMPLETION_PIPS = 3  # Reversal needed to confirm
-        self.POST_SWEEP_BOOST = 20  # Confidence boost for post-sweep
-        self.MAX_DELAY_MINUTES = 30  # Max time to delay a signal
+        # Configuration - LOOSENED for more signals
+        self.SWEEP_ZONE_PIPS = 15  # How close to zone = risk (was 5, now 15 - much less restrictive)
+        self.SWEEP_COMPLETION_PIPS = 8  # Reversal needed to confirm (was 3, now 8 - needs bigger reversal)
+        self.POST_SWEEP_BOOST = 10  # Confidence boost for post-sweep (was 20, now 10 - less aggressive boost)
+        self.MAX_DELAY_MINUTES = 10  # Max time to delay a signal (was 30, now 10 - faster processing)
         
         # Statistics
         self.stats = {

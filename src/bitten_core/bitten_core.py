@@ -1648,7 +1648,7 @@ Your mission briefing is waiting."""
                 # Get actual user balance from EA instances
                 actual_balance = self._get_user_actual_balance(user_id)
                 account_balance = actual_balance if actual_balance > 0 else user_info.get('account_balance', 10000.0)
-                risk_percent = 0.05  # 5% risk
+                risk_percent = 0.03  # 3% risk MAX for production
                 
                 # Calculate stop loss pips from price levels (fix for null stop_pips)
                 if signal_data.get('stop_pips') and signal_data['stop_pips'] > 0:
@@ -1692,6 +1692,30 @@ Your mission briefing is waiting."""
                     tcs_score=signal_data.get('confidence', 0),
                     mission_id=signal_id
                 )
+            
+            # Check for available manual slot before executing
+            from src.bitten_core.fire_mode_database import FireModeDatabase
+            fire_db = FireModeDatabase()
+            
+            # Get user tier for slot limits
+            user_tier = user_info.get('tier', 'NIBBLER') if user_info else 'NIBBLER'
+            
+            # Check manual slot availability
+            if not fire_db.check_slot_available(user_id, slot_type='MANUAL', user_tier=user_tier):
+                limits = fire_db.get_tier_slot_limits(user_tier)
+                return {
+                    'success': False,
+                    'error': 'no_slots_available',
+                    'message': f"❌ No manual slots available. Your {user_tier} tier allows {limits['manual']} manual slot(s). Close an existing position first."
+                }
+            
+            # Occupy the slot
+            if not fire_db.occupy_slot(user_id, signal_id, trade_request.symbol, slot_type='MANUAL', user_tier=user_tier):
+                return {
+                    'success': False,
+                    'error': 'slot_occupation_failed',
+                    'message': "❌ Failed to occupy slot. Please try again."
+                }
             
             # Execute via FireRouter with enhanced monitoring
             execution_result = self.fire_router.execute_trade_request(trade_request, user_info)
@@ -1757,6 +1781,9 @@ Your mission briefing is waiting."""
             else:
                 self._log_error(f"❌ Signal {signal_id} execution failed for user {user_id}: {execution_result.message}")
                 
+                # Release the slot since execution failed
+                fire_db.release_slot(user_id, signal_id)
+                
                 return {
                     'success': False,
                     'signal_id': signal_id,
@@ -1803,7 +1830,7 @@ Your mission briefing is waiting."""
             # CRITICAL: COMMANDER 5% RISK POSITION SIZING
             actual_balance = self._get_user_actual_balance(user_id)
             account_balance = actual_balance if actual_balance > 0 else 1000.0
-            risk_percent = 0.05  # COMMANDER gets 5% risk
+            risk_percent = 0.03  # COMMANDER gets 3% risk MAX
             
             # Calculate stop loss pips from price levels (same logic as regular flow)
             if signal_data.get('stop_pips') and signal_data['stop_pips'] > 0:
@@ -1834,6 +1861,26 @@ Your mission briefing is waiting."""
             print(f"🎖️ COMMANDER Position sizing: Balance ${account_balance:.2f}, Risk {risk_percent*100}% = ${risk_amount:.2f}")
             print(f"🎖️ COMMANDER Stop loss {stop_loss_pips} pips, Calculated lot size: {lot_size:.2f}")
             
+            # Check for available manual slot for COMMANDER (10 slots max)
+            from src.bitten_core.fire_mode_database import FireModeDatabase
+            fire_db = FireModeDatabase()
+            
+            # COMMANDER tier with 10 manual slots
+            if not fire_db.check_slot_available(user_id, slot_type='MANUAL', user_tier='COMMANDER'):
+                return {
+                    'success': False,
+                    'error': 'no_slots_available',
+                    'message': f"❌ No manual slots available. COMMANDER tier allows 10 manual slots. Close an existing position first."
+                }
+            
+            # Occupy the slot
+            if not fire_db.occupy_slot(user_id, signal_id, signal_data['symbol'], slot_type='MANUAL', user_tier='COMMANDER'):
+                return {
+                    'success': False,
+                    'error': 'slot_occupation_failed',
+                    'message': "❌ Failed to occupy slot. Please try again."
+                }
+            
             # CRITICAL: FORCE REAL EXECUTION WITH PROPER POSITION SIZING
             trade_request = TradeRequest(
                 user_id=user_id,
@@ -1851,25 +1898,37 @@ Your mission briefing is waiting."""
             
             logger.info(f"🎖️ COMMANDER EXECUTION RESULT: {execution_result.message}")
             
-            # Mark as executed
-            self.mark_user_signal_executed(user_id, signal_id)
-            
-            # Return immediate response - NO SIMULATION
-            return {
-                'success': True,
-                'signal_id': signal_id,
-                'execution_result': execution_result,
-                'message': f"🎖️ COMMANDER FIRE EXECUTED: {execution_result.message}",
-                'commander_mode': True,
-                'simulation_disabled': True,
-                'mt5_account': '94956065',
-                'signal_data': {
-                    'symbol': signal_data['symbol'],
-                    'direction': signal_data['direction'],
-                    'confidence': signal_data.get('confidence'),
-                    'executed_at': signal_data['executed_at']
+            if execution_result.success:
+                # Mark as executed
+                self.mark_user_signal_executed(user_id, signal_id)
+                
+                # Return immediate response - NO SIMULATION
+                return {
+                    'success': True,
+                    'signal_id': signal_id,
+                    'execution_result': execution_result,
+                    'message': f"🎖️ COMMANDER FIRE EXECUTED: {execution_result.message}",
+                    'commander_mode': True,
+                    'simulation_disabled': True,
+                    'mt5_account': '94956065',
+                    'signal_data': {
+                        'symbol': signal_data['symbol'],
+                        'direction': signal_data['direction'],
+                        'confidence': signal_data.get('confidence'),
+                        'executed_at': signal_data['executed_at']
+                    }
                 }
-            }
+            else:
+                # Release the slot since execution failed
+                fire_db.release_slot(user_id, signal_id)
+                
+                return {
+                    'success': False,
+                    'signal_id': signal_id,
+                    'execution_result': execution_result,
+                    'message': f"🎖️ COMMANDER FIRE FAILED: {execution_result.message}",
+                    'error': execution_result.message
+                }
             
         except Exception as e:
             logger.error(f"🎖️ COMMANDER FIRE ERROR: {e}")
@@ -1938,8 +1997,17 @@ Your mission briefing is waiting."""
             
             # Calculate SL/TP prices if missing (fallback calculation)
             entry_price = signal_data.get('entry_price', 0)
-            sl_price = signal_data.get('sl')
-            tp_price = signal_data.get('tp')
+            # Check both field names for compatibility
+            sl_price = signal_data.get('sl') or signal_data.get('stop_loss')
+            tp_price = signal_data.get('tp') or signal_data.get('take_profit')
+            
+            # DEBUG: Log what fields we received
+            if not sl_price or not tp_price:
+                print(f"[DEBUG] Signal missing SL/TP. Available fields: {list(signal_data.keys())}")
+                if 'stop_loss' in signal_data:
+                    print(f"        stop_loss value: {signal_data.get('stop_loss')}")
+                if 'take_profit' in signal_data:
+                    print(f"        take_profit value: {signal_data.get('take_profit')}")
             
             print(f"[DEBUG] Mission creation for {signal_id}: entry={entry_price}, sl={sl_price}, tp={tp_price}")
             

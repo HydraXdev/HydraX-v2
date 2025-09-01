@@ -1,0 +1,30 @@
+{
+  "positions": {
+    "21084221": {
+      "ticket": 21084221,
+      "fire_id": "ELITE_SNIPER_USDJPY_1756433588",
+      "user_id": "7176191872",
+      "user_tier": "COMMANDER",
+      "symbol": "USDJPY",
+      "direction": "BUY",
+      "entry_px": 146.961,
+      "sl_init_px": 146.761,
+      "sl_current_px": 146.761,
+      "tp_px": 149.961,
+      "r_pips": 20.000000000001705,
+      "lot_size": 0.01,
+      "lot_remaining": 0.01,
+      "state": "entered",
+      "tp1_done": false,
+      "be_set": false,
+      "trail_on": false,
+      "open_ts": 1756434224.6126137,
+      "last_update_ts": 1756437894.3692193,
+      "milestones_hit": [],
+      "commands_sent": {},
+      "last_seq": 0
+    }
+  },
+  "global_seq": 0,
+  "timestamp": 1756437894.369333
+}

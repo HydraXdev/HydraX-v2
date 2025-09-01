@@ -1358,6 +1358,105 @@ Consider documenting your current thoughts:
                         error_msg = "❌ Slots command failed. Please try again."
                         self.send_adaptive_response(message.chat.id, error_msg, user_tier, "command_error")
                 
+# [DISABLED BITMODE]                 elif message.text.upper().startswith("/BITMODE"):
+# [DISABLED BITMODE]                     # Handle BITMODE toggle command (FANG+ tiers only)
+                    try:
+                        from src.bitten_core.fire_mode_database import fire_mode_db
+                        
+                        # Check tier eligibility
+                        if user_tier not in ['FANG', 'COMMANDER']:
+# [DISABLED BITMODE]                             upgrade_msg = "🚫 **BITMODE - FANG+ REQUIRED**\n\n"
+# [DISABLED BITMODE]                             upgrade_msg += "BITMODE (Hybrid Position Management) is exclusive to FANG+ tiers.\n\n"
+# [DISABLED BITMODE]                             upgrade_msg += "**BITMODE Features:**\n"
+                            upgrade_msg += "• 25%/25%/50% position management\n"
+                            upgrade_msg += "• Auto breakeven at +8 pips\n"
+                            upgrade_msg += "• Trailing stops for remaining 50%\n"
+                            upgrade_msg += "• Symbol-specific optimization\n\n"
+                            upgrade_msg += "Upgrade to FANG tier to unlock advanced position management!"
+                            self.send_adaptive_response(message.chat.id, upgrade_msg, user_tier, "bitmode_upgrade_required")
+                            return
+                        
+                        # Parse command arguments
+                        parts = message.text.split()
+                        if len(parts) == 1:
+                            # Status check
+                            current_status = fire_mode_db.is_bitmode_enabled(uid)
+# [DISABLED BITMODE]                             status_msg = f"🎯 **BITMODE STATUS**\n\n"
+                            status_msg += f"Status: {'✅ ENABLED' if current_status else '❌ DISABLED'}\n"
+                            status_msg += f"Tier: {user_tier} ✅\n\n"
+                            
+                            if current_status:
+                                status_msg += "**Active Features:**\n"
+                                status_msg += "• First 25% closed at +8 pips\n"
+                                status_msg += "• Second 25% closed at +12 pips\n"
+                                status_msg += "• Remaining 50% trails with 10 pip distance\n"
+                                status_msg += "• Auto breakeven protection\n\n"
+# [DISABLED BITMODE]                                 status_msg += "Use `/BITMODE OFF` to disable"
+                            else:
+                                status_msg += "**Available Commands:**\n"
+# [DISABLED BITMODE]                                 status_msg += "• `/BITMODE ON` - Enable hybrid management\n"
+# [DISABLED BITMODE]                                 status_msg += "• `/BITMODE OFF` - Disable hybrid management\n"
+# [DISABLED BITMODE]                                 status_msg += "• `/BITMODE` - Check status"
+                            
+                            self.send_adaptive_response(message.chat.id, status_msg, user_tier, "bitmode_status")
+                            
+                        elif len(parts) == 2:
+                            command = parts[1].upper()
+                            if command in ['ON', 'ENABLE', 'TRUE', '1']:
+# [DISABLED BITMODE]                                 # Enable BITMODE
+                                success = fire_mode_db.toggle_bitmode(uid, True, user_tier)
+                                if success:
+# [DISABLED BITMODE]                                     success_msg = f"🎯 **BITMODE ACTIVATED**\n\n"
+                                    success_msg += f"Hybrid position management is now ENABLED for all trades.\n\n"
+                                    success_msg += f"**Your Configuration:**\n"
+                                    success_msg += f"• Tier: {user_tier}\n"
+                                    success_msg += f"• Strategy: 25%/25%/50% management\n"
+                                    success_msg += f"• Breakeven: Auto at +8 pips\n"
+                                    success_msg += f"• Trailing: 10 pip distance\n\n"
+# [DISABLED BITMODE]                                     success_msg += f"Next manual or auto fire will use BITMODE!"
+                                    self.send_adaptive_response(message.chat.id, success_msg, user_tier, "bitmode_enabled")
+                                else:
+# [DISABLED BITMODE]                                     error_msg = "❌ Failed to enable BITMODE. Please try again."
+                                    self.send_adaptive_response(message.chat.id, error_msg, user_tier, "bitmode_error")
+                                    
+                            elif command in ['OFF', 'DISABLE', 'FALSE', '0']:
+# [DISABLED BITMODE]                                 # Disable BITMODE
+                                success = fire_mode_db.toggle_bitmode(uid, False, user_tier)
+                                if success:
+# [DISABLED BITMODE]                                     disable_msg = f"🔸 **BITMODE DEACTIVATED**\n\n"
+                                    disable_msg += f"Hybrid position management is now DISABLED.\n\n"
+                                    disable_msg += f"Future trades will use standard single TP/SL management.\n"
+# [DISABLED BITMODE]                                     disable_msg += f"Use `/BITMODE ON` to re-enable when ready."
+                                    self.send_adaptive_response(message.chat.id, disable_msg, user_tier, "bitmode_disabled")
+                                else:
+# [DISABLED BITMODE]                                     error_msg = "❌ Failed to disable BITMODE. Please try again."
+                                    self.send_adaptive_response(message.chat.id, error_msg, user_tier, "bitmode_error")
+                            else:
+                                # Invalid argument
+                                help_msg = f"❌ Invalid argument: `{command}`\n\n"
+                                help_msg += f"**Valid Commands:**\n"
+# [DISABLED BITMODE]                                 help_msg += f"• `/BITMODE ON` - Enable hybrid management\n"
+# [DISABLED BITMODE]                                 help_msg += f"• `/BITMODE OFF` - Disable hybrid management\n"
+# [DISABLED BITMODE]                                 help_msg += f"• `/BITMODE` - Check current status"
+                                self.send_adaptive_response(message.chat.id, help_msg, user_tier, "bitmode_help")
+                        else:
+                            # Too many arguments
+                            help_msg = f"❌ Too many arguments.\n\n"
+                            help_msg += f"**Usage:**\n"
+# [DISABLED BITMODE]                             help_msg += f"• `/BITMODE` - Check status\n"
+# [DISABLED BITMODE]                             help_msg += f"• `/BITMODE ON` - Enable\n"
+# [DISABLED BITMODE]                             help_msg += f"• `/BITMODE OFF` - Disable"
+                            self.send_adaptive_response(message.chat.id, help_msg, user_tier, "bitmode_help")
+                            
+                    except ImportError as e:
+# [DISABLED BITMODE]                         logger.error(f"BITMODE database import failed: {e}")
+# [DISABLED BITMODE]                         error_msg = "⚠️ BITMODE system temporarily unavailable. Please try again later."
+                        self.send_adaptive_response(message.chat.id, error_msg, user_tier, "system_error")
+                    except Exception as e:
+# [DISABLED BITMODE]                         logger.error(f"BITMODE command error: {e}")
+# [DISABLED BITMODE]                         error_msg = "❌ BITMODE command failed. Please try again or contact support."
+                        self.send_adaptive_response(message.chat.id, error_msg, user_tier, "command_error")
+                
                 elif message.text.startswith("/presspass"):
                     # Handle Press Pass registration and management
                     try:

@@ -65,7 +65,8 @@ class FreshFireBuilder:
             'AUDUSD': 10.0,
             'EURJPY': 6.8,   # JPY pairs have different pip values
             'GBPJPY': 6.8,
-            'XAUUSD': 1.0,   # Gold has different pip value
+            'XAUUSD': 10.0,  # Gold - $10 per pip per standard lot
+            'XAGUSD': 5.0,   # Silver - $5 per pip per standard lot (5000 oz)
             'BTCUSD': 0.01,  # Crypto pairs
             'ETHUSD': 0.01,
             'XRPUSD': 0.0001
@@ -211,22 +212,41 @@ class FreshFireBuilder:
         # Get pip value for this symbol
         pip_value = self._get_pip_value(symbol)
         
+        # CRITICAL: Log the calculation for debugging
+        logger.info(f"🔍 LOT CALC: {symbol} | Balance: ${balance:.2f} | Risk: {risk_percent}% (${risk_amount:.2f})")
+        logger.info(f"   SL Distance: {sl_distance:.1f} pips | Pip Value: ${pip_value:.2f}")
+        
         # Calculate lot size
         # Formula: Lot Size = Risk Amount / (SL Pips × Pip Value)
         lot_size = risk_amount / (sl_distance * pip_value)
+        logger.info(f"   Calculated: {lot_size:.4f} lots before limits")
         
         # Apply limits
         min_lot = 0.01
         max_lot = self._get_max_lot_size(symbol, balance)
         
-        return max(min_lot, min(lot_size, max_lot))
+        final_lot = max(min_lot, min(lot_size, max_lot))
+        
+        # SAFETY CHECK: Verify actual risk doesn't exceed 3%
+        actual_risk = final_lot * sl_distance * pip_value
+        actual_risk_pct = (actual_risk / balance) * 100
+        if actual_risk_pct > 3.5:  # Allow 3.5% max (small buffer for rounding)
+            logger.warning(f"⚠️ RISK EXCEEDED: {actual_risk_pct:.1f}% > 3.5% max! Reducing lot size...")
+            # Recalculate to enforce 3% max
+            final_lot = (balance * 0.03) / (sl_distance * pip_value)
+            final_lot = round(final_lot, 2)
+            logger.info(f"   Adjusted to {final_lot} lots for 3% risk")
+        
+        return final_lot
     
     def _get_pip_multiplier(self, symbol: str) -> float:
         """Get pip multiplier for symbol"""
         if 'JPY' in symbol:
             return 100
         elif symbol in ['XAUUSD']:
-            return 100  # For XAUUSD: 0.01 price movement = 1 pip
+            return 10  # For XAUUSD: 0.1 price movement = 1 pip (e.g., 2405.0 to 2405.1)
+        elif symbol in ['XAGUSD']:
+            return 100  # For XAGUSD: 0.01 price movement = 1 pip (e.g., 38.50 to 38.51)
         elif symbol in ['BTCUSD', 'ETHUSD']:
             return 1
         elif symbol == 'XRPUSD':
@@ -240,6 +260,11 @@ class FreshFireBuilder:
     
     def _get_max_lot_size(self, symbol: str, balance: float) -> float:
         """Get maximum allowed lot size based on symbol and balance"""
+        # Standard forex pairs - scale with account size
+        if any(x in symbol for x in ['EUR', 'GBP', 'USD', 'JPY', 'CHF', 'CAD', 'AUD', 'NZD']):
+            # Allow up to 10 lots per $10k balance (scales with account)
+            return balance / 1000.0
+        
         # Crypto pairs have different limits
         if symbol in ['BTCUSD', 'ETHUSD', 'XRPUSD']:
             # Max 5% of balance worth for crypto

@@ -39,7 +39,7 @@ class TradingConfig:
     PIP_SIZES = {
         'JPY': 0.01,
         'GOLD': 0.1,  # XAUUSD - $0.10 = 1 pip (2510.50 to 2510.60 = 1 pip)
-        'SILVER': 0.001,  # XAGUSD - $0.001 = 1 pip (38.500 to 38.501 = 1 pip)
+        'SILVER': 0.01,  # XAGUSD - $0.01 = 1 pip (38.50 to 38.51 = 1 pip)
         'DEFAULT': 0.0001
     }
     
@@ -739,7 +739,7 @@ class EliteGuardBalanced:
             elif symbol == 'XAUUSD':
                 pip_size = 0.1
             elif symbol == 'XAGUSD':
-                pip_size = 0.001  # Silver: 0.001 = 1 pip (38.500 to 38.501 = 1 pip)
+                pip_size = 0.01  # Silver: 0.01 = 1 pip (38.50 to 38.51 = 1 pip)
             else:
                 pip_size = 0.0001
             
@@ -1294,7 +1294,7 @@ class EliteGuardBalanced:
             elif symbol == 'XAUUSD':
                 pip_size = 0.1  # Gold: 0.1 = 1 pip
             elif symbol == 'XAGUSD':
-                pip_size = 0.001  # Silver: 0.001 = 1 pip
+                pip_size = 0.01  # Silver: 0.01 = 1 pip
             else:
                 pip_size = 0.0001
             
@@ -1470,7 +1470,7 @@ class EliteGuardBalanced:
             elif symbol == "XAUUSD":
                 pip_size = 0.1
             elif symbol == "XAGUSD":
-                pip_size = 0.001  # Silver: 0.001 = 1 pip
+                pip_size = 0.01  # Silver: 0.01 = 1 pip
             else:
                 pip_size = 0.0001
             range_candles = candles[-4:-1]
@@ -1660,7 +1660,7 @@ class EliteGuardBalanced:
         elif symbol in ['XAUUSD']:
             pip_value = 0.01  # Gold pip value (standard pips)
         elif symbol in ['XAGUSD']:
-            pip_value = 0.001  # Silver: 0.001 price = 1 pip  
+            pip_value = 0.01  # Silver: 0.01 price = 1 pip  
         else:
             pip_value = 0.0001  # Standard forex pairs
             
@@ -1669,9 +1669,9 @@ class EliteGuardBalanced:
         # Assuming standard lot pip values: $10 for forex, varies for metals
         # Corrected pip values for proper risk calculation
         if symbol == 'XAUUSD':
-            pip_value_per_lot = 1.0  # Gold: $1 per pip per 0.01 lot
+            pip_value_per_lot = 10.0  # Gold: $10.00 per pip per standard lot
         elif symbol == 'XAGUSD':
-            pip_value_per_lot = 0.5  # Silver: $0.50 per pip per 0.01 lot (corrected from $5)
+            pip_value_per_lot = 5.0  # Silver: $5.00 per pip per standard lot (5000 oz)
         else:
             pip_value_per_lot = 10.0  # Forex pairs: $10 per pip per standard lot
         lot_size = risk_amount / (stop_pips * pip_value_per_lot)

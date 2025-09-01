@@ -8,6 +8,8 @@ import zmq
 import json
 import logging
 import time
+from time import monotonic
+from src.bitten_core.tiered_exit_integration import drive_exits_for_active_positions
 
 logging.basicConfig(
     level=logging.INFO,
@@ -31,6 +33,12 @@ def main():
     logger.info("📡 Bridging telemetry...")
     
     message_count = 0
+    
+    # Hook B: Track quotes and drive exit FSM
+    quotes = {}  # symbol -> {"bid": x, "ask": y}
+    last_drive_ts = 0.0
+    DRIVE_MIN_GAP = 0.10  # 100ms debounce
+    symbols_we_manage = {"USDJPY"}  # Canary symbol for testing
     
     while True:
         try:
@@ -71,6 +79,32 @@ def main():
                             logger.info(f"   Symbol: {data['symbol']}")
                         if 'bid' in data and 'ask' in data:
                             logger.info(f"   Tick: {data['bid']}/{data['ask']}")
+                    
+                    # Hook B: Accumulate quotes for exit FSM
+                    if 'symbol' in data and 'bid' in data and 'ask' in data:
+                        symbol = data['symbol']
+                        quotes[symbol] = {
+                            "bid": float(data['bid']),
+                            "ask": float(data['ask'])
+                        }
+                        
+                        # Drive exits if it's time and we have the canary symbol
+                        now = monotonic()
+                        if now - last_drive_ts >= DRIVE_MIN_GAP:
+                            # Filter for managed symbols only
+                            snapshot = {s: quotes[s] for s in quotes.keys() & symbols_we_manage
+                                      if "bid" in quotes[s] and "ask" in quotes[s]}
+                            
+                            if snapshot:
+                                # 🔥 Hook B: Drive the exit FSM
+                                try:
+                                    drive_exits_for_active_positions(snapshot)
+                                    if message_count % 100 == 0:  # Log periodically
+                                        logger.info(f"🎯 Hook B: Driving exits for {list(snapshot.keys())}")
+                                except Exception as e:
+                                    logger.error(f"Hook B error: {e}")
+                                
+                                last_drive_ts = now
                     
                     # Republish as JSON
                     publisher.send_json(data)

@@ -16,6 +16,8 @@ import time
 import signal
 import sys
 from datetime import datetime
+from time import monotonic
+from src.bitten_core.tiered_exit_integration import drive_exits_for_active_positions
 
 logging.basicConfig(
     level=logging.INFO,
@@ -37,6 +39,12 @@ class ResilientTelemetryBridge:
         self.ticks_per_minute = 0
         self.last_minute_mark = time.time()
         self.minute_tick_count = 0
+        
+        # Hook B: Track quotes and drive exit FSM
+        self.quotes = {}  # symbol -> {"bid": x, "ask": y}
+        self.last_drive_ts = 0.0
+        self.DRIVE_MIN_GAP = 0.10  # 100ms debounce
+        self.symbols_we_manage = {"USDJPY"}  # Canary symbol for testing
         
     def setup_sockets(self):
         """Setup ZMQ sockets with proper options"""
@@ -145,6 +153,55 @@ class ResilientTelemetryBridge:
                 # Log first 5 messages
                 if self.message_count <= 5:
                     logger.info(f"📊 Message {self.message_count}: {data.get('symbol', 'unknown')}")
+                
+                # Detect position closes IMMEDIATELY
+                try:
+                    from src.bitten_core.position_close_detector import detect_position_closes
+                    detect_position_closes(data)
+                except Exception as e:
+                    pass  # Silent fail, non-critical
+                
+                # Hook B: Accumulate quotes for exit FSM
+                if 'symbol' in data and 'bid' in data and 'ask' in data:
+                    symbol = data['symbol']
+                    self.quotes[symbol] = {
+                        "bid": float(data['bid']),
+                        "ask": float(data['ask'])
+                    }
+                    
+                    # Drive exits if it's time and we have the canary symbol
+                    now = monotonic()
+                    if now - self.last_drive_ts >= self.DRIVE_MIN_GAP:
+                        # Filter for managed symbols only
+                        snapshot = {s: self.quotes[s] for s in self.quotes.keys() & self.symbols_we_manage
+                                  if "bid" in self.quotes[s] and "ask" in self.quotes[s]}
+                        
+                        if snapshot:
+                            # 🔥 Hook B: Drive the exit FSM
+                            try:
+                                drive_exits_for_active_positions(snapshot)
+                                if self.message_count % 500 == 0:  # Log periodically
+                                    logger.info(f"🎯 Hook B: Driving exits for {list(snapshot.keys())}")
+                            except Exception as e:
+                                logger.error(f"Hook B error: {e}")
+                            
+                            # Check for position timeouts
+                            try:
+                                from src.bitten_core.tiered_exit_integration import _check_position_timeouts
+                                _check_position_timeouts()
+                            except Exception as e:
+                                logger.error(f"Timeout check error: {e}")
+                            
+                            # Clean up stale positions every 50 messages (more frequent)
+                            # This runs approximately every 5-10 seconds
+                            if self.message_count % 50 == 0:
+                                try:
+                                    from src.bitten_core.position_close_updater import check_orphaned_positions
+                                    check_orphaned_positions()
+                                except Exception as e:
+                                    logger.debug(f"Position cleanup: {e}")
+                            
+                            self.last_drive_ts = now
                     
                 # Republish as JSON
                 self.publisher.send_json(data)

@@ -1,0 +1,24 @@
+# Rollout configuration for safe deployment
+
+# Feature flags
+FEATURE_HYBRID_ENABLED = true
+FEATURE_AUTOFIRE_ENABLED = true
+
+# Canary deployment settings
+CANARY_SYMBOLS = ["*"]
+CANARY_PERCENT = 1.00
+
+# Command timing and reliability
+MIN_CMD_GAP_MS = 700
+MAX_RETRIES = 3                  # Max retry attempts for failed commands
+RETRY_BACKOFF_MS = [150, 300, 600]  # Backoff delays for retries
+
+# Safety limits
+MAX_CONCURRENT_COMMANDS = 5      # Max commands in flight
+COMMAND_TIMEOUT_MS = 5000        # Command timeout
+
+# Monitoring thresholds
+ALERT_PARTIAL_MIN_R = 1.25       # Alert if partial close below this R
+ALERT_BE_MIN_R = 1.25            # Alert if BE move below this R
+AUTO_DISABLE_THRESHOLD = 2       # Auto-disable after N bad exits in a row
+# [DISABLED BITMODE] FEATURE_BITMODE_ENABLED = false  # BITMODE disabled - using tiered exits only

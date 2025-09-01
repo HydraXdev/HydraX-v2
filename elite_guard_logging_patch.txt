@@ -1,0 +1,25 @@
+# Elite Guard Unified Logging Patch
+# Add this import at the top of elite_guard_with_citadel.py:
+import sys
+sys.path.insert(0, '/root/HydraX-v2')
+from comprehensive_tracking_layer import log_trade
+
+# Replace any logging to truth_log.jsonl with:
+def log_signal_unified(self, signal_data):
+    """Log signal using unified tracking"""
+    trade_data = {
+        'signal_id': signal_data.get('signal_id'),
+        'pattern': signal_data.get('pattern'),
+        'confidence': signal_data.get('confidence'),
+        'symbol': signal_data.get('symbol'),
+        'direction': signal_data.get('direction'),
+        'entry': signal_data.get('entry'),
+        'sl': signal_data.get('sl'),
+        'tp': signal_data.get('tp'),
+        'session': signal_data.get('session'),
+        'citadel_score': signal_data.get('citadel_score', 0),
+        'timestamp': datetime.now().isoformat()
+    }
+    log_trade(trade_data)
+
+# Use this function instead of direct file writes

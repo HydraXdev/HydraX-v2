@@ -911,9 +911,9 @@ class FireRouter:
         # Calculate proper lot size if not provided
         lot_size = mission.get("lot_size", mission.get("lot"))
         if not lot_size or lot_size == 0.01:
-            # Calculate based on 5% risk
+            # Calculate based on 3% risk
             account_balance = mission.get("account_balance", 10000.0)
-            risk_percent = 0.05  # 5% risk
+            risk_percent = 0.03  # 3% risk MAX for production
             stop_loss_pips = mission.get("stop_pips", 20)
             
             risk_amount = account_balance * risk_percent

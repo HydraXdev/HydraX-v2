@@ -203,25 +203,53 @@ Your Tier: **{user_tier}**
         
         keyboard = types.InlineKeyboardMarkup()
         
-        # Slot options
-        for slots in [1, 2, 3]:
-            check = "✅ " if mode_info['max_slots'] == slots else ""
+        # Slot options - Only COMMANDER can configure auto slots (up to 5 for testing)
+        # Auto slots are separate from manual slots
+        if user_tier == "COMMANDER":
+            slot_options = [1, 2, 3, 4, 5]  # Auto slots only (5 for testing)
+        else:
+            # Non-COMMANDER users cannot configure auto slots
+            keyboard.row(types.InlineKeyboardButton("🔒 Auto slots require COMMANDER", callback_data="mode_back"))
+            keyboard.row(types.InlineKeyboardButton("⬅️ Back", callback_data="mode_back"))
+            
+            text = f"""⚙️ **Slot Configuration**
+
+Auto slots are only available for COMMANDER tier.
+Your tier: **{user_tier}**
+
+Upgrade to COMMANDER for auto-fire capabilities."""
+            
+            bot.edit_message_text(
+                text,
+                call.message.chat.id,
+                call.message.message_id,
+                reply_markup=keyboard,
+                parse_mode="Markdown"
+            )
+            return
+        for slots in slot_options:
+            check = "✅ " if mode_info.get('max_auto_slots', mode_info['max_slots']) == slots else ""
             keyboard.row(
                 types.InlineKeyboardButton(
-                    f"{check}{slots} Slot{'s' if slots > 1 else ''}", 
+                    f"{check}{slots} Auto Slot{'s' if slots > 1 else ''}", 
                     callback_data=f"slots_{slots}"
                 )
             )
         
         keyboard.row(types.InlineKeyboardButton("⬅️ Back", callback_data="mode_back"))
         
-        text = f"""⚙️ **Slot Configuration**
+        text = f"""⚙️ **Auto Slot Configuration**
 
-Maximum concurrent positions for AUTO mode
-Current: **{mode_info['max_slots']} slot{'s' if mode_info['max_slots'] > 1 else ''}**
-In use: **{mode_info['slots_in_use']}**
+Maximum concurrent AUTO-FIRE positions
+Current: **{mode_info.get('max_auto_slots', mode_info['max_slots'])} auto slot{'s' if mode_info.get('max_auto_slots', mode_info['max_slots']) > 1 else ''}**
+Auto slots in use: **{mode_info.get('auto_slots_in_use', mode_info['slots_in_use'])}**
+Manual slots in use: **{mode_info.get('manual_slots_in_use', 0)}**
 
-Select maximum slots:"""
+Your tier limits:
+• Manual slots: **10** (COMMANDER)
+• Auto slots: **5** (configurable below - testing mode)
+
+Select maximum AUTO slots:"""
         
         bot.edit_message_text(
             text,
@@ -244,12 +272,12 @@ Select maximum slots:"""
         # Extract slot count
         slots = int(call.data.replace("slots_", ""))
         
-        if fire_mode_db.set_max_slots(user_id, slots):
-            bot.answer_callback_query(call.id, f"Max slots set to {slots}")
+        if fire_mode_db.set_max_auto_slots(user_id, slots, user_tier):
+            bot.answer_callback_query(call.id, f"Auto slots set to {slots}")
             # Show updated menu
             FireModeHandlers.show_slot_config(bot, call, user_tier)
         else:
-            bot.answer_callback_query(call.id, "Error setting slots", show_alert=True)
+            bot.answer_callback_query(call.id, "Error setting auto slots", show_alert=True)
     
     @staticmethod
     def handle_slots_command(bot, message, user_tier: str):
@@ -258,7 +286,7 @@ Select maximum slots:"""
         
         # Check if COMMANDER
         if user_tier != "COMMANDER":
-            bot.send_message(message.chat.id, "🔒 Slot configuration requires COMMANDER subscription")
+            bot.send_message(message.chat.id, "🔒 Auto slot configuration requires COMMANDER subscription")
             return
         
         # Check if slots specified
@@ -266,13 +294,14 @@ Select maximum slots:"""
         if len(parts) > 1:
             try:
                 slots = int(parts[1])
-                if 1 <= slots <= 3:
-                    if fire_mode_db.set_max_slots(user_id, slots):
-                        bot.send_message(message.chat.id, f"✅ Max slots set to {slots}")
+                # Auto slots max is 5 for COMMANDER (testing)
+                if 1 <= slots <= 5:
+                    if fire_mode_db.set_max_auto_slots(user_id, slots, user_tier):
+                        bot.send_message(message.chat.id, f"✅ Auto slots set to {slots}")
                     else:
-                        bot.send_message(message.chat.id, "❌ Error setting slots")
+                        bot.send_message(message.chat.id, "❌ Error setting auto slots")
                 else:
-                    bot.send_message(message.chat.id, "❌ Slots must be between 1 and 3")
+                    bot.send_message(message.chat.id, "❌ Auto slots must be between 1 and 5 (testing)")
             except ValueError:
                 bot.send_message(message.chat.id, "❌ Invalid slot number")
             return
@@ -283,18 +312,23 @@ Select maximum slots:"""
         
         slots_text = f"""🎰 **Slot Status**
 
-Max Slots: **{mode_info['max_slots']}**
-In Use: **{mode_info['slots_in_use']}**
-Available: **{mode_info['max_slots'] - mode_info['slots_in_use']}**
+**COMMANDER Tier Limits:**
+• Manual Slots: **10** (always available)
+• Auto Slots: **{mode_info.get('max_auto_slots', mode_info['max_slots'])}** (configurable)
+
+**Current Usage:**
+• Manual slots in use: **{mode_info.get('manual_slots_in_use', 0)}/10**
+• Auto slots in use: **{mode_info.get('auto_slots_in_use', mode_info['slots_in_use'])}/{mode_info.get('max_auto_slots', mode_info['max_slots'])}**
 
 Active Positions:"""
         
         if active_slots:
             for i, slot in enumerate(active_slots, 1):
-                slots_text += f"\n{i}. {slot['symbol']} (Mission: {slot['mission_id'][:8]}...)"
+                slot_type = slot.get('slot_type', 'MANUAL')
+                slots_text += f"\n{i}. {slot['symbol']} ({slot_type}) - Mission: {slot['mission_id'][:8]}..."
         else:
             slots_text += "\nNo active positions"
         
-        slots_text += "\n\nUse `/slots [1-3]` to set max slots"
+        slots_text += "\n\nUse `/slots [1-5]` to set max AUTO slots (testing mode)"
         
         bot.send_message(message.chat.id, slots_text, parse_mode="Markdown")

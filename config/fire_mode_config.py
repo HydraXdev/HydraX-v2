@@ -41,7 +41,7 @@ class FireModeConfig:
             "execute": ["RAPID_ASSAULT", "SNIPER_OPS", "MIDNIGHT_HAMMER"],
             "fire_modes": ["SELECT", "AUTO"],  # Full fire selector switch
             "auto_execution": True,  # Full autonomous slot-based execution
-            "max_auto_slots": 3,  # COMMANDER gets 3 auto slots
+            "max_auto_slots": 75,  # COMMANDER gets 75 auto slots (testing)
             "max_concurrent_trades": "unlimited",  # Unlimited concurrent trades
             "voice_enabled": True,  # Voice personalities available
             "exclusive_features": ["UNLIMITED_TRADES", "PRIORITY_SUPPORT", "EXCLUSIVE_SIGNALS", "ADVANCED_ANALYTICS", "PRIORITY_SIGNALS"]  # All premium features

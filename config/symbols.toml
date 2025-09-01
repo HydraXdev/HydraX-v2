@@ -1,0 +1,79 @@
+# Symbol-specific configuration for pip/point conversion and trading parameters
+
+[XAUUSD]
+points_per_pip = 10              # 0.01 point → 0.1 "pip" ($0.10)
+min_stop_pips_default = 20       # Minimum stop distance in pips
+be_offset_min_pips = 20          # Minimum BE offset in pips
+trail_min_pips = 25              # Minimum trail distance
+atr_mult_default = 2.0           # ATR multiplier for trailing
+
+[XAGUSD]
+points_per_pip = 10              # 0.001 point → 0.01 "pip" 
+min_stop_pips_default = 15       # Minimum stop distance in pips
+be_offset_min_pips = 10          # Minimum BE offset in pips
+trail_min_pips = 15              # Minimum trail distance
+atr_mult_default = 2.0           # ATR multiplier for trailing
+
+[EURUSD]
+points_per_pip = 10              # 0.0001 pip on 5-digit = 10 points
+min_stop_pips_default = 5        # Minimum stop distance in pips
+be_offset_min_pips = 2           # Minimum BE offset in pips
+trail_min_pips = 12              # Minimum trail distance
+atr_mult_default = 2.0
+
+[GBPUSD]
+points_per_pip = 10
+min_stop_pips_default = 5
+be_offset_min_pips = 2
+trail_min_pips = 12
+atr_mult_default = 2.0
+
+[USDJPY]
+points_per_pip = 10              # 0.01 pip on 3-decimal JPY quoting
+min_stop_pips_default = 6
+be_offset_min_pips = 2
+trail_min_pips = 15
+atr_mult_default = 2.0
+
+[EURJPY]
+points_per_pip = 10
+min_stop_pips_default = 7
+be_offset_min_pips = 3
+trail_min_pips = 18
+atr_mult_default = 2.0
+
+[GBPJPY]
+points_per_pip = 10
+min_stop_pips_default = 8
+be_offset_min_pips = 3
+trail_min_pips = 20
+atr_mult_default = 2.0
+
+[USDCHF]
+points_per_pip = 10
+min_stop_pips_default = 5
+be_offset_min_pips = 2
+trail_min_pips = 12
+atr_mult_default = 2.0
+
+[USDCAD]
+points_per_pip = 10
+min_stop_pips_default = 5
+be_offset_min_pips = 2
+trail_min_pips = 12
+atr_mult_default = 2.0
+
+[AUDUSD]
+points_per_pip = 10
+min_stop_pips_default = 5
+be_offset_min_pips = 2
+trail_min_pips = 12
+atr_mult_default = 2.0
+
+# Default for any symbol not explicitly configured
+[DEFAULT]
+points_per_pip = 10
+min_stop_pips_default = 5
+be_offset_min_pips = 2
+trail_min_pips = 12
+atr_mult_default = 2.0

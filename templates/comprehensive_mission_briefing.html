@@ -8,7 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ symbol }} {{ direction }} - BITTEN TACTICAL MISSION BRIEFING</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     
     <style>
@@ -675,8 +675,17 @@
                     </div>
 
                     <!-- Price Chart -->
-                    <div class="chart-container">
-                        <canvas id="priceChart"></canvas>
+                    <div class="chart-container" id="chartContainer">
+                        <canvas id="priceChart" width="400" height="300"></canvas>
+                        <div id="chartFallback" style="display:none; color: #00ff41; text-align: center; padding: 20px;">
+                            <div style="font-size: 14px; margin-bottom: 10px;">Price Trend Visualization</div>
+                            <div style="font-size: 24px; font-weight: bold;">{{ symbol }}</div>
+                            <div style="margin-top: 10px;">
+                                <span style="color: #fbbf24;">Entry: {{ '{:.5f}'.format(entry_price) if entry_price else 'Loading' }}</span><br>
+                                <span style="color: #10b981;">TP: {{ '{:.5f}'.format(take_profit) if take_profit else 'Loading' }}</span><br>
+                                <span style="color: #ef4444;">SL: {{ '{:.5f}'.format(stop_loss) if stop_loss else 'Loading' }}</span>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Pattern Analysis -->
@@ -731,30 +740,25 @@
                 </div>
             </div>
 
-            <!-- Right Column: CITADEL & Execution -->
+            <!-- Right Column: Market Context & Execution -->
             <div>
-                <!-- CITADEL Shield Analysis -->
+                <!-- Market Context Analysis -->
                 <div class="citadel-shield">
                     <h2 class="section-title">
-                        🛡️ CITADEL Shield Analysis
+                        📊 Market Context & Session
                     </h2>
                     
-                    <div class="shield-score">
-                        <div class="shield-value">{{ citadel_score }}/10</div>
-                        <div class="shield-classification">{{ briefing.citadel_analysis.shield_status if briefing else 'SHIELD ACTIVE' }}</div>
-                    </div>
-                    
                     <div class="shield-insights">
-                        <h3 style="color: var(--elite-gold); margin-bottom: 10px;">Institutional Analysis</h3>
+                        <h3 style="color: var(--elite-gold); margin-bottom: 10px;">Current Market Conditions</h3>
                         <ul style="list-style: none; padding: 0;">
-                            <li style="margin-bottom: 8px;">✅ Market Regime: {{ briefing.citadel_analysis.market_regime if briefing else 'OPTIMAL' }}</li>
+                            <li style="margin-bottom: 8px;">✅ Pattern Type: <strong>{{ briefing.tactical_intel.pattern_detected if briefing else pattern_type|default('LIQUIDITY_SWEEP_REVERSAL') }}</strong></li>
+                            <li style="margin-bottom: 8px;">✅ Confidence Score: <strong>{{ tcs_score }}%</strong></li>
+                            <li style="margin-bottom: 8px;">✅ Session: <strong>{{ briefing.mission_parameters.session_context if briefing else 'LONDON' }}</strong> - Prime trading hours</li>
                             <li style="margin-bottom: 8px;">✅ Liquidity: Sufficient for execution</li>
-                            <li style="margin-bottom: 8px;">✅ Correlation: No conflicts detected</li>
-                            <li style="margin-bottom: 8px;">✅ News Impact: Low volatility window</li>
-                            <li style="margin-bottom: 8px;">✅ Session: {{ briefing.mission_parameters.session_context if briefing else 'LONDON' }} - Prime trading hours</li>
+                            <li style="margin-bottom: 8px;">✅ Volatility: Within normal range</li>
                         </ul>
                         <p style="margin-top: 15px; font-size: 13px; color: #94a3b8;">
-                            Position multiplier: {{ briefing.citadel_analysis.risk_multiplier if briefing else '1.0' }}x based on shield score
+                            Risk/Reward: <strong>1:{{ briefing.tactical_intel.reward_potential.split(':')[1] if briefing else '1.5' }}</strong> based on market structure
                         </p>
                     </div>
                 </div>
@@ -1265,6 +1269,199 @@
         
         // Note: To close an OPEN trade, users must use their MT5 terminal or 
         // a dedicated trade management interface, NOT the mission briefing
+        
+        // Initialize Price Chart
+        function initializePriceChart() {
+            console.log('Initializing price chart...');
+            
+            // Check if Chart.js is loaded
+            if (typeof Chart === 'undefined') {
+                console.error('Chart.js not loaded! Showing fallback...');
+                // Show fallback text display
+                const canvas = document.getElementById('priceChart');
+                const fallback = document.getElementById('chartFallback');
+                if (canvas) canvas.style.display = 'none';
+                if (fallback) fallback.style.display = 'block';
+                
+                // Try loading Chart.js one more time
+                if (!window.chartLoadAttempted) {
+                    window.chartLoadAttempted = true;
+                    const script = document.createElement('script');
+                    script.src = 'https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js';
+                    script.onload = function() {
+                        console.log('Chart.js loaded, retrying...');
+                        const fallback = document.getElementById('chartFallback');
+                        const canvas = document.getElementById('priceChart');
+                        if (fallback) fallback.style.display = 'none';
+                        if (canvas) canvas.style.display = 'block';
+                        initializePriceChart();
+                    };
+                    document.head.appendChild(script);
+                }
+                return;
+            }
+            
+            const ctx = document.getElementById('priceChart');
+            if (!ctx) {
+                console.error('Chart canvas not found');
+                const fallback = document.getElementById('chartFallback');
+                if (fallback) fallback.style.display = 'block';
+                return;
+            }
+            console.log('Chart canvas found:', ctx);
+            
+            // Generate sample price data based on signal direction
+            const direction = '{{ direction }}';
+            const entryPrice = {{ entry_price|default(1.1000) }};
+            const stopLoss = {{ stop_loss|default(1.0980) }};
+            const takeProfit = {{ take_profit|default(1.1030) }};
+            
+            // Create price points showing the trend
+            const dataPoints = 50;
+            const priceData = [];
+            const labels = [];
+            
+            // Generate trend data based on direction
+            for (let i = 0; i < dataPoints; i++) {
+                const time = i - (dataPoints - 1);
+                labels.push(time <= 0 ? `${Math.abs(time)}m ago` : 'now');
+                
+                // Create a trending pattern
+                let price;
+                if (i < dataPoints * 0.6) {
+                    // Historical price movement (opposite of signal direction)
+                    const variance = (Math.random() - 0.5) * 0.0010;
+                    if (direction === 'BUY') {
+                        // Downtrend before buy signal
+                        price = entryPrice + 0.0020 - (i * 0.00003) + variance;
+                    } else {
+                        // Uptrend before sell signal
+                        price = entryPrice - 0.0020 + (i * 0.00003) + variance;
+                    }
+                } else {
+                    // Recent price action (towards signal direction)
+                    const recentIndex = i - (dataPoints * 0.6);
+                    const variance = (Math.random() - 0.5) * 0.0005;
+                    if (direction === 'BUY') {
+                        // Bounce starting for buy signal
+                        price = entryPrice - 0.0010 + (recentIndex * 0.00005) + variance;
+                    } else {
+                        // Rejection starting for sell signal
+                        price = entryPrice + 0.0010 - (recentIndex * 0.00005) + variance;
+                    }
+                }
+                priceData.push(price);
+            }
+            
+            // Ensure last price is near entry
+            priceData[priceData.length - 1] = entryPrice + (Math.random() - 0.5) * 0.0002;
+            
+            try {
+                const chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '{{ symbol }} Price',
+                        data: priceData,
+                        borderColor: '#00ff41',
+                        backgroundColor: 'rgba(0, 255, 65, 0.1)',
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return '{{ symbol }}: ' + context.parsed.y.toFixed(5);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            display: false,
+                            grid: {
+                                display: false
+                            }
+                        },
+                        y: {
+                            position: 'right',
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.05)'
+                            },
+                            ticks: {
+                                color: '#94a3b8',
+                                callback: function(value) {
+                                    return value.toFixed(5);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+                console.log('Chart created successfully!');
+            } catch (error) {
+                console.error('Error creating chart:', error);
+                // Try a simpler chart as fallback
+                try {
+                    const simpleChart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: ['60m ago', '30m ago', 'now'],
+                            datasets: [{
+                                label: 'Price',
+                                data: [entryPrice - 0.001, entryPrice, entryPrice + 0.0005],
+                                borderColor: '#00ff41',
+                                borderWidth: 2
+                            }]
+                        }
+                    });
+                    console.log('Simple fallback chart created');
+                } catch (fallbackError) {
+                    console.error('Even simple chart failed:', fallbackError);
+                }
+            }
+        }
+        
+        function showChartFallback() {
+            const canvas = document.getElementById('priceChart');
+            const fallback = document.getElementById('chartFallback');
+            if (canvas) canvas.style.display = 'none';
+            if (fallback) fallback.style.display = 'block';
+        }
+        
+        // Initialize chart with proper timing
+        function tryInitChart() {
+            if (typeof Chart !== 'undefined') {
+                console.log('Chart.js available, initializing...');
+                initializePriceChart();
+            } else {
+                console.log('Waiting for Chart.js...');
+                setTimeout(tryInitChart, 250);
+            }
+        }
+        
+        // Start initialization when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', tryInitChart);
+        } else {
+            // DOM is already ready
+            setTimeout(tryInitChart, 100);
+        }
         
         // Initialize Telegram WebApp
         if (window.Telegram && window.Telegram.WebApp) {

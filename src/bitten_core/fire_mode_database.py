@@ -114,7 +114,7 @@ class FireModeDatabase:
         except sqlite3.OperationalError:
             pass
             
-        # BITMODE Migration: Add BITMODE column
+# [DISABLED BITMODE]         # BITMODE Migration: Add BITMODE column
         try:
             cursor.execute("ALTER TABLE user_fire_modes ADD COLUMN bitmode_enabled BOOLEAN DEFAULT FALSE")
         except sqlite3.OperationalError:
@@ -437,11 +437,11 @@ class FireModeDatabase:
             return False
     
     def toggle_bitmode(self, user_id: str, enabled: bool, user_tier: str = 'COMMANDER') -> bool:
-        """Toggle BITMODE for user (FANG+ tiers only)"""
-        # Only FANG+ tiers can use BITMODE
+# [DISABLED BITMODE]         """Toggle BITMODE for user (FANG+ tiers only)"""
+# [DISABLED BITMODE]         # Only FANG+ tiers can use BITMODE
         allowed_tiers = ['FANG', 'COMMANDER']
         if user_tier not in allowed_tiers:
-            logger.error(f"BITMODE not available for tier {user_tier} - FANG+ required")
+# [DISABLED BITMODE]             logger.error(f"BITMODE not available for tier {user_tier} - FANG+ required")
             return False
             
         conn = sqlite3.connect(self.db_path)
@@ -460,16 +460,16 @@ class FireModeDatabase:
             conn.commit()
             conn.close()
             
-            logger.info(f"User {user_id} BITMODE {'enabled' if enabled else 'disabled'}")
+# [DISABLED BITMODE]             logger.info(f"User {user_id} BITMODE {'enabled' if enabled else 'disabled'}")
             return True
             
         except Exception as e:
-            logger.error(f"Error toggling BITMODE: {e}")
+# [DISABLED BITMODE]             logger.error(f"Error toggling BITMODE: {e}")
             conn.close()
             return False
     
     def is_bitmode_enabled(self, user_id: str) -> bool:
-        """Check if BITMODE is enabled for user"""
+# [DISABLED BITMODE]         """Check if BITMODE is enabled for user"""
         user_mode = self.get_user_mode(user_id)
         return user_mode.get('bitmode_enabled', False)
 

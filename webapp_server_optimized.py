@@ -462,11 +462,11 @@ def api_signals():
                                                     risk_percent=3.0  # Reduced from 5% to 3% for margin management
                                                 )
                                                 
-                                                # Check if user has BITMODE enabled
+# [DISABLED BITMODE]                                                 # Check if user has BITMODE enabled
                                                 from src.bitten_core.fire_mode_database import fire_mode_db
                                                 bitmode_enabled = fire_mode_db.is_bitmode_enabled(str(user_id))
                                                 
-                                                # Create and send AUTO fire command with BITMODE support
+# [DISABLED BITMODE]                                                 # Create and send AUTO fire command with BITMODE support
                                                 auto_fire_cmd = create_fire_command(
                                                     mission_id=signal_id,
                                                     user_id=str(user_id),
@@ -497,7 +497,7 @@ def api_signals():
                                                 logger.error(f"Full traceback: {traceback.format_exc()}")
                                                 # Use fallback lot size with proper 5% risk estimate
                                                 estimated_lot = (float(balance) * 0.05) / 80 if balance else 0.50  # Assume ~$80 risk per lot
-                                                # Check BITMODE for fallback command too
+# [DISABLED BITMODE]                                                 # Check BITMODE for fallback command too
                                                 fallback_bitmode = fire_mode_db.is_bitmode_enabled(str(user_id))
                                                 
                                                 auto_fire_cmd = create_fire_command(
@@ -1521,7 +1521,7 @@ def fire_mission():
                 # Use a reasonable fallback based on 5% risk
                 calculated_lot = 0.50  # Temporary higher fallback
             
-            # Check if user has BITMODE enabled for manual fire
+# [DISABLED BITMODE]             # Check if user has BITMODE enabled for manual fire
             bitmode_enabled = fire_db.is_bitmode_enabled(str(user_id))
             
             fire_cmd = create_fire_command(
@@ -2406,7 +2406,7 @@ def war_room():
         manual_slots_available = tier_limits['manual'] - mode_info.get('manual_slots_in_use', 0)
         auto_slots_available = mode_info.get('max_auto_slots', 75) - mode_info.get('auto_slots_in_use', 0)
         
-        # Get BITMODE status
+# [DISABLED BITMODE]         # Get BITMODE status
         bitmode_enabled = mode_info.get('bitmode_enabled', False)
         bitmode_status = "✅ ACTIVE" if bitmode_enabled else "❌ DISABLED"
         bitmode_color = "#00ff41" if bitmode_enabled else "#ff4444"
@@ -2562,7 +2562,7 @@ def war_room():
             </div>
             <div class="stat-card">
                 <div class="stat-value" style="color: {bitmode_color}">{bitmode_status}</div>
-                <div class="stat-label">🎯 BITMODE</div>
+# [DISABLED BITMODE]                 <div class="stat-label">🎯 BITMODE</div>
             </div>
         </div>
 
@@ -2571,7 +2571,7 @@ def war_room():
             <a href="/analysis" class="action-btn">📊 ANALYSIS</a>
             <a href="/mode" class="action-btn">⚡ FIRE MODE</a>
             <button class="action-btn" onclick="toggleBitmode()" id="bitmode-btn" style="background: {'linear-gradient(135deg, #009900 0%, #00cc00 100%)' if bitmode_enabled else 'linear-gradient(135deg, #666 0%, #888 100%)'}"">
-                🎯 {'DISABLE BITMODE' if bitmode_enabled else 'ENABLE BITMODE'}
+# [DISABLED BITMODE]                 🎯 {'DISABLE BITMODE' if bitmode_enabled else 'ENABLE BITMODE'}
             </button>
             <a href="/settings" class="action-btn">⚙️ SETTINGS</a>
         </div>
@@ -2582,7 +2582,7 @@ def war_room():
         </div>
 
         <script>
-            // BITMODE Toggle Function
+# [DISABLED BITMODE]             // BITMODE Toggle Function
             function toggleBitmode() {{
                 const btn = document.getElementById('bitmode-btn');
                 btn.disabled = true;
@@ -2603,16 +2603,16 @@ def war_room():
                     if (data.success) {{
                         location.reload(); // Refresh to show updated status
                     }} else {{
-                        alert('❌ Failed to toggle BITMODE: ' + data.error);
+# [DISABLED BITMODE]                         alert('❌ Failed to toggle BITMODE: ' + data.error);
                         btn.disabled = false;
-                        btn.textContent = '🎯 {'DISABLE BITMODE' if bitmode_enabled else 'ENABLE BITMODE'}';
+# [DISABLED BITMODE]                         btn.textContent = '🎯 {'DISABLE BITMODE' if bitmode_enabled else 'ENABLE BITMODE'}';
                     }}
                 }})
                 .catch(error => {{
                     console.error('Error:', error);
-                    alert('❌ Failed to toggle BITMODE');
+# [DISABLED BITMODE]                     alert('❌ Failed to toggle BITMODE');
                     btn.disabled = false;
-                    btn.textContent = '🎯 {'DISABLE BITMODE' if bitmode_enabled else 'ENABLE BITMODE'}';
+# [DISABLED BITMODE]                     btn.textContent = '🎯 {'DISABLE BITMODE' if bitmode_enabled else 'ENABLE BITMODE'}';
                 }});
             }}
         </script>
@@ -2798,7 +2798,7 @@ def get_live_user_balance(user_id):
 
 @app.route('/api/bitmode/toggle', methods=['POST'])
 def api_bitmode_toggle():
-    """API endpoint to toggle BITMODE for user"""
+# [DISABLED BITMODE]     """API endpoint to toggle BITMODE for user"""
     try:
         data = request.get_json()
         user_id = data.get('user_id')
@@ -2814,10 +2814,10 @@ def api_bitmode_toggle():
         if user_tier not in ['FANG', 'COMMANDER']:
             return jsonify({
                 'success': False, 
-                'error': f'BITMODE requires FANG+ tier. Current tier: {user_tier}'
+# [DISABLED BITMODE]                 'error': f'BITMODE requires FANG+ tier. Current tier: {user_tier}'
             }), 403
         
-        # Toggle BITMODE
+# [DISABLED BITMODE]         # Toggle BITMODE
         from src.bitten_core.fire_mode_database import fire_mode_db
         success = fire_mode_db.toggle_bitmode(user_id, enabled, user_tier)
         
@@ -2825,16 +2825,16 @@ def api_bitmode_toggle():
             return jsonify({
                 'success': True,
                 'enabled': enabled,
-                'message': f'BITMODE {"enabled" if enabled else "disabled"} successfully'
+# [DISABLED BITMODE]                 'message': f'BITMODE {"enabled" if enabled else "disabled"} successfully'
             })
         else:
             return jsonify({
                 'success': False,
-                'error': 'Failed to update BITMODE status'
+# [DISABLED BITMODE]                 'error': 'Failed to update BITMODE status'
             }), 500
             
     except Exception as e:
-        logger.error(f"BITMODE toggle error: {e}")
+# [DISABLED BITMODE]         logger.error(f"BITMODE toggle error: {e}")
         return jsonify({
             'success': False,
             'error': 'Internal server error'

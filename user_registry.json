@@ -10,11 +10,11 @@
     "fire_eligible": true,
     "tier": "COMMANDER",
     "ready_for_fire": true,
-    "account_balance": 9747.71,
-    "account_equity": 9712.64,
+    "account_balance": 116.52,
+    "account_equity": 185.34,
     "account_currency": "USD",
     "user_uuid": "COMMANDER_DEV_001",
-    "last_update": "2025-08-22T19:48:21.056858",
+    "last_update": "2025-09-01T14:28:40.805159",
     "handshake_received": true,
     "server": "",
     "handshake_captured": true,
@@ -29,8 +29,8 @@
     },
     "capture_source": "tick_stream",
     "risk_profile": {
-      "risk_percentage": 2.0,
-      "max_daily_risk": 10.0,
+      "risk_percentage": 3.0,
+      "max_daily_risk": 15.0,
       "max_concurrent_trades": 3,
       "risk_mode": "MODERATE"
     }

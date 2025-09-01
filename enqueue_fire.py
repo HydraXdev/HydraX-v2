@@ -11,65 +11,17 @@ _ctx = None
 _push = None
 
 def get_bitmode_config(symbol: str) -> dict:
-    """Get BITMODE (hybrid position management) configuration for symbol"""
-    
-    # Symbol-specific BITMODE configurations
-    # UPDATED: SL stays original until 2nd partial, then trails at 8 pips for better scalping
-    BITMODE_CONFIGS = {
-        "EURUSD": {
-            "partial1": {"trigger": 8, "percent": 25},  # Close 25% at +8, SL stays original
-            "partial2": {"trigger": 12, "percent": 25, "move_sl_breakeven": True}, # Close 25% at +12, THEN move SL to BE
-            "trail": {"distance": 8}  # Trail at 8 pips after 2nd partial (tighter for scalping)
-        },
-        "GBPUSD": {
-            "partial1": {"trigger": 8, "percent": 25},  # Close 25% at +8, SL stays original
-            "partial2": {"trigger": 12, "percent": 25, "move_sl_breakeven": True}, # Close 25% at +12, THEN move SL to BE
-            "trail": {"distance": 8}  # Trail at 8 pips after 2nd partial (tighter for scalping)
-        },
-        "XAUUSD": {
-            "partial1": {"trigger": 80, "percent": 25},  # 8 dollars = 80 pips for gold, SL stays original
-            "partial2": {"trigger": 120, "percent": 25, "move_sl_breakeven": True}, # 12 dollars = 120 pips, THEN move SL to BE
-            "trail": {"distance": 80}  # 8 dollars trail for gold (tighter for scalping)
-        },
-        "XAGUSD": {
-            "partial1": {"trigger": 8, "percent": 25},   # 8 cents = 8 pips for silver, SL stays original
-            "partial2": {"trigger": 12, "percent": 25, "move_sl_breakeven": True},  # 12 cents = 12 pips, THEN move SL to BE  
-            "trail": {"distance": 8}  # 8 cents trail for silver (tighter for scalping)
-        },
-        "GBPJPY": {
-            "partial1": {"trigger": 12, "percent": 25},  # Close 25% at +12, SL stays original
-            "partial2": {"trigger": 18, "percent": 25, "move_sl_breakeven": True}, # Close 25% at +18, THEN move SL to BE
-            "trail": {"distance": 12}  # Keep wider for volatile pairs but slightly tighter
-        },
-        "EURJPY": {
-            "partial1": {"trigger": 10, "percent": 25},  # Close 25% at +10, SL stays original
-            "partial2": {"trigger": 15, "percent": 25, "move_sl_breakeven": True}, # Close 25% at +15, THEN move SL to BE
-            "trail": {"distance": 10}  # Tighter trail for better scalping
-        },
-        "USDJPY": {
-            "partial1": {"trigger": 8, "percent": 25},  # Close 25% at +8, SL stays original
-            "partial2": {"trigger": 12, "percent": 25, "move_sl_breakeven": True}, # Close 25% at +12, THEN move SL to BE
-            "trail": {"distance": 8}  # Trail at 8 pips after 2nd partial (tighter for scalping)
-        },
-        "USDCAD": {
-            "partial1": {"trigger": 10, "percent": 25},  # Close 25% at +10, SL stays original
-            "partial2": {"trigger": 15, "percent": 25, "move_sl_breakeven": True}, # Close 25% at +15, THEN move SL to BE
-            "trail": {"distance": 10}  # Tighter trail for better scalping
-        },
-        "AUDUSD": {
-            "partial1": {"trigger": 10, "percent": 25},  # Close 25% at +10, SL stays original
-            "partial2": {"trigger": 15, "percent": 25, "move_sl_breakeven": True}, # Close 25% at +15, THEN move SL to BE
-            "trail": {"distance": 10}  # Tighter trail for better scalping
-        },
-        # Default configuration for other pairs
-        "DEFAULT": {
-            "partial1": {"trigger": 8, "percent": 25},  # Close 25% at +8, SL stays original
-            "partial2": {"trigger": 12, "percent": 25, "move_sl_breakeven": True}, # Close 25% at +12, THEN move SL to BE
-            "trail": {"distance": 8}  # Trail at 8 pips after 2nd partial (tighter for scalping)
-        }
+    """
+    DEPRECATED - Kept for backward compatibility only
+    Use hybrid_manager.create_bitmode_config() for proper pip calculations
+    """
+    # This old config had WRONG pip values that were treated as points
+    # causing instant triggers. DO NOT USE.
+    return {
+        "partial1": {"trigger": 15, "percent": 25},  # Safer fallback
+        "partial2": {"trigger": 20, "percent": 25, "move_sl_breakeven": True},
+        "trail": {"distance": 15}
     }
-    
-    return BITMODE_CONFIGS.get(symbol, BITMODE_CONFIGS["DEFAULT"])
 
 def enqueue_fire(cmd: dict):
     """Send fire command to IPC queue with direction gate check"""
@@ -148,6 +100,28 @@ def create_fire_command(mission_id: str, user_id: str, symbol: str = None, direc
             with open(mission_file, 'r') as f:
                 mission_data = json.load(f)
                 signal = mission_data.get('signal', mission_data)
+                
+                # FILTER 1: Confidence Gate - Only allow signals >= 80% confidence
+                confidence = float(signal.get('confidence', 0))
+                pattern = signal.get('pattern_type', 'UNKNOWN')
+                
+                if confidence < 80.0:
+                    print(f"❌ Dropped low-confidence signal {pattern} conf={confidence:.1f}%")
+                    return None
+                
+                # FILTER 2: Pattern Quarantine - Block FAIR_VALUE_GAP_FILL
+                if pattern == 'FAIR_VALUE_GAP_FILL':
+                    print(f"❌ Quarantined FVG signal (conf={confidence:.1f}%)")
+                    return None
+                
+                # FILTER 3: Session Filter for specific patterns
+                if pattern in ['SWEEP_RETURN', 'VCB_BREAKOUT']:
+                    from datetime import datetime, timezone
+                    current_hour = datetime.now(timezone.utc).hour
+                    # London + NY sessions: 06:00-21:00 UTC
+                    if current_hour < 6 or current_hour >= 21:
+                        print(f"❌ Dropped {pattern} in Asian session (hour={current_hour} UTC)")
+                        return None
                 
                 # Extract values from mission including risk_reward
                 symbol = symbol or signal.get('symbol')
@@ -381,9 +355,25 @@ def create_fire_command(mission_id: str, user_id: str, symbol: str = None, direc
             # Import fire mode database to check BITMODE status
             from src.bitten_core.fire_mode_database import fire_mode_db
             if fire_mode_db.is_bitmode_enabled(user_id):
-                # Get hybrid configuration based on symbol
-                bitmode_config = get_bitmode_config(symbol)
-                print(f"🎯 BITMODE ENABLED for {symbol}: {bitmode_config}")
+                # Use NEW hybrid manager for CORRECT pip calculations
+                from src.bitten_core.hybrid_manager import hybrid_manager
+                bitmode_config = hybrid_manager.create_bitmode_config(
+                    symbol=symbol,
+                    entry=entry_rounded,
+                    sl=sl,
+                    direction=direction,
+                    user_id=user_id
+                )
+                # Track position for monitoring
+                hybrid_manager.track_position(
+                    fire_id=mission_id,
+                    symbol=symbol,
+                    entry=entry_rounded,
+                    sl=sl,
+                    direction=direction,
+                    lot_size=lot
+                )
+                print(f"🎯 BITMODE ENABLED for {symbol} with FIXED pip calculations")
             else:
                 print(f"🔸 BITMODE requested but not enabled for user {user_id}")
         except Exception as e:
@@ -403,7 +393,7 @@ def create_fire_command(mission_id: str, user_id: str, symbol: str = None, direc
         print(f"   📊 R:R Check: Risk={risk:.5f}, Reward={reward:.5f}, R:R={actual_rr:.2f}")
         
         # BITMODE OVERRIDE: If BITMODE enabled, set TP far away to let trailing work
-        if enable_bitmode:
+        if enable_bitmode and bitmode_config:
             print(f"   🎯 BITMODE ACTIVE: Setting distant TP to enable unlimited trailing...")
             # Set TP to 100x risk to ensure it won't be hit (trailing will exit instead)
             # This ensures partials at +8/+12 pips and trailing stop have room to work
@@ -456,6 +446,17 @@ def create_fire_command(mission_id: str, user_id: str, symbol: str = None, direc
     
     print(f"✅ FINAL VALUES: Entry={entry_rounded:.5f}, SL={sl:.5f}, TP={tp:.5f}")
     
+    # Calculate TP1 price for comment (1.5R)
+    sl_pips = abs(entry_rounded - sl) / pip_size
+    tp1_pips = sl_pips * 1.5  # 1.5R for TP1
+    if direction.upper() == "BUY":
+        tp1_price = entry_rounded + (tp1_pips * pip_size)
+    else:
+        tp1_price = entry_rounded - (tp1_pips * pip_size)
+    
+    # Format comment with TP1 price
+    comment = f"FANG@{tp1_price:.5f}"
+    
     # Build fire command
     fire_command = {
         "type": "fire",
@@ -467,8 +468,26 @@ def create_fire_command(mission_id: str, user_id: str, symbol: str = None, direc
         "sl": sl,        # Adjusted SL maintaining pip distance
         "tp": tp,        # Adjusted TP maintaining pip distance 
         "lot": lot,
-        "user_id": user_id
+        "user_id": user_id,
+        "comment": comment  # Add MT5 comment with TP1 price
     }
+    
+    # Apply tier-based exit configuration
+    try:
+        from src.bitten_core.tier_exit_manager import TierExitManager
+        fire_command = TierExitManager.apply_tier_exit_to_fire_command(fire_command, user_id)
+        print(f"🎯 Tier-based exits applied for user {user_id}")
+    except Exception as e:
+        print(f"⚠️ Could not apply tier exits: {e}")
+        # Continue without tier exits if module not available
+    
+    # Sanitize OPEN command to remove client-provided exits
+    try:
+        from src.bitten_core.open_sanitize import sanitize_open
+        fire_command = sanitize_open(fire_command)
+        print(f"✅ Exit fields stripped - server will manage exits")
+    except Exception as e:
+        print(f"⚠️ Could not sanitize open command: {e}")
     
     # Add BITMODE configuration if enabled
     if bitmode_config:
@@ -528,8 +547,8 @@ if __name__ == "__main__":
             # For XAUUSD, 1 pip = 0.01 price movement
             stop_pips = abs(entry_price - stop_loss) / 0.01
         elif symbol == 'XAGUSD':
-            # For XAGUSD (Silver), 1 pip = 0.001 price movement
-            stop_pips = abs(entry_price - stop_loss) / 0.001
+            # For XAGUSD (Silver), 1 pip = 0.01 price movement (like gold)
+            stop_pips = abs(entry_price - stop_loss) / 0.01
         elif 'JPY' in symbol:
             # For JPY pairs, 1 pip = 0.01 price movement
             stop_pips = abs(entry_price - stop_loss) / 0.01
@@ -548,10 +567,13 @@ if __name__ == "__main__":
         if 'JPY' in symbol:
             pip_value = 9.5  # Approximate for JPY pairs (varies by USD/JPY rate)
         elif symbol == 'XAUUSD':
-            # For XAUUSD, 1 pip (0.01 movement) = $1 per standard lot
-            pip_value = 1.0  # Gold pip value per standard lot
+            # For XAUUSD, 1 pip (0.01 movement) = $10.00 per standard lot
+            # Standard lot (1.0) = 100 oz, and 0.01 move = $1 per oz = $100 per standard lot
+            # But brokers typically use $10 per pip per standard lot
+            pip_value = 10.0  # Gold pip value per standard lot
         elif symbol == 'XAGUSD':
-            # For XAGUSD, 1 pip (0.001 movement) = $5 per standard lot (5000 oz)
+            # For XAGUSD, 1 pip (0.01 movement) = $5.00 per standard lot (5000 oz)
+            # Standard market convention for silver
             pip_value = 5.0  # Silver pip value per standard lot
         elif symbol == 'USDCNH':
             # For USDCNH, pip value depends on CNH rate (~1.4 USD per pip at 7.2 rate)

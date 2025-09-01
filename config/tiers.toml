@@ -1,0 +1,45 @@
+# BITTEN Tiered Exit System Configuration
+# Integrated with existing NIBBLER, FANG, COMMANDER tiers
+
+# NIBBLER (Entry tier): fixed quick scalp, 1 manual slot
+[NIBBLER]
+MODE = "FIXED"
+RR = 1.50                        # Fixed 1:1.5 risk/reward
+MAX_HOLD_MIN = 90                # Close after 90 minutes max
+PARTIALS_ENABLED = false         # No partial closes
+TRAIL_ENABLED = false            # No trailing stops
+MOVE_BE_AT = "NEVER"            # Never move to breakeven
+MAX_MANUAL_SLOTS = 1             # 1 manual slot only
+MAX_AUTO_SLOTS = 0               # No auto slots
+SIGNAL_MODES = ["RAPID"]         # Only RAPID signals
+
+# FANG (Mid tier): scalp core + runner, 2 manual slots
+[FANG]
+MODE = "HYBRID_SCALP_RUNNER"
+TP1_R = 1.50                     # Bank most at 1.5R
+TP1_CLOSE_PCT = 0.75             # Close 75% at TP1
+MOVE_BE_AT = "TP1"               # Move to BE after TP1
+BE_OFFSET_MODE = "SPREAD_OR_MINSTOP"  # Dynamic BE offset
+TRAIL_ENABLED = true             # Enable trailing after TP1
+TRAIL_METHOD = "ATR"             # Use ATR-based trailing
+ATR_LEN = 14                     # ATR period
+ATR_MULT = 2.0                   # Trail at 2x ATR
+TRAIL_STEP_PIPS = 20             # Fallback step trail distance
+MAX_HOLD_MIN = 90                # If TP1 not hit within time, close all
+MAX_MANUAL_SLOTS = 2             # 2 manual slots
+MAX_AUTO_SLOTS = 0               # No auto slots
+SIGNAL_MODES = ["RAPID", "SNIPER"]  # Both signal types
+# [DISABLED BITMODE] BITMODE_ENABLED = false          # BITMODE disabled - using tiered exits only
+
+# COMMANDER (Top tier): UNLIMITED for testing - no restrictions
+[COMMANDER]
+INHERIT = "FANG"                 # Same as FANG plus extras
+AUTOFIRE_ENABLED = true          # Enable auto-firing
+MAX_MANUAL_SLOTS = 999           # Unlimited manual slots for testing
+MAX_AUTO_SLOTS = 999             # Unlimited auto slots for testing
+MAX_CONCURRENT = 999             # No concurrent limit for testing
+DAILY_RISK_CAP_R = 999           # No drawdown limit for testing
+SIGNAL_MODES = ["RAPID", "SNIPER"]  # Both signal types
+MAX_HOLD_MIN = 90                 # TESTING: 2 minute timeout (normally 90)
+# [DISABLED BITMODE] BITMODE_ENABLED = false          # BITMODE disabled - using tiered exits only
+# TESTING MODE - No limits on Commander tier while we develop the system

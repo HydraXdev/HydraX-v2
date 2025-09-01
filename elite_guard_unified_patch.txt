@@ -1,0 +1,65 @@
+
+# Add this at the top of elite_guard_with_citadel.py after imports:
+import sys
+sys.path.insert(0, '/root/HydraX-v2')
+from comprehensive_tracking_layer import log_trade
+
+# Replace the publish_signal method (around line 1500) with:
+def publish_signal(self, signal_data):
+    """Publish signal and log to unified tracking"""
+    try:
+        # Calculate additional metrics for unified logging
+        symbol = signal_data.get('symbol', '')
+        pip_multiplier = 100 if 'JPY' in symbol else (1 if symbol == 'XAUUSD' else 10000)
+        
+        entry = float(signal_data.get('entry', 0))
+        sl = float(signal_data.get('sl', 0))
+        tp = float(signal_data.get('tp', 0))
+        
+        sl_pips = abs(entry - sl) * pip_multiplier
+        tp_pips = abs(tp - entry) * pip_multiplier
+        
+        # Prepare comprehensive trade data
+        trade_data = {
+            'signal_id': signal_data.get('signal_id'),
+            'pattern': signal_data.get('pattern'),
+            'confidence': signal_data.get('confidence'),
+            'symbol': symbol,
+            'direction': signal_data.get('direction'),
+            'entry': entry,
+            'sl': sl,
+            'tp': tp,
+            'sl_pips': sl_pips,
+            'tp_pips': tp_pips,
+            'lot_size': signal_data.get('lot_size', 0.01),
+            'session': signal_data.get('session', self.get_current_session()),
+            'citadel_score': signal_data.get('citadel_score', 0),
+            'rsi': signal_data.get('rsi', 50),
+            'volume_ratio': signal_data.get('volume_ratio', 1.0),
+            'timestamp': datetime.now(pytz.UTC).isoformat(),
+            'executed': signal_data.get('confidence', 0) >= 85
+        }
+        
+        # Log to unified tracking
+        log_trade(trade_data)
+        
+        # Also publish to ZMQ for real-time systems
+        if self.publisher:
+            signal_msg = json.dumps(signal_data)
+            self.publisher.send_string(f"ELITE_GUARD_SIGNAL {signal_msg}")
+            
+    except Exception as e:
+        print(f"Error in publish_signal: {e}")
+
+# Add helper method for session detection:
+def get_current_session(self):
+    """Get current trading session"""
+    hour = datetime.now(pytz.UTC).hour
+    if 22 <= hour or hour < 7:
+        return "ASIAN"
+    elif 7 <= hour < 12:
+        return "LONDON"
+    elif 12 <= hour < 17:
+        return "NEWYORK"
+    else:
+        return "OVERLAP"

@@ -1,0 +1,2952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="/static/css/bitten.css">
+    <link rel="stylesheet" href="/static/css/hud.css">
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏆 BITTEN Commander Throne - Dashboard</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="application-name" content="Commander Throne">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Commander Throne">
+    <meta name="description" content="BITTEN Tactical Trading Command Center">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="msapplication-config" content="/static/browserconfig.xml">
+    <meta name="msapplication-TileColor" content="#00ff41">
+    <meta name="theme-color" content="#00ff41">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/static/manifest.json">
+    <link rel="apple-touch-icon" href="/static/icons/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/icons/icon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/icons/icon-16x16.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #00ff41;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden; /* Prevent horizontal scroll */
+        }
+        
+        /* Mobile-first responsive padding */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            body {
+                padding: 8px;
+            }
+        }
+        
+        .throne-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00ff41;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        /* Mobile throne header */
+        @media (max-width: 768px) {
+            .throne-header {
+                flex-direction: column;
+                text-align: center;
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .throne-header {
+                padding: 12px;
+                margin-bottom: 12px;
+            }
+        }
+        
+        .throne-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #ff6b00;
+            text-shadow: 0 0 10px #ff6b00;
+        }
+        
+        /* Mobile throne title */
+        @media (max-width: 768px) {
+            .throne-title {
+                font-size: 24px;
+                margin-bottom: 10px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .throne-title {
+                font-size: 20px;
+                margin-bottom: 8px;
+            }
+        }
+        
+        .commander-info {
+            text-align: right;
+        }
+        
+        /* Mobile commander info */
+        @media (max-width: 768px) {
+            .commander-info {
+                text-align: center;
+                font-size: 14px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .commander-info {
+                font-size: 12px;
+            }
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        /* Mobile dashboard grid - stack vertically */
+        @media (max-width: 1024px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 15px;
+                margin-bottom: 15px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+                margin-bottom: 15px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .dashboard-grid {
+                gap: 12px;
+                margin-bottom: 12px;
+            }
+        }
+        
+        .dashboard-panel {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00ff41;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.2);
+        }
+        
+        /* Mobile dashboard panels */
+        @media (max-width: 768px) {
+            .dashboard-panel {
+                padding: 15px;
+                border-radius: 8px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .dashboard-panel {
+                padding: 12px;
+                border-radius: 6px;
+                border-width: 1px;
+            }
+        }
+        
+        .panel-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #ff6b00;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+        }
+        
+        /* Mobile panel titles */
+        @media (max-width: 768px) {
+            .panel-title {
+                font-size: 16px;
+                margin-bottom: 12px;
+                padding-bottom: 8px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .panel-title {
+                font-size: 14px;
+                margin-bottom: 10px;
+                padding-bottom: 6px;
+            }
+        }
+        
+        .mission-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        /* Mobile mission stats */
+        @media (max-width: 768px) {
+            .mission-stats {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+        }
+        
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px;
+            background: rgba(0, 255, 65, 0.1);
+            border-radius: 5px;
+            margin-bottom: 5px;
+        }
+        
+        /* Mobile stat items */
+        @media (max-width: 768px) {
+            .stat-item {
+                padding: 10px;
+                font-size: 14px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .stat-item {
+                padding: 8px;
+                font-size: 12px;
+                border-radius: 4px;
+            }
+        }
+        
+        .stat-value {
+            font-weight: bold;
+            color: #00ff41;
+        }
+        
+        .command-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+        
+        /* Mobile command grid */
+        @media (max-width: 768px) {
+            .command-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .command-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+        }
+        
+        .command-btn {
+            background: linear-gradient(45deg, #ff6b00, #ff8c00);
+            color: white;
+            border: none;
+            padding: 12px 15px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            min-height: 48px; /* Touch-friendly minimum */
+        }
+        
+        /* Mobile command buttons - larger touch targets */
+        @media (max-width: 768px) {
+            .command-btn {
+                padding: 16px 20px;
+                font-size: 14px;
+                min-height: 52px;
+                border-radius: 8px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .command-btn {
+                padding: 18px 24px;
+                font-size: 16px;
+                min-height: 56px;
+                border-radius: 10px;
+            }
+        }
+        
+        .command-btn:hover {
+            background: linear-gradient(45deg, #ff8c00, #ffa500);
+            box-shadow: 0 3px 10px rgba(255, 107, 0, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        .command-btn.danger {
+            background: linear-gradient(45deg, #ff0040, #ff4060);
+        }
+        
+        .command-btn.danger:hover {
+            background: linear-gradient(45deg, #ff4060, #ff6080);
+        }
+        
+        .soldier-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        
+        .soldier-table th,
+        .soldier-table td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #333;
+            font-size: 12px;
+        }
+        
+        .soldier-table th {
+            background: rgba(255, 107, 0, 0.2);
+            color: #ff6b00;
+            font-weight: bold;
+        }
+        
+        /* Mobile soldier table */
+        @media (max-width: 768px) {
+            .soldier-table {
+                font-size: 11px;
+                overflow-x: auto;
+                display: block;
+                white-space: nowrap;
+            }
+            
+            .soldier-table thead,
+            .soldier-table tbody,
+            .soldier-table th,
+            .soldier-table td,
+            .soldier-table tr {
+                display: block;
+            }
+            
+            .soldier-table thead tr {
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+            
+            .soldier-table tr {
+                border: 1px solid #333;
+                border-radius: 8px;
+                margin-bottom: 10px;
+                padding: 10px;
+                background: rgba(0, 0, 0, 0.5);
+            }
+            
+            .soldier-table td {
+                border: none;
+                position: relative;
+                padding-left: 50%;
+                white-space: normal;
+                text-align: right;
+            }
+            
+            .soldier-table td:before {
+                content: attr(data-label) ": ";
+                position: absolute;
+                left: 6px;
+                width: 45%;
+                padding-right: 10px;
+                white-space: nowrap;
+                text-align: left;
+                font-weight: bold;
+                color: #ff6b00;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .soldier-table td {
+                font-size: 12px;
+                padding: 8px 6px 8px 50%;
+            }
+        }
+        
+        .trade-log {
+            max-height: 300px;
+            overflow-y: auto;
+            font-size: 11px;
+        }
+        
+        .trade-row {
+            display: grid;
+            grid-template-columns: 60px 80px 60px 40px 40px 50px 50px;
+            gap: 5px;
+            padding: 5px;
+            border-bottom: 1px solid #333;
+        }
+        
+        .trade-row.win {
+            background: rgba(0, 255, 65, 0.1);
+        }
+        
+        .trade-row.loss {
+            background: rgba(255, 0, 64, 0.1);
+        }
+        
+        .sitrep-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+        }
+        
+        .sitrep-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.95);
+            border: 2px solid #00ff41;
+            border-radius: 10px;
+            padding: 30px;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: #ff0040;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        
+        .status-online { background: #00ff41; }
+        .status-offline { background: #ff0040; }
+        .status-warning { background: #ffaa00; }
+        
+        .live-update {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        
+        .full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .two-thirds {
+            grid-column: span 2;
+        }
+        
+        /* Black Box Truth Metrics Styles */
+        .truth-metrics {
+            background: linear-gradient(135deg, rgba(0,255,65,0.1) 0%, rgba(0,255,65,0.05) 100%);
+            border-left: 3px solid #00ff41;
+        }
+        
+        /* Trade Ticker Styles */
+        .trade-ticker-row {
+            display: grid;
+            grid-template-columns: 60px 80px 50px 60px 80px 60px 80px;
+            gap: 10px;
+            padding: 5px 8px;
+            border-bottom: 1px solid #333;
+            font-size: 11px;
+            transition: background 0.3s ease;
+        }
+        
+        /* Mobile trade ticker - make scrollable horizontally */
+        @media (max-width: 768px) {
+            .trade-ticker-row {
+                grid-template-columns: 80px 100px 60px 70px 90px 70px 90px;
+                gap: 8px;
+                padding: 8px;
+                font-size: 12px;
+                min-width: 580px; /* Forces horizontal scroll */
+            }
+            
+            .trade-ticker-container {
+                overflow-x: auto !important;
+                overflow-y: hidden;
+            }
+            
+            .trade-ticker-header {
+                font-size: 12px !important;
+                grid-template-columns: 80px 100px 60px 70px 90px 70px 90px !important;
+                gap: 8px !important;
+                padding: 10px !important;
+                min-width: 580px !important;
+            }
+            
+            .trade-ticker-scroll {
+                overflow-x: auto !important;
+                overflow-y: auto !important;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .trade-ticker-row {
+                padding: 10px;
+                font-size: 13px;
+                min-width: 600px;
+            }
+            
+            .trade-ticker-header {
+                font-size: 13px !important;
+                padding: 12px !important;
+                min-width: 600px !important;
+            }
+        }
+        
+        .trade-ticker-row:hover {
+            background: rgba(0,255,65,0.1);
+        }
+        
+        .trade-ticker-row.win {
+            border-left: 3px solid #00ff41;
+        }
+        
+        .trade-ticker-row.loss {
+            border-left: 3px solid #ff0040;
+        }
+        
+        .trade-ticker-row .result-win {
+            color: #00ff41;
+            font-weight: bold;
+        }
+        
+        .trade-ticker-row .result-loss {
+            color: #ff0040;
+            font-weight: bold;
+        }
+        
+        /* Active Signals Styles */
+        .active-signal-item {
+            background: rgba(255,165,0,0.1);
+            border: 1px solid rgba(255,165,0,0.3);
+            border-radius: 5px;
+            padding: 8px;
+            margin: 5px 0;
+            position: relative;
+        }
+        
+        .active-signal-item.expiring {
+            background: rgba(255,0,64,0.1);
+            border-color: rgba(255,0,64,0.3);
+            animation: pulse-warning 2s infinite;
+        }
+        
+        @keyframes pulse-warning {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        
+        .signal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        
+        .signal-symbol {
+            font-weight: bold;
+            color: #ff6b00;
+        }
+        
+        .signal-direction {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            background: rgba(0,255,65,0.2);
+            color: #00ff41;
+        }
+        
+        .signal-direction.sell {
+            background: rgba(255,0,64,0.2);
+            color: #ff0040;
+        }
+        
+        .signal-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+            font-size: 10px;
+            color: #888;
+        }
+        
+        .time-remaining {
+            position: absolute;
+            top: 5px;
+            right: 8px;
+            font-size: 9px;
+            color: #ffaa00;
+            font-weight: bold;
+        }
+        
+        .time-remaining.critical {
+            color: #ff0040;
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+        
+        /* VENOM Risk Control Panel Styles */
+        .venom-risk-control {
+            background: linear-gradient(135deg, rgba(255,0,64,0.1) 0%, rgba(255,0,64,0.05) 100%);
+            border-left: 3px solid #ff0040;
+            border-radius: 5px;
+            padding: 15px;
+        }
+        
+        .risk-status-display {
+            transition: all 0.3s ease;
+        }
+        
+        .risk-status-display.warning {
+            border-color: #ffaa00 !important;
+            background: rgba(255,170,0,0.1) !important;
+        }
+        
+        .risk-status-display.critical {
+            border-color: #ff0040 !important;
+            background: rgba(255,0,64,0.1) !important;
+            animation: pulse-critical 2s infinite;
+        }
+        
+        @keyframes pulse-critical {
+            0% { opacity: 1; box-shadow: 0 0 5px rgba(255,0,64,0.3); }
+            50% { opacity: 0.8; box-shadow: 0 0 15px rgba(255,0,64,0.6); }
+            100% { opacity: 1; box-shadow: 0 0 5px rgba(255,0,64,0.3); }
+        }
+        
+        .risk-status-display.halted {
+            border-color: #ff0040 !important;
+            background: rgba(255,0,64,0.2) !important;
+            animation: pulse-halted 1s infinite;
+        }
+        
+        @keyframes pulse-halted {
+            0% { background: rgba(255,0,64,0.2); }
+            50% { background: rgba(255,0,64,0.4); }
+            100% { background: rgba(255,0,64,0.2); }
+        }
+        
+        /* Risk control sliders */
+        .venom-risk-control input[type="range"] {
+            -webkit-appearance: none;
+            background: #333;
+            border-radius: 5px;
+            height: 8px;
+            outline: none;
+        }
+        
+        .venom-risk-control input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #ff0040;
+            cursor: pointer;
+            border: 2px solid #fff;
+        }
+        
+        .venom-risk-control input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #ff0040;
+            cursor: pointer;
+            border: 2px solid #fff;
+        }
+        
+        /* Risk control checkbox */
+        .venom-risk-control input[type="checkbox"] {
+            accent-color: #ff0040;
+        }
+        
+        /* Risk ratio indicators */
+        .risk-ratio-safe { color: #00ff41 !important; }
+        .risk-ratio-warning { color: #ffaa00 !important; }
+        .risk-ratio-critical { color: #ff0040 !important; font-weight: bold; }
+        
+        /* Command view grid responsive */
+        .command-view-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 1024px) {
+            .command-view-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 15px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .command-view-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .command-view-grid {
+                gap: 12px;
+            }
+        }
+        
+        /* Apex control grid responsive */
+        .apex-control-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr 1fr 1.5fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 1200px) {
+            .apex-control-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 15px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .apex-control-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .apex-control-grid {
+                gap: 12px;
+            }
+        }
+        
+        /* Mobile collapsible sections */
+        .mobile-collapsible {
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .mobile-collapsible {
+                display: block;
+            }
+            
+            .mobile-collapsible-header {
+                background: rgba(255, 107, 0, 0.1);
+                padding: 12px 15px;
+                border-radius: 8px;
+                margin-bottom: 10px;
+                cursor: pointer;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                transition: background 0.3s ease;
+                border: 1px solid rgba(255, 107, 0, 0.3);
+            }
+            
+            .mobile-collapsible-header:hover {
+                background: rgba(255, 107, 0, 0.2);
+            }
+            
+            .mobile-collapsible-content {
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.3s ease-out;
+            }
+            
+            .mobile-collapsible-content.expanded {
+                max-height: 1000px;
+                margin-bottom: 15px;
+            }
+            
+            .collapsible-toggle {
+                font-size: 18px;
+                color: #ff6b00;
+                transition: transform 0.3s ease;
+            }
+            
+            .collapsible-toggle.rotated {
+                transform: rotate(180deg);
+            }
+            
+            /* Hide original full-width panels on mobile */
+            .dashboard-panel.full-width.mobile-hide {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="throne-header">
+        <div class="throne-title">🏆 BITTEN COMMANDER THRONE</div>
+        <div class="commander-info">
+            <div><strong>{{ commander_id }}</strong></div>
+            <div>Access Level: <span style="color: #ff6b00;">{{ access_level }}</span></div>
+            <div id="currentTime"></div>
+        </div>
+    </div>
+    
+    <!-- Primary Command View - Full Width Top Section -->
+    <div class="dashboard-panel full-width" style="margin-bottom: 20px;">
+        <div class="command-view-grid" style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 20px;">
+            <!-- Revenue & Subscriptions -->
+            <div>
+                <div class="panel-title" style="font-size: 16px; margin-bottom: 10px;">💰 REVENUE COMMAND</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div>
+                        <div style="font-size: 28px; font-weight: bold; color: #00ff41;">
+                            $<span id="totalMRR">0</span>
+                        </div>
+                        <div style="font-size: 12px; color: #888;">Monthly Recurring</div>
+                        <div style="font-size: 14px; margin-top: 5px;">
+                            <span id="mrrGrowth" style="color: #00ff41;">↑ 0%</span> this month
+                        </div>
+                    </div>
+                    <div>
+                        <div style="font-size: 24px; font-weight: bold; color: #ff6b00;">
+                            <span id="totalActiveUsers">0</span>
+                        </div>
+                        <div style="font-size: 12px; color: #888;">Paid Soldiers</div>
+                        <div style="font-size: 14px; margin-top: 5px;">
+                            <span id="pressPassCount" style="color: #ffaa00;">0</span> Press Pass
+                        </div>
+                    </div>
+                </div>
+                <div style="margin-top: 15px;">
+                    <div id="tierBreakdown" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; font-size: 11px;">
+                        <!-- Tier counts will be populated here -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- System Health -->
+            <div>
+                <div class="panel-title" style="font-size: 16px; margin-bottom: 10px;">⚡ SYSTEM STATUS</div>
+                <div class="stat-item">
+                    <span>Bridge:</span>
+                    <span class="stat-value" id="bridgeStatus">
+                        <span class="status-indicator status-offline"></span>OFFLINE
+                    </span>
+                </div>
+                <div class="stat-item">
+                    <span>:</span>
+                    <span class="stat-value" id="apexQuickStatus">
+                        <span class="status-indicator status-offline"></span>OFFLINE
+                    </span>
+                </div>
+                <div class="stat-item">
+                    <span>Signals/Hr:</span>
+                    <span class="stat-value" id="signalRate">0</span>
+                </div>
+            </div>
+            
+            <!-- Performance Metrics -->
+            <div>
+                <div class="panel-title" style="font-size: 16px; margin-bottom: 10px;">📊 PERFORMANCE</div>
+                <div class="stat-item">
+                    <span>Win Rate:</span>
+                    <span class="stat-value" id="winRate" style="color: #00ff41;">--%</span>
+                </div>
+                <div class="stat-item">
+                    <span>True Rate:</span>
+                    <span class="stat-value" id="trueWinRate" style="color: #ffaa00;">--%</span>
+                </div>
+                <div class="stat-item">
+                    <span>Execution:</span>
+                    <span class="stat-value" id="executionRate">--%</span>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div>
+                <div class="panel-title" style="font-size: 16px; margin-bottom: 10px;">🎮 QUICK ACTIONS</div>
+                <button class="command-btn" onclick="executeCommand('toggle_stealth')" style="width: 100%; margin-bottom: 5px; font-size: 11px;">STEALTH MODE</button>
+                <button class="command-btn" onclick="executeCommand('double_xp_event')" style="width: 100%; margin-bottom: 5px; font-size: 11px;">DOUBLE XP</button>
+                <button class="command-btn danger" onclick="executeCommand('halt_trades')" style="width: 100%; font-size: 11px;">EMERGENCY HALT</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="dashboard-grid">
+        
+        <!-- Black Box Truth Metrics -->
+        <div class="dashboard-panel">
+            <div class="panel-title">🔍 BLACK BOX TRUTH METRICS</div>
+            <div class="mission-stats">
+                <div class="stat-item">
+                    <span>Total Signals:</span>
+                    <span class="stat-value" id="truthTotalSignals">--</span>
+                </div>
+                <div class="stat-item">
+                    <span>Wins/Losses:</span>
+                    <span class="stat-value"><span id="truthWins" style="color: #00ff41;">--</span>/<span id="truthLosses" style="color: #ff0040;">--</span></span>
+                </div>
+                <div class="stat-item">
+                    <span>Win Rate:</span>
+                    <span class="stat-value" id="truthWinRate" style="color: #00ff41;">--%</span>
+                </div>
+                <div class="stat-item">
+                    <span>Avg Pips:</span>
+                    <span class="stat-value" id="truthAvgPips">--</span>
+                </div>
+                <div class="stat-item">
+                    <span>Avg Runtime:</span>
+                    <span class="stat-value" id="truthAvgRuntime">-- min</span>
+                </div>
+                <div class="stat-item">
+                    <span>Total Pips:</span>
+                    <span class="stat-value" id="truthTotalPips" style="color: #ff6b00;">--</span>
+                </div>
+            </div>
+            <div style="margin-top: 10px; font-size: 10px; color: #888; text-align: center;">
+                Last Updated: <span id="truthLastUpdated">--</span>
+            </div>
+        </div>
+
+        <!-- ML Brain Metrics -->
+        <div class="dashboard-panel">
+            <div class="panel-title">🧠 ML BRAIN METRICS</div>
+            <div class="mission-stats">
+                <div class="stat-item">
+                    <span>Model Accuracy:</span>
+                    <span class="stat-value" id="mlAccuracy" style="color: #00ff41;">--%</span>
+                </div>
+                <div class="stat-item">
+                    <span>Last Retrain:</span>
+                    <span class="stat-value" id="mlLastRetrain">--</span>
+                </div>
+                <div class="stat-item">
+                    <span>Total Cycles:</span>
+                    <span class="stat-value" id="mlTotalCycles">--</span>
+                </div>
+                <div class="stat-item">
+                    <span>Training Status:</span>
+                    <span class="stat-value" id="mlTrainingStatus">--</span>
+                </div>
+            </div>
+            <div style="margin-top: 10px; text-align: center;">
+                <button class="command-btn" onclick="viewRetrainLog()" style="font-size: 11px; padding: 8px 12px;">VIEW RETRAIN LOG</button>
+            </div>
+            <div style="margin-top: 10px; font-size: 10px; color: #888; text-align: center;">
+                Last Updated: <span id="mlLastUpdated">--</span>
+            </div>
+        </div>
+
+        <!-- Signal Completion Analytics -->
+        <div class="dashboard-panel">
+            <div class="panel-title">🎯 SIGNAL COMPLETION ANALYTICS</div>
+            <div class="mission-stats">
+                <div class="stat-item">
+                    <span>Generated 24h:</span>
+                    <span class="stat-value" id="signalsGenerated24h">--</span>
+                </div>
+                <div class="stat-item">
+                    <span>Fired 24h:</span>
+                    <span class="stat-value" id="signalsFired24h" style="color: #00ff41;">--</span>
+                </div>
+                <div class="stat-item">
+                    <span>Completion Rate:</span>
+                    <span class="stat-value" id="completionRate" style="color: #ff6b00;">--%</span>
+                </div>
+                <div class="stat-item">
+                    <span>Expired 24h:</span>
+                    <span class="stat-value" id="signalsExpired24h" style="color: #ff0040;">--</span>
+                </div>
+                <div class="stat-item">
+                    <span>Avg Fire Time:</span>
+                    <span class="stat-value" id="avgFireTime">-- min</span>
+                </div>
+                <div class="stat-item">
+                    <span>Active Users:</span>
+                    <span class="stat-value" id="activeFireUsers">--</span>
+                </div>
+            </div>
+            <div style="margin-top: 10px; font-size: 10px; color: #888; text-align: center;">
+                Last Updated: <span id="completionLastUpdated">--</span>
+            </div>
+        </div>
+
+        <!-- Elite Guard Analytics -->
+        <div class="dashboard-panel">
+            <div class="panel-title">⚡ ELITE GUARD ANALYTICS</div>
+            <div class="mission-stats">
+                <div class="stat-item">
+                    <span>Elite Signals 24h:</span>
+                    <span class="stat-value" id="eliteSignals24h">--</span>
+                </div>
+                <div class="stat-item">
+                    <span>Elite Fired 24h:</span>
+                    <span class="stat-value" id="eliteFired24h" style="color: #00ff41;">--</span>
+                </div>
+                <div class="stat-item">
+                    <span>Elite Completion:</span>
+                    <span class="stat-value" id="eliteCompletionRate" style="color: #ff6b00;">--%</span>
+                </div>
+                <div class="stat-item">
+                    <span>Shield Boost:</span>
+                    <span class="stat-value" id="shieldEffectiveness" style="color: #d4af37;">--%</span>
+                </div>
+            </div>
+            
+            <!-- Pattern Performance Mini-Display -->
+            <div style="margin-top: 15px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 5px;">
+                <div style="font-size: 11px; color: #ff6b00; margin-bottom: 8px; text-align: center; font-weight: bold;">PATTERN PERFORMANCE</div>
+                <div id="patternPerformanceList" style="font-size: 10px; line-height: 1.4;">
+                    <!-- Pattern data will be populated here -->
+                </div>
+            </div>
+            
+            <div style="margin-top: 10px; font-size: 10px; color: #888; text-align: center;">
+                Last Updated: <span id="eliteLastUpdated">--</span>
+            </div>
+        </div>
+
+        <!-- Expiry Warning System -->
+        <div class="dashboard-panel">
+            <div class="panel-title">⚠️ EXPIRY ALERTS</div>
+            <div class="mission-stats">
+                <div class="stat-item">
+                    <span>Critical Signals:</span>
+                    <span class="stat-value" id="criticalSignalsCount" style="color: #ff0040;">--</span>
+                </div>
+                <div class="stat-item">
+                    <span>Alert Level:</span>
+                    <span class="stat-value" id="alertLevel">--</span>
+                </div>
+                <div class="stat-item">
+                    <span>Expired 24h:</span>
+                    <span class="stat-value" id="totalExpired24h">--</span>
+                </div>
+                <div class="stat-item">
+                    <span>Quality Lost:</span>
+                    <span class="stat-value" id="qualitySignalsLost" style="color: #ff0040;">--</span>
+                </div>
+            </div>
+            
+            <!-- Critical Signals List -->
+            <div style="margin-top: 15px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 5px; max-height: 120px; overflow-y: auto;">
+                <div style="font-size: 11px; color: #ff0040; margin-bottom: 8px; text-align: center; font-weight: bold;">CRITICAL EXPIRING SIGNALS</div>
+                <div id="criticalSignalsList" style="font-size: 10px; line-height: 1.4;">
+                    <!-- Critical signals will be populated here -->
+                </div>
+            </div>
+            
+            <div style="margin-top: 10px; font-size: 10px; color: #888; text-align: center;">
+                Last Updated: <span id="expiryLastUpdated">--</span>
+            </div>
+        </div>
+
+        <!-- Fire Command Analytics -->
+        <div class="dashboard-panel">
+            <div class="panel-title">🔫 FIRE COMMAND ANALYTICS</div>
+            <div class="mission-stats">
+                <div class="stat-item">
+                    <span>Fire Attempts 24h:</span>
+                    <span class="stat-value" id="fireAttempts24h">--</span>
+                </div>
+                <div class="stat-item">
+                    <span>Fire Success Rate:</span>
+                    <span class="stat-value" id="fireSuccessRate" style="color: #00ff41;">--%</span>
+                </div>
+                <div class="stat-item">
+                    <span>Avg Exec Time:</span>
+                    <span class="stat-value" id="avgExecTime">--</span>
+                </div>
+                <div class="stat-item">
+                    <span>Failures 24h:</span>
+                    <span class="stat-value" id="fireFailures24h" style="color: #ff0040;">--</span>
+                </div>
+            </div>
+            
+            <!-- Failure Analysis Mini-Display -->
+            <div style="margin-top: 15px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 5px;">
+                <div style="font-size: 11px; color: #ff6b00; margin-bottom: 8px; text-align: center; font-weight: bold;">FAILURE ANALYSIS</div>
+                <div id="failureAnalysisList" style="font-size: 10px; line-height: 1.4;">
+                    <!-- Failure data will be populated here -->
+                </div>
+            </div>
+            
+            <div style="margin-top: 10px; font-size: 10px; color: #888; text-align: center;">
+                Last Updated: <span id="fireLastUpdated">--</span>
+            </div>
+        </div>
+
+        <!-- Live Activity Feed -->
+        <div class="dashboard-panel">
+            <div class="panel-title">📡 LIVE ACTIVITY</div>
+            
+            <!-- Signal Timeline Heatmap -->
+            <div style="margin-bottom: 15px;">
+                <div style="font-size: 12px; color: #ff6b00; margin-bottom: 8px; font-weight: bold;">📡 24H SIGNAL TIMELINE</div>
+                <div style="position: relative; height: 80px; background: rgba(0,0,0,0.5); border: 1px solid #333; border-radius: 5px; overflow: hidden;">
+                    <canvas id="signalHeatmap" width="800" height="60" style="width: 100%; height: 60px; display: block; margin: 10px 0;"></canvas>
+                    <div id="heatmapHover" style="position: absolute; top: 0; left: 0; pointer-events: none; background: rgba(0,0,0,0.8); color: #00ff41; padding: 4px 8px; border-radius: 3px; font-size: 10px; display: none; z-index: 100;"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 9px; color: #888; margin-top: 5px;">
+                    <span>00:00</span>
+                    <span>06:00</span>
+                    <span>12:00</span>
+                    <span>18:00</span>
+                    <span>24:00</span>
+                </div>
+            </div>
+            
+            <div class="trade-log" style="max-height: 180px;">
+                <div id="liveActivityFeed" style="font-size: 11px;">
+                    <!-- Live updates will appear here -->
+                </div>
+            </div>
+            <div style="margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <button class="command-btn" onclick="showSitrep()" style="font-size: 11px;">GENERATE SITREP</button>
+                <button class="command-btn" onclick="executeCommand('global_alert')" style="font-size: 11px;">GLOBAL ALERT</button>
+            </div>
+        </div>
+        
+        <!-- Live Trade Ticker Feed -->
+        <div class="dashboard-panel full-width" style="margin-bottom: 20px;">
+            <div class="panel-title">📊 LIVE TRADE TICKER</div>
+            <div class="trade-ticker-container" style="background: rgba(0,0,0,0.5); border: 1px solid #333; border-radius: 5px; height: 120px; overflow: hidden; position: relative;">
+                <div class="trade-ticker-header" style="display: grid; grid-template-columns: 60px 80px 50px 60px 80px 60px 80px; gap: 10px; padding: 8px; background: rgba(255,107,0,0.2); font-size: 11px; font-weight: bold; border-bottom: 1px solid #333;">
+                    <div>TIME</div>
+                    <div>SYMBOL</div>
+                    <div>RESULT</div>
+                    <div>PIPS</div>
+                    <div>RUNTIME</div>
+                    <div>TCS</div>
+                    <div>CITADEL</div>
+                </div>
+                <div class="trade-ticker-scroll" id="tradeTicker" style="height: 80px; overflow-y: auto; scrollbar-width: thin;">
+                    <div style="padding: 20px; text-align: center; color: #888; font-size: 12px;">
+                        Loading trade feed...
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; font-size: 11px;">
+                <div style="text-align: center; color: #888;">
+                    <span id="tickerUpdateTime">--:--</span> | Auto-refresh: 10s
+                </div>
+                <div style="text-align: center;">
+                    <button class="command-btn" onclick="loadTradeFeed()" style="font-size: 10px; padding: 5px 10px;">REFRESH FEED</button>
+                </div>
+                <div style="text-align: center; color: #888;">
+                    Last 15 completed trades
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Signal Progression Panel -->
+        <div class="dashboard-panel">
+            <div class="panel-title">⚡ ACTIVE SIGNALS</div>
+            <div class="active-signals-container" style="max-height: 200px; overflow-y: auto;">
+                <div id="activeSignalsList" style="font-size: 11px;">
+                    <div style="padding: 20px; text-align: center; color: #888;">
+                        Loading active signals...
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top: 10px; font-size: 10px; color: #888; text-align: center;">
+                Signals from venom_scalp_master only
+            </div>
+        </div>
+
+        <!-- Trade of the Day Panel -->
+        <div class="dashboard-panel">
+            <div class="panel-title">🎯 TRADE OF THE DAY</div>
+            <div id="tradeOfTheDay" style="background: linear-gradient(135deg, rgba(255,215,0,0.1) 0%, rgba(255,215,0,0.05) 100%); border: 1px solid rgba(255,215,0,0.3); border-radius: 8px; padding: 15px; margin-bottom: 10px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div>
+                        <div style="font-size: 24px; font-weight: bold; color: #ffd700; margin-bottom: 5px;" id="todSymbol">--</div>
+                        <div style="font-size: 12px; color: #888;">Symbol</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 24px; font-weight: bold; color: #00ff41; margin-bottom: 5px;" id="todPips">+-- pips</div>
+                        <div style="font-size: 12px; color: #888;">Profit</div>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; margin-top: 15px; font-size: 11px;">
+                    <div>
+                        <div style="color: #ff6b00; font-weight: bold;" id="todTCS">--%</div>
+                        <div style="color: #888;">TCS</div>
+                    </div>
+                    <div>
+                        <div style="color: #00ff41; font-weight: bold;" id="todMLPass">--</div>
+                        <div style="color: #888;">ML Pass</div>
+                    </div>
+                    <div>
+                        <div style="color: #ffaa00; font-weight: bold;" id="todCitadel">--</div>
+                        <div style="color: #888;">CITADEL</div>
+                    </div>
+                    <div>
+                        <div style="color: #888; font-weight: bold;" id="todRuntime">-- min</div>
+                        <div style="color: #888;">Runtime</div>
+                    </div>
+                </div>
+                <div style="margin-top: 10px; text-align: center; font-size: 10px; color: #888;">
+                    <span id="todTime">--:--</span> | Best WIN trade in last 24h
+                </div>
+            </div>
+            <div style="font-size: 10px; color: #888; text-align: center;">
+                Updates every 30s | Based on highest pips_result
+            </div>
+        </div>
+
+        <!-- Soldier Roster -->
+        <div class="dashboard-panel two-thirds">
+            <div class="panel-title">🪖 SOLDIER ROSTER</div>
+            <table class="soldier-table" id="soldierTable">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Tier</th>
+                        <th>XP</th>
+                        <th>Telegram</th>
+                        <th>Last Seen</th>
+                        <th>Trades</th>
+                    </tr>
+                </thead>
+                <tbody id="soldierTableBody">
+                    <tr><td colspan="6">Loading soldiers...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Control Panel -->
+        <div class="dashboard-panel full-width mobile-hide">
+            <div class="panel-title">🎯 ENGINE CONTROL</div>
+            <div class="apex-control-grid">
+                <!-- Status Section -->
+                <div class="apex-status">
+                    <h4 style="color: #ff6b00; margin-bottom: 10px;">ENGINE STATUS</h4>
+                    <div class="stat-item">
+                        <span>Status:</span>
+                        <span class="stat-value" id="apexStatus">
+                            <span class="status-indicator status-offline"></span>OFFLINE
+                        </span>
+                    </div>
+                    <div class="stat-item">
+                        <span>PID:</span>
+                        <span class="stat-value" id="apexPid">--</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Signals:</span>
+                        <span class="stat-value" id="apexSignalCount">0</span>
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <button class="command-btn" id="apexStartBtn" onclick="control('start')" style="width: 100%; margin-bottom: 5px;">START</button>
+                        <button class="command-btn danger" id="apexStopBtn" onclick="control('stop')" style="width: 100%; margin-bottom: 5px;">STOP</button>
+                        <button class="command-btn" onclick="control('restart')" style="width: 100%;">RESTART</button>
+                    </div>
+                </div>
+                
+                <!-- Configuration Section -->
+                <div class="apex-config">
+                    <h4 style="color: #ff6b00; margin-bottom: 10px;">CONFIGURATION</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div>
+                            <label style="font-size: 11px; color: #888;">Signals/Hour Target</label>
+                            <input type="range" id="apexSignalsPerHour" min="10" max="100" value="40" onchange="updateConfig()" style="width: 100%;">
+                            <span id="apexSignalsPerHourValue" style="font-size: 12px;">40</span>
+                        </div>
+                        <div>
+                            <label style="font-size: 11px; color: #888;">TCS Threshold (%)</label>
+                            <input type="range" id="apexTcsThreshold" min="50" max="90" value="65" onchange="updateConfig()" style="width: 100%;">
+                            <span id="apexTcsThresholdValue" style="font-size: 12px;">65%</span>
+                        </div>
+                        <div>
+                            <label style="font-size: 11px; color: #888;">Scan Interval (sec)</label>
+                            <input type="range" id="apexScanInterval" min="15" max="120" value="45" onchange="updateConfig()" style="width: 100%;">
+                            <span id="apexScanIntervalValue" style="font-size: 12px;">45s</span>
+                        </div>
+                        <div>
+                            <label style="font-size: 11px; color: #888;">Max Spread</label>
+                            <input type="range" id="apexMaxSpread" min="20" max="100" value="50" onchange="updateConfig()" style="width: 100%;">
+                            <span id="apexMaxSpreadValue" style="font-size: 12px;">50</span>
+                        </div>
+                    </div>
+                    <div style="margin-top: 10px;">
+                        <button class="command-btn" onclick="saveConfig()" style="width: 100%;">APPLY CONFIGURATION</button>
+                    </div>
+                </div>
+                
+                <!-- HUD Access Logs -->
+                <div class="dashboard-panel">
+                    <div class="panel-title">🎥 HUD ACCESS LOGS</div>
+                    <div id="hudAccessLogs" style="max-height: 200px; overflow-y: auto; font-size: 11px;">
+                        <div class="trade-row" style="font-weight: bold; background: rgba(255,107,0,0.2); grid-template-columns: 100px 80px 120px; gap: 8px; padding: 8px; border-bottom: 1px solid #333;">
+                            <div>USERNAME</div>
+                            <div>MISSION</div>
+                            <div>TIMESTAMP</div>
+                        </div>
+                        <div id="hudAccessLogBody">
+                            <div style="padding: 20px; text-align: center; color: #888;">Loading HUD access logs...</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 10px; font-size: 10px; color: #888; text-align: center;">
+                        Last 50 HUD accesses | Auto-refresh: 30s
+                    </div>
+                </div>
+                
+                <!-- Ghost Trade Tracker -->
+                <div class="dashboard-panel">
+                    <div class="panel-title">👻 GHOST TRADE TRACKER</div>
+                    <div id="ghostTracker">
+                        <div class="mission-stats">
+                            <div class="stat-item">
+                                <span>Total Missions:</span>
+                                <span class="stat-value" id="ghostTotalMissions">--</span>
+                            </div>
+                            <div class="stat-item">
+                                <span>Executed:</span>
+                                <span class="stat-value" id="ghostExecuted">--</span>
+                            </div>
+                            <div class="stat-item">
+                                <span>Ghosted:</span>
+                                <span class="stat-value" id="ghostGhosted" style="color: #ffaa00;">--</span>
+                            </div>
+                            <div class="stat-item">
+                                <span>Ghost Wins:</span>
+                                <span class="stat-value" id="ghostWins" style="color: #00ff41;">--</span>
+                            </div>
+                        </div>
+                        <hr style="margin: 10px 0; border-color: #333;">
+                        <div class="ghost-rates" style="font-size: 12px;">
+                            <div style="display: flex; justify-content: space-between; margin: 5px 0;">
+                                <span>Fired Win Rate:</span>
+                                <span id="ghostFiredWinRate" style="font-weight: bold;">--%</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin: 5px 0;">
+                                <span>Ghost Win Rate:</span>
+                                <span id="ghostGhostWinRate" style="font-weight: bold; color: #ffaa00;">--%</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin: 5px 0;">
+                                <span>True Win Rate:</span>
+                                <span id="ghostTrueWinRate" style="font-weight: bold; color: #00ff41;">--%</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin: 5px 0;">
+                                <span>Impact:</span>
+                                <span id="ghostImpact" style="font-weight: bold; color: #ff6b00;">--%</span>
+                            </div>
+                        </div>
+                        <hr style="margin: 10px 0; border-color: #333;">
+                        <div id="ghostTopMissed" style="font-size: 11px; max-height: 100px; overflow-y: auto;">
+                            <div style="font-weight: bold; color: #ff6b00; margin-bottom: 5px;">Top Missed Wins:</div>
+                            <div id="ghostMissedList">Loading...</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- VENOM Risk Control Panel -->
+                <div class="venom-risk-control">
+                    <h4 style="color: #ff0040; margin-bottom: 10px;">🔥 VENOM RISK PARAMETERS</h4>
+                    
+                    <!-- Risk Status Display -->
+                    <div class="risk-status-display" style="background: rgba(0,0,0,0.8); border: 2px solid #333; border-radius: 5px; padding: 10px; margin-bottom: 15px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 12px; color: #888;">Risk Status:</span>
+                            <span id="venomRiskStatus" style="font-weight: bold; color: #00ff41;">SAFE</span>
+                        </div>
+                        <div style="font-size: 10px; color: #888; margin-top: 5px;" id="venomRiskMessage">
+                            ✅ Within safe limits
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; font-size: 10px;">
+                            <div>Loss: <span id="venomLossRatio" style="color: #00ff41;">0%</span></div>
+                            <div>Trades: <span id="venomTradesRatio" style="color: #00ff41;">0%</span></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Risk Configuration Controls -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div>
+                            <label style="font-size: 11px; color: #888;">Max Trades/Session</label>
+                            <input type="range" id="venomMaxTrades" min="1" max="15" value="8" onchange="updateVenomRiskConfig()" style="width: 100%;">
+                            <span id="venomMaxTradesValue" style="font-size: 12px;">8</span>
+                        </div>
+                        <div>
+                            <label style="font-size: 11px; color: #888;">Daily Loss Cap (%)</label>
+                            <input type="range" id="venomLossCap" min="1" max="50" value="10" onchange="updateVenomRiskConfig()" style="width: 100%;">
+                            <span id="venomLossCapValue" style="font-size: 12px;">10%</span>
+                        </div>
+                        <div>
+                            <label style="font-size: 11px; color: #888;">Risk/Trade (%)</label>
+                            <input type="range" id="venomRiskPerTrade" min="0.1" max="5.0" step="0.1" value="2.0" onchange="updateVenomRiskConfig()" style="width: 100%;">
+                            <span id="venomRiskPerTradeValue" style="font-size: 12px;">2.0%</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <label style="font-size: 11px; color: #888;">Auto Halt:</label>
+                            <input type="checkbox" id="venomAutoHalt" checked onchange="updateVenomRiskConfig()" style="transform: scale(1.2);">
+                            <span id="venomAutoHaltStatus" style="font-size: 10px; color: #00ff41;">ENABLED</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Control Buttons -->
+                    <div style="margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <button class="command-btn" onclick="saveVenomRiskConfig()" style="width: 100%; font-size: 11px;">APPLY RISK CONFIG</button>
+                        <button class="command-btn danger" onclick="executeVenomHalt()" style="width: 100%; font-size: 11px;">EMERGENCY HALT</button>
+                    </div>
+                </div>
+
+                <!-- Trading Pairs Section -->
+                <div class="apex-pairs">
+                    <h4 style="color: #ff6b00; margin-bottom: 10px;">TRADING PAIRS</h4>
+                    <div id="apexPairToggles" style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; max-height: 200px; overflow-y: auto;">
+                        <!-- Pair toggles will be populated here -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Signals -->
+            <div style="margin-top: 20px;">
+                <h4 style="color: #ff6b00; margin-bottom: 10px;">RECENT SIGNALS</h4>
+                <div class="trade-log" style="max-height: 150px;">
+                    <div class="trade-row" style="font-weight: bold; background: rgba(255,107,0,0.2); grid-template-columns: 120px 1fr 80px 60px 60px;">
+                        <div>Time</div>
+                        <div>Signal #</div>
+                        <div>Symbol</div>
+                        <div>Direction</div>
+                        <div>TCS</div>
+                    </div>
+                    <div id="apexSignalLog">Loading signals...</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Collapsible Engine Control -->
+        <div class="mobile-collapsible">
+            <div class="mobile-collapsible-header" id="mobileEngineHeader" onclick="toggleMobileSection('mobileEngineHeader')">
+                <span style="font-weight: bold; color: #ff6b00;">🎯 ENGINE CONTROL</span>
+                <span class="collapsible-toggle">▼</span>
+            </div>
+            <div class="mobile-collapsible-content">
+                <div class="apex-control-grid">
+                    <!-- Status Section -->
+                    <div class="apex-status">
+                        <h4 style="color: #ff6b00; margin-bottom: 10px;">ENGINE STATUS</h4>
+                        <div class="stat-item">
+                            <span>Status:</span>
+                            <span class="stat-value" id="apexStatusMobile">
+                                <span class="status-indicator status-offline"></span>OFFLINE
+                            </span>
+                        </div>
+                        <div class="stat-item">
+                            <span>PID:</span>
+                            <span class="stat-value" id="apexPidMobile">--</span>
+                        </div>
+                        <div style="margin-top: 15px;">
+                            <button class="command-btn" onclick="control('start')" style="width: 100%; margin-bottom: 5px;">START</button>
+                            <button class="command-btn danger" onclick="control('stop')" style="width: 100%;">STOP</button>
+                        </div>
+                    </div>
+                    
+                    <!-- VENOM Risk Control Panel (Mobile) -->
+                    <div class="venom-risk-control">
+                        <h4 style="color: #ff0040; margin-bottom: 10px;">🔥 VENOM RISK</h4>
+                        <div class="risk-status-display" style="background: rgba(0,0,0,0.8); border: 2px solid #333; border-radius: 5px; padding: 10px; margin-bottom: 15px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-size: 12px;">Status:</span>
+                                <span id="venomRiskStatusMobile" style="font-weight: bold; color: #00ff41;">SAFE</span>
+                            </div>
+                        </div>
+                        <div style="margin-top: 10px;">
+                            <button class="command-btn" onclick="saveVenomRiskConfig()" style="width: 100%; font-size: 12px;">APPLY CONFIG</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Trade Log -->
+        <div class="dashboard-panel full-width">
+            <div class="panel-title">📜 TRADE LOG EXPLORER</div>
+            <div class="trade-log" id="tradeLog">
+                <div class="trade-row" style="font-weight: bold; background: rgba(255,107,0,0.2);">
+                    <div>Time</div>
+                    <div>User</div>
+                    <div>Pair</div>
+                    <div>Dir</div>
+                    <div>Result</div>
+                    <div>Pips</div>
+                    <div>XP</div>
+                </div>
+                <div id="tradeLogBody">Loading trades...</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- SITREP Modal -->
+    <div class="sitrep-modal" id="sitrepModal">
+        <div class="sitrep-content">
+            <button class="close-btn" onclick="closeSitrep()">×</button>
+            <div class="panel-title">📋 SITUATIONAL REPORT</div>
+            <div id="sitrepContent">Loading SITREP...</div>
+            <button class="command-btn" onclick="exportSitrep()" style="margin-top: 20px;">Export as PDF</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script>
+        // Initialize Socket.IO
+        const socket = io();
+        
+        // Update current time
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('currentTime').textContent = now.toLocaleTimeString() + ' UTC';
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+        
+        // Subscription Analytics Functions
+        async function loadSubscriptionAnalytics() {
+            try {
+                const response = await fetch('/throne/api/subscription_analytics');
+                const data = await response.json();
+                
+                // Update MRR and growth
+                document.getElementById('totalMRR').textContent = data.mrr.total.toLocaleString();
+                const growthEl = document.getElementById('mrrGrowth');
+                if (data.mrr.growth_percentage > 0) {
+                    growthEl.innerHTML = `↑ ${data.mrr.growth_percentage}%`;
+                    growthEl.style.color = '#00ff41';
+                } else if (data.mrr.growth_percentage < 0) {
+                    growthEl.innerHTML = `↓ ${Math.abs(data.mrr.growth_percentage)}%`;
+                    growthEl.style.color = '#ff0040';
+                } else {
+                    growthEl.innerHTML = '→ 0%';
+                    growthEl.style.color = '#888';
+                }
+                
+                // Update user counts
+                document.getElementById('totalActiveUsers').textContent = data.users.total_active;
+                document.getElementById('pressPassCount').textContent = data.users.press_pass;
+                
+                // Update tier breakdown
+                const tierBreakdown = document.getElementById('tierBreakdown');
+                tierBreakdown.innerHTML = '';
+                
+                const tiers = ['NIBBLER', 'FANG', 'COMMANDER', ''];
+                const tierColors = {
+                    'NIBBLER': '#00ff41',
+                    'FANG': '#ffaa00',
+                    'COMMANDER': '#ff6b00',
+                    '': '#ff0040'
+                };
+                
+                tiers.forEach(tier => {
+                    const tierData = data.mrr.by_tier[tier] || {count: 0, mrr: 0};
+                    const tierDiv = document.createElement('div');
+                    tierDiv.style.cssText = 'text-align: center; padding: 8px; background: rgba(0,0,0,0.5); border-radius: 5px;';
+                    tierDiv.innerHTML = `
+                        <div style="font-weight: bold; color: ${tierColors[tier]};">${tier}</div>
+                        <div style="font-size: 18px; font-weight: bold;">${tierData.count}</div>
+                        <div style="font-size: 10px; color: #888;">$${tierData.mrr}</div>
+                    `;
+                    tierBreakdown.appendChild(tierDiv);
+                });
+                
+            } catch (error) {
+                console.error('Error loading subscription analytics:', error);
+            }
+        }
+        
+        // Load initial data
+        async function loadMissionStats() {
+            try {
+                const response = await fetch('/throne/api/mission_stats');
+                const data = await response.json();
+                
+                // Update bridge status in top bar
+                const bridgeStatus = document.getElementById('bridgeStatus');
+                const statusClass = data.bridge_status === 'ONLINE' ? 'status-online' : 'status-offline';
+                bridgeStatus.innerHTML = `<span class="status-indicator ${statusClass}"></span>${data.bridge_status}`;
+                
+                // Update win rate
+                document.getElementById('winRate').textContent = data.win_rate + '%';
+                
+                // Calculate signal rate (trades today / hours so far)
+                const hoursToday = new Date().getHours() || 1;
+                const signalRate = Math.round(data.trades_today / hoursToday);
+                document.getElementById('signalRate').textContent = signalRate;
+                
+            } catch (error) {
+                console.error('Error loading mission stats:', error);
+            }
+        }
+        
+        async function loadSoldierRoster() {
+            try {
+                const response = await fetch('/throne/api/soldier_roster');
+                const data = await response.json();
+                
+                const tbody = document.getElementById('soldierTableBody');
+                tbody.innerHTML = '';
+                
+                data.soldiers.forEach(soldier => {
+                    const row = tbody.insertRow();
+                    row.innerHTML = `
+                        <td data-label="Username">${soldier.username}</td>
+                        <td data-label="Tier">${soldier.tier}</td>
+                        <td data-label="XP">${soldier.xp.toLocaleString()}</td>
+                        <td data-label="Telegram">${soldier.telegram_linked ? '✅' : '❌'}</td>
+                        <td data-label="Last Seen">${soldier.last_seen}</td>
+                        <td data-label="Trades">${soldier.trade_count}</td>
+                    `;
+                });
+            } catch (error) {
+                console.error('Error loading soldier roster:', error);
+            }
+        }
+        
+        async function loadTradeLog() {
+            try {
+                const response = await fetch('/throne/api/trade_log');
+                const data = await response.json();
+                
+                const container = document.getElementById('tradeLogBody');
+                container.innerHTML = '';
+                
+                data.trades.forEach(trade => {
+                    const row = document.createElement('div');
+                    row.className = `trade-row ${trade.result.toLowerCase()}`;
+                    row.innerHTML = `
+                        <div>${trade.time}</div>
+                        <div>${trade.user}</div>
+                        <div>${trade.pair}</div>
+                        <div>${trade.direction}</div>
+                        <div>${trade.result}</div>
+                        <div>${trade.pips}</div>
+                        <div>${trade.xp_earned}</div>
+                    `;
+                    container.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Error loading trade log:', error);
+            }
+        }
+        
+        async function executeCommand(command, parameters = {}) {
+            try {
+                const response = await fetch('/throne/api/command', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ command, parameters })
+                });
+                
+                const result = await response.json();
+                alert(result.message);
+                
+                if (result.success) {
+                    loadMissionStats(); // Refresh stats
+                }
+            } catch (error) {
+                alert('Command execution failed: ' + error.message);
+            }
+        }
+        
+        function awardXP() {
+            const userId = document.getElementById('xpUserId').value;
+            const amount = parseInt(document.getElementById('xpAmount').value);
+            
+            if (!userId || !amount) {
+                alert('Please enter both User ID and XP Amount');
+                return;
+            }
+            
+            executeCommand('award_xp', { user_id: userId, amount: amount });
+            
+            // Clear inputs
+            document.getElementById('xpUserId').value = '';
+            document.getElementById('xpAmount').value = '';
+        }
+        
+        async function showSitrep() {
+            document.getElementById('sitrepModal').style.display = 'block';
+            
+            try {
+                const response = await fetch('/throne/api/sitrep');
+                const data = await response.json();
+                
+                const content = document.getElementById('sitrepContent');
+                content.innerHTML = `
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div>
+                            <h3>📊 System Metrics</h3>
+                            <p><strong>XP Flow (24h):</strong> ${data.sitrep.xp_flow_24h.toLocaleString()}</p>
+                            <p><strong>Signal Volume:</strong> ${data.sitrep.signal_fire_volume}</p>
+                            <p><strong>Bridge Response:</strong> ${data.sitrep.bridge_response_time}</p>
+                            <p><strong>Win Rate Trend:</strong> ${data.sitrep.win_rate_trend}</p>
+                        </div>
+                        <div>
+                            <h3>👥 User Activity</h3>
+                            <p><strong>Manual Mode:</strong> ${data.sitrep.active_users_by_mode.MANUAL}</p>
+                            <p><strong>Semi-Auto:</strong> ${data.sitrep.active_users_by_mode.SEMI_AUTO}</p>
+                            <p><strong>Full Auto:</strong> ${data.sitrep.active_users_by_mode.FULL_AUTO}</p>
+                            <p><strong>Press Pass Conv:</strong> ${data.sitrep.press_pass_conversion}</p>
+                        </div>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <h3>🏆 Intelligence</h3>
+                        <p><strong>Top Performer:</strong> ${data.sitrep.most_profitable_user}</p>
+                        <p><strong>Badge Velocity:</strong> ${data.sitrep.badge_unlock_velocity}</p>
+                        <p><strong>Overdue Links:</strong> ${data.sitrep.overdue_telegram_links}</p>
+                        <p><strong>Referral Ratio:</strong> ${data.sitrep.referrals_vs_enlistments}</p>
+                    </div>
+                `;
+            } catch (error) {
+                document.getElementById('sitrepContent').innerHTML = 'Error loading SITREP: ' + error.message;
+            }
+        }
+        
+        function closeSitrep() {
+            document.getElementById('sitrepModal').style.display = 'none';
+        }
+        
+        async function exportSitrep() {
+            try {
+                // Get fresh SITREP data
+                const response = await fetch('/throne/api/sitrep');
+                const data = await response.json();
+                
+                if (!data.sitrep) {
+                    alert('Failed to generate SITREP data');
+                    return;
+                }
+                
+                // Initialize jsPDF
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                // Generate timestamp for filename
+                const now = new Date();
+                const timestamp = now.toISOString().split('T')[0]; // YYYY-MM-DD format
+                const timeUTC = now.toTimeString().split(' ')[0]; // HH:MM:SS format
+                
+                // Page setup
+                const pageWidth = doc.internal.pageSize.getWidth();
+                const pageHeight = doc.internal.pageSize.getHeight();
+                const margin = 20;
+                let yPosition = margin;
+                
+                // Header with BITTEN branding
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(24);
+                doc.setTextColor(40, 40, 40);
+                doc.text('🏆 BITTEN COMMANDER REPORT', pageWidth / 2, yPosition, { align: 'center' });
+                
+                yPosition += 15;
+                doc.setFontSize(14);
+                doc.setFont('helvetica', 'normal');
+                doc.setTextColor(80, 80, 80);
+                doc.text(`SITUATIONAL REPORT - ${timestamp}`, pageWidth / 2, yPosition, { align: 'center' });
+                
+                yPosition += 20;
+                
+                // Horizontal line
+                doc.setDrawColor(200, 200, 200);
+                doc.line(margin, yPosition, pageWidth - margin, yPosition);
+                yPosition += 15;
+                
+                // System Metrics Section
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(16);
+                doc.setTextColor(40, 40, 40);
+                doc.text('📊 SYSTEM METRICS', margin, yPosition);
+                yPosition += 10;
+                
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(11);
+                doc.setTextColor(60, 60, 60);
+                
+                const metrics = [
+                    `XP Flow (24h): ${data.sitrep.xp_flow_24h.toLocaleString()}`,
+                    `Signal Fire Volume: ${data.sitrep.signal_fire_volume}`,
+                    `Bridge Response Time: ${data.sitrep.bridge_response_time}`,
+                    `Win Rate Trend: ${data.sitrep.win_rate_trend}`
+                ];
+                
+                metrics.forEach(metric => {
+                    doc.text(`• ${metric}`, margin + 5, yPosition);
+                    yPosition += 6;
+                });
+                
+                yPosition += 10;
+                
+                // User Activity Section
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(16);
+                doc.setTextColor(40, 40, 40);
+                doc.text('👥 USER ACTIVITY', margin, yPosition);
+                yPosition += 10;
+                
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(11);
+                doc.setTextColor(60, 60, 60);
+                
+                const userActivity = [
+                    `Manual Mode Users: ${data.sitrep.active_users_by_mode.MANUAL}`,
+                    `Semi-Auto Mode Users: ${data.sitrep.active_users_by_mode.SEMI_AUTO}`,
+                    `Full Auto Mode Users: ${data.sitrep.active_users_by_mode.FULL_AUTO}`,
+                    `Press Pass Conversion: ${data.sitrep.press_pass_conversion}`
+                ];
+                
+                userActivity.forEach(activity => {
+                    doc.text(`• ${activity}`, margin + 5, yPosition);
+                    yPosition += 6;
+                });
+                
+                yPosition += 10;
+                
+                // Intelligence Section
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(16);
+                doc.setTextColor(40, 40, 40);
+                doc.text('🏆 INTELLIGENCE', margin, yPosition);
+                yPosition += 10;
+                
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(11);
+                doc.setTextColor(60, 60, 60);
+                
+                const intelligence = [
+                    `Top Performer: ${data.sitrep.most_profitable_user}`,
+                    `Badge Unlock Velocity: ${data.sitrep.badge_unlock_velocity}`,
+                    `Overdue Telegram Links: ${data.sitrep.overdue_telegram_links}`,
+                    `Referral vs Enlistments: ${data.sitrep.referrals_vs_enlistments}`
+                ];
+                
+                intelligence.forEach(intel => {
+                    doc.text(`• ${intel}`, margin + 5, yPosition);
+                    yPosition += 6;
+                });
+                
+                // Footer
+                const footerY = pageHeight - 20;
+                doc.setDrawColor(200, 200, 200);
+                doc.line(margin, footerY - 5, pageWidth - margin, footerY - 5);
+                
+                doc.setFont('helvetica', 'italic');
+                doc.setFontSize(9);
+                doc.setTextColor(120, 120, 120);
+                doc.text(`Generated by BITTEN Commander Throne at ${timeUTC} UTC`, pageWidth / 2, footerY, { align: 'center' });
+                
+                // Classification marking
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(8);
+                doc.setTextColor(200, 0, 0);
+                doc.text('COMMANDER EYES ONLY', pageWidth / 2, footerY + 8, { align: 'center' });
+                
+                // Save the PDF
+                const filename = `SITREP_${timestamp}.pdf`;
+                doc.save(filename);
+                
+                // Success notification
+                setTimeout(() => {
+                    alert(`✅ SITREP exported successfully as ${filename}`);
+                }, 500);
+                
+            } catch (error) {
+                console.error('Error exporting SITREP:', error);
+                alert('❌ Failed to export SITREP: ' + error.message);
+            }
+        }
+        
+        // Socket.IO event handlers
+        socket.on('live_update', function(data) {
+            // Update live data without full page refresh
+            document.getElementById('activeUsers').textContent = data.active_users;
+            document.getElementById('tradesToday').textContent = data.trades_today;
+            document.getElementById('winRate').textContent = data.win_rate + '%';
+        });
+        
+        // Control Functions
+        let apexConfig = {};
+        
+        async function loadStatus() {
+            try {
+                const response = await fetch('/throne/api/apex/status');
+                const data = await response.json();
+                
+                // Update status display in control panel
+                const statusEl = document.getElementById('apexStatus');
+                const statusClass = data.running ? 'status-online' : 'status-offline';
+                const statusText = data.running ? 'ONLINE' : 'OFFLINE';
+                statusEl.innerHTML = `<span class="status-indicator ${statusClass}"></span>${statusText}`;
+                
+                // Update quick status in top bar
+                const quickStatusEl = document.getElementById('apexQuickStatus');
+                quickStatusEl.innerHTML = `<span class="status-indicator ${statusClass}"></span>${statusText}`;
+                
+                // Update PID
+                document.getElementById('apexPid').textContent = data.pid || '--';
+                
+                // Update signal count
+                document.getElementById('apexSignalCount').textContent = data.signal_count || '0';
+                
+                // Update config if available
+                if (data.config) {
+                    apexConfig = data.config;
+                    updateConfigDisplay();
+                }
+                
+                // Update button states
+                document.getElementById('apexStartBtn').disabled = data.running;
+                document.getElementById('apexStopBtn').disabled = !data.running;
+                
+            } catch (error) {
+                console.error('Error loading status:', error);
+            }
+        }
+        
+        function updateConfigDisplay() {
+            // Update sliders and values
+            if (apexConfig.signal_generation) {
+                const sg = apexConfig.signal_generation;
+                
+                document.getElementById('apexSignalsPerHour').value = sg.signals_per_hour_target || 40;
+                document.getElementById('apexSignalsPerHourValue').textContent = sg.signals_per_hour_target || 40;
+                
+                document.getElementById('apexTcsThreshold').value = sg.min_tcs_threshold || 65;
+                document.getElementById('apexTcsThresholdValue').textContent = (sg.min_tcs_threshold || 65) + '%';
+                
+                document.getElementById('apexScanInterval').value = sg.scan_interval_seconds || 45;
+                document.getElementById('apexScanIntervalValue').textContent = (sg.scan_interval_seconds || 45) + 's';
+                
+                document.getElementById('apexMaxSpread').value = sg.max_spread_allowed || 50;
+                document.getElementById('apexMaxSpreadValue').textContent = sg.max_spread_allowed || 50;
+            }
+            
+            // Update pair toggles
+            if (apexConfig.trading_pairs) {
+                updatePairToggles(apexConfig.trading_pairs.pairs || []);
+            }
+        }
+        
+        function updatePairToggles(activePairs) {
+            const container = document.getElementById('apexPairToggles');
+            const allPairs = [
+                'EURUSD', 'GBPUSD', 'USDJPY', 'USDCHF', 'USDCAD',
+                'AUDUSD', 'NZDUSD', 'EURJPY', 'GBPJPY', 'EURGBP',
+                'AUDJPY', 'EURAUD', 'GBPAUD', 'GBPNZD', 'NZDJPY'
+            ];
+            
+            container.innerHTML = '';
+            allPairs.forEach(pair => {
+                const isActive = activePairs.includes(pair);
+                const toggle = document.createElement('label');
+                toggle.style.cssText = 'display: flex; align-items: center; gap: 5px; font-size: 11px; padding: 5px; background: rgba(0,255,65,0.1); border-radius: 3px; cursor: pointer;';
+                toggle.innerHTML = `
+                    <input type="checkbox" id="pair_${pair}" value="${pair}" ${isActive ? 'checked' : ''} onchange="updateConfig()">
+                    <span>${pair}</span>
+                `;
+                container.appendChild(toggle);
+            });
+        }
+        
+        function updateConfig() {
+            // Update display values in real-time
+            document.getElementById('apexSignalsPerHourValue').textContent = document.getElementById('apexSignalsPerHour').value;
+            document.getElementById('apexTcsThresholdValue').textContent = document.getElementById('apexTcsThreshold').value + '%';
+            document.getElementById('apexScanIntervalValue').textContent = document.getElementById('apexScanInterval').value + 's';
+            document.getElementById('apexMaxSpreadValue').textContent = document.getElementById('apexMaxSpread').value;
+        }
+        
+        async function saveConfig() {
+            try {
+                // Gather all selected pairs
+                const pairs = [];
+                const pairCheckboxes = document.querySelectorAll('#apexPairToggles input[type="checkbox"]:checked');
+                pairCheckboxes.forEach(cb => pairs.push(cb.value));
+                
+                const config = {
+                    signals_per_hour: parseInt(document.getElementById('apexSignalsPerHour').value),
+                    min_tcs: parseInt(document.getElementById('apexTcsThreshold').value),
+                    scan_interval: parseInt(document.getElementById('apexScanInterval').value),
+                    max_spread: parseInt(document.getElementById('apexMaxSpread').value),
+                    pairs: pairs
+                };
+                
+                const response = await fetch('/throne/api/apex/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(config)
+                });
+                
+                const result = await response.json();
+                alert(result.success ? '✅ Configuration updated!' : '❌ ' + result.message);
+                
+                if (result.success) {
+                    loadStatus(); // Reload to confirm changes
+                }
+            } catch (error) {
+                alert('❌ Failed to update configuration: ' + error.message);
+            }
+        }
+        
+        async function control(action) {
+            try {
+                const response = await fetch('/throne/api/apex/control', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action })
+                });
+                
+                const result = await response.json();
+                alert(result.success ? '✅ ' + result.message : '❌ ' + result.message);
+                
+                // Reload status after a moment
+                setTimeout(loadStatus, 2000);
+                
+            } catch (error) {
+                alert('❌ Failed to control : ' + error.message);
+            }
+        }
+        
+        async function loadSignals() {
+            try {
+                const response = await fetch('/throne/api/apex/signals');
+                const data = await response.json();
+                
+                const container = document.getElementById('apexSignalLog');
+                container.innerHTML = '';
+                
+                if (data.signals && data.signals.length > 0) {
+                    // Show last 10 signals
+                    data.signals.slice(-10).reverse().forEach(signal => {
+                        const row = document.createElement('div');
+                        row.className = 'trade-row';
+                        row.style.cssText = 'grid-template-columns: 120px 1fr 80px 60px 60px;';
+                        row.innerHTML = `
+                            <div>${signal.timestamp ? signal.timestamp.split(' ')[1] : '--'}</div>
+                            <div>${signal.number}</div>
+                            <div>${signal.symbol}</div>
+                            <div>${signal.direction}</div>
+                            <div>${signal.tcs}%</div>
+                        `;
+                        container.appendChild(row);
+                    });
+                } else {
+                    container.innerHTML = '<div style="padding: 10px; color: #888;">No signals yet</div>';
+                }
+            } catch (error) {
+                console.error('Error loading signals:', error);
+            }
+        }
+        
+        // Ghost Trade Tracker Functions
+        async function loadGhostTrades() {
+            try {
+                const response = await fetch('/throne/api/ghost_trades');
+                const data = await response.json();
+                
+                // Update summary stats
+                document.getElementById('ghostTotalMissions').textContent = data.summary.total_missions || '0';
+                document.getElementById('ghostExecuted').textContent = data.summary.executed || '0';
+                document.getElementById('ghostGhosted').textContent = data.summary.ghosted || '0';
+                document.getElementById('ghostWins').textContent = data.summary.ghost_wins || '0';
+                
+                // Update hit rates
+                document.getElementById('ghostFiredWinRate').textContent = (data.hit_rates.fired_win_rate || 0).toFixed(1) + '%';
+                document.getElementById('ghostGhostWinRate').textContent = (data.hit_rates.ghost_win_rate || 0).toFixed(1) + '%';
+                document.getElementById('ghostTrueWinRate').textContent = (data.hit_rates.true_win_rate || 0).toFixed(1) + '%';
+                document.getElementById('ghostImpact').textContent = (data.hit_rates.impact || 0).toFixed(1) + '%';
+                
+                // Update true win rate in top bar
+                document.getElementById('trueWinRate').textContent = (data.hit_rates.true_win_rate || 0).toFixed(1) + '%';
+                
+                // Calculate and update execution rate
+                const totalMissions = data.summary.total_missions || 0;
+                const executed = data.summary.executed || 0;
+                const executionRate = totalMissions > 0 ? ((executed / totalMissions) * 100).toFixed(1) : 0;
+                document.getElementById('executionRate').textContent = executionRate + '%';
+                
+                // Update top missed wins
+                const missedList = document.getElementById('ghostMissedList');
+                if (data.top_missed && data.top_missed.length > 0) {
+                    missedList.innerHTML = '';
+                    data.top_missed.forEach(miss => {
+                        const item = document.createElement('div');
+                        item.style.cssText = 'padding: 3px 0; border-bottom: 1px solid #333;';
+                        item.innerHTML = `
+                            <span style="color: #00ff41;">${miss.symbol}</span> - 
+                            <span>${miss.potential_pips || 0} pips</span> - 
+                            <span style="color: #888; font-size: 10px;">${miss.timestamp || ''}</span>
+                        `;
+                        missedList.appendChild(item);
+                    });
+                } else {
+                    missedList.innerHTML = '<div style="color: #888;">No missed wins tracked yet</div>';
+                }
+                
+            } catch (error) {
+                console.error('Error loading ghost trades:', error);
+            }
+        }
+        
+        // Black Box Truth Metrics Functions
+        async function loadTruthStats() {
+            try {
+                const response = await fetch('/throne/api/truth_stats');
+                const data = await response.json();
+                
+                document.getElementById('truthTotalSignals').textContent = data.total_signals;
+                document.getElementById('truthWins').textContent = data.wins;
+                document.getElementById('truthLosses').textContent = data.losses;
+                document.getElementById('truthWinRate').textContent = data.win_rate + '%';
+                document.getElementById('truthAvgPips').textContent = data.avg_pips;
+                document.getElementById('truthAvgRuntime').textContent = data.avg_runtime + ' min';
+                document.getElementById('truthTotalPips').textContent = data.total_pips;
+                document.getElementById('truthLastUpdated').textContent = data.last_updated;
+                
+                // Update win rate color based on performance
+                const winRateEl = document.getElementById('truthWinRate');
+                if (data.win_rate >= 70) {
+                    winRateEl.style.color = '#00ff41';
+                } else if (data.win_rate >= 50) {
+                    winRateEl.style.color = '#ffaa00';
+                } else {
+                    winRateEl.style.color = '#ff0040';
+                }
+                
+            } catch (error) {
+                console.error('Error loading truth stats:', error);
+            }
+        }
+        
+        // Live Trade Feed Functions
+        async function loadTradeFeed() {
+            try {
+                const response = await fetch('/throne/api/live_trade_feed');
+                const data = await response.json();
+                
+                const container = document.getElementById('tradeTicker');
+                container.innerHTML = '';
+                
+                if (data.trades && data.trades.length > 0) {
+                    data.trades.forEach(trade => {
+                        const row = document.createElement('div');
+                        row.className = `trade-ticker-row ${trade.result.toLowerCase()}`;
+                        
+                        const resultClass = trade.result === 'WIN' ? 'result-win' : 'result-loss';
+                        const pipsColor = trade.pips >= 0 ? '#00ff41' : '#ff0040';
+                        const pipsSign = trade.pips >= 0 ? '+' : '';
+                        
+                        row.innerHTML = `
+                            <div>${trade.time}</div>
+                            <div>${trade.symbol}</div>
+                            <div class="${resultClass}">${trade.result}</div>
+                            <div style="color: ${pipsColor};">${pipsSign}${trade.pips}</div>
+                            <div>${trade.runtime}m</div>
+                            <div>${trade.tcs}%</div>
+                            <div>${trade.citadel}</div>
+                        `;
+                        container.appendChild(row);
+                    });
+                    
+                    // Auto-scroll to top (newest)
+                    container.scrollTop = 0;
+                } else {
+                    container.innerHTML = '<div style="padding: 20px; text-align: center; color: #888;">No completed trades yet</div>';
+                }
+                
+                // Update timestamp
+                document.getElementById('tickerUpdateTime').textContent = new Date().toLocaleTimeString().slice(0, 5);
+                
+            } catch (error) {
+                console.error('Error loading trade feed:', error);
+            }
+        }
+        
+        // Active Signals Functions
+        async function loadActiveSignals() {
+            try {
+                const response = await fetch('/throne/api/active_signals');
+                const data = await response.json();
+                
+                const container = document.getElementById('activeSignalsList');
+                container.innerHTML = '';
+                
+                if (data.signals && data.signals.length > 0) {
+                    data.signals.forEach(signal => {
+                        const signalDiv = document.createElement('div');
+                        
+                        // Determine if signal is expiring (< 30 minutes)
+                        const isExpiring = signal.time_remaining < 30;
+                        const isCritical = signal.time_remaining < 10;
+                        
+                        signalDiv.className = `active-signal-item ${isExpiring ? 'expiring' : ''}`;
+                        
+                        const directionClass = signal.direction.toLowerCase() === 'sell' ? 'sell' : '';
+                        const timeClass = isCritical ? 'critical' : '';
+                        
+                        signalDiv.innerHTML = `
+                            <div class="signal-header">
+                                <span class="signal-symbol">${signal.symbol}</span>
+                                <span class="signal-direction ${directionClass}">${signal.direction}</span>
+                            </div>
+                            <div class="time-remaining ${timeClass}">${signal.time_remaining}m</div>
+                            <div class="signal-details">
+                                <div>TCS: ${signal.tcs_score}%</div>
+                                <div>R:R: ${signal.risk_reward_ratio}</div>
+                                <div>Entry: ${signal.entry_price}</div>
+                                <div>Type: ${signal.signal_type}</div>
+                            </div>
+                        `;
+                        container.appendChild(signalDiv);
+                    });
+                } else {
+                    container.innerHTML = '<div style="padding: 20px; text-align: center; color: #888;">No active venom_scalp_master signals</div>';
+                }
+                
+            } catch (error) {
+                console.error('Error loading active signals:', error);
+            }
+        }
+
+        // VENOM Risk Control Functions
+        let venomRiskConfig = {};
+        
+        async function loadVenomRiskConfig() {
+            try {
+                const response = await fetch('/throne/api/venom/risk-config', {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                if (response.status === 403 || response.status === 401) {
+                    // User doesn't have COMMANDER access, hide risk controls
+                    const riskPanel = document.querySelector('.venom-risk-control');
+                    if (riskPanel) {
+                        riskPanel.style.display = 'none';
+                    }
+                    return;
+                }
+                
+                const data = await response.json();
+                venomRiskConfig = data;
+                
+                // Update UI controls
+                document.getElementById('venomMaxTrades').value = data.max_trades_per_session || 8;
+                document.getElementById('venomMaxTradesValue').textContent = data.max_trades_per_session || 8;
+                
+                document.getElementById('venomLossCap').value = data.max_daily_loss_cap_percent || 10;
+                document.getElementById('venomLossCapValue').textContent = (data.max_daily_loss_cap_percent || 10) + '%';
+                
+                document.getElementById('venomRiskPerTrade').value = data.risk_per_trade_percent || 2.0;
+                document.getElementById('venomRiskPerTradeValue').textContent = (data.risk_per_trade_percent || 2.0) + '%';
+                
+                document.getElementById('venomAutoHalt').checked = data.auto_halt_on_loss !== false;
+                document.getElementById('venomAutoHaltStatus').textContent = data.auto_halt_on_loss !== false ? 'ENABLED' : 'DISABLED';
+                document.getElementById('venomAutoHaltStatus').style.color = data.auto_halt_on_loss !== false ? '#00ff41' : '#ff0040';
+                
+                // Update risk status
+                updateVenomRiskStatus(data);
+                
+            } catch (error) {
+                console.error('Error loading VENOM risk config:', error);
+            }
+        }
+        
+        async function loadVenomRiskStatus() {
+            try {
+                const response = await fetch('/throne/api/venom/risk-status');
+                const data = await response.json();
+                
+                updateVenomRiskStatus(data);
+                
+            } catch (error) {
+                console.error('Error loading VENOM risk status:', error);
+            }
+        }
+        
+        function updateVenomRiskStatus(data) {
+            const statusEl = document.getElementById('venomRiskStatus');
+            const messageEl = document.getElementById('venomRiskMessage');
+            const lossRatioEl = document.getElementById('venomLossRatio');
+            const tradesRatioEl = document.getElementById('venomTradesRatio');
+            const displayEl = document.querySelector('.risk-status-display');
+            
+            // Update status text and color
+            statusEl.textContent = data.risk_status || 'UNKNOWN';
+            statusEl.style.color = data.risk_color || '#888';
+            messageEl.textContent = data.message || 'Status unknown';
+            
+            // Update ratios with color coding
+            const lossRatio = data.loss_ratio || 0;
+            const tradesRatio = data.trades_ratio || 0;
+            
+            lossRatioEl.textContent = lossRatio + '%';
+            tradesRatioEl.textContent = tradesRatio + '%';
+            
+            // Color code the ratios
+            const getLevelClass = (ratio) => {
+                if (ratio >= 90) return 'risk-ratio-critical';
+                if (ratio >= 70) return 'risk-ratio-warning';
+                return 'risk-ratio-safe';
+            };
+            
+            lossRatioEl.className = getLevelClass(lossRatio);
+            tradesRatioEl.className = getLevelClass(tradesRatio);
+            
+            // Update display styling based on status
+            displayEl.className = 'risk-status-display';
+            if (data.risk_status === 'HALTED') {
+                displayEl.classList.add('halted');
+            } else if (data.risk_status === 'CRITICAL') {
+                displayEl.classList.add('critical');
+            } else if (data.risk_status === 'WARNING') {
+                displayEl.classList.add('warning');
+            }
+        }
+        
+        function updateVenomRiskConfig() {
+            // Update display values in real-time
+            document.getElementById('venomMaxTradesValue').textContent = document.getElementById('venomMaxTrades').value;
+            document.getElementById('venomLossCapValue').textContent = document.getElementById('venomLossCap').value + '%';
+            document.getElementById('venomRiskPerTradeValue').textContent = document.getElementById('venomRiskPerTrade').value + '%';
+            
+            const autoHalt = document.getElementById('venomAutoHalt').checked;
+            document.getElementById('venomAutoHaltStatus').textContent = autoHalt ? 'ENABLED' : 'DISABLED';
+            document.getElementById('venomAutoHaltStatus').style.color = autoHalt ? '#00ff41' : '#ff0040';
+        }
+        
+        async function saveVenomRiskConfig() {
+            try {
+                const config = {
+                    max_trades_per_session: parseInt(document.getElementById('venomMaxTrades').value),
+                    max_daily_loss_cap_percent: parseFloat(document.getElementById('venomLossCap').value),
+                    risk_per_trade_percent: parseFloat(document.getElementById('venomRiskPerTrade').value),
+                    auto_halt_on_loss: document.getElementById('venomAutoHalt').checked
+                };
+                
+                const response = await fetch('/throne/api/venom/risk-config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(config)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    alert('✅ VENOM risk configuration updated successfully!');
+                    addActivity('VENOM', 'Risk parameters updated', '#ff0040');
+                    
+                    // Reload config to get updated status
+                    setTimeout(() => {
+                        loadVenomRiskConfig();
+                        loadVenomRiskStatus();
+                    }, 1000);
+                } else {
+                    alert('❌ Failed to update VENOM risk config: ' + (result.error || 'Unknown error'));
+                }
+                
+            } catch (error) {
+                alert('❌ Failed to update VENOM risk config: ' + error.message);
+                console.error('Error saving VENOM risk config:', error);
+            }
+        }
+        
+        async function executeVenomHalt() {
+            if (!confirm('⚠️ EMERGENCY HALT: This will immediately stop all VENOM trading. Continue?')) {
+                return;
+            }
+            
+            try {
+                // Set halt flag via config update
+                const response = await fetch('/throne/api/venom/risk-config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        halt_active: true,
+                        auto_halt_on_loss: true
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    alert('🚨 EMERGENCY HALT ACTIVATED - VENOM trading has been stopped!');
+                    addActivity('EMERGENCY', 'VENOM trading halted by operator', '#ff0040');
+                    
+                    // Reload status immediately
+                    loadVenomRiskStatus();
+                } else {
+                    alert('❌ Failed to activate emergency halt: ' + (result.error || 'Unknown error'));
+                }
+                
+            } catch (error) {
+                alert('❌ Failed to activate emergency halt: ' + error.message);
+                console.error('Error executing VENOM halt:', error);
+            }
+        }
+
+        // ML Brain Metrics Functions
+        async function loadMLMetrics() {
+            try {
+                const response = await fetch('/throne/api/ml_status');
+                const data = await response.json();
+                
+                document.getElementById('mlAccuracy').textContent = (data.accuracy || 0).toFixed(1) + '%';
+                document.getElementById('mlLastRetrain').textContent = data.last_retrain || '--';
+                document.getElementById('mlTotalCycles').textContent = data.total_cycles || '0';
+                document.getElementById('mlTrainingStatus').textContent = data.training_status || 'Idle';
+                document.getElementById('mlLastUpdated').textContent = new Date().toLocaleTimeString().slice(0, 5);
+                
+                // Color code accuracy
+                const accuracyEl = document.getElementById('mlAccuracy');
+                const accuracy = data.accuracy || 0;
+                if (accuracy >= 90) {
+                    accuracyEl.style.color = '#00ff41';
+                } else if (accuracy >= 80) {
+                    accuracyEl.style.color = '#ffaa00';
+                } else {
+                    accuracyEl.style.color = '#ff0040';
+                }
+                
+            } catch (error) {
+                console.error('Error loading ML metrics:', error);
+            }
+        }
+        
+        function viewRetrainLog() {
+            window.open('/throne/api/retrain_log', '_blank');
+        }
+        
+        // Signal Timeline Heatmap Functions
+        let signalHeatmapData = new Array(24).fill(0);
+        
+        async function loadSignalHeatmapData() {
+            try {
+                const response = await fetch('/throne/api/signal_timeline');
+                const data = await response.json();
+                signalHeatmapData = data.hourly_counts || new Array(24).fill(0);
+                drawSignalHeatmap();
+            } catch (error) {
+                console.error('Error loading signal heatmap:', error);
+                drawSignalHeatmap(); // Draw with empty data
+            }
+        }
+        
+        function drawSignalHeatmap() {
+            const canvas = document.getElementById('signalHeatmap');
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, width, height);
+            
+            // Calculate dimensions
+            const cellWidth = width / 24;
+            const maxSignals = Math.max(...signalHeatmapData, 1);
+            
+            // Draw heatmap cells
+            for (let hour = 0; hour < 24; hour++) {
+                const signals = signalHeatmapData[hour];
+                const intensity = signals / maxSignals;
+                
+                // Color based on intensity (green gradient)
+                const alpha = Math.max(0.1, intensity);
+                const red = Math.floor(255 * (1 - intensity));
+                const green = 255;
+                const blue = Math.floor(128 * (1 - intensity));
+                
+                ctx.fillStyle = `rgba(${red}, ${green}, ${blue}, ${alpha})`;
+                ctx.fillRect(hour * cellWidth, 0, cellWidth - 1, height);
+                
+                // Add text if signals > 0
+                if (signals > 0) {
+                    ctx.fillStyle = '#000';
+                    ctx.font = '10px monospace';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(signals.toString(), hour * cellWidth + cellWidth/2, height/2 + 3);
+                }
+            }
+            
+            // Add hover functionality
+            canvas.onmousemove = function(e) {
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const hour = Math.floor(x / cellWidth);
+                
+                if (hour >= 0 && hour < 24) {
+                    const hover = document.getElementById('heatmapHover');
+                    hover.style.display = 'block';
+                    hover.style.left = (e.clientX - rect.left + 10) + 'px';
+                    hover.style.top = (e.clientY - rect.top - 30) + 'px';
+                    hover.textContent = `${hour.toString().padStart(2, '0')}:00 - ${signalHeatmapData[hour]} signals`;
+                }
+            };
+            
+            canvas.onmouseleave = function() {
+                document.getElementById('heatmapHover').style.display = 'none';
+            };
+        }
+        
+        // HUD Access Logs Functions
+        async function loadHUDAccessLogs() {
+            try {
+                const response = await fetch('/throne/api/hud_access_logs');
+                const data = await response.json();
+                
+                const container = document.getElementById('hudAccessLogBody');
+                container.innerHTML = '';
+                
+                if (data.logs && data.logs.length > 0) {
+                    data.logs.forEach(log => {
+                        const row = document.createElement('div');
+                        row.className = 'trade-row';
+                        row.style.cssText = 'grid-template-columns: 100px 80px 120px; gap: 8px; padding: 5px 8px; border-bottom: 1px solid #333; font-size: 11px;';
+                        row.innerHTML = `
+                            <div style="color: #00ff41;">${log.username || log.user_id}</div>
+                            <div style="color: #ff6b00;">${log.mission_id || 'N/A'}</div>
+                            <div style="color: #888;">${log.timestamp}</div>
+                        `;
+                        container.appendChild(row);
+                    });
+                } else {
+                    container.innerHTML = '<div style="padding: 20px; text-align: center; color: #888;">No HUD access logs yet</div>';
+                }
+                
+            } catch (error) {
+                console.error('Error loading HUD access logs:', error);
+                document.getElementById('hudAccessLogBody').innerHTML = '<div style="padding: 20px; text-align: center; color: #ff0040;">Error loading logs</div>';
+            }
+        }
+        
+        // Trade of the Day Functions
+        async function loadTradeOfTheDay() {
+            try {
+                const response = await fetch('/throne/api/trade_of_the_day');
+                const data = await response.json();
+                
+                if (data.trade) {
+                    const trade = data.trade;
+                    document.getElementById('todSymbol').textContent = trade.symbol || '--';
+                    document.getElementById('todPips').textContent = '+' + (trade.pips_result || 0) + ' pips';
+                    document.getElementById('todTCS').textContent = (trade.tcs || 0) + '%';
+                    document.getElementById('todMLPass').textContent = trade.ml_pass || '--';
+                    document.getElementById('todCitadel').textContent = trade.citadel_score || '--';
+                    document.getElementById('todRuntime').textContent = (trade.runtime_minutes || 0) + ' min';
+                    document.getElementById('todTime').textContent = trade.time_of_day || '--:--';
+                } else {
+                    // No trade found
+                    document.getElementById('todSymbol').textContent = '--';
+                    document.getElementById('todPips').textContent = '+-- pips';
+                    document.getElementById('todTCS').textContent = '--%';
+                    document.getElementById('todMLPass').textContent = '--';
+                    document.getElementById('todCitadel').textContent = '--';
+                    document.getElementById('todRuntime').textContent = '-- min';
+                    document.getElementById('todTime').textContent = '--:--';
+                }
+                
+            } catch (error) {
+                console.error('Error loading trade of the day:', error);
+            }
+        }
+
+        // Signal Completion Analytics
+        async function loadSignalCompletionStats() {
+            try {
+                const response = await fetch('/throne/api/signal_completion_stats');
+                const data = await response.json();
+                
+                if (data.completion_metrics) {
+                    const metrics = data.completion_metrics;
+                    document.getElementById('signalsGenerated24h').textContent = metrics.signals_generated_24h || 0;
+                    document.getElementById('signalsFired24h').textContent = metrics.signals_fired_24h || 0;
+                    document.getElementById('completionRate').textContent = metrics.completion_rate + '%' || '0%';
+                    document.getElementById('signalsExpired24h').textContent = metrics.signals_expired_24h || 0;
+                    document.getElementById('avgFireTime').textContent = metrics.avg_fire_time || '0 minutes';
+                }
+                
+                if (data.user_engagement) {
+                    const engagement = data.user_engagement;
+                    document.getElementById('activeFireUsers').textContent = engagement.active_fire_users_24h || 0;
+                }
+                
+                document.getElementById('completionLastUpdated').textContent = data.last_updated || '--';
+                
+            } catch (error) {
+                console.error('Error loading signal completion stats:', error);
+                document.getElementById('signalsGenerated24h').textContent = 'ERR';
+                document.getElementById('signalsFired24h').textContent = 'ERR';
+                document.getElementById('completionRate').textContent = 'ERR';
+            }
+        }
+
+        // Elite Guard Analytics
+        async function loadEliteGuardAnalytics() {
+            try {
+                const response = await fetch('/throne/api/elite_guard_analytics');
+                const data = await response.json();
+                
+                if (data.elite_guard_overview) {
+                    const overview = data.elite_guard_overview;
+                    document.getElementById('eliteSignals24h').textContent = overview.signals_generated_24h || 0;
+                    document.getElementById('eliteFired24h').textContent = overview.signals_fired_24h || 0;
+                    document.getElementById('eliteCompletionRate').textContent = overview.completion_rate || '0%';
+                }
+                
+                if (data.citadel_shield_impact) {
+                    const shield = data.citadel_shield_impact;
+                    document.getElementById('shieldEffectiveness').textContent = shield.shield_effectiveness || '0%';
+                }
+                
+                // Update pattern performance
+                const patternList = document.getElementById('patternPerformanceList');
+                patternList.innerHTML = '';
+                
+                if (data.pattern_performance) {
+                    const patterns = data.pattern_performance;
+                    Object.keys(patterns).forEach(pattern => {
+                        const perf = patterns[pattern];
+                        const patternDiv = document.createElement('div');
+                        patternDiv.style.cssText = 'margin-bottom: 5px; padding: 3px 5px; background: rgba(255,255,255,0.05); border-radius: 3px;';
+                        
+                        const patternName = pattern.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
+                        patternDiv.innerHTML = `
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="color: #ff6b00;">${patternName}:</span>
+                                <span style="color: #00ff41;">${perf.fire_rate}</span>
+                            </div>
+                            <div style="font-size: 9px; color: #888; margin-top: 2px;">
+                                Gen: ${perf.generated} | Win Rate: ${perf.win_rate}
+                            </div>
+                        `;
+                        patternList.appendChild(patternDiv);
+                    });
+                }
+                
+                if (Object.keys(data.pattern_performance || {}).length === 0) {
+                    patternList.innerHTML = '<div style="color: #888; text-align: center;">No pattern data available</div>';
+                }
+                
+                document.getElementById('eliteLastUpdated').textContent = data.last_updated || '--';
+                
+            } catch (error) {
+                console.error('Error loading Elite Guard analytics:', error);
+                document.getElementById('eliteSignals24h').textContent = 'ERR';
+                document.getElementById('eliteFired24h').textContent = 'ERR';
+                document.getElementById('eliteCompletionRate').textContent = 'ERR';
+            }
+        }
+
+        // Expiry Warning System
+        async function loadExpiryAlerts() {
+            try {
+                const response = await fetch('/throne/api/expiring_signals');
+                const data = await response.json();
+                
+                if (data.critical_signals) {
+                    document.getElementById('criticalSignalsCount').textContent = data.critical_signals.length || 0;
+                    
+                    // Color-code alert level
+                    const alertLevel = data.alert_level || 'NORMAL';
+                    const alertElement = document.getElementById('alertLevel');
+                    alertElement.textContent = alertLevel;
+                    
+                    if (alertLevel === 'CRITICAL') {
+                        alertElement.style.color = '#ff0040';
+                    } else {
+                        alertElement.style.color = '#00ff41';
+                    }
+                    
+                    // Update critical signals list
+                    const criticalList = document.getElementById('criticalSignalsList');
+                    criticalList.innerHTML = '';
+                    
+                    if (data.critical_signals.length > 0) {
+                        data.critical_signals.forEach(signal => {
+                            const signalDiv = document.createElement('div');
+                            signalDiv.style.cssText = 'margin-bottom: 5px; padding: 3px 5px; background: rgba(255,0,64,0.1); border-left: 2px solid #ff0040; border-radius: 3px;';
+                            
+                            const lossColor = signal.potential_loss === 'CRITICAL' ? '#ff0040' : 
+                                            signal.potential_loss === 'HIGH' ? '#ff6b00' : '#ffaa00';
+                            
+                            signalDiv.innerHTML = `
+                                <div style="display: flex; justify-content: space-between; font-weight: bold;">
+                                    <span style="color: #ff6b00;">${signal.symbol}</span>
+                                    <span style="color: #ff0040;">${signal.expires_in_minutes}m</span>
+                                </div>
+                                <div style="font-size: 9px; color: #888; margin-top: 2px;">
+                                    TCS: ${signal.tcs_score}% | Risk: <span style="color: ${lossColor};">${signal.potential_loss}</span>
+                                </div>
+                            `;
+                            criticalList.appendChild(signalDiv);
+                        });
+                    } else {
+                        criticalList.innerHTML = '<div style="color: #888; text-align: center;">No critical signals</div>';
+                    }
+                }
+                
+                if (data.expiry_trends) {
+                    const trends = data.expiry_trends;
+                    document.getElementById('totalExpired24h').textContent = trends.total_expired_24h || 0;
+                    document.getElementById('qualitySignalsLost').textContent = trends.quality_signals_lost || 0;
+                }
+                
+                document.getElementById('expiryLastUpdated').textContent = data.last_updated || '--';
+                
+            } catch (error) {
+                console.error('Error loading expiry alerts:', error);
+                document.getElementById('criticalSignalsCount').textContent = 'ERR';
+                document.getElementById('alertLevel').textContent = 'ERR';
+            }
+        }
+
+        // Fire Command Analytics
+        async function loadFireCommandAnalytics() {
+            try {
+                const response = await fetch('/throne/api/fire_command_analytics');
+                const data = await response.json();
+                
+                if (data.execution_metrics) {
+                    const metrics = data.execution_metrics;
+                    document.getElementById('fireAttempts24h').textContent = metrics.fire_attempts_24h || 0;
+                    document.getElementById('fireSuccessRate').textContent = metrics.success_rate || '0%';
+                    document.getElementById('avgExecTime').textContent = metrics.avg_execution_time || '0s';
+                    document.getElementById('fireFailures24h').textContent = metrics.fire_failures_24h || 0;
+                }
+                
+                // Update failure analysis
+                const failureList = document.getElementById('failureAnalysisList');
+                failureList.innerHTML = '';
+                
+                if (data.failure_analysis) {
+                    const failures = data.failure_analysis;
+                    const failureTypes = [
+                        {key: 'expired_signals', label: 'Expired Signals', color: '#ff6b00'},
+                        {key: 'insufficient_balance', label: 'Low Balance', color: '#ffaa00'},
+                        {key: 'connection_errors', label: 'Connection', color: '#ff0040'},
+                        {key: 'authorization_failures', label: 'Auth Failures', color: '#ff0040'},
+                        {key: 'unknown_errors', label: 'Unknown', color: '#888'}
+                    ];
+                    
+                    failureTypes.forEach(type => {
+                        const count = failures[type.key] || 0;
+                        if (count > 0) {
+                            const failureDiv = document.createElement('div');
+                            failureDiv.style.cssText = 'display: flex; justify-content: space-between; margin-bottom: 3px; padding: 2px 5px; background: rgba(255,255,255,0.05); border-radius: 2px;';
+                            failureDiv.innerHTML = `
+                                <span style="color: ${type.color}; font-size: 9px;">${type.label}:</span>
+                                <span style="color: #fff; font-size: 9px; font-weight: bold;">${count}</span>
+                            `;
+                            failureList.appendChild(failureDiv);
+                        }
+                    });
+                    
+                    if (failureList.innerHTML === '') {
+                        failureList.innerHTML = '<div style="color: #00ff41; text-align: center; font-size: 9px;">No failures detected</div>';
+                    }
+                }
+                
+                document.getElementById('fireLastUpdated').textContent = data.last_updated || '--';
+                
+            } catch (error) {
+                console.error('Error loading fire command analytics:', error);
+                document.getElementById('fireAttempts24h').textContent = 'ERR';
+                document.getElementById('fireSuccessRate').textContent = 'ERR';
+                document.getElementById('avgExecTime').textContent = 'ERR';
+            }
+        }
+
+        // Live Activity Feed
+        let activityBuffer = [];
+        const MAX_ACTIVITIES = 20;
+        
+        function addActivity(type, message, color = '#00ff41') {
+            const timestamp = new Date().toLocaleTimeString();
+            const activity = {
+                time: timestamp,
+                type: type,
+                message: message,
+                color: color
+            };
+            
+            activityBuffer.unshift(activity);
+            if (activityBuffer.length > MAX_ACTIVITIES) {
+                activityBuffer.pop();
+            }
+            
+            updateActivityFeed();
+        }
+        
+        function updateActivityFeed() {
+            const feed = document.getElementById('liveActivityFeed');
+            feed.innerHTML = '';
+            
+            activityBuffer.forEach(activity => {
+                const item = document.createElement('div');
+                item.style.cssText = `padding: 5px; border-bottom: 1px solid #333; opacity: 0.9;`;
+                item.innerHTML = `
+                    <span style="color: #888; font-size: 10px;">${activity.time}</span>
+                    <span style="color: ${activity.color}; margin-left: 10px;">[${activity.type}]</span>
+                    <span style="margin-left: 10px;">${activity.message}</span>
+                `;
+                feed.appendChild(item);
+            });
+        }
+        
+        // Simulate some initial activities
+        function initializeActivityFeed() {
+            addActivity('SYSTEM', 'Commander Throne initialized', '#ff6b00');
+            addActivity('', 'Signal engine monitoring active', '#00ff41');
+            addActivity('REVENUE', 'Subscription analytics loaded', '#ffaa00');
+        }
+        
+        // Load initial data
+        loadMissionStats();
+        loadSoldierRoster();
+        loadTradeLog();
+        loadStatus();
+        loadSignals();
+        loadGhostTrades();
+        loadSubscriptionAnalytics();
+        loadTruthStats();
+        loadTradeFeed();
+        loadActiveSignals();
+        loadVenomRiskConfig();
+        loadVenomRiskStatus();
+        loadMLMetrics();
+        loadSignalHeatmapData();
+        loadHUDAccessLogs();
+        loadTradeOfTheDay();
+        loadSignalCompletionStats();
+        loadEliteGuardAnalytics();
+        loadExpiryAlerts();
+        loadFireCommandAnalytics();
+        initializeActivityFeed();
+        
+        // Refresh data every 30 seconds
+        setInterval(() => {
+            loadMissionStats();
+            loadTradeLog();
+            loadStatus();
+            loadSignals();
+            loadGhostTrades();
+            loadSubscriptionAnalytics();
+            loadTruthStats();
+            loadActiveSignals();
+            loadVenomRiskConfig();
+            loadMLMetrics();
+            loadSignalHeatmapData();
+            loadHUDAccessLogs();
+            loadSignalCompletionStats();
+            loadEliteGuardAnalytics();
+            loadExpiryAlerts();
+            loadFireCommandAnalytics();
+            loadTradeOfTheDay();
+            addActivity('REFRESH', 'Dashboard data updated', '#888');
+        }, 30000);
+        
+        // Refresh trade feed every 10 seconds (more frequent for live updates)
+        setInterval(() => {
+            loadTradeFeed();
+        }, 10000);
+        
+        // Refresh VENOM risk status every 60 seconds
+        setInterval(() => {
+            loadVenomRiskStatus();
+        }, 60000);
+        
+        // Refresh soldier roster every 2 minutes
+        setInterval(loadSoldierRoster, 120000);
+        
+        // Mobile collapsible functionality
+        function toggleMobileSection(headerId) {
+            const header = document.getElementById(headerId);
+            const content = header.nextElementSibling;
+            const toggle = header.querySelector('.collapsible-toggle');
+            
+            if (content.classList.contains('expanded')) {
+                content.classList.remove('expanded');
+                toggle.classList.remove('rotated');
+            } else {
+                content.classList.add('expanded');
+                toggle.classList.add('rotated');
+            }
+        }
+        
+        // Initialize mobile collapsibles - expand first section by default
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.innerWidth <= 768) {
+                const firstCollapsible = document.querySelector('.mobile-collapsible-content');
+                if (firstCollapsible) {
+                    firstCollapsible.classList.add('expanded');
+                    const firstToggle = document.querySelector('.collapsible-toggle');
+                    if (firstToggle) {
+                        firstToggle.classList.add('rotated');
+                    }
+                }
+            }
+        });
+        
+        // PWA Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/static/sw.js')
+                    .then(function(registration) {
+                        console.log('[PWA] Service Worker registered successfully:', registration.scope);
+                    })
+                    .catch(function(error) {
+                        console.log('[PWA] Service Worker registration failed:', error);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>

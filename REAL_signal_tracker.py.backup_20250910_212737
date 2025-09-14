@@ -1,0 +1,369 @@
+#!/usr/bin/env python3
+"""
+DEFINITIVE REAL-TIME SIGNAL TRACKER
+- Subscribes to Elite Guard signals on port 5557
+- Subscribes to market data on port 5560  
+- Tracks EVERY signal to actual TP/SL hit - NO TIMEOUT EVER
+- Updates comprehensive_tracking.jsonl with REAL outcomes
+- NO FAKE DATA, NO RANDOM WINS, NO SHORTCUTS, NO TIMEOUTS
+- TRACKS UNTIL DEATH - TP OR SL HIT ONLY
+"""
+
+import zmq
+import json
+import time
+import threading
+from datetime import datetime, timezone
+import logging
+import os
+import sys
+
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+class RealSignalTracker:
+    def __init__(self):
+        self.context = zmq.Context()
+        
+        # Subscribe to Elite Guard signals
+        self.signal_socket = self.context.socket(zmq.SUB)
+        self.signal_socket.connect("tcp://localhost:5557")
+        self.signal_socket.setsockopt(zmq.SUBSCRIBE, b"ELITE_GUARD_SIGNAL")
+        
+        # Subscribe to market data
+        self.market_socket = self.context.socket(zmq.SUB)
+        self.market_socket.connect("tcp://localhost:5560")
+        self.market_socket.setsockopt(zmq.SUBSCRIBE, b"")  # Subscribe to all
+        
+        # Active signals being tracked
+        self.active_signals = {}
+        
+        # Latest prices for each pair
+        self.current_prices = {}
+        
+        self.tracking_file = "/root/HydraX-v2/comprehensive_tracking.jsonl"
+        self.running = True
+        
+    def start(self):
+        """Start the tracker threads"""
+        logger.info("🎯 STARTING REAL SIGNAL TRACKER - NO MORE FAKE DATA!")
+        
+        # Start market data thread
+        market_thread = threading.Thread(target=self.process_market_data, daemon=True)
+        market_thread.start()
+        
+        # Start signal processing thread  
+        signal_thread = threading.Thread(target=self.process_signals, daemon=True)
+        signal_thread.start()
+        
+        # Start tracking update thread
+        tracker_thread = threading.Thread(target=self.update_signal_outcomes, daemon=True)
+        tracker_thread.start()
+        
+        logger.info("✅ All tracker threads started")
+        
+        # Main loop
+        try:
+            while self.running:
+                time.sleep(10)
+                if len(self.active_signals) > 0:
+                    logger.info(f"📊 Tracking {len(self.active_signals)} active signals")
+        except KeyboardInterrupt:
+            logger.info("Shutting down tracker...")
+            self.running = False
+            
+    def process_market_data(self):
+        """Process real-time market data"""
+        logger.info("📡 Market data processor started")
+        
+        message_count = 0
+        while self.running:
+            try:
+                # Poll for market data (non-blocking)
+                if self.market_socket.poll(1000):  # 1 second timeout
+                    message = self.market_socket.recv_string(zmq.NOBLOCK)
+                    message_count += 1
+                    
+                    # Log first few messages to see format
+                    if message_count <= 3:
+                        logger.info(f"📡 Market msg #{message_count}: {message[:100]}")
+                    
+                    # Parse JSON tick data
+                    try:
+                        tick_data = json.loads(message)
+                        if tick_data.get('type') == 'TICK':
+                            symbol = tick_data.get('symbol')
+                            bid = tick_data.get('bid')
+                            ask = tick_data.get('ask')
+                            
+                            if symbol and bid and ask:
+                                # Store current prices
+                                self.current_prices[symbol] = {
+                                    'bid': float(bid),
+                                    'ask': float(ask),
+                                    'timestamp': time.time()
+                                }
+                                
+                                # Log successful price update for debugging
+                                if message_count <= 10:
+                                    logger.info(f"✅ Price update: {symbol} bid={bid} ask={ask}")
+                                    
+                    except Exception as e:
+                        continue
+                else:
+                    # No data received  
+                    if message_count == 0:
+                        logger.warning("⚠️ No market data received on port 5560")
+                        message_count = -1  # Only warn once
+                            
+            except zmq.Again:
+                continue
+            except Exception as e:
+                logger.error(f"Market data error: {e}")
+                time.sleep(1)
+                
+    def process_signals(self):
+        """Process new signals from Elite Guard"""
+        logger.info("🎯 Signal processor started")
+        
+        while self.running:
+            try:
+                # Poll for new signals
+                if self.signal_socket.poll(1000):  # 1 second timeout
+                    message = self.signal_socket.recv_string(zmq.NOBLOCK)
+                    
+                    if "ELITE_GUARD_SIGNAL" in message:
+                        try:
+                            # Extract JSON from message
+                            json_part = message.split("ELITE_GUARD_SIGNAL ", 1)[1]
+                            signal_data = json.loads(json_part)
+                            
+                            # Add to active tracking
+                            signal_id = signal_data.get('signal_id')
+                            if signal_id:
+                                signal_data['start_time'] = time.time()
+                                signal_data['outcome'] = None
+                                signal_data['win'] = None
+                                signal_data['lifespan'] = 0
+                                
+                                self.active_signals[signal_id] = signal_data
+                                logger.info(f"🔥 NEW SIGNAL TRACKED: {signal_id} - {signal_data.get('symbol')} {signal_data.get('direction')}")
+                                
+                                # Write initial record to file
+                                self.write_signal_record(signal_data)
+                                
+                        except Exception as e:
+                            logger.error(f"Signal parsing error: {e}")
+                            
+            except zmq.Again:
+                continue
+            except Exception as e:
+                logger.error(f"Signal processing error: {e}")
+                time.sleep(1)
+                
+    def update_signal_outcomes(self):
+        """Update tracked signals with real outcomes"""
+        logger.info("📈 Outcome tracker started")
+        
+        while self.running:
+            completed_signals = []
+            
+            for signal_id, signal in self.active_signals.items():
+                try:
+                    symbol = signal.get('symbol')
+                    direction = signal.get('direction')
+                    entry_price = signal.get('entry_price')
+                    tp_price = signal.get('tp_price') or signal.get('take_profit')
+                    sl_price = signal.get('sl_price') or signal.get('stop_loss')
+                    start_time = signal.get('start_time')
+                    
+                    if not all([symbol, direction, entry_price, tp_price, sl_price, start_time]):
+                        continue
+                        
+                    # Get current price
+                    current_price_data = self.current_prices.get(symbol)
+                    if not current_price_data:
+                        continue
+                        
+                    current_time = time.time()
+                    elapsed_seconds = current_time - start_time
+                    elapsed_minutes = elapsed_seconds / 60
+                    
+                    # Use bid for SELL, ask for BUY
+                    current_price = current_price_data['ask'] if direction == 'BUY' else current_price_data['bid']
+                    
+                    # Calculate pip movement
+                    pip_multiplier = 100 if 'JPY' in symbol else 10000
+                    if direction == 'BUY':
+                        pips_moved = (current_price - entry_price) * pip_multiplier
+                        hit_tp = current_price >= tp_price
+                        hit_sl = current_price <= sl_price
+                    else:
+                        pips_moved = (entry_price - current_price) * pip_multiplier
+                        hit_tp = current_price <= tp_price
+                        hit_sl = current_price >= sl_price
+                    
+                    # Update signal data
+                    signal['lifespan'] = elapsed_seconds
+                    signal['pips_moved'] = pips_moved
+                    signal['current_price'] = current_price
+                    
+                    # Update 30min metrics
+                    if elapsed_seconds >= 1800 and signal.get('outcome_30min') is None:
+                        signal['outcome_30min'] = 'WIN' if hit_tp else ('LOSS' if hit_sl else 'PENDING')
+                        signal['pips_moved_30min'] = pips_moved
+                        signal['max_favorable_30min'] = max(0, pips_moved)
+                        signal['max_adverse_30min'] = min(0, pips_moved)
+                        
+                    # Update 60min metrics  
+                    if elapsed_seconds >= 3600 and signal.get('outcome_60min') is None:
+                        signal['outcome_60min'] = 'WIN' if hit_tp else ('LOSS' if hit_sl else 'PENDING')
+                        signal['pips_moved_60min'] = pips_moved
+                        signal['max_favorable_60min'] = max(0, pips_moved)
+                        signal['max_adverse_60min'] = min(0, pips_moved)
+                    
+                    # Check for completion
+                    if hit_tp:
+                        signal['outcome'] = 'WIN'
+                        signal['win'] = True
+                        signal['completion_reason'] = 'TP_HIT'
+                        completed_signals.append(signal_id)
+                        logger.info(f"✅ WIN: {signal_id} hit TP after {elapsed_minutes:.1f}min (+{pips_moved:.1f} pips)")
+                        
+                    elif hit_sl:
+                        signal['outcome'] = 'LOSS'
+                        signal['win'] = False
+                        signal['completion_reason'] = 'SL_HIT'
+                        completed_signals.append(signal_id)
+                        logger.info(f"❌ LOSS: {signal_id} hit SL after {elapsed_minutes:.1f}min ({pips_moved:.1f} pips)")
+                        
+                    # NO TIMEOUT - TRACK UNTIL DEATH (TP OR SL HIT)
+                    # Signal stays active until TP or SL is actually hit
+                        
+                    # Update file for all signals (ongoing updates)
+                    self.update_signal_record(signal)
+                    
+                except Exception as e:
+                    logger.error(f"Error updating signal {signal_id}: {e}")
+                    continue
+                    
+            # Remove completed signals
+            for signal_id in completed_signals:
+                if signal_id in self.active_signals:
+                    del self.active_signals[signal_id]
+                    
+            time.sleep(5)  # Update every 5 seconds
+            
+    def write_signal_record(self, signal_data):
+        """Write new signal record to tracking file with ALL REQUIRED FIELDS"""
+        try:
+            entry_price = signal_data.get('entry_price', 0)
+            tp_price = signal_data.get('take_profit', 0)  
+            sl_price = signal_data.get('stop_loss', 0)
+            
+            # Calculate pip values
+            symbol = signal_data.get('symbol', '')
+            pip_multiplier = 100 if 'JPY' in symbol else 10000
+            tp_pips = abs(tp_price - entry_price) * pip_multiplier if tp_price and entry_price else 0
+            sl_pips = abs(entry_price - sl_price) * pip_multiplier if sl_price and entry_price else 0
+            
+            record = {
+                'signal_id': signal_data.get('signal_id'),
+                'timestamp': signal_data.get('start_time', time.time()),  # Unix timestamp  
+                'time_utc': datetime.now(timezone.utc).isoformat(),  # ISO format
+                'pair': signal_data.get('symbol'),
+                'pattern_type': signal_data.get('pattern_type', 'UNKNOWN'),
+                'pattern': signal_data.get('pattern_type', 'UNKNOWN'),  # Alias
+                'direction': signal_data.get('direction'),
+                'confidence_score': signal_data.get('confidence', 0),
+                'confidence': signal_data.get('confidence', 0),  # Alias
+                'quality_score': signal_data.get('confidence', 0),
+                'entry_price': entry_price,
+                'tp_price': tp_price,
+                'sl_price': sl_price,
+                'tp_pips': tp_pips,
+                'sl_pips': sl_pips,
+                'session': signal_data.get('session', 'UNKNOWN'),
+                'signal_type': signal_data.get('signal_type', 'UNKNOWN'),
+                'signal_class': signal_data.get('signal_type', 'UNKNOWN'),  # Alias
+                'citadel_score': signal_data.get('citadel_score', 0),
+                'rsi': signal_data.get('rsi', 50),  # Add RSI with default of 50
+                'spread': signal_data.get('spread'),
+                'estimated_time_to_tp': signal_data.get('estimated_time_to_tp'),
+                'fired': False,  # Will be updated if actually fired
+                'would_fire': signal_data.get('confidence', 0) >= 70,  # Auto-fire threshold
+                'win': None,  # Will be updated when resolved
+                'outcome': None,
+                'lifespan': 0,
+                'pips_moved': 0,
+                'current_price': entry_price,
+                'risk_reward': signal_data.get('risk_reward', 1.0),
+                # Time-based tracking fields  
+                'outcome_30min': None,
+                'outcome_60min': None,
+                'pips_moved_30min': None,
+                'pips_moved_60min': None,
+                'max_favorable_30min': None,
+                'max_adverse_30min': None,
+                'max_favorable_60min': None,
+                'max_adverse_60min': None
+            }
+            
+            with open(self.tracking_file, 'a') as f:
+                f.write(json.dumps(record) + '\n')
+                f.flush()
+                
+        except Exception as e:
+            logger.error(f"Error writing signal record: {e}")
+            
+    def update_signal_record(self, signal_data):
+        """Update existing signal record in tracking file"""
+        try:
+            signal_id = signal_data.get('signal_id')
+            if not signal_id:
+                return
+                
+            # Read all records
+            records = []
+            if os.path.exists(self.tracking_file):
+                with open(self.tracking_file, 'r') as f:
+                    for line in f:
+                        if line.strip():
+                            try:
+                                record = json.loads(line.strip())
+                                if record.get('signal_id') == signal_id:
+                                    # Update this record with ALL tracking data
+                                    record.update({
+                                        'win': signal_data.get('win'),
+                                        'outcome': signal_data.get('outcome'),
+                                        'lifespan': signal_data.get('lifespan', 0),
+                                        'pips_moved': signal_data.get('pips_moved', 0),
+                                        'current_price': signal_data.get('current_price'),
+                                        'completion_reason': signal_data.get('completion_reason'),
+                                        'outcome_30min': signal_data.get('outcome_30min'),
+                                        'outcome_60min': signal_data.get('outcome_60min'),
+                                        'pips_moved_30min': signal_data.get('pips_moved_30min'),
+                                        'pips_moved_60min': signal_data.get('pips_moved_60min'),
+                                        'max_favorable_30min': signal_data.get('max_favorable_30min'),
+                                        'max_adverse_30min': signal_data.get('max_adverse_30min'),
+                                        'max_favorable_60min': signal_data.get('max_favorable_60min'),
+                                        'max_adverse_60min': signal_data.get('max_adverse_60min'),
+                                        'last_updated': datetime.now(timezone.utc).isoformat()
+                                    })
+                                records.append(record)
+                            except:
+                                continue
+                
+                # Rewrite file with updated records
+                with open(self.tracking_file, 'w') as f:
+                    for record in records:
+                        f.write(json.dumps(record) + '\n')
+                    f.flush()
+                    
+        except Exception as e:
+            logger.error(f"Error updating signal record: {e}")
+
+if __name__ == "__main__":
+    tracker = RealSignalTracker()
+    tracker.start()

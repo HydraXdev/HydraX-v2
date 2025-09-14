@@ -5248,3 +5248,14 @@
 {"bot": "athena", "chat_id": "-1002581996861", "message_id": 10274, "signal_id": "ELITE_SNIPER_USDCNH_1756735993", "sent_at": "2025-09-01T14:13:14.360996", "delete_at": "2025-09-01T22:13:14.361001"}
 {"bot": "athena", "chat_id": "-1002581996861", "message_id": 10275, "signal_id": "ELITE_RAPID_GBPJPY_1756736280", "sent_at": "2025-09-01T14:18:01.275822", "delete_at": "2025-09-01T22:18:01.275827"}
 {"bot": "athena", "chat_id": "-1002581996861", "message_id": 10276, "signal_id": "ELITE_RAPID_GBPJPY_1756736885", "sent_at": "2025-09-01T14:28:05.605157", "delete_at": "2025-09-01T22:28:05.605161"}
+{"bot": "athena", "chat_id": "-1002581996861", "message_id": 14429, "signal_id": "TEST_AUTOFIRE_92", "sent_at": "2025-09-11T22:39:37.602062", "delete_at": "2025-09-12T06:39:37.602077"}
+{"bot": "athena", "chat_id": "-1002581996861", "message_id": 14432, "signal_id": "ELITE_SNIPER_XAGUSD_1757608685", "sent_at": "2025-09-11T22:43:27.988678", "delete_at": "2025-09-12T06:43:27.988687"}
+{"bot": "athena", "chat_id": "-1002581996861", "message_id": 14433, "signal_id": "TEST_FLOW_CHECK", "sent_at": "2025-09-11T22:59:44.294266", "delete_at": "2025-09-12T06:59:44.294269"}
+{"bot": "athena", "chat_id": "-1002581996861", "message_id": 14439, "signal_id": "ELITE_TEST_1757633176", "sent_at": "2025-09-11T23:26:17.859543", "delete_at": "2025-09-12T07:26:17.859554"}
+{"bot": "athena", "chat_id": "-1002581996861", "message_id": 14448, "signal_id": "ELITE_RAPID_EURUSD_1757635991", "sent_at": "2025-09-12T00:13:11.938819", "delete_at": "2025-09-12T08:13:11.938827"}
+{"bot": "athena", "chat_id": "-1002581996861", "message_id": 14449, "signal_id": "ELITE_RAPID_USDCHF_1757635991", "sent_at": "2025-09-12T00:13:12.510400", "delete_at": "2025-09-12T08:13:12.510404"}
+{"bot": "athena", "chat_id": "-1002581996861", "message_id": 14451, "signal_id": "ELITE_RAPID_USDCNH_1757635991", "sent_at": "2025-09-12T00:13:13.055936", "delete_at": "2025-09-12T08:13:13.055940"}
+{"bot": "athena", "chat_id": "-1002581996861", "message_id": 14454, "signal_id": "ELITE_SNIPER_USDCNH_1757636293", "sent_at": "2025-09-12T00:18:14.279622", "delete_at": "2025-09-12T08:18:14.279625"}
+{"bot": "athena", "chat_id": "-1002581996861", "message_id": 14455, "signal_id": "ELITE_RAPID_XAGUSD_1757636293", "sent_at": "2025-09-12T00:18:14.843911", "delete_at": "2025-09-12T08:18:14.843918"}
+{"bot": "athena", "chat_id": "-1002581996861", "message_id": 14458, "signal_id": "ELITE_RAPID_EURUSD_1757636580", "sent_at": "2025-09-12T00:23:01.231431", "delete_at": "2025-09-12T08:23:01.231435"}
+{"bot": "athena", "chat_id": "-1002581996861", "message_id": 14462, "signal_id": "ELITE_RAPID_GBPUSD_1757637789", "sent_at": "2025-09-12T00:43:10.690055", "delete_at": "2025-09-12T08:43:10.690064"}

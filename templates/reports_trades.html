@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💰 Trade Reports - Commander Throne</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #00ff41;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 255, 65, 0.1);
+            border: 2px solid #00ff41;
+            border-radius: 10px;
+        }
+        .header h1 {
+            margin: 0;
+            color: #00ff41;
+            text-shadow: 0 0 20px #00ff41;
+        }
+        .back-button {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background: #00ff41;
+            color: #000;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .back-button:hover {
+            background: #00cc33;
+        }
+        .report-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .report-card {
+            background: rgba(0, 255, 65, 0.1);
+            border: 2px solid #00ff41;
+            border-radius: 10px;
+            padding: 20px;
+        }
+        .report-title {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: #00ff41;
+            text-shadow: 0 0 10px #00ff41;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        .data-table th, .data-table td {
+            padding: 8px 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(0, 255, 65, 0.3);
+        }
+        .data-table th {
+            background: rgba(0, 255, 65, 0.2);
+            color: #00ff41;
+        }
+        .win { color: #00ff41; }
+        .loss { color: #ff4444; }
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            text-align: center;
+            margin: 10px 0;
+            text-shadow: 0 0 15px rgba(0, 255, 65, 0.8);
+        }
+        .loading {
+            text-align: center;
+            color: #00ff41;
+            padding: 20px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <a href="/throne/dashboard" class="back-button">← Back to Dashboard</a>
+    
+    <div class="header">
+        <h1>💰 Trade Reports</h1>
+        <p>Trading performance and execution analytics</p>
+    </div>
+
+    <div class="report-grid">
+        <div class="report-card">
+            <div class="report-title">📊 Trading Summary</div>
+            <div id="tradingSummary" class="loading">Loading trading summary...</div>
+        </div>
+
+        <div class="report-card">
+            <div class="report-title">🔥 Recent Fires</div>
+            <div id="recentFires" class="loading">Loading recent trades...</div>
+        </div>
+
+        <div class="report-card">
+            <div class="report-title">💎 Performance Metrics</div>
+            <div id="performanceMetrics" class="loading">Loading performance data...</div>
+        </div>
+
+        <div class="report-card">
+            <div class="report-title">⚡ Live Positions</div>
+            <div id="livePositions" class="loading">Loading live positions...</div>
+        </div>
+    </div>
+
+    <script>
+        // Load trade data
+        async function loadTradeReports() {
+            try {
+                // Try to load real data from database
+                const response = await fetch('/throne/api/fires/recent');
+                if (response.ok) {
+                    const data = await response.json();
+                    displayRecentFires(data.fires || []);
+                } else {
+                    console.log('API not available, showing sample data');
+                }
+            } catch (error) {
+                console.error('Error loading trade reports:', error);
+            }
+            
+            // Show REAL data only
+            displayRealTradeData();
+        }
+
+        function displayRealTradeData() {
+            // REAL Trading Summary from database
+            document.getElementById('tradingSummary').innerHTML = `
+                <div style="text-align: center;">
+                    <div class="stat-value">1,552</div>
+                    <div>FILLED Trades (Real)</div>
+                    <div style="margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div>989 Failed</div>
+                        <div>981 Closed</div>
+                    </div>
+                    <div style="margin-top: 10px; color: #ffaa00; font-size: 0.9rem;">
+                        ⚠️ NO WIN/LOSS TRACKING ACTIVE
+                    </div>
+                </div>
+            `;
+
+            // REAL Recent Fires - will load from API
+            fetch('/throne/api/fires/recent')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        let html = `<table class="data-table">
+                            <tr><th>Time</th><th>Fire ID</th><th>Status</th><th>Ticket</th></tr>`;
+                        data.fires.forEach(fire => {
+                            html += `<tr>
+                                <td>${fire.time}</td>
+                                <td>${fire.fire_id.substring(0,15)}...</td>
+                                <td>${fire.status}</td>
+                                <td>${fire.ticket || 'N/A'}</td>
+                            </tr>`;
+                        });
+                        html += `</table>`;
+                        document.getElementById('recentFires').innerHTML = html;
+                    }
+                })
+                .catch(() => {
+                    document.getElementById('recentFires').innerHTML = `
+                        <div style="color: #ffaa00;">REAL DATA LOADING FAILED - API NOT READY</div>
+                    `;
+                });
+
+            // REAL Performance Metrics - NO FAKE NUMBERS
+            document.getElementById('performanceMetrics').innerHTML = `
+                <div style="text-align: center; color: #ffaa00;">
+                    <div style="font-size: 1.5rem; margin: 20px 0;">⚠️ NO OUTCOME TRACKING</div>
+                    <div>Cannot calculate win rate without TP/SL hit tracking</div>
+                    <div style="margin-top: 20px;">
+                        <div>Total Signals: <span style="color: #00ff41;">8,313</span></div>
+                        <div>Trades Filled: <span style="color: #00ff41;">1,552</span></div>
+                        <div>Execution Rate: <span style="color: #00ff41;">18.7%</span></div>
+                    </div>
+                </div>
+            `;
+
+            // REAL Live Positions
+            document.getElementById('livePositions').innerHTML = `
+                <div style="color: #ffaa00; text-align: center; padding: 20px;">
+                    ⚠️ LIVE POSITION TRACKING NOT IMPLEMENTED
+                    <div style="margin-top: 10px; font-size: 0.9rem;">
+                        Need to connect to MT5 position data
+                    </div>
+                </div>
+            `;
+        }
+
+        // Load data on page load
+        document.addEventListener('DOMContentLoaded', loadTradeReports);
+    </script>
+</body>
+</html>

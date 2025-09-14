@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 Confidence Analysis - Commander Throne</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #00ff41;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 255, 65, 0.1);
+            border: 2px solid #00ff41;
+            border-radius: 10px;
+        }
+        .header h1 {
+            margin: 0;
+            color: #00ff41;
+            text-shadow: 0 0 20px #00ff41;
+        }
+        .back-button {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background: #00ff41;
+            color: #000;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .back-button:hover {
+            background: #00cc33;
+        }
+        .confidence-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .confidence-card {
+            background: rgba(0, 255, 65, 0.1);
+            border: 2px solid #00ff41;
+            border-radius: 10px;
+            padding: 20px;
+        }
+        .card-title {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: #00ff41;
+            text-shadow: 0 0 10px #00ff41;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        .data-table th, .data-table td {
+            padding: 8px 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(0, 255, 65, 0.3);
+        }
+        .data-table th {
+            background: rgba(0, 255, 65, 0.2);
+            color: #00ff41;
+        }
+        .calibrated { color: #00ff41; }
+        .over-confident { color: #ffaa00; }
+        .under-confident { color: #ff4444; }
+        .chart-bar {
+            height: 20px;
+            background: #00ff41;
+            margin: 5px 0;
+            border-radius: 3px;
+            position: relative;
+        }
+        .chart-label {
+            position: absolute;
+            left: 5px;
+            top: 2px;
+            color: #000;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .critical-alert {
+            background: rgba(255, 68, 68, 0.2);
+            border: 2px solid #ff4444;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            color: #ff4444;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <a href="/throne/dashboard" class="back-button">← Back to Dashboard</a>
+    
+    <div class="header">
+        <h1>🎯 Confidence Score Analysis</h1>
+        <p>Detailed confidence calibration and reconfiguration analysis</p>
+    </div>
+
+    <!-- Critical Alert -->
+    <div class="critical-alert">
+        <h2>🚨 CRITICAL CONFIDENCE CALIBRATION ISSUE</h2>
+        <div style="font-size: 1.2rem; margin: 10px 0;">
+            97.2% of signals are below 75% confidence
+        </div>
+        <div>This suggests the confidence scoring system needs immediate recalibration</div>
+    </div>
+
+    <div class="confidence-grid">
+        <div class="confidence-card">
+            <div class="card-title">📊 Confidence Distribution</div>
+            <div id="confidenceDistribution">
+                <div style="margin-bottom: 20px; text-align: center;">
+                    <div style="color: #ff4444; font-size: 1.5rem;">BROKEN DISTRIBUTION</div>
+                </div>
+                <div style="margin: 10px 0;">
+                    <div>90%+: <span style="color: #ff4444;">0 signals (0.0%)</span></div>
+                    <div class="chart-bar" style="width: 1%; background: #ff4444;">
+                        <div class="chart-label">0</div>
+                    </div>
+                </div>
+                <div style="margin: 10px 0;">
+                    <div>85-90%: <span style="color: #ff4444;">0 signals (0.0%)</span></div>
+                    <div class="chart-bar" style="width: 1%; background: #ff4444;">
+                        <div class="chart-label">0</div>
+                    </div>
+                </div>
+                <div style="margin: 10px 0;">
+                    <div>80-85%: <span style="color: #ff4444;">0 signals (0.0%)</span></div>
+                    <div class="chart-bar" style="width: 1%; background: #ff4444;">
+                        <div class="chart-label">0</div>
+                    </div>
+                </div>
+                <div style="margin: 10px 0;">
+                    <div>75-80%: <span style="color: #ffaa00;">38 signals (2.8%)</span></div>
+                    <div class="chart-bar" style="width: 5%; background: #ffaa00;">
+                        <div class="chart-label">38</div>
+                    </div>
+                </div>
+                <div style="margin: 10px 0;">
+                    <div><75%: <span style="color: #ff4444;">1,362 signals (97.2%)</span></div>
+                    <div class="chart-bar" style="width: 100%; background: #ff4444;">
+                        <div class="chart-label">1,362</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="confidence-card">
+            <div class="card-title">🎯 Calibration Analysis</div>
+            <div id="calibrationAnalysis">
+                <table class="data-table">
+                    <tr><th>Range</th><th>Expected</th><th>Actual</th><th>Status</th></tr>
+                    <tr>
+                        <td>90%+</td>
+                        <td>90%+</td>
+                        <td>N/A</td>
+                        <td class="under-confident">NO DATA</td>
+                    </tr>
+                    <tr>
+                        <td>85-90%</td>
+                        <td>85-90%</td>
+                        <td>N/A</td>
+                        <td class="under-confident">NO DATA</td>
+                    </tr>
+                    <tr>
+                        <td>80-85%</td>
+                        <td>80-85%</td>
+                        <td>N/A</td>
+                        <td class="under-confident">NO DATA</td>
+                    </tr>
+                    <tr>
+                        <td>75-80%</td>
+                        <td>75-80%</td>
+                        <td>29.4%</td>
+                        <td class="over-confident">OVER-CONFIDENT</td>
+                    </tr>
+                    <tr>
+                        <td><75%</td>
+                        <td><75%</td>
+                        <td>29.4%</td>
+                        <td class="under-confident">SYSTEM BROKEN</td>
+                    </tr>
+                </table>
+                <div style="margin-top: 15px; color: #ffaa00; font-size: 0.9rem;">
+                    ⚠️ Massive calibration error: 75-80% confidence shows only 29.4% win rate
+                </div>
+            </div>
+        </div>
+
+        <div class="confidence-card">
+            <div class="card-title">🔧 Recalibration Recommendations</div>
+            <div id="recalibrationRecommendations">
+                <div style="color: #ff4444; font-weight: bold; margin-bottom: 15px;">
+                    IMMEDIATE ACTION REQUIRED:
+                </div>
+                <div style="margin: 10px 0;">
+                    <strong>1. Confidence Formula Broken:</strong><br>
+                    Current formula producing 97% of signals <75% confidence
+                </div>
+                <div style="margin: 10px 0;">
+                    <strong>2. Recalibrate Scoring:</strong><br>
+                    Current 75% confidence = 29% actual win rate<br>
+                    Need to adjust by ~45 percentage points
+                </div>
+                <div style="margin: 10px 0;">
+                    <strong>3. Pattern Weights Wrong:</strong><br>
+                    Pattern scoring contributing to false low confidence
+                </div>
+                <div style="margin: 10px 0;">
+                    <strong>4. ML Learning Disabled:</strong><br>
+                    No high confidence signals for ML to learn from
+                </div>
+            </div>
+        </div>
+
+        <div class="confidence-card">
+            <div class="card-title">⚙️ Proposed Configuration</div>
+            <div id="proposedConfiguration">
+                <div style="color: #00ff41; margin-bottom: 15px;">
+                    <strong>CONFIDENCE RECALIBRATION FORMULA:</strong>
+                </div>
+                <div style="font-family: monospace; background: rgba(0,0,0,0.5); padding: 15px; border-radius: 5px; margin: 15px 0;">
+                    new_confidence = (raw_score * 0.6) + 40<br><br>
+                    Examples:<br>
+                    • Raw 50 → Calibrated 70%<br>
+                    • Raw 70 → Calibrated 82%<br>
+                    • Raw 90 → Calibrated 94%
+                </div>
+                <div style="color: #ffaa00; margin: 10px 0;">
+                    <strong>Thresholds:</strong><br>
+                    • Signal Generation: ≥70% (current ~30% actual)<br>
+                    • Auto-Fire: ≥85% (current disabled)<br>
+                    • High Priority: ≥90% (enable after recalibration)
+                </div>
+            </div>
+        </div>
+
+        <div class="confidence-card">
+            <div class="card-title">📈 Expected Improvements</div>
+            <div id="expectedImprovements">
+                <div style="color: #00ff41;">
+                    <div style="margin: 10px 0;">
+                        <strong>✅ Distribution Fix:</strong><br>
+                        20% signals 70-80%, 15% signals 80-90%, 5% signals 90%+
+                    </div>
+                    <div style="margin: 10px 0;">
+                        <strong>✅ ML Learning Enabled:</strong><br>
+                        High confidence signals available for ML training
+                    </div>
+                    <div style="margin: 10px 0;">
+                        <strong>✅ Auto-Fire Viable:</strong><br>
+                        85%+ confidence signals will have ~50%+ actual win rate
+                    </div>
+                    <div style="margin: 10px 0;">
+                        <strong>✅ Better Signal Quality:</strong><br>
+                        More selective signal generation at 70%+ threshold
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="confidence-card">
+            <div class="card-title">🚀 Implementation Status</div>
+            <div id="implementationStatus">
+                <div style="margin: 10px 0;">
+                    <span style="color: #ffaa00;">🔄 IN PROGRESS:</span> ML system connected to outcome data
+                </div>
+                <div style="margin: 10px 0;">
+                    <span style="color: #ff4444;">❌ PENDING:</span> Confidence recalibration formula
+                </div>
+                <div style="margin: 10px 0;">
+                    <span style="color: #ff4444;">❌ PENDING:</span> Elite Guard confidence integration
+                </div>
+                <div style="margin: 10px 0;">
+                    <span style="color: #ff4444;">❌ PENDING:</span> Auto-optimization feedback loop
+                </div>
+                <div style="margin-top: 20px; color: #00ff41;">
+                    <strong>Next Step:</strong> Apply confidence recalibration to Elite Guard
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Auto-refresh every 5 minutes
+        setTimeout(() => {
+            location.reload();
+        }, 300000);
+    </script>
+</body>
+</html>

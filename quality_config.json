@@ -1,0 +1,13 @@
+{
+  "last_check": "2025-09-12T22:57:28.045969",
+  "win_rate": 100.0,
+  "trade_count": 1,
+  "recommendation": "\ud83d\udcca WAITING: Only 1 trades (need 5+)",
+  "pattern_stats": {
+    "RAPID": {
+      "wins": 1,
+      "total": 1,
+      "win_rate": 100.0
+    }
+  }
+}

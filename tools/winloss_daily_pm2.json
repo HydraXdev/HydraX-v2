@@ -1,0 +1,15 @@
+{
+  "apps": [
+    {
+      "name": "winloss_daily",
+      "script": "/root/HydraX-v2/tools/winloss_daily_report.sh",
+      "cron_restart": "0 0 * * *",
+      "autorestart": false,
+      "watch": false,
+      "max_memory_restart": "100M",
+      "log_date_format": "YYYY-MM-DD HH:mm:ss",
+      "error_file": "/root/HydraX-v2/logs/winloss_daily_error.log",
+      "out_file": "/root/HydraX-v2/logs/winloss_daily_out.log"
+    }
+  ]
+}

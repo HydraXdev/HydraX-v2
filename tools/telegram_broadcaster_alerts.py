@@ -236,7 +236,7 @@ def loop():
                             # Add small delay for rate limiting
                             time.sleep(0.5)
                             
-                            ok = send(fmt(ev), signal_id=signal_id, is_dm=False, event_data=ev)
+                            ok = send(fmt(ev), signal_id=signal_id, event_data=ev)
                             if ok:
                                 R.xack(STREAM, GROUP, mid)
                                 drained += 1
@@ -272,7 +272,7 @@ def loop():
                         ev=json.loads(fields.get("event","{}"))
                         signal_id = ev.get('signal_id', '')
                         print(f"[ALERT] {signal_id} - {ev.get('symbol')} {ev.get('direction')}")
-                        ok = send(fmt(ev), signal_id=signal_id, is_dm=False, event_data=ev)
+                        ok = send(fmt(ev), signal_id=signal_id, event_data=ev)
                     except Exception as e:
                         print(f"[ERROR] Failed to process {mid}: {e}")
                         ok = False

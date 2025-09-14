@@ -6,15 +6,11 @@ EXIT_KEYS = {
 }
 
 def sanitize_open(payload: dict) -> dict:
-    """Remove any client-provided exits; tiered exit manager will take over."""
+    """Keep TP/SL for proper trade execution - DO NOT strip them"""
     if not isinstance(payload, dict):
         return payload
     clean = dict(payload)
-    for k in list(clean.keys()):
-        if k.lower() in EXIT_KEYS:
-            clean.pop(k, None)
-    # make it explicit we expect server-managed exits
-    clean["managed_exits"] = True
-    # force TP to None so EA doesn't set one
-    clean["tp"] = None
+    # KEEP TP and SL - they are essential for trade execution
+    # Removing them causes trades to execute without proper exits
+    # The EA needs these values to manage the position
     return clean

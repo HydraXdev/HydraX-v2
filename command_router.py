@@ -203,6 +203,7 @@ def queue_to_router_forever():
         cmd = pull.recv_json()
         fire_id = cmd.get("fire_id")
         LOG.info(f"[CMD] DEQ {fire_id} | {cmd.get('type')} | {cmd.get('symbol')}")
+        LOG.info(f"[DEBUG] Command has TP={cmd.get('tp')}, SL={cmd.get('sl')}")
         
         uuid = cmd.get("target_uuid")
         if not uuid:

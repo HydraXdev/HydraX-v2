@@ -1,0 +1,418 @@
+{
+  "generated_at": "2025-09-11T13:49:29.019705",
+  "generator": "DynamicOutcomeTracker",
+  "tracking_settings": {
+    "base_timeout_minutes": 60,
+    "atr_multiplier": 3.0,
+    "max_tracking_hours": 24,
+    "min_tracking_minutes": 15
+  },
+  "statistics": {
+    "error": "unsupported operand type(s) for +: 'int' and 'NoneType'"
+  },
+  "active_signals": {
+    "count": 50,
+    "signals": {
+      "ELITE_SNIPER_NZDJPY_1757598486": {
+        "symbol": "NZDJPY",
+        "direction": "SELL",
+        "minutes_tracked": 0.0,
+        "timeout_in_minutes": 90.0,
+        "max_favorable_excursion": 0.0,
+        "max_adverse_excursion": 0.0
+      },
+      "ELITE_RAPID_AUDJPY_1757598486": {
+        "symbol": "AUDJPY",
+        "direction": "SELL",
+        "minutes_tracked": 0.0,
+        "timeout_in_minutes": 90.0,
+        "max_favorable_excursion": 0.0,
+        "max_adverse_excursion": 0.0
+      },
+      "ELITE_SNIPER_EURUSD_1757598486": {
+        "symbol": "EURUSD",
+        "direction": "BUY",
+        "minutes_tracked": 0.0,
+        "timeout_in_minutes": 90.0,
+        "max_favorable_excursion": 0.0,
+        "max_adverse_excursion": 0.0
+      },
+      "ELITE_RAPID_XAUUSD_1757597881": {
+        "symbol": "XAUUSD",
+        "direction": "BUY",
+        "minutes_tracked": 0.0,
+        "timeout_in_minutes": 90.0,
+        "max_favorable_excursion": 0.0,
+        "max_adverse_excursion": 0.0
+      },
+      "ELITE_SNIPER_GBPJPY_1757597594": {
+        "symbol": "GBPJPY",
+        "direction": "BUY",
+        "minutes_tracked": 0.0,
+        "timeout_in_minutes": 90.0,
+        "max_favorable_excursion": 0.0,
+        "max_adverse_excursion": 0.0
+      },
+      "ELITE_SNIPER_USDCNH_1757597291": {
+        "symbol": "USDCNH",
+        "direction": "BUY",
+        "minutes_tracked": 0.0,
+        "timeout_in_minutes": 90.0,
+        "max_favorable_excursion": 0.0,
+        "max_adverse_excursion": 0.0
+      },
+      "ELITE_SNIPER_EURAUD_1757597291": {
+        "symbol": "EURAUD",
+        "direction": "SELL",
+        "minutes_tracked": 0.0,
+        "timeout_in_minutes": 90.0,
+        "max_favorable_excursion": 0.0,
+        "max_adverse_excursion": 0.0
+      },
+      "ELITE_SNIPER_USDJPY_1757597290": {
+        "symbol": "USDJPY",
+        "direction": "SELL",
+        "minutes_tracked": 0.0,
+        "timeout_in_minutes": 90.0,
+        "max_favorable_excursion": 0.0,
+        "max_adverse_excursion": 0.0
+      },
+      "ELITE_RAPID_AUDJPY_1757596988": {
+        "symbol": "AUDJPY",
+        "direction": "SELL",
+        "minutes_tracked": 0.0,
+        "timeout_in_minutes": 90.0,
+        "max_favorable_excursion": 0.0,
+        "max_adverse_excursion": 0.0
+      },
+      "ELITE_SNIPER_EURAUD_1757596988": {
+        "symbol": "EURAUD",
+        "direction": "BUY",
+        "minutes_tracked": 0.0,
+        "timeout_in_minutes": 90.0,
+        "max_favorable_excursion": 0.0,
+        "max_adverse_excursion": 0.0
+      },
+      "ELITE_SNIPER_USDJPY_1757596988": {
+        "symbol": "USDJPY",
+        "direction": "SELL",
+        "minutes_tracked": 0.0,
+        "timeout_in_minutes": 90.0,
+        "max_favorable_excursion": 0.0,
+        "max_adverse_excursion": 0.0
+      },
+      "ELITE_RAPID_AUDJPY_1757596685": {
+        "symbol": "AUDJPY",
+        "direction": "SELL",
+        "minutes_tracked": 0.0,
+        "timeout_in_minutes": 90.0,
+        "max_favorable_excursion": 0.0,
+        "max_adverse_excursion": 0.0
+      },
+      "ELITE_SNIPER_USDJPY_1757596685": {
+        "symbol": "USDJPY",
+        "direction": "SELL",
+        "minutes_tracked": 0.0,
+        "timeout_in_minutes": 90.0,
+        "max_favorable_excursion": 0.0,
+        "max_adverse_excursion": 0.0
+      },
+      "ELITE_RAPID_GBPCAD_1757596397": {
+        "symbol": "GBPCAD",
+        "direction": "SELL",
+        "minutes_tracked": 0.0,
+        "timeout_in_minutes": 90.0,
+        "max_favorable_excursion": 0.0,
+        "max_adverse_excursion": 0.0
+      },
+      "ELITE_RAPID_EURJPY_1757596397": {
+        "symbol": "EURJPY",
+        "direction": "SELL",
+        "minutes_tracked": 0.0,
+        "timeout_in_minutes": 180.0,
+        "max_favorable_excursion": 0.0,
+        "max_adverse_excursion": 0.0
+      },
+      "ELITE_RAPID_EURUSD_1757596382": {
+        "symbol": "EURUSD",
+        "direction": "SELL",
+        "minutes_tracked": 0.0,
+        "timeout_in_minutes": 90.0,
+        "max_favorable_excursion": 0.0,
+        "max_adverse_excursion": 0.0
+      },
+      "ELITE_RAPID_USDCNH_1757596095": {
+        "symbol": "USDCNH",
+        "direction": "BUY",
+        "minutes_tracked": 0.0,
+        "timeout_in_minutes": 90.0,
+        "max_favorable_excursion": 0.0,
+        "max_adverse_excursion": 0.0
+      },
+      "ELITE_RAPID_GBPCAD_1757596095": {
+        "symbol": "GBPCAD",
+        "direction": "SELL",
+        "minutes_tracked": 0.0,
+        "timeout_in_minutes": 90.0,
+        "max_favorable_excursion": 0.0,
+        "max_adverse_excursion": 0.0
+      },
+      "ELITE_RAPID_EURAUD_1757596094": {
+        "symbol": "EURAUD",
+        "direction": "SELL",
+        "minutes_tracked": 0.0,
+        "timeout_in_minutes": 90.0,
+        "max_favorable_excursion": 0.0,
+        "max_adverse_excursion": 0.0
+      },
+      "ELITE_RAPID_EURJPY_1757596094": {
+        "symbol": "EURJPY",
+        "direction": "SELL",
+        "minutes_tracked": 0.0,
+        "timeout_in_minutes": 180.0,
+        "max_favorable_excursion": 0.0,
+        "max_adverse_excursion": 0.0
+      },
+      "ELITE_RAPID_NZDUSD_1757596094": {
+        "symbol": "NZDUSD",
+        "direction": "SELL",
+        "minutes_tracked": 0.0,
+        "timeout_in_minutes": 180.0,
+        "max_favorable_excursion": 0.0,
+        "max_adverse_excursion": 0.0
+      },
+      "ELITE_RAPID_AUDUSD_1757596094": {
+        "symbol": "AUDUSD",
+        "direction": "SELL",
+        "minutes_tracked": 0.0,
+        "timeout_in_minutes": 90.0,
+        "max_favorable_excursion": 0.0,
+        "max_adverse_excursion": 0.0
+      },
+      "ELITE_RAPID_GBPUSD_1757596094": {
+        "symbol": "GBPUSD",
+        "direction": "SELL",
+        "minutes_tracked": 0.0,
+        "timeout_in_minutes": 180.0,
+        "max_favorable_excursion": 0.0,
+        "max_adverse_excursion": 0.0
+      },
+      "ELITE_RAPID_USDCNH_1757595791": {
+        "symbol": "USDCNH",
+        "direction": "BUY",
+        "minutes_tracked": 0.0,
+        "timeout_in_minutes": 90.0,
+        "max_favorable_excursion": 0.0,
+        "max_adverse_excursion": 0.0
+      },
+      "ELITE_RAPID_GBPCAD_1757595791": {
+        "symbol": "GBPCAD",
+        "direction": "SELL",
+        "minutes_tracked": 0.0,
+        "timeout_in_minutes": 90.0,
+        "max_favorable_excursion": 0.0,
+        "max_adverse_excursion": 0.0
+      },
+      "ELITE_RAPID_EURJPY_1757595791": {
+        "symbol": "EURJPY",
+        "direction": "SELL",
+        "minutes_tracked": 0.0,
+        "timeout_in_minutes": 180.0,
+        "max_favorable_excursion": 0.0,
+        "max_adverse_excursion": 0.0
+      },
+      "ELITE_RAPID_GBPUSD_1757595609": {
+        "symbol": "GBPUSD",
+        "direction": "SELL",
+        "minutes_tracked": 0.0,
+        "timeout_in_minutes": 90.0,
+        "max_favorable_excursion": 0.0,
+        "max_adverse_excursion": 0.0
+      },
+      "ELITE_SNIPER_EURUSD_1757595609": {
+        "symbol": "EURUSD",
+        "direction": "SELL",
+        "minutes_tracked": 0.0,
+        "timeout_in_minutes": 90.0,
+        "max_favorable_excursion": 0.0,
+        "max_adverse_excursion": 0.0
+      },
+      "ELITE_SNIPER_EURJPY_1757595489": {
+        "symbol": "EURJPY",
+        "direction": "BUY",
+        "minutes_tracked": 0.0,
+        "timeout_in_minutes": 90.0,
+        "max_favorable_excursion": 0.0,
+        "max_adverse_excursion": 0.0
+      },
+      "ELITE_RAPID_USDCHF_1757595489": {
+        "symbol": "USDCHF",
+        "direction": "BUY",
+        "minutes_tracked": 0.0,
+        "timeout_in_minutes": 90.0,
+        "max_favorable_excursion": 0.0,
+        "max_adverse_excursion": 0.0
+      },
+      "ELITE_RAPID_USDCAD_1757595186": {
+        "symbol": "USDCAD",
+        "direction": "BUY",
+        "minutes_tracked": 0.0,
+        "timeout_in_minutes": 90.0,
+        "max_favorable_excursion": 0.0,
+        "max_adverse_excursion": 0.0
+      },
+      "ELITE_RAPID_USDJPY_1757594597": {
+        "symbol": "USDJPY",
+        "direction": "BUY",
+        "minutes_tracked": 0.0,
+        "timeout_in_minutes": 90.0,
+        "max_favorable_excursion": 0.0,
+        "max_adverse_excursion": 0.0
+      },
+      "ELITE_RAPID_USDCHF_1757594597": {
+        "symbol": "USDCHF",
+        "direction": "BUY",
+        "minutes_tracked": 0.0,
+        "timeout_in_minutes": 90.0,
+        "max_favorable_excursion": 0.0,
+        "max_adverse_excursion": 0.0
+      },
+      "ELITE_RAPID_EURUSD_1757594597": {
+        "symbol": "EURUSD",
+        "direction": "SELL",
+        "minutes_tracked": 0.0,
+        "timeout_in_minutes": 90.0,
+        "max_favorable_excursion": 0.0,
+        "max_adverse_excursion": 0.0
+      },
+      "ELITE_SNIPER_EURGBP_1757594581": {
+        "symbol": "EURGBP",
+        "direction": "SELL",
+        "minutes_tracked": 0.0,
+        "timeout_in_minutes": 90.0,
+        "max_favorable_excursion": 0.0,
+        "max_adverse_excursion": 0.0
+      },
+      "ELITE_RAPID_XAGUSD_1757594295": {
+        "symbol": "XAGUSD",
+        "direction": "SELL",
+        "minutes_tracked": 0.0,
+        "timeout_in_minutes": 90.0,
+        "max_favorable_excursion": 0.0,
+        "max_adverse_excursion": 0.0
+      },
+      "ELITE_RAPID_NZDJPY_1757594294": {
+        "symbol": "NZDJPY",
+        "direction": "BUY",
+        "minutes_tracked": 0.0,
+        "timeout_in_minutes": 90.0,
+        "max_favorable_excursion": 0.0,
+        "max_adverse_excursion": 0.0
+      },
+      "ELITE_RAPID_AUDJPY_1757594294": {
+        "symbol": "AUDJPY",
+        "direction": "BUY",
+        "minutes_tracked": 0.0,
+        "timeout_in_minutes": 90.0,
+        "max_favorable_excursion": 0.0,
+        "max_adverse_excursion": 0.0
+      },
+      "ELITE_RAPID_EURAUD_1757594294": {
+        "symbol": "EURAUD",
+        "direction": "SELL",
+        "minutes_tracked": 0.0,
+        "timeout_in_minutes": 90.0,
+        "max_favorable_excursion": 0.0,
+        "max_adverse_excursion": 0.0
+      },
+      "ELITE_RAPID_NZDUSD_1757594294": {
+        "symbol": "NZDUSD",
+        "direction": "SELL",
+        "minutes_tracked": 0.0,
+        "timeout_in_minutes": 180.0,
+        "max_favorable_excursion": 0.0,
+        "max_adverse_excursion": 0.0
+      },
+      "ELITE_RAPID_AUDUSD_1757594294": {
+        "symbol": "AUDUSD",
+        "direction": "SELL",
+        "minutes_tracked": 0.0,
+        "timeout_in_minutes": 90.0,
+        "max_favorable_excursion": 0.0,
+        "max_adverse_excursion": 0.0
+      },
+      "ELITE_RAPID_USDJPY_1757594294": {
+        "symbol": "USDJPY",
+        "direction": "BUY",
+        "minutes_tracked": 0.0,
+        "timeout_in_minutes": 90.0,
+        "max_favorable_excursion": 0.0,
+        "max_adverse_excursion": 0.0
+      },
+      "ELITE_RAPID_USDCHF_1757594294": {
+        "symbol": "USDCHF",
+        "direction": "BUY",
+        "minutes_tracked": 0.0,
+        "timeout_in_minutes": 180.0,
+        "max_favorable_excursion": 0.0,
+        "max_adverse_excursion": 0.0
+      },
+      "ELITE_RAPID_GBPUSD_1757594294": {
+        "symbol": "GBPUSD",
+        "direction": "SELL",
+        "minutes_tracked": 0.0,
+        "timeout_in_minutes": 180.0,
+        "max_favorable_excursion": 0.0,
+        "max_adverse_excursion": 0.0
+      },
+      "ELITE_RAPID_EURUSD_1757594294": {
+        "symbol": "EURUSD",
+        "direction": "SELL",
+        "minutes_tracked": 0.0,
+        "timeout_in_minutes": 90.0,
+        "max_favorable_excursion": 0.0,
+        "max_adverse_excursion": 0.0
+      },
+      "ELITE_RAPID_XAGUSD_1757593991": {
+        "symbol": "XAGUSD",
+        "direction": "SELL",
+        "minutes_tracked": 0.0,
+        "timeout_in_minutes": 90.0,
+        "max_favorable_excursion": 0.0,
+        "max_adverse_excursion": 0.0
+      },
+      "ELITE_RAPID_GBPJPY_1757593991": {
+        "symbol": "GBPJPY",
+        "direction": "BUY",
+        "minutes_tracked": 0.0,
+        "timeout_in_minutes": 180.0,
+        "max_favorable_excursion": 0.0,
+        "max_adverse_excursion": 0.0
+      },
+      "ELITE_RAPID_USDJPY_1757593991": {
+        "symbol": "USDJPY",
+        "direction": "BUY",
+        "minutes_tracked": 0.0,
+        "timeout_in_minutes": 90.0,
+        "max_favorable_excursion": 0.0,
+        "max_adverse_excursion": 0.0
+      },
+      "ELITE_RAPID_GBPUSD_1757593991": {
+        "symbol": "GBPUSD",
+        "direction": "SELL",
+        "minutes_tracked": 0.0,
+        "timeout_in_minutes": 90.0,
+        "max_favorable_excursion": 0.0,
+        "max_adverse_excursion": 0.0
+      },
+      "ELITE_RAPID_EURUSD_1757593991": {
+        "symbol": "EURUSD",
+        "direction": "SELL",
+        "minutes_tracked": 0.0,
+        "timeout_in_minutes": 90.0,
+        "max_favorable_excursion": 0.0,
+        "max_adverse_excursion": 0.0
+      }
+    }
+  }
+}

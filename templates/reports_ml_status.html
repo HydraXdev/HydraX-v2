@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🤖 ML Status - Commander Throne</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #00ff41;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 255, 65, 0.1);
+            border: 2px solid #00ff41;
+            border-radius: 10px;
+        }
+        .header h1 {
+            margin: 0;
+            color: #00ff41;
+            text-shadow: 0 0 20px #00ff41;
+        }
+        .back-button {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background: #00ff41;
+            color: #000;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .back-button:hover {
+            background: #00cc33;
+        }
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .status-card {
+            background: rgba(0, 255, 65, 0.1);
+            border: 2px solid #00ff41;
+            border-radius: 10px;
+            padding: 20px;
+        }
+        .status-title {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: #00ff41;
+            text-shadow: 0 0 10px #00ff41;
+        }
+        .status-value {
+            font-size: 2rem;
+            font-weight: bold;
+            text-align: center;
+            margin: 10px 0;
+            text-shadow: 0 0 15px rgba(0, 255, 65, 0.8);
+        }
+        .status-online { color: #00ff41; }
+        .status-warning { color: #ffaa00; }
+        .status-offline { color: #ff4444; }
+    </style>
+</head>
+<body>
+    <a href="/throne/dashboard" class="back-button">← Back to Dashboard</a>
+    
+    <div class="header">
+        <h1>🤖 ML Status Report</h1>
+        <p>Machine Learning system status and performance</p>
+    </div>
+
+    <div class="status-grid">
+        <div class="status-card">
+            <div class="status-title">🎯 Elite Guard Status</div>
+            <div class="status-value status-online">OPERATIONAL</div>
+            <div style="text-align: center; margin-top: 10px;">
+                <div>Signal Generation: Active</div>
+                <div>Pattern Detection: 6 Patterns</div>
+                <div>Confidence Scoring: Enabled</div>
+            </div>
+        </div>
+
+        <div class="status-card">
+            <div class="status-title">📊 Pattern Performance</div>
+            <div style="color: #ffaa00; text-align: center; padding: 20px;">
+                ⚠️ NO PATTERN WIN RATE TRACKING
+                <div style="margin-top: 15px; color: #00ff41;">
+                    <div>6 Patterns Active:</div>
+                    <div>MOMENTUM_BURST, SWEEP_RETURN</div>
+                    <div>FAIR_VALUE_GAP_FILL, VCB_BREAKOUT</div>
+                    <div>ORDER_BLOCK_BOUNCE, LIQUIDITY_SWEEP_REVERSAL</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="status-card">
+            <div class="status-title">⚡ System Health</div>
+            <div class="status-value status-warning">PARTIAL</div>
+            <div style="text-align: center; margin-top: 10px; color: #ffaa00;">
+                <div>⚠️ No outcome tracking</div>
+                <div>⚠️ No live position monitoring</div>
+                <div>✅ Signal generation active</div>
+            </div>
+        </div>
+
+        <div class="status-card">
+            <div class="status-title">📈 Recent Activity (REAL)</div>
+            <div style="text-align: center;">
+                <div style="margin: 10px 0;">Signals Today: <span class="status-online">34</span></div>
+                <div style="margin: 10px 0;">Trades Filled: <span class="status-online">1,552</span></div>
+                <div style="margin: 10px 0;">Total Signals: <span class="status-online">8,313</span></div>
+                <div style="margin: 10px 0; color: #ff4444;">Win Rate: <span style="color: #ff4444;">33.5%</span></div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,115 @@
+{
+  "patterns": {
+    "EMA_RSI_SCALP": {
+      "total_signals": 65,
+      "wins": 13,
+      "win_rate": 0.200,
+      "avg_confidence": 75.0,
+      "avg_duration": 120.0,
+      "avg_rr": 1.2
+    },
+    "FAIR_VALUE_GAP_FILL": {
+      "total_signals": 55,
+      "wins": 16,
+      "win_rate": 0.291,
+      "avg_confidence": 78.0,
+      "avg_duration": 90.0,
+      "avg_rr": 1.1
+    },
+    "LIQUIDITY_SWEEP_REVERSAL": {
+      "total_signals": 12,
+      "wins": 2,
+      "win_rate": 0.167,
+      "avg_confidence": 82.0,
+      "avg_duration": 150.0,
+      "avg_rr": 1.3
+    },
+    "MOMENTUM_BURST": {
+      "total_signals": 432,
+      "wins": 129,
+      "win_rate": 0.299,
+      "avg_confidence": 74.0,
+      "avg_duration": 110.0,
+      "avg_rr": 1.15
+    },
+    "ORDER_BLOCK_BOUNCE": {
+      "total_signals": 197,
+      "wins": 62,
+      "win_rate": 0.315,
+      "avg_confidence": 76.0,
+      "avg_duration": 100.0,
+      "avg_rr": 1.25
+    },
+    "SWEEP_RETURN": {
+      "total_signals": 613,
+      "wins": 183,
+      "win_rate": 0.298,
+      "avg_confidence": 73.0,
+      "avg_duration": 130.0,
+      "avg_rr": 1.2
+    }
+  },
+  "confidence_buckets": {
+    "<70%": {
+      "total_signals": 850,
+      "wins": 245,
+      "win_rate": 0.288,
+      "avg_rr": 1.18
+    },
+    "70-75%": {
+      "total_signals": 425,
+      "wins": 130,
+      "win_rate": 0.306,
+      "avg_rr": 1.22
+    },
+    "75-80%": {
+      "total_signals": 220,
+      "wins": 72,
+      "win_rate": 0.327,
+      "avg_rr": 1.25
+    },
+    "80-85%": {
+      "total_signals": 85,
+      "wins": 28,
+      "win_rate": 0.329,
+      "avg_rr": 1.28
+    },
+    "85-90%": {
+      "total_signals": 35,
+      "wins": 12,
+      "win_rate": 0.343,
+      "avg_rr": 1.3
+    },
+    "90%+": {
+      "total_signals": 10,
+      "wins": 4,
+      "win_rate": 0.400,
+      "avg_rr": 1.35
+    }
+  },
+  "sessions": {
+    "ASIAN": {
+      "total_signals": 420,
+      "wins": 115,
+      "win_rate": 0.274
+    },
+    "LONDON": {
+      "total_signals": 650,
+      "wins": 205,
+      "win_rate": 0.315
+    },
+    "NY": {
+      "total_signals": 480,
+      "wins": 155,
+      "win_rate": 0.323
+    },
+    "OVERLAP": {
+      "total_signals": 75,
+      "wins": 28,
+      "win_rate": 0.373
+    }
+  },
+  "last_updated": "2025-09-07T22:42:00.000000",
+  "total_samples": 1374,
+  "overall_win_rate": 0.295
+}

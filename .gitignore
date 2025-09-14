@@ -62,6 +62,18 @@ Thumbs.db
 
 # Test files
 test_*.py
+demo_*.py
+experimental_*.py
+
+# Locked Archives - DO NOT RESTORE
+LOCKED_ARCHIVE_*/
+LOCKED_ARCHIVE_*.tar.gz
+ARCHIVE_*/
+BACKUP_*/
+PURGE_*/
+*_OLD/
+*_DEPRECATED/
+*_BROKEN/
 
 # Node modules (if any)
 node_modules/

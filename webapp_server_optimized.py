@@ -293,6 +293,8 @@ def api_signals():
                         'entry_price': float(row[4]) if row[4] else 0.0,  # entry column
                         'sl': float(row[5]) if row[5] else 0.0,
                         'tp': float(row[6]) if row[6] else 0.0,
+                        'stop_loss': float(row[5]) if row[5] else 0.0,  # Duplicate for compatibility
+                        'take_profit': float(row[6]) if row[6] else 0.0,  # Duplicate for compatibility
                         'pattern_type': payload_data.get('pattern_type', 'UNKNOWN'),
                         'created_at': row[7],  # created_at is index 7
                         'stop_pips': payload_data.get('stop_pips', 20),
@@ -370,8 +372,8 @@ def api_signals():
                             signal_data.get("symbol", signal_data.get("pair", "")),
                             signal_data.get("direction", ""),
                             signal_data.get("entry_price", signal_data.get("entry", 0)),
-                            signal_data.get("stop_loss", signal_data.get("sl", 0)),
-                            signal_data.get("take_profit", signal_data.get("tp", 0)),
+                            float(signal_data.get("stop_loss", 0)) or float(signal_data.get("sl", 0)),
+                            float(signal_data.get("take_profit", 0)) or float(signal_data.get("tp", 0)),
                             signal_data.get("confidence", 0),
                             signal_data.get("pattern_type", ""),  # Add pattern_type field
                             int(time.time()),
@@ -467,17 +469,24 @@ def api_signals():
                                                 bitmode_enabled = fire_mode_db.is_bitmode_enabled(str(user_id))
                                                 
 # [DISABLED BITMODE]                                                 # Create and send AUTO fire command with BITMODE support
+                                                # Pass complete signal data for proper SL/TP calculation
+                                                # If sl/tp are 0, enqueue_fire will calculate from stop_pips/target_pips
                                                 auto_fire_cmd = create_fire_command(
                                                     mission_id=signal_id,
                                                     user_id=str(user_id),
                                                     symbol=symbol,
                                                     direction=direction,
                                                     entry=entry_price,
-                                                    sl=stop_loss,
-                                                    tp=take_profit,
+                                                    sl=stop_loss if stop_loss else 0,
+                                                    tp=take_profit if take_profit else 0,
                                                     lot=calculated_lot,
                                                     enable_bitmode=bitmode_enabled
                                                 )
+                                                
+                                                # If command creation failed (returned None), skip
+                                                if auto_fire_cmd is None:
+                                                    logger.warning(f"Fire command creation failed for {signal_id}")
+                                                    continue
                                                 
                                                 # Occupy slot before firing
                                                 from src.bitten_core.fire_mode_database import FireModeDatabase
@@ -1308,30 +1317,33 @@ def brief_mission():
             if s.startswith("XAG"): return 0.01
             return 0.0001
             
-        # Calculate absolute SL/TP from pips
+        # Use existing SL/TP if available, otherwise calculate from pips
         signal = signal_data.get('signal', signal_data)
         sym = signal.get('symbol', '').upper()
         side = signal.get('direction', '').upper()
         entry = float(signal.get('entry_price') or 0)
-        stop_pips = float(signal.get('stop_pips') or signal.get('sl_pips') or 10)
-        target_pips = float(signal.get('target_pips') or signal.get('tp_pips') or 15)
         
-        if entry > 0 and sym and side:
+        # First check if we already have stop_loss and take_profit
+        sl = float(signal.get('stop_loss') or 0)
+        tp = float(signal.get('take_profit') or 0)
+        
+        # Only calculate from pips if we don't have absolute values
+        if (sl == 0 or tp == 0) and entry > 0 and sym and side:
+            stop_pips = float(signal.get('stop_pips') or signal.get('sl_pips') or 10)
+            target_pips = float(signal.get('target_pips') or signal.get('tp_pips') or 15)
             pip = pip_size(sym)
             if side == "BUY":
-                sl = entry - (stop_pips * pip) if stop_pips > 0 else 0
-                tp = entry + (target_pips * pip) if target_pips > 0 else 0
+                sl = entry - (stop_pips * pip) if stop_pips > 0 and sl == 0 else sl
+                tp = entry + (target_pips * pip) if target_pips > 0 and tp == 0 else tp
             elif side == "SELL":
-                sl = entry + (stop_pips * pip) if stop_pips > 0 else 0
-                tp = entry - (target_pips * pip) if target_pips > 0 else 0
-            else:
-                sl = tp = 0
+                sl = entry + (stop_pips * pip) if stop_pips > 0 and sl == 0 else sl
+                tp = entry - (target_pips * pip) if target_pips > 0 and tp == 0 else tp
                 
-            # Add absolute levels to signal data
-            signal['sl'] = round(sl, 6)
-            signal['tp'] = round(tp, 6)
-            if 'signal' in signal_data:
-                signal_data['signal'] = signal
+        # Add absolute levels to signal data
+        signal['sl'] = round(sl, 6) if sl > 0 else 0
+        signal['tp'] = round(tp, 6) if tp > 0 else 0
+        if 'signal' in signal_data:
+            signal_data['signal'] = signal
             
         # Create per-user mission in database
         mission_id = f"{signal_id}_USER_{user_id}"

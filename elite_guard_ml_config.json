@@ -1,0 +1,85 @@
+{
+  "confidence_adjustment": {
+    "base_multiplier": 0.9431167998415129,
+    "pattern_adjustments": {},
+    "last_calibration": "2025-09-07T22:58:41.481474",
+    "calibration_details": {
+      "<70%": {
+        "expected": 0.65,
+        "actual": 0.288,
+        "adjustment_factor": 0.44307692307692303,
+        "samples": 850
+      },
+      "70-75%": {
+        "expected": 0.725,
+        "actual": 0.306,
+        "adjustment_factor": 0.4220689655172414,
+        "samples": 425
+      },
+      "75-80%": {
+        "expected": 0.775,
+        "actual": 0.327,
+        "adjustment_factor": 0.42193548387096774,
+        "samples": 220
+      },
+      "80-85%": {
+        "expected": 0.825,
+        "actual": 0.329,
+        "adjustment_factor": 0.3987878787878788,
+        "samples": 85
+      },
+      "85-90%": {
+        "expected": 0.875,
+        "actual": 0.343,
+        "adjustment_factor": 0.392,
+        "samples": 35
+      },
+      "90%+": {
+        "expected": 0.95,
+        "actual": 0.4,
+        "adjustment_factor": 0.4210526315789474,
+        "samples": 10
+      }
+    }
+  },
+  "pattern_status": {
+    "MOMENTUM_BURST": {
+      "enabled": true,
+      "threshold": 75,
+      "threshold_reason": "Increased due to 29.9% win rate"
+    },
+    "SWEEP_RETURN": {
+      "enabled": true,
+      "threshold": 75,
+      "threshold_reason": "Increased due to 29.8% win rate"
+    },
+    "ORDER_BLOCK_BOUNCE": {
+      "enabled": true,
+      "threshold": 75,
+      "threshold_reason": "Increased due to 31.5% win rate"
+    },
+    "FAIR_VALUE_GAP_FILL": {
+      "enabled": true,
+      "threshold": 75,
+      "threshold_reason": "Increased due to 29.1% win rate"
+    },
+    "EMA_RSI_SCALP": {
+      "enabled": false,
+      "threshold": 70,
+      "disabled_reason": "Low win rate: 20.0% (65 samples)",
+      "disabled_at": "2025-09-07T22:58:41.480865"
+    },
+    "LIQUIDITY_SWEEP_REVERSAL": {
+      "enabled": true,
+      "threshold": 70
+    }
+  },
+  "auto_optimization": {
+    "enabled": true,
+    "disable_threshold": 0.25,
+    "warning_threshold": 0.35,
+    "min_samples": 50
+  },
+  "last_update": "2025-09-07T22:58:41.481547",
+  "version": "1.0"
+}

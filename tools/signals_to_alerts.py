@@ -8,7 +8,7 @@ GROUP = os.environ.get("GROUP","alerts_fanout")
 CONS  = os.environ.get("CONSUMER","fanout1")
 
 # Central canonical classifier configuration
-CANON_FLOOR_RR = float(os.environ.get("CANON_FLOOR_RR","1.2"))
+CANON_FLOOR_RR = float(os.environ.get("CANON_FLOOR_RR","0.7"))
 SNIPER_RR_MIN  = float(os.environ.get("SNIPER_RR_MIN","1.8"))
 SNIPER_RR_MIN_WITH_CONF = float(os.environ.get("SNIPER_RR_MIN_WITH_CONF","1.6"))
 SNIPER_CONF_BOOST = float(os.environ.get("SNIPER_CONF_BOOST","75"))

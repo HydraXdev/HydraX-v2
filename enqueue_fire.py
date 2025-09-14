@@ -23,63 +23,48 @@ def get_bitmode_config(symbol: str) -> dict:
         "trail": {"distance": 15}
     }
 
-def enqueue_fire(cmd: dict):
-    """Send fire command to IPC queue with direction gate check"""
+def enqueue_fire(cmd):
+    """Send fire command to IPC queue - direction gate DISABLED for manual trading"""
     global _ctx, _push
     
-    # Import direction gate (lazy import to avoid circular deps)
-    try:
-        from direction_gate import check_fire_direction
-        
-        # Extract trade details
-        symbol = cmd.get('symbol')
-        direction = cmd.get('direction')
-        lot = cmd.get('lot', 0.01)
-        
-        if symbol and direction:
-            # Check direction gate
-            action, details = check_fire_direction(symbol, direction, lot)
-            
-            if action == "BLOCK":
-                print(f"🚫 Direction gate BLOCKED: {symbol} {direction}")
-                if details and isinstance(details, dict):
-                    print(f"   Reason: {details.get('reason', 'Unknown')}")
-                    print(f"   Current position: {details.get('current_direction', 'N/A')} {details.get('current_net', 0)} lots")
-                return False
-            
-            elif action == "FLIP":
-                print(f"⚠️ Direction gate FLIP required: {symbol} {direction}")
-                if details and isinstance(details, dict):
-                    print(f"   Must close {len(details.get('tickets_to_close', []))} opposite positions first")
-                    print(f"   Current: {details.get('current_direction', 'N/A')} {details.get('current_net', 0)} lots")
-                
-                # TODO: Implement automated closing of opposite positions
-                # For now, just block to prevent hedging
-                print("   AUTO-CLOSE not yet implemented - blocking trade")
-                return False
-            
-            elif action == "REDUCE":
-                print(f"⚠️ Direction gate REDUCE: {symbol} {direction}")
-                if details and isinstance(details, dict):
-                    print(f"   Reduce only mode - would close {details.get('reduce_lots', 0)} lots")
-                # TODO: Implement partial close
-                return False
-            
-            # OPEN is allowed - continue with normal flow
-            
-    except ImportError:
-        # Direction gate not available, proceed normally
-        pass
-    except Exception as e:
-        print(f"Direction gate check failed: {e}")
-        # Don't block on errors, let trade proceed
+    # DIRECTION GATE DISABLED - Allow manual traders to manage their own hedging
+    # The direction gate was preventing legitimate opposite direction trades
+    # Manual traders should have full control over their positions
+    
+    symbol = cmd.get('symbol')
+    direction = cmd.get('direction')
+    tp = cmd.get('tp')
+    sl = cmd.get('sl')
+    print(f"✅ Allowing {symbol} {direction} trade (direction gate disabled)")
+    print(f"📊 DEBUG: Enqueueing with SL={sl}, TP={tp}")
+    
+    # CRITICAL: Remove any extra fields that might have been added
+    # EA expects EXACTLY these fields in this order
+    from collections import OrderedDict
+    clean_cmd = OrderedDict([
+        ("type", cmd.get("type")),
+        ("target_uuid", cmd.get("target_uuid")),
+        ("fire_id", cmd.get("fire_id")),
+        ("symbol", cmd.get("symbol")),
+        ("direction", cmd.get("direction")),
+        ("entry", cmd.get("entry")),
+        ("sl", cmd.get("sl")),
+        ("tp", cmd.get("tp")),
+        ("lot", cmd.get("lot"))
+    ])
+    
+    # Add hybrid config if present (this is allowed per CLAUDE.md)
+    if "hybrid" in cmd:
+        clean_cmd["hybrid"] = cmd["hybrid"]
     
     if _ctx is None:
         _ctx = zmq.Context.instance()
         _push = _ctx.socket(zmq.PUSH)
         _push.connect(QUEUE_ADDR)
         _push.setsockopt(zmq.LINGER, 0)
-    _push.send_json(cmd)
+    
+    # Send the clean command with preserved order
+    _push.send_json(clean_cmd)
     return True
 
 def create_fire_command(mission_id: str, user_id: str, symbol: str = None, direction: str = None, 
@@ -92,27 +77,56 @@ def create_fire_command(mission_id: str, user_id: str, symbol: str = None, direc
         print("🚫 USDSEK BLOCKED: Trading temporarily disabled - signals coming through with no TP")
         return None
     
-    # If called with just mission_id and user_id, load from mission file
+    # If called with just mission_id and user_id, load from mission file OR database
     mission_data = {}  # Initialize for later use
+    signal_data = {}  # Store signal data from DB
+    
+    # First try to get signal data from database if we have missing values
     if symbol is None or direction is None or entry is None or sl is None or tp is None or sl == 0 or tp == 0:
+        # Check database for signal details
+        try:
+            import sqlite3
+            conn = sqlite3.connect('/root/HydraX-v2/bitten.db')
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT symbol, direction, entry_price, sl, tp, stop_pips, target_pips
+                FROM signals WHERE signal_id = ?
+            """, (mission_id,))
+            row = cursor.fetchone()
+            if row:
+                signal_data = {
+                    'symbol': row[0],
+                    'direction': row[1],
+                    'entry_price': row[2],
+                    'sl': row[3],
+                    'tp': row[4],
+                    'stop_pips': row[5],
+                    'target_pips': row[6]
+                }
+                # Use DB values if not provided
+                symbol = symbol or signal_data.get('symbol')
+                direction = direction or signal_data.get('direction')
+                entry = entry or signal_data.get('entry_price')
+                # Don't override sl/tp if they're 0 - we'll calculate from pips later
+            conn.close()
+        except Exception as e:
+            print(f"DB lookup failed: {e}")
+        
+        # Then check mission file as fallback
         mission_file = f"/root/HydraX-v2/missions/{mission_id}.json"
         if os.path.exists(mission_file):
             with open(mission_file, 'r') as f:
                 mission_data = json.load(f)
                 signal = mission_data.get('signal', mission_data)
                 
-                # FILTER 1: Confidence Gate - Only allow signals >= 80% confidence
+                # Get signal details for logging
                 confidence = float(signal.get('confidence', 0))
                 pattern = signal.get('pattern_type', 'UNKNOWN')
                 
-                if confidence < 80.0:
-                    print(f"❌ Dropped low-confidence signal {pattern} conf={confidence:.1f}%")
-                    return None
+                # REMOVED confidence gate - allow manual execution at any confidence
+                print(f"✅ Processing {pattern} signal at {confidence:.1f}% confidence")
                 
-                # FILTER 2: Pattern Quarantine - Block FAIR_VALUE_GAP_FILL
-                if pattern == 'FAIR_VALUE_GAP_FILL':
-                    print(f"❌ Quarantined FVG signal (conf={confidence:.1f}%)")
-                    return None
+                # REMOVED pattern quarantine - allow all patterns for manual execution
                 
                 # FILTER 3: Session Filter for specific patterns
                 if pattern in ['SWEEP_RETURN', 'VCB_BREAKOUT']:
@@ -146,8 +160,9 @@ def create_fire_command(mission_id: str, user_id: str, symbol: str = None, direc
                     
                 # If still missing, calculate from pips
                 if (sl == 0 or tp == 0) and entry > 0:
-                    stop_pips = float(signal.get('stop_pips', 10))
-                    target_pips = float(signal.get('target_pips', 20))
+                    # Try to get from signal_data (from DB) first, then signal (from mission)
+                    stop_pips = float(signal_data.get('stop_pips', signal.get('stop_pips', 15)))  # Default 15 pips
+                    target_pips = float(signal_data.get('target_pips', signal.get('target_pips', 20)))  # Default 20 pips
                     
                     # Determine pip size
                     if 'JPY' in symbol:
@@ -253,7 +268,7 @@ def create_fire_command(mission_id: str, user_id: str, symbol: str = None, direc
     if 'JPY' in symbol:
         pip_size = 0.01
     elif symbol in ['XAUUSD', 'XAGUSD']:
-        pip_size = 0.1 if symbol == 'XAUUSD' else 0.01  # Gold: 0.1, Silver: 0.01
+        pip_size = 0.1 if symbol == 'XAUUSD' else 0.001  # Gold: 0.1, Silver: 0.001
     else:
         pip_size = 0.0001
         
@@ -457,47 +472,102 @@ def create_fire_command(mission_id: str, user_id: str, symbol: str = None, direc
     # Format comment with TP1 price
     comment = f"FANG@{tp1_price:.5f}"
     
-    # Build fire command
-    fire_command = {
-        "type": "fire",
-        "fire_id": mission_id,
-        "target_uuid": target_uuid,
-        "symbol": symbol,
-        "direction": direction,
-        "entry": entry_rounded,  # Current market price as entry
-        "sl": sl,        # Adjusted SL maintaining pip distance
-        "tp": tp,        # Adjusted TP maintaining pip distance 
-        "lot": lot,
-        "user_id": user_id,
-        "comment": comment  # Add MT5 comment with TP1 price
-    }
+    # Build fire command - EXACT FORMAT REQUIRED BY EA
+    # EA STRICT REQUIREMENTS:
+    # 1. "type": "fire" must be FIRST key
+    # 2. Keys must be lowercase exactly as shown
+    # 3. direction must be UPPERCASE ("BUY" or "SELL")
+    # 4. Numbers must NOT be quoted
+    # 5. entry/sl/tp can be 0 for market/no stop/no target
+    from collections import OrderedDict
     
-    # Apply tier-based exit configuration
-    try:
-        from src.bitten_core.tier_exit_manager import TierExitManager
-        fire_command = TierExitManager.apply_tier_exit_to_fire_command(fire_command, user_id)
-        print(f"🎯 Tier-based exits applied for user {user_id}")
-    except Exception as e:
-        print(f"⚠️ Could not apply tier exits: {e}")
-        # Continue without tier exits if module not available
+    # Ensure direction is uppercase
+    direction = direction.upper() if direction else "BUY"
     
-    # Sanitize OPEN command to remove client-provided exits
-    try:
-        from src.bitten_core.open_sanitize import sanitize_open
-        fire_command = sanitize_open(fire_command)
-        print(f"✅ Exit fields stripped - server will manage exits")
-    except Exception as e:
-        print(f"⚠️ Could not sanitize open command: {e}")
+    # For market orders, entry should be 0 (EA will use current price)
+    # If we calculated entry_rounded as current price, set to 0 for EA
+    entry_for_ea = 0  # Always use 0 for market orders
     
-    # Add BITMODE configuration if enabled
+    # Determine correct decimal precision for each symbol
+    if 'JPY' in symbol:
+        decimals = 3  # JPY pairs: 147.389
+    elif symbol == 'XAUUSD':
+        decimals = 2  # Gold: 3645.19
+    elif symbol == 'XAGUSD':
+        decimals = 3  # Silver: 31.456
+    else:
+        decimals = 5  # Most forex pairs: 1.17280
+    
+    # If SL or TP are None or 0, use emergency defaults
+    if sl is None or sl == 0:
+        print(f"⚠️ WARNING: SL is None/0, using emergency calculation")
+        # Emergency SL calculation
+        pip_size = 0.01 if 'JPY' in symbol else 0.0001
+        if direction.upper() == "BUY":
+            sl = entry_rounded - (20 * pip_size)
+        else:
+            sl = entry_rounded + (20 * pip_size)
+    
+    if tp is None or tp == 0:
+        print(f"⚠️ WARNING: TP is None/0, using emergency calculation")
+        # Emergency TP calculation (1.5:1 R:R)
+        pip_size = 0.01 if 'JPY' in symbol else 0.0001
+        if direction.upper() == "BUY":
+            tp = entry_rounded + (30 * pip_size)
+        else:
+            tp = entry_rounded - (30 * pip_size)
+    
+    # Round to appropriate decimals
+    sl_for_ea = round(sl, decimals) if sl > 0 else 0
+    tp_for_ea = round(tp, decimals) if tp > 0 else 0
+    
+    # Round lot to 2 decimals
+    lot_for_ea = round(lot, 2) if lot else 0.01
+    
+    fire_command = OrderedDict([
+        ("type", "fire"),
+        ("target_uuid", target_uuid),
+        ("fire_id", mission_id),
+        ("symbol", symbol),
+        ("direction", direction),  # Must be uppercase
+        ("entry", entry_for_ea),   # 0 for market orders
+        ("sl", sl_for_ea),         # Can be 0
+        ("tp", tp_for_ea),         # Can be 0
+        ("lot", lot_for_ea)        # Rounded to 2 decimals
+    ])
+    
+    # Debug logging to verify exact packet format
+    import json
+    debug_json = json.dumps(fire_command, indent=2)
+    print(f"📦 EXACT EA PACKET:\n{debug_json}")
+    
+    # Store user_id separately for database tracking, but don't send to EA
+    fire_command_for_db = dict(fire_command)
+    fire_command_for_db["user_id"] = user_id
+    
+    # DISABLED tier-based exit configuration - was overriding TP to 10R
+    # DISABLED sanitize_open - was stripping TP entirely
+    # We need the actual TP and SL values for proper trade execution
+    print(f"✅ Using calculated TP and SL values (tier exits disabled)")
+    
+    # Add BITMODE/hybrid configuration if enabled
     if bitmode_config:
+        # Format hybrid exactly as EA expects
         fire_command["hybrid"] = {
             "enabled": True,
-            "partial1": bitmode_config["partial1"],
-            "partial2": bitmode_config["partial2"],
-            "trail": bitmode_config["trail"]
+            "partial1": {
+                "trigger": bitmode_config["partial1"]["trigger"],
+                "percent": bitmode_config["partial1"]["percent"]
+            },
+            "partial2": {
+                "trigger": bitmode_config["partial2"]["trigger"],
+                "percent": bitmode_config["partial2"]["percent"]
+            },
+            "trail": {
+                "distance": bitmode_config["trail"]["distance"]
+            }
         }
-        print(f"🎯 BITMODE fire command: {bitmode_config}")
+        print(f"🎯 BITMODE/Hybrid enabled with config")
     
     return fire_command
 
@@ -547,8 +617,8 @@ if __name__ == "__main__":
             # For XAUUSD, 1 pip = 0.01 price movement
             stop_pips = abs(entry_price - stop_loss) / 0.01
         elif symbol == 'XAGUSD':
-            # For XAGUSD (Silver), 1 pip = 0.01 price movement (like gold)
-            stop_pips = abs(entry_price - stop_loss) / 0.01
+            # For XAGUSD (Silver), 1 pip = 0.001 price movement
+            stop_pips = abs(entry_price - stop_loss) / 0.001
         elif 'JPY' in symbol:
             # For JPY pairs, 1 pip = 0.01 price movement
             stop_pips = abs(entry_price - stop_loss) / 0.01
@@ -572,9 +642,9 @@ if __name__ == "__main__":
             # But brokers typically use $10 per pip per standard lot
             pip_value = 10.0  # Gold pip value per standard lot
         elif symbol == 'XAGUSD':
-            # For XAGUSD, 1 pip (0.01 movement) = $5.00 per standard lot (5000 oz)
+            # For XAGUSD, 1 pip (0.001 movement) = $0.50 per standard lot (5000 oz)
             # Standard market convention for silver
-            pip_value = 5.0  # Silver pip value per standard lot
+            pip_value = 0.5  # Silver pip value per standard lot (0.001 movement)
         elif symbol == 'USDCNH':
             # For USDCNH, pip value depends on CNH rate (~1.4 USD per pip at 7.2 rate)
             pip_value = 1.4  # Approximate - actual varies with CNH rate
@@ -616,11 +686,22 @@ if __name__ == "__main__":
         # Calculate lot size: Risk Amount / (Stop Loss in Pips × Pip Value per Lot)
         if stop_pips > 0:
             calculated_lot = risk_amount / (stop_pips * pip_value)
+            print(f"📊 Lot calculation: ${risk_amount:.2f} / ({stop_pips:.1f} pips × ${pip_value:.2f}) = {calculated_lot:.3f} lots")
+            
+            # Apply reasonable limits for safety
+            MAX_LOT_SIZE = 2.0  # Maximum 2 lots for safety
+            MIN_LOT_SIZE = 0.01  # Minimum lot size
+            
+            if calculated_lot > MAX_LOT_SIZE:
+                print(f"⚠️ Lot size {calculated_lot:.2f} exceeds max {MAX_LOT_SIZE}, capping")
+                calculated_lot = MAX_LOT_SIZE
+            
             calculated_lot = round(calculated_lot, 2)  # Round to 2 decimals for MT5
-            # Ensure minimum lot size
-            calculated_lot = max(calculated_lot, 0.01)
+            calculated_lot = max(calculated_lot, MIN_LOT_SIZE)
+            print(f"✅ Final lot size: {calculated_lot}")
         else:
             calculated_lot = 0.01  # Minimum lot size if can't calculate
+            print(f"⚠️ No stop pips, using minimum lot: {calculated_lot}")
         
         # Check if user has BITMODE enabled
         enable_bitmode = False

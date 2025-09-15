@@ -48,10 +48,48 @@ def update_fire(m):
     status = (m.get("status") or "").upper()
     if status in ("FILLED", "SUCCESS", "OK", "FILLED_OK"):
         db_status = "FILLED"
+        
+        # EVENT BUS INTEGRATION - Track trade confirmation
+        try:
+            from event_bus.event_bridge import trade_confirmed
+            trade_confirmed({
+                'fire_id': fire_id,
+                'signal_id': fire_id,  # fire_id is based on signal_id
+                'status': db_status,
+                'ticket': m.get("ticket") or m.get("order"),
+                'price': m.get("price") or m.get("execution_price"),
+                'volume': m.get("volume", m.get("lot")),
+                'symbol': m.get("symbol"),
+                'direction': m.get("direction"),
+                'timestamp': int(time.time())
+            })
+            LOG.info("✅ Event Bus: Trade confirmation published for %s", fire_id)
+        except Exception as e:
+            LOG.warning("⚠️ Event Bus: Failed to publish confirmation (non-critical): %s", e)
+            
     elif status in ("FAILED", "REJECTED", "ERROR"):
         db_status = "FAILED"
     elif status in ("CLOSED", "CLOSE", "COMPLETED", "TP_HIT", "SL_HIT"):
         db_status = "CLOSED"
+        
+        # EVENT BUS INTEGRATION - Track trade closure/outcome
+        try:
+            from event_bus.event_bridge import trade_outcome
+            outcome_type = 'TP_HIT' if 'TP_HIT' in status else 'SL_HIT' if 'SL_HIT' in status else 'CLOSED'
+            trade_outcome({
+                'fire_id': fire_id,
+                'signal_id': fire_id,  # fire_id is based on signal_id
+                'outcome': outcome_type,
+                'status': db_status,
+                'profit': m.get("profit"),
+                'pips': m.get("pips"),
+                'close_price': m.get("price"),
+                'timestamp': int(time.time())
+            })
+            LOG.info("✅ Event Bus: Trade outcome published for %s (%s)", fire_id, outcome_type)
+        except Exception as e:
+            LOG.warning("⚠️ Event Bus: Failed to publish outcome (non-critical): %s", e)
+        
         # Release slot when trade closes
         try:
             # Get user_id from fires table

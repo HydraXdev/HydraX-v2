@@ -5259,3 +5259,7 @@
 {"bot": "athena", "chat_id": "-1002581996861", "message_id": 14455, "signal_id": "ELITE_RAPID_XAGUSD_1757636293", "sent_at": "2025-09-12T00:18:14.843911", "delete_at": "2025-09-12T08:18:14.843918"}
 {"bot": "athena", "chat_id": "-1002581996861", "message_id": 14458, "signal_id": "ELITE_RAPID_EURUSD_1757636580", "sent_at": "2025-09-12T00:23:01.231431", "delete_at": "2025-09-12T08:23:01.231435"}
 {"bot": "athena", "chat_id": "-1002581996861", "message_id": 14462, "signal_id": "ELITE_RAPID_GBPUSD_1757637789", "sent_at": "2025-09-12T00:43:10.690055", "delete_at": "2025-09-12T08:43:10.690064"}
+{"bot": "athena", "chat_id": "-1002581996861", "message_id": 14883, "signal_id": "TEST_EVENT_BUS_001", "sent_at": "2025-09-15T14:24:38.740566", "delete_at": "2025-09-15T22:24:38.740577"}
+{"bot": "athena", "chat_id": "-1002581996861", "message_id": 14884, "signal_id": "TEST_EVENT_BUS_002", "sent_at": "2025-09-15T14:26:54.510938", "delete_at": "2025-09-15T22:26:54.510940"}
+{"bot": "athena", "chat_id": "-1002581996861", "message_id": 14888, "signal_id": "WEBAPP_BROKER_TEST_001", "sent_at": "2025-09-15T14:35:06.493645", "delete_at": "2025-09-15T22:35:06.493647"}
+{"bot": "athena", "chat_id": "-1002581996861", "message_id": 14889, "signal_id": "WEBAPP_BROKER_TEST_002", "sent_at": "2025-09-15T14:38:22.066723", "delete_at": "2025-09-15T22:38:22.066732"}

@@ -23,8 +23,32 @@
       "milestones_hit": [],
       "commands_sent": {},
       "last_seq": 0
+    },
+    "21625611": {
+      "ticket": 21625611,
+      "fire_id": "WEBAPP_BROKER_TEST_002",
+      "user_id": "7176191872",
+      "user_tier": "TIER_PRO",
+      "symbol": "EURUSD",
+      "direction": "BUY",
+      "entry_px": 1.17591,
+      "sl_init_px": 1.095,
+      "sl_current_px": 1.095,
+      "tp_px": 1.105,
+      "r_pips": 809.1000000000004,
+      "lot_size": 0.55,
+      "lot_remaining": 0.55,
+      "state": "entered",
+      "tp1_done": false,
+      "be_set": false,
+      "trail_on": false,
+      "open_ts": 1757947103.5703897,
+      "last_update_ts": 1757947103.5703905,
+      "milestones_hit": [],
+      "commands_sent": {},
+      "last_seq": 0
     }
   },
   "global_seq": 0,
-  "timestamp": 1756437894.369333
+  "timestamp": 1757947103.5706859
 }

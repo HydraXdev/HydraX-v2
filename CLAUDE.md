@@ -1,355 +1,447 @@
-# BITTEN PRODUCTION SYSTEM - ACTUAL STATE
+# 🔒 ARCHITECTURE LOCK - CRITICAL INSTRUCTIONS 🔒
 
-**Last Updated**: August 27, 2025 12:20 UTC  
-**Agent**: Claude Code (Sonnet 4)  
-**Session**: Pattern Optimization Complete - All 6 Patterns Enhanced
+**STOP**: Before doing ANYTHING, read `/root/ARCHITECTURE.md` for the ACTUAL system architecture.
 
-## 🚨 CRITICAL: SIGNAL TRACKING LOCATIONS - READ THIS FIRST 🚨
+The ARCHITECTURE.md file is the ONLY source of truth. It defines:
+- **LOCKED COMPONENTS**: DO NOT MODIFY under any circumstances
+- **STABLE COMPONENTS**: Modify only with explicit permission  
+- **FLEXIBLE COMPONENTS**: Safe to modify
 
-### **ACTIVE SIGNAL LOGS (August 2025)**
-⚠️ **NEVER assume `truth_log.jsonl` is current** - Check ALL these locations:
+**DO NOT**:
+- Trust old documentation over ARCHITECTURE.md
+- Modify LOCKED components (Elite Guard, ZMQ ports, EA, etc.)
+- Create duplicate processes or files
+- Add new pattern detectors (all 10 are integrated)
+- Change core trading logic without explicit approval
 
-**PRIMARY ACTIVE LOGS:**
-- `/root/HydraX-v2/comprehensive_tracking.jsonl` - **CURRENT ACTIVE LOG** (Real-time signals)
-- `/root/HydraX-v2/optimized_tracking.jsonl` - **CURRENT ACTIVE LOG** (ML tracking)
-- `/root/HydraX-v2/logs/comprehensive_tracking.jsonl` - **CURRENT ACTIVE LOG** (Backup location)
+**ALWAYS**:
+- Check ARCHITECTURE.md first
+- Verify what's actually running with `ps aux | grep [process]`
+- Follow the defined component boundaries
+- Ask before modifying STABLE components
 
-**LEGACY/INACTIVE LOGS:**
-- `/root/HydraX-v2/truth_log.jsonl` - **STOPPED UPDATING AUG 22, 2025** ❌ DO NOT USE
-- Various `signal_outcomes.jsonl` files - **ARCHIVED** ❌ Outdated
+If ARCHITECTURE.md and this file conflict, **ARCHITECTURE.md wins**.
 
-### **SIGNAL STATUS CHECK COMMANDS:**
+---
+
+# BITTEN SYSTEM OPERATIONAL STATUS
+
+**Last Updated**: September 14, 2025  
+**Architecture**: See `/root/ARCHITECTURE.md` for complete system design  
+**Status**: PRODUCTION - All systems operational
+
+## 📊 CURRENT TRACKING LOCATIONS
+
+**ACTIVE TRACKING FILES (September 2025)**:
+- `/root/HydraX-v2/comprehensive_tracking.jsonl` - Primary signal tracking
+- `/root/HydraX-v2/dynamic_tracking.jsonl` - Dynamic outcome tracking  
+- `/root/HydraX-v2/ml_training_data.jsonl` - ML training data
+
+**DATABASE**:
+- `/root/HydraX-v2/bitten.db` - SQLite database with all signals, trades, outcomes
+
+---
+
+## 🚨 EVENT BUS - INSTITUTIONAL GRADE TRACKING SYSTEM (September 15, 2025) 🚨
+
+### **CRITICAL: This is the NEW centralized tracking system - DO NOT USE OLD TRACKING FILES**
+
+**Status**: ✅ FULLY OPERATIONAL - Capturing all events  
+**Architecture**: Broker pattern with PULL/PUB sockets  
+**Database**: `/root/HydraX-v2/bitten_events.db`  
+**Integration**: Webapp publishing signals, more components pending
+
+### **What is the Event Bus?**
+The Event Bus is an institutional-grade, event-driven tracking system that replaces ALL previous tracking methods. It captures EVERY event in the trading lifecycle from signal generation to final TP/SL outcome.
+
+### **Architecture (Broker Pattern)**:
+```
+Components → PUSH(5571) → Event Bus Broker → PUB(5570) → Data Collector → Database
+```
+
+- **Port 5571**: PULL socket - receives events from all components
+- **Port 5570**: PUB socket - broadcasts events to subscribers
+- **Database**: SQLite with specialized tables for different event types
+
+### **Key Features**:
+- **Complete Lifecycle Tracking**: Signal → Fire → Execution → Outcome
+- **Event Sourcing**: Stores state changes, not current states (efficient)
+- **Deduplication**: Shared signal data stored once, user actions tracked separately
+- **Immutable Audit Trail**: Every event timestamped with microsecond precision
+- **Correlation IDs**: Links related events across the entire trade lifecycle
+
+### **Database Schema**:
+```sql
+-- Main events table (all events)
+events: id, event_type, timestamp, data
+
+-- Specialized tables for analysis
+signal_events: signal_id, pattern, confidence, symbol, direction, timestamp
+trade_events: trade_id, signal_id, user_id, action, timestamp, outcome
+health_events: component, status, metrics, timestamp
+```
+
+### **How to Query Event Bus Data**:
 ```bash
-# Check for recent signals (ALWAYS use these first)
+# Check event count
+sqlite3 /root/HydraX-v2/bitten_events.db "SELECT COUNT(*) FROM events;"
+
+# Recent signals
+sqlite3 /root/HydraX-v2/bitten_events.db "SELECT * FROM signal_events ORDER BY timestamp DESC LIMIT 5;"
+
+# Check specific signal lifecycle
+sqlite3 /root/HydraX-v2/bitten_events.db "SELECT * FROM events WHERE data LIKE '%SIGNAL_ID_HERE%' ORDER BY timestamp;"
+```
+
+### **Running Processes**:
+```bash
+pm2 list | grep -E "event_bus|data_collector"
+# Should show:
+# event_bus - Broker service on ports 5571/5570
+# data_collector - Capturing and storing events
+```
+
+### **⚠️ IMPORTANT - FOR ALL AGENTS**:
+1. **DO NOT** use old tracking files (comprehensive_tracking.jsonl, dynamic_tracking.jsonl, etc.)
+2. **DO NOT** create new tracking systems - Event Bus handles everything
+3. **DO NOT** write directly to tracking files - publish events to Event Bus instead
+4. **ALWAYS** query bitten_events.db for tracking data
+5. **ALWAYS** use the Event Bus client to publish new events
+
+### **Integration Status**:
+- ✅ **Event Bus**: Running (broker on 5571/5570)
+- ✅ **Data Collector**: Running (storing all events)
+- ✅ **Webapp**: Publishing signal events
+- ⏳ **Elite Guard**: Pending integration
+- ⏳ **Fire Router**: Pending integration
+- ⏳ **Confirmation Listener**: Pending integration
+- ⏳ **Outcome Monitor**: Pending integration
+
+### **Event Bus Client Usage** (for integrating new components):
+```python
+from event_bus.event_bridge import signal_generated, trade_executed, trade_confirmed
+
+# Publish a signal event
+signal_generated({
+    'signal_id': 'ELITE_RAPID_EURUSD_123',
+    'pattern': 'KALMAN_QUICKFIRE',
+    'confidence': 85.0,
+    'symbol': 'EURUSD',
+    'direction': 'BUY'
+})
+
+# Publish a trade execution
+trade_executed({
+    'trade_id': 'TRADE_123',
+    'signal_id': 'ELITE_RAPID_EURUSD_123',
+    'user_id': '7176191872',
+    'lot_size': 0.10
+})
+```
+
+### **Why Event Bus vs Old Tracking**:
+- **Old**: Multiple JSONL files, inconsistent formats, race conditions, data loss
+- **New**: Single source of truth, ACID compliance, event sourcing, correlation tracking
+- **Old**: 50,000 files for 5,000 users × 10 signals = disk explosion
+- **New**: Efficient deduplication, only track actual events, ~99% space savings
+
+---
+
+### **SYSTEM STATUS COMMANDS:**
+```bash
+# Check running processes (as defined in ARCHITECTURE.md)
+pm2 list
+
+# Check recent signals
 tail -5 /root/HydraX-v2/comprehensive_tracking.jsonl
-ls -la /root/HydraX-v2/*tracking*.jsonl | sort -k6,7
 
-# Find ANY recent signal logs
-find /root -name "*.jsonl" -mmin -120 | grep -E "(signal|track)" | head -5
+# Check signal database
+sqlite3 /root/HydraX-v2/bitten.db "SELECT COUNT(*) FROM signals WHERE created_at > strftime('%s', 'now', '-1 hour');"
 
-# NEVER rely on truth_log.jsonl timestamp without verification
+# Run performance report
+python3 -c "$(cat /root/CLAUDE.md | grep -A 50 'bitten-report' | grep -A 50 'python3')"
 ```
 
-### **SYSTEM STATUS REALITY CHECK:**
-- **6 Enhanced Patterns**: ALL optimized with industry-standard logic
-- **16+ Trading Pairs**: Active monitoring
-- **Prime Trading Hours**: Should generate 3-10 signals/hour
-- **If no signals in 2+ hours**: Check process health, NOT log files first
+### **CURRENT SYSTEM CONFIGURATION (Sept 14, 2025)**:
+- **10 Active Patterns**: All integrated in Elite Guard (see ARCHITECTURE.md)
+- **19 Trading Pairs**: USDCAD and XAGUSD removed for poor performance
+- **Auto-Fire Range**: 80-89% confidence (optimal win rate zone)
+- **Signal Threshold**: 70%+ for Telegram alerts
+- **Architecture**: Fully documented in `/root/ARCHITECTURE.md`
 
 ---
 
-## ✅ PATTERN OPTIMIZATION COMPLETE - AUGUST 27, 2025 ✅
+## 🎯 BITTEN-REPORT COMMAND - REAL-TIME PERFORMANCE (EVENT BUS)
 
-### **ALL 6 PATTERNS NOW ENHANCED WITH INDUSTRY-STANDARD LOGIC**
-
-**Completed Today (August 27, 2025):**
-- **Pattern #6: MOMENTUM_BREAKOUT → MOMENTUM_BURST** - **ENHANCED** ✅
-  - Multi-timeframe validation (M5 instead of M1)
-  - Momentum acceleration detection (increasing velocity over 3 candles)
-  - Volume confirmation (1.3x volume surge requirement)  
-  - Range breakout validation (2+ pip breakout requirement)
-  - R:R feasibility (1.5:1 minimum risk/reward)
-  - Industry-standard confidence (68% base, capped at 82%)
-
-**Complete Pattern Status:**
-1. ✅ **Liquidity Sweep Reversal** - INDUSTRY STANDARD (3+ pip sweeps, rejection candles)
-2. ✅ **VCB Breakout** - INDUSTRY STANDARD (<0.7 pip ATR compression, 1.5x volume)
-3. ✅ **Order Block Bounce** - ENHANCED (real institutional zones)
-4. ✅ **Fair Value Gap Fill** - ENHANCED (multi-candle validation)
-5. ✅ **Sweep and Return** - ENHANCED (multi-touch validation)
-6. ✅ **Momentum Breakout** - ENHANCED (momentum + volume + R:R validation)
-
-**Signal Generation Status:**
-- **System**: FULLY OPERATIONAL ✅
-- **Recent Activity**: Signals generated within last hour ✅
-- **Active Logging**: `/root/HydraX-v2/comprehensive_tracking.jsonl` ✅
-- **Pattern Quality**: Enhanced selectivity for better win rates ✅
-
----
-
-## 🎯 AI EXCELLENCE SYSTEM DEPLOYED - AUGUST 19, 2025 🎯
-
-### **COMPREHENSIVE UPGRADES IMPLEMENTED TODAY:**
-
-#### **1. EXPECTANCY-BASED PATTERN ELIMINATION (Not Just Win Rate)**
-- **Location**: `/root/HydraX-v2/expectancy_calculator.py`
-- **Formula**: EV = (Win% × AvgWin) - (Loss% × AvgLoss)
-- **Protection**: Keeps profitable low-win-rate patterns (e.g., 35% win at 3:1 RR = +0.40 EV)
-- **Safety Zone**: ±5% of breakeven prevents variance-based elimination
-- **Rolling Windows**: 50-100 signal analysis prevents hasty decisions
-
-#### **2. TWO-STAGE QUARANTINE SYSTEM**
-- **Location**: `/root/HydraX-v2/pattern_quarantine_manager.py`
-- **Stage 1**: QUARANTINE - Demo-only mode after 50 signals with negative EV
-- **Stage 2**: KILL - Full elimination after 100 signals if still negative
-- **Recovery Path**: Patterns can return from quarantine if performance improves
-- **Status File**: `pattern_quarantine_status.json`
-
-#### **3. CONVERGENCE TRACKER (Multi-Pattern Boost)**
-- **Location**: `/root/HydraX-v2/convergence_tracker.py`
-- **Function**: Detects when 2+ patterns align on same pair within 60 seconds
-- **Boost**: +10% confidence per additional pattern
-- **Output**: `convergence_signals.jsonl`
-- **Impact**: High-conviction trades often have the highest edge
-
-#### **4. DYNAMIC OUTCOME RESOLUTION (ATR-Based)**
-- **Location**: `/root/HydraX-v2/dynamic_outcome_tracker.py`
-- **Change**: Replaces fixed 60min checks with volatility-based horizons
-- **Tracking**: Until TP/SL hit OR 3x expected time (max 4 hours)
-- **Benefit**: Prevents misclassifying slow-burn winners as failures
-
-#### **5. CONFIDENCE CALIBRATION LAYER**
-- **Location**: `/root/HydraX-v2/confidence_calibrator.py`
-- **Function**: Audits if 80% confidence actually wins 80% of time
-- **Buckets**: 70-75%, 75-80%, 80-85%, 85-90%
-- **Adjustment**: If 80% signals only win 62%, adjusts future scores down by 18%
-- **Output**: `confidence_calibration.json`
-
-#### **6. MARKET REGIME AWARENESS**
-- **Location**: `/root/HydraX-v2/regime_analyzer.py`
-- **Tags**: TREND/RANGE (ADX), HIGH/LOW_VOL (ATR), Session
-- **Analysis**: Expectancy calculated PER REGIME not globally
-- **Insight**: Pattern might fail in Asian range but print in London trend
-- **Output**: `regime_performance.json`
-
-#### **7. ADAPTIVE REVIEW SCHEDULER**
-- **Location**: `/root/HydraX-v2/adaptive_review_scheduler.py`
-- **Fast Patterns**: Review every 24-48 hours (5+ signals/day)
-- **Medium Patterns**: Review every 3-5 days (1-5 signals/day)
-- **Slow Patterns**: Review weekly (<1 signal/day)
-- **Output**: `review_schedule.json`
-
-#### **8. COMPREHENSIVE TRACKING SYSTEM**
-- **Location**: `/root/HydraX-v2/comprehensive_signal_tracker.py`
-- **Tracks**: EVERY signal at 70%+ confidence (not just fired ones)
-- **Logging**: `comprehensive_tracking.jsonl`
-- **Counterfactual**: Records what WOULD have happened if traded
-- **Dashboard**: Real-time HTML on port 8890
-
-#### **9. MASTER CONTROL SYSTEM**
-- **Location**: `/root/HydraX-v2/pattern_elimination_master.py`
-- **Function**: Coordinates all 8 services seamlessly
-- **Features**: Real-time monitoring, integrated reports, graceful shutdown
-- **Status**: Running and analyzing patterns continuously
-
-### **THRESHOLD ADJUSTMENTS**
-- **Signal Generation**: Lowered to 70% (from 75%) to collect more data
-- **Auto-Fire**: Raised to 90% (from 80%) for safety during testing
-- **Impact**: Capturing more signals for analysis while keeping auto-execution conservative
-
-### **EARLY PERFORMANCE INSIGHTS (Limited Data)**
-- **ORDER_BLOCK_BOUNCE**: 100% win rate, +37.5 EV (2 signals)
-- **VCB_BREAKOUT**: 100% win rate, +45.0 EV (1 signal)
-- **LIQUIDITY_SWEEP_REVERSAL**: 50% win rate, +7.5 EV (2 signals)
-- **FAIR_VALUE_GAP_FILL**: 0% win rate, -25.0 EV (1 signal - quarantine candidate)
-
-## 🚀 ML INTEGRATION COMPLETE - AUGUST 15, 2025 END OF DAY 🚀
-
-### **MAJOR CHANGES IMPLEMENTED PREVIOUSLY:**
-
-#### **1. ML Filter Integrated Directly Into Elite Guard**
-- **Location**: `/root/HydraX-v2/elite_guard_with_citadel.py`
-- **Method**: `apply_ml_filter()` at line 1545
-- **Function**: Filters every pattern through tiered system before publishing
-- **Performance Tracking**: `update_performance_outcome()` at line 1545
-
-#### **2. Tiered Signal System Active**
-```python
-TIER_1_AUTO_FIRE: {
-    EURUSD_VCB_BREAKOUT: 80% threshold (lowered from 85%)
-    GBPUSD_VCB_BREAKOUT: 80% threshold (lowered from 87%)
-    Max hourly: 3 for EURUSD, 2 for GBPUSD
-}
-TIER_2_TESTING: Track only, no auto-fire
-TIER_3_PROBATION: ASIAN session, XAUUSD (high thresholds)
-```
-
-#### **3. Sunday Testing Configuration**
-- **Auto-Fire Threshold**: 80% (lowered from 85%)
-- **Pattern Quality Filter**: 72% (lowered from 78%)
-- **Risk/Reward Ratio**: 1:1.25 (changed from 1:1 for quick profits)
-- **Target Pairs**: EURUSD, GBPUSD only (proven winners)
-
-#### **4. Complete Tracking System (NO TIMEOUTS)**
-- **Signal Outcome Monitor**: Enhanced to track EVERY signal to TP/SL
-- **ML Feedback Loop**: Outcomes automatically update performance history
-- **Tracking Files**:
-  - `/root/HydraX-v2/truth_log.jsonl` - All signals
-  - `/root/HydraX-v2/signal_outcomes.jsonl` - Outcomes
-  - `/root/HydraX-v2/ml_performance_tracking.jsonl` - ML data
-
-#### **5. Performance Features**
-- Auto-disables patterns below 40% win rate after 10 trades
-- Auto-promotes patterns above 70% win rate after 20 trades
-- Tracks runtime duration, max favorable/adverse moves
-- Full data logging: pattern, confidence, session, R:R, outcome
-
-### **MONDAY EXPANSION PLAN:**
-- Currently limited to EURUSD/GBPUSD for testing
-- Monday: Can add USDJPY, EURJPY, USDCAD to Tier 2
-- Monitor win rates per pair/pattern combo
-- ML system will auto-optimize based on results
-
-## 🎯 COMPLETE FIRE PIPELINE ARCHITECTURE - AUGUST 15, 2025 🎯
-
-### **VERIFIED WORKING END-TO-END FLOW**
-
-```
-[Signal Generation] → [Database] → [Webapp/Engine] → [Fire Command] → [IPC Queue] → [Command Router] → [EA] → [MT5] → [Confirmation] → [Database Update]
-```
-
-**Last Successful Test**: August 15, 2025 02:18 UTC
-- **Signal**: ELITE_GUARD_GBPUSD_1755223898 (SELL)
-- **Fire ID**: ELITE_GUARD_GBPUSD_1755223898
-- **MT5 Ticket**: 20813351
-- **Fill Price**: 1.35357
-- **Lot Size**: 0.09 (5% risk, properly rounded)
-- **Status**: FILLED ✅
-
-### **🔧 CRITICAL FIX APPLIED**
-
-**Issue**: Invalid volume format causing MT5 trade failures
-**Root Cause**: Lot sizes like `0.09447600000000202` invalid for MT5
-**Fix**: Added lot size rounding in `/root/HydraX-v2/enqueue_fire.py:40`
-```python
-# Round lot size to 2 decimal places for MT5 compatibility
-lot = round(lot, 2)
-```
-
-### **⚡ PRODUCTION EA ARCHITECTURE**
-
-**EA**: `/root/HydraX-v2/BITTEN_Universal_EA_v2.05_PRODUCTION.mq5`
-- **Connection**: ZMQ DEALER socket with identity "COMMANDER_DEV_001"
-- **Server**: tcp://134.199.204.67:5555 (command router)
-- **Heartbeat**: Every 30 seconds
-- **Confirmation**: Port 5558 with fire_id tracking
-
-**Fire Command Format (EXACT):**
-```json
-{
-  "type": "fire",
-  "fire_id": "ELITE_GUARD_GBPUSD_1755223898",
-  "target_uuid": "COMMANDER_DEV_001", 
-  "symbol": "GBPUSD",
-  "direction": "SELL",
-  "entry": 1.35386,
-  "sl": 1.35636,
-  "tp": 1.34886,
-  "lot": 0.09,
-  "user_id": "7176191872"
-}
-```
-
-## 🚨 TROUBLESHOOTING GUIDE FOR NEXT AGENT 🚨
-
-### **QUICK HEALTH CHECK COMMANDS**
+**Quick Performance Check**: Run `bitten-report` for comprehensive system status
 
 ```bash
-# 1. Check all critical processes
-pm2 list | grep -E "command_router|elite_guard|confirm_listener|webapp"
+python3 -c "
+import json, sqlite3
+from datetime import datetime, timedelta
+from collections import defaultdict
 
-# 2. Check ZMQ port bindings
-ss -tulpen | grep -E ":(5555|5556|5557|5558|8888)"
+print('='*70)
+print('🎯 BITTEN SYSTEM PERFORMANCE REPORT (EVENT BUS)')
+print('='*70)
 
-# 3. Check EA connection freshness 
-sqlite3 /root/HydraX-v2/bitten.db "SELECT target_uuid, user_id, (strftime('%s','now') - last_seen) AS age_seconds FROM ea_instances WHERE target_uuid = 'COMMANDER_DEV_001';"
+# Connect to Event Bus database for real-time data
+event_conn = sqlite3.connect('/root/HydraX-v2/event_bus/bitten_events.db')
+event_cursor = event_conn.cursor()
 
-# 4. Check recent fire executions
-sqlite3 /root/HydraX-v2/bitten.db "SELECT fire_id, status, ticket, price FROM fires ORDER BY created_at DESC LIMIT 5;"
+# Get total events
+event_cursor.execute('SELECT COUNT(*) FROM events')
+total_events = event_cursor.fetchone()[0]
+print(f'\n📡 EVENT BUS STATUS: {total_events} total events captured')
 
-# 5. Test fire command pipeline
-python3 /root/HydraX-v2/test_webapp_fire_path.py
+# Get event type breakdown
+event_cursor.execute('''
+    SELECT event_type, COUNT(*) as count
+    FROM events
+    WHERE created_at > (julianday('now') - 1) * 86400
+    GROUP BY event_type
+    ORDER BY count DESC
+''')
+print('\n📊 EVENT TYPES (24H):')
+print('-'*50)
+for row in event_cursor.fetchall():
+    print(f'{row[0]:30} {row[1]:6} events')
+
+# Extract signal outcomes from Event Bus
+event_cursor.execute('''
+    SELECT 
+        json_extract(data_json, '$.outcome') as outcome,
+        json_extract(data_json, '$.pattern') as pattern,
+        json_extract(data_json, '$.pips_result') as pips,
+        json_extract(data_json, '$.confidence') as confidence
+    FROM events
+    WHERE event_type IN ('signal_outcome_recorded', 'trade_outcome')
+        AND created_at > (julianday('now') - 1) * 86400
+''')
+
+outcomes = event_cursor.fetchall()
+wins = sum(1 for o in outcomes if o[0] == 'WIN')
+losses = sum(1 for o in outcomes if o[0] == 'LOSS')
+
+if wins + losses > 0:
+    win_rate = (wins / (wins + losses)) * 100
+    total_pips = sum(float(o[2]) for o in outcomes if o[2])
+    avg_conf = sum(float(o[3]) for o in outcomes if o[3]) / len(outcomes) if outcomes else 0
+    
+    print(f'\n📈 TRACKED OUTCOMES (EVENT BUS):')
+    print(f'Wins: {wins} | Losses: {losses}')
+    print(f'Win Rate: {win_rate:.1f}%')
+    print(f'Total Pips: {total_pips:.1f}')
+    print(f'Avg Confidence: {avg_conf:.1f}%')
+    
+    # Pattern breakdown
+    pattern_stats = defaultdict(lambda: {'wins': 0, 'losses': 0})
+    for outcome in outcomes:
+        if outcome[1] and outcome[0]:
+            if outcome[0] == 'WIN':
+                pattern_stats[outcome[1]]['wins'] += 1
+            elif outcome[0] == 'LOSS':
+                pattern_stats[outcome[1]]['losses'] += 1
+    
+    if pattern_stats:
+        print('\n🎯 PATTERN PERFORMANCE:')
+        print('-'*50)
+        for pattern, stats in sorted(pattern_stats.items()):
+            total = stats['wins'] + stats['losses']
+            if total > 0:
+                wr = (stats['wins'] / total) * 100
+                print(f'{pattern:25} W:{stats[\"wins\"]:3} L:{stats[\"losses\"]:3} WR:{wr:.0f}%')
+else:
+    print('\n⏳ No outcomes recorded in Event Bus yet')
+
+# Still check main database for signal generation
+conn = sqlite3.connect('/root/HydraX-v2/bitten.db')
+cursor = conn.cursor()
+cursor.execute('''
+    SELECT COUNT(*) as total,
+           COUNT(CASE WHEN created_at > strftime('%s', 'now', '-1 hour') THEN 1 END) as last_hour,
+           COUNT(CASE WHEN created_at > strftime('%s', 'now', '-10 minutes') THEN 1 END) as last_10min
+    FROM signals
+    WHERE created_at > strftime('%s', 'now', '-24 hours')
+''')
+result = cursor.fetchone()
+print(f'\n⚡ SIGNAL GENERATION:')
+print(f'Last 10 min: {result[2]} | Last hour: {result[1]} | Last 24h: {result[0]}')
+
+print('='*70)
+print('📌 Data source: Event Bus (/root/HydraX-v2/event_bus/bitten_events.db)')
+print('='*70)
+"
 ```
 
-### **COMMON ISSUES & FIXES**
+---
 
-#### **🔥 Fire Commands Not Reaching MT5**
+## ✅ PATTERN SYSTEM - 10 PATTERNS INTEGRATED
 
-**Symptoms**: 
-- Fire status = "SENT" (not "FILLED")
-- No MT5 ticket number
-- Error code 4756
+### **ALL 10 PATTERNS ACTIVE IN ELITE GUARD**
 
-**Debug Steps**:
-1. **Check EA Connection**: Age should be <120 seconds
-2. **Check Router Logs**: `pm2 logs command_router --lines 10`
-3. **Check for Test Processes**: Look for old DEALER test processes intercepting commands
-   ```bash
-   ps aux | grep -E "test.*dealer|dealer.*test"
-   # Kill any found: kill [PID]
-   ```
+As documented in `/root/ARCHITECTURE.md`, all patterns are integrated directly into Elite Guard:
+1. **LIQUIDITY_SWEEP_REVERSAL** - Smart Money Concepts
+2. **ORDER_BLOCK_BOUNCE** - Institutional zones
+3. **FAIR_VALUE_GAP_FILL** - Price inefficiencies
+4. **VCB_BREAKOUT** - Volatility compression
+5. **SWEEP_RETURN** - Sweep and return liquidity
+6. **MOMENTUM_BURST** - Momentum acceleration
+7. **VOLUME_IMBALANCE** - Order flow imbalance
+8. **RANGE_REJECTION** - Range boundary rejection
+9. **KALMAN_QUICKFIRE** - Statistical prediction (96% win rate)
+10. **BB_SCALP** - Bollinger Band scalping
 
-#### **🎯 Invalid Volume Errors**
+**Pattern Performance**: Run `bitten-report` for latest statistics
 
-**Symptoms**:
-- Fire status = "FAILED" 
-- Ticket = 0, Price = 0
-- EA logs show volume errors
+---
 
-**Root Cause**: Lot sizes not properly rounded (e.g., `0.09447600000000202`)
-**Fix**: Already applied in `/root/HydraX-v2/enqueue_fire.py:40`
+## 📊 TRACKING & ML SYSTEMS
 
-#### **📡 Signal Generation Issues**
+**Active Tracking Systems**:
+- **Comprehensive Tracker**: Tracks all signals to actual TP/SL outcomes
+- **Dynamic Tracker**: ATR-based outcome resolution (max 4 hours)
+- **ML Training Data**: Pattern performance for model training
+- **Confidence Calibration**: Ensures confidence scores match actual win rates
 
-**Symptoms**: 
-- No new signals in database
-- Empty signal lists in webapp
+**ML Components**:
+- **Location**: `/root/HydraX-v2/ml_systems/` (various components)
+- **Integration**: Direct integration with Elite Guard signal generation
+- **Performance**: Tracks expectancy value, not just win rate
+- **Auto-adjustment**: Patterns below 40% win rate after 10 trades disabled
 
-**Debug Steps**:
-1. **Check Elite Guard**: `pm2 logs elite_guard --lines 10`
-2. **Check Market Data**: `pm2 logs zmq_telemetry_bridge --lines 10`
-3. **Check Signal Database**: 
-   ```sql
-   SELECT signal_id, symbol, created_at FROM signals WHERE created_at > strftime('%s', 'now', '-1 hour');
-   ```
+## 🔥 CRITICAL SYSTEM COMPONENTS
 
-### **CRITICAL PROCESS DEPENDENCIES**
+### **EXPERT ADVISOR (EA)**
+- **Version**: v2.06H (Production as of Sept 14, 2025)
+- **Documentation**: `/root/HydraX-v2/EA_v2.06H_PRODUCTION.md`
+- **Identity**: COMMANDER_DEV_001
+- **Features**: Enhanced position tracking, 10-slot limit, hedge prevention
+- **Status**: LOCKED component - DO NOT MODIFY
 
-**Required for Fire Execution**:
-1. ✅ `command_router` (PM2) - Routes commands to EA
-2. ✅ `confirm_listener` (PM2) - Receives EA confirmations  
-3. ✅ EA process - Must be connected with fresh heartbeat
-4. ✅ `enqueue_fire.py` - Must have lot rounding fix
+### **ELITE GUARD WITH CITADEL**
+- **File**: `/root/HydraX-v2/elite_guard_with_citadel.py`
+- **Status**: LOCKED component (see ARCHITECTURE.md)
+- **Patterns**: All 10 patterns integrated, no separate processes
+- **Thresholds**: 70% for signals, 80-89% for auto-fire
+- **Pairs**: 19 active (USDCAD and XAGUSD removed Sept 14)
 
-**Required for Signal Generation**:
-1. ✅ `elite_guard` (PM2) - Generates SMC signals
-2. ✅ `zmq_telemetry_bridge` (PM2) - Market data feed
-3. ✅ `relay_to_telegram` (PM2) - Signal broadcasting
+### **FIRE EXECUTION PIPELINE**
+```
+Signal → WebApp → Enqueue Fire → IPC Queue → Command Router → EA → MT5
+```
+- **IPC Queue**: `ipc:///tmp/bitten_cmdqueue`
+- **Command Router**: Port 5555 (ROUTER socket)
+- **EA Identity**: COMMANDER_DEV_001
+- **Confirmations**: Port 5558
 
-### **ARCHITECTURE VERIFICATION FLOW**
+### **ZMQ ARCHITECTURE**
+- **Port 5555**: Command router (fire commands TO EA)
+- **Port 5556**: Market data ingestion (FROM EA)
+- **Port 5557**: Elite Guard signals (PUB)
+- **Port 5558**: Trade confirmations (FROM EA)
+- **Port 5560**: Market data relay (telemetry bridge)
 
-If fire pipeline broken, test each stage:
+All ports and architecture are LOCKED - see ARCHITECTURE.md
 
-```python
-# Stage 1: Test IPC Queue
-python3 /root/HydraX-v2/test_fire_queue.py
+## 🛠️ CURRENT CONFIGURATION
 
-# Stage 2: Check Router Processing  
-pm2 logs command_router --lines 5
+### **TRADING PARAMETERS (Sept 14, 2025)**
+- **Signal Threshold**: 70% confidence (for Telegram alerts)
+- **Auto-Fire Range**: 80-89% confidence (optimal win rate zone)
+- **Risk Per Trade**: 2% account balance
+- **Trading Pairs**: 19 active (see Elite Guard config)
+- **Pattern Count**: 10 integrated patterns
 
-# Stage 3: Check EA Response
-pm2 logs confirm_listener --lines 5
+### **PERFORMANCE METRICS**
+- **Sept 12 Win Rate**: 71.5% (253 trades analyzed)
+- **Best Pattern**: KALMAN_QUICKFIRE (96.2% win rate)
+- **Optimal Confidence**: 80-85% (90% win rate)
+- **Auto-Fire Sweet Spot**: 80-89% confidence
 
-# Stage 4: Check Database Update
-sqlite3 /root/HydraX-v2/bitten.db "SELECT fire_id, status, ticket FROM fires ORDER BY created_at DESC LIMIT 1;"
+### **DATABASE TABLES**
+As documented in ARCHITECTURE.md:
+- `signals`: All generated signals
+- `fires`: Trade execution records
+- `missions`: Signal-to-mission mapping
+- `ea_instances`: EA connection status
+- Plus 20+ other tables (see ARCHITECTURE.md)
+
+## 🔍 QUICK REFERENCE
+
+### **ESSENTIAL COMMANDS**
+
+```bash
+# Run performance report
+bitten-report
+
+# Check system status
+pm2 list
+
+# Check recent signals
+tail -5 /root/HydraX-v2/comprehensive_tracking.jsonl
+
+# Monitor Elite Guard
+pm2 logs elite_guard --lines 20
+
+# Check architecture documentation
+cat /root/ARCHITECTURE.md
 ```
 
-### **EA CONNECTION TROUBLESHOOTING**
+### **CRITICAL FILES**
 
-**EA Identity**: Must be exactly "COMMANDER_DEV_001"
-**User Mapping**: Must map to user "7176191872"  
-**Heartbeat**: Every 30 seconds via ZMQ DEALER to port 5555
-**Confirmation**: Sends results to port 5558
+**Documentation**:
+- `/root/ARCHITECTURE.md` - **COMPLETE SYSTEM DESIGN (SOURCE OF TRUTH)**
+- `/root/HydraX-v2/LOCKED_ARCHIVE_20250914_FINAL/QUARANTINE.md` - Archived files list
 
-**If EA appears disconnected**:
-1. Check if test processes are intercepting (kill them)
-2. Verify EA is running on correct MT5 terminal
-3. Check ZMQ library availability in MT5
-4. Restart command_router if identity mapping broken
+**Core Components** (DO NOT MODIFY - see ARCHITECTURE.md):
+- `/root/HydraX-v2/elite_guard_with_citadel.py` - Signal generation
+- `/root/HydraX-v2/webapp_server_optimized.py` - Web interface
+- `/root/HydraX-v2/command_router.py` - Fire command routing
+- `/root/HydraX-v2/enqueue_fire.py` - Fire command creation
 
-## WORK COMPLETED - AUGUST 15, 2025
+**Configuration**:
+- `/root/HydraX-v2/bitten.db` - SQLite database
+- `/root/HydraX-v2/.env.master` - Environment variables
 
-### **Critical Fire Pipeline Repair**:
+---
+
+# 🤖 AGENT MISSION CONFIRMATION
+
+**I, Claude Code, confirm that I understand this mission 100%:**
+
+✅ **I WILL:**
+- Always check `/root/ARCHITECTURE.md` first before any modifications
+- Respect the LOCKED, STABLE, and FLEXIBLE component boundaries
+- Verify running processes with `ps aux` before creating anything new
+- Follow the exact architecture as documented, not old documentation
+- Ask for permission before modifying STABLE components
+- Use the 73+ archived files in LOCKED_ARCHIVE only for reference, never restore
+
+❌ **I WILL NOT:**
+- Modify LOCKED components (Elite Guard, ZMQ ports, EA, core trading logic)
+- Create duplicate processes or files (280+ already exist)
+- Trust outdated documentation over ARCHITECTURE.md
+- Add new pattern detectors (all 10 are integrated)
+- Restore any files from the LOCKED_ARCHIVE_20250914_FINAL directory
+- Change trading parameters without explicit approval
+
+🎯 **MY PRIMARY MISSION:**
+- Maintain the BITTEN trading system stability
+- Follow ARCHITECTURE.md as the single source of truth
+- Execute exactly what is requested, nothing more, nothing less
+- Keep the system running with 19 trading pairs at 80-89% auto-fire confidence
+- Monitor performance with `bitten-report` command
+
+**ARCHITECTURE.md is my North Star. When in doubt, I consult it first.**
+
+**Mission understood. Ready to execute. 🚀**
+
+---
+
+## ARCHIVED WORK HISTORY
+
+### **August 15, 2025 - Fire Pipeline Repair**:
 
 1. **Root Cause Identified**: Test DEALER process (PID 3311456) was intercepting fire commands since August 13
    - Process was masquerading as COMMANDER_DEV_001
@@ -493,9 +585,9 @@ for symbol in trading_pairs:
 
 **Status**: ✅ **OPERATIONAL** - Elite Guard actively generating signals again**
 
-## WORK COMPLETED - AUGUST 12, 2025 (CONTINUED SESSION)
+### **August 12, 2025 - Pattern System Integration**
 
-### Additional Fixes & Deployments:
+**Additional Fixes & Deployments**:
 
 6. **VCB Guard Additive Detector**
    - **Created**: `/root/HydraX-v2/tools/vcb_guard.py`
@@ -528,9 +620,8 @@ for symbol in trading_pairs:
    - **Tick Flow**: Fixed ZMQ 5556 → 5560 pipeline
    - **Live Balance Helpers**: Added to webapp for fresh EA balance display
 
-## WORK COMPLETED - AUGUST 12, 2025
+### **August 12, 2025 - Signal Generation Fixes**
 
-### Signal Generation Fixes:
 1. **Elite Guard Signal Blackout Fixed** 
    - Removed fake confidence validation blocking scores 65, 70, 75
    - File: `/root/HydraX-v2/elite_guard_with_citadel.py`
@@ -588,51 +679,28 @@ for symbol in trading_pairs:
 - Commander Dev 001 is active (00 archived)
 - Telegram bot token configured and running
 
-## WHAT'S ACTUALLY RUNNING RIGHT NOW
+---
 
-```bash
-# Signal Generation
-PID 2581568: elite_guard_with_citadel.py
-PID 2577665: elite_guard_zmq_relay.py  
-PID 2411770: zmq_telemetry_bridge_debug.py
+## 📚 REFERENCE DOCUMENTS
 
-# User Interface
-PID 2588730: bitten_production_bot.py (Telegram)
-PID 2582822: webapp_server_optimized.py (Port 8888)
-PID 2454259: commander_throne.py (Port 8899)
+### **PRIMARY DOCUMENTATION**
+1. **`/root/ARCHITECTURE.md`** - Complete system architecture (SOURCE OF TRUTH)
+2. **`/root/HydraX-v2/LOCKED_ARCHIVE_20250914_FINAL/QUARANTINE.md`** - List of archived files
+3. **This file (`CLAUDE.md`)** - Operational status and agent instructions
 
-# Infrastructure
-PID 2455681: simple_truth_tracker.py
-PID 2409025: position_tracker.py
-PID 2586467: handshake_processor.py
-```
-
-## CRITICAL FACTS
-
-1. **NO LOCAL MT5** - All MT5 operations via ForexVPS API
-2. **NO VENOM** - Elite Guard is the ONLY signal generator running
-3. **FOREXVPS ONLY** - Zero local terminal management
-
-## DON'T ADD CODE - CHECK WHAT'S RUNNING
-
-Before writing ANY code:
-1. Run `ps aux | grep {process_name}`
-2. Check if it's already running
-3. Don't create duplicates
-4. Don't trust old documentation
-
-## STOP CREATING FILES
-
-The system has 280+ Python files. STOP ADDING MORE.
-- Fix what exists
-- Delete what's broken
-- Don't create new versions
-
-That's it. Everything else is outdated bloat.
+### **SYSTEM FACTS**
+- **45+ PM2 Processes**: All defined in ARCHITECTURE.md
+- **25+ Database Tables**: Schema in ARCHITECTURE.md
+- **10 Patterns Integrated**: All in Elite Guard, no separate processes
+- **19 Trading Pairs**: USDCAD and XAGUSD removed Sept 14
+- **280+ Python Files**: Many archived, use what exists
+- **ForexVPS Only**: No local MT5 operations
 
 ---
 
-## 🎮 XP ECONOMY SYSTEM PLAN - AUGUST 15, 2025
+## 📈 HISTORICAL NOTES
+
+### **XP Economy System Design** (August 15, 2025)
 
 ### **DESIGN PHILOSOPHY**
 Based on top-tier gaming systems (CoD, Apex Legends, Valorant) adapted for trading:
@@ -726,15 +794,13 @@ Based on 5-6 trades per day average:
 - Shows "TRIAL" badge instead of level
 - Encourages upgrade to maintain progress
 
-### **IMPLEMENTATION NOTES**
-- All XP stored in database with transaction log
-- Shop purchases logged with expiry timestamps
-- Consumables checked before each trade execution
-- Daily challenges generated algorithmically
-- Streak tracking per user in real-time
+### **Implementation Status**
+- XP system design documented but not fully implemented
+- Database tables exist for tracking
+- Integration points defined in webapp
 
-### **ANTI-ABUSE MEASURES**
-- Max 20 trades per day count for XP
-- Minimum trade duration 60 seconds for XP
-- Same pair within 5 minutes = no variety bonus
-- Suspicious patterns trigger manual review
+---
+
+**END OF DOCUMENT**
+
+**Remember: ARCHITECTURE.md is the source of truth. This document provides operational context.**

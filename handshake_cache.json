@@ -1,10 +1,10 @@
 {
   "COMMANDER_DEV_001": {
-    "balance": 418.27,
-    "equity": 394.11,
+    "balance": 9405.62,
+    "equity": 9535.23,
     "margin": 0,
-    "free_margin": 120.78,
-    "timestamp": "2025-09-12T20:59:36.925759",
+    "free_margin": 6012.52,
+    "timestamp": "2025-09-15T13:19:19.568863",
     "broker": "",
     "telegram_id": "7176191872"
   }

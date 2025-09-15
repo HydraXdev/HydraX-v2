@@ -1,12 +1,17 @@
 {
-  "last_check": "2025-09-12T22:57:28.045969",
+  "last_check": "2025-09-15T13:18:04.289524",
   "win_rate": 100.0,
-  "trade_count": 1,
-  "recommendation": "\ud83d\udcca WAITING: Only 1 trades (need 5+)",
+  "trade_count": 4,
+  "recommendation": "\ud83d\udcca WAITING: Only 4 trades (need 5+)",
   "pattern_stats": {
+    "SNIPER": {
+      "wins": 2,
+      "total": 2,
+      "win_rate": 100.0
+    },
     "RAPID": {
-      "wins": 1,
-      "total": 1,
+      "wins": 2,
+      "total": 2,
       "win_rate": 100.0
     }
   }

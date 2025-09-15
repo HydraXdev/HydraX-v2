@@ -384,6 +384,24 @@ def api_signals():
                 except Exception as e:
                     logger.warning(f"⚠️ Failed to log signal to database: {e}")
                 
+                # EVENT BUS INTEGRATION - Publish signal (fails silently)
+                try:
+                    from event_bus.event_bridge import signal_generated
+                    signal_generated({
+                        'signal_id': signal_data.get('signal_id'),
+                        'symbol': signal_data.get('symbol', signal_data.get('pair')),
+                        'direction': signal_data.get('direction'),
+                        'confidence': signal_data.get('confidence', 0),
+                        'pattern_type': signal_data.get('pattern_type', ''),
+                        'entry': signal_data.get('entry_price', signal_data.get('entry', 0)),
+                        'sl': signal_data.get('stop_loss', signal_data.get('sl', 0)),
+                        'tp': signal_data.get('take_profit', signal_data.get('tp', 0))
+                    })
+                    print(f"✅ Event published for signal {signal_data.get('signal_id')}")
+                except Exception as e:
+                    print(f"❌ Event bus error: {e}")  # Log for debugging
+                    pass  # Fails silently - non-critical
+                
                 # AUTO FIRE SYSTEM - Check for instant execution with ML filtering
                 try:
                     signal_confidence = float(signal_data.get('confidence', 0))

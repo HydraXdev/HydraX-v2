@@ -1,0 +1,44 @@
+{
+  "apps": [
+    {
+      "name": "event_bus",
+      "script": "/root/HydraX-v2/event_bus/event_bus.py",
+      "cwd": "/root/HydraX-v2/event_bus",
+      "interpreter": "python3",
+      "args": [],
+      "instances": 1,
+      "exec_mode": "fork",
+      "autorestart": true,
+      "watch": false,
+      "max_memory_restart": "500M",
+      "env": {
+        "PYTHONPATH": "/root/HydraX-v2:/root/HydraX-v2/event_bus",
+        "LOG_LEVEL": "INFO"
+      },
+      "log_file": "/root/HydraX-v2/logs/event_bus.log",
+      "out_file": "/root/HydraX-v2/logs/event_bus_out.log",
+      "error_file": "/root/HydraX-v2/logs/event_bus_error.log",
+      "log_date_format": "YYYY-MM-DD HH:mm:ss Z"
+    },
+    {
+      "name": "data_collector", 
+      "script": "/root/HydraX-v2/event_bus/data_collector.py",
+      "cwd": "/root/HydraX-v2/event_bus",
+      "interpreter": "python3",
+      "args": [],
+      "instances": 1,
+      "exec_mode": "fork",
+      "autorestart": true,
+      "watch": false,
+      "max_memory_restart": "1G",
+      "env": {
+        "PYTHONPATH": "/root/HydraX-v2:/root/HydraX-v2/event_bus",
+        "LOG_LEVEL": "INFO"
+      },
+      "log_file": "/root/HydraX-v2/logs/data_collector.log",
+      "out_file": "/root/HydraX-v2/logs/data_collector_out.log", 
+      "error_file": "/root/HydraX-v2/logs/data_collector_error.log",
+      "log_date_format": "YYYY-MM-DD HH:mm:ss Z"
+    }
+  ]
+}

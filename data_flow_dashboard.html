@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BITTEN Data Flow Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #00ff00;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 0 0 10px #00ff00;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .status-card {
+            background: #1a1a1a;
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+        }
+        
+        .status-card h2 {
+            margin-bottom: 15px;
+            color: #00ff00;
+            border-bottom: 1px solid #00ff00;
+            padding-bottom: 10px;
+        }
+        
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #333;
+        }
+        
+        .status-item:last-child {
+            border-bottom: none;
+        }
+        
+        .status-label {
+            color: #888;
+        }
+        
+        .status-value {
+            font-weight: bold;
+        }
+        
+        .status-ok {
+            color: #00ff00;
+        }
+        
+        .status-warning {
+            color: #ffaa00;
+        }
+        
+        .status-error {
+            color: #ff0000;
+        }
+        
+        .data-flow-diagram {
+            background: #1a1a1a;
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .flow-step {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 5px;
+            background: #2a2a2a;
+            border: 1px solid #00ff00;
+            border-radius: 5px;
+            position: relative;
+        }
+        
+        .flow-arrow {
+            color: #00ff00;
+            font-size: 1.5em;
+            margin: 0 10px;
+        }
+        
+        .metrics-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .metric-box {
+            background: #1a1a1a;
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .metric-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .metric-label {
+            color: #888;
+            font-size: 0.9em;
+        }
+        
+        .alert-box {
+            background: #2a1a1a;
+            border: 2px solid #ff0000;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .alert-box.active {
+            display: block;
+        }
+        
+        .alert-title {
+            color: #ff0000;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+        
+        .alert-item {
+            padding: 5px 0;
+            color: #ffaa00;
+        }
+        
+        #refreshTimer {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #1a1a1a;
+            border: 1px solid #00ff00;
+            padding: 10px 20px;
+            border-radius: 5px;
+        }
+        
+        .port-status {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-left: 10px;
+        }
+        
+        .port-status.bound {
+            background: #00ff00;
+            box-shadow: 0 0 10px #00ff00;
+        }
+        
+        .port-status.unbound {
+            background: #ff0000;
+            box-shadow: 0 0 10px #ff0000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛡️ BITTEN DATA FLOW DASHBOARD</h1>
+        
+        <div id="refreshTimer">Auto-refresh: <span id="countdown">30</span>s</div>
+        
+        <div class="alert-box" id="alertBox">
+            <div class="alert-title">⚠️ CRITICAL ALERTS</div>
+            <div id="alertList"></div>
+        </div>
+        
+        <div class="metrics-row">
+            <div class="metric-box">
+                <div class="metric-label">24H SIGNALS</div>
+                <div class="metric-value status-ok" id="signals24h">0</div>
+            </div>
+            <div class="metric-box">
+                <div class="metric-label">24H TRADES</div>
+                <div class="metric-value status-ok" id="trades24h">0</div>
+            </div>
+            <div class="metric-box">
+                <div class="metric-label">EA HEARTBEAT</div>
+                <div class="metric-value" id="eaHeartbeat">--</div>
+            </div>
+            <div class="metric-box">
+                <div class="metric-label">SYSTEM HEALTH</div>
+                <div class="metric-value" id="systemHealth">--</div>
+            </div>
+        </div>
+        
+        <div class="data-flow-diagram">
+            <h2>📊 REAL-TIME DATA FLOW</h2>
+            <div style="margin-top: 20px;">
+                <span class="flow-step" id="flowMarket">Market Data</span>
+                <span class="flow-arrow">→</span>
+                <span class="flow-step" id="flowElite">Elite Guard</span>
+                <span class="flow-arrow">→</span>
+                <span class="flow-step" id="flowSignals">Signals</span>
+                <span class="flow-arrow">→</span>
+                <span class="flow-step" id="flowWebapp">WebApp</span>
+                <span class="flow-arrow">→</span>
+                <span class="flow-step" id="flowFire">Fire Cmd</span>
+                <span class="flow-arrow">→</span>
+                <span class="flow-step" id="flowEA">EA/MT5</span>
+            </div>
+        </div>
+        
+        <div class="status-grid">
+            <div class="status-card">
+                <h2>🔧 PROCESS STATUS</h2>
+                <div id="processStatus">
+                    <div class="status-item">
+                        <span class="status-label">Elite Guard</span>
+                        <span class="status-value" id="procEliteGuard">--</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Command Router</span>
+                        <span class="status-value" id="procRouter">--</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">WebApp</span>
+                        <span class="status-value" id="procWebapp">--</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Telemetry Bridge</span>
+                        <span class="status-value" id="procTelemetry">--</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Relay to Telegram</span>
+                        <span class="status-value" id="procRelay">--</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="status-card">
+                <h2>🔌 ZMQ PORT STATUS</h2>
+                <div id="portStatus">
+                    <div class="status-item">
+                        <span class="status-label">5555 (Commands)</span>
+                        <span class="status-value" id="port5555">
+                            <span class="port-status" id="portStatus5555"></span>
+                        </span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">5556 (Market In)</span>
+                        <span class="status-value" id="port5556">
+                            <span class="port-status" id="portStatus5556"></span>
+                        </span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">5557 (Signals)</span>
+                        <span class="status-value" id="port5557">
+                            <span class="port-status" id="portStatus5557"></span>
+                        </span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">5558 (Confirms)</span>
+                        <span class="status-value" id="port5558">
+                            <span class="port-status" id="portStatus5558"></span>
+                        </span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">5560 (Relay)</span>
+                        <span class="status-value" id="port5560">
+                            <span class="port-status" id="portStatus5560"></span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="status-card">
+                <h2>📈 DATA FLOW HEALTH</h2>
+                <div id="dataFlowStatus">
+                    <div class="status-item">
+                        <span class="status-label">Signal Generation</span>
+                        <span class="status-value" id="flowSignalGen">--</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">EA Connection</span>
+                        <span class="status-value" id="flowEAConn">--</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Comprehensive Tracking</span>
+                        <span class="status-value" id="flowCompTrack">--</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Dynamic Tracking</span>
+                        <span class="status-value" id="flowDynTrack">--</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">ML Training Data</span>
+                        <span class="status-value" id="flowMLData">--</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="status-card">
+                <h2>⏱️ LAST ACTIVITY</h2>
+                <div id="activityStatus">
+                    <div class="status-item">
+                        <span class="status-label">Last Signal</span>
+                        <span class="status-value" id="lastSignal">--</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Last Trade</span>
+                        <span class="status-value" id="lastTrade">--</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Last Tick</span>
+                        <span class="status-value" id="lastTick">--</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Last Heartbeat</span>
+                        <span class="status-value" id="lastHeartbeat">--</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Data Updated</span>
+                        <span class="status-value" id="lastUpdate">--</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let refreshCountdown = 30;
+        
+        function formatAge(seconds) {
+            if (seconds === null || seconds === undefined) return '--';
+            if (seconds < 60) return seconds + 's ago';
+            if (seconds < 3600) return Math.floor(seconds/60) + 'm ago';
+            if (seconds < 86400) return Math.floor(seconds/3600) + 'h ago';
+            return Math.floor(seconds/86400) + 'd ago';
+        }
+        
+        function updateStatus(elementId, value, isHealthy) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                if (typeof value === 'boolean') {
+                    element.textContent = value ? '✅ RUNNING' : '❌ DOWN';
+                    element.className = value ? 'status-value status-ok' : 'status-value status-error';
+                } else {
+                    element.textContent = value;
+                    if (isHealthy !== undefined) {
+                        element.className = isHealthy ? 'status-value status-ok' : 'status-value status-error';
+                    }
+                }
+            }
+        }
+        
+        function updatePortStatus(port, isBound) {
+            const element = document.getElementById('portStatus' + port);
+            if (element) {
+                element.className = isBound ? 'port-status bound' : 'port-status unbound';
+            }
+        }
+        
+        function updateFlowStep(stepId, isHealthy) {
+            const element = document.getElementById(stepId);
+            if (element) {
+                element.style.borderColor = isHealthy ? '#00ff00' : '#ff0000';
+                element.style.background = isHealthy ? '#1a2a1a' : '#2a1a1a';
+            }
+        }
+        
+        async function fetchHealthData() {
+            try {
+                const response = await fetch('/root/HydraX-v2/data_flow_health.json?' + Date.now());
+                const data = await response.json();
+                
+                // Update metrics
+                document.getElementById('signals24h').textContent = data.health_status.signals_24h || 0;
+                document.getElementById('trades24h').textContent = data.health_status.fires_24h || 0;
+                
+                // Update EA heartbeat
+                const eaFresh = data.health_status.ea_freshness;
+                const eaElement = document.getElementById('eaHeartbeat');
+                if (eaFresh !== null && eaFresh !== undefined) {
+                    eaElement.textContent = formatAge(eaFresh);
+                    eaElement.className = eaFresh < 120 ? 'metric-value status-ok' : 
+                                          eaFresh < 300 ? 'metric-value status-warning' : 
+                                          'metric-value status-error';
+                }
+                
+                // Update system health
+                const systemHealthElement = document.getElementById('systemHealth');
+                if (data.all_healthy) {
+                    systemHealthElement.textContent = '✅ OK';
+                    systemHealthElement.className = 'metric-value status-ok';
+                } else {
+                    systemHealthElement.textContent = '⚠️ ISSUE';
+                    systemHealthElement.className = 'metric-value status-warning';
+                }
+                
+                // Update process status
+                const processes = data.health_status.process_health || {};
+                updateStatus('procEliteGuard', processes.elite_guard);
+                updateStatus('procRouter', processes.command_router);
+                updateStatus('procWebapp', processes.webapp);
+                updateStatus('procTelemetry', processes.telemetry_bridge);
+                updateStatus('procRelay', processes.relay);
+                
+                // Update port status
+                const ports = data.health_status.port_health || {};
+                [5555, 5556, 5557, 5558, 5560].forEach(port => {
+                    updatePortStatus(port, ports[port]);
+                });
+                
+                // Update data flow health
+                const flows = data.health_status.data_flow_health || {};
+                
+                if (flows.signal_generation) {
+                    const age = flows.signal_generation.age_seconds;
+                    updateStatus('flowSignalGen', formatAge(age), flows.signal_generation.healthy);
+                    updateStatus('lastSignal', formatAge(age));
+                }
+                
+                if (flows.ea_connection) {
+                    const age = flows.ea_connection.age_seconds;
+                    updateStatus('flowEAConn', flows.ea_connection.healthy ? '✅ CONNECTED' : '❌ DISCONNECTED', 
+                                flows.ea_connection.healthy);
+                }
+                
+                // Update tracking files
+                ['comprehensive_tracking.jsonl', 'dynamic_tracking.jsonl', 'ml_training_data.jsonl'].forEach(file => {
+                    const flow = flows[file];
+                    if (flow) {
+                        let elementId = '';
+                        if (file.includes('comprehensive')) elementId = 'flowCompTrack';
+                        else if (file.includes('dynamic')) elementId = 'flowDynTrack';
+                        else if (file.includes('ml')) elementId = 'flowMLData';
+                        
+                        if (elementId) {
+                            updateStatus(elementId, formatAge(flow.age_seconds), flow.healthy);
+                        }
+                    }
+                });
+                
+                // Update flow diagram
+                updateFlowStep('flowMarket', ports[5556]);
+                updateFlowStep('flowElite', processes.elite_guard);
+                updateFlowStep('flowSignals', flows.signal_generation && flows.signal_generation.healthy);
+                updateFlowStep('flowWebapp', processes.webapp);
+                updateFlowStep('flowFire', processes.command_router);
+                updateFlowStep('flowEA', flows.ea_connection && flows.ea_connection.healthy);
+                
+                // Check for alerts
+                const alerts = [];
+                if (!processes.elite_guard) alerts.push('Elite Guard process is DOWN');
+                if (!processes.command_router) alerts.push('Command Router is DOWN');
+                if (!processes.webapp) alerts.push('WebApp is DOWN');
+                if (!ports[5555]) alerts.push('Command port 5555 is UNBOUND');
+                if (!ports[5556]) alerts.push('Market data port 5556 is UNBOUND');
+                if (eaFresh > 300) alerts.push('EA connection is STALE (>5 minutes)');
+                
+                const alertBox = document.getElementById('alertBox');
+                const alertList = document.getElementById('alertList');
+                if (alerts.length > 0) {
+                    alertBox.classList.add('active');
+                    alertList.innerHTML = alerts.map(a => `<div class="alert-item">• ${a}</div>`).join('');
+                } else {
+                    alertBox.classList.remove('active');
+                }
+                
+                // Update last update time
+                document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+                
+            } catch (error) {
+                console.error('Error fetching health data:', error);
+                document.getElementById('systemHealth').textContent = '❌ ERROR';
+                document.getElementById('systemHealth').className = 'metric-value status-error';
+            }
+        }
+        
+        // Update countdown timer
+        setInterval(() => {
+            refreshCountdown--;
+            if (refreshCountdown <= 0) {
+                refreshCountdown = 30;
+                fetchHealthData();
+            }
+            document.getElementById('countdown').textContent = refreshCountdown;
+        }, 1000);
+        
+        // Initial load
+        fetchHealthData();
+    </script>
+</body>
+</html>

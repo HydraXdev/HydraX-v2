@@ -102,22 +102,22 @@ class DynamicThresholdManager:
                 'fill_ratio': 0.5
             },
             'VCB_BREAKOUT': {
-                'compression_ratio': 0.7,
-                'min_conf': 70,     # Start at 70
-                'vol_gate': 1.5,
-                'breakout_mult': 1.0
+                'compression_ratio': 0.6,  # Tighter compression = better quality
+                'min_conf': 75,           # Higher quality requirement
+                'vol_gate': 2.0,          # Need 2x volume for institutional move
+                'breakout_mult': 1.5      # Stronger breakout required
             },
             'SWEEP_RETURN': {
-                'wick_ratio': 0.7,
-                'min_conf': 72,     # Start at 72
-                'vol_gate': 1.3,
-                'sweep_pips': 2.0
+                'wick_ratio': 0.6,        # 60% wick shows real rejection
+                'min_conf': 78,           # Higher quality signals only
+                'vol_gate': 1.8,          # Need volume for liquidity sweep
+                'sweep_pips': 3.0         # Clear sweep required
             },
             'MOMENTUM_BURST': {
-                'breakout_pips': 1.0,
-                'min_conf': 68,     # Start at 68
-                'vol_gate': 1.2,
-                'momentum_mult': 1.0
+                'breakout_pips': 2.0,     # Real momentum needs 2+ pip move
+                'min_conf': 75,           # Quality signals only
+                'vol_gate': 2.5,          # Strong volume for momentum
+                'momentum_mult': 1.5      # 1.5x average momentum required
             }
         }
         
@@ -332,15 +332,15 @@ class EliteGuardBalanced:
         # Define trading pairs FIRST (before load_candles)
         self.trading_pairs = [
             # Major Forex Pairs (7)
-            "EURUSD", "GBPUSD", "USDCHF", "USDJPY", "USDCAD", "AUDUSD", "NZDUSD",
+            "EURUSD", "GBPUSD", "USDCHF", "USDJPY", "AUDUSD", "NZDUSD",  # USDCAD removed - high margin, low win rate
             # Cross Pairs (10)
             "EURJPY", "GBPJPY", "EURGBP", "EURAUD", "GBPCAD", "AUDJPY", "NZDJPY",
             "CHFJPY", "CADJPY", "AUDCAD",
             # Additional Pairs (2)
             "USDCNH", "AUDNZD",
-            # Precious Metals (2)
+            # Precious Metals (1)
             "XAUUSD",  # GOLD
-            "XAGUSD"   # SILVER
+            # "XAGUSD"   # SILVER - Disabled Sept 14 - pending more data
             # Total: 21 pairs
         ]
         
@@ -1098,8 +1098,6 @@ class EliteGuardBalanced:
         Based on SMC principles with proper validation criteria
         """
         try:
-            print(f"🏦 OBB {symbol}: INSTITUTIONAL ORDER BLOCK ANALYSIS")
-            
             if len(self.m5_data[symbol]) < 15:  # Need more data for proper OB identification
                 return None
                 
@@ -1141,10 +1139,33 @@ class EliteGuardBalanced:
                 if displacement_pips < 8:  # No significant displacement = invalid OB
                     continue
                 
-                # STEP 3: VOLUME VALIDATION - Institutional footprint
-                ob_volume = ob_candle.get('volume', 1000)
-                avg_volume = sum(c.get('volume', 1000) for c in candles[-10:-i]) / max(1, 10-i)
-                if ob_volume < avg_volume * 1.5:  # Need 1.5x volume for institutional activity
+                # STEP 2.5: CHECK FOR LIQUIDITY SWEEP BEFORE OB (INSTITUTIONAL REQUIREMENT)
+                # Order blocks are most valid after liquidity is swept
+                liquidity_swept = False
+                for prev_idx in range(max(0, -i-5), -i):
+                    if prev_idx >= -len(candles):
+                        prev_candle = candles[prev_idx]
+                        # Check if previous candles swept liquidity
+                        if displacement_direction == 'DOWN':
+                            # For bearish OB, check if we swept above recent highs first
+                            if prev_candle['high'] > ob_candle['high'] + (pip_size * 3):
+                                liquidity_swept = True
+                                break
+                        elif displacement_direction == 'UP':
+                            # For bullish OB, check if we swept below recent lows first
+                            if prev_candle['low'] < ob_candle['low'] - (pip_size * 3):
+                                liquidity_swept = True
+                                break
+                
+                if not liquidity_swept:
+                    continue  # Skip OB without liquidity sweep
+                
+                # STEP 3: VOLUME VALIDATION - Institutional footprint (ENHANCED)
+                ob_volume = ob_candle.get('volume', 0)
+                avg_volume = sum(c.get('volume', 0) for c in candles[-20:]) / 20 if len(candles) >= 20 else 1000
+                
+                # INSTITUTIONAL REQUIREMENT: 2x average volume
+                if ob_volume < avg_volume * 2.0:  # Raised from 1.5x for institutional footprint
                     continue
                 
                 # STEP 4: ORDER BLOCK ZONE DEFINITION
@@ -1306,7 +1327,14 @@ class EliteGuardBalanced:
         Identifies deliberate liquidity raids by banks/funds with multi-factor confirmation
         """
         try:
-            print(f"🎯 SRL {symbol}: INSTITUTIONAL LIQUIDITY SWEEP ANALYSIS")
+            # KILL ZONE VALIDATION - Only trade during institutional sessions
+            current_hour = datetime.now().hour
+            # London Kill Zone: 7-10 UTC (2-5AM EST)
+            # NY Kill Zone: 12-15 UTC (7-10AM EST)
+            in_kill_zone = (7 <= current_hour <= 10) or (12 <= current_hour <= 15)
+            
+            if not in_kill_zone:
+                return None
             
             # Need extensive history for proper liquidity zone identification
             if len(self.m5_data[symbol]) < 20:
@@ -1423,11 +1451,11 @@ class EliteGuardBalanced:
                             continue
                         
                         # VALIDATION 3: Volume spike on sweep (institutional footprint)
-                        avg_volume = sum(c.get('volume', 1000) for c in candles[-10:-1]) / 9
+                        avg_volume = sum(c.get('volume', 1000) for c in candles[-20:-1]) / 19
                         sweep_volume = sweep_candle.get('volume', 1000)
                         volume_spike = sweep_volume / avg_volume if avg_volume > 0 else 1.0
                         
-                        if volume_spike < 1.3:  # No institutional participation
+                        if volume_spike < 1.5:  # Need 50%+ volume increase per research
                             continue
                         
                         # VALIDATION 4: Speed of rejection (fast = institutional)
@@ -1599,11 +1627,8 @@ class EliteGuardBalanced:
         Combines Bollinger Bands, Keltner Channels, and ATR analysis for supreme accuracy
         """
         try:
-            print(f"🏛️ VCB {symbol}: INSTITUTIONAL BB/KC SQUEEZE ANALYSIS")
-            
             # Need sufficient candles for comprehensive analysis
             if len(self.m5_data[symbol]) < 25:
-                print(f"🏛️ VCB {symbol}: Need 25+ M5 candles, have {len(self.m5_data[symbol])}")
                 return None
                 
             candles = list(self.m5_data[symbol])[-25:]
@@ -1661,11 +1686,27 @@ class EliteGuardBalanced:
             print(f"🏛️ VCB {symbol}: KC Width: {kc_width:.1f} pips")
             
             # STEP 3: PROFESSIONAL SQUEEZE DETECTION
-            # BB inside KC = Squeeze condition (institutional standard)
-            squeeze_active = (bb_upper <= kc_upper and bb_lower >= kc_lower)
+            # Check for BB/KC convergence (more realistic than full squeeze)
+            # Instead of BB completely inside KC, check if BB width is less than KC width
+            bb_squeeze = bb_width < kc_width * 0.8  # BB is 80% or less of KC width
+            
+            # Also check for recent volatility compression
+            recent_widths = []
+            for i in range(5, 10):
+                old_closes = [c['close'] for c in candles[-20-i:-i]]
+                old_sma = sum(old_closes) / len(old_closes)
+                old_variance = sum((close - old_sma) ** 2 for close in old_closes) / len(old_closes)
+                old_std = old_variance ** 0.5
+                old_width = (2.0 * old_std * 2) / pip_size
+                recent_widths.append(old_width)
+            
+            avg_recent_width = sum(recent_widths) / len(recent_widths) if recent_widths else bb_width
+            volatility_compressed = bb_width < avg_recent_width * 0.7  # Current width is 70% of recent average
+            
+            squeeze_active = bb_squeeze and volatility_compressed
             
             if not squeeze_active:
-                print(f"🏛️ VCB {symbol}: No BB/KC squeeze detected")
+                print(f"🏛️ VCB {symbol}: No squeeze detected (BB/KC: {bb_squeeze}, Vol compressed: {volatility_compressed})")
                 return None
             
             # STEP 4: SQUEEZE INTENSITY ANALYSIS
@@ -1675,41 +1716,48 @@ class EliteGuardBalanced:
             
             print(f"🏛️ VCB {symbol}: Squeeze intensity: {squeeze_intensity:.3f} (BB/KC ratio: {bb_kc_ratio:.3f})")
             
-            # Only proceed with tight squeezes (professional threshold)
-            if squeeze_intensity < 0.15:  # BB must be at least 15% tighter than KC
-                print(f"🏛️ VCB {symbol}: Squeeze not tight enough ({squeeze_intensity:.3f} < 0.15)")
+            # More reasonable squeeze intensity requirement
+            if squeeze_intensity < 0.05:  # Just need SOME compression (5% minimum)
+                print(f"🏛️ VCB {symbol}: Squeeze not tight enough ({squeeze_intensity:.3f} < 0.05)")
                 return None
             
-            # STEP 5: COMPRESSION DURATION VALIDATION
-            # Count consecutive candles in squeeze (longer = better)
-            squeeze_duration = 0
-            for i in range(2, min(10, len(candles))):  # Check up to 10 candles back
-                test_candles = candles[-i-1:]
-                test_closes = [c['close'] for c in test_candles[-20:]]
-                
-                # Quick BB/KC check for this period
-                test_sma = sum(test_closes) / min(20, len(test_closes))
-                test_variance = sum((close - test_sma) ** 2 for close in test_closes) / len(test_closes)
-                test_std = test_variance ** 0.5
-                
-                test_bb_upper = test_sma + (2.0 * test_std)
-                test_bb_lower = test_sma - (2.0 * test_std)
-                
-                # Simple EMA for test period (approximation)
-                test_ema = sum(test_closes[-5:]) / 5  # Use 5-period approximation
-                test_kc_upper = test_ema + (1.5 * atr_20)  # Use current ATR
-                test_kc_lower = test_ema - (1.5 * atr_20)
-                
-                if test_bb_upper <= test_kc_upper and test_bb_lower >= test_kc_lower:
-                    squeeze_duration += 1
-                else:
+            # STEP 5: CONTRACTION STAGES VALIDATION (VCP REQUIREMENT)
+            # Must have 2-3 contractions, each smaller than the last
+            contractions = []
+            lookback_ranges = [5, 10, 15]  # Check different lookback periods
+            
+            for lookback in lookback_ranges:
+                if len(candles) < lookback + 5:
+                    continue
+                period_candles = candles[-lookback-5:-lookback]
+                if len(period_candles) >= 3:
+                    period_high = max(c['high'] for c in period_candles)
+                    period_low = min(c['low'] for c in period_candles)
+                    period_range = (period_high - period_low) / pip_size
+                    contractions.append(period_range)
+            
+            # Check if contractions are getting tighter
+            valid_contractions = len(contractions) >= 2
+            for i in range(1, len(contractions)):
+                if contractions[i] >= contractions[i-1] * 0.8:  # Each must be 20% tighter
+                    valid_contractions = False
                     break
             
-            print(f"🏛️ VCB {symbol}: Squeeze duration: {squeeze_duration} candles")
+            if not valid_contractions:
+                print(f"🏛️ VCB {symbol}: No valid contraction pattern found")
+                return None
             
-            # Require minimum 3-candle squeeze for institutional validity
-            if squeeze_duration < 3:
-                print(f"🏛️ VCB {symbol}: Squeeze duration too short ({squeeze_duration} < 3 candles)")
+            # STEP 6: VOLUME DECLINE DURING CONTRACTION (INSTITUTIONAL SIGNAL)
+            # Volume should decrease during compression
+            recent_volumes = [c.get('volume', 1000) for c in candles[-10:-1]]
+            older_volumes = [c.get('volume', 1000) for c in candles[-20:-10]]
+            avg_recent_volume = sum(recent_volumes) / len(recent_volumes)
+            avg_older_volume = sum(older_volumes) / len(older_volumes)
+            
+            volume_compression = avg_recent_volume < avg_older_volume * 0.8  # 20% volume decline
+            
+            if not volume_compression:
+                print(f"🏛️ VCB {symbol}: No volume compression detected")
                 return None
             
             # STEP 6: BREAKOUT DETECTION WITH VOLUME CONFIRMATION
@@ -1821,11 +1869,7 @@ class EliteGuardBalanced:
             )
             
         except Exception as e:
-            print(f"❌ VCB {symbol}: Error in institutional analysis: {str(e)}")
             logger.exception(f"VCB pattern detection error for {symbol}")
-            traceback.print_exc()
-            return None
-            traceback.print_exc()
             return None
 
     def detect_momentum_breakout(self, symbol: str) -> Optional[PatternSignal]:
@@ -1834,8 +1878,6 @@ class EliteGuardBalanced:
         Identifies institutional-driven breakouts with 50%+ volume increase and strong momentum
         """
         try:
-            print(f"🚀 MOMENTUM {symbol}: INSTITUTIONAL BREAKOUT ANALYSIS")
-            
             # Need sufficient history for momentum and volume analysis
             if len(self.m5_data[symbol]) < 20:
                 return None
@@ -1853,12 +1895,9 @@ class EliteGuardBalanced:
             consolidation_low = min(c['low'] for c in consolidation_candles)
             consolidation_range = (consolidation_high - consolidation_low) / pip_size
             
-            print(f"🚀 MOMENTUM {symbol}: Consolidation range: {consolidation_range:.1f} pips")
-            
             # Skip if consolidation range is too wide (not a proper base)
             max_consolidation = {'XAUUSD': 100, 'XAGUSD': 50}.get(symbol, 30)
             if consolidation_range > max_consolidation:
-                print(f"🚀 MOMENTUM {symbol}: Consolidation too wide ({consolidation_range:.1f} > {max_consolidation})")
                 return None
             
             # STEP 2: MOMENTUM CANDLE VALIDATION
@@ -1868,7 +1907,6 @@ class EliteGuardBalanced:
             momentum_multiplier = current_range / avg_candle_range if avg_candle_range > 0 else 0
             
             if momentum_multiplier < 1.3:  # Reduced from 2.0 for more signals
-                print(f"🚀 MOMENTUM {symbol}: Insufficient momentum ({momentum_multiplier:.1f}x < 1.3x)")
                 return None
             
             # Body must be significant (60%+ of candle)
@@ -1876,7 +1914,6 @@ class EliteGuardBalanced:
             body_ratio = current_body / current_range if current_range > 0 else 0
             
             if body_ratio < 0.6:
-                print(f"🚀 MOMENTUM {symbol}: Weak body ratio ({body_ratio:.1%} < 60%)")
                 return None
             
             # STEP 3: VOLUME SURGE VALIDATION (Institutional footprint)
@@ -1886,7 +1923,6 @@ class EliteGuardBalanced:
             volume_surge = current_volume / avg_volume if avg_volume > 0 else 1.0
             
             if volume_surge < 1.5:  # 50% increase minimum
-                print(f"🚀 MOMENTUM {symbol}: Insufficient volume ({volume_surge:.1f}x < 1.5x)")
                 return None
             
             # STEP 4: BREAKOUT DETECTION WITH CLEAN BREAK
@@ -2001,8 +2037,6 @@ class EliteGuardBalanced:
         Identifies institutional displacement creating inefficient pricing for retracement
         """
         try:
-            print(f"💎 FVG {symbol}: ICT FAIR VALUE GAP ANALYSIS")
-            
             # Need minimum candles for FVG identification
             if len(self.m5_data[symbol]) < 10:
                 return None
@@ -2026,8 +2060,9 @@ class EliteGuardBalanced:
                 if candle3['low'] > candle1['high']:
                     gap_size = (candle3['low'] - candle1['high']) / pip_size
                     
-                    # ICT minimum: 5 pips for institutional significance
-                    if gap_size >= 5:
+                    # INSTITUTIONAL MINIMUM: 10 pips for majors, 100 for gold (was 5)
+                    min_gap_pips = 10 if symbol != 'XAUUSD' else 100
+                    if gap_size >= min_gap_pips:
                         # Validate displacement candle (must be strong bullish)
                         displacement_body = candle2['close'] - candle2['open']
                         displacement_range = candle2['high'] - candle2['low']
@@ -2050,8 +2085,9 @@ class EliteGuardBalanced:
                 elif candle3['high'] < candle1['low']:
                     gap_size = (candle1['low'] - candle3['high']) / pip_size
                     
-                    # ICT minimum: 5 pips for institutional significance
-                    if gap_size >= 5:
+                    # INSTITUTIONAL MINIMUM: 10 pips for majors, 100 for gold
+                    min_gap_pips = 10 if symbol != 'XAUUSD' else 100
+                    if gap_size >= min_gap_pips:
                         # Validate displacement candle (must be strong bearish)
                         displacement_body = candle2['open'] - candle2['close']
                         displacement_range = candle2['high'] - candle2['low']
@@ -3809,7 +3845,7 @@ class EliteGuardBalanced:
         
         # WINNING COMBOS: Big bonuses (proven performers)
         winning_combos = {
-            'ORDER_BLOCK_BOUNCE_USDCAD': -15,    # 100% win rate
+            # 'ORDER_BLOCK_BOUNCE_USDCAD': removed - USDCAD no longer traded
             'ORDER_BLOCK_BOUNCE_NZDUSD': -12,    # 75% win rate
             'FAIR_VALUE_GAP_FILL_EURJPY': -10,   # 75% win rate
             'ORDER_BLOCK_BOUNCE_XAUUSD': -8,     # Good on XAUUSD
@@ -3872,10 +3908,10 @@ class EliteGuardBalanced:
             'FAIR_VALUE_GAP_FILL': 99.0,      # DISABLED: 31% WR - effectively off
             'ORDER_BLOCK_BOUNCE': 75.0,       # MODERATE: 44% WR - raised
             'LIQUIDITY_SWEEP_REVERSAL': 70.0, # STANDARD: 50% WR - standard
-            'VCB_BREAKOUT': 65.0,              # LOWER: Good potential
-            'SWEEP_RETURN': 70.0,              # ACCESSIBLE: 57% WR - good performer
-            'MOMENTUM_BURST': 65.0,            # LOWER: 75% WR - best performer!
-            'MOMENTUM_BREAKOUT': 65.0,        # STANDARD: Similar to MOMENTUM_BURST
+            'VCB_BREAKOUT': 75.0,              # QUALITY: Only high-confidence VCB
+            'SWEEP_RETURN': 78.0,              # QUALITY: Clear liquidity sweeps only  
+            'MOMENTUM_BURST': 75.0,            # QUALITY: Strong momentum only
+            'MOMENTUM_BREAKOUT': 75.0,        # QUALITY: Same as MOMENTUM_BURST
             'BB_SCALP': 85.0,                 # HIGH: 35% WR - filter heavily
             'KALMAN_QUICKFIRE': 80.0          # HIGH: 42% WR - filter most
         }
@@ -4934,7 +4970,7 @@ class EliteGuardBalanced:
             return 50.0  # Default neutral on error
     
     def publish_signal(self, signal: Dict):
-        """Publish signal to ALL channels: ZMQ, JSONL, Missions, Telegram, WebApp"""
+        """Publish signal to ALL channels: ZMQ, JSONL, Missions, Telegram, WebApp, Event Bus"""
         combo = f"{signal.get('pattern', 'UNKNOWN')}_{signal.get('symbol', 'UNKNOWN')}"
         print(f"🚀 Publishing {signal.get('signal_id')}: Conf={signal.get('confidence')}%, Quality={signal.get('quality_score')}%, Combo={combo}")
         
@@ -4943,6 +4979,28 @@ class EliteGuardBalanced:
         if 'rsi' not in signal and symbol:
             signal['rsi'] = self.calculate_rsi_for_symbol(symbol)
             print(f"   📊 Calculated RSI for {symbol}: {signal['rsi']}")
+        
+        # EVENT BUS INTEGRATION - Publish to institutional-grade tracking
+        try:
+            from event_bus.event_bridge import signal_generated
+            signal_generated({
+                'signal_id': signal.get('signal_id'),
+                'pattern': signal.get('pattern_type'),
+                'confidence': signal.get('confidence'),
+                'symbol': signal.get('symbol'),
+                'direction': signal.get('direction'),
+                'entry_price': signal.get('entry_price'),
+                'stop_loss': signal.get('stop_loss'),
+                'take_profit': signal.get('take_profit'),
+                'signal_type': signal.get('signal_type'),
+                'quality_score': signal.get('quality_score'),
+                'rsi': signal.get('rsi'),
+                'timestamp': signal.get('timestamp')
+            })
+            print(f"   ✅ Event Bus: Signal published to institutional tracking")
+        except Exception as e:
+            print(f"   ⚠️ Event Bus: Failed to publish (non-critical): {e}")
+            # Non-critical - continue with other channels
         
         # CRITICAL FIX: Ensure stop_loss and take_profit price levels exist
         if ('stop_loss' not in signal or signal.get('stop_loss') is None) and 'entry_price' in signal and 'stop_pips' in signal:

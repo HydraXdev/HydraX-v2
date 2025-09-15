@@ -63,6 +63,26 @@ def enqueue_fire(cmd):
         _push.connect(QUEUE_ADDR)
         _push.setsockopt(zmq.LINGER, 0)
     
+    # EVENT BUS INTEGRATION - Track trade execution
+    try:
+        import time
+        from event_bus.event_bridge import trade_executed
+        trade_executed({
+            'fire_id': clean_cmd.get('fire_id'),
+            'signal_id': clean_cmd.get('fire_id'),  # fire_id is based on signal_id
+            'user_id': 'unknown',  # Not available in clean_cmd
+            'symbol': clean_cmd.get('symbol'),
+            'direction': clean_cmd.get('direction'),
+            'entry': clean_cmd.get('entry'),
+            'sl': clean_cmd.get('sl'),
+            'tp': clean_cmd.get('tp'),
+            'lot_size': clean_cmd.get('lot'),
+            'timestamp': int(time.time())
+        })
+        print(f"   ✅ Event Bus: Trade execution published")
+    except Exception as e:
+        print(f"   ⚠️ Event Bus: Failed to publish (non-critical): {e}")
+    
     # Send the clean command with preserved order
     _push.send_json(clean_cmd)
     return True

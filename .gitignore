@@ -80,3 +80,4 @@ node_modules/
 package-lock.json.env.master
 .secrets/
 .env.master
+*.backup_*

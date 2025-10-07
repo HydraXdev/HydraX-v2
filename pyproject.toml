@@ -56,47 +56,21 @@ exclude = [".git", "__pycache__", "build", "dist", ".venv", "node_modules"]
 max-complexity = 15
 
 [tool.pytest.ini_options]
-minversion = "6.0"
-addopts = "-ra -q --strict-markers --cov --cov-report=term-missing --cov-report=xml"
+addopts = "-q -ra"
 testpaths = ["tests"]
-python_files = ["test_*.py", "*_test.py"]
-python_classes = ["Test*"]
-python_functions = ["test_*"]
-markers = [
-    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
-    "integration: marks tests as integration tests",
-    "unit: marks tests as unit tests",
-]
 
 [tool.coverage.run]
 branch = true
 source = ["."]
 omit = [
-    "**/tests/**",
-    "**/__init__.py",
-    "**/node_modules/**",
-    "**/.venv/**",
-    "**/migrations/**",
-    "**/conftest.py",
+  "**/tests/**",
+  "**/__init__.py",
 ]
 
 [tool.coverage.report]
 show_missing = true
+skip_covered = true
 fail_under = 65
-precision = 2
-exclude_lines = [
-    "pragma: no cover",
-    "def __repr__",
-    "raise AssertionError",
-    "raise NotImplementedError",
-    "if __name__ == .__main__.:",
-    "if TYPE_CHECKING:",
-    "class .*\\bProtocol\\):",
-    "@(abc\\.)?abstractmethod",
-]
-
-[tool.coverage.html]
-directory = "htmlcov"
 
 [tool.mypy]
 python_version = "3.8"

@@ -7,7 +7,7 @@ Nightly XP wipe for Press Pass users with dramatic notifications
 import asyncio
 import logging
 from datetime import datetime, timezone, time as datetime_time
-from typing import Dict, List, Optional, Tuple, TYPE_CHECKING
+from typing import Dict, List, Optional, Tuple, TYPE_CHECKING, Any
 import sys
 import os
 

@@ -7,9 +7,10 @@ import logging
 import random
 from typing import Dict, List, Optional, Tuple, Any
 from datetime import datetime, timedelta
+from telegram.ext import CommandHandler, CallbackQueryHandler
 
 from .gear_system import (
-    GearSystem, GearItem, GearRarity, GearType,
+    GearSystem, GearItem, GearRarity, GearType, GearStats,
     award_gear_for_achievement, award_gear_for_milestone
 )
 from .achievement_system import AchievementSystem, AchievementTier

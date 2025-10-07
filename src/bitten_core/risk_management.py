@@ -453,9 +453,12 @@ class RiskCalculator:
                     'restrictions': {'risk_controller_blocked': True}
                 }
             
+            # Get tier multiplier
+            tier_mult = self.tier_multipliers.get(profile.tier_level.upper(), 1.0)
+
             # Get adjusted risk parameters from risk manager (for other restrictions)
             risk_params = self.risk_manager.get_adjusted_risk_params(profile, account, risk_percent)
-            
+
             # Calculate risk amount based on mode
             if risk_mode == RiskMode.PERCENTAGE:
                 # Use risk controller's percentage
@@ -746,16 +749,18 @@ class RiskCalculator:
             # Calculate potential loss
             potential_loss = lot_size * stop_loss_pips * pip_value_per_lot
             potential_loss_percent = (potential_loss / account.balance) * 100
-            
+
+            # Get risk controller and tier enum for validation
+            risk_controller = get_risk_controller()
+            tier_enum = RiskTierLevel[profile.tier_level.upper()]
+
             # HARD LIMIT 1: Check against allowed risk (from bitmode settings via risk controller)
             # The risk_percent passed in already reflects bitmode settings
             tier_risk_percent, _ = risk_controller.get_user_risk_percent(profile.user_id, tier_enum)
             if potential_loss_percent > tier_risk_percent:
                 return False, f"Trade size exceeds maximum risk of {tier_risk_percent}%. Trade blocked.", 0
-            
+
             # HARD LIMIT 2: Check against tier-specific limits
-            risk_controller = get_risk_controller()
-            tier_enum = RiskTierLevel[profile.tier_level.upper()]
             trade_allowed, block_reason = risk_controller.check_trade_allowed(
                 profile.user_id, tier_enum, potential_loss, account.balance
             )

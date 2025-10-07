@@ -12,7 +12,7 @@ import time
 import psutil
 import requests
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any, Callable
+from typing import Dict, List, Optional, Any, Callable, Tuple
 from dataclasses import dataclass, asdict
 from enum import Enum
 import sqlite3

@@ -5,6 +5,7 @@ Extends MT5 bridge to support XP-purchased trading features
 
 import json
 import logging
+import os
 from typing import Dict, Optional, Tuple, Any, List
 from datetime import datetime
 from dataclasses import dataclass

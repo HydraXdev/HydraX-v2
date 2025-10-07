@@ -5,6 +5,7 @@ Handles automatic credit application to Stripe invoices and subscription billing
 """
 
 import logging
+import sqlite3
 import stripe
 from typing import Dict, Optional, Tuple
 from decimal import Decimal

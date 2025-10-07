@@ -4,12 +4,16 @@
 import json
 import time
 import asyncio
+import logging
 from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
 import os
 import sys
+
+# Initialize logger
+logger = logging.getLogger(__name__)
 
 # Import BITTEN subsystems
 from .rank_access import RankAccess, UserRank

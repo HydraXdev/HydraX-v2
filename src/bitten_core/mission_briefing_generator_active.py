@@ -204,11 +204,12 @@ class v5MissionBriefingGenerator:
         
         # Calculate position sizing (v5.0 enhanced) - ZERO SIMULATION ENFORCEMENT
         from ZERO_SIMULATION_ENFORCEMENT import validate_balance
-        
+
+        user_id = user_data.get('user_id', 'unknown')
         account_balance_raw = account_data.get('balance')
         if account_balance_raw is None:
             raise ValueError(f"🚨 CRITICAL: No real account balance available for user {user_id} - CANNOT GENERATE MISSIONS WITH FAKE DATA")
-        
+
         account_balance = validate_balance(account_balance_raw, f"mission_generator_user_{user_id}")
         position_size, risk_amount, dollar_amount = self._calculate_v5_position_sizing(
             signal_data, account_balance, user_data.get('tier', '')

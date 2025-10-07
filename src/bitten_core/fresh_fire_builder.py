@@ -12,6 +12,7 @@ import os
 from datetime import datetime
 from typing import Dict, Optional, Tuple
 from dataclasses import dataclass
+from .signal_vitality_engine import VitalityMetrics
 
 # Add parent directory to path for imports
 sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))

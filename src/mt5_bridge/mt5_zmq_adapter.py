@@ -15,7 +15,7 @@ import json
 import time
 import logging
 from datetime import datetime
-from typing import Dict, Optional, Tuple, Any, Callable
+from typing import Dict, Optional, Tuple, Any, Callable, List
 from dataclasses import dataclass, asdict
 import threading
 from zmq_bitten_controller import get_bitten_controller, TradeResult

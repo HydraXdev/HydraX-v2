@@ -9,7 +9,7 @@ import io
 import base64
 from dataclasses import dataclass
 
-from .gear_system import GearItem, GearRarity, GearType, GearStats, Loadout
+from .gear_system import GearItem, GearRarity, GearType, GearStats, Loadout, GearSlot
 
 class GearVisualizer:
     """Creates visual representations of gear and inventory"""

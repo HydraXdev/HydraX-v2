@@ -3,6 +3,7 @@ Simple URL Generator for BITTEN Telegram Bot
 Generates simple user_id URLs for HUD access
 """
 
+import time
 from typing import Dict, Optional, Any
 
 # Base URL for the HUD interface - Using working HTTPS domain

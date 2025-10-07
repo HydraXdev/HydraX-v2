@@ -139,7 +139,7 @@ class PressPassManager:
             return jsonify({
                 'success': True,
                 'press_pass': {
-                    'id': pass_pass['pass_id'],
+                    'id': press_pass['pass_id'],
                     'status': press_pass['status'],
                     'email': press_pass['email'],
                     'clone_id': press_pass['clone_id'],

@@ -266,11 +266,11 @@ def test_health_monitor():
     health_result = handler()
 
     print(f"📊 Health Check Results:")
-    print(f"  Status: {health_result[status]} ({health_result[status_code]})")
-    print(f"  Last event age: {health_result[last_event_age_ms]}ms")
-    print(f"  Account age: {health_result[account_heartbeat_age_ms]}ms")
-    print(f"  Position age: {health_result[position_heartbeat_age_ms]}ms")
-    print(f"  P95 lag: {health_result[event_lag_ms_p95]}ms")
+    print(f"  Status: {health_result['status']} ({health_result['status_code']})")
+    print(f"  Last event age: {health_result['last_event_age_ms']}ms")
+    print(f"  Account age: {health_result['account_heartbeat_age_ms']}ms")
+    print(f"  Position age: {health_result['position_heartbeat_age_ms']}ms")
+    print(f"  P95 lag: {health_result['event_lag_ms_p95']}ms")
 
     print(f"\n📈 Tick Rates:")
     for symbol, rate in health_result["tick_rate_per_symbol"].items():
@@ -280,7 +280,7 @@ def test_health_monitor():
     for check, status in health_result["checks"].items():
         print(f"  {check}: {status}")
 
-    print(f"\n📋 Subscriptions: {health_result[subscriptions]}")
+    print(f"\n📋 Subscriptions: {health_result['subscriptions']}")
 
     # Test unhealthy scenario
     print(f"\n🚨 Testing Unhealthy Scenario:")
@@ -290,9 +290,9 @@ def test_health_monitor():
         monitor.update_tick_metrics(symbol, old_time)
 
     unhealthy_result = handler()
-    print(f"  Status: {unhealthy_result[status]} ({unhealthy_result[status_code]})")
-    print(f"  Last event age: {unhealthy_result[last_event_age_ms]}ms")
-    print(f"  Ages OK: {unhealthy_result[checks][event_ages_ok]}")
+    print(f"  Status: {unhealthy_result['status']} ({unhealthy_result['status_code']})")
+    print(f"  Last event age: {unhealthy_result['last_event_age_ms']}ms")
+    print(f"  Ages OK: {unhealthy_result['checks']['event_ages_ok']}")
 
     print("\n🎉 Health monitor test completed!")
 

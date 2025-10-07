@@ -219,7 +219,7 @@ class XPEconomy:
             description="Auto-reduce to 1% risk after 3 consecutive wins",
             cost=20000,
             purchase_type=PurchaseType.FORTRESS_MODE,
-            tier_required=UserTier.COMMANDER)
+            tier_required="COMMANDER")
         
         # Ammunition Upgrades
         catalog["extended_mag"] = XPItem(

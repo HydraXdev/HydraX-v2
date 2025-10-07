@@ -8,7 +8,7 @@ import io
 import qrcode
 import hashlib
 import datetime
-from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance
+from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance, ImageColor
 from typing import Dict, Any, Optional, Tuple, List
 import json
 import base64

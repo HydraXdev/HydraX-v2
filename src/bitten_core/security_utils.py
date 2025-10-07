@@ -12,7 +12,7 @@ import decimal
 from pathlib import Path
 from typing import Any, Dict, Optional, Union, List
 import secrets
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import logging
 
 logger = logging.getLogger(__name__)

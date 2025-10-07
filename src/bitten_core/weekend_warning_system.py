@@ -175,7 +175,7 @@ async def send_weekend_warnings(telegram_router, active_users: List[Dict]):
     Send weekend warnings to all active users
     Called by scheduler every Friday at noon UTC
     """
-    warning_system = WeekendWarningSystem()
+    warning_system = WeekendSafetyBriefing()
     
     for user in active_users:
         try:

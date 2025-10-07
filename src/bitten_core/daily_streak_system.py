@@ -12,9 +12,9 @@ from enum import Enum
 import sqlite3
 import logging
 
-# Note: These imports would be used in production with actual database
-# from .database.models import UserLoginStreak, RewardClaim
-# from .database.connection import get_db_session
+# Import database models and connection
+from .database.models import UserLoginStreak, RewardClaim
+from .database.connection import get_db_session
 
 logger = logging.getLogger(__name__)
 

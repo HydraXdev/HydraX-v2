@@ -11,6 +11,7 @@ CRITICAL: NO SIMULATION - ALL DATA MUST BE REAL
 
 import json
 import logging
+import os
 from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass

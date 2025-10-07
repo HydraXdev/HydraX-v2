@@ -13,6 +13,9 @@ from typing import Dict, Optional, List, Tuple
 from dataclasses import dataclass
 from pathlib import Path
 
+# Initialize logger first
+logger = logging.getLogger(__name__)
+
 # Import gamification hooks if available
 try:
     from .referral_gamification_hooks import get_referral_gamification_hooks
@@ -20,8 +23,6 @@ try:
 except ImportError:
     GAMIFICATION_AVAILABLE = False
     logger.warning("Gamification hooks not available - referral rewards will be basic")
-
-logger = logging.getLogger(__name__)
 
 @dataclass
 class ReferralCredit:

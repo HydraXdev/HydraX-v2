@@ -1,6 +1,7 @@
 # fire_mode_validator.py
 # BITTEN Fire Mode Validation Engine - THE BEATING HEART OF CONTROL
 
+import random
 import secrets
 from datetime import datetime, timedelta
 from typing import Dict, Optional, List, Tuple

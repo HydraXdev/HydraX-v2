@@ -387,21 +387,24 @@ class MT5BridgeIntegration:
         Returns:
             Batch processing summary
         """
-        batch = TradeResultBatch()
+        # Simple batch processing without TradeResultBatch class
         processed_results = []
-        
+        successful_count = 0
+
         for result_string in results:
             result = await self.process_mt5_result(result_string, user_id, fire_mode)
             processed_results.append(result)
-            
-            # Add to batch if successful
+
+            # Count successful results
             if result.get('success'):
-                parsed = self.parser.parse(result_string)
-                trade_result = TradeResult.from_parser_result(parsed)
-                batch.add_result(trade_result)
-        
-        # Get batch summary
-        summary = batch.get_summary()
+                successful_count += 1
+
+        # Create simple summary
+        summary = {
+            'total': len(results),
+            'successful': successful_count,
+            'failed': len(results) - successful_count
+        }
         summary['processed_count'] = len(processed_results)
         summary['success_count'] = sum(1 for r in processed_results if r.get('success'))
         summary['error_count'] = sum(1 for r in processed_results if not r.get('success'))

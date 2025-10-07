@@ -4,7 +4,7 @@ Hooks volatility checks into fire modes and trading flow
 """
 
 import asyncio
-from typing import Dict, Optional, Tuple, Any
+from typing import Dict, Optional, Tuple, Any, List
 from datetime import datetime
 import logging
 

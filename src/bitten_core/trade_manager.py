@@ -15,6 +15,7 @@ from enum import Enum
 from .risk_management import TradeManagementPlan, TradeManagementFeature, RiskProfile
 from ..mt5_bridge.mt5_bridge_adapter import get_bridge_adapter
 from .trade_confirmation_system import TradeConfirmationSystem
+from .risk_controller import TierLevel
 
 logger = logging.getLogger(__name__)
 

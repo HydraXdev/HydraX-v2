@@ -10,7 +10,7 @@ from typing import Dict, List, Optional, Any, Tuple
 from datetime import datetime
 from pathlib import Path
 
-from flask import Flask, request, session, jsonify, render_template
+from flask import Flask, request, session, jsonify, render_template, redirect
 from flask_socketio import SocketIO
 
 from .squad_chat import SquadChatSystem, UserRole, ChatUser

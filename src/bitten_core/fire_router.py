@@ -138,16 +138,14 @@ class DirectAPIManager:
             USE_DIRECT_API = False
             if USE_DIRECT_API:
                 # Old direct API block (kept behind flag)
-                pass
+                session = None  # Would be set here if enabled
+                # Track successful connection
+                with self._lock:
+                    self.last_successful_connection = datetime.now()
+                    self.connection_failures = 0
+                return session
             else:
                 raise RuntimeError("Direct API path disabled; use command_router via IPC queue.")
-            
-            # Track successful connection
-            with self._lock:
-                self.last_successful_connection = datetime.now()
-                self.connection_failures = 0
-            
-            return session
             
         except Exception as e:
             with self._lock:

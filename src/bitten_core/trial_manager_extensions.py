@@ -3,6 +3,11 @@ Extensions for trial manager - subscription processing
 Add these methods to TrialManager class
 """
 
+from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+from .trial_manager import CommandResult
+from .database.connection import get_db_session
+from .database.models import UserSubscription
+
 async def _process_subscription(self, user_id: int, tier: str) -> CommandResult:
     """Process subscription selection"""
     

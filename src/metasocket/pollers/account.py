@@ -197,7 +197,7 @@ async def test_account_poller():
 
     def account_handler(account_data):
         received_accounts.append(account_data)
-        print(f"📊 Account Update: {account_data[currency]} {account_data[balance]:.2f}")
+        print(f"📊 Account Update: {account_data['currency']} {account_data['balance']:.2f}")
 
     poller.add_account_callback(account_handler)
 
@@ -217,9 +217,9 @@ async def test_account_poller():
 
     if received_accounts:
         latest = received_accounts[-1]
-        print(f"  Latest balance: {latest[balance]:.2f}")
-        print(f"  Latest equity: {latest[equity]:.2f}")
-        print(f"  Source: {latest[src]}")
+        print(f"  Latest balance: {latest['balance']:.2f}")
+        print(f"  Latest equity: {latest['equity']:.2f}")
+        print(f"  Source: {latest['src']}")
 
     # Show stats
     stats = poller.get_stats()

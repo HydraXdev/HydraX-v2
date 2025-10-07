@@ -1,3 +1,4 @@
+import sqlite3
 
 def get_available_instance(master_type, tier):
     """Get an available MT5 instance for a user"""

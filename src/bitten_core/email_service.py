@@ -3,6 +3,7 @@ Email Service Integration for BITTEN Press Pass Campaign
 Supports multiple email providers: SMTP, SendGrid, AWS SES
 """
 
+import base64
 import os
 import smtplib
 import logging

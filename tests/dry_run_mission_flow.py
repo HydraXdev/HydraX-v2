@@ -12,26 +12,28 @@ Exit Codes:
 """
 
 import json
+import logging
 import sys
 import time
 import uuid
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, Any, List, Tuple
-import logging
+from typing import Any, Dict, List, Tuple
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+
 # ANSI color codes for output
 class Colors:
-    GREEN = '\033[92m'
-    RED = '\033[91m'
-    YELLOW = '\033[93m'
-    BLUE = '\033[94m'
-    CYAN = '\033[96m'
-    RESET = '\033[0m'
-    BOLD = '\033[1m'
+    GREEN = "\033[92m"
+    RED = "\033[91m"
+    YELLOW = "\033[93m"
+    BLUE = "\033[94m"
+    CYAN = "\033[96m"
+    RESET = "\033[0m"
+    BOLD = "\033[1m"
+
 
 class TestResult:
     def __init__(self, name: str):
@@ -57,8 +59,9 @@ class TestResult:
             "passed": self.passed,
             "duration_ms": self.duration_ms,
             "error": self.error,
-            "details": self.details
+            "details": self.details,
         }
+
 
 class DryRunTester:
     def __init__(self):
@@ -68,10 +71,7 @@ class DryRunTester:
 
     def setup_logging(self):
         """Configure logging for test execution"""
-        logging.basicConfig(
-            level=logging.INFO,
-            format='%(asctime)s - %(levelname)s - %(message)s'
-        )
+        logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
         self.logger = logging.getLogger(__name__)
 
     def print_header(self, text: str):
@@ -136,7 +136,7 @@ class DryRunTester:
                 "confidence": 87.5,
                 "pattern_type": "LIQUIDITY_SWEEP_REVERSAL",
                 "signal_type": "RAPID_ASSAULT",
-                "created_at": int(time.time())
+                "created_at": int(time.time()),
             }
 
             # User context
@@ -150,7 +150,7 @@ class DryRunTester:
                 user_id=user_id,
                 account_id=account_id,
                 ttl_minutes=10,
-                risk_max_usd=risk_max_usd
+                risk_max_usd=risk_max_usd,
             )
 
             # Verify session structure
@@ -175,7 +175,7 @@ class DryRunTester:
                 True,
                 ms=session["ms"],
                 deep_link=deep_link,
-                expires_at=datetime.fromtimestamp(session["expires_at"]).isoformat()
+                expires_at=datetime.fromtimestamp(session["expires_at"]).isoformat(),
             )
 
         except ImportError:
@@ -217,18 +217,14 @@ Pattern: {signal_data['pattern_type']}
             """.strip()
 
             # Verify alert format
-            assert signal_data['symbol'] in alert_message
-            assert signal_data['direction'] in alert_message
-            assert session['deep_link'] in alert_message
+            assert signal_data["symbol"] in alert_message
+            assert signal_data["direction"] in alert_message
+            assert session["deep_link"] in alert_message
 
             # Store alert
             self.test_data["telegram_alert"] = alert_message
 
-            result.finish(
-                True,
-                alert_length=len(alert_message),
-                deep_link_included=True
-            )
+            result.finish(True, alert_length=len(alert_message), deep_link_included=True)
 
         except Exception as e:
             result.finish(False, str(e))
@@ -276,19 +272,14 @@ Pattern: {signal_data['pattern_type']}
             # Verify beacons
             beacons = {
                 "operational": True,  # System is running
-                "secure": True,       # Token valid
-                "latency": 45         # Simulated latency
+                "secure": True,  # Token valid
+                "latency": 45,  # Simulated latency
             }
 
             self.test_data["mission_data"] = mission_data
             self.test_data["beacons"] = beacons
 
-            result.finish(
-                True,
-                token_valid=validation["valid"],
-                scopes=validation["scopes"],
-                beacons=beacons
-            )
+            result.finish(True, token_valid=validation["valid"], scopes=validation["scopes"], beacons=beacons)
 
         except ImportError:
             result.finish(False, "session_manager not found")
@@ -317,7 +308,7 @@ Pattern: {signal_data['pattern_type']}
             fire_request = {
                 "ms": session["ms"],
                 "clientRequestId": client_request_id,
-                "riskUsd": 50.0  # Within risk_max_usd of 100
+                "riskUsd": 50.0,  # Within risk_max_usd of 100
             }
 
             # Mock execution (since we're in dry-run)
@@ -341,7 +332,7 @@ Pattern: {signal_data['pattern_type']}
                 client_request_id=client_request_id,
                 op_id=op_id,
                 response_code=202,
-                redirect_to=f"/status?opId={op_id}"
+                redirect_to=f"/status?opId={op_id}",
             )
 
         except Exception as e:
@@ -368,11 +359,7 @@ Pattern: {signal_data['pattern_type']}
             arming_event = {
                 "type": "trades.delta",
                 "timestamp": int(arming_time * 1000),
-                "data": {
-                    "opId": op_id,
-                    "status": "ARMING",
-                    "message": "Order queued for execution"
-                }
+                "data": {"opId": op_id, "status": "ARMING", "message": "Order queued for execution"},
             }
             events.append(("ARMING", arming_event, 0))
 
@@ -381,13 +368,7 @@ Pattern: {signal_data['pattern_type']}
             filled_event = {
                 "type": "trades.delta",
                 "timestamp": int(filled_time * 1000),
-                "data": {
-                    "opId": op_id,
-                    "status": "FILLED",
-                    "ticket": 123456,
-                    "fill_price": 1.10005,
-                    "latency_ms": 150
-                }
+                "data": {"opId": op_id, "status": "FILLED", "ticket": 123456, "fill_price": 1.10005, "latency_ms": 150},
             }
             events.append(("FILLED", filled_event, 150))
 
@@ -399,23 +380,13 @@ Pattern: {signal_data['pattern_type']}
             pnl_event = {
                 "type": "trades.delta",
                 "timestamp": int((filled_time + 0.100) * 1000),
-                "data": {
-                    "opId": op_id,
-                    "status": "OPEN",
-                    "unrealized_pnl": 5.50,
-                    "pips": 5.5
-                }
+                "data": {"opId": op_id, "status": "OPEN", "unrealized_pnl": 5.50, "pips": 5.5},
             }
             events.append(("P&L_UPDATE", pnl_event, 250))
 
             self.test_data["events"] = events
 
-            result.finish(
-                True,
-                event_count=len(events),
-                latency_ms=int(latency * 1000),
-                latency_ok=latency < 0.250
-            )
+            result.finish(True, event_count=len(events), latency_ms=int(latency * 1000), latency_ok=latency < 0.250)
 
         except Exception as e:
             result.finish(False, str(e))
@@ -454,7 +425,7 @@ Pattern: {signal_data['pattern_type']}
                 original_op_id=original_op_id,
                 duplicate_op_id=returned_op_id,
                 idempotency_preserved=True,
-                expected_response_code="202 or 409"
+                expected_response_code="202 or 409",
             )
 
         except Exception as e:
@@ -488,7 +459,7 @@ Pattern: {signal_data['pattern_type']}
                 "confidence": 82.0,
                 "pattern_type": "ORDER_BLOCK_BOUNCE",
                 "signal_type": "PRECISION_STRIKE",
-                "created_at": int(time.time())
+                "created_at": int(time.time()),
             }
 
             # Create session with 0 second TTL (immediately expired)
@@ -497,27 +468,21 @@ Pattern: {signal_data['pattern_type']}
                 user_id=self.test_data["user_id"],
                 account_id=self.test_data["account_id"],
                 ttl_minutes=0,  # Expire immediately
-                risk_max_usd=100.0
+                risk_max_usd=100.0,
             )
 
             # Wait 1 second to ensure expiry
             time.sleep(1)
 
             # Try to validate expired token
-            validation = session_manager.validate_session_token(
-                expired_session["ms"],
-                expired_session["token"]
-            )
+            validation = session_manager.validate_session_token(expired_session["ms"], expired_session["token"])
 
             # Should be invalid
             assert not validation["valid"], "Expired token validated as valid"
             assert "expired" in validation.get("error", "").lower()
 
             result.finish(
-                True,
-                expired_session_rejected=True,
-                error_message=validation.get("error"),
-                expected_response_code=410
+                True, expired_session_rejected=True, error_message=validation.get("error"), expected_response_code=410
             )
 
         except ImportError:
@@ -544,7 +509,7 @@ Pattern: {signal_data['pattern_type']}
             excessive_risk_request = {
                 "ms": session["ms"],
                 "clientRequestId": str(uuid.uuid4()),
-                "riskUsd": risk_max_usd + 50.0  # Exceed by 50
+                "riskUsd": risk_max_usd + 50.0,  # Exceed by 50
             }
 
             # Verify risk check
@@ -562,7 +527,7 @@ Pattern: {signal_data['pattern_type']}
                 risk_max=risk_max_usd,
                 risk_exceeded=risk_exceeded,
                 expected_response_code=422,
-                expected_error=expected_error
+                expected_error=expected_error,
             )
 
         except Exception as e:
@@ -590,7 +555,7 @@ Pattern: {signal_data['pattern_type']}
             equity_update = {
                 "timestamp": int(time.time() * 1000),
                 "equity": 850.45 + 5.50,  # Original balance + unrealized P&L
-                "trade_id": op_id
+                "trade_id": op_id,
             }
 
             # Verify trade appears in recent events
@@ -600,19 +565,14 @@ Pattern: {signal_data['pattern_type']}
                 "direction": "BUY",
                 "status": "OPEN",
                 "pnl": 5.50,
-                "timestamp": int(time.time() * 1000)
+                "timestamp": int(time.time() * 1000),
             }
 
             # Check stats would include this trade
             assert equity_update["equity"] > 850.45
             assert recent_trade["opId"] == op_id
 
-            result.finish(
-                True,
-                equity_updated=True,
-                new_equity=equity_update["equity"],
-                trade_in_recent_events=True
-            )
+            result.finish(True, equity_updated=True, new_equity=equity_update["equity"], trade_in_recent_events=True)
 
         except Exception as e:
             result.finish(False, str(e))
@@ -636,7 +596,7 @@ Pattern: {signal_data['pattern_type']}
             ("Idempotency", self.test_idempotency),
             ("Session Expiry", self.test_session_expiry),
             ("Risk Fuse", self.test_risk_fuse),
-            ("Stats Page", self.test_stats_page)
+            ("Stats Page", self.test_stats_page),
         ]
 
         passed = 0
@@ -683,10 +643,10 @@ Pattern: {signal_data['pattern_type']}
             "total_tests": len(self.results),
             "passed": sum(1 for r in self.results if r.passed),
             "failed": sum(1 for r in self.results if not r.passed),
-            "tests": [r.to_dict() for r in self.results]
+            "tests": [r.to_dict() for r in self.results],
         }
 
-        with open(output_file, 'w') as f:
+        with open(output_file, "w") as f:
             json.dump(results_data, f, indent=2)
 
         print(f"\n{Colors.CYAN}Results saved to: {output_file}{Colors.RESET}")

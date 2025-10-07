@@ -1,6 +1,6 @@
 # 🚨 Bridge Rescue Agent - Ready for Deployment
 
-**Created**: July 16, 2025 14:15 UTC  
+**Created**: July 16, 2025 14:15 UTC
 **Status**: ✅ **READY FOR DOWNLOAD**
 
 ---
@@ -8,16 +8,19 @@
 ## 📥 **Download Instructions**
 
 ### **✅ Step 1: Download the Script**
+
 ```powershell
 iwr http://134.199.204.67:9999/bridge_rescue_agent.py -OutFile bridge_rescue_agent.py
 ```
 
 ### **✅ Step 2: Run the Rescue Agent**
+
 ```powershell
 python bridge_rescue_agent.py
 ```
 
 **Optional port specification:**
+
 ```powershell
 python bridge_rescue_agent.py --port 9000
 ```
@@ -51,6 +54,7 @@ python bridge_rescue_agent.py --port 9000
    - Confirms MT5 bridge is responding correctly
 
 ### **📝 Logging**
+
 - All output logged to: `bridge_status.log`
 - Console output includes status updates
 - Error details captured for troubleshooting
@@ -60,6 +64,7 @@ python bridge_rescue_agent.py --port 9000
 ## 🎯 **Expected Output**
 
 ### **✅ Successful Completion:**
+
 ```
 [BRIDGE] Checking Windows Firewall for port 9000...
 [BRIDGE] ✅ Firewall rule already exists for port 9000
@@ -75,9 +80,11 @@ python bridge_rescue_agent.py --port 9000
 ```
 
 ### **⚠️ Partial Success:**
+
 If 3 out of 4 checks pass, the script still reports success but logs which check failed.
 
 ### **❌ Failure Scenarios:**
+
 - MT5 not found at expected path
 - `primary_agent_mt5_enhanced.py` missing from current directory
 - Permission issues with firewall configuration
@@ -88,24 +95,28 @@ If 3 out of 4 checks pass, the script still reports success but logs which check
 ## 🔧 **Script Features**
 
 ### **✅ Windows Compatibility**
+
 - **Python 3.11** compatible
 - Uses Windows-specific firewall commands (`netsh`)
 - Process detection via `psutil`
 - Silent background process launching
 
 ### **✅ Robust Error Handling**
+
 - 30-second timeout for command execution
 - Process monitoring with PID tracking
 - Comprehensive logging to file and console
 - Graceful failure handling
 
 ### **✅ Non-Blocking Operation**
+
 - No UI dialogs or blocking prompts
 - Background process creation
 - Silent unless errors occur
 - Quick execution (typically under 30 seconds)
 
 ### **✅ Smart Detection**
+
 - Checks existing processes before starting new ones
 - Verifies firewall rules before creating duplicates
 - Tests actual connectivity, not just process existence
@@ -116,15 +127,18 @@ If 3 out of 4 checks pass, the script still reports success but logs which check
 ## 📋 **Prerequisites**
 
 ### **Required Files:**
+
 - ✅ `primary_agent_mt5_enhanced.py` (in same directory)
 - ✅ Python 3.11+ installed
 - ✅ `psutil` package: `pip install psutil`
 
 ### **Required Permissions:**
+
 - ✅ Administrator privileges (for firewall configuration)
 - ✅ MT5 installation at: `C:\Program Files\MetaTrader 5\terminal64.exe`
 
 ### **Network Requirements:**
+
 - ✅ Port 9000 available (script will configure firewall)
 - ✅ No conflicting applications on port 9000
 
@@ -152,6 +166,7 @@ If 3 out of 4 checks pass, the script still reports success but logs which check
    - Verify enhanced agent started successfully
 
 ### **Manual Verification:**
+
 ```powershell
 # Check if processes are running
 Get-Process | Where-Object {$_.Name -like "*terminal64*"}
@@ -169,12 +184,14 @@ netsh advfirewall firewall show rule name="BITTEN Bridge Port 9000" dir=in
 ## 🎯 **File Server Status**
 
 ### **✅ Currently Hosted At:**
+
 - **URL**: `http://134.199.204.67:9999/bridge_rescue_agent.py`
 - **Status**: Active and serving file
 - **Size**: 11.6 KB
 - **Last Modified**: July 16, 2025 14:10:27 GMT
 
 ### **Download Command Ready:**
+
 ```powershell
 iwr http://134.199.204.67:9999/bridge_rescue_agent.py -OutFile bridge_rescue_agent.py
 python bridge_rescue_agent.py
@@ -184,4 +201,4 @@ python bridge_rescue_agent.py
 
 **🚀 BRIDGE RESCUE AGENT IS READY FOR DEPLOYMENT!**
 
-*The script will automatically configure everything needed for the enhanced MT5 bridge to work properly on Windows.*
+_The script will automatically configure everything needed for the enhanced MT5 bridge to work properly on Windows._

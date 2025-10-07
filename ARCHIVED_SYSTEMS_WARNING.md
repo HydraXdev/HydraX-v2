@@ -1,20 +1,22 @@
 # ⚠️ ARCHIVED SIGNAL SYSTEMS - DO NOT USE
 
-**Date**: August 3, 2025  
-**Action**: Emergency archival of old/inactive signal systems  
-**Reason**: Preventing confusion with current production systems  
+**Date**: August 3, 2025
+**Action**: Emergency archival of old/inactive signal systems
+**Reason**: Preventing confusion with current production systems
 
 ## 🚨 ARCHIVED FILES (DO NOT USE)
 
 These files have been archived because they are NOT part of current production:
 
 ### VENOM Systems (All Archived)
+
 - `ARCHIVED_venom_scalp_master.py` - Old scalping system
-- `ARCHIVED_apex_venom_v7_unfiltered.py` - Old VENOM v7 engine  
+- `ARCHIVED_apex_venom_v7_unfiltered.py` - Old VENOM v7 engine
 - `ARCHIVED_venom_real_data_engine.py` - Old real data engine
 - `ARCHIVED_real_data_signal_generator.py` - Old signal generator
 
 ### APEX Systems (All Archived)
+
 - All APEX mission files moved to `/ARCHIVED_MISSIONS/` (477 files)
 - APEX engines and related files archived
 
@@ -36,11 +38,13 @@ These files have been archived because they are NOT part of current production:
 ## 🔒 ARCHIVE PROTECTION
 
 **DO NOT:**
-- Reactivate any ARCHIVED_ files
+
+- Reactivate any ARCHIVED\_ files
 - Reference old APEX or VENOM systems in documentation
 - Assume any signal system is active without checking `ps aux`
 
 **ALWAYS:**
+
 - Check running processes to verify what's actually active
 - Refer only to systems with confirmed PIDs
 - Update documentation based on actual system state

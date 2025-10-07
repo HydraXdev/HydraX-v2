@@ -20,6 +20,7 @@ This is the ONLY authorized production EA. All other versions are OBSOLETE and a
 ## **Server Integration**
 
 This EA works with:
+
 - `/root/HydraX-v2/zmq_telemetry_bridge_debug.py` (heartbeat storage)
 - `/root/HydraX-v2/command_router.py` (position reconciliation)
 - All server-side handlers are PRODUCTION READY
@@ -27,6 +28,7 @@ This EA works with:
 ## **Compilation**
 
 Compile in MT5 MetaEditor:
+
 - 0 errors
 - 0 warnings
 - Production grade code

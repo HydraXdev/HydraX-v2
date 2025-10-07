@@ -6,21 +6,21 @@ Tracks EVERY signal from database to TP/SL completion
 """
 
 import sys
-sys.path.append('/root/HydraX-v2')
+
+sys.path.append("/root/HydraX-v2")
+
+import json
+import logging
+import sqlite3
+import time
+from collections import defaultdict
+from datetime import datetime
 
 import zmq
-import json
-import time
-import sqlite3
-import logging
-from datetime import datetime
-from collections import defaultdict
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(message)s'
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
 logger = logging.getLogger(__name__)
+
 
 class DefinitiveSignalTracker:
     def __init__(self):
@@ -32,13 +32,13 @@ class DefinitiveSignalTracker:
         self.market_socket.setsockopt(zmq.SUBSCRIBE, b"")
 
         # Database connection
-        self.db_path = '/root/HydraX-v2/bitten.db'
+        self.db_path = "/root/HydraX-v2/bitten.db"
 
         # Current prices for each symbol
         self.current_prices = {}
 
         # Tracking file (append-only JSONL)
-        self.tracking_file = '/root/HydraX-v2/signal_tracking.jsonl'
+        self.tracking_file = "/root/HydraX-v2/signal_tracking.jsonl"
 
         # Load pending signals from database on startup
         self.pending_signals = {}
@@ -53,7 +53,8 @@ class DefinitiveSignalTracker:
         cursor = conn.cursor()
 
         # Get all signals without outcomes (or with PENDING outcome)
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT
                 signal_id,
                 symbol,
@@ -67,31 +68,32 @@ class DefinitiveSignalTracker:
             FROM signals
             WHERE outcome IS NULL OR outcome = 'PENDING'
             ORDER BY created_at DESC
-        """)
+        """
+        )
 
         for row in cursor.fetchall():
             signal_id = row[0]
             self.pending_signals[signal_id] = {
-                'signal_id': signal_id,
-                'symbol': row[1],
-                'direction': row[2],
-                'entry_price': float(row[3]),
-                'stop_pips': float(row[4]),
-                'target_pips': float(row[5]),
-                'confidence': float(row[6]),
-                'pattern_type': row[7],
-                'created_at': row[8],
-                'start_time': time.time()
+                "signal_id": signal_id,
+                "symbol": row[1],
+                "direction": row[2],
+                "entry_price": float(row[3]),
+                "stop_pips": float(row[4]),
+                "target_pips": float(row[5]),
+                "confidence": float(row[6]),
+                "pattern_type": row[7],
+                "created_at": row[8],
+                "start_time": time.time(),
             }
 
         conn.close()
 
     def _calculate_pip_value(self, symbol):
         """Calculate pip value based on symbol type"""
-        if 'JPY' in symbol:
+        if "JPY" in symbol:
             return 0.01  # JPY pairs use 2 decimal places
-        elif symbol in ['XAUUSD', 'XAGUSD', 'BTCUSD']:
-            return 0.1   # Metals/crypto
+        elif symbol in ["XAUUSD", "XAGUSD", "BTCUSD"]:
+            return 0.1  # Metals/crypto
         else:
             return 0.0001  # Standard forex pairs
 
@@ -107,17 +109,13 @@ class DefinitiveSignalTracker:
 
                     try:
                         tick_data = json.loads(message)
-                        if tick_data.get('type', '').upper() == 'TICK':
-                            symbol = tick_data.get('symbol')
-                            bid = float(tick_data.get('bid', 0))
-                            ask = float(tick_data.get('ask', 0))
+                        if tick_data.get("type", "").upper() == "TICK":
+                            symbol = tick_data.get("symbol")
+                            bid = float(tick_data.get("bid", 0))
+                            ask = float(tick_data.get("ask", 0))
 
                             if symbol and bid > 0 and ask > 0:
-                                self.current_prices[symbol] = {
-                                    'bid': bid,
-                                    'ask': ask,
-                                    'timestamp': time.time()
-                                }
+                                self.current_prices[symbol] = {"bid": bid, "ask": ask, "timestamp": time.time()}
 
                                 # Check if this price update triggers any outcomes
                                 self._check_signal_outcomes(symbol, bid, ask)
@@ -134,49 +132,49 @@ class DefinitiveSignalTracker:
         to_remove = []
 
         for signal_id, signal in list(self.pending_signals.items()):
-            if signal['symbol'] != symbol:
+            if signal["symbol"] != symbol:
                 continue
 
-            direction = signal['direction'].upper()
-            entry = signal['entry_price']
-            stop_pips = signal['stop_pips']
-            target_pips = signal['target_pips']
+            direction = signal["direction"].upper()
+            entry = signal["entry_price"]
+            stop_pips = signal["stop_pips"]
+            target_pips = signal["target_pips"]
 
             # Calculate pip value for this symbol
             pip_value = self._calculate_pip_value(symbol)
 
             # Calculate SL and TP prices
-            if direction == 'BUY':
+            if direction == "BUY":
                 current_price = bid  # Exit on bid for BUY
                 sl_price = entry - (stop_pips * pip_value)
                 tp_price = entry + (target_pips * pip_value)
 
                 # Check SL hit
                 if current_price <= sl_price:
-                    self._record_outcome(signal, 'LOSS', current_price, sl_price)
+                    self._record_outcome(signal, "LOSS", current_price, sl_price)
                     to_remove.append(signal_id)
                     continue
 
                 # Check TP hit
                 if current_price >= tp_price:
-                    self._record_outcome(signal, 'WIN', current_price, tp_price)
+                    self._record_outcome(signal, "WIN", current_price, tp_price)
                     to_remove.append(signal_id)
                     continue
 
-            elif direction == 'SELL':
+            elif direction == "SELL":
                 current_price = ask  # Exit on ask for SELL
                 sl_price = entry + (stop_pips * pip_value)
                 tp_price = entry - (target_pips * pip_value)
 
                 # Check SL hit
                 if current_price >= sl_price:
-                    self._record_outcome(signal, 'LOSS', current_price, sl_price)
+                    self._record_outcome(signal, "LOSS", current_price, sl_price)
                     to_remove.append(signal_id)
                     continue
 
                 # Check TP hit
                 if current_price <= tp_price:
-                    self._record_outcome(signal, 'WIN', current_price, tp_price)
+                    self._record_outcome(signal, "WIN", current_price, tp_price)
                     to_remove.append(signal_id)
                     continue
 
@@ -186,43 +184,48 @@ class DefinitiveSignalTracker:
 
     def _record_outcome(self, signal, outcome, exit_price, target_price):
         """Record signal outcome to database and tracking file"""
-        signal_id = signal['signal_id']
-        duration = int(time.time() - signal['start_time'])
+        signal_id = signal["signal_id"]
+        duration = int(time.time() - signal["start_time"])
 
         # Update database
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
-        cursor.execute("""
+        cursor.execute(
+            """
             UPDATE signals
             SET outcome = ?,
                 exit_price = ?,
                 duration_seconds = ?
             WHERE signal_id = ?
-        """, (outcome, exit_price, duration, signal_id))
+        """,
+            (outcome, exit_price, duration, signal_id),
+        )
         conn.commit()
         conn.close()
 
         # Write to tracking file (append-only JSONL)
         tracking_data = {
-            'signal_id': signal_id,
-            'symbol': signal['symbol'],
-            'direction': signal['direction'],
-            'pattern_type': signal['pattern_type'],
-            'confidence': signal['confidence'],
-            'entry_price': signal['entry_price'],
-            'exit_price': exit_price,
-            'outcome': outcome,
-            'duration_seconds': duration,
-            'created_at': signal['created_at'],
-            'completed_at': int(time.time())
+            "signal_id": signal_id,
+            "symbol": signal["symbol"],
+            "direction": signal["direction"],
+            "pattern_type": signal["pattern_type"],
+            "confidence": signal["confidence"],
+            "entry_price": signal["entry_price"],
+            "exit_price": exit_price,
+            "outcome": outcome,
+            "duration_seconds": duration,
+            "created_at": signal["created_at"],
+            "completed_at": int(time.time()),
         }
 
-        with open(self.tracking_file, 'a') as f:
-            f.write(json.dumps(tracking_data) + '\n')
+        with open(self.tracking_file, "a") as f:
+            f.write(json.dumps(tracking_data) + "\n")
 
         # Log outcome
         duration_min = duration // 60
-        logger.info(f"{'✅ WIN' if outcome == 'WIN' else '❌ LOSS'} | {signal['symbol']} {signal['direction']} | {signal['pattern_type']} | {signal['confidence']:.0f}% | {duration_min}min | {signal_id}")
+        logger.info(
+            f"{'✅ WIN' if outcome == 'WIN' else '❌ LOSS'} | {signal['symbol']} {signal['direction']} | {signal['pattern_type']} | {signal['confidence']:.0f}% | {duration_min}min | {signal_id}"
+        )
 
     def monitor_new_signals(self):
         """Monitor database for new signals to track"""
@@ -238,7 +241,8 @@ class DefinitiveSignalTracker:
                     cursor = conn.cursor()
 
                     # Get signals created in last 10 seconds that aren't being tracked
-                    cursor.execute("""
+                    cursor.execute(
+                        """
                         SELECT
                             signal_id,
                             symbol,
@@ -252,23 +256,25 @@ class DefinitiveSignalTracker:
                         FROM signals
                         WHERE created_at > ?
                         AND (outcome IS NULL OR outcome = 'PENDING')
-                    """, (int(current_time - 10),))
+                    """,
+                        (int(current_time - 10),),
+                    )
 
                     new_count = 0
                     for row in cursor.fetchall():
                         signal_id = row[0]
                         if signal_id not in self.pending_signals:
                             self.pending_signals[signal_id] = {
-                                'signal_id': signal_id,
-                                'symbol': row[1],
-                                'direction': row[2],
-                                'entry_price': float(row[3]),
-                                'stop_pips': float(row[4]),
-                                'target_pips': float(row[5]),
-                                'confidence': float(row[6]),
-                                'pattern_type': row[7],
-                                'created_at': row[8],
-                                'start_time': current_time
+                                "signal_id": signal_id,
+                                "symbol": row[1],
+                                "direction": row[2],
+                                "entry_price": float(row[3]),
+                                "stop_pips": float(row[4]),
+                                "target_pips": float(row[5]),
+                                "confidence": float(row[6]),
+                                "pattern_type": row[7],
+                                "created_at": row[8],
+                                "start_time": current_time,
                             }
                             new_count += 1
 
@@ -306,10 +312,11 @@ class DefinitiveSignalTracker:
             while True:
                 time.sleep(30)
                 if len(self.pending_signals) > 0:
-                    symbols = set(s['symbol'] for s in self.pending_signals.values())
+                    symbols = set(s["symbol"] for s in self.pending_signals.values())
                     logger.info(f"📊 Tracking {len(self.pending_signals)} signals across {len(symbols)} symbols")
         except KeyboardInterrupt:
             logger.info("Shutting down tracker...")
+
 
 if __name__ == "__main__":
     tracker = DefinitiveSignalTracker()

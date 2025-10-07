@@ -4,22 +4,23 @@ Simple TCP Command Server for HydraSocket EA
 Handles native TCP connections on port 5555 without ZMQ complexity
 """
 
-import socket
 import json
-import threading
 import select
-import time
+import socket
 import sys
+import threading
+import time
 from datetime import datetime
 
 # Force unbuffered output
-sys.stdout = sys.stderr = open(sys.stdout.fileno(), 'w', buffering=1)
+sys.stdout = sys.stderr = open(sys.stdout.fileno(), "w", buffering=1)
+
 
 class SimpleCommandServer:
     def __init__(self):
         self.tcp_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.tcp_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.tcp_sock.bind(('0.0.0.0', 5555))
+        self.tcp_sock.bind(("0.0.0.0", 5555))
         self.tcp_sock.listen(200)
         print(f"{datetime.now()} | TCP command server listening on port 5555")
 
@@ -58,20 +59,20 @@ class SimpleCommandServer:
                     print(f"{datetime.now()} | EA disconnected from {addr}")
                     break
 
-                buffer += data.decode('utf-8')
+                buffer += data.decode("utf-8")
 
-                while '\n' in buffer:
-                    line, buffer = buffer.split('\n', 1)
+                while "\n" in buffer:
+                    line, buffer = buffer.split("\n", 1)
                     if line.strip():
                         try:
                             cmd = json.loads(line)
-                            cmd_type = cmd.get('type', 'unknown')
+                            cmd_type = cmd.get("type", "unknown")
 
                             print(f"{datetime.now()} | 📥 Command from {addr}: {cmd_type}")
 
                             # Extract account_id from first command
-                            if not account_id and 'account_id' in cmd:
-                                account_id = cmd['account_id']
+                            if not account_id and "account_id" in cmd:
+                                account_id = cmd["account_id"]
                                 self.ea_connections[account_id] = conn
                                 print(f"{datetime.now()} | ✅ Registered EA account_id: {account_id}")
 
@@ -92,15 +93,15 @@ class SimpleCommandServer:
 
     def process_command(self, cmd, conn, addr):
         """Process incoming command from EA and send response"""
-        cmd_type = cmd.get('type', 'unknown')
-        request_ref = cmd.get('request_ref', '')
+        cmd_type = cmd.get("type", "unknown")
+        request_ref = cmd.get("request_ref", "")
 
         # Build response
         response = {
             "type": "command_result",
             "request_ref": request_ref,
             "status": "success",
-            "message": f"Command {cmd_type} received"
+            "message": f"Command {cmd_type} received",
         }
 
         try:
@@ -125,6 +126,7 @@ class SimpleCommandServer:
         except Exception as e:
             print(f"{datetime.now()} | ❌ Failed to send command to {account_id}: {e}")
             return False
+
 
 if __name__ == "__main__":
     server = SimpleCommandServer()

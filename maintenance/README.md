@@ -17,12 +17,14 @@ This maintenance suite addresses the top 5 bottlenecks identified in the system 
 ## 🚀 Quick Start
 
 ### Run Complete Maintenance Suite
+
 ```bash
 cd /root/HydraX-v2/maintenance
 bash run_maintenance.sh
 ```
 
 ### Run Individual Scripts
+
 ```bash
 # Cache cleanup only (safe during trading hours)
 bash cache_cleanup.sh
@@ -37,6 +39,7 @@ bash process_health.sh
 ## 📅 Automated Scheduling
 
 ### Recommended Crontab Setup
+
 ```bash
 # Edit crontab
 crontab -e
@@ -55,9 +58,11 @@ crontab -e
 ## 📊 Script Details
 
 ### 1. `cache_cleanup.sh`
+
 **Purpose**: Reclaim disk space from caches and temporary files
 **Safe to run**: During trading hours ✅
 **Targets**:
+
 - Pip cache (~1.1G)
 - NPM cache (~528M)
 - Python build artifacts (`__pycache__`, `.pyc`)
@@ -67,9 +72,11 @@ crontab -e
 **Expected savings**: 1-2GB per run
 
 ### 2. `database_maintenance.sh`
+
 **Purpose**: Optimize SQLite databases for performance
 **Safe to run**: During off-peak hours ⚠️
 **Operations**:
+
 - VACUUM (reclaim deleted space)
 - ANALYZE (update query statistics)
 - PRAGMA optimize (improve query planner)
@@ -77,9 +84,11 @@ crontab -e
 **Expected savings**: 10-30% database size reduction
 
 ### 3. `process_health.sh`
+
 **Purpose**: Monitor critical system processes
 **Safe to run**: Anytime ✅ (read-only)
 **Monitors**:
+
 - Elite Guard signal generation
 - ZMQ port bindings (5555-5560, 8888)
 - EA connection freshness
@@ -87,13 +96,16 @@ crontab -e
 - Memory usage
 
 **Exit codes**:
+
 - `0`: All systems healthy
 - `1`: Issues detected (check output)
 
 ### 4. `run_maintenance.sh`
+
 **Purpose**: Master orchestration script
 **Safe to run**: During off-peak hours ⚠️
 **Features**:
+
 - Runs all maintenance tasks in sequence
 - Generates timestamped logs
 - Pre/post maintenance validation
@@ -103,8 +115,10 @@ crontab -e
 ## 🔧 CI/CD Improvements
 
 ### GitHub Actions Optimization
+
 **File**: `.github/workflows/python-ci.yml`
 **Changes**:
+
 - Added pip caching (50-70% faster builds)
 - Updated to latest actions (v4/v5)
 - Added security scanning (bandit, pip-audit)
@@ -116,16 +130,17 @@ crontab -e
 
 Based on system audit analysis:
 
-| Area | Before | After | Improvement |
-|------|--------|-------|-------------|
-| CI/CD Build Time | ~15 min | ~5-8 min | 50-70% faster |
-| Pip Cache | 1.1G | <100M | 90% reduction |
-| Database Size | 350M | ~245M | 30% reduction |
-| Disk Space | Variable | Monitored | Proactive alerts |
+| Area             | Before   | After     | Improvement      |
+| ---------------- | -------- | --------- | ---------------- |
+| CI/CD Build Time | ~15 min  | ~5-8 min  | 50-70% faster    |
+| Pip Cache        | 1.1G     | <100M     | 90% reduction    |
+| Database Size    | 350M     | ~245M     | 30% reduction    |
+| Disk Space       | Variable | Monitored | Proactive alerts |
 
 ## 🏥 Health Monitoring
 
 ### Critical Processes Monitored
+
 - `elite_guard_with_citadel.py` - Signal generation
 - `webapp_server_optimized.py` - API server (port 8888)
 - `command_router.py` - Fire command routing (port 5555)
@@ -133,6 +148,7 @@ Based on system audit analysis:
 - `zmq_telemetry_bridge_debug.py` - Market data (ports 5556/5560)
 
 ### Critical Port Bindings
+
 - **5555**: Command routing (ROUTER socket)
 - **5556**: Market data ingestion (PULL socket)
 - **5557**: Signal publishing (PUB socket)
@@ -143,6 +159,7 @@ Based on system audit analysis:
 ## 📝 Log Files
 
 All maintenance runs generate timestamped logs:
+
 - Location: `/root/HydraX-v2/maintenance/maintenance_YYYYMMDD_HHMMSS.log`
 - Retention: Manual cleanup recommended (keep last 10 runs)
 - Format: Timestamped with color-coded output
@@ -150,17 +167,20 @@ All maintenance runs generate timestamped logs:
 ## ⚠️ Important Notes
 
 ### When to Run
+
 - **Cache Cleanup**: Anytime (safe)
 - **Database Maintenance**: During off-peak hours (brief locks)
 - **Process Health**: Anytime (read-only)
 - **Full Maintenance**: Sunday 3 AM (recommended)
 
 ### Trading Impact
+
 - Cache cleanup: **No impact** ✅
 - Database maintenance: **Brief performance dip** (<1 min) ⚠️
 - Process health: **No impact** ✅
 
 ### Disk Space Alerts
+
 - **>85% usage**: Warning issued, manual review needed
 - **>90% usage**: Critical, immediate action required
 - Maintenance suite typically frees 1-2GB per run
@@ -168,14 +188,17 @@ All maintenance runs generate timestamped logs:
 ## 🐛 Troubleshooting
 
 ### "Database is locked" errors
+
 - Cause: Active trading operations
 - Solution: Run during off-peak hours or stop processes temporarily
 
 ### "Permission denied" on cache cleanup
+
 - Cause: Files owned by different user
 - Solution: Run with `sudo` or adjust ownership
 
 ### Process health check failures
+
 - Check PM2 logs: `pm2 logs [process-name] --lines 50`
 - Restart failed process: `pm2 restart [process-name]`
 - Check ZMQ ports: `ss -tulpen | grep -E ":(5555|5556|5557|5558|5560)"`

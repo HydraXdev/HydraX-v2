@@ -1,8 +1,8 @@
 """
 CITADEL Shield System - Intelligent Signal Protection & Education Platform
 
-CITADEL transforms signal filtering from restriction to protection, showing ALL signals 
-while intelligently scoring and tagging them. This creates trust, transparency, and 
+CITADEL transforms signal filtering from restriction to protection, showing ALL signals
+while intelligently scoring and tagging them. This creates trust, transparency, and
 teaches users to think like institutions.
 
 Core Philosophy:
@@ -15,21 +15,21 @@ Author: HydraX Strategic Defense Initiative
 Version: 1.0.0
 """
 
-from .analyzers.signal_inspector import SignalInspector
-from .analyzers.market_regime import MarketRegimeAnalyzer
-from .analyzers.liquidity_mapper import LiquidityMapper
 from .analyzers.cross_tf_validator import CrossTimeframeValidator
-from .scoring.shield_engine import ShieldScoringEngine
+from .analyzers.liquidity_mapper import LiquidityMapper
+from .analyzers.market_regime import MarketRegimeAnalyzer
+from .analyzers.signal_inspector import SignalInspector
 from .formatters.telegram_formatter import TelegramShieldFormatter
+from .scoring.shield_engine import ShieldScoringEngine
 from .storage.shield_logger import ShieldLogger
 
 __version__ = "1.0.0"
 __all__ = [
     "SignalInspector",
-    "MarketRegimeAnalyzer", 
+    "MarketRegimeAnalyzer",
     "LiquidityMapper",
     "CrossTimeframeValidator",
     "ShieldScoringEngine",
     "TelegramShieldFormatter",
-    "ShieldLogger"
+    "ShieldLogger",
 ]

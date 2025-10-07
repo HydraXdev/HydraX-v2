@@ -3,10 +3,10 @@ name: BITTEN UI QA Pipeline
 on:
   push:
     paths:
-      - 'bitten-ui/**'
+      - "bitten-ui/**"
   pull_request:
     paths:
-      - 'bitten-ui/**'
+      - "bitten-ui/**"
 
 jobs:
   qa:
@@ -23,8 +23,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
-          cache: 'npm'
+          node-version: "18"
+          cache: "npm"
           cache-dependency-path: bitten-ui/package-lock.json
 
       - name: Install dependencies
@@ -73,8 +73,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
-          cache: 'npm'
+          node-version: "18"
+          cache: "npm"
           cache-dependency-path: bitten-ui/package-lock.json
 
       - name: Install dependencies

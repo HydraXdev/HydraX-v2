@@ -5,39 +5,40 @@ Creates tables, indexes, and sample data for the engagement system
 """
 
 import asyncio
-import logging
-import sqlite3
-import os
-from datetime import datetime, timedelta
-from typing import Dict, Any, List
 import json
+import logging
+import os
+import sqlite3
+from datetime import datetime, timedelta
+from typing import Any, Dict, List
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 # Database configuration
-DB_PATH = os.path.join(os.path.dirname(__file__), 'data', 'engagement.db')
-DB_SCHEMA_PATH = os.path.join(os.path.dirname(__file__), 'database', 'engagement_schema.sql')
+DB_PATH = os.path.join(os.path.dirname(__file__), "data", "engagement.db")
+DB_SCHEMA_PATH = os.path.join(os.path.dirname(__file__), "database", "engagement_schema.sql")
+
 
 class EngagementDatabaseInitializer:
     """Database initializer for engagement system"""
-    
+
     def __init__(self, db_path: str = DB_PATH):
         self.db_path = db_path
         self.ensure_data_directory()
-    
+
     def ensure_data_directory(self):
         """Ensure data directory exists"""
         data_dir = os.path.dirname(self.db_path)
         if not os.path.exists(data_dir):
             os.makedirs(data_dir, exist_ok=True)
             logger.info(f"Created data directory: {data_dir}")
-    
+
     def create_database_schema(self):
         """Create database schema for engagement system"""
         logger.info("Creating engagement database schema...")
-        
+
         schema_sql = """
         -- User Login Streaks Table
         CREATE TABLE IF NOT EXISTS user_login_streaks (
@@ -154,25 +155,25 @@ class EngagementDatabaseInitializer:
         CREATE INDEX IF NOT EXISTS idx_reward_claims_type ON reward_claims(reward_type);
 
         -- Triggers for updated_at timestamps
-        CREATE TRIGGER IF NOT EXISTS update_user_login_streaks_timestamp 
+        CREATE TRIGGER IF NOT EXISTS update_user_login_streaks_timestamp
             AFTER UPDATE ON user_login_streaks
             BEGIN
                 UPDATE user_login_streaks SET updated_at = CURRENT_TIMESTAMP WHERE user_id = NEW.user_id;
             END;
 
-        CREATE TRIGGER IF NOT EXISTS update_daily_missions_timestamp 
+        CREATE TRIGGER IF NOT EXISTS update_daily_missions_timestamp
             AFTER UPDATE ON daily_missions
             BEGIN
                 UPDATE daily_missions SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
             END;
 
-        CREATE TRIGGER IF NOT EXISTS update_campaign_progress_timestamp 
+        CREATE TRIGGER IF NOT EXISTS update_campaign_progress_timestamp
             AFTER UPDATE ON user_campaign_progress
             BEGIN
                 UPDATE user_campaign_progress SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
             END;
         """
-        
+
         try:
             with sqlite3.connect(self.db_path) as conn:
                 conn.executescript(schema_sql)
@@ -181,108 +182,120 @@ class EngagementDatabaseInitializer:
         except Exception as e:
             logger.error(f"Error creating database schema: {e}")
             raise
-    
+
     def create_sample_data(self):
         """Create sample data for testing"""
         logger.info("Creating sample data...")
-        
+
         try:
             with sqlite3.connect(self.db_path) as conn:
                 cursor = conn.cursor()
-                
+
                 # Sample seasonal campaign
                 campaign_data = {
-                    'campaign_id': 'winter_2024',
-                    'name': 'Winter Warriors',
-                    'description': 'Battle through the frozen lands and earn exclusive winter rewards!',
-                    'start_date': (datetime.now() - timedelta(days=10)).isoformat(),
-                    'end_date': (datetime.now() + timedelta(days=20)).isoformat(),
-                    'milestones': json.dumps([
-                        {'level': 1, 'xp_required': 100, 'rewards': [{'type': 'bits', 'amount': 100}]},
-                        {'level': 2, 'xp_required': 250, 'rewards': [{'type': 'xp', 'amount': 50}]},
-                        {'level': 3, 'xp_required': 500, 'rewards': [{'type': 'mystery_box', 'amount': 1}]},
-                        {'level': 4, 'xp_required': 1000, 'rewards': [{'type': 'rare_item', 'amount': 1}]},
-                        {'level': 5, 'xp_required': 2000, 'rewards': [{'type': 'exclusive_bot', 'amount': 1}]}
-                    ]),
-                    'is_active': True
+                    "campaign_id": "winter_2024",
+                    "name": "Winter Warriors",
+                    "description": "Battle through the frozen lands and earn exclusive winter rewards!",
+                    "start_date": (datetime.now() - timedelta(days=10)).isoformat(),
+                    "end_date": (datetime.now() + timedelta(days=20)).isoformat(),
+                    "milestones": json.dumps(
+                        [
+                            {"level": 1, "xp_required": 100, "rewards": [{"type": "bits", "amount": 100}]},
+                            {"level": 2, "xp_required": 250, "rewards": [{"type": "xp", "amount": 50}]},
+                            {"level": 3, "xp_required": 500, "rewards": [{"type": "mystery_box", "amount": 1}]},
+                            {"level": 4, "xp_required": 1000, "rewards": [{"type": "rare_item", "amount": 1}]},
+                            {"level": 5, "xp_required": 2000, "rewards": [{"type": "exclusive_bot", "amount": 1}]},
+                        ]
+                    ),
+                    "is_active": True,
                 }
-                
-                cursor.execute("""
-                    INSERT OR REPLACE INTO seasonal_campaigns 
+
+                cursor.execute(
+                    """
+                    INSERT OR REPLACE INTO seasonal_campaigns
                     (campaign_id, name, description, start_date, end_date, milestones, is_active)
                     VALUES (?, ?, ?, ?, ?, ?, ?)
-                """, (
-                    campaign_data['campaign_id'],
-                    campaign_data['name'],
-                    campaign_data['description'],
-                    campaign_data['start_date'],
-                    campaign_data['end_date'],
-                    campaign_data['milestones'],
-                    campaign_data['is_active']
-                ))
-                
+                """,
+                    (
+                        campaign_data["campaign_id"],
+                        campaign_data["name"],
+                        campaign_data["description"],
+                        campaign_data["start_date"],
+                        campaign_data["end_date"],
+                        campaign_data["milestones"],
+                        campaign_data["is_active"],
+                    ),
+                )
+
                 # Sample test user data
-                test_users = [
-                    'test_user_1',
-                    'test_user_2',
-                    'test_user_3'
-                ]
-                
+                test_users = ["test_user_1", "test_user_2", "test_user_3"]
+
                 for user_id in test_users:
                     # Login streak
-                    cursor.execute("""
-                        INSERT OR REPLACE INTO user_login_streaks 
+                    cursor.execute(
+                        """
+                        INSERT OR REPLACE INTO user_login_streaks
                         (user_id, current_streak, longest_streak, last_login, total_logins, streak_rewards_claimed)
                         VALUES (?, ?, ?, ?, ?, ?)
-                    """, (user_id, 1, 1, datetime.now().isoformat(), 1, '[]'))
-                    
+                    """,
+                        (user_id, 1, 1, datetime.now().isoformat(), 1, "[]"),
+                    )
+
                     # Personal record
-                    cursor.execute("""
-                        INSERT OR REPLACE INTO personal_records 
+                    cursor.execute(
+                        """
+                        INSERT OR REPLACE INTO personal_records
                         (user_id, record_type, value, achieved_at, details)
                         VALUES (?, ?, ?, ?, ?)
-                    """, (user_id, 'highest_damage_dealt', 1000.0, datetime.now().isoformat(), '{}'))
-                    
+                    """,
+                        (user_id, "highest_damage_dealt", 1000.0, datetime.now().isoformat(), "{}"),
+                    )
+
                     # Campaign progress
-                    cursor.execute("""
-                        INSERT OR REPLACE INTO user_campaign_progress 
+                    cursor.execute(
+                        """
+                        INSERT OR REPLACE INTO user_campaign_progress
                         (user_id, campaign_id, current_progress, completed_milestones, total_rewards_claimed)
                         VALUES (?, ?, ?, ?, ?)
-                    """, (user_id, 'winter_2024', 0, '[]', 0))
-                
+                    """,
+                        (user_id, "winter_2024", 0, "[]", 0),
+                    )
+
                 conn.commit()
                 logger.info(f"Sample data created for {len(test_users)} test users")
-                
+
         except Exception as e:
             logger.error(f"Error creating sample data: {e}")
             raise
-    
+
     def verify_database(self):
         """Verify database was created properly"""
         logger.info("Verifying database structure...")
-        
+
         try:
             with sqlite3.connect(self.db_path) as conn:
                 cursor = conn.cursor()
-                
+
                 # Check tables exist
-                cursor.execute("""
-                    SELECT name FROM sqlite_master 
+                cursor.execute(
+                    """
+                    SELECT name FROM sqlite_master
                     WHERE type='table' AND name NOT LIKE 'sqlite_%'
-                """)
+                """
+                )
                 tables = [row[0] for row in cursor.fetchall()]
-                
+
                 expected_tables = [
-                    'user_login_streaks',
-                    'personal_records',
-                    'daily_missions',
-                    'mystery_boxes',
-                    'seasonal_campaigns',
-                    'user_campaign_progress',
-                    'engagement_events',
-                    'reward_claims'
+                    "user_login_streaks",
+                    "personal_records",
+                    "daily_missions",
+                    "mystery_boxes",
+                    "seasonal_campaigns",
+                    "user_campaign_progress",
+                    "engagement_events",
+                    "reward_claims",
                 ]
-                
+
                 for table in expected_tables:
                     if table in tables:
                         cursor.execute(f"SELECT COUNT(*) FROM {table}")
@@ -290,152 +303,164 @@ class EngagementDatabaseInitializer:
                         logger.info(f"✓ Table {table}: {count} rows")
                     else:
                         logger.error(f"✗ Table {table}: NOT FOUND")
-                
+
                 # Check indexes
-                cursor.execute("""
-                    SELECT name FROM sqlite_master 
+                cursor.execute(
+                    """
+                    SELECT name FROM sqlite_master
                     WHERE type='index' AND name NOT LIKE 'sqlite_%'
-                """)
+                """
+                )
                 indexes = [row[0] for row in cursor.fetchall()]
                 logger.info(f"✓ Created {len(indexes)} indexes")
-                
+
                 # Check triggers
-                cursor.execute("""
-                    SELECT name FROM sqlite_master 
+                cursor.execute(
+                    """
+                    SELECT name FROM sqlite_master
                     WHERE type='trigger'
-                """)
+                """
+                )
                 triggers = [row[0] for row in cursor.fetchall()]
                 logger.info(f"✓ Created {len(triggers)} triggers")
-                
+
                 logger.info("Database verification completed successfully")
-                
+
         except Exception as e:
             logger.error(f"Error verifying database: {e}")
             raise
-    
+
     def run_maintenance_tasks(self):
         """Run database maintenance tasks"""
         logger.info("Running database maintenance tasks...")
-        
+
         try:
             with sqlite3.connect(self.db_path) as conn:
                 cursor = conn.cursor()
-                
+
                 # Clean up expired missions
-                cursor.execute("""
-                    DELETE FROM daily_missions 
+                cursor.execute(
+                    """
+                    DELETE FROM daily_missions
                     WHERE expires_at < datetime('now') AND is_completed = FALSE
-                """)
+                """
+                )
                 expired_missions = cursor.rowcount
-                
+
                 # Clean up old engagement events (keep last 30 days)
-                cursor.execute("""
-                    DELETE FROM engagement_events 
+                cursor.execute(
+                    """
+                    DELETE FROM engagement_events
                     WHERE timestamp < datetime('now', '-30 days')
-                """)
+                """
+                )
                 old_events = cursor.rowcount
-                
+
                 conn.commit()
-                
+
                 # Vacuum database (must be done outside transaction)
                 conn.execute("VACUUM")
-                logger.info(f"Maintenance completed: removed {expired_missions} expired missions, {old_events} old events")
-                
+                logger.info(
+                    f"Maintenance completed: removed {expired_missions} expired missions, {old_events} old events"
+                )
+
         except Exception as e:
             logger.error(f"Error running maintenance tasks: {e}")
             raise
-    
+
     def get_database_stats(self) -> Dict[str, Any]:
         """Get database statistics"""
         try:
             with sqlite3.connect(self.db_path) as conn:
                 cursor = conn.cursor()
-                
+
                 stats = {}
-                
+
                 # Table row counts
                 tables = [
-                    'user_login_streaks',
-                    'personal_records', 
-                    'daily_missions',
-                    'mystery_boxes',
-                    'seasonal_campaigns',
-                    'user_campaign_progress',
-                    'engagement_events',
-                    'reward_claims'
+                    "user_login_streaks",
+                    "personal_records",
+                    "daily_missions",
+                    "mystery_boxes",
+                    "seasonal_campaigns",
+                    "user_campaign_progress",
+                    "engagement_events",
+                    "reward_claims",
                 ]
-                
+
                 for table in tables:
                     cursor.execute(f"SELECT COUNT(*) FROM {table}")
                     stats[f"{table}_count"] = cursor.fetchone()[0]
-                
+
                 # Database size
                 cursor.execute("SELECT page_count * page_size FROM pragma_page_count(), pragma_page_size()")
-                stats['database_size_bytes'] = cursor.fetchone()[0]
-                
+                stats["database_size_bytes"] = cursor.fetchone()[0]
+
                 # Active campaigns
                 cursor.execute("SELECT COUNT(*) FROM seasonal_campaigns WHERE is_active = TRUE")
-                stats['active_campaigns'] = cursor.fetchone()[0]
-                
+                stats["active_campaigns"] = cursor.fetchone()[0]
+
                 # Total users with engagement data
                 cursor.execute("SELECT COUNT(DISTINCT user_id) FROM user_login_streaks")
-                stats['total_users'] = cursor.fetchone()[0]
-                
+                stats["total_users"] = cursor.fetchone()[0]
+
                 return stats
-                
+
         except Exception as e:
             logger.error(f"Error getting database stats: {e}")
             return {}
 
+
 async def main():
     """Main initialization function"""
     logger.info("Starting HydraX v2 Engagement Database Initialization")
-    
+
     try:
         # Initialize database
         db_init = EngagementDatabaseInitializer()
-        
+
         # Create schema
         db_init.create_database_schema()
-        
+
         # Create sample data
         db_init.create_sample_data()
-        
+
         # Verify database
         db_init.verify_database()
-        
+
         # Run maintenance
         db_init.run_maintenance_tasks()
-        
+
         # Get stats
         stats = db_init.get_database_stats()
         logger.info("Database Statistics:")
         for key, value in stats.items():
             logger.info(f"  {key}: {value}")
-        
+
         logger.info("✅ Engagement database initialization completed successfully!")
-        
+
         # Test basic operations
         logger.info("Testing basic database operations...")
-        
+
         with sqlite3.connect(db_init.db_path) as conn:
             cursor = conn.cursor()
-            
+
             # Test login streak query
             cursor.execute("SELECT user_id, current_streak FROM user_login_streaks LIMIT 3")
             streaks = cursor.fetchall()
             logger.info(f"Sample login streaks: {streaks}")
-            
+
             # Test campaign query
             cursor.execute("SELECT campaign_id, name FROM seasonal_campaigns WHERE is_active = TRUE")
             campaigns = cursor.fetchall()
             logger.info(f"Active campaigns: {campaigns}")
-        
+
         logger.info("✅ Database operations test completed successfully!")
-        
+
     except Exception as e:
         logger.error(f"❌ Database initialization failed: {e}")
         raise
+
 
 if __name__ == "__main__":
     # Run the initialization

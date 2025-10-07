@@ -6,14 +6,16 @@ Handles symbol subscriptions with auto-reconnect and backoff
 
 import asyncio
 import json
-import time
-import random
 import logging
-from typing import Dict, List, Optional, Set, Callable
+import random
+import time
 from datetime import datetime
+from typing import Callable, Dict, List, Optional, Set
+
 import websockets
 
 logger = logging.getLogger(__name__)
+
 
 class MetaSocketSubscriptions:
     """Manages MetaSocket symbol subscriptions with resilience"""
@@ -27,14 +29,29 @@ class MetaSocketSubscriptions:
         # 22 active symbols (including XAGUSD, excluding USDCAD)
         self.active_symbols = [
             # Major Forex Pairs (6)
-            "EURUSD", "GBPUSD", "USDCHF", "USDJPY", "AUDUSD", "NZDUSD",
+            "EURUSD",
+            "GBPUSD",
+            "USDCHF",
+            "USDJPY",
+            "AUDUSD",
+            "NZDUSD",
             # Cross Pairs (10)
-            "EURJPY", "GBPJPY", "EURGBP", "EURAUD", "GBPCAD", "AUDJPY", "NZDJPY",
-            "CHFJPY", "CADJPY", "AUDCAD",
+            "EURJPY",
+            "GBPJPY",
+            "EURGBP",
+            "EURAUD",
+            "GBPCAD",
+            "AUDJPY",
+            "NZDJPY",
+            "CHFJPY",
+            "CADJPY",
+            "AUDCAD",
             # Additional Pairs (2)
-            "USDCNH", "AUDNZD",
+            "USDCNH",
+            "AUDNZD",
             # Precious Metals (2)
-            "XAUUSD", "XAGUSD"
+            "XAUUSD",
+            "XAGUSD",
         ]
 
         # Track subscription status
@@ -72,10 +89,7 @@ class MetaSocketSubscriptions:
                 logger.info(f"Connecting to MetaSocket at {self.ws_url}")
 
                 self.websocket = await websockets.connect(
-                    self.ws_url,
-                    ping_interval=20,
-                    ping_timeout=10,
-                    close_timeout=5
+                    self.ws_url, ping_interval=20, ping_timeout=10, close_timeout=5
                 )
 
                 self.connected = True
@@ -127,20 +141,11 @@ class MetaSocketSubscriptions:
         """Subscribe to price tracking and OHLC for a single symbol"""
         try:
             # Subscribe to price tracking
-            price_msg = {
-                "action": "TRACK_PRICES",
-                "symbol": symbol,
-                "ts": int(time.time() * 1000)
-            }
+            price_msg = {"action": "TRACK_PRICES", "symbol": symbol, "ts": int(time.time() * 1000)}
             await self.websocket.send(json.dumps(price_msg))
 
             # Subscribe to OHLC if available, otherwise we'll build from ticks
-            ohlc_msg = {
-                "action": "TRACK_OHLC",
-                "symbol": symbol,
-                "timeframe": "M1",
-                "ts": int(time.time() * 1000)
-            }
+            ohlc_msg = {"action": "TRACK_OHLC", "symbol": symbol, "timeframe": "M1", "ts": int(time.time() * 1000)}
             await self.websocket.send(json.dumps(ohlc_msg))
 
             # Track subscription
@@ -155,10 +160,7 @@ class MetaSocketSubscriptions:
     async def subscribe_trade_events(self):
         """Subscribe to position/trade events"""
         try:
-            trade_msg = {
-                "action": "TRACK_TRADE_EVENTS",
-                "ts": int(time.time() * 1000)
-            }
+            trade_msg = {"action": "TRACK_TRADE_EVENTS", "ts": int(time.time() * 1000)}
             await self.websocket.send(json.dumps(trade_msg))
             logger.debug("📈 Subscribed to trade events")
 
@@ -210,7 +212,7 @@ class MetaSocketSubscriptions:
                 "ask": data.get("ask"),
                 "mid": (data.get("bid", 0) + data.get("ask", 0)) / 2 if data.get("bid") and data.get("ask") else None,
                 "ts_epoch_ms": int(timestamp * 1000),
-                "src": "metasocket"
+                "src": "metasocket",
             }
             await self.tick_callback(normalized_tick)
 
@@ -225,7 +227,7 @@ class MetaSocketSubscriptions:
                 "close": data.get("close"),
                 "volume": data.get("volume", 0),
                 "ts_epoch_ms": int(timestamp * 1000),
-                "src": "metasocket"
+                "src": "metasocket",
             }
             await self.ohlc_callback(normalized_ohlc)
 
@@ -242,7 +244,7 @@ class MetaSocketSubscriptions:
                 "sl": data.get("sl"),
                 "tp": data.get("tp"),
                 "ts_epoch_ms": int(timestamp * 1000),
-                "src": "metasocket"
+                "src": "metasocket",
             }
             await self.position_callback(normalized_position)
 
@@ -270,12 +272,14 @@ class MetaSocketSubscriptions:
 
         subscriptions = []
         for symbol in self.active_symbols:
-            subscriptions.append({
-                "symbol": symbol,
-                "prices": symbol in self.subscribed_symbols,
-                "ohlc": symbol in self.subscribed_symbols,  # Assuming same for now
-                "last_ts_ms": int(self.last_tick_timestamps.get(symbol, 0) * 1000)
-            })
+            subscriptions.append(
+                {
+                    "symbol": symbol,
+                    "prices": symbol in self.subscribed_symbols,
+                    "ohlc": symbol in self.subscribed_symbols,  # Assuming same for now
+                    "last_ts_ms": int(self.last_tick_timestamps.get(symbol, 0) * 1000),
+                }
+            )
 
         return {
             "last_event_age_ms": max_age,
@@ -283,7 +287,7 @@ class MetaSocketSubscriptions:
             "tick_rate_per_symbol": tick_rates,
             "account_heartbeat_age_ms": int((current_time - self.last_heartbeat) * 1000),
             "subscriptions": subscriptions,
-            "connected": self.connected
+            "connected": self.connected,
         }
 
     async def health_check_loop(self):
@@ -312,13 +316,12 @@ class MetaSocketSubscriptions:
         logger.info("🚀 Starting MetaSocket subscription system")
 
         # Start connection and health check loops
-        await asyncio.gather(
-            self.connect(),
-            self.health_check_loop()
-        )
+        await asyncio.gather(self.connect(), self.health_check_loop())
+
 
 # Example usage
 if __name__ == "__main__":
+
     async def tick_handler(tick):
         print(f"TICK: {tick['symbol']} {tick['bid']}/{tick['ask']}")
 

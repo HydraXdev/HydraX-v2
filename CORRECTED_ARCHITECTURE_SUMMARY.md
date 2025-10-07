@@ -7,6 +7,7 @@ The documentation files contained **OUTDATED ARCHITECTURE** that described a com
 ## 🎯 ACTUAL IMPLEMENTATION (Verified in Code)
 
 ### Single Master Architecture ✅
+
 **Location**: `/root/HydraX-v2/bitten_clone_manager.py`
 
 ```
@@ -18,6 +19,7 @@ Live Trading Instance
 ```
 
 ### Press Pass Flow ✅
+
 **Location**: `/root/HydraX-v2/src/bitten_core/press_pass_manager.py`
 
 ```
@@ -29,7 +31,9 @@ destroy_user_clone(old) → Slot Recycled
 ```
 
 ### MT5 Farm Structure ✅
+
 **Actual Directory Layout**:
+
 ```
 C:\MT5_Farm\
 ├── Masters\
@@ -43,18 +47,21 @@ C:\MT5_Farm\
 ## 🔧 Key Implementation Details
 
 ### Clone Manager (`bitten_clone_manager.py`)
+
 - **create_user_clone()**: Copies BITTEN_MASTER in seconds
 - **inject_credentials()**: Injects broker credentials post-clone
 - **destroy_user_clone()**: Removes instance for recycling
 - **Port allocation**: Hash-based instant assignment
 
 ### Performance Verified
+
 - **Directory Copy**: `shutil.copytree()` = milliseconds
 - **Bridge Setup**: JSON file creation = instant
 - **Database Insert**: Single SQL operation = instant
 - **Total Time**: Well under 3 seconds
 
 ### Smart Recycling
+
 - **Upgrade**: New clone with credentials, old destroyed
 - **Abandonment**: Instance recycled after 24h inactivity
 - **Infinite Scaling**: No pre-allocated limits
@@ -62,12 +69,14 @@ C:\MT5_Farm\
 ## 📋 Files Corrected
 
 ### Updated Documentation:
+
 1. **CLAUDE.md** - Fixed architecture section
 2. **MT5_FARM_FINAL_STATUS_REPORT.md** - Corrected structure
 3. **PRESS_PASS_IMPLEMENTATION.md** - Updated with actual flow
 4. **MT5_INSTANCE_IDENTIFICATION_GUIDE.md** - Fixed directory structure
 
 ### Key Code Files (Already Correct):
+
 1. **bitten_clone_manager.py** - Core cloning logic ✅
 2. **press_pass_manager.py** - Email-only signup ✅
 3. **backup_agent.py** - Failover cloning ✅
@@ -76,6 +85,7 @@ C:\MT5_Farm\
 ## 🎉 Bottom Line for Next AI
 
 **The code was already correct** - it implements exactly the architecture you described:
+
 - Single BITTEN_MASTER for all users
 - Sub-3-second clone deployment
 - Email-only Press Pass signup

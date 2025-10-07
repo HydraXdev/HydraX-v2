@@ -1,14 +1,22 @@
-"use client"
+"use client";
 
-import React, { useMemo } from 'react';
-import { motion } from 'framer-motion';
-import { TrendingUp, TrendingDown, ExternalLink, X, BarChart3, BookOpen, Target } from 'lucide-react';
-import { useReducedMotion } from '@/lib/ui/a11y';
-import { fmtUSD, fmtPrice, fmtSigned, fmtRelative } from '@/lib/ui/format';
-import type { LiveTrade } from '@/lib/eventBus/contracts';
-import { HeaderOps } from './HeaderOps';
-import { HelpMenuButtons } from './HelpMenuButtons';
-import { FooterStatus } from './FooterStatus';
+import React, { useMemo } from "react";
+import { motion } from "framer-motion";
+import {
+  TrendingUp,
+  TrendingDown,
+  ExternalLink,
+  X,
+  BarChart3,
+  BookOpen,
+  Target,
+} from "lucide-react";
+import { useReducedMotion } from "@/lib/ui/a11y";
+import { fmtUSD, fmtPrice, fmtSigned, fmtRelative } from "@/lib/ui/format";
+import type { LiveTrade } from "@/lib/eventBus/contracts";
+import { HeaderOps } from "./HeaderOps";
+import { HelpMenuButtons } from "./HelpMenuButtons";
+import { FooterStatus } from "./FooterStatus";
 
 export interface StatusBoardProps {
   trades: LiveTrade[];
@@ -65,16 +73,10 @@ export function StatusBoard({
   return (
     <div className="min-h-screen bg-[#0a0e1a] text-[#cbd5e0] flex flex-col">
       {/* Header */}
-      <HeaderOps
-        pageTitle="STATUS BOARD"
-        userLevel={level}
-      />
+      <HeaderOps pageTitle="STATUS BOARD" userLevel={level} />
 
       {/* Help & Menu Buttons */}
-      <HelpMenuButtons
-        onHelp={onOpenHelp}
-        onMenu={onOpenMenu}
-      />
+      <HelpMenuButtons onHelp={onOpenHelp} onMenu={onOpenMenu} />
 
       <div className="flex-1 max-w-6xl mx-auto w-full px-4 py-8 pb-32">
         {/* Account Telemetry Card */}
@@ -87,26 +89,38 @@ export function StatusBoard({
             {/* Balance */}
             <div>
               <p className="text-xs text-[#4a5568] mb-1">BALANCE</p>
-              <p className="text-2xl font-mono tabular-nums text-[#cbd5e0]">{fmtUSD(balance)}</p>
+              <p className="text-2xl font-mono tabular-nums text-[#cbd5e0]">
+                {fmtUSD(balance)}
+              </p>
             </div>
 
             {/* Equity */}
             <div>
               <p className="text-xs text-[#4a5568] mb-1">EQUITY</p>
-              <p className="text-2xl font-mono tabular-nums text-[#cbd5e0]">{fmtUSD(equity)}</p>
+              <p className="text-2xl font-mono tabular-nums text-[#cbd5e0]">
+                {fmtUSD(equity)}
+              </p>
             </div>
 
             {/* P/L Delta */}
             <div>
               <p className="text-xs text-[#4a5568] mb-1">TOTAL P/L</p>
               <div className="flex items-center gap-2">
-                <p className={`text-2xl font-mono tabular-nums ${totalPnL >= 0 ? 'text-[#34d399]' : 'text-[#ef4444]'}`}>
+                <p
+                  className={`text-2xl font-mono tabular-nums ${totalPnL >= 0 ? "text-[#34d399]" : "text-[#ef4444]"}`}
+                >
                   {fmtSigned(totalPnL)}
                 </p>
                 {totalPnL >= 0 ? (
-                  <TrendingUp className="w-5 h-5 text-[#34d399]" aria-hidden="true" />
+                  <TrendingUp
+                    className="w-5 h-5 text-[#34d399]"
+                    aria-hidden="true"
+                  />
                 ) : (
-                  <TrendingDown className="w-5 h-5 text-[#ef4444]" aria-hidden="true" />
+                  <TrendingDown
+                    className="w-5 h-5 text-[#ef4444]"
+                    aria-hidden="true"
+                  />
                 )}
               </div>
             </div>
@@ -123,9 +137,11 @@ export function StatusBoard({
             <div className="w-full bg-[#2d3748] rounded-full h-2">
               <div
                 className={`h-2 rounded-full transition-all ${
-                  openSlots / slots > 0.8 ? 'bg-[#ef4444]' :
-                  openSlots / slots > 0.5 ? 'bg-[#fbbf24]' :
-                  'bg-[#34d399]'
+                  openSlots / slots > 0.8
+                    ? "bg-[#ef4444]"
+                    : openSlots / slots > 0.5
+                      ? "bg-[#fbbf24]"
+                      : "bg-[#34d399]"
                 }`}
                 style={{ width: `${(openSlots / slots) * 100}%` }}
                 aria-label={`${openSlots} of ${slots} position slots used`}
@@ -137,15 +153,24 @@ export function StatusBoard({
         {/* Trade Lanes */}
         <div className="space-y-4 mb-6">
           {trades.map((trade, index) => (
-            <TradeLane key={trade.id} trade={trade} index={index} prefersReducedMotion={prefersReducedMotion} />
+            <TradeLane
+              key={trade.id}
+              trade={trade}
+              index={index}
+              prefersReducedMotion={prefersReducedMotion}
+            />
           ))}
 
           {/* Empty Slots */}
           {availableSlots > 0 && (
             <div className="bg-[#1a1f2e] border border-[#2d3748] border-dashed rounded-lg p-6 text-center">
-              <Target className="w-8 h-8 text-[#4a5568] mx-auto mb-2" aria-hidden="true" />
+              <Target
+                className="w-8 h-8 text-[#4a5568] mx-auto mb-2"
+                aria-hidden="true"
+              />
               <p className="text-sm text-[#4a5568]">
-                {availableSlots} {availableSlots === 1 ? 'slot' : 'slots'} available
+                {availableSlots} {availableSlots === 1 ? "slot" : "slots"}{" "}
+                available
               </p>
             </div>
           )}
@@ -153,7 +178,9 @@ export function StatusBoard({
 
         {/* Control Panel */}
         <div className="bg-[#1a1f2e] border border-[#cbd5e0]/30 rounded-lg p-6">
-          <h2 className="text-lg font-tactical text-[#cbd5e0] mb-4">CONTROL PANEL</h2>
+          <h2 className="text-lg font-tactical text-[#cbd5e0] mb-4">
+            CONTROL PANEL
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <button
               onClick={onAlerts}
@@ -226,12 +253,14 @@ function TradeLane({
   const isProfitable = trade.equity >= 0;
 
   // Calculate progress on the TP/SL track (0-100%)
-  const range = trade.direction === 'BUY'
-    ? (trade.takeProfit - trade.stopLoss)
-    : (trade.stopLoss - trade.takeProfit);
-  const progress = trade.direction === 'BUY'
-    ? ((trade.current - trade.stopLoss) / range) * 100
-    : ((trade.stopLoss - trade.current) / range) * 100;
+  const range =
+    trade.direction === "BUY"
+      ? trade.takeProfit - trade.stopLoss
+      : trade.stopLoss - trade.takeProfit;
+  const progress =
+    trade.direction === "BUY"
+      ? ((trade.current - trade.stopLoss) / range) * 100
+      : ((trade.stopLoss - trade.current) / range) * 100;
   const clampedProgress = Math.max(0, Math.min(100, progress));
 
   return (
@@ -245,10 +274,16 @@ function TradeLane({
         {/* Left Meta */}
         <div className="md:col-span-3">
           <div className="flex items-center gap-2 mb-1">
-            {trade.direction === 'BUY' ? (
-              <TrendingUp className="w-4 h-4 text-[#34d399]" aria-hidden="true" />
+            {trade.direction === "BUY" ? (
+              <TrendingUp
+                className="w-4 h-4 text-[#34d399]"
+                aria-hidden="true"
+              />
             ) : (
-              <TrendingDown className="w-4 h-4 text-[#ef4444]" aria-hidden="true" />
+              <TrendingDown
+                className="w-4 h-4 text-[#ef4444]"
+                aria-hidden="true"
+              />
             )}
             <span className="font-tactical text-[#cbd5e0]">{trade.pair}</span>
           </div>
@@ -261,14 +296,20 @@ function TradeLane({
         <div className="md:col-span-6">
           <div className="relative h-6 bg-[#0a0e1a] rounded-lg overflow-hidden">
             {/* SL Gate (Red) */}
-            <div className="absolute left-0 top-0 h-full w-1 bg-[#ef4444]" aria-label="Stop loss" />
+            <div
+              className="absolute left-0 top-0 h-full w-1 bg-[#ef4444]"
+              aria-label="Stop loss"
+            />
 
             {/* TP Gate (Green) */}
-            <div className="absolute right-0 top-0 h-full w-1 bg-[#34d399]" aria-label="Take profit" />
+            <div
+              className="absolute right-0 top-0 h-full w-1 bg-[#34d399]"
+              aria-label="Take profit"
+            />
 
             {/* Fill area */}
             <div
-              className={`absolute top-0 left-0 h-full transition-all ${isProfitable ? 'bg-[#34d399]/20' : 'bg-[#ef4444]/20'}`}
+              className={`absolute top-0 left-0 h-full transition-all ${isProfitable ? "bg-[#34d399]/20" : "bg-[#ef4444]/20"}`}
               style={{ width: `${clampedProgress}%` }}
               aria-hidden="true"
             />
@@ -284,27 +325,42 @@ function TradeLane({
             <div className="absolute inset-0 flex items-center justify-between px-2 text-xs font-mono tabular-nums">
               <span className="text-[#ef4444]">{fmtPrice(trade.stopLoss)}</span>
               <span className="text-[#fbbf24]">{fmtPrice(trade.current)}</span>
-              <span className="text-[#34d399]">{fmtPrice(trade.takeProfit)}</span>
+              <span className="text-[#34d399]">
+                {fmtPrice(trade.takeProfit)}
+              </span>
             </div>
           </div>
         </div>
 
         {/* Right: P/L */}
         <div className="md:col-span-3 text-right">
-          <p className={`text-xl font-mono tabular-nums ${isProfitable ? 'text-[#34d399]' : 'text-[#ef4444]'}`}>
+          <p
+            className={`text-xl font-mono tabular-nums ${isProfitable ? "text-[#34d399]" : "text-[#ef4444]"}`}
+          >
             {fmtSigned(trade.equity)}
           </p>
-          <p className={`text-xs font-mono tabular-nums ${isProfitable ? 'text-[#34d399]/70' : 'text-[#ef4444]/70'}`}>
+          <p
+            className={`text-xs font-mono tabular-nums ${isProfitable ? "text-[#34d399]/70" : "text-[#ef4444]/70"}`}
+          >
             {fmtSigned(pnlPercent)}%
           </p>
 
           {/* Optional Sparkline */}
           {trade.history && trade.history.length > 0 && (
-            <svg viewBox="0 0 60 20" className="w-full h-5 mt-1" aria-label="Price history sparkline">
+            <svg
+              viewBox="0 0 60 20"
+              className="w-full h-5 mt-1"
+              aria-label="Price history sparkline"
+            >
               <polyline
-                points={trade.history.map((val, i) => `${(i / (trade.history!.length - 1)) * 60},${10 - (val / 100) * 5}`).join(' ')}
+                points={trade.history
+                  .map(
+                    (val, i) =>
+                      `${(i / (trade.history!.length - 1)) * 60},${10 - (val / 100) * 5}`,
+                  )
+                  .join(" ")}
                 fill="none"
-                stroke={isProfitable ? '#34d399' : '#ef4444'}
+                stroke={isProfitable ? "#34d399" : "#ef4444"}
                 strokeWidth="1"
                 opacity="0.5"
               />

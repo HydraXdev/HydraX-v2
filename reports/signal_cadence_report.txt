@@ -28,7 +28,7 @@ Remaining time: ~86 minutes
 
 THRESHOLD ADJUSTMENTS:
 • Pip movement: 3 → 2 pips (33% reduction)
-• Volume surge: 1.3x → 1.1x (15% reduction)  
+• Volume surge: 1.3x → 1.1x (15% reduction)
 • Confidence validation: BYPASSED
 • Calculation breakdown: NOT REQUIRED
 • Signal limit: 10 during decay window
@@ -50,7 +50,7 @@ THRESHOLD ADJUSTMENTS:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ✅ Elite Guard (PID 3190774): GENERATING
-✅ ZMQ Port 5557: PUBLISHING  
+✅ ZMQ Port 5557: PUBLISHING
 ✅ Relay to Telegram: ACTIVE
 ✅ WebApp API: RECEIVING
 ✅ Telegram Group: DELIVERING

@@ -21,12 +21,14 @@ Successfully integrated HydraSocket EA (native TCP sockets) with existing BITTEN
 ## 📊 CURRENT LIVE STATUS
 
 **Your MT5 Account (843859)**:
+
 - **Balance**: $7,978.85 ✅ LIVE DATA
 - **Equity**: $7,821.39 ✅ LIVE DATA
 - **Last Update**: < 1 second ago ✅ REAL-TIME
 - **Connection Status**: 🟢 ACTIVE
 
 **Data Flow**:
+
 - **Account summaries**: Every 1 second ✅
 - **Position heartbeats**: Every 2 seconds ✅
 - **Custom 15s bars**: Ready to receive ✅
@@ -130,10 +132,12 @@ pkill -f hydrasocket_universal_bridge && sleep 2 && nohup python3 /root/HydraX-v
 ### **Current Balance-Based Calculation:**
 
 **Your Account (843859)**:
+
 - Balance: $7,978.85
 - Risk: 2% = $159.58
 
 **Example Signal (EURUSD)**:
+
 - Entry: 1.09000
 - SL: 1.08900 (10 pips)
 - Calculation: $159.58 / (10 pips × $10/pip) = **1.60 lots**
@@ -168,6 +172,7 @@ lot_size = manager.calculate_lot_size('843859', signal, risk_percent=0.02)
 ### **Status**: Ready to receive (EA configured ✅)
 
 **How It Works:**
+
 1. EA builds 15-second bars from ticks
 2. Sends `custom_bar_closed` events to port 5559
 3. Universal bridge receives and deduplicates
@@ -175,12 +180,14 @@ lot_size = manager.calculate_lot_size('843859', signal, risk_percent=0.02)
 5. Elite Guard processes for pattern detection (4x faster than M1)
 
 **Expected Performance:**
+
 - 20 bars needed for pattern detection
 - 15s bars: 5 minutes to start detecting ⚡
 - M1 bars: 20 minutes to start detecting
 - **Result**: 4x faster signal generation!
 
 ### **Multi-EA Scaling (Future)**:
+
 - 10 provider EAs send data
 - 190 consumer EAs execution-only
 - 640 bars/min from 10 providers
@@ -225,6 +232,7 @@ Database age: < 5 seconds
 ### **Issue 1: No account data updating**
 
 **Check:**
+
 ```bash
 # Is bridge running?
 ps aux | grep hydrasocket_universal_bridge
@@ -244,12 +252,14 @@ Restart universal bridge
 ### **Issue 2: Database shows stale data**
 
 **Check:**
+
 ```sql
 SELECT account_login, last_balance, datetime(last_seen, 'unixepoch'), (strftime('%s','now') - last_seen) as age_seconds FROM ea_instances WHERE account_login = '843859';
 ```
 
 **Fix:**
 If age > 10 seconds, check if account_summary events are being processed:
+
 ```bash
 grep "account_summary" /var/log/hydrasocket_universal_bridge.log | tail -5
 ```
@@ -259,12 +269,14 @@ grep "account_summary" /var/log/hydrasocket_universal_bridge.log | tail -5
 ### **Issue 3: Custom bars not appearing**
 
 **Check EA configuration:**
+
 ```
 InpEnableMarketFeed = true  // Must be enabled
 InpEnableDataFeed = true    // Must be enabled
 ```
 
 **Check logs:**
+
 ```bash
 grep "custom_bar_closed" /var/log/hydrasocket_universal_bridge.log
 ```
@@ -274,12 +286,14 @@ grep "custom_bar_closed" /var/log/hydrasocket_universal_bridge.log
 ## 🚀 NEXT STEPS
 
 ### **Immediate:**
+
 1. ✅ System is operational and capturing data
 2. ⏳ Monitor for 24 hours to verify stability
 3. ⏳ Integrate position sizing into fire execution
 4. ⏳ Test custom 15s bars (when EA starts sending them)
 
 ### **Future Enhancements:**
+
 1. **Multi-Account Support** - Track 200 EAs simultaneously
 2. **Provider Rotation** - Auto-select best 10 data providers
 3. **Feed Control Dashboard** - Web UI for enabling/disabling feeds
@@ -291,18 +305,21 @@ grep "custom_bar_closed" /var/log/hydrasocket_universal_bridge.log
 ## 📝 KEY ACHIEVEMENTS
 
 ### **Protocol Integration:**
+
 - ✅ **TCP → ZMQ**: Successfully bridged native sockets to existing ZMQ infrastructure
 - ✅ **Backward Compatible**: No changes needed to existing Elite Guard or pattern detectors
 - ✅ **Real-time Performance**: Sub-second latency for all data flows
 - ✅ **Scalable Architecture**: Ready for 200 EA deployment
 
 ### **Account Management:**
+
 - ✅ **Live Balance Tracking**: Updates every second from EA
 - ✅ **Position Sizing**: Accurate calculations based on current balance
 - ✅ **Multi-Currency**: Supports USD, JPY, EUR, and metal pairs
 - ✅ **Risk Management**: Configurable risk percentages (0.5%-5%)
 
 ### **Market Data:**
+
 - ✅ **Custom 15s Bars**: Infrastructure ready for 4x faster pattern detection
 - ✅ **Deduplication**: Handles multiple EAs sending same bars
 - ✅ **Event Streaming**: Real-time forwarding to Elite Guard
@@ -312,21 +329,22 @@ grep "custom_bar_closed" /var/log/hydrasocket_universal_bridge.log
 
 ## 🎯 SYSTEM STATUS SUMMARY
 
-| Component | Status | Performance |
-|-----------|--------|-------------|
-| Universal Bridge | 🟢 RUNNING | 100% |
-| Account Data Capture | 🟢 ACTIVE | < 1s latency |
-| Database Updates | 🟢 REAL-TIME | Every second |
-| Position Sizing | 🟢 OPERATIONAL | Accurate |
-| Custom 15s Bars | 🟡 READY | Awaiting EA data |
-| ZMQ Integration | 🟢 CONNECTED | Port 5560 |
-| TCP Listeners | 🟢 LISTENING | Ports 5559, 6000 |
+| Component            | Status         | Performance      |
+| -------------------- | -------------- | ---------------- |
+| Universal Bridge     | 🟢 RUNNING     | 100%             |
+| Account Data Capture | 🟢 ACTIVE      | < 1s latency     |
+| Database Updates     | 🟢 REAL-TIME   | Every second     |
+| Position Sizing      | 🟢 OPERATIONAL | Accurate         |
+| Custom 15s Bars      | 🟡 READY       | Awaiting EA data |
+| ZMQ Integration      | 🟢 CONNECTED   | Port 5560        |
+| TCP Listeners        | 🟢 LISTENING   | Ports 5559, 6000 |
 
 ---
 
 ## 📈 PERFORMANCE METRICS
 
 **Current Performance (October 1, 2025 02:22 UTC)**:
+
 - **Events Processed**: 1000+ per minute
 - **Account Updates**: 60+ per minute (1 per second)
 - **Position Heartbeats**: 30+ per minute

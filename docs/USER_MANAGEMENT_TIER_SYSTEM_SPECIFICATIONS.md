@@ -1,6 +1,7 @@
 # HydraX-v2 User Management & Tier System Specifications
 
 ## Table of Contents
+
 1. [System Architecture Overview](#system-architecture-overview)
 2. [Tier System Design](#tier-system-design)
 3. [Authentication & Authorization](#authentication--authorization)
@@ -59,6 +60,7 @@ The HydraX-v2 user management system consists of several interconnected componen
 The system implements a 5-tier subscription model with progressive feature unlocks:
 
 #### 1. PRESS_PASS (Free Trial)
+
 - **Price**: $0 (Limited time)
 - **Duration**: 7-30 days
 - **Purpose**: High-value trial to convert users
@@ -71,6 +73,7 @@ The system implements a 5-tier subscription model with progressive feature unloc
   - Access to COMMANDER-tier features during trial
 
 #### 2. NIBBLER (Entry Level)
+
 - **Price**: $39/month
 - **Target**: New traders
 - **Features**:
@@ -82,6 +85,7 @@ The system implements a 5-tier subscription model with progressive feature unloc
   - Basic risk management
 
 #### 3. FANG (Intermediate)
+
 - **Price**: $89/month
 - **Target**: Developing traders
 - **Features**:
@@ -93,6 +97,7 @@ The system implements a 5-tier subscription model with progressive feature unloc
   - Advanced risk controls
 
 #### 4. COMMANDER (Advanced)
+
 - **Price**: $189/month
 - **Target**: Experienced traders
 - **Features**:
@@ -104,6 +109,7 @@ The system implements a 5-tier subscription model with progressive feature unloc
   - Professional risk management
 
 #### 5. (Elite)
+
 - **Price**: /month
 - **Target**: Professional traders
 - **Features**:
@@ -129,7 +135,7 @@ tiers:
     features:
       xp_reset_nightly: true
       has_apex_access: true
-      
+
   NIBBLER:
     pricing:
       monthly_price: 39
@@ -140,7 +146,7 @@ tiers:
     risk_control:
       drawdown_cap: 6.0
       max_open_trades: 1
-      
+
   # ... (other tiers)
 ```
 
@@ -177,6 +183,7 @@ graph TD
 ### Authorization Levels
 
 #### Feature-Based Authorization
+
 ```python
 class FeatureAuthorization:
     FEATURES = {
@@ -190,6 +197,7 @@ class FeatureAuthorization:
 ```
 
 #### Command-Level Authorization
+
 ```python
 def requires_tier(min_tier: str):
     def decorator(func):
@@ -230,7 +238,7 @@ class BillingCycle:
     MONTHLY = "monthly"
     QUARTERLY = "quarterly"  # 10% discount
     ANNUAL = "annual"       # 20% discount
-    
+
     DISCOUNTS = {
         QUARTERLY: 0.10,
         ANNUAL: 0.20
@@ -240,16 +248,19 @@ class BillingCycle:
 ### Subscription Features
 
 #### Auto-Renewal System
+
 - **Payment Retry**: 3 attempts over 7 days
 - **Grace Period**: 3 days after failure
 - **Downgrade Protection**: Features locked, not removed immediately
 
 #### Proration System
+
 - **Upgrades**: Immediate access, prorated billing
 - **Downgrades**: Features removed at next billing cycle
 - **Cancellations**: Access until period end
 
 #### Payment Methods
+
 - **Stripe**: Primary processor for cards
 - **PayPal**: Alternative payment method
 - **Crypto**: Bitcoin, Ethereum support
@@ -266,27 +277,29 @@ The Press Pass is a unique trial system that provides full access but with a dra
 ### XP Reset Mechanism
 
 #### Daily Reset Process
+
 ```python
 class PressPassResetManager:
     async def execute_nightly_reset(self):
         """Execute nightly XP reset for Press Pass users"""
         press_pass_users = await self.get_active_press_pass_users()
-        
+
         for user_id in press_pass_users:
             current_xp = await self.xp_economy.get_balance(user_id)
-            
+
             if current_xp > 0:
                 # Save shadow stats
                 await self.update_shadow_stats(user_id, current_xp)
-                
+
                 # Reset XP to 0
                 await self.xp_economy.set_balance(user_id, 0)
-                
+
                 # Send dramatic notification
                 await self.send_reset_notification(user_id, current_xp)
 ```
 
 #### Shadow Statistics Tracking
+
 ```python
 class ShadowStats:
     def __init__(self):
@@ -300,11 +313,13 @@ class ShadowStats:
 ### Warning System
 
 #### Notification Schedule
+
 - **23:00 UTC**: 1-hour warning
 - **23:45 UTC**: 15-minute final warning
 - **00:00 UTC**: Reset execution notification
 
 #### Warning Messages
+
 ```python
 WARNING_MESSAGES = {
     'one_hour': "🚨 PRESS PASS ALERT: Your {xp} XP will be WIPED in 1 hour! Use /xpshop to spend now!",
@@ -331,6 +346,7 @@ WARNING_MESSAGES = {
 ### Experience Point (XP) System
 
 #### XP Sources
+
 ```python
 XP_SOURCES = {
     'trade_win': 50,
@@ -345,6 +361,7 @@ XP_SOURCES = {
 ```
 
 #### XP Multipliers
+
 ```python
 XP_MULTIPLIERS = {
     'weekend_bonus': 1.5,
@@ -362,6 +379,7 @@ XP_MULTIPLIERS = {
 ### Rank System
 
 #### Military-Style Ranking
+
 ```python
 RANKS = {
     'RECRUIT': {'min_xp': 0, 'max_xp': 999},
@@ -380,6 +398,7 @@ RANKS = {
 ### Prestige System
 
 #### Prestige Mechanics
+
 - **Requirement**: Reach maximum rank
 - **Benefit**: Prestige star, XP multiplier increase
 - **Cost**: Rank reset to RECRUIT, keep achievements
@@ -398,6 +417,7 @@ class PrestigeSystem:
 ### Achievement Categories
 
 #### Combat Achievements
+
 ```python
 COMBAT_ACHIEVEMENTS = {
     'first_blood': {'trades_won': 1, 'xp_reward': 100},
@@ -408,6 +428,7 @@ COMBAT_ACHIEVEMENTS = {
 ```
 
 #### Progression Achievements
+
 ```python
 PROGRESSION_ACHIEVEMENTS = {
     'level_10': {'level': 10, 'xp_reward': 200},
@@ -417,6 +438,7 @@ PROGRESSION_ACHIEVEMENTS = {
 ```
 
 #### Special Achievements
+
 ```python
 SPECIAL_ACHIEVEMENTS = {
     'beta_tester': {'beta_participant': True, 'xp_reward': 2500},
@@ -440,6 +462,7 @@ class AchievementTier:
 ### Badge System
 
 #### Visual Effects
+
 ```python
 BADGE_EFFECTS = {
     'bronze': ['subtle_glow'],
@@ -458,6 +481,7 @@ BADGE_EFFECTS = {
 ### Squad System
 
 #### Squad Structure
+
 ```python
 class Squad:
     def __init__(self):
@@ -474,6 +498,7 @@ class Squad:
 ```
 
 #### Squad Features
+
 - **Shared XP Pool**: Bonus XP for squad activities
 - **Squad Challenges**: Group objectives
 - **Leaderboards**: Inter-squad competition
@@ -483,6 +508,7 @@ class Squad:
 ### Mentoring System
 
 #### Mentor-Student Pairing
+
 ```python
 class MentorshipProgram:
     def __init__(self):
@@ -499,6 +525,7 @@ class MentorshipProgram:
 ```
 
 #### Mentorship Benefits
+
 - **Mentor Rewards**: XP bonus for student success
 - **Student Benefits**: Guidance, tips, reduced risk
 - **Mutual Growth**: Both parties gain from relationship
@@ -507,6 +534,7 @@ class MentorshipProgram:
 ### Referral System
 
 #### Referral Mechanics
+
 ```python
 class ReferralSystem:
     def __init__(self):
@@ -518,6 +546,7 @@ class ReferralSystem:
 ```
 
 #### Referral Tracking
+
 - **Unique Codes**: Each user gets a referral code
 - **Attribution**: Track referral sources
 - **Rewards**: Tiered rewards based on referral success
@@ -594,6 +623,7 @@ class TradingSession:
 ### Core Tables
 
 #### Users Table
+
 ```sql
 CREATE TABLE users (
     user_id BIGSERIAL PRIMARY KEY,
@@ -612,6 +642,7 @@ CREATE TABLE users (
 ```
 
 #### User Profiles Table
+
 ```sql
 CREATE TABLE user_profiles (
     profile_id BIGSERIAL PRIMARY KEY,
@@ -633,6 +664,7 @@ CREATE TABLE user_profiles (
 ```
 
 #### Subscriptions Table
+
 ```sql
 CREATE TABLE user_subscriptions (
     subscription_id BIGSERIAL PRIMARY KEY,
@@ -650,6 +682,7 @@ CREATE TABLE user_subscriptions (
 ```
 
 #### XP Transactions Table
+
 ```sql
 CREATE TABLE xp_transactions (
     transaction_id BIGSERIAL PRIMARY KEY,
@@ -665,6 +698,7 @@ CREATE TABLE xp_transactions (
 ```
 
 #### Achievements Table
+
 ```sql
 CREATE TABLE achievements (
     achievement_id BIGSERIAL PRIMARY KEY,
@@ -682,6 +716,7 @@ CREATE TABLE achievements (
 ```
 
 #### User Achievements Table
+
 ```sql
 CREATE TABLE user_achievements (
     user_achievement_id BIGSERIAL PRIMARY KEY,
@@ -696,6 +731,7 @@ CREATE TABLE user_achievements (
 ### Advanced Tables
 
 #### Squads Table
+
 ```sql
 CREATE TABLE squads (
     squad_id BIGSERIAL PRIMARY KEY,
@@ -711,6 +747,7 @@ CREATE TABLE squads (
 ```
 
 #### Squad Members Table
+
 ```sql
 CREATE TABLE squad_members (
     member_id BIGSERIAL PRIMARY KEY,
@@ -723,6 +760,7 @@ CREATE TABLE squad_members (
 ```
 
 #### Mentorship Table
+
 ```sql
 CREATE TABLE mentorships (
     mentorship_id BIGSERIAL PRIMARY KEY,
@@ -750,19 +788,19 @@ graph TD
     E -->|Free Trial| F[Press Pass Activation]
     E -->|Direct Purchase| G[Tier Upgrade]
     E -->|Continue Free| H[NIBBLER Experience]
-    
+
     F --> I[Access + XP Reset]
     I --> J{Trial End}
     J -->|Convert| K[Paid Subscription]
     J -->|Expire| L[Downgrade to NIBBLER]
-    
+
     G --> M[Immediate Tier Benefits]
     M --> N[Ongoing Subscription]
     N --> O{Renewal/Cancellation}
     O -->|Renew| N
     O -->|Cancel| P[Grace Period]
     P --> Q[Tier Downgrade]
-    
+
     H --> R[Basic Trading Experience]
     R --> S{Upgrade Decision}
     S -->|Yes| G
@@ -772,18 +810,21 @@ graph TD
 ### Onboarding Process
 
 #### Phase 1: Registration
+
 1. **Telegram Authentication**: Verify user identity
 2. **Profile Creation**: Initialize user record
 3. **Welcome Message**: Introduce system features
 4. **Tier Assignment**: Default to NIBBLER
 
 #### Phase 2: Education
+
 1. **Tutorial Messages**: Explain core concepts
 2. **Feature Walkthrough**: Show available commands
 3. **First Trade Setup**: Guide MT5 connection
 4. **Risk Education**: Explain risk management
 
 #### Phase 3: Engagement
+
 1. **Achievement Unlock**: First participation badge
 2. **XP Earning**: Reward engagement
 3. **Social Introduction**: Suggest squad joining
@@ -792,12 +833,14 @@ graph TD
 ### Retention Strategies
 
 #### Engagement Mechanics
+
 - **Daily Login Rewards**: XP bonuses
 - **Streak Bonuses**: Consecutive day rewards
 - **Achievement Unlocks**: Regular goal completion
 - **Social Features**: Squad participation
 
 #### Progression Systems
+
 - **Rank Advancement**: Clear progression path
 - **Prestige System**: Long-term goals
 - **Achievement Hunting**: Collection gameplay
@@ -810,6 +853,7 @@ graph TD
 ### Core Components
 
 #### User Management Service
+
 ```python
 class UserManagementService:
     def __init__(self):
@@ -819,7 +863,7 @@ class UserManagementService:
         self.subscription_manager = SubscriptionManager()
         self.achievement_system = AchievementSystem()
         self.social_manager = SocialManager()
-        
+
     async def create_user(self, telegram_data):
         """Create new user with default settings"""
         user = User(
@@ -828,40 +872,41 @@ class UserManagementService:
             tier='NIBBLER',
             subscription_status='inactive'
         )
-        
+
         profile = UserProfile(
             user_id=user.user_id,
             total_xp=0,
             current_rank='RECRUIT',
             referral_code=generate_referral_code()
         )
-        
+
         await self.db.create_user(user)
         await self.db.create_profile(profile)
         await self.achievement_system.initialize_user_progress(user.user_id)
-        
+
         return user
 ```
 
 #### Tier Management System
+
 ```python
 class TierManager:
     def __init__(self):
         self.tier_configs = load_tier_settings()
         self.feature_matrix = self._build_feature_matrix()
-        
+
     def get_user_features(self, user_id):
         """Get available features for user's tier"""
         user = self.db.get_user(user_id)
         tier_config = self.tier_configs[user.tier]
-        
+
         return {
             'daily_shots': tier_config['fire_settings']['daily_shots'],
             'risk_per_shot': tier_config['fire_settings']['risk_per_shot'],
             'max_open_trades': tier_config['risk_control']['max_open_trades'],
             'features': tier_config['features']
         }
-        
+
     def can_access_feature(self, user_id, feature_name):
         """Check if user can access specific feature"""
         user = self.db.get_user(user_id)
@@ -869,46 +914,48 @@ class TierManager:
 ```
 
 #### Subscription Workflow
+
 ```python
 class SubscriptionWorkflow:
     async def create_subscription(self, user_id, tier, billing_cycle):
         """Create new subscription workflow"""
         # Validate tier and pricing
         price = self.calculate_price(tier, billing_cycle)
-        
+
         # Process payment
         payment_result = await self.payment_processor.charge(
             user_id, price, f"{tier} subscription"
         )
-        
+
         if payment_result['success']:
             # Update user tier
             await self.update_user_tier(user_id, tier)
-            
+
             # Create subscription record
             subscription = await self.create_subscription_record(
                 user_id, tier, billing_cycle, price
             )
-            
+
             # Schedule renewal
             await self.schedule_renewal(subscription)
-            
+
             # Send confirmation
             await self.send_confirmation(user_id, subscription)
-            
+
             return subscription
         else:
             raise PaymentError(payment_result['error'])
 ```
 
 #### XP Integration System
+
 ```python
 class XPIntegrationManager:
     def __init__(self):
         self.xp_economy = XPEconomy()
         self.press_pass_manager = PressPassResetManager()
         self.achievement_system = AchievementSystem()
-        
+
     async def award_xp(self, user_id, amount, source_type, description):
         """Award XP with full integration"""
         # Check for Press Pass mode
@@ -917,44 +964,45 @@ class XPIntegrationManager:
             await self.press_pass_manager.update_shadow_stats(
                 user_id, amount, source_type
             )
-        
+
         # Award XP
         new_balance = await self.xp_economy.award_xp(
             user_id, amount, source_type, description
         )
-        
+
         # Check for achievements
         unlocked = await self.achievement_system.update_progress(
             user_id, {'total_xp': new_balance}
         )
-        
+
         # Update user profile
         await self.update_user_profile(user_id, new_balance)
-        
+
         return new_balance, unlocked
 ```
 
 ### Integration Points
 
 #### Telegram Bot Integration
+
 ```python
 class TelegramBotHandler:
     def __init__(self):
         self.user_manager = UserManagementService()
         self.command_router = CommandRouter()
-        
+
     async def handle_message(self, update, context):
         """Handle incoming Telegram messages"""
         user_data = update.effective_user
-        
+
         # Get or create user
         user = await self.user_manager.get_or_create_user(user_data)
-        
+
         # Route command with user context
         response = await self.command_router.route_command(
             user, update.message.text
         )
-        
+
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
             text=response.message,
@@ -963,53 +1011,57 @@ class TelegramBotHandler:
 ```
 
 #### MT5 Trading Integration
+
 ```python
 class TradingIntegration:
     def __init__(self):
         self.user_manager = UserManagementService()
         self.risk_controller = RiskController()
-        
+
     async def execute_trade(self, user_id, trade_params):
         """Execute trade with user validation"""
         # Validate user tier and features
         user = await self.user_manager.get_user(user_id)
         tier_features = self.user_manager.get_user_features(user_id)
-        
+
         # Check daily limits
         if not await self.risk_controller.can_trade(user_id):
             raise TradingLimitError("Daily limit exceeded")
-        
+
         # Validate risk parameters
         risk_params = self.risk_controller.validate_risk(
             user_id, trade_params, tier_features
         )
-        
+
         # Execute trade
         trade_result = await self.mt5_adapter.execute_trade(
             user_id, trade_params, risk_params
         )
-        
+
         # Award XP
         await self.user_manager.award_trade_xp(user_id, trade_result)
-        
+
         return trade_result
 ```
 
 ### Security Considerations
 
 #### Data Protection
+
 - **Encryption**: All sensitive data encrypted at rest
 - **Access Control**: Role-based permissions
 - **Audit Logging**: Complete action tracking
 - **API Security**: Rate limiting and authentication
 
 #### Payment Security
+
 - **PCI Compliance**: Secure payment processing
 - **Tokenization**: No stored card details
 - **Fraud Detection**: Advanced monitoring
 - **Secure Webhooks**: Validated payment callbacks
 
 #### User Privacy
+
 - **Data Minimization**: Only necessary data collected
 - **Consent Management**: Clear opt-in/opt-out
 - **Right to Deletion**: GDPR compliance
@@ -1022,6 +1074,7 @@ class TradingIntegration:
 ### Key Metrics
 
 #### User Engagement
+
 - **Daily Active Users (DAU)**
 - **Weekly Active Users (WAU)**
 - **Monthly Active Users (MAU)**
@@ -1029,6 +1082,7 @@ class TradingIntegration:
 - **Feature Usage Rates**
 
 #### Conversion Metrics
+
 - **Trial to Paid Conversion Rate**
 - **Tier Upgrade Rates**
 - **Churn Rate by Tier**
@@ -1036,6 +1090,7 @@ class TradingIntegration:
 - **Customer Lifetime Value (CLV)**
 
 #### System Performance
+
 - **Response Time Metrics**
 - **Error Rate Tracking**
 - **System Uptime**
@@ -1049,7 +1104,7 @@ class AnalyticsDashboard:
     def __init__(self):
         self.metrics_collector = MetricsCollector()
         self.dashboard_api = DashboardAPI()
-        
+
     async def generate_user_report(self, time_period):
         """Generate comprehensive user analytics report"""
         return {
@@ -1068,24 +1123,28 @@ class AnalyticsDashboard:
 ### Planned Features
 
 #### Advanced Social Features
+
 - **Guilds/Organizations**: Large group management
 - **Tournaments**: Competitive events
 - **Collaborative Trading**: Group strategies
 - **Social Trading**: Copy trading features
 
 #### Enhanced Gamification
+
 - **Dynamic Achievements**: Procedurally generated goals
 - **Seasonal Events**: Limited-time challenges
 - **Exclusive Rewards**: Rare collectibles
 - **Achievement Marketplace**: Trading badges
 
 #### AI Integration
+
 - **Personalized Recommendations**: Smart tier suggestions
 - **Predictive Analytics**: Churn prevention
 - **Intelligent Tutoring**: Adaptive learning
 - **Automated Risk Management**: AI-powered controls
 
 #### Mobile Applications
+
 - **Native Mobile App**: iOS/Android support
 - **Push Notifications**: Real-time alerts
 - **Offline Functionality**: Limited offline features
@@ -1094,12 +1153,14 @@ class AnalyticsDashboard:
 ### Technical Improvements
 
 #### Performance Optimizations
+
 - **Database Sharding**: Horizontal scaling
 - **Caching Layer**: Redis implementation
 - **CDN Integration**: Global content delivery
 - **Microservices Architecture**: Service decomposition
 
 #### Security Enhancements
+
 - **Multi-Factor Authentication**: Enhanced login security
 - **Behavioral Analysis**: Anomaly detection
 - **Zero Trust Architecture**: Comprehensive security model

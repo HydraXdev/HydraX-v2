@@ -22,7 +22,18 @@ components:
       required: [error, code]
       properties:
         error: { type: string }
-        code: { type: string, enum: [E_SPREAD_GUARD, E_HEDGE_BLOCKED, E_BROKER_REJECT, E_IDEMPOTENCY_DUP, E_SCHEMA_INVALID] }
+        code:
+          {
+            type: string,
+            enum:
+              [
+                E_SPREAD_GUARD,
+                E_HEDGE_BLOCKED,
+                E_BROKER_REJECT,
+                E_IDEMPOTENCY_DUP,
+                E_SCHEMA_INVALID,
+              ],
+          }
     TradeOpenRequest:
       type: object
       required: [account_id, symbol, side, volume]
@@ -52,7 +63,8 @@ components:
         reason: { type: string, nullable: true }
     AccountSummary:
       type: object
-      required: [account_id, balance, equity, margin, free_margin, margin_level, ts]
+      required:
+        [account_id, balance, equity, margin, free_margin, margin_level, ts]
       properties:
         account_id: { type: string }
         balance: { type: number }
@@ -64,35 +76,109 @@ components:
 paths:
   /v1/trades/open:
     post:
-      security: [ { ApiKeyAuth: [] }, { BearerAuth: [] } ]
+      security: [{ ApiKeyAuth: [] }, { BearerAuth: [] }]
       summary: Open trade
       responses:
-        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/TradeOpenResponse" }}}}
-        "403": { description: RBAC forbidden, content: { application/json: { schema: { $ref: "#/components/schemas/Error" }}}}
+        "200":
+          {
+            description: OK,
+            content:
+              {
+                application/json:
+                  {
+                    schema: { $ref: "#/components/schemas/TradeOpenResponse" },
+                  },
+              },
+          }
+        "403":
+          {
+            description: RBAC forbidden,
+            content:
+              {
+                application/json:
+                  { schema: { $ref: "#/components/schemas/Error" } },
+              },
+          }
   /v1/trades/{ticket}/close:
     post:
-      parameters: [ { name: ticket, in: path, required: true, schema: { type: string }} ]
-      security: [ { ApiKeyAuth: [] }, { BearerAuth: [] } ]
+      parameters:
+        [{ name: ticket, in: path, required: true, schema: { type: string } }]
+      security: [{ ApiKeyAuth: [] }, { BearerAuth: [] }]
       summary: Close trade
       responses:
-        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/TradeCloseResponse" }}}}
-        "403": { description: RBAC forbidden, content: { application/json: { schema: { $ref: "#/components/schemas/Error" }}}}
+        "200":
+          {
+            description: OK,
+            content:
+              {
+                application/json:
+                  {
+                    schema: { $ref: "#/components/schemas/TradeCloseResponse" },
+                  },
+              },
+          }
+        "403":
+          {
+            description: RBAC forbidden,
+            content:
+              {
+                application/json:
+                  { schema: { $ref: "#/components/schemas/Error" } },
+              },
+          }
   /v1/account/{account_id}:
     get:
-      parameters: [ { name: account_id, in: path, required: true, schema: { type: string }} ]
-      security: [ { ApiKeyAuth: [] }, { BearerAuth: [] } ]
+      parameters:
+        [
+          {
+            name: account_id,
+            in: path,
+            required: true,
+            schema: { type: string },
+          },
+        ]
+      security: [{ ApiKeyAuth: [] }, { BearerAuth: [] }]
       summary: Get account summary
       responses:
-        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/AccountSummary" }}}}
+        "200":
+          {
+            description: OK,
+            content:
+              {
+                application/json:
+                  { schema: { $ref: "#/components/schemas/AccountSummary" } },
+              },
+          }
   /v1/events:
     get:
-      security: [ { ApiKeyAuth: [] }, { BearerAuth: [] } ]
+      security: [{ ApiKeyAuth: [] }, { BearerAuth: [] }]
       summary: Replay events
       parameters:
-        - { name: account_id, in: query, required: true, schema: { type: string } }
-        - { name: from_seq,  in: query, required: false, schema: { type: integer, minimum: 0 } }
-        - { name: since_ts,  in: query, required: false, schema: { type: string, format: date-time } }
-        - { name: limit,     in: query, required: false, schema: { type: integer, minimum: 1, maximum: 1000 }, description: "page size" }
+        - {
+            name: account_id,
+            in: query,
+            required: true,
+            schema: { type: string },
+          }
+        - {
+            name: from_seq,
+            in: query,
+            required: false,
+            schema: { type: integer, minimum: 0 },
+          }
+        - {
+            name: since_ts,
+            in: query,
+            required: false,
+            schema: { type: string, format: date-time },
+          }
+        - {
+            name: limit,
+            in: query,
+            required: false,
+            schema: { type: integer, minimum: 1, maximum: 1000 },
+            description: "page size",
+          }
       responses:
         "200": { description: Events page (contiguous slice) }
   /healthz:

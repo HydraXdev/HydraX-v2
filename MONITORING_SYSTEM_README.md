@@ -31,6 +31,7 @@ This comprehensive monitoring system provides real-time tracking and alerting fo
 ## Features
 
 ### 1. Structured Logging System
+
 - **JSON-formatted logs** with structured fields
 - **Service-specific loggers** for different components
 - **Performance logging** with context managers and decorators
@@ -38,6 +39,7 @@ This comprehensive monitoring system provides real-time tracking and alerting fo
 - **Centralized log management** with search and analysis capabilities
 
 ### 2. Performance Monitoring
+
 - **Signal generation tracking** with 65 signals/day target
 - **TCS threshold optimization** with automatic adjustment
 - **Trade execution monitoring** with timing metrics
@@ -45,6 +47,7 @@ This comprehensive monitoring system provides real-time tracking and alerting fo
 - **Historical performance analysis** with trend tracking
 
 ### 3. Health Check System
+
 - **Multi-service health monitoring** (database, Redis, MT5 farm, webapp)
 - **Automated health checks** with configurable intervals
 - **RESTful health endpoints** for external monitoring
@@ -52,6 +55,7 @@ This comprehensive monitoring system provides real-time tracking and alerting fo
 - **Kubernetes-compatible** readiness and liveness probes
 
 ### 4. Alert System
+
 - **Multi-channel notifications** (email, Slack, Telegram, webhook)
 - **Configurable alert rules** with thresholds and cooldowns
 - **Alert suppression** and acknowledgment features
@@ -59,6 +63,7 @@ This comprehensive monitoring system provides real-time tracking and alerting fo
 - **Historical alert tracking** with resolution times
 
 ### 5. Win Rate Monitoring
+
 - **Real-time win rate calculation** with 85%+ target
 - **Symbol-specific tracking** for all trading pairs
 - **Trend analysis** with improving/declining detection
@@ -66,6 +71,7 @@ This comprehensive monitoring system provides real-time tracking and alerting fo
 - **Consecutive win/loss tracking** with statistics
 
 ### 6. Dashboard System
+
 - **Real-time web dashboard** with auto-refresh
 - **Interactive charts** using Plotly.js
 - **System health overview** with status indicators
@@ -73,8 +79,9 @@ This comprehensive monitoring system provides real-time tracking and alerting fo
 - **Alert management** with acknowledgment capabilities
 
 ### 7. Log Management
+
 - **Automated log rotation** with compression
-- **Configurable retention policies** 
+- **Configurable retention policies**
 - **Log analysis** with metrics extraction
 - **Daily report generation** with summaries
 - **Archive management** with cleanup policies
@@ -82,12 +89,14 @@ This comprehensive monitoring system provides real-time tracking and alerting fo
 ## Installation
 
 ### Quick Installation
+
 ```bash
 cd /root/HydraX-v2
 sudo ./scripts/install_monitoring.sh
 ```
 
 ### Manual Installation
+
 ```bash
 # Install dependencies
 pip3 install -r requirements_monitoring.txt
@@ -112,6 +121,7 @@ sudo systemctl enable bitten-health-check.service
 ## Configuration
 
 ### Main Configuration (`/etc/bitten/monitoring.conf`)
+
 ```ini
 [monitoring]
 log_level = INFO
@@ -143,6 +153,7 @@ timeout = 10
 ```
 
 ### Dashboard Configuration (`/etc/bitten/dashboard.conf`)
+
 ```ini
 [dashboard]
 host = 0.0.0.0
@@ -157,6 +168,7 @@ session_timeout = 3600
 ## Usage
 
 ### Starting Services
+
 ```bash
 # Start all monitoring services
 sudo systemctl start bitten-monitoring.service
@@ -168,12 +180,14 @@ sudo systemctl status bitten-monitoring.service
 ```
 
 ### Accessing Dashboard
+
 - **Web Dashboard**: http://localhost:8080
 - **Health Check API**: http://localhost:8888/health
 - **Detailed Health**: http://localhost:8888/health/detailed
 - **Metrics API**: http://localhost:8080/api/metrics/current
 
 ### Monitoring Commands
+
 ```bash
 # Check system status
 ./scripts/monitoring_status.sh
@@ -192,6 +206,7 @@ curl http://localhost:8888/health | jq
 ## Integration with BITTEN Core
 
 ### Automatic Integration
+
 ```python
 from src.monitoring.system_integrator import setup_bitten_monitoring
 
@@ -201,9 +216,10 @@ monitoring = setup_bitten_monitoring(bitten_core)
 ```
 
 ### Manual Integration
+
 ```python
 from src.monitoring import (
-    get_performance_monitor, 
+    get_performance_monitor,
     get_win_rate_monitor,
     get_alert_manager
 )
@@ -250,18 +266,21 @@ win_rate_monitor.record_trade(
 ## Monitoring Targets
 
 ### Signal Generation
+
 - **Target**: 65 signals per day across 10 pairs
 - **Warning**: Below 52 signals (80% of target)
 - **Critical**: Below 39 signals (60% of target)
 - **TCS Threshold**: Auto-adjusted between 65-85%
 
 ### Win Rate
+
 - **Target**: 85%+ win rate
 - **Warning**: Below 80% win rate
 - **Critical**: Below 75% win rate
 - **Minimum Trades**: 10 trades for reliable analysis
 
 ### System Health
+
 - **CPU Warning**: Above 80% usage
 - **Memory Warning**: Above 85% usage
 - **Response Time Warning**: Above 1000ms
@@ -270,6 +289,7 @@ win_rate_monitor.record_trade(
 ## Alert Rules
 
 ### Default Alert Rules
+
 1. **Signal Generation Below Target** (Medium)
 2. **Win Rate Below Target** (High)
 3. **System Resource High Usage** (Medium)
@@ -278,6 +298,7 @@ win_rate_monitor.record_trade(
 6. **MT5 Farm Connection Issues** (Critical)
 
 ### Custom Alert Rules
+
 ```python
 from src.monitoring.alert_system import AlertRule, AlertSeverity
 
@@ -302,6 +323,7 @@ alert_manager.add_alert_rule(rule)
 ## API Endpoints
 
 ### Health Check Endpoints
+
 - `GET /health` - Basic health check
 - `GET /health/detailed` - Detailed health status
 - `GET /health/ready` - Kubernetes readiness probe
@@ -309,6 +331,7 @@ alert_manager.add_alert_rule(rule)
 - `GET /health/metrics` - Prometheus-style metrics
 
 ### Dashboard API Endpoints
+
 - `GET /api/status` - API status
 - `GET /api/metrics/current` - Current metrics
 - `GET /api/metrics/historical` - Historical data
@@ -359,18 +382,21 @@ alert_manager.add_alert_rule(rule)
 ## Maintenance
 
 ### Daily Tasks
+
 - Review dashboard for anomalies
 - Check active alerts
 - Verify signal generation targets
 - Monitor win rate performance
 
 ### Weekly Tasks
+
 - Review log summaries
 - Check system resource usage
 - Verify backup integrity
 - Update alert thresholds if needed
 
 ### Monthly Tasks
+
 - Analyze performance trends
 - Review alert effectiveness
 - Clean up old logs and databases
@@ -381,15 +407,17 @@ alert_manager.add_alert_rule(rule)
 ### Common Issues
 
 1. **Services Not Starting**
+
    ```bash
    # Check logs
    journalctl -u bitten-monitoring.service -n 50
-   
+
    # Check configuration
    sudo -u bitten python3 -c "import src.monitoring; print('OK')"
    ```
 
 2. **Database Connection Issues**
+
    ```bash
    # Test database connection
    sudo -u bitten python3 -c "
@@ -400,19 +428,21 @@ alert_manager.add_alert_rule(rule)
    ```
 
 3. **Dashboard Not Loading**
+
    ```bash
    # Check dashboard service
    systemctl status bitten-dashboard.service
-   
+
    # Check port binding
    netstat -tlnp | grep 8080
    ```
 
 4. **Alerts Not Sending**
+
    ```bash
    # Check alert configuration
    grep -A 10 "\[alerts\]" /etc/bitten/monitoring.conf
-   
+
    # Test alert manager
    sudo -u bitten python3 -c "
    from src.monitoring.alert_system import get_alert_manager;
@@ -422,6 +452,7 @@ alert_manager.add_alert_rule(rule)
    ```
 
 ### Performance Issues
+
 - Check CPU and memory usage
 - Review log file sizes
 - Verify database performance
@@ -438,11 +469,13 @@ alert_manager.add_alert_rule(rule)
 ## Backup and Recovery
 
 ### Automated Backups
+
 - Daily database backups
 - Weekly log archives
 - Monthly full system backups
 
 ### Recovery Procedures
+
 1. Stop monitoring services
 2. Restore database from backup
 3. Restore configuration files
@@ -456,6 +489,7 @@ This monitoring system is part of the BITTEN trading platform. All rights reserv
 ## Support
 
 For issues or questions:
+
 1. Check logs: `/var/log/bitten/`
 2. Review configuration: `/etc/bitten/`
 3. Run status check: `./scripts/monitoring_status.sh`

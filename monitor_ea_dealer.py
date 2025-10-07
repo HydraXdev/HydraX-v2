@@ -3,11 +3,12 @@
 Monitor for EA DEALER socket connection in real-time
 """
 
-import zmq
 import json
-import time
 import threading
+import time
 from datetime import datetime
+
+import zmq
 
 print("=" * 70)
 print("🔍 MONITORING FOR EA DEALER CONNECTION")
@@ -23,13 +24,14 @@ dealer_found = threading.Event()
 heartbeat_count = 0
 tick_count = 0
 
+
 def monitor_port_5560():
     """Monitor for heartbeats and ticks"""
     global heartbeat_count, tick_count
 
     sub = context.socket(zmq.SUB)
-    sub.connect('tcp://localhost:5560')
-    sub.subscribe(b'')
+    sub.connect("tcp://localhost:5560")
+    sub.subscribe(b"")
     sub.setsockopt(zmq.RCVTIMEO, 100)
 
     while not dealer_found.is_set():
@@ -37,18 +39,19 @@ def monitor_port_5560():
             msg = sub.recv_string()
             data = json.loads(msg)
 
-            if data.get('type') == 'heartbeat':
+            if data.get("type") == "heartbeat":
                 heartbeat_count += 1
                 if heartbeat_count == 1:
                     print(f"\n💓 HEARTBEAT DETECTED! Balance: ${data.get('balance')}")
 
-            elif data.get('type') == 'tick':
+            elif data.get("type") == "tick":
                 tick_count += 1
 
         except (zmq.Again, json.JSONDecodeError):
             pass
 
     sub.close()
+
 
 def monitor_router_logs():
     """Check router logs for DEALER registration"""
@@ -58,10 +61,12 @@ def monitor_router_logs():
     while not dealer_found.is_set():
         result = subprocess.run(
             ["pm2", "logs", "command_router", "--lines", "30", "--nostream"],
-            capture_output=True, text=True, stderr=subprocess.DEVNULL
+            capture_output=True,
+            text=True,
+            stderr=subprocess.DEVNULL,
         )
 
-        for line in result.stdout.split('\n'):
+        for line in result.stdout.split("\n"):
             if line and line not in checked:
                 checked.add(line)
 
@@ -72,6 +77,7 @@ def monitor_router_logs():
                     return
 
         time.sleep(1)
+
 
 # Start monitoring threads
 t1 = threading.Thread(target=monitor_port_5560, daemon=True)
@@ -96,11 +102,11 @@ try:
             # Send another ping to try triggering registration
             if elapsed % 10 == 0:
                 sender = context.socket(zmq.PUSH)
-                sender.connect('ipc:///tmp/bitten_cmdqueue')
+                sender.connect("ipc:///tmp/bitten_cmdqueue")
                 ping = {
-                    'type': 'ping',
-                    'target_uuid': 'COMMANDER_DEV_001',
-                    'ping_id': f'MONITOR_PING_{int(time.time())}'
+                    "type": "ping",
+                    "target_uuid": "COMMANDER_DEV_001",
+                    "ping_id": f"MONITOR_PING_{int(time.time())}",
                 }
                 sender.send_json(ping)
                 sender.close()

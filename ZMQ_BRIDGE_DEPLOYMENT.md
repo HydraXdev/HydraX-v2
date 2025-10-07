@@ -6,25 +6,27 @@ This guide deploys the new ZMQ-based fire execution system that replaces the fra
 
 ## 🎯 Benefits of ZMQ Bridge
 
-| Feature | Old (File-based) | New (ZMQ) |
-|---------|------------------|-----------|
-| **Speed** | 100-500ms delay | <1ms execution |
+| Feature         | Old (File-based)  | New (ZMQ)         |
+| --------------- | ----------------- | ----------------- |
+| **Speed**       | 100-500ms delay   | <1ms execution    |
 | **Reliability** | File I/O failures | Socket resilience |
-| **Feedback** | No confirmation | Real-time results |
-| **Telemetry** | Manual checking | Live streaming |
+| **Feedback**    | No confirmation   | Real-time results |
+| **Telemetry**   | Manual checking   | Live streaming    |
 | **Scalability** | One file per user | Unlimited sockets |
-| **Monitoring** | File watching | Live telemetry |
+| **Monitoring**  | File watching     | Live telemetry    |
 
 ## 📦 Components
 
 ### 1. MT5 Expert Advisor
+
 - **File**: `BITTENBridge_ZMQ.mq5`
 - **Purpose**: Receives fire commands and sends telemetry
-- **Ports**: 
+- **Ports**:
   - 9001 - Fire commands (SUB)
   - 9101 - Telemetry/results (PUSH)
 
 ### 2. Python Components
+
 - **Fire Sender**: `python_zmq_fire_sender.py` - Send trade commands
 - **Telemetry Receiver**: `python_zmq_telemetry_receiver.py` - Monitor accounts
 - **Fire Bridge**: `zmq_fire_bridge.py` - Integration with BITTEN
@@ -35,12 +37,14 @@ This guide deploys the new ZMQ-based fire execution system that replaces the fra
 ### Step 1: Compile and Deploy EA
 
 1. **Copy EA to MT5**:
+
    ```
    Copy BITTENBridge_ZMQ.mq5 to:
    C:\Program Files\MetaTrader 5\MQL5\Experts\
    ```
 
 2. **Ensure libzmq.dll is present**:
+
    ```
    C:\Program Files\MetaTrader 5\MQL5\Libraries\libzmq.dll
    ```
@@ -63,6 +67,7 @@ This guide deploys the new ZMQ-based fire execution system that replaces the fra
 ### Step 2: Test Telemetry
 
 1. **Start telemetry receiver**:
+
    ```bash
    python3 python_zmq_telemetry_receiver.py
    ```
@@ -82,11 +87,13 @@ This guide deploys the new ZMQ-based fire execution system that replaces the fra
 ### Step 3: Test Fire Command
 
 1. **Send test trade**:
+
    ```bash
    python3 python_zmq_fire_sender.py
    ```
 
 2. **You should see in MT5**:
+
    ```
    🔥 FIRE RECEIVED: {"uuid":"user-001","action":"BUY","symbol":"XAUUSD"...}
    ✅ Trade executed: BUY XAUUSD Ticket: 123456789
@@ -108,6 +115,7 @@ python3 test_zmq_bridge.py
 ```
 
 This will:
+
 1. Start telemetry listener
 2. Wait for initial data
 3. Send BUY command
@@ -131,6 +139,7 @@ execute_zmq_trade(user_id, signal_data)
 ## 🔧 Configuration
 
 ### EA Parameters
+
 - `fire_socket_url`: Where EA receives commands (default: tcp://127.0.0.1:9001)
 - `telemetry_socket_url`: Where EA sends data (default: tcp://127.0.0.1:9101)
 - `uuid`: Unique user identifier
@@ -138,6 +147,7 @@ execute_zmq_trade(user_id, signal_data)
 - `enable_telemetry`: Enable/disable telemetry streaming
 
 ### Python Configuration
+
 - Fire port: 9001 (can be per-user: 9001 + user_hash)
 - Telemetry port: 9101 (can be per-user: 9101 + user_hash)
 - Multiple users supported via port allocation
@@ -145,6 +155,7 @@ execute_zmq_trade(user_id, signal_data)
 ## 📊 Monitoring
 
 ### Real-time Telemetry
+
 ```bash
 # Monitor specific user
 python3 python_zmq_telemetry_receiver.py 9101
@@ -155,6 +166,7 @@ python3 python_zmq_telemetry_receiver.py 9103  # user-003
 ```
 
 ### Fire Command Testing
+
 ```bash
 # Send custom trades
 python3 python_zmq_fire_sender.py SELL EURUSD 0.01 50 25 user-001
@@ -164,18 +176,21 @@ python3 python_zmq_fire_sender.py BUY GBPUSD 0.02 30 15 user-002
 ## 🚨 Troubleshooting
 
 ### EA Not Receiving Commands
+
 1. Check libzmq.dll is in Libraries folder
 2. Verify EA shows "ZMQ Bridge initialized" in Experts tab
 3. Check firewall isn't blocking ports 9001/9101
 4. Test with `netstat -an | grep 9001`
 
 ### No Telemetry
+
 1. Ensure `enable_telemetry` is true in EA
 2. Check EA is connected to correct telemetry URL
 3. Verify Python receiver is running
 4. Check for errors in MT5 Experts tab
 
 ### Trade Execution Fails
+
 1. Check symbol is valid and available
 2. Verify lot size meets broker minimums
 3. Check account has sufficient margin
@@ -184,6 +199,7 @@ python3 python_zmq_fire_sender.py BUY GBPUSD 0.02 30 15 user-002
 ## 🎯 Production Deployment
 
 ### Multi-User Setup
+
 ```python
 # In fire_router.py
 from zmq_fire_bridge import get_zmq_bridge
@@ -197,6 +213,7 @@ for user_id in active_users:
 ```
 
 ### High-Performance Configuration
+
 1. Use dedicated server for ZMQ broker
 2. Configure larger ZMQ buffers for high volume
 3. Monitor latency with timestamp tracking

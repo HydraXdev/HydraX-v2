@@ -5,13 +5,15 @@
 You need to set up these 5 master instances, each configured differently:
 
 ### 1. **Coinexx Live Master** (Production Trading)
+
 - **Broker**: Coinexx
 - **Account Type**: Live/Real
 - **Purpose**: Real money trading for paid tiers
 - **Clone Target**: 50-100 instances
 - **Risk Settings**: Conservative (1-2% per trade)
 
-### 2. **Forex.com Live Master** (Production Trading)  
+### 2. **Forex.com Live Master** (Production Trading)
+
 - **Broker**: Forex.com
 - **Account Type**: Live/Real
 - **Purpose**: Alternative broker for risk distribution
@@ -19,6 +21,7 @@ You need to set up these 5 master instances, each configured differently:
 - **Risk Settings**: Conservative (1-2% per trade)
 
 ### 3. **Forex.com Demo Master** (Testing/Development)
+
 - **Broker**: Forex.com
 - **Account Type**: Demo
 - **Purpose**: Testing strategies, new users trials
@@ -26,6 +29,7 @@ You need to set up these 5 master instances, each configured differently:
 - **Risk Settings**: Moderate (2-5% per trade)
 
 ### 4. **Coinexx Demo Master** (Testing/Development)
+
 - **Broker**: Coinexx
 - **Account Type**: Demo
 - **Purpose**: Alternative demo environment
@@ -33,6 +37,7 @@ You need to set up these 5 master instances, each configured differently:
 - **Risk Settings**: Moderate (2-5% per trade)
 
 ### 5. **Generic Demo Master** (Press Pass - No Login)
+
 - **Broker**: MetaQuotes Demo
 - **Account Type**: Automatic Demo
 - **Purpose**: Press Pass 7-day trials
@@ -43,6 +48,7 @@ You need to set up these 5 master instances, each configured differently:
 ## 📋 Setup Steps for Each Master
 
 ### Step 1: Install MT5 Terminals
+
 ```bash
 # Suggested directory structure:
 C:\MT5_Farm\Masters\
@@ -56,12 +62,14 @@ C:\MT5_Farm\Masters\
 ### Step 2: Configure Each Master
 
 #### For Broker-Specific Masters (1-4):
+
 1. Install MT5 from broker's website
 2. Login with appropriate credentials
 3. File → Login to Trade Account
 4. Save login credentials for cloning
 
 #### For Generic Demo Master (5):
+
 1. Install standard MT5 from metaquotes.net
 2. File → Open Demo Account
 3. Choose "MetaQuotes-Demo" server
@@ -83,6 +91,7 @@ Generic Demo:    Magic: 50001-50200, Risk: 5%
 ### Step 4: Attach EA to Charts
 
 For each master, open these pairs and attach EA:
+
 1. EURUSD
 2. GBPUSD
 3. USDJPY
@@ -97,18 +106,21 @@ For each master, open these pairs and attach EA:
 ### Step 5: Configure EA Settings
 
 **Live Masters (Coinexx/Forex Live):**
+
 - Risk per trade: 1%
 - Max daily loss: 5%
 - Enable all safety features
 - Conservative mode ON
 
 **Demo Masters (Coinexx/Forex Demo):**
+
 - Risk per trade: 3%
 - Max daily loss: 10%
 - Standard safety features
 - Normal mode
 
 **Generic Demo (Press Pass):**
+
 - Risk per trade: 5%
 - Max daily loss: 20%
 - Minimal restrictions
@@ -134,7 +146,7 @@ foreach ($master in $masters.Keys) {
     for ($i = 1; $i -le $count; $i++) {
         # Copy master to clone directory
         Copy-Item "C:\MT5_Farm\Masters\$master" "C:\MT5_Farm\Clones\${master}_$i" -Recurse
-        
+
         # Modify config for unique instance
         # Update magic number
         # Update installation ID
@@ -149,14 +161,14 @@ def assign_mt5_instance(user_tier, user_id):
     if user_tier == "PRESS_PASS":
         # Assign from Generic Demo pool
         return get_available_instance("Generic_Demo")
-    
+
     elif user_tier in ["NIBBLER", "FANG"]:
         # Prefer demo, fallback to live with restrictions
         instance = get_available_instance("Forex_Demo")
         if not instance:
             instance = get_available_instance("Coinexx_Demo")
         return instance
-    
+
     elif user_tier in ["COMMANDER"]:
         # Assign from live pools
         if user_id % 2 == 0:
@@ -170,11 +182,13 @@ def assign_mt5_instance(user_tier, user_id):
 **Total Instances**: 400 (5 masters × 80 average clones)
 
 **Resource Requirements per Instance**:
+
 - RAM: ~200MB
 - CPU: ~1-2%
 - Disk: ~500MB
 
 **Total Server Requirements**:
+
 - RAM: 80GB minimum
 - CPU: 32+ cores recommended
 - Disk: 200GB SSD
@@ -182,7 +196,7 @@ def assign_mt5_instance(user_tier, user_id):
 
 ## 🔐 Security Considerations
 
-1. **Live Masters**: 
+1. **Live Masters**:
    - Isolated network segment
    - Encrypted credentials
    - Read-only access for clones

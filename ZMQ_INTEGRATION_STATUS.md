@@ -5,16 +5,17 @@
 
 ## 🚀 ZMQ Port Status - ALL ACTIVE
 
-| Port | Component | Process | PID | Status | Purpose |
-|------|-----------|---------|-----|--------|---------|
-| 5555 | command_router | PM2 ID 155 | 126698 | ✅ ACTIVE | DEALER/ROUTER bidirectional commands |
-| 5556 | zmq_telemetry_bridge | PM2 ID 148 | 120093 | ✅ ACTIVE | PULL socket for tick data |
-| 5558 | confirm_listener_v207 | PM2 ID 146 | 1995639 | ✅ ACTIVE | PULL socket for confirmations |
-| 5560 | zmq_telemetry_bridge | PM2 ID 148 | 120093 | ✅ ACTIVE | PUB socket for metrics relay |
+| Port | Component             | Process    | PID     | Status    | Purpose                              |
+| ---- | --------------------- | ---------- | ------- | --------- | ------------------------------------ |
+| 5555 | command_router        | PM2 ID 155 | 126698  | ✅ ACTIVE | DEALER/ROUTER bidirectional commands |
+| 5556 | zmq_telemetry_bridge  | PM2 ID 148 | 120093  | ✅ ACTIVE | PULL socket for tick data            |
+| 5558 | confirm_listener_v207 | PM2 ID 146 | 1995639 | ✅ ACTIVE | PULL socket for confirmations        |
+| 5560 | zmq_telemetry_bridge  | PM2 ID 148 | 120093  | ✅ ACTIVE | PUB socket for metrics relay         |
 
 ## 📊 Business Logic Components - RUNNING
 
 ### Hedge Protection
+
 - **Process**: hedge_prevention (PM2 ID 123)
 - **PID**: 1994997
 - **Uptime**: 23 hours
@@ -22,11 +23,13 @@
 - **Function**: Prevents opposing positions on same symbol
 
 ### Slot Management
+
 - **enhanced_slot_manager** (PM2 ID 143) - PID 1995182 - ✅ ONLINE
 - **auto_slot_manager** (PM2 ID 55) - PID 1995282 - ✅ ONLINE
 - **Function**: Enforces user tier-based position limits (3/5/7 slots)
 
 ### Position Monitoring
+
 - **ea_position_monitor** (PM2 ID 142) - PID 1995053 - ✅ ONLINE
 - **position_sync** (PM2 ID 141) - PID 1995013 - ✅ ONLINE
 - **position_closure** (PM2 ID 102) - PID 1995328 - ✅ ONLINE
@@ -34,16 +37,19 @@
 ## 🔄 Signal Flow Components
 
 ### Pattern Detection
+
 - **elite_guard** (PM2 ID 125) - PID 746757 - ✅ ONLINE (14h uptime)
 - **eg_signal_wrapper** (PM2 ID 97) - PID 1995668 - ✅ ONLINE
 
 ### Signal Distribution
+
 - **signals_zmq_to_redis** (PM2 ID 19) - PID 1740813 - ✅ ONLINE
 - **signals_redis_to_webapp** (PM2 ID 135) - PID 1995660 - ✅ ONLINE
 - **signals_to_alerts** (PM2 ID 132) - PID 1994998 - ✅ ONLINE
 - **athena_broadcaster_secure** (PM2 ID 150) - PID 1995497 - ✅ ONLINE (Telegram)
 
 ### Trading Engine
+
 - **webapp** (PM2 ID 157) - PID 126654 - ✅ ONLINE
 - **canonical_tracker** (PM2 ID 156) - PID 1995401 - ✅ ONLINE
 - **ml_autofire_optimizer** (PM2 ID 145) - PID 1995332 - ✅ ONLINE

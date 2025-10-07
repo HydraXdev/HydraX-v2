@@ -2,7 +2,7 @@
 
 **Bot-Integrated Tactical Trading Engine / Network**
 
-> *"The market bites. We bite back."*
+> _"The market bites. We bite back."_
 
 ## Executive Summary
 
@@ -17,12 +17,14 @@ BITTEN is a comprehensive forex trading platform that combines advanced AI-drive
 ### System Core (`src/bitten_core/`)
 
 **Primary Components**:
+
 - **bitten_core.py**: Central orchestration hub managing all subsystems
 - **fire_router.py**: Advanced trade execution engine with probability filtering
 - **telegram_router.py**: Command processing and user interface layer
 - **fire_modes.py**: Tiered trading mode implementation with access controls
 
 **Key Features**:
+
 - Microservices architecture with webhook-based integration
 - Real-time trade execution via MT5 bridge
 - Multi-tier user authentication and authorization
@@ -31,6 +33,7 @@ BITTEN is a comprehensive forex trading platform that combines advanced AI-drive
 ### Trading Engine
 
 **Fire Router System**:
+
 ```
 TCS Filtering → Tier Validation → Risk Checks → MT5 Execution
      ↓              ↓               ↓            ↓
@@ -38,14 +41,17 @@ TCS Filtering → Tier Validation → Risk Checks → MT5 Execution
 ```
 
 **Fire Modes**:
+
 1. **SELECT**: Manual precision trading (All tiers)
 2. **AUTO**: Autonomous 24/7 operation (Commander only)
 
 **Signal Types**:
+
 1. **RAPID_ASSAULT**: Fast market action signals (All tiers)
 2. **SNIPER_OPS**: High-precision signals (FANG+)
 
 **Special Weapons & Events**:
+
 1. **CHAINGUN**: Progressive risk weapon (FANG+ unlock)
 2. **STEALTH**: Anti-detection mode (COMMANDER)
 3. **MIDNIGHT_HAMMER**: Community event weapon (Platform-wide)
@@ -53,6 +59,7 @@ TCS Filtering → Tier Validation → Risk Checks → MT5 Execution
 ### Risk Management System
 
 **Multi-Layer Protection**:
+
 - **TCS Threshold Enforcement**: 70-91% minimum by tier
 - **Daily Loss Limits**: 6-8.5% maximum drawdown by tier
 - **Position Size Controls**: Dynamic calculation based on account balance
@@ -61,6 +68,7 @@ TCS Filtering → Tier Validation → Risk Checks → MT5 Execution
 - **Emergency Stop Protocol**: Multiple escalation levels (Soft/Hard/Panic)
 
 **Advanced Features**:
+
 - Kelly Criterion position sizing (10,000+ XP users)
 - XP-based trade management unlocks (Breakeven, Trailing, Partial Close)
 - Medic Mode: Reduced risk during drawdown periods
@@ -72,13 +80,14 @@ TCS Filtering → Tier Validation → Risk Checks → MT5 Execution
 
 ### Subscription Tiers
 
-| Tier | Price/Month | Daily Trades | Min TCS | Features |
-|------|-------------|--------------|---------|----------|
-| **NIBBLER** | $39 | 6 | 70% | Basic single-shot trading |
-| **FANG** | $89 | 8-10 | 85% | + Chaingun progressive risk |
-| **COMMANDER** | $189 | ∞ | 85%+ | + 24/7 auto-fire mode + STEALTH |
+| Tier          | Price/Month | Daily Trades | Min TCS | Features                        |
+| ------------- | ----------- | ------------ | ------- | ------------------------------- |
+| **NIBBLER**   | $39         | 6            | 70%     | Basic single-shot trading       |
+| **FANG**      | $89         | 8-10         | 85%     | + Chaingun progressive risk     |
+| **COMMANDER** | $189        | ∞            | 85%+    | + 24/7 auto-fire mode + STEALTH |
 
 **Revenue Projections** (Conservative):
+
 - 1,000 users average: $93,000/month
 - 10,000 users average: $930,000/month
 - Premium features and enterprise licensing: Additional 20-30%
@@ -98,6 +107,7 @@ TCS Filtering → Tier Validation → Risk Checks → MT5 Execution
 ### Infrastructure Requirements
 
 **Production Environment**:
+
 - **Backend**: Python 3.10+, Flask webhook server
 - **Database**: SQLite (current), PostgreSQL (roadmap)
 - **Message Queue**: Redis (planned)
@@ -105,6 +115,7 @@ TCS Filtering → Tier Validation → Risk Checks → MT5 Execution
 - **Bridge**: MT5 integration via secure SSH/JSON
 
 **API Integrations**:
+
 - Telegram Bot API for user interface
 - Economic calendar for news filtering
 - MT5 bridge for trade execution
@@ -113,6 +124,7 @@ TCS Filtering → Tier Validation → Risk Checks → MT5 Execution
 ### Security & Compliance
 
 **Security Measures**:
+
 - Cryptographically secure random number generation
 - Input sanitization and validation
 - Rate limiting on all endpoints
@@ -120,6 +132,7 @@ TCS Filtering → Tier Validation → Risk Checks → MT5 Execution
 - Audit logging for all trades
 
 **Risk Disclosures**:
+
 - Forex trading involves substantial risk
 - Past performance doesn't guarantee future results
 - Users can lose more than initial investment
@@ -132,6 +145,7 @@ TCS Filtering → Tier Validation → Risk Checks → MT5 Execution
 ### Telegram Bot Interface
 
 **Command Categories**:
+
 - **Trading**: `/fire`, `/positions`, `/close`, `/balance`
 - **Risk Management**: `/risk`, `/emergency_stop`, `/recover`
 - **Uncertainty Control**: `/bitmode`, `/stealth`, `/gemini`
@@ -141,12 +155,14 @@ TCS Filtering → Tier Validation → Risk Checks → MT5 Execution
 ### Web Applications
 
 **Sniper HUD**: Real-time trading interface with:
+
 - Live market data visualization
 - One-click trade execution
 - Risk calculator integration
 - Performance analytics dashboard
 
 **Mission Center**: Gamified trading experience with:
+
 - Achievement system and XP tracking
 - Social sharing capabilities
 - Recruitment and referral management
@@ -157,6 +173,7 @@ TCS Filtering → Tier Validation → Risk Checks → MT5 Execution
 ## Unique Value Propositions
 
 ### For Retail Traders
+
 - **Institutional Tools**: Access to professional-grade risk management
 - **Community Learning**: Network intelligence from collective trading
 - **Strict Discipline**: Built-in controls prevent emotional trading
@@ -164,6 +181,7 @@ TCS Filtering → Tier Validation → Risk Checks → MT5 Execution
 - **24/7 Operation**: Auto-fire mode for consistent execution
 
 ### For Technical Users
+
 - **Open Architecture**: Modular design allows customization
 - **Advanced Algorithms**: Kelly Criterion, dynamic trailing stops
 - **Real-time Data**: Comprehensive analytics and reporting
@@ -171,6 +189,7 @@ TCS Filtering → Tier Validation → Risk Checks → MT5 Execution
 - **Safety Systems**: Multiple layers of protection and controls
 
 ### For Investors
+
 - **Scalable SaaS Model**: Recurring revenue with high retention
 - **Network Effects**: Value increases with user base growth
 - **Low Customer Acquisition Cost**: Viral referral system built-in
@@ -182,32 +201,36 @@ TCS Filtering → Tier Validation → Risk Checks → MT5 Execution
 ## Roadmap & Development Status
 
 ### Current Implementation (~40% Complete)
-✅ Core trading engine and fire modes  
-✅ Telegram bot with full command suite  
-✅ Risk management and safety systems  
-✅ User authentication and tier management  
-✅ Basic MT5 bridge integration  
+
+✅ Core trading engine and fire modes
+✅ Telegram bot with full command suite
+✅ Risk management and safety systems
+✅ User authentication and tier management
+✅ Basic MT5 bridge integration
 
 ### Phase 1 Priorities (Weeks 1-2)
-🔄 MT5 bridge result parser completion  
-🔄 Trade confirmation system implementation  
-🔄 News event detection and auto-pause  
-🔄 Emergency stop functionality  
-🔄 User onboarding flow (`/start` command)  
+
+🔄 MT5 bridge result parser completion
+🔄 Trade confirmation system implementation
+🔄 News event detection and auto-pause
+🔄 Emergency stop functionality
+🔄 User onboarding flow (`/start` command)
 
 ### Phase 2 Enhancements (Weeks 3-6)
-📋 Advanced XP calculation engine  
-📋 Kill card visual generator  
-📋 Daily mission system  
-📋 Referral reward implementation  
-📋 DrillBot/MedicBot personality systems  
+
+📋 Advanced XP calculation engine
+📋 Kill card visual generator
+📋 Daily mission system
+📋 Referral reward implementation
+📋 DrillBot/MedicBot personality systems
 
 ### Phase 3 Advanced Features (Weeks 7-10)
-📋 Enhanced stealth mode randomization  
-📋 Midnight Hammer community events  
-📋 Multi-user license control panel  
-📋 AR mode foundations  
-📋 PostgreSQL + Redis migration  
+
+📋 Enhanced stealth mode randomization
+📋 Midnight Hammer community events
+📋 Multi-user license control panel
+📋 AR mode foundations
+📋 PostgreSQL + Redis migration
 
 ---
 
@@ -216,6 +239,7 @@ TCS Filtering → Tier Validation → Risk Checks → MT5 Execution
 ### For Developers
 
 **Quick Start**:
+
 ```bash
 # Clone and setup
 cd HydraX-v2
@@ -229,6 +253,7 @@ python trigger_test_signals.py
 ```
 
 **Key Files**:
+
 - `CLAUDE.md`: Development context and rules
 - `docs/bitten/RULES_OF_ENGAGEMENT.md`: THE LAW for all fire modes
 - `src/bitten_core/bitten_core.py`: Main system controller
@@ -237,12 +262,14 @@ python trigger_test_signals.py
 ### For Integration Partners
 
 **Webhook Endpoints**:
+
 - `POST /webhook/telegram`: Telegram bot updates
 - `POST /webhook/mt5`: Trading bridge responses
 - `GET /health`: System health check
 - `POST /api/signals`: External signal integration
 
 **Data Formats**:
+
 - Trade requests: JSON with symbol, direction, volume, TCS
 - Risk parameters: Percentage-based with tier validation
 - User profiles: Rank, XP, tier, and preference data
@@ -252,17 +279,20 @@ python trigger_test_signals.py
 ## Market Opportunity
 
 ### Total Addressable Market
+
 - **Global Forex Market**: $7.5 trillion daily volume
 - **Retail Forex Traders**: ~15 million active participants
 - **Trading Software Market**: $3.1 billion annually
 - **Social Trading Platforms**: Growing 25% YoY
 
 ### Target Demographics
+
 - **Primary**: Experienced forex traders seeking better tools
 - **Secondary**: Gaming enthusiasts attracted to progression systems
 - **Tertiary**: Professional traders wanting automated execution
 
 ### Competitive Landscape
+
 - **MetaTrader**: Dominant but outdated user experience
 - **TradingView**: Great charting, weak execution tools
 - **eToro**: Social focus, limited risk management
@@ -275,18 +305,21 @@ python trigger_test_signals.py
 ## Investment Thesis
 
 ### Revenue Model Validation
+
 - **High LTV/CAC Ratio**: Gamification and community increase retention
 - **Viral Growth**: Built-in referral system drives organic acquisition
 - **Expansion Revenue**: Natural tier upgrade progression
 - **Network Effects**: Value increases with user base size
 
 ### Technical Moats
+
 - **Proprietary Algorithms**: TCS scoring and uncertainty injection
 - **Community Data**: Collective intelligence unavailable elsewhere
 - **Regulatory Compliance**: Built-in risk controls exceed requirements
 - **Platform Integration**: Deep MT5 integration with expansion potential
 
 ### Scaling Opportunities
+
 - **Geographic Expansion**: Localization for Asian/European markets
 - **Asset Class Expansion**: Stocks, crypto, commodities integration
 - **Enterprise Licensing**: Prop trading firms and hedge funds
@@ -297,16 +330,19 @@ python trigger_test_signals.py
 ## Risk Factors & Mitigation
 
 ### Technical Risks
+
 - **MT5 Bridge Reliability**: Redundant connection paths planned
 - **Scalability Concerns**: Cloud-native architecture in roadmap
 - **Security Vulnerabilities**: Regular audits and penetration testing
 
 ### Business Risks
+
 - **Regulatory Changes**: Proactive compliance and legal review
 - **Market Competition**: Continuous feature development and community building
 - **User Losses**: Strict risk controls and education programs
 
 ### Operational Risks
+
 - **Key Person Dependency**: Documentation and knowledge transfer
 - **Infrastructure Failures**: Multi-region deployment strategy
 - **Customer Support**: Automated systems and community moderation
@@ -325,14 +361,14 @@ BITTEN represents a paradigm shift in retail forex trading, combining institutio
 
 ---
 
-*Last Updated: January 2025*  
-*System Status: Active Development - Production Ready Q1 2025*
+_Last Updated: January 2025_
+_System Status: Active Development - Production Ready Q1 2025_
 
 ---
 
 ## Quick Reference
 
-**GitHub**: `/docs` folder contains complete technical documentation  
-**Support**: Telegram bot `/help` command for user assistance  
-**Demo**: `/simulate_signals.py` for testing trade execution  
+**GitHub**: `/docs` folder contains complete technical documentation
+**Support**: Telegram bot `/help` command for user assistance
+**Demo**: `/simulate_signals.py` for testing trade execution
 **API Docs**: `/docs/api.md` for integration specifications

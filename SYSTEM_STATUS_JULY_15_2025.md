@@ -3,6 +3,7 @@
 ## 🎯 Today's Accomplishments
 
 ### 1. ✅ Fire Mode System Implementation
+
 - **SELECT FIRE Mode**: One-click confirmation system for all users
 - **AUTO Mode**: 90%+ TCS autonomous execution for COMMANDER tier
 - **/mode Command**: Inline keyboard for mode switching
@@ -10,6 +11,7 @@
 - **Database Backend**: Complete tracking and history
 
 ### 2. ✅ Fire Mode Naming Standardization
+
 - Renamed MANUAL → SELECT FIRE across entire codebase
 - Renamed SEMI-AUTO → SELECT FIRE (consolidated)
 - Renamed FULL_AUTO → AUTO
@@ -17,12 +19,14 @@
 - Added backward compatibility mapping
 
 ### 3. ✅ Tier System Simplification
+
 - Reduced from 5 tiers to 3 paid tiers + trial
 - features merged into COMMANDER tier
 - COMMANDER now has AUTO mode exclusively
 - Updated pricing and access controls
 
 ### 4. ✅ BIT Integration
+
 - AI companion cat fully integrated into production bot
 - Trade reactions, error comfort, daily wisdom
 - /bit command for direct interaction
@@ -31,6 +35,7 @@
 ## 🔴 Critical Tasks Remaining
 
 ### Fire Mode Integration
+
 1. **Connect to Real Trading**
    - SELECT FIRE confirmation needs to call fire_mission_for_user()
    - AUTO fire needs to execute actual trades
@@ -42,6 +47,7 @@
    - Should start with bot initialization
 
 ### Existing Systems to Connect
+
 3. **XP System** - Complete but not called on trades
 4. **Risk Management** - Built but needs verification it's active
 5. **Performance Analytics** - Ready but not recording trade results
@@ -49,12 +55,14 @@
 ## 📊 Current Production Status
 
 ### What's Running
+
 - `apex_v5_lean.py` - Signal generation (✅)
 - `bitten_production_bot.py` - Main bot with fire modes (✅)
 - `webapp_server.py` - Web interface (✅)
 - `commander_throne.py` - Admin panel (✅)
 
 ### What's Built But Not Active
+
 - XP/Gamification system
 - Risk management limits
 - Performance tracking
@@ -62,18 +70,19 @@
 - Payment webhooks
 
 ### What's Actually Missing
+
 - Chaingun mode implementation
 - Battle pass frontend
 - WebApp fire mode UI
 
 ## 🎮 Fire Mode Access Summary
 
-| Tier | Modes | Slots | Signals | Price |
-|------|-------|-------|---------|-------|
-| PRESS PASS | SELECT | N/A | RAPID ASSAULT view | Free |
-| NIBBLER | SELECT | 1 | RAPID ASSAULT | $39 |
-| FANG | SELECT | 2 | All signals | $89 |
-| COMMANDER | SELECT + AUTO | 3 (AUTO) / ∞ | All signals | $189 |
+| Tier       | Modes         | Slots        | Signals            | Price |
+| ---------- | ------------- | ------------ | ------------------ | ----- |
+| PRESS PASS | SELECT        | N/A          | RAPID ASSAULT view | Free  |
+| NIBBLER    | SELECT        | 1            | RAPID ASSAULT      | $39   |
+| FANG       | SELECT        | 2            | All signals        | $89   |
+| COMMANDER  | SELECT + AUTO | 3 (AUTO) / ∞ | All signals        | $189  |
 
 ## 📝 Next Steps Priority
 

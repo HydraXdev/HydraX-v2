@@ -1,22 +1,27 @@
 # 🎯 B.I.T.T.E.N. Complete Implementation Roadmap
 
-> *Bot-Integrated Tactical Trading Engine / Network*
+> _Bot-Integrated Tactical Trading Engine / Network_
 
 ## 📊 Implementation Phases Overview
 
 ### Phase 1: Core Completion (Week 1-2) 🔴 PRIORITY
+
 Complete the existing core functionality and ensure stable operation.
 
 ### Phase 2: UX & Onboarding (Week 3-4) 🟡
+
 User experience improvements and onboarding flow.
 
 ### Phase 3: Game Logic & Rewards (Week 5-6) 🟢
+
 XP system, missions, and gamification elements.
 
 ### Phase 4: PsyOps & Personality (Week 7-8) 🔵
+
 Bot personalities and emotional intelligence.
 
 ### Phase 5: Advanced Features (Week 9-10) ⚪
+
 Scaling, security, and special modes.
 
 ---
@@ -24,14 +29,16 @@ Scaling, security, and special modes.
 ## 📋 Phase 1: Core Completion 🔴
 
 ### 1.1 Trade Execution Pipeline
+
 ```
 Files to create:
 - src/bitten_core/trade_executor.py
-- src/bitten_core/risk_calculator.py  
+- src/bitten_core/risk_calculator.py
 - src/bitten_core/cooldown_manager.py
 ```
 
 **Tasks:**
+
 - [ ] Complete fire mode execution in `fire_router.py`
 - [ ] Implement 2% risk calculation per tier
 - [ ] Add 30-minute cooldown enforcement
@@ -40,6 +47,7 @@ Files to create:
 - [ ] Add trade confirmation to Telegram
 
 ### 1.2 Safety Systems
+
 ```
 Files to create:
 - src/bitten_core/news_monitor.py
@@ -47,12 +55,14 @@ Files to create:
 ```
 
 **Tasks:**
+
 - [ ] News event detection and auto-pause
 - [ ] -7% daily drawdown protection
 - [ ] Emergency stop functionality
 - [ ] Account balance monitoring
 
 ### 1.3 TCS Enforcement
+
 ```
 Files to update:
 - src/bitten_core/fire_router.py
@@ -60,6 +70,7 @@ Files to update:
 ```
 
 **Tasks:**
+
 - [ ] Strict TCS threshold checking
 - [ ] Tier-based TCS requirements (70/85/91/91)
 - [ ] Signal rejection logging
@@ -69,6 +80,7 @@ Files to update:
 ## 📋 Phase 2: UX & Onboarding 🟡
 
 ### 2.1 Onboarding Flow
+
 ```
 Files to create:
 - src/bitten_core/onboarding/welcome_flow.py
@@ -78,6 +90,7 @@ Files to create:
 ```
 
 **Tasks:**
+
 - [ ] Create `/start` command tree
 - [ ] MT5 connection walkthrough
 - [ ] First trade tutorial
@@ -85,6 +98,7 @@ Files to create:
 - [ ] Interactive setup wizard
 
 ### 2.2 Tier Management
+
 ```
 Files to create:
 - src/bitten_core/upgrade_router.py
@@ -92,6 +106,7 @@ Files to create:
 ```
 
 **Tasks:**
+
 - [ ] `/upgrade` command implementation
 - [ ] `/downgrade` command implementation
 - [ ] Tier transition animations
@@ -99,6 +114,7 @@ Files to create:
 - [ ] Payment integration hooks
 
 ### 2.3 Visual Enhancements
+
 ```
 Files to update:
 - src/bitten_core/signal_display.py
@@ -106,6 +122,7 @@ Files to update:
 ```
 
 **Tasks:**
+
 - [ ] Kill card visual generator
 - [ ] Progress bar displays
 - [ ] Badge/rank visuals
@@ -116,6 +133,7 @@ Files to update:
 ## 📋 Phase 3: Game Logic & Rewards 🟢
 
 ### 3.1 XP System
+
 ```
 Files to create:
 - src/bitten_core/xp_system.py
@@ -124,6 +142,7 @@ Files to create:
 ```
 
 **Tasks:**
+
 - [ ] XP calculation engine
 - [ ] Daily mission system
 - [ ] Trade quest logic
@@ -132,6 +151,7 @@ Files to create:
 - [ ] Leaderboard tracking
 
 ### 3.2 Gear & Inventory
+
 ```
 Files to create:
 - src/bitten_core/gear_system.py
@@ -139,6 +159,7 @@ Files to create:
 ```
 
 **Tasks:**
+
 - [ ] `/gear` command implementation
 - [ ] Perk unlock system
 - [ ] Inventory display
@@ -146,6 +167,7 @@ Files to create:
 - [ ] Gear tier progression
 
 ### 3.3 Performance Metrics
+
 ```
 Files to create:
 - src/bitten_core/metrics/accuracy_tracker.py
@@ -153,6 +175,7 @@ Files to create:
 ```
 
 **Tasks:**
+
 - [ ] Kill streak detection
 - [ ] Accuracy metrics (Sniper mode)
 - [ ] One-Up mode tracker
@@ -163,6 +186,7 @@ Files to create:
 ## 📋 Phase 4: PsyOps & Personality 🔵
 
 ### 4.1 Bot Personalities
+
 ```
 Files to create:
 - src/bitten_core/psyops/drill_bot.py
@@ -174,6 +198,7 @@ Files to create:
 ```
 
 **Tasks:**
+
 - [ ] Full message trees for each bot
 - [ ] Emotion-based triggers
 - [ ] Loss streak responses
@@ -182,6 +207,7 @@ Files to create:
 - [ ] Mood cycling logic
 
 ### 4.2 Narrative Integration
+
 ```
 Files to create:
 - src/bitten_core/lore/story_engine.py
@@ -190,6 +216,7 @@ Files to create:
 ```
 
 **Tasks:**
+
 - [ ] `/lore` command system
 - [ ] Chapter unlock triggers
 - [ ] Norman/Bit/Gemini arc
@@ -201,6 +228,7 @@ Files to create:
 ## 📋 Phase 5: Advanced Features ⚪
 
 ### 5.1 Special Modes
+
 ```
 Files to create:
 - src/bitten_core/modes/stealth_injector.py
@@ -209,12 +237,14 @@ Files to create:
 ```
 
 **Tasks:**
+
 - [ ] Stealth mode randomization
 - [ ] Gemini AI vs AI battles
 - [ ] Arcade cooldown timers
 - [ ] Midnight Hammer unity bonus
 
 ### 5.2 Security & Scaling
+
 ```
 Files to create:
 - src/bitten_core/security/license_control.py
@@ -223,6 +253,7 @@ Files to create:
 ```
 
 **Tasks:**
+
 - [ ] Multi-user license panel
 - [ ] Anti-screenshot watermarks
 - [ ] Deploy auto-packer
@@ -289,26 +320,31 @@ src/bitten_core/
 ## 🎯 Implementation Order
 
 ### Week 1-2: Foundation
+
 1. Complete fire execution
 2. Add safety systems
 3. Basic cooldowns
 
-### Week 3-4: User Experience  
+### Week 3-4: User Experience
+
 1. Onboarding flow
 2. Tier management
 3. Visual improvements
 
 ### Week 5-6: Gamification
+
 1. XP system
 2. Missions
 3. Gear/perks
 
 ### Week 7-8: Personality
+
 1. PsyOps bots
 2. Emotion engine
 3. Story integration
 
 ### Week 9-10: Polish
+
 1. Special modes
 2. Security features
 3. Performance optimization
@@ -337,4 +373,4 @@ src/bitten_core/
 
 ---
 
-*"The Engine is watching. The Network is evolving."*
+_"The Engine is watching. The Network is evolving."_

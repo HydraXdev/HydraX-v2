@@ -1,0 +1,54 @@
+CRITICAL SECURITY FIXES - PRIORITY ORDER
+=========================================
+
+🔴 IMMEDIATE (Must fix before production)
+------------------------------------------
+1. Flask Debug Mode (3 files)
+   - Search: grep -r "debug=True" *.py
+   - Fix: Change to debug=False
+   - Impact: Prevents remote code execution
+
+2. Subprocess Shell Injection (7 instances)
+   - File: bitten_system_supervisor.py (lines 163, 202, 207)
+   - Fix: Use subprocess.run(['cmd', 'arg1', 'arg2'], shell=False)
+   - Impact: Prevents command injection
+
+3. MD5 Hash Usage (5 instances)
+   - Fix: Replace hashlib.md5() with hashlib.sha256()
+   - Impact: Ensures cryptographic security
+
+🟠 HIGH PRIORITY (Fix this sprint)
+-----------------------------------
+4. Bind to All Interfaces (10+ instances)
+   - webapp_server_optimized.py:4393 - host="0.0.0.0"
+   - commander_throne.py:2914 - host="0.0.0.0"
+   - Fix: Use host="127.0.0.1" or specific IP
+   - Impact: Reduces attack surface
+
+5. SSH Host Key Verification (3 instances)
+   - Fix: Remove AutoAddPolicy, use known_hosts
+   - Impact: Prevents MITM attacks
+
+🟡 MEDIUM PRIORITY (Next 2 weeks)
+----------------------------------
+6. SQL Injection Vectors (~15 instances)
+   - Fix: Use parameterized queries
+   - Example: cursor.execute("SELECT * FROM users WHERE id=?", (user_id,))
+
+7. Hardcoded Temp Paths (~20 instances)
+   - Fix: Use tempfile.mkstemp() or TemporaryDirectory()
+   - Impact: Prevents race conditions
+
+8. Missing Request Timeouts (~5 instances)
+   - Fix: requests.get(url, timeout=30)
+   - Impact: Prevents DoS
+
+9. Pickle Deserialization (2 instances)
+   - Fix: Use JSON or msgpack instead
+   - Impact: Prevents RCE from untrusted data
+
+⚪ LOW PRIORITY (Technical debt)
+--------------------------------
+10. Low severity issues (363 instances)
+    - Code quality improvements
+    - Review and suppress false positives with #nosec

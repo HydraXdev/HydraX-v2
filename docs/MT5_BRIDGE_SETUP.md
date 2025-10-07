@@ -54,6 +54,7 @@ The bridge uses three files for communication:
 - **bitten_status.txt**: EA status and heartbeat (MT5 → Python)
 
 Default locations:
+
 - Windows: `C:\Users\[Username]\AppData\Roaming\MetaQuotes\Terminal\[ID]\MQL5\Files\`
 - Local fallback: `./mt5_files/`
 
@@ -108,12 +109,14 @@ print(f"MT5 Status: {status}")
 ## File Formats
 
 ### Instruction File (CSV)
+
 ```
 ID,SYMBOL,TYPE,LOT,PRICE,TP,SL
 T1234567890,XAUUSD,BUY,0.01,0,1970.00,1950.00
 ```
 
 ### Result File (JSON)
+
 ```json
 {
   "id": "T1234567890",
@@ -122,15 +125,16 @@ T1234567890,XAUUSD,BUY,0.01,0,1970.00,1950.00
   "message": "Order executed",
   "timestamp": "2025-01-05 12:34:56",
   "account": {
-    "balance": 10000.00,
-    "equity": 10050.00,
-    "margin": 100.00,
-    "free_margin": 9950.00
+    "balance": 10000.0,
+    "equity": 10050.0,
+    "margin": 100.0,
+    "free_margin": 9950.0
   }
 }
 ```
 
 ### Status File (JSON)
+
 ```json
 {
   "type": "heartbeat",
@@ -151,6 +155,7 @@ python test_mt5_bridge.py
 ```
 
 This will test:
+
 1. File communication
 2. Bridge adapter functionality
 3. Fire router integration
@@ -184,6 +189,7 @@ logging.basicConfig(level=logging.DEBUG)
 ```
 
 Check EA logs in MT5:
+
 - View → Terminal → Experts tab
 - View → Terminal → Journal tab
 
@@ -204,6 +210,7 @@ Check EA logs in MT5:
 ## Integration with BITTEN Features
 
 The MT5 bridge fully supports:
+
 - All fire modes (SINGLE_SHOT, BURST, etc.)
 - Tier-based execution
 - TCS score integration

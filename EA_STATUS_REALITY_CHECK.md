@@ -6,6 +6,7 @@
 ## 🎯 THE TRUTH SOURCE
 
 **PRIMARY**: Port 5556 telemetry bridge receives EA heartbeats EVERY SECOND
+
 - EA sends heartbeat with balance, equity, open positions
 - Telemetry bridge republishes to port 5560 (ZMQ)
 - Telemetry bridge publishes to event bus: `ea.status.heartbeat`
@@ -14,6 +15,7 @@
 ## ✅ HOW TO CHECK EA STATUS (CORRECT WAY)
 
 ### Option 1: Event Bus (REAL-TIME - BEST)
+
 ```python
 from event_bus.consumer import EventConsumer
 
@@ -23,11 +25,12 @@ consumer.start()
 ```
 
 ### Option 2: Database (ACCEPTABLE - 1 second lag)
+
 ```python
 cursor.execute("""
     SELECT target_uuid, last_balance, last_equity, open_positions,
            (strftime('%s','now') - last_seen) as age_sec
-    FROM ea_instances 
+    FROM ea_instances
     WHERE target_uuid = ?
 """, (ea_uuid,))
 
@@ -36,6 +39,7 @@ is_connected = result[4] < 5  # Connected if heartbeat within 5 seconds
 ```
 
 ### Option 3: Direct Telemetry Logs (DEBUG ONLY)
+
 ```bash
 tail -f /root/.pm2/logs/zmq-telemetry-bridge-error.log | grep "Heartbeat"
 ```
@@ -57,6 +61,7 @@ age = now - ea_timestamp  # Can be negative!
 ## 🔧 BUG THAT WAS FIXED
 
 **Before Fix**:
+
 ```python
 # zmq_telemetry_bridge_debug.py line 34:
 timestamp = heartbeat_data.get('timestamp', int(time.time()))
@@ -64,6 +69,7 @@ timestamp = heartbeat_data.get('timestamp', int(time.time()))
 ```
 
 **After Fix**:
+
 ```python
 # zmq_telemetry_bridge_debug.py line 35:
 timestamp = int(time.time())  # SERVER RECEIVE TIME = TRUTH
@@ -74,10 +80,12 @@ timestamp = int(time.time())  # SERVER RECEIVE TIME = TRUTH
 ## 📊 REAL-TIME SLOT TRACKING
 
 **Enhanced Slot Manager** subscribes to:
+
 - `ea.status.heartbeat` → Updates position counts from EA
 - `trade.closed` → Releases slots immediately
 
 **Webapp AUTO Fire** checks:
+
 ```python
 # Before sending fire command:
 ea_age = get_ea_age(target_uuid)
@@ -113,4 +121,3 @@ pm2 logs zmq_telemetry_bridge --lines 5 | grep "ea.status"
 # Check slot manager (should track real-time positions)
 pm2 logs enhanced_slot_manager --lines 5
 ```
-

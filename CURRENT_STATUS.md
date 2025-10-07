@@ -6,6 +6,7 @@
 ## ✅ SERVER INFRASTRUCTURE READY
 
 ### Working Components:
+
 1. **Elite Guard**: Building candles from previous tick data
 2. **WebApp**: Running on port 8888
 3. **Command Router**: Ready on port 5555
@@ -13,10 +14,12 @@
 5. **Telemetry Bridge**: Ready on ports 5556/5560
 
 ### Signal Chain Ready:
+
 - Elite Guard → ZMQ → Redis → Alerts → Telegram
 - All relay components active and waiting
 
 ## ⏸️ EA STATUS
+
 - **EA Removed**: Disconnected by user
 - **Last Activity**: Tick stream stopped
 - **Handshake**: Not received (EA v3.003 format expected)
@@ -26,13 +29,14 @@
 When EA reconnects, it should:
 
 1. **Send Handshake** on port 5556:
+
 ```json
 {
   "type": "handshake",
   "uuid": "COMMANDER_DEV_001",
   "account": 843859,
-  "balance": 10000.00,
-  "equity": 10000.00,
+  "balance": 10000.0,
+  "equity": 10000.0,
   "currency": "USD",
   "broker": "...",
   "version": "3.003"
@@ -69,4 +73,5 @@ python3 /root/HydraX-v2/test_live_fire_flow.py
 - Pattern detection: ⏳ Needs more candles (~30-45 min after tick resume)
 
 ---
+
 **STATUS: Ready for EA reconnection**

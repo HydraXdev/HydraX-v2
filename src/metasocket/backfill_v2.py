@@ -5,51 +5,41 @@ Implements OhlcStore interface, Bar type, and backfillAll functionality
 
 import asyncio
 import json
-import time
 import logging
-from typing import Dict, List, Optional, Any, Protocol
-from dataclasses import dataclass
+import time
 from collections import deque
-import websockets
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional, Protocol
 
+import websockets
 from symbols import SYMBOLS
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class Bar:
     """OHLC Bar - mirrors TypeScript Bar type"""
-    ts_open_ms: int    # Opening timestamp in milliseconds
-    o: float           # Open price
-    h: float           # High price
-    l: float           # Low price
-    c: float           # Close price
+
+    ts_open_ms: int  # Opening timestamp in milliseconds
+    o: float  # Open price
+    h: float  # High price
+    l: float  # Low price
+    c: float  # Close price
     v: Optional[float] = None  # Volume (optional)
 
     def to_dict(self) -> dict:
         """Convert to dictionary for JSON serialization"""
-        result = {
-            "ts_open_ms": self.ts_open_ms,
-            "o": self.o,
-            "h": self.h,
-            "l": self.l,
-            "c": self.c
-        }
+        result = {"ts_open_ms": self.ts_open_ms, "o": self.o, "h": self.h, "l": self.l, "c": self.c}
         if self.v is not None:
             result["v"] = self.v
         return result
 
     @classmethod
-    def from_dict(cls, data: dict) -> 'Bar':
+    def from_dict(cls, data: dict) -> "Bar":
         """Create Bar from dictionary"""
-        return cls(
-            ts_open_ms=data["ts_open_ms"],
-            o=data["o"],
-            h=data["h"],
-            l=data["l"],
-            c=data["c"],
-            v=data.get("v")
-        )
+        return cls(ts_open_ms=data["ts_open_ms"], o=data["o"], h=data["h"], l=data["l"], c=data["c"], v=data.get("v"))
+
 
 class OhlcStore(Protocol):
     """OHLC Store interface - mirrors TypeScript OhlcStore"""
@@ -65,6 +55,7 @@ class OhlcStore(Protocol):
     def last(self, symbol: str, n: int) -> List[Bar]:
         """Get last n bars for symbol"""
         ...
+
 
 class InMemoryOhlcStore:
     """In-memory OHLC store implementation"""
@@ -110,12 +101,7 @@ class InMemoryOhlcStore:
         # Create new bar if needed
         if current_bar is None:
             self.current_bars[symbol] = Bar(
-                ts_open_ms=minute_ts,
-                o=mid_price,
-                h=mid_price,
-                l=mid_price,
-                c=mid_price,
-                v=0.0
+                ts_open_ms=minute_ts, o=mid_price, h=mid_price, l=mid_price, c=mid_price, v=0.0
             )
             current_bar = self.current_bars[symbol]
 
@@ -163,8 +149,9 @@ class InMemoryOhlcStore:
             "symbols_stored": len(self.bars),
             "bars_per_symbol": {symbol: len(bars) for symbol, bars in self.bars.items()},
             "current_bars_active": len(self.current_bars),
-            "total_bars": sum(len(bars) for bars in self.bars.values())
+            "total_bars": sum(len(bars) for bars in self.bars.values()),
         }
+
 
 def map_to_bar(b: Any) -> Bar:
     """
@@ -172,13 +159,7 @@ def map_to_bar(b: Any) -> Bar:
     Mirrors TypeScript mapToBar() function
     """
     # Accept various timestamp field names
-    ts_open_ms = (
-        b.get("ts_ms") or
-        b.get("ts") or
-        b.get("time_ms") or
-        b.get("timestamp") or
-        int(time.time() * 1000)
-    )
+    ts_open_ms = b.get("ts_ms") or b.get("ts") or b.get("time_ms") or b.get("timestamp") or int(time.time() * 1000)
 
     # Ensure timestamp is in milliseconds
     if ts_open_ms < 1e12:  # If less than year 2001 in milliseconds, assume seconds
@@ -190,8 +171,9 @@ def map_to_bar(b: Any) -> Bar:
         h=float(b.get("h", 0) or b.get("high", 0)),
         l=float(b.get("l", 0) or b.get("low", 0)),
         c=float(b.get("c", 0) or b.get("close", 0)),
-        v=float(b.get("v")) if b.get("v") is not None else None
+        v=float(b.get("v")) if b.get("v") is not None else None,
     )
+
 
 async def backfill_all(conn: Any, store: OhlcStore) -> None:
     """
@@ -208,15 +190,10 @@ async def backfill_all(conn: Any, store: OhlcStore) -> None:
             logger.debug(f"📊 Requesting history for {symbol}...")
 
             # Request historical data
-            request = {
-                "op": "PRICE_HISTORY",
-                "symbol": symbol,
-                "timeframe": "M1",
-                "limit": 300
-            }
+            request = {"op": "PRICE_HISTORY", "symbol": symbol, "timeframe": "M1", "limit": 300}
 
             # Send request and wait for response
-            if hasattr(conn, 'send_and_wait'):
+            if hasattr(conn, "send_and_wait"):
                 response = await conn.send_and_wait(request)
             else:
                 # Fallback for basic connection
@@ -249,6 +226,7 @@ async def backfill_all(conn: Any, store: OhlcStore) -> None:
 
     return {"success": success_count, "failed": failed_symbols}
 
+
 class EnhancedBackfillManager:
     """Enhanced backfill manager with TypeScript-mirrored functionality"""
 
@@ -262,10 +240,7 @@ class EnhancedBackfillManager:
         """Initialize WebSocket connection"""
         try:
             self.connection = await websockets.connect(
-                self.websocket_url,
-                ping_interval=20,
-                ping_timeout=10,
-                close_timeout=5
+                self.websocket_url, ping_interval=20, ping_timeout=10, close_timeout=5
             )
             logger.info(f"🔗 Connected to {self.websocket_url} for backfill")
         except Exception as e:
@@ -299,10 +274,7 @@ class EnhancedBackfillManager:
             await self.initialize_connection()
 
             # Create connection wrapper for backfill_all
-            conn_wrapper = type('Connection', (), {
-                'send': self.connection.send,
-                'send_and_wait': self.send_and_wait
-            })()
+            conn_wrapper = type("Connection", (), {"send": self.connection.send, "send_and_wait": self.send_and_wait})()
 
             # Perform backfill
             result = await backfill_all(conn_wrapper, self.store)
@@ -361,15 +333,11 @@ class EnhancedBackfillManager:
             current_price = {
                 "bid": current_bar["c"] - 0.00005,  # Approximate spread
                 "ask": current_bar["c"] + 0.00005,
-                "mid": current_bar["c"]
+                "mid": current_bar["c"],
             }
         elif bars:
             latest_close = bars[-1]["c"]
-            current_price = {
-                "bid": latest_close - 0.00005,
-                "ask": latest_close + 0.00005,
-                "mid": latest_close
-            }
+            current_price = {"bid": latest_close - 0.00005, "ask": latest_close + 0.00005, "mid": latest_close}
         else:
             return None
 
@@ -391,12 +359,9 @@ class EnhancedBackfillManager:
             "bars": bars,  # Last 100 bars
             "current_bar": current_bar,  # Incomplete current bar
             "price": current_price,
-            "overlays": {
-                "spread": spread,
-                "rr_hint": rr_hint
-            },
+            "overlays": {"spread": spread, "rr_hint": rr_hint},
             "ts_epoch_ms": int(time.time() * 1000),
-            "src": "metasocket"
+            "src": "metasocket",
         }
 
     def get_health_stats(self) -> dict:
@@ -407,8 +372,9 @@ class EnhancedBackfillManager:
             "backfill_completed": self.backfill_completed,
             "connection_active": self.connection is not None and not self.connection.closed,
             "symbols_configured": len(SYMBOLS),
-            **store_stats
+            **store_stats,
         }
+
 
 # Example usage and testing
 async def test_enhanced_backfill():
@@ -427,7 +393,7 @@ async def test_enhanced_backfill():
         "h": 1.10600,
         "l": 1.10400,
         "c": 1.10550,
-        "v": 1000
+        "v": 1000,
     }
 
     bar = map_to_bar(test_bar_data)
@@ -436,8 +402,14 @@ async def test_enhanced_backfill():
     # Test store operations
     print("📊 Testing store operations...")
     test_bars = [
-        Bar(int(time.time() * 1000) - i * 60000, 1.10500 + i * 0.0001, 1.10600 + i * 0.0001,
-            1.10400 + i * 0.0001, 1.10550 + i * 0.0001, 100)
+        Bar(
+            int(time.time() * 1000) - i * 60000,
+            1.10500 + i * 0.0001,
+            1.10600 + i * 0.0001,
+            1.10400 + i * 0.0001,
+            1.10550 + i * 0.0001,
+            100,
+        )
         for i in range(10)
     ]
 
@@ -447,11 +419,7 @@ async def test_enhanced_backfill():
 
     # Test tick integration
     print("📊 Testing tick integration...")
-    test_tick = {
-        "symbol": "EURUSD",
-        "mid": 1.10575,
-        "ts": int(time.time() * 1000)
-    }
+    test_tick = {"symbol": "EURUSD", "mid": 1.10575, "ts": int(time.time() * 1000)}
 
     store.upsert_from_tick("EURUSD", test_tick)
     current = store.get_current_bar("EURUSD")
@@ -468,11 +436,9 @@ async def test_enhanced_backfill():
 
     print("\n🎉 All tests completed successfully!")
 
+
 if __name__ == "__main__":
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    )
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
     # Run test
     asyncio.run(test_enhanced_backfill())

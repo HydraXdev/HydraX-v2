@@ -16,28 +16,35 @@ The enhanced `mission_endpoints.py` provides a complete REST API for managing mi
 ## API Endpoints
 
 ### Health Check
+
 ```
 GET /api/health
 ```
+
 No authentication required. Returns service status.
 
 ### Mission Status
+
 ```
 GET /api/mission-status/<mission_id>
 Authorization: Bearer <token>
 X-User-ID: <user_id>
 ```
+
 Returns detailed mission status including countdown timer.
 
 ### List Missions
+
 ```
 GET /api/missions?status=pending&limit=50&offset=0
 Authorization: Bearer <token>
 X-User-ID: <user_id>
 ```
+
 Returns paginated list of user missions with filtering options.
 
 ### Fire Mission (Execute Trade)
+
 ```
 POST /api/fire
 Authorization: Bearer <token>
@@ -48,23 +55,28 @@ Content-Type: application/json
   "mission_id": "test_user_123_1752507290"
 }
 ```
+
 Executes a trade for the specified mission.
 
 ### Cancel Mission
+
 ```
 POST /api/missions/<mission_id>/cancel
 Authorization: Bearer <token>
 X-User-ID: <user_id>
 ```
+
 Cancels a pending mission.
 
 ## Authentication
 
 All protected endpoints require:
+
 - `Authorization: Bearer <token>` header
 - `X-User-ID: <user_id>` header
 
 The system validates:
+
 1. Presence of both headers
 2. Correct Bearer token format
 3. User access to specific missions
@@ -100,6 +112,7 @@ The system validates:
 ## Error Responses
 
 All errors follow this format:
+
 ```json
 {
   "status": "error",
@@ -109,6 +122,7 @@ All errors follow this format:
 ```
 
 Common error codes:
+
 - `authentication_required`: Missing auth headers
 - `invalid_token_format`: Invalid Bearer token
 - `access_denied`: User doesn't have mission access
@@ -122,6 +136,7 @@ Common error codes:
 ### 1. Update WebApp Configuration
 
 Add mission endpoints URL to your WebApp config:
+
 ```python
 MISSION_ENDPOINTS_URL = "http://localhost:5001"
 ```
@@ -129,6 +144,7 @@ MISSION_ENDPOINTS_URL = "http://localhost:5001"
 ### 2. Authentication Integration
 
 Use the existing authentication system to get user tokens:
+
 ```python
 from src.bitten_core.user_management.auth_middleware import SessionManager
 
@@ -147,12 +163,12 @@ async def fetch_mission_status(mission_id, user_id, token):
         "Authorization": f"Bearer {token}",
         "X-User-ID": user_id
     }
-    
+
     response = requests.get(
         f"{MISSION_ENDPOINTS_URL}/api/mission-status/{mission_id}",
         headers=headers
     )
-    
+
     if response.status_code == 200:
         return response.json()
     else:
@@ -168,34 +184,35 @@ async def fire_mission(mission_id, user_id, token):
         "X-User-ID": user_id,
         "Content-Type": "application/json"
     }
-    
+
     payload = {"mission_id": mission_id}
-    
+
     response = requests.post(
         f"{MISSION_ENDPOINTS_URL}/api/fire",
         headers=headers,
         json=payload
     )
-    
+
     return response.json()
 ```
 
 ### 5. Real-time Updates
 
 For countdown timers, use JavaScript to update the UI:
+
 ```javascript
 function updateCountdown(timeRemaining) {
-    const minutes = Math.floor(timeRemaining / 60);
-    const seconds = timeRemaining % 60;
-    
-    document.getElementById('countdown').textContent = 
-        `${minutes}:${seconds.toString().padStart(2, '0')}`;
-    
-    if (timeRemaining > 0) {
-        setTimeout(() => updateCountdown(timeRemaining - 1), 1000);
-    } else {
-        document.getElementById('mission-expired').style.display = 'block';
-    }
+  const minutes = Math.floor(timeRemaining / 60);
+  const seconds = timeRemaining % 60;
+
+  document.getElementById("countdown").textContent =
+    `${minutes}:${seconds.toString().padStart(2, "0")}`;
+
+  if (timeRemaining > 0) {
+    setTimeout(() => updateCountdown(timeRemaining - 1), 1000);
+  } else {
+    document.getElementById("mission-expired").style.display = "block";
+  }
 }
 ```
 
@@ -216,12 +233,14 @@ function updateCountdown(timeRemaining) {
 ## Running the Service
 
 1. Start the mission endpoints server:
+
 ```bash
 cd /root/HydraX-v2/src/api
 python mission_endpoints.py
 ```
 
 2. Test the endpoints:
+
 ```bash
 cd /root/HydraX-v2
 python test_mission_endpoints.py
@@ -255,6 +274,7 @@ python test_mission_endpoints.py
 ### Debugging
 
 Enable debug logging:
+
 ```python
 import logging
 logging.basicConfig(level=logging.DEBUG)
@@ -263,6 +283,7 @@ logging.basicConfig(level=logging.DEBUG)
 ### Log Files
 
 Check logs for detailed error information:
+
 - Application logs contain request/response details
 - Error logs show stack traces for failures
 - Trade execution logs track fire_router calls
@@ -270,6 +291,7 @@ Check logs for detailed error information:
 ## Support
 
 For issues or questions about the mission endpoints integration, check:
+
 1. This integration guide
 2. API endpoint documentation
 3. Test script examples

@@ -69,7 +69,7 @@ REM Instance 1 - Nibbler/Fang
 if defined MT5_PATH[1] (
     echo Configuring Instance 1 (Nibbler/Fang)...
     copy /Y "BITTENBridge_v3_ENHANCED.mq5" "!MT5_PATH[1]!\MQL5\Experts\BITTEN_Instance1.mq5"
-    
+
     REM Create configuration file
     (
         echo // BITTEN Instance 1 Configuration
@@ -86,7 +86,7 @@ REM Instance 2 - Commander
 if defined MT5_PATH[2] (
     echo Configuring Instance 2 (Commander)...
     copy /Y "BITTENBridge_v3_ENHANCED.mq5" "!MT5_PATH[2]!\MQL5\Experts\BITTEN_Instance2.mq5"
-    
+
     (
         echo // BITTEN Instance 2 Configuration
         echo // Tier: Commander
@@ -102,7 +102,7 @@ REM Instance 3 - APEX
 if defined MT5_PATH[3] (
     echo Configuring Instance 3 (APEX)...
     copy /Y "BITTENBridge_v3_ENHANCED.mq5" "!MT5_PATH[3]!\MQL5\Experts\BITTEN_Instance3.mq5"
-    
+
     (
         echo // BITTEN Instance 3 Configuration
         echo // Tier: APEX
@@ -235,7 +235,7 @@ REM Create README
     echo.
     echo File Structure:
     echo - C:\BITTEN_Bridge\Instance1 - Nibbler/Fang trades
-    echo - C:\BITTEN_Bridge\Instance2 - Commander trades  
+    echo - C:\BITTEN_Bridge\Instance2 - Commander trades
     echo - C:\BITTEN_Bridge\Instance3 - APEX trades
     echo.
     echo Next Steps:

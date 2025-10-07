@@ -6,30 +6,51 @@ Creates realistic price movements, patterns, and trading scenarios
 """
 
 import json
-import time
-import random
 import math
+import random
+import time
 from datetime import datetime, timedelta
 from typing import Dict, List, Tuple
+
 
 class MarketSimulator:
     """Advanced market data simulator for testing"""
 
     def __init__(self):
         self.base_prices = {
-            "EURUSD": 1.0875, "GBPUSD": 1.2645, "USDJPY": 149.85,
-            "USDCHF": 0.8745, "AUDUSD": 0.6598, "USDCAD": 1.3567,
-            "NZDUSD": 0.6012, "EURJPY": 162.34, "GBPJPY": 189.23,
-            "EURGBP": 0.8598, "AUDCAD": 0.8954, "AUDNZD": 1.0875,
-            "EURAUD": 1.6498, "EURCHF": 0.9512, "GBPCHF": 1.1054
+            "EURUSD": 1.0875,
+            "GBPUSD": 1.2645,
+            "USDJPY": 149.85,
+            "USDCHF": 0.8745,
+            "AUDUSD": 0.6598,
+            "USDCAD": 1.3567,
+            "NZDUSD": 0.6012,
+            "EURJPY": 162.34,
+            "GBPJPY": 189.23,
+            "EURGBP": 0.8598,
+            "AUDCAD": 0.8954,
+            "AUDNZD": 1.0875,
+            "EURAUD": 1.6498,
+            "EURCHF": 0.9512,
+            "GBPCHF": 1.1054,
         }
 
         self.pip_values = {
-            "EURUSD": 0.0001, "GBPUSD": 0.0001, "USDJPY": 0.01,
-            "USDCHF": 0.0001, "AUDUSD": 0.0001, "USDCAD": 0.0001,
-            "NZDUSD": 0.0001, "EURJPY": 0.01, "GBPJPY": 0.01,
-            "EURGBP": 0.0001, "AUDCAD": 0.0001, "AUDNZD": 0.0001,
-            "EURAUD": 0.0001, "EURCHF": 0.0001, "GBPCHF": 0.0001
+            "EURUSD": 0.0001,
+            "GBPUSD": 0.0001,
+            "USDJPY": 0.01,
+            "USDCHF": 0.0001,
+            "AUDUSD": 0.0001,
+            "USDCAD": 0.0001,
+            "NZDUSD": 0.0001,
+            "EURJPY": 0.01,
+            "GBPJPY": 0.01,
+            "EURGBP": 0.0001,
+            "AUDCAD": 0.0001,
+            "AUDNZD": 0.0001,
+            "EURAUD": 0.0001,
+            "EURCHF": 0.0001,
+            "GBPCHF": 0.0001,
         }
 
         # Market sessions with different volatility
@@ -37,7 +58,7 @@ class MarketSimulator:
             "ASIAN": {"volatility": 0.5, "start": 0, "end": 8},
             "LONDON": {"volatility": 1.2, "start": 8, "end": 16},
             "NY": {"volatility": 1.0, "start": 13, "end": 22},
-            "OVERLAP": {"volatility": 1.5, "start": 13, "end": 16}
+            "OVERLAP": {"volatility": 1.5, "start": 13, "end": 16},
         }
 
         self.current_prices = self.base_prices.copy()
@@ -96,7 +117,7 @@ class MarketSimulator:
                 "direction": "SELL" if spike_direction > 0 else "BUY",
                 "confidence": random.uniform(75, 89),
                 "stop_pips": int(random.uniform(15, 25)),
-                "target_pips": int(random.uniform(20, 35))
+                "target_pips": int(random.uniform(20, 35)),
             }
 
         elif pattern_type == "VCB_BREAKOUT":
@@ -112,7 +133,7 @@ class MarketSimulator:
                 "direction": "BUY" if breakout_direction > 0 else "SELL",
                 "confidence": random.uniform(70, 85),
                 "stop_pips": int(random.uniform(12, 20)),
-                "target_pips": int(random.uniform(15, 25))
+                "target_pips": int(random.uniform(15, 25)),
             }
 
         elif pattern_type == "ORDER_BLOCK_BOUNCE":
@@ -127,7 +148,7 @@ class MarketSimulator:
                 "direction": "BUY" if bounce_direction > 0 else "SELL",
                 "confidence": random.uniform(72, 88),
                 "stop_pips": int(random.uniform(18, 28)),
-                "target_pips": int(random.uniform(25, 40))
+                "target_pips": int(random.uniform(25, 40)),
             }
 
         return {}
@@ -139,8 +160,12 @@ class MarketSimulator:
 
         if pattern_types is None:
             pattern_types = [
-                "LIQUIDITY_SWEEP_REVERSAL", "VCB_BREAKOUT", "ORDER_BLOCK_BOUNCE",
-                "FAIR_VALUE_GAP_FILL", "SWEEP_RETURN", "MOMENTUM_BURST"
+                "LIQUIDITY_SWEEP_REVERSAL",
+                "VCB_BREAKOUT",
+                "ORDER_BLOCK_BOUNCE",
+                "FAIR_VALUE_GAP_FILL",
+                "SWEEP_RETURN",
+                "MOMENTUM_BURST",
             ]
 
         current_session = self.get_current_session()
@@ -152,10 +177,7 @@ class MarketSimulator:
             self.current_prices[pair] += movement
 
             # Store price history
-            self.price_history[pair].append({
-                "price": self.current_prices[pair],
-                "timestamp": time.time()
-            })
+            self.price_history[pair].append({"price": self.current_prices[pair], "timestamp": time.time()})
 
             # Keep only last 100 price points
             if len(self.price_history[pair]) > 100:
@@ -181,7 +203,7 @@ class MarketSimulator:
                         "expires_at": int(time.time()) + random.randint(600, 1800),  # 10-30 minutes
                         "session": current_session,
                         "citadel_score": round(random.uniform(6.0, 9.5), 1),
-                        "simulated": True
+                        "simulated": True,
                     }
                     signals.append(signal)
 
@@ -194,26 +216,26 @@ class MarketSimulator:
                 "description": "Major news event causing high volatility",
                 "pairs": ["EURUSD", "GBPUSD", "USDJPY"],
                 "volatility_multiplier": 3.0,
-                "signal_probability": 0.8
+                "signal_probability": 0.8,
             },
             "quiet_market": {
                 "description": "Low volatility consolidation period",
                 "pairs": ["USDCHF", "EURGBP", "AUDNZD"],
                 "volatility_multiplier": 0.3,
-                "signal_probability": 0.1
+                "signal_probability": 0.1,
             },
             "trend_day": {
                 "description": "Strong trending market conditions",
                 "pairs": ["EURUSD", "GBPJPY", "AUDUSD"],
                 "volatility_multiplier": 1.5,
-                "signal_probability": 0.6
+                "signal_probability": 0.6,
             },
             "asian_session": {
                 "description": "Typical Asian session trading",
                 "pairs": ["USDJPY", "AUDUSD", "NZDUSD"],
                 "volatility_multiplier": 0.5,
-                "signal_probability": 0.2
-            }
+                "signal_probability": 0.2,
+            },
         }
 
         if scenario_type not in scenarios:
@@ -229,7 +251,7 @@ class MarketSimulator:
             if random.random() < scenario["signal_probability"]:
                 pair_signals = self.generate_signal_scenario(
                     pairs=scenario["pairs"],
-                    pattern_types=["LIQUIDITY_SWEEP_REVERSAL", "VCB_BREAKOUT", "MOMENTUM_BURST"]
+                    pattern_types=["LIQUIDITY_SWEEP_REVERSAL", "VCB_BREAKOUT", "MOMENTUM_BURST"],
                 )
                 signals.extend(pair_signals)
 
@@ -237,8 +259,9 @@ class MarketSimulator:
             "scenario": scenario_type,
             "description": scenario["description"],
             "signals": signals,
-            "total_signals": len(signals)
+            "total_signals": len(signals),
         }
+
 
 def main():
     """Demo the market simulator"""
@@ -266,6 +289,7 @@ def main():
     print("\n📊 Current simulated market prices:")
     for pair, price in list(simulator.current_prices.items())[:5]:
         print(f"  {pair}: {price:.5f}")
+
 
 if __name__ == "__main__":
     main()

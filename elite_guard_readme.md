@@ -11,12 +11,14 @@
 ## 🎯 Quick Start
 
 ### Prerequisites
+
 - Python 3.9+
 - ZMQ libraries installed
 - Access to market data stream (port 5556)
 - BITTEN core system running
 
 ### Installation
+
 ```bash
 # Clone the Elite Guard system
 git clone https://github.com/HydraX/elite-guard.git
@@ -30,6 +32,7 @@ python3 elite_guard_with_citadel.py
 ```
 
 ### Basic Usage
+
 ```python
 from elite_guard_with_citadel import EliteGuardWithCitadel
 
@@ -57,12 +60,12 @@ engine.start()
 
 ### Performance Targets
 
-| Metric | Target | Status |
-|--------|--------|--------|
-| Win Rate | 60-70% | ✅ Live Testing |
-| Signals/Day | 20-30 | ✅ Adaptive Pacing |
-| Risk/Reward | 1:1.5, 1:2 | ✅ Tier Specific |
-| Response Time | <500ms | ✅ Optimized |
+| Metric        | Target     | Status             |
+| ------------- | ---------- | ------------------ |
+| Win Rate      | 60-70%     | ✅ Live Testing    |
+| Signals/Day   | 20-30      | ✅ Adaptive Pacing |
+| Risk/Reward   | 1:1.5, 1:2 | ✅ Tier Specific   |
+| Response Time | <500ms     | ✅ Optimized       |
 
 ---
 
@@ -84,12 +87,12 @@ engine.start()
 
 ### Core Files
 
-| File | Purpose | Status |
-|------|---------|--------|
-| `elite_guard_engine.py` | Core pattern detection | ✅ Production |
-| `citadel_shield_filter.py` | Signal validation | ✅ Production |
-| `elite_guard_with_citadel.py` | Integrated system | ✅ Live |
-| `ELITE_GUARD_BLUEPRINT.md` | Technical specs | ✅ Complete |
+| File                          | Purpose                | Status        |
+| ----------------------------- | ---------------------- | ------------- |
+| `elite_guard_engine.py`       | Core pattern detection | ✅ Production |
+| `citadel_shield_filter.py`    | Signal validation      | ✅ Production |
+| `elite_guard_with_citadel.py` | Integrated system      | ✅ Live       |
+| `ELITE_GUARD_BLUEPRINT.md`    | Technical specs        | ✅ Complete   |
 
 ---
 
@@ -116,10 +119,11 @@ MIN_BROKER_CONFIDENCE=75           # Minimum consensus %
 ### Trading Pairs
 
 Elite Guard monitors 15 major currency pairs:
+
 ```python
 TRADING_PAIRS = [
     "EURUSD", "GBPUSD", "USDJPY", "USDCAD", "AUDUSD",
-    "USDCHF", "NZDUSD", "EURGBP", "EURJPY", "GBPJPY", 
+    "USDCHF", "NZDUSD", "EURGBP", "EURJPY", "GBPJPY",
     "GBPNZD", "GBPAUD", "EURAUD", "GBPCHF", "AUDJPY"
 ]
 # Note: XAUUSD excluded per system constraints
@@ -130,6 +134,7 @@ TRADING_PAIRS = [
 ## 🎯 Signal Types
 
 ### RAPID_ASSAULT (1:1.5 R:R)
+
 - **Target Users**: Average, Nibbler tiers
 - **Duration**: 30 minutes
 - **Risk/Reward**: 1:1.5
@@ -137,6 +142,7 @@ TRADING_PAIRS = [
 - **Characteristics**: Quick scalps, higher frequency
 
 ### PRECISION_STRIKE (1:2 R:R)
+
 - **Target Users**: Sniper, Commander tiers
 - **Duration**: 60 minutes
 - **Risk/Reward**: 1:2
@@ -157,6 +163,7 @@ price_movement > 3_pips AND volume_surge > 30% AND quick_reversal
 ```
 
 **Example Signal**:
+
 ```json
 {
   "pattern": "LIQUIDITY_SWEEP_REVERSAL",
@@ -205,12 +212,12 @@ price_deviation < 0.5% AND broker_consensus > 75% AND outliers <= 1
 
 ### Shield Classifications
 
-| Score | Classification | Position Size | Status |
-|-------|---------------|---------------|--------|
-| 8.0-10.0 | 🛡️ SHIELD APPROVED | 1.5x | Premium |
-| 6.0-7.9 | ✅ SHIELD ACTIVE | 1.0x | Standard |
-| 4.0-5.9 | ⚠️ VOLATILITY ZONE | 0.5x | Caution |
-| 0.0-3.9 | 🔍 UNVERIFIED | 0.25x | Educational |
+| Score    | Classification     | Position Size | Status      |
+| -------- | ------------------ | ------------- | ----------- |
+| 8.0-10.0 | 🛡️ SHIELD APPROVED | 1.5x          | Premium     |
+| 6.0-7.9  | ✅ SHIELD ACTIVE   | 1.0x          | Standard    |
+| 4.0-5.9  | ⚠️ VOLATILITY ZONE | 0.5x          | Caution     |
+| 0.0-3.9  | 🔍 UNVERIFIED      | 0.25x         | Educational |
 
 ---
 
@@ -266,6 +273,7 @@ publisher.send_string(f"ELITE_GUARD_SIGNAL {json.dumps(signal)}")
 ### Message Formats
 
 **Input (Market Data)**:
+
 ```json
 {
   "symbol": "EURUSD",
@@ -278,6 +286,7 @@ publisher.send_string(f"ELITE_GUARD_SIGNAL {json.dumps(signal)}")
 ```
 
 **Output (Signal)**:
+
 ```json
 {
   "signal_id": "ELITE_GUARD_EURUSD_1722470400",
@@ -348,6 +357,7 @@ grep "ELITE GUARD:" elite_guard.log | awk '{print $5}' | sort | uniq -c
 ### Common Issues
 
 **1. No signals generated**
+
 ```bash
 # Check confidence threshold
 grep "confidence" elite_guard.log | tail -5
@@ -360,6 +370,7 @@ export CONFIDENCE_THRESHOLD=60
 ```
 
 **2. ZMQ connection errors**
+
 ```bash
 # Check port availability
 netstat -tulpn | grep 555
@@ -372,6 +383,7 @@ python3 elite_guard_with_citadel.py
 ```
 
 **3. CITADEL validation failures**
+
 ```bash
 # Check broker connections
 grep "broker failed" elite_guard.log
@@ -486,13 +498,13 @@ python3 stress_test_elite_guard.py --pairs=15 --frequency=1s --duration=1h
 ```python
 class EliteGuardEngine:
     """Core pattern detection engine"""
-    
+
     def detect_liquidity_sweep_reversal(self, symbol: str) -> Optional[PatternSignal]:
         """Detect liquidity sweep patterns"""
-        
+
     def detect_order_block_bounce(self, symbol: str) -> Optional[PatternSignal]:
         """Detect order block bounces"""
-        
+
     def apply_ml_confluence_scoring(self, signal: PatternSignal) -> float:
         """Apply ML-style confluence scoring"""
 ```
@@ -502,10 +514,10 @@ class EliteGuardEngine:
 ```python
 class CitadelShieldFilter:
     """Multi-broker consensus validation"""
-    
+
     def validate_and_enhance(self, signal: Dict) -> Optional[Dict]:
         """Main validation and enhancement"""
-        
+
     def detect_manipulation(self, symbol: str, price: float) -> Tuple[bool, str]:
         """Detect price manipulation"""
 ```
@@ -515,13 +527,13 @@ class CitadelShieldFilter:
 ```python
 class EliteGuardWithCitadel:
     """Complete integrated system"""
-    
+
     def start(self) -> None:
         """Start the signal engine"""
-        
+
     def stop(self) -> None:
         """Stop the signal engine"""
-        
+
     def get_statistics(self) -> Dict:
         """Get performance statistics"""
 ```
@@ -593,6 +605,7 @@ Copyright © 2025 HydraX Trading Systems. All rights reserved.
 ## 🔄 Changelog
 
 ### v6.0.0 (August 1, 2025)
+
 - ✅ Complete SMC pattern implementation
 - ✅ CITADEL Shield multi-broker validation
 - ✅ ZMQ integration with BITTEN core
@@ -601,6 +614,7 @@ Copyright © 2025 HydraX Trading Systems. All rights reserved.
 - ✅ Educational signal enhancement
 
 ### v5.0.0 (July 2025)
+
 - Initial Elite Guard development
 - Basic pattern recognition
 - Single-broker validation
@@ -610,12 +624,14 @@ Copyright © 2025 HydraX Trading Systems. All rights reserved.
 ## 🎯 Roadmap
 
 ### Q3 2025
+
 - [ ] Real broker API integration
 - [ ] Advanced pattern library expansion
 - [ ] Machine learning model training
 - [ ] Mobile application development
 
 ### Q4 2025
+
 - [ ] Multi-asset support (commodities, indices)
 - [ ] Social trading features
 - [ ] Advanced analytics dashboard

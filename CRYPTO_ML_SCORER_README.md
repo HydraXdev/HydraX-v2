@@ -27,28 +27,36 @@ Cache Hit ← Feature Cache ←── Model Prediction ← Session Bonus
 ## 🔧 Core Components
 
 ### 1. CryptoMLScorer (`crypto_ml_scorer.py`)
+
 Main ML scoring engine with:
+
 - **RandomForestClassifier** (150 estimators, depth 12)
 - **Feature extraction** from market data
 - **Performance optimization** (caching, parallel processing)
 - **Model persistence** and versioning
 
 ### 2. MLIntegrationExample (`ml_integration_example.py`)
+
 Integration patterns showing:
-- **Elite Guard integration** 
+
+- **Elite Guard integration**
 - **Signal enhancement pipeline**
 - **Outcome recording** for training
 - **Performance tracking**
 
 ### 3. MLTrainingManager (`ml_training_manager.py`)
+
 Automated training lifecycle:
+
 - **Weekly retraining** from truth tracker
 - **Performance monitoring** and alerts
 - **Model backup** and versioning
 - **Feature drift detection**
 
 ### 4. Test Suite (`test_crypto_ml_scorer.py`)
+
 Comprehensive testing:
+
 - **Unit tests** for all components
 - **Performance benchmarks**
 - **Integration tests**
@@ -96,18 +104,18 @@ print(f"Enhanced: {base_score} → {enhanced_score:.1f}")
 
 ### 11 Comprehensive Features (0-100 normalized)
 
-| Feature | Description | Impact |
-|---------|-------------|---------|
-| **ATR Volatility** | Current vs historical volatility | High volatility = opportunity |
-| **Volume Delta** | Current vs 20-period average volume | Volume surge = institutional activity |
-| **TF Alignment** | Multi-timeframe trend agreement | More alignment = higher confidence |
-| **Sentiment Score** | Market sentiment (external feeds) | Positive sentiment = trend continuation |
-| **Whale Activity** | Large transaction detection | Whale moves = significant levels |
-| **Spread Quality** | Execution cost assessment | Tight spreads = better execution |
-| **Correlation Check** | Independence from other assets | Low correlation = unique opportunity |
-| **Session Bonus** | Trading session multiplier | Active sessions = higher volatility |
-| **Momentum Strength** | Price momentum indicator | Strong momentum = trend continuation |
-| **Support/Resistance** | Distance from key levels | Near S/R = reversal probability |
+| Feature                | Description                         | Impact                                  |
+| ---------------------- | ----------------------------------- | --------------------------------------- |
+| **ATR Volatility**     | Current vs historical volatility    | High volatility = opportunity           |
+| **Volume Delta**       | Current vs 20-period average volume | Volume surge = institutional activity   |
+| **TF Alignment**       | Multi-timeframe trend agreement     | More alignment = higher confidence      |
+| **Sentiment Score**    | Market sentiment (external feeds)   | Positive sentiment = trend continuation |
+| **Whale Activity**     | Large transaction detection         | Whale moves = significant levels        |
+| **Spread Quality**     | Execution cost assessment           | Tight spreads = better execution        |
+| **Correlation Check**  | Independence from other assets      | Low correlation = unique opportunity    |
+| **Session Bonus**      | Trading session multiplier          | Active sessions = higher volatility     |
+| **Momentum Strength**  | Price momentum indicator            | Strong momentum = trend continuation    |
+| **Support/Resistance** | Distance from key levels            | Near S/R = reversal probability         |
 
 ### Feature Calculation Examples
 
@@ -118,7 +126,7 @@ historical_atr = np.mean(price_changes)
 volatility_ratio = current_atr / historical_atr
 score = 50 + (volatility_ratio - 1) * 25  # 50 = normal
 
-# Volume Delta (0-100)  
+# Volume Delta (0-100)
 volume_ratio = current_volume / avg_volume_20
 score = 50 + (volume_ratio - 1) * 20
 
@@ -148,7 +156,7 @@ class EliteGuardWithCitadel:
 ```python
 def process_market_data(self, symbol, tick_data):
     # ... existing processing ...
-    
+
     # Update ML scorer
     self.ml_scorer.update_market_data(symbol, {
         'bid': tick_data.bid,
@@ -165,26 +173,26 @@ def process_market_data(self, symbol, tick_data):
 def generate_pattern_signal(self, pattern_signal):
     # Original SMC detection
     base_confidence = pattern_signal.confidence
-    
+
     # Prepare timeframe data
     timeframe_data = {
         'M1': list(self.m1_data[pattern_signal.pair])[-10:],
         'M5': list(self.m5_data[pattern_signal.pair])[-10:],
         'M15': list(self.m15_data[pattern_signal.pair])[-10:]
     }
-    
+
     # ML enhancement
     enhanced_score, ml_metadata = self.ml_scorer.enhance_signal_score(
         symbol=pattern_signal.pair,
         base_score=base_confidence,
         timeframe_data=timeframe_data
     )
-    
+
     # Update signal
     pattern_signal.confidence = enhanced_score
     pattern_signal.ml_enhanced = True
     pattern_signal.ml_metadata = ml_metadata
-    
+
     return pattern_signal
 ```
 
@@ -193,14 +201,14 @@ def generate_pattern_signal(self, pattern_signal):
 ```python
 def record_signal_outcome(self, signal_id, outcome_data):
     # ... existing recording ...
-    
+
     # Record for ML training
     if 'ml_metadata' in outcome_data:
         features_dict = outcome_data['ml_metadata']['features']
         features = MarketFeatures(**features_dict)
-        
+
         outcome = outcome_data['outcome'] == 'WIN'
-        
+
         self.ml_scorer.record_signal_outcome(
             signal_id=signal_id,
             features=features,
@@ -269,12 +277,12 @@ python test_crypto_ml_scorer.py
 
 ### Performance Benchmarks
 
-| Metric | Target | Typical |
-|--------|--------|---------|
-| Feature Extraction | <20ms | ~15ms |
-| ML Prediction | <30ms | ~25ms |
-| End-to-End Enhancement | <50ms | ~40ms |
-| Cache Hit Rate | >80% | ~85% |
+| Metric                 | Target | Typical |
+| ---------------------- | ------ | ------- |
+| Feature Extraction     | <20ms  | ~15ms   |
+| ML Prediction          | <30ms  | ~25ms   |
+| End-to-End Enhancement | <50ms  | ~40ms   |
+| Cache Hit Rate         | >80%   | ~85%    |
 
 ## 📊 Expected Results
 
@@ -286,7 +294,7 @@ Base Score: 74.5 → Enhanced: 82.3 (+7.8)
 Features: High volume (85), Good TF alignment (78), US session (+25)
 
 NY Session ETH Reversal:
-Base Score: 67.0 → Enhanced: 73.5 (+6.5)  
+Base Score: 67.0 → Enhanced: 73.5 (+6.5)
 Features: Whale activity (45), Tight spreads (88), Strong momentum (75)
 
 Asian Session Low Volume:
@@ -390,12 +398,12 @@ tail -f /root/HydraX-v2/ml_training_data.jsonl
 
 ### Troubleshooting
 
-| Issue | Solution |
-|-------|----------|
-| Slow predictions | Check feature cache hit rate |
-| Poor accuracy | Increase training data, retrain |
-| Memory usage | Reduce cache size, cleanup old data |
-| Integration errors | Verify truth tracker data format |
+| Issue              | Solution                            |
+| ------------------ | ----------------------------------- |
+| Slow predictions   | Check feature cache hit rate        |
+| Poor accuracy      | Increase training data, retrain     |
+| Memory usage       | Reduce cache size, cleanup old data |
+| Integration errors | Verify truth tracker data format    |
 
 ---
 
@@ -403,12 +411,12 @@ tail -f /root/HydraX-v2/ml_training_data.jsonl
 
 The Crypto ML Scorer is production-ready with:
 
-✅ **Performance targets met** (<50ms predictions)  
-✅ **Comprehensive testing** (unit, integration, benchmarks)  
-✅ **Real-world validation** (multiple trading scenarios)  
-✅ **Automated training** (weekly retraining pipeline)  
-✅ **Production reliability** (fallbacks, monitoring, alerts)  
-✅ **Integration examples** (Elite Guard integration)  
+✅ **Performance targets met** (<50ms predictions)
+✅ **Comprehensive testing** (unit, integration, benchmarks)
+✅ **Real-world validation** (multiple trading scenarios)
+✅ **Automated training** (weekly retraining pipeline)
+✅ **Production reliability** (fallbacks, monitoring, alerts)
+✅ **Integration examples** (Elite Guard integration)
 ✅ **Documentation complete** (setup, usage, maintenance)
 
 **Expected Improvement**: Base SMC 65-75% → ML Enhanced 75-85% win rate

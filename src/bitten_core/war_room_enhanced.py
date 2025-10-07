@@ -6,46 +6,55 @@ Implements AAA gaming aesthetics inspired by Call of Duty command centers
 
 import asyncio
 import json
-import time
 import logging
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Tuple, Any, Union
-from dataclasses import dataclass, asdict
-from enum import Enum
+import time
 from collections import defaultdict, deque
+from dataclasses import asdict, dataclass
+from datetime import datetime, timedelta
+from enum import Enum
+from threading import Lock
+from typing import Any, Dict, List, Optional, Tuple, Union
+
 import numpy as np
 import websockets
-from threading import Lock
 
 logger = logging.getLogger(__name__)
 
+
 class ThreatLevel(Enum):
     """Market threat assessment levels"""
+
     DEFCON_5 = "DEFCON_5"  # Normal conditions
     DEFCON_4 = "DEFCON_4"  # Increased watch
     DEFCON_3 = "DEFCON_3"  # Increase in force readiness
     DEFCON_2 = "DEFCON_2"  # High market volatility
     DEFCON_1 = "DEFCON_1"  # Maximum readiness - market crisis
 
+
 class OperationStatus(Enum):
     """Squad operation status"""
+
     STANDBY = "standby"
     DEPLOYED = "deployed"
     ENGAGED = "engaged"
     RTB = "rtb"  # Return to base
     OFFLINE = "offline"
 
+
 class AlertType(Enum):
     """Alert classification system"""
+
     INTEL = "intel"
     TACTICAL = "tactical"
     STRATEGIC = "strategic"
     EMERGENCY = "emergency"
     SYSTEM = "system"
 
+
 @dataclass
 class MarketIntelligence:
     """Real-time market intelligence data"""
+
     timestamp: float
     symbol: str
     price: float
@@ -57,9 +66,11 @@ class MarketIntelligence:
     prediction_confidence: float
     anomaly_score: float
 
+
 @dataclass
 class SquadMember:
     """Individual squad member data"""
+
     callsign: str
     rank: str
     specialization: str
@@ -71,9 +82,11 @@ class SquadMember:
     risk_tolerance: float
     active_positions: List[str]
 
+
 @dataclass
 class TacticalAlert:
     """Enhanced alert system for war room"""
+
     id: str
     type: AlertType
     severity: int  # 1-10 scale
@@ -88,9 +101,11 @@ class TacticalAlert:
     resolution_time: Optional[float]
     metadata: Dict[str, Any]
 
+
 @dataclass
 class PerformanceMetrics:
     """Comprehensive performance tracking"""
+
     timestamp: float
     total_trades: int
     win_rate: float
@@ -104,13 +119,14 @@ class PerformanceMetrics:
     current_positions: int
     portfolio_value: float
 
+
 class WarRoomCommandCenter:
     """
     Advanced War Room Command Center
     Provides comprehensive tactical dashboard with real-time market surveillance,
     squad coordination, risk management, and performance analytics
     """
-    
+
     def __init__(self):
         self.connected_clients = set()
         self.market_data = defaultdict(lambda: deque(maxlen=1000))
@@ -122,13 +138,13 @@ class WarRoomCommandCenter:
         self.voice_commands_enabled = False
         self.auto_risk_management = True
         self.data_lock = Lock()
-        
+
         # Initialize subsystems
         self._initialize_surveillance_system()
         self._initialize_alert_system()
         self._initialize_squad_system()
         self._initialize_risk_management()
-        
+
     def _initialize_surveillance_system(self):
         """Initialize market surveillance dashboard"""
         self.surveillance_config = {
@@ -136,10 +152,10 @@ class WarRoomCommandCenter:
             "max_symbols": 50,
             "correlation_threshold": 0.7,
             "anomaly_threshold": 2.5,
-            "volatility_alert_threshold": 0.05
+            "volatility_alert_threshold": 0.05,
         }
         logger.info("Market surveillance system initialized")
-        
+
     def _initialize_alert_system(self):
         """Initialize custom alert and notification center"""
         self.alert_config = {
@@ -147,20 +163,20 @@ class WarRoomCommandCenter:
             "auto_acknowledge_timeout": 300,  # 5 minutes
             "escalation_threshold": 8,  # severity level
             "sound_alerts_enabled": True,
-            "email_notifications": True
+            "email_notifications": True,
         }
         logger.info("Alert system initialized")
-        
+
     def _initialize_squad_system(self):
         """Initialize squad deployment and coordination tools"""
         self.squad_config = {
             "max_squad_size": 25,
             "deployment_timeout": 3600,  # 1 hour
             "performance_review_interval": 86400,  # 24 hours
-            "auto_reassignment": True
+            "auto_reassignment": True,
         }
         logger.info("Squad coordination system initialized")
-        
+
     def _initialize_risk_management(self):
         """Initialize advanced risk management controls"""
         self.risk_config = {
@@ -169,7 +185,7 @@ class WarRoomCommandCenter:
             "correlation_limit": 0.8,
             "var_limit": 0.03,  # 3% Value at Risk limit
             "emergency_stop_loss": 0.10,  # 10% emergency stop
-            "auto_hedging": True
+            "auto_hedging": True,
         }
         logger.info("Risk management system initialized")
 
@@ -197,8 +213,8 @@ class WarRoomCommandCenter:
                 "surveillance": self.surveillance_config,
                 "alerts": self.alert_config,
                 "squad": self.squad_config,
-                "risk": self.risk_config
-            }
+                "risk": self.risk_config,
+            },
         }
         await websocket.send(json.dumps(initial_data))
 
@@ -206,17 +222,17 @@ class WarRoomCommandCenter:
         """Update market intelligence data"""
         with self.data_lock:
             self.market_data[intel.symbol].append(intel)
-            
+
             # Update correlation matrix
             self._update_correlation_matrix(intel)
-            
+
             # Check for anomalies
             if intel.anomaly_score > self.surveillance_config["anomaly_threshold"]:
                 self._create_anomaly_alert(intel)
-            
+
             # Update threat assessment
             self._update_threat_assessment()
-            
+
         # Broadcast to all clients
         asyncio.create_task(self._broadcast_market_update(intel))
 
@@ -224,16 +240,16 @@ class WarRoomCommandCenter:
         """Deploy squad member to specific mission"""
         if callsign not in self.squad_roster:
             return False
-            
+
         member = self.squad_roster[callsign]
         if member.status != OperationStatus.STANDBY:
             return False
-            
+
         member.status = OperationStatus.DEPLOYED
         member.current_mission = mission
         member.location = location
         member.last_seen = time.time()
-        
+
         # Create deployment alert
         alert = TacticalAlert(
             id=f"deploy_{callsign}_{int(time.time())}",
@@ -248,10 +264,10 @@ class WarRoomCommandCenter:
             acknowledgment_required=False,
             acknowledged_by=None,
             resolution_time=None,
-            metadata={"callsign": callsign, "mission": mission, "location": location}
+            metadata={"callsign": callsign, "mission": mission, "location": location},
         )
         self._add_alert(alert)
-        
+
         logger.info(f"Squad member {callsign} deployed to {mission}")
         return True
 
@@ -259,18 +275,24 @@ class WarRoomCommandCenter:
         """Recall squad member from current mission"""
         if callsign not in self.squad_roster:
             return False
-            
+
         member = self.squad_roster[callsign]
         member.status = OperationStatus.RTB
         member.current_mission = None
-        
+
         logger.info(f"Squad member {callsign} recalled")
         return True
 
-    def create_custom_alert(self, alert_type: AlertType, severity: int, 
-                          title: str, message: str, source: str,
-                          affected_symbols: List[str] = None,
-                          action_required: bool = False) -> str:
+    def create_custom_alert(
+        self,
+        alert_type: AlertType,
+        severity: int,
+        title: str,
+        message: str,
+        source: str,
+        affected_symbols: List[str] = None,
+        action_required: bool = False,
+    ) -> str:
         """Create custom alert"""
         alert = TacticalAlert(
             id=f"custom_{int(time.time() * 1000)}",
@@ -285,9 +307,9 @@ class WarRoomCommandCenter:
             acknowledgment_required=severity >= self.alert_config["escalation_threshold"],
             acknowledged_by=None,
             resolution_time=None,
-            metadata={}
+            metadata={},
         )
-        
+
         self._add_alert(alert)
         return alert.id
 
@@ -295,18 +317,18 @@ class WarRoomCommandCenter:
         """Acknowledge alert"""
         if alert_id not in self.active_alerts:
             return False
-            
+
         alert = self.active_alerts[alert_id]
         alert.acknowledged_by = operator
         alert.resolution_time = time.time()
-        
+
         logger.info(f"Alert {alert_id} acknowledged by {operator}")
         return True
 
     def get_performance_analytics(self, timeframe: str = "24h") -> Dict[str, Any]:
         """Get comprehensive performance analytics"""
         end_time = time.time()
-        
+
         if timeframe == "1h":
             start_time = end_time - 3600
         elif timeframe == "24h":
@@ -315,16 +337,13 @@ class WarRoomCommandCenter:
             start_time = end_time - 604800
         else:
             start_time = end_time - 86400
-            
+
         # Filter performance data by timeframe
-        filtered_data = [
-            metric for metric in self.performance_history
-            if metric.timestamp >= start_time
-        ]
-        
+        filtered_data = [metric for metric in self.performance_history if metric.timestamp >= start_time]
+
         if not filtered_data:
             return self._get_default_analytics()
-            
+
         return self._calculate_analytics(filtered_data)
 
     def enable_voice_commands(self, enabled: bool = True):
@@ -336,9 +355,9 @@ class WarRoomCommandCenter:
         """Process voice command input"""
         if not self.voice_commands_enabled:
             return {"success": False, "message": "Voice commands disabled"}
-            
+
         command_lower = command.lower()
-        
+
         # Command parsing logic
         if "deploy" in command_lower:
             return self._process_deploy_command(command, operator)
@@ -356,13 +375,12 @@ class WarRoomCommandCenter:
     def _update_correlation_matrix(self, intel: MarketIntelligence):
         """Update correlation matrix with new market data"""
         symbol = intel.symbol
-        
+
         # Simple correlation calculation (would be more sophisticated in production)
         for other_symbol, data_queue in self.market_data.items():
             if other_symbol != symbol and len(data_queue) > 10:
                 correlation = self._calculate_correlation(
-                    [d.price for d in self.market_data[symbol]],
-                    [d.price for d in data_queue]
+                    [d.price for d in self.market_data[symbol]], [d.price for d in data_queue]
                 )
                 self.correlation_matrix[f"{symbol}_{other_symbol}"] = correlation
 
@@ -370,7 +388,7 @@ class WarRoomCommandCenter:
         """Calculate correlation between two price series"""
         if len(x) != len(y) or len(x) < 2:
             return 0.0
-            
+
         try:
             return float(np.corrcoef(x[-20:], y[-20:])[0, 1])
         except:
@@ -381,7 +399,7 @@ class WarRoomCommandCenter:
         total_volatility = 0
         total_anomalies = 0
         symbol_count = 0
-        
+
         for symbol, data_queue in self.market_data.items():
             if len(data_queue) > 0:
                 latest = data_queue[-1]
@@ -389,13 +407,13 @@ class WarRoomCommandCenter:
                 if latest.anomaly_score > self.surveillance_config["anomaly_threshold"]:
                     total_anomalies += 1
                 symbol_count += 1
-        
+
         if symbol_count == 0:
             return
-            
+
         avg_volatility = total_volatility / symbol_count
         anomaly_ratio = total_anomalies / symbol_count
-        
+
         # Determine threat level
         if avg_volatility > 0.08 or anomaly_ratio > 0.3:
             new_threat = ThreatLevel.DEFCON_1
@@ -407,7 +425,7 @@ class WarRoomCommandCenter:
             new_threat = ThreatLevel.DEFCON_4
         else:
             new_threat = ThreatLevel.DEFCON_5
-            
+
         if new_threat != self.threat_assessment:
             self.threat_assessment = new_threat
             self._create_threat_level_alert(new_threat)
@@ -427,7 +445,7 @@ class WarRoomCommandCenter:
             acknowledgment_required=True,
             acknowledged_by=None,
             resolution_time=None,
-            metadata={"anomaly_score": intel.anomaly_score, "symbol": intel.symbol}
+            metadata={"anomaly_score": intel.anomaly_score, "symbol": intel.symbol},
         )
         self._add_alert(alert)
 
@@ -446,20 +464,19 @@ class WarRoomCommandCenter:
             acknowledgment_required=True,
             acknowledged_by=None,
             resolution_time=None,
-            metadata={"new_threat_level": new_threat.value}
+            metadata={"new_threat_level": new_threat.value},
         )
         self._add_alert(alert)
 
     def _add_alert(self, alert: TacticalAlert):
         """Add alert to active alerts"""
         self.active_alerts[alert.id] = alert
-        
+
         # Cleanup old alerts
         if len(self.active_alerts) > self.alert_config["max_alerts"]:
-            oldest_alert_id = min(self.active_alerts.keys(), 
-                                key=lambda x: self.active_alerts[x].timestamp)
+            oldest_alert_id = min(self.active_alerts.keys(), key=lambda x: self.active_alerts[x].timestamp)
             del self.active_alerts[oldest_alert_id]
-        
+
         # Broadcast alert to clients
         asyncio.create_task(self._broadcast_alert(alert))
 
@@ -467,17 +484,17 @@ class WarRoomCommandCenter:
         """Broadcast market update to all connected clients"""
         if not self.connected_clients:
             return
-            
+
         update_data = {
             "type": "market_update",
             "data": asdict(intel),
             "threat_level": self.threat_assessment.value,
-            "correlation_data": self._get_relevant_correlations(intel.symbol)
+            "correlation_data": self._get_relevant_correlations(intel.symbol),
         }
-        
+
         message = json.dumps(update_data)
         disconnected_clients = set()
-        
+
         for client in self.connected_clients:
             try:
                 await client.send(message)
@@ -486,7 +503,7 @@ class WarRoomCommandCenter:
             except Exception as e:
                 logger.error(f"Error broadcasting to client: {e}")
                 disconnected_clients.add(client)
-        
+
         # Remove disconnected clients
         self.connected_clients -= disconnected_clients
 
@@ -494,15 +511,12 @@ class WarRoomCommandCenter:
         """Broadcast alert to all connected clients"""
         if not self.connected_clients:
             return
-            
-        alert_data = {
-            "type": "new_alert",
-            "alert": asdict(alert)
-        }
-        
+
+        alert_data = {"type": "new_alert", "alert": asdict(alert)}
+
         message = json.dumps(alert_data)
         disconnected_clients = set()
-        
+
         for client in self.connected_clients:
             try:
                 await client.send(message)
@@ -511,7 +525,7 @@ class WarRoomCommandCenter:
             except Exception as e:
                 logger.error(f"Error broadcasting alert to client: {e}")
                 disconnected_clients.add(client)
-        
+
         # Remove disconnected clients
         self.connected_clients -= disconnected_clients
 
@@ -523,7 +537,7 @@ class WarRoomCommandCenter:
             "active_alerts": len(self.active_alerts),
             "high_severity_alerts": len([a for a in self.active_alerts.values() if a.severity >= 8]),
             "correlation_warnings": len([c for c in self.correlation_matrix.values() if abs(c) > 0.8]),
-            "last_update": time.time()
+            "last_update": time.time(),
         }
         return overview
 
@@ -531,7 +545,7 @@ class WarRoomCommandCenter:
         """Get performance summary"""
         if not self.performance_history:
             return self._get_default_analytics()
-            
+
         latest = self.performance_history[-1]
         return {
             "win_rate": latest.win_rate,
@@ -540,7 +554,7 @@ class WarRoomCommandCenter:
             "max_drawdown": latest.max_drawdown,
             "current_positions": latest.current_positions,
             "portfolio_value": latest.portfolio_value,
-            "last_update": latest.timestamp
+            "last_update": latest.timestamp,
         }
 
     def _get_relevant_correlations(self, symbol: str) -> Dict[str, float]:
@@ -565,34 +579,34 @@ class WarRoomCommandCenter:
             "var_95": 0.0,
             "current_positions": 0,
             "portfolio_value": 0.0,
-            "total_trades": 0
+            "total_trades": 0,
         }
 
     def _calculate_analytics(self, data: List[PerformanceMetrics]) -> Dict[str, Any]:
         """Calculate comprehensive analytics from performance data"""
         if not data:
             return self._get_default_analytics()
-            
+
         latest = data[-1]
         returns = [d.profit_loss for d in data]
-        
+
         # Calculate metrics
         total_return = sum(returns)
         avg_return = total_return / len(returns) if returns else 0
         volatility = np.std(returns) if len(returns) > 1 else 0
         sharpe = (avg_return / volatility) if volatility > 0 else 0
-        
+
         max_dd = 0
         peak = 0
         cumulative = 0
-        
+
         for ret in returns:
             cumulative += ret
             if cumulative > peak:
                 peak = cumulative
             drawdown = (peak - cumulative) / peak if peak > 0 else 0
             max_dd = max(max_dd, drawdown)
-        
+
         return {
             "win_rate": latest.win_rate,
             "profit_loss": latest.profit_loss,
@@ -606,7 +620,7 @@ class WarRoomCommandCenter:
             "portfolio_value": latest.portfolio_value,
             "total_trades": latest.total_trades,
             "volatility": volatility,
-            "total_return": total_return
+            "total_return": total_return,
         }
 
     def _process_deploy_command(self, command: str, operator: str) -> Dict[str, Any]:
@@ -615,14 +629,14 @@ class WarRoomCommandCenter:
         parts = command.lower().split()
         if len(parts) < 3:
             return {"success": False, "message": "Deploy command requires callsign and mission"}
-        
+
         callsign = parts[1].upper()
         mission = " ".join(parts[2:])
-        
+
         success = self.deploy_squad_member(callsign, mission, "FIELD")
         return {
             "success": success,
-            "message": f"Deployed {callsign} to {mission}" if success else f"Failed to deploy {callsign}"
+            "message": f"Deployed {callsign} to {mission}" if success else f"Failed to deploy {callsign}",
         }
 
     def _process_recall_command(self, command: str, operator: str) -> Dict[str, Any]:
@@ -630,13 +644,10 @@ class WarRoomCommandCenter:
         parts = command.lower().split()
         if len(parts) < 2:
             return {"success": False, "message": "Recall command requires callsign"}
-        
+
         callsign = parts[1].upper()
         success = self.recall_squad_member(callsign)
-        return {
-            "success": success,
-            "message": f"Recalled {callsign}" if success else f"Failed to recall {callsign}"
-        }
+        return {"success": success, "message": f"Recalled {callsign}" if success else f"Failed to recall {callsign}"}
 
     def _process_alert_command(self, command: str, operator: str) -> Dict[str, Any]:
         """Process voice alert command"""
@@ -644,24 +655,22 @@ class WarRoomCommandCenter:
         message = command.replace("alert", "").strip()
         if not message:
             return {"success": False, "message": "Alert requires message"}
-        
-        alert_id = self.create_custom_alert(
-            AlertType.TACTICAL, 5, "Voice Alert", message, f"operator_{operator}"
-        )
+
+        alert_id = self.create_custom_alert(AlertType.TACTICAL, 5, "Voice Alert", message, f"operator_{operator}")
         return {"success": True, "message": f"Alert created: {alert_id}"}
 
     def _process_status_command(self, command: str, operator: str) -> Dict[str, Any]:
         """Process voice status command"""
         overview = self._get_market_overview()
         performance = self._get_performance_summary()
-        
+
         status_message = (
             f"Threat Level: {overview['threat_level']}, "
             f"Active Alerts: {overview['active_alerts']}, "
             f"Portfolio Value: ${performance['portfolio_value']:,.2f}, "
             f"Win Rate: {performance['win_rate']:.1%}"
         )
-        
+
         return {"success": True, "message": status_message, "data": {"overview": overview, "performance": performance}}
 
     def _process_threat_command(self, command: str, operator: str) -> Dict[str, Any]:
@@ -669,18 +678,19 @@ class WarRoomCommandCenter:
         return {
             "success": True,
             "message": f"Current threat level: {self.threat_assessment.value}",
-            "data": {"threat_level": self.threat_assessment.value}
+            "data": {"threat_level": self.threat_assessment.value},
         }
+
 
 # WebSocket server for real-time communication
 class WarRoomWebSocketServer:
     """WebSocket server for war room real-time communication"""
-    
+
     def __init__(self, command_center: WarRoomCommandCenter, host="localhost", port=8765):
         self.command_center = command_center
         self.host = host
         self.port = port
-        
+
     async def handle_client(self, websocket, path):
         """Handle client connection"""
         await self.command_center.register_client(websocket)
@@ -691,80 +701,76 @@ class WarRoomWebSocketServer:
             pass
         finally:
             await self.command_center.unregister_client(websocket)
-    
+
     async def process_message(self, websocket, message):
         """Process incoming message from client"""
         try:
             data = json.loads(message)
             message_type = data.get("type")
-            
+
             if message_type == "voice_command":
                 command = data.get("command", "")
                 operator = data.get("operator", "unknown")
                 result = self.command_center.process_voice_command(command, operator)
-                
-                response = {
-                    "type": "voice_command_result",
-                    "result": result
-                }
+
+                response = {"type": "voice_command_result", "result": result}
                 await websocket.send(json.dumps(response))
-                
+
             elif message_type == "acknowledge_alert":
                 alert_id = data.get("alert_id")
                 operator = data.get("operator", "unknown")
                 success = self.command_center.acknowledge_alert(alert_id, operator)
-                
-                response = {
-                    "type": "alert_acknowledged",
-                    "alert_id": alert_id,
-                    "success": success
-                }
+
+                response = {"type": "alert_acknowledged", "alert_id": alert_id, "success": success}
                 await websocket.send(json.dumps(response))
-                
+
             elif message_type == "deploy_squad":
                 callsign = data.get("callsign")
                 mission = data.get("mission")
                 location = data.get("location", "FIELD")
                 success = self.command_center.deploy_squad_member(callsign, mission, location)
-                
-                response = {
-                    "type": "deployment_result",
-                    "success": success,
-                    "callsign": callsign
-                }
+
+                response = {"type": "deployment_result", "success": success, "callsign": callsign}
                 await websocket.send(json.dumps(response))
-                
+
         except json.JSONDecodeError:
             logger.error("Invalid JSON received from client")
         except Exception as e:
             logger.error(f"Error processing client message: {e}")
-    
+
     async def start_server(self):
         """Start the WebSocket server"""
         logger.info(f"Starting War Room WebSocket server on {self.host}:{self.port}")
         async with websockets.serve(self.handle_client, self.host, self.port):
             await asyncio.Future()  # Run forever
 
+
 # Example usage and testing
 if __name__ == "__main__":
     # Initialize war room command center
     war_room = WarRoomCommandCenter()
-    
+
     # Example squad members
     squad_members = [
         SquadMember("ALPHA-1", "Captain", "Sniper", OperationStatus.STANDBY, 95.5, None, "BASE", time.time(), 0.7, []),
-        SquadMember("BRAVO-2", "Lieutenant", "Heavy", OperationStatus.STANDBY, 88.2, None, "BASE", time.time(), 0.8, []),
-        SquadMember("CHARLIE-3", "Sergeant", "Medic", OperationStatus.STANDBY, 92.1, None, "BASE", time.time(), 0.6, []),
-        SquadMember("DELTA-4", "Corporal", "Engineer", OperationStatus.STANDBY, 87.9, None, "BASE", time.time(), 0.7, []),
-        SquadMember("ECHO-5", "Private", "Scout", OperationStatus.STANDBY, 91.3, None, "BASE", time.time(), 0.9, [])
+        SquadMember(
+            "BRAVO-2", "Lieutenant", "Heavy", OperationStatus.STANDBY, 88.2, None, "BASE", time.time(), 0.8, []
+        ),
+        SquadMember(
+            "CHARLIE-3", "Sergeant", "Medic", OperationStatus.STANDBY, 92.1, None, "BASE", time.time(), 0.6, []
+        ),
+        SquadMember(
+            "DELTA-4", "Corporal", "Engineer", OperationStatus.STANDBY, 87.9, None, "BASE", time.time(), 0.7, []
+        ),
+        SquadMember("ECHO-5", "Private", "Scout", OperationStatus.STANDBY, 91.3, None, "BASE", time.time(), 0.9, []),
     ]
-    
+
     for member in squad_members:
         war_room.squad_roster[member.callsign] = member
-    
+
     # Enable voice commands
     war_room.enable_voice_commands(True)
-    
+
     # Example market intelligence
     intel = MarketIntelligence(
         timestamp=time.time(),
@@ -776,11 +782,11 @@ if __name__ == "__main__":
         threat_level=ThreatLevel.DEFCON_4,
         correlation_strength=0.75,
         prediction_confidence=0.82,
-        anomaly_score=1.2
+        anomaly_score=1.2,
     )
-    
+
     war_room.update_market_intelligence(intel)
-    
+
     # Example performance metrics
     performance = PerformanceMetrics(
         timestamp=time.time(),
@@ -794,11 +800,11 @@ if __name__ == "__main__":
         beta=0.92,
         var_95=0.025,
         current_positions=8,
-        portfolio_value=185750.50
+        portfolio_value=185750.50,
     )
-    
+
     war_room.performance_history.append(performance)
-    
+
     print("War Room Command Center initialized successfully")
     print(f"Squad roster: {len(war_room.squad_roster)} members")
     print(f"Threat level: {war_room.threat_assessment.value}")

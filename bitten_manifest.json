@@ -235,14 +235,14 @@
       "table": "missions",
       "primary_key": "mission_id",
       "columns": [
-        {"name": "mission_id", "type": "TEXT"},
-        {"name": "signal_id", "type": "TEXT"},
-        {"name": "payload_json", "type": "TEXT"},
-        {"name": "tg_message_id", "type": "INTEGER"},
-        {"name": "status", "type": "TEXT"},
-        {"name": "expires_at", "type": "INTEGER"},
-        {"name": "created_at", "type": "INTEGER"},
-        {"name": "target_uuid", "type": "TEXT"}
+        { "name": "mission_id", "type": "TEXT" },
+        { "name": "signal_id", "type": "TEXT" },
+        { "name": "payload_json", "type": "TEXT" },
+        { "name": "tg_message_id", "type": "INTEGER" },
+        { "name": "status", "type": "TEXT" },
+        { "name": "expires_at", "type": "INTEGER" },
+        { "name": "created_at", "type": "INTEGER" },
+        { "name": "target_uuid", "type": "TEXT" }
       ],
       "used_by": ["webapp", "outcome_daemon"]
     },
@@ -250,17 +250,17 @@
       "table": "fires",
       "primary_key": "fire_id",
       "columns": [
-        {"name": "fire_id", "type": "TEXT"},
-        {"name": "mission_id", "type": "TEXT"},
-        {"name": "user_id", "type": "TEXT"},
-        {"name": "status", "type": "TEXT"},
-        {"name": "ticket", "type": "INTEGER"},
-        {"name": "price", "type": "REAL"},
-        {"name": "idem", "type": "TEXT"},
-        {"name": "created_at", "type": "INTEGER"},
-        {"name": "updated_at", "type": "INTEGER"},
-        {"name": "equity_used", "type": "REAL"},
-        {"name": "risk_pct_used", "type": "REAL"}
+        { "name": "fire_id", "type": "TEXT" },
+        { "name": "mission_id", "type": "TEXT" },
+        { "name": "user_id", "type": "TEXT" },
+        { "name": "status", "type": "TEXT" },
+        { "name": "ticket", "type": "INTEGER" },
+        { "name": "price", "type": "REAL" },
+        { "name": "idem", "type": "TEXT" },
+        { "name": "created_at", "type": "INTEGER" },
+        { "name": "updated_at", "type": "INTEGER" },
+        { "name": "equity_used", "type": "REAL" },
+        { "name": "risk_pct_used", "type": "REAL" }
       ],
       "used_by": ["webapp", "confirm_listener"]
     },
@@ -268,13 +268,13 @@
       "table": "ea_instances",
       "primary_key": "target_uuid",
       "columns": [
-        {"name": "target_uuid", "type": "TEXT"},
-        {"name": "user_id", "type": "TEXT"},
-        {"name": "last_seen", "type": "INTEGER"},
-        {"name": "account_balance", "type": "REAL"},
-        {"name": "account_equity", "type": "REAL"},
-        {"name": "account_currency", "type": "TEXT"},
-        {"name": "messages_received", "type": "INTEGER"}
+        { "name": "target_uuid", "type": "TEXT" },
+        { "name": "user_id", "type": "TEXT" },
+        { "name": "last_seen", "type": "INTEGER" },
+        { "name": "account_balance", "type": "REAL" },
+        { "name": "account_equity", "type": "REAL" },
+        { "name": "account_currency", "type": "TEXT" },
+        { "name": "messages_received", "type": "INTEGER" }
       ],
       "used_by": ["command_router", "webapp"]
     },
@@ -282,15 +282,15 @@
       "table": "signals",
       "primary_key": "signal_id",
       "columns": [
-        {"name": "signal_id", "type": "TEXT"},
-        {"name": "symbol", "type": "TEXT"},
-        {"name": "direction", "type": "TEXT"},
-        {"name": "entry_price", "type": "REAL"},
-        {"name": "stop_pips", "type": "REAL"},
-        {"name": "target_pips", "type": "REAL"},
-        {"name": "confidence", "type": "REAL"},
-        {"name": "pattern_type", "type": "TEXT"},
-        {"name": "created_at", "type": "INTEGER"}
+        { "name": "signal_id", "type": "TEXT" },
+        { "name": "symbol", "type": "TEXT" },
+        { "name": "direction", "type": "TEXT" },
+        { "name": "entry_price", "type": "REAL" },
+        { "name": "stop_pips", "type": "REAL" },
+        { "name": "target_pips", "type": "REAL" },
+        { "name": "confidence", "type": "REAL" },
+        { "name": "pattern_type", "type": "TEXT" },
+        { "name": "created_at", "type": "INTEGER" }
       ],
       "used_by": ["webapp"]
     },
@@ -298,11 +298,11 @@
       "table": "users",
       "primary_key": "user_id",
       "columns": [
-        {"name": "user_id", "type": "TEXT"},
-        {"name": "username", "type": "TEXT"},
-        {"name": "tier", "type": "TEXT"},
-        {"name": "settings_json", "type": "TEXT"},
-        {"name": "created_at", "type": "INTEGER"}
+        { "name": "user_id", "type": "TEXT" },
+        { "name": "username", "type": "TEXT" },
+        { "name": "tier", "type": "TEXT" },
+        { "name": "settings_json", "type": "TEXT" },
+        { "name": "created_at", "type": "INTEGER" }
       ],
       "used_by": ["webapp"]
     }

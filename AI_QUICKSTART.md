@@ -13,17 +13,20 @@
 ## 📍 Most Common Tasks
 
 ### Send Test Signal
+
 ```bash
 # Look at: /root/HydraX-v2/send_proper_signal.py
 # BUT you need to set WEBAPP_URL first!
 ```
 
 ### Understand Signal Flow
+
 ```bash
 # Read: /root/HydraX-v2/SIGNAL_FLOW.md
 ```
 
 ### Check Configuration
+
 ```bash
 # Bot config: /root/HydraX-v2/.env
 # Or: /root/HydraX-v2/config/telegram.py
@@ -34,6 +37,7 @@
 ## 🚨 Critical Info
 
 ### Signal Format (Telegram)
+
 ```
 ✅ CORRECT (Brief):
 ⚡ **SIGNAL DETECTED**
@@ -45,6 +49,7 @@ EUR/USD | BUY | 87%
 ```
 
 ### WebApp URL Issue
+
 - **Problem**: WebApp URL not configured
 - **Solution**: Need HTTPS URL for webapp server
 - **Files**: `webapp_server.py` serves the webapp
@@ -70,19 +75,22 @@ EUR/USD | BUY | 87%
 ## 🔧 Quick Fixes
 
 ### User Says "Signal Too Big"
+
 → Use brief format from `signal_alerts.py` (2-3 lines only)
 
-### User Wants Test Signal  
+### User Wants Test Signal
+
 → Need webapp URL first, then use format from `SIGNAL_FLOW.md`
 
 ### User Asks About Flow
+
 → Point to `/root/HydraX-v2/SIGNAL_FLOW.md`
 
 ---
 
 ## 💡 Key Insight
 
-**Telegram = Brief Alert + Button**  
+**Telegram = Brief Alert + Button**
 **WebApp = Full Intelligence Display**
 
 The verbose signal displays in `signal_display.py` are for the WEBAPP, not Telegram!

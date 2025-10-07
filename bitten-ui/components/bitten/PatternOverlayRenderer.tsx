@@ -1,7 +1,13 @@
-"use client"
+"use client";
 
-import React from 'react';
-import { PatternOverlay, SignalSnapshot, domainToPixels, PATTERN_REGISTRY, PatternId } from '@/lib/patterns/registry';
+import React from "react";
+import {
+  PatternOverlay,
+  SignalSnapshot,
+  domainToPixels,
+  PATTERN_REGISTRY,
+  PatternId,
+} from "@/lib/patterns/registry";
 
 interface PatternOverlayRendererProps {
   patternId: PatternId;
@@ -25,11 +31,24 @@ export const PatternOverlayRenderer: React.FC<PatternOverlayRendererProps> = ({
   const pattern = PATTERN_REGISTRY[patternId];
 
   return (
-    <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox={`0 0 ${dimensions.width} ${dimensions.height}`}>
+    <svg
+      className="absolute inset-0 w-full h-full pointer-events-none"
+      viewBox={`0 0 ${dimensions.width} ${dimensions.height}`}
+    >
       {/* Render Zones */}
       {overlay.zones?.map((zone, i) => {
-        const topLeft = domainToPixels(zone.tStart, zone.priceTop, bounds, dimensions);
-        const bottomRight = domainToPixels(zone.tEnd, zone.priceBottom, bounds, dimensions);
+        const topLeft = domainToPixels(
+          zone.tStart,
+          zone.priceTop,
+          bounds,
+          dimensions,
+        );
+        const bottomRight = domainToPixels(
+          zone.tEnd,
+          zone.priceBottom,
+          bounds,
+          dimensions,
+        );
         const width = bottomRight.x - topLeft.x;
         const height = bottomRight.y - topLeft.y;
 
@@ -61,8 +80,18 @@ export const PatternOverlayRenderer: React.FC<PatternOverlayRendererProps> = ({
 
       {/* Render Levels */}
       {overlay.levels?.map((level, i) => {
-        const left = domainToPixels(bounds.xStartTs, level.price, bounds, dimensions);
-        const right = domainToPixels(bounds.xEndTs, level.price, bounds, dimensions);
+        const left = domainToPixels(
+          bounds.xStartTs,
+          level.price,
+          bounds,
+          dimensions,
+        );
+        const right = domainToPixels(
+          bounds.xEndTs,
+          level.price,
+          bounds,
+          dimensions,
+        );
 
         return (
           <g key={`level-${i}`}>
@@ -73,7 +102,7 @@ export const PatternOverlayRenderer: React.FC<PatternOverlayRendererProps> = ({
               y2={right.y}
               stroke={level.color}
               strokeWidth="2"
-              strokeDasharray={level.style === 'dashed' ? '4,2' : undefined}
+              strokeDasharray={level.style === "dashed" ? "4,2" : undefined}
             />
             <text
               x={right.x - 5}
@@ -93,12 +122,18 @@ export const PatternOverlayRenderer: React.FC<PatternOverlayRendererProps> = ({
       {overlay.paths?.map((path, i) => {
         const pathData = path.points
           .map((point, idx) => {
-            const { x, y } = domainToPixels(point.t, point.price, bounds, dimensions);
-            return `${idx === 0 ? 'M' : 'L'} ${x} ${y}`;
+            const { x, y } = domainToPixels(
+              point.t,
+              point.price,
+              bounds,
+              dimensions,
+            );
+            return `${idx === 0 ? "M" : "L"} ${x} ${y}`;
           })
-          .join(' ');
+          .join(" ");
 
-        const color = path.color || (path.style === 'expected' ? '#06b6d4' : '#fbbf24');
+        const color =
+          path.color || (path.style === "expected" ? "#06b6d4" : "#fbbf24");
 
         return (
           <path
@@ -107,7 +142,7 @@ export const PatternOverlayRenderer: React.FC<PatternOverlayRendererProps> = ({
             stroke={color}
             strokeWidth="2"
             fill="none"
-            strokeDasharray={path.style === 'expected' ? '4,2' : undefined}
+            strokeDasharray={path.style === "expected" ? "4,2" : undefined}
             markerEnd="url(#arrowhead)"
           />
         );
@@ -181,13 +216,21 @@ export const PatternOverlayRenderer: React.FC<PatternOverlayRendererProps> = ({
 
 function getMarkerColor(kind: string): string {
   switch (kind) {
-    case 'sweep': return '#ef4444';
-    case 'kalmanSignal': return '#10b981';
-    case 'wickReject': return '#3b82f6';
-    case 'vcb': return '#8b5cf6';
-    case 'touch': return '#fbbf24';
-    case 'midpoint': return '#06b6d4';
-    case 'momentum': return '#f59e0b';
-    default: return '#fbbf24';
+    case "sweep":
+      return "#ef4444";
+    case "kalmanSignal":
+      return "#10b981";
+    case "wickReject":
+      return "#3b82f6";
+    case "vcb":
+      return "#8b5cf6";
+    case "touch":
+      return "#fbbf24";
+    case "midpoint":
+      return "#06b6d4";
+    case "momentum":
+      return "#f59e0b";
+    default:
+      return "#fbbf24";
   }
 }

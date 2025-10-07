@@ -5,7 +5,9 @@ This directory contains production-ready initialization scripts for the SHEPHERD
 ## Components
 
 ### 1. shepherd_init.sh
+
 Main initialization script that:
+
 - Checks Python version (requires 3.8+)
 - Installs dependencies
 - Creates required directories
@@ -14,6 +16,7 @@ Main initialization script that:
 - Runs health checks
 
 **Usage:**
+
 ```bash
 # Basic initialization
 ./shepherd_init.sh
@@ -23,7 +26,9 @@ Main initialization script that:
 ```
 
 ### 2. shepherd.service
+
 Systemd service file for automatic startup with:
+
 - Auto-restart on failure
 - Resource limits (2GB memory, 50% CPU)
 - Security hardening
@@ -31,6 +36,7 @@ Systemd service file for automatic startup with:
 - Health check integration
 
 **Installation:**
+
 ```bash
 # Install service
 sudo ./install_shepherd_service.sh
@@ -49,7 +55,9 @@ sudo journalctl -u shepherd -f
 ```
 
 ### 3. shepherd_healthcheck.py
+
 Comprehensive health monitoring that checks:
+
 - Process status
 - Index freshness and integrity
 - System resources (CPU, memory, disk)
@@ -58,6 +66,7 @@ Comprehensive health monitoring that checks:
 - Network connectivity
 
 **Usage:**
+
 ```bash
 # Single health check
 ./shepherd_healthcheck.py
@@ -99,6 +108,7 @@ Comprehensive health monitoring that checks:
 ## Configuration
 
 ### Environment Variables
+
 - `PYTHON_BIN`: Python executable path (default: python3)
 - `SHEPHERD_ALERT_EMAIL`: Email for critical alerts
 - `SMTP_HOST`: SMTP server for alerts
@@ -107,6 +117,7 @@ Comprehensive health monitoring that checks:
 - `SMTP_PASS`: SMTP password
 
 ### Thresholds (in shepherd_healthcheck.py)
+
 - `MAX_INDEX_AGE_HOURS`: 24 hours
 - `MAX_MEMORY_PERCENT`: 80%
 - `MAX_CPU_PERCENT`: 90%
@@ -117,6 +128,7 @@ Comprehensive health monitoring that checks:
 ## Health Status
 
 The health check system uses three status levels:
+
 - **healthy**: Everything is working correctly
 - **warning**: Non-critical issues that should be addressed
 - **critical**: Serious issues requiring immediate attention
@@ -126,13 +138,17 @@ Critical issues trigger email alerts if configured.
 ## Monitoring
 
 ### Systemd Integration
+
 When running as a systemd service:
+
 - Watchdog timer ensures the service is responsive
 - Automatic restart on failure (max 5 times in 5 minutes)
 - Resource limits prevent runaway processes
 
 ### Metrics
+
 The health check tracks:
+
 - Component count in index
 - Index age and size
 - Process CPU and memory usage
@@ -143,21 +159,25 @@ The health check tracks:
 ## Troubleshooting
 
 ### SHEPHERD won't start
+
 1. Check Python version: `python3 --version` (needs 3.8+)
 2. Check permissions: `ls -la /root/HydraX-v2/bitten/data/shepherd`
 3. Check logs: `journalctl -u shepherd -n 100`
 
 ### High resource usage
+
 1. Check index size: `du -h /root/HydraX-v2/bitten/data/shepherd/shepherd_index.json`
 2. Reduce watch frequency in shepherd_watch.py
 3. Increase resource limits in shepherd.service
 
 ### Index not updating
+
 1. Check watch process: `ps aux | grep shepherd_watch`
 2. Check file permissions in data directory
 3. Manually rebuild: `python3 /root/HydraX-v2/bitten/core/shepherd/indexer.py`
 
 ### Health check failures
+
 1. Run manual check: `./shepherd_healthcheck.py`
 2. Check specific component: `./shepherd_healthcheck.py --json | jq '.results[]'`
 3. Review health state: `cat /root/HydraX-v2/bitten/data/shepherd/health_state.json`
@@ -165,15 +185,18 @@ The health check tracks:
 ## Maintenance
 
 ### Daily Tasks
+
 - Monitor health check alerts
 - Review log sizes
 
 ### Weekly Tasks
+
 - Check index backup count
 - Review resource usage trends
 - Update thresholds if needed
 
 ### Monthly Tasks
+
 - Full index rebuild
 - Clean old log files
 - Review and optimize queries
@@ -190,6 +213,7 @@ The health check tracks:
 ## Support
 
 For issues or questions:
+
 1. Check health status first
 2. Review recent logs
 3. Verify configuration

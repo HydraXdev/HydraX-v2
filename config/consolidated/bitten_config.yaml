@@ -7,14 +7,14 @@ core:
   environment: "production"
   debug: false
   log_level: "INFO"
-  
-# Database Configuration  
+
+# Database Configuration
 database:
   type: "sqlite"
   path: "data/bitten_production.db"
   backup_enabled: true
   backup_interval_hours: 6
-  
+
 # Bridge Configuration (MT5 Communication)
 bridge:
   enabled: true
@@ -23,26 +23,34 @@ bridge:
   check_interval_ms: 100
   timeout_seconds: 10
   magic_number: 20250626
-  
+
 # Telegram Configuration
 telegram:
-  bot_token: "7854827710:AAE6m_sNuMk2X6Z3yf2mYO6-6-Clqan-F2c"  # BIT COMMANDER
+  bot_token: "7854827710:AAE6m_sNuMk2X6Z3yf2mYO6-6-Clqan-F2c" # BIT COMMANDER
   chat_id: -1002581996861
   webapp_url: "https://joinbitten.com"
   signal_cooldown_seconds: 60
-  
-# Engine Configuration
+
+  # Engine Configuration
   nibbler:
-    price: 3900  # $39.00
+    price: 3900 # $39.00
     signals_per_day: 20
     features: ["view_all", "execute_rapid_assault", "manual_only"]
   fang:
-    price: 8900  # $89.00
+    price: 8900 # $89.00
     features: ["view_all", "execute_all", "manual_only"]
   commander:
-    price: 18900  # $189.00
-    features: ["view_all", "execute_all", "semi_auto", "full_auto", "stealth_mode", "unlimited_trades"]
-    
+    price: 18900 # $189.00
+    features:
+      [
+        "view_all",
+        "execute_all",
+        "semi_auto",
+        "full_auto",
+        "stealth_mode",
+        "unlimited_trades",
+      ]
+
 # WebApp Configuration
 webapp:
   host: "0.0.0.0"
@@ -50,14 +58,14 @@ webapp:
   secret_key: "your-secret-key-here"
   session_timeout_minutes: 60
   max_connections: 1000
-  
+
 # Risk Management
 risk:
   max_daily_loss_percent: 10.0
   max_concurrent_trades: 10
   max_lot_size: 10.0
   default_risk_percent: 1.0
-  
+
 # Logging Configuration
 logging:
   level: "INFO"
@@ -67,12 +75,12 @@ logging:
     telegram: "logs/telegram_connector.log"
     webapp: "logs/webapp.log"
     execution: "logs/execution.log"
-    
+
 # Performance Optimization
 performance:
   lazy_loading: true
   cache_ttl_seconds: 300
-  max_memory_mb: 128  # Reduced from 512MB to 128MB
+  max_memory_mb: 128 # Reduced from 512MB to 128MB
   cleanup_interval_hours: 24
   webapp_optimization:
     use_optimized_server: true

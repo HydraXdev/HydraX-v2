@@ -1,13 +1,28 @@
-import os, time, json, redis, requests, urllib.parse
-R = redis.Redis(host=os.getenv("REDIS_HOST","127.0.0.1"), port=int(os.getenv("REDIS_PORT","6379")), decode_responses=True)
-STREAM = os.getenv("STREAM","alerts"); GROUP=os.getenv("GROUP","telegram"); CONSUMER=os.getenv("CONSUMER","athena")
-TG_TOKEN=os.getenv("TELEGRAM_BOT_TOKEN"); CHAT_ID=os.getenv("TELEGRAM_CHAT_ID")  # must be set in env already
+import json
+import os
+import time
+import urllib.parse
+
+import redis
+import requests
+
+R = redis.Redis(
+    host=os.getenv("REDIS_HOST", "127.0.0.1"), port=int(os.getenv("REDIS_PORT", "6379")), decode_responses=True
+)
+STREAM = os.getenv("STREAM", "alerts")
+GROUP = os.getenv("GROUP", "telegram")
+CONSUMER = os.getenv("CONSUMER", "athena")
+TG_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")  # must be set in env already
 assert TG_TOKEN and CHAT_ID, "Missing TELEGRAM_BOT_TOKEN/CHAT_ID env"
 
+
 def send(msg):
-    u=f"https://api.telegram.org/bot{TG_TOKEN}/sendMessage"
-    r=requests.post(u, json={"chat_id": CHAT_ID, "text": msg, "disable_web_page_preview": True})
-    r.raise_for_status(); return r.json().get("result",{}).get("message_id")
+    u = f"https://api.telegram.org/bot{TG_TOKEN}/sendMessage"
+    r = requests.post(u, json={"chat_id": CHAT_ID, "text": msg, "disable_web_page_preview": True})
+    r.raise_for_status()
+    return r.json().get("result", {}).get("message_id")
+
 
 claimed = 0
 start_id = "0-0"
@@ -22,12 +37,12 @@ while True:
         try:
             # fields is dict-like already (decode_responses=True)
             # Build minimal 3-line alert (already used in broadcaster)
-            pc = fields.get("pattern_class","RAPID")
-            sym = fields.get("symbol","?")
-            dirn= fields.get("direction","?")
-            conf= fields.get("confidence","?")
-            rr  = fields.get("target_rr","?")
-            url = fields.get("mission_url","")
+            pc = fields.get("pattern_class", "RAPID")
+            sym = fields.get("symbol", "?")
+            dirn = fields.get("direction", "?")
+            conf = fields.get("confidence", "?")
+            rr = fields.get("target_rr", "?")
+            url = fields.get("mission_url", "")
             if pc == "SNIPER":
                 line1 = "🎯 SNIPER"
             else:

@@ -20,12 +20,12 @@ Module
 └────┴──────────────────────────────┴───────────────┴──────────┴──────────┴──────┴──────────┴──────────┴──────────┘
 
 == PORT BINDINGS 5555/5556/5557/5558/5560/8888 ==
-tcp        0      0 0.0.0.0:8888            0.0.0.0:*               LISTEN     
-tcp        0      0 0.0.0.0:5560            0.0.0.0:*               LISTEN     
-tcp        0      0 0.0.0.0:5555            0.0.0.0:*               LISTEN     
-tcp        0      0 0.0.0.0:5558            0.0.0.0:*               LISTEN     
-tcp        0      0 0.0.0.0:5557            0.0.0.0:*               LISTEN     
-tcp        0      0 0.0.0.0:5556            0.0.0.0:*               LISTEN     
+tcp        0      0 0.0.0.0:8888            0.0.0.0:*               LISTEN
+tcp        0      0 0.0.0.0:5560            0.0.0.0:*               LISTEN
+tcp        0      0 0.0.0.0:5555            0.0.0.0:*               LISTEN
+tcp        0      0 0.0.0.0:5558            0.0.0.0:*               LISTEN
+tcp        0      0 0.0.0.0:5557            0.0.0.0:*               LISTEN
+tcp        0      0 0.0.0.0:5556            0.0.0.0:*               LISTEN
 
 == HEALTH ENDPOINT ==
 {"service":"webapp","status":"OK","timestamp":1755006699.8843446}
@@ -133,7 +133,7 @@ NO SIGNAL in 5s: Resource temporarily unavailable
 10|relay_t | 2025-08-12 09:44:00,009 - EliteGuardZMQRelay - INFO - ✅ Signal relayed: ELITE_GUARD_USDJPY_1754991839 (USDJPY SELL)
 10|relay_t | 2025-08-12 09:44:59,561 - EliteGuardZMQRelay - INFO - ✅ Signal relayed: ELITE_GUARD_XAUUSD_1754991899 (XAUUSD SELL)
 10|relay_t | 2025-08-12 09:45:00,059 - EliteGuardZMQRelay - INFO - ✅ Signal relayed: ELITE_GUARD_EURUSD_1754991899 (EURUSD BUY)
-10|relay_t | 2025-08-12 12:37:49,743 - EliteGuardZMQRelay - INFO - 
+10|relay_t | 2025-08-12 12:37:49,743 - EliteGuardZMQRelay - INFO -
 10|relay_t | 🛑 Received signal 2
 10|relay_t | 2025-08-12 12:37:49,743 - EliteGuardZMQRelay - ERROR - Message processing error: Context was terminated
 10|relay_t | 2025-08-12 12:37:49,744 - EliteGuardZMQRelay - INFO - 📊 Final Statistics:

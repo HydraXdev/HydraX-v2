@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-import os, json, redis, requests, time
+import json
+import os
+import time
+
+import redis
+import requests
 
 # ATHENA bot credentials
 ATHENA_TOKEN = "8322305650:AAHSnZiY4nX-qFQm0URUg_WyXrGrgb7kkBM"
@@ -10,21 +15,18 @@ STREAM = "alerts"
 GROUP = "telegram"
 CONSUMER = "athena"
 
+
 def send_athena_message(text):
     """Send message using ATHENA bot only"""
     url = f"https://api.telegram.org/bot{ATHENA_TOKEN}/sendMessage"
-    payload = {
-        "chat_id": CHAT_ID,
-        "text": text,
-        "disable_web_page_preview": True
-    }
-    
+    payload = {"chat_id": CHAT_ID, "text": text, "disable_web_page_preview": True}
+
     try:
         r = requests.post(url, json=payload, timeout=10)
         r.raise_for_status()
         result = r.json()
-        if result.get('ok'):
-            return result.get('result',{}).get('message_id')
+        if result.get("ok"):
+            return result.get("result", {}).get("message_id")
         else:
             print(f"[ERROR] Telegram API: {result}")
             return None
@@ -32,13 +34,14 @@ def send_athena_message(text):
         print(f"[ERROR] Failed to send: {e}")
         return None
 
+
 # Verify we're using ATHENA
 print("=== ATHENA BOT VERIFICATION ===")
 me_url = f"https://api.telegram.org/bot{ATHENA_TOKEN}/getMe"
 me_resp = requests.get(me_url)
 me_data = me_resp.json()
-if me_data.get('ok'):
-    bot_info = me_data.get('result', {})
+if me_data.get("ok"):
+    bot_info = me_data.get("result", {})
     print(f"✅ Using ATHENA bot: @{bot_info.get('username')} ({bot_info.get('first_name')})")
 else:
     print(f"❌ Bot verification failed: {me_data}")
@@ -53,42 +56,42 @@ sent_count = 0
 error_count = 0
 
 for item in pending:
-    msg_id = item['message_id']
+    msg_id = item["message_id"]
     try:
         # Claim the message
         claimed_msgs = R.xclaim(STREAM, GROUP, CONSUMER, 0, [msg_id])
-        
+
         if claimed_msgs:
             for mid, fields in claimed_msgs:
                 try:
                     # Parse event data
-                    ev = json.loads(fields.get("event","{}"))
-                    
+                    ev = json.loads(fields.get("event", "{}"))
+
                     # Extract alert data
-                    signal_id = ev.get('signal_id', '')
-                    pc = ev.get("pattern_class","RAPID")
-                    sym = ev.get("symbol","?")
-                    dirn = ev.get("direction","?")
-                    conf = ev.get("confidence","?")
-                    rr = ev.get("target_rr","?")
-                    
+                    signal_id = ev.get("signal_id", "")
+                    pc = ev.get("pattern_class", "RAPID")
+                    sym = ev.get("symbol", "?")
+                    dirn = ev.get("direction", "?")
+                    conf = ev.get("confidence", "?")
+                    rr = ev.get("target_rr", "?")
+
                     # Format message (3 lines, no button due to domain restrictions)
                     if pc == "SNIPER":
                         line1 = "🎯 SNIPER PRIME"
                     else:
                         line1 = "⚡ RAPID ALERT"
-                    
+
                     line2 = f"{sym} {dirn} • TCS {conf}% • RR {rr}"
                     line3 = f"https://joinbitten.com/brief?signal_id={signal_id}"
-                    
+
                     message_text = f"{line1}\n{line2}\n{line3}"
-                    
+
                     print(f"\nProcessing {mid}: {signal_id}")
                     print(f"  Pattern: {pc}, Symbol: {sym} {dirn}")
-                    
+
                     # Send via ATHENA
                     tg_msg_id = send_athena_message(message_text)
-                    
+
                     if tg_msg_id:
                         # ACK successful send
                         R.xack(STREAM, GROUP, mid)
@@ -97,14 +100,14 @@ for item in pending:
                     else:
                         error_count += 1
                         print(f"  ❌ Failed to send")
-                    
+
                     # Rate limit
                     time.sleep(0.5)
-                    
+
                 except Exception as e:
                     print(f"  ❌ Error processing {mid}: {e}")
                     error_count += 1
-                    
+
     except Exception as e:
         print(f"❌ Failed to claim {msg_id}: {e}")
         error_count += 1

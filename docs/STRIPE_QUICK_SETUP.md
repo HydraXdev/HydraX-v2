@@ -13,11 +13,13 @@
 ## Step 1: Create Products
 
 Run this command:
+
 ```bash
 python setup_stripe_products.py
 ```
 
 This will:
+
 - Create all 4 products in your Stripe account
 - Set up monthly pricing
 - Give you the price IDs to add to .env
@@ -29,7 +31,7 @@ This will:
 3. Enter your URL: `https://your-domain.com/stripe/webhook`
 4. Select these events:
    - `customer.subscription.created`
-   - `customer.subscription.updated` 
+   - `customer.subscription.updated`
    - `customer.subscription.deleted`
    - `invoice.payment_succeeded`
    - `invoice.payment_failed`
@@ -83,12 +85,14 @@ register_stripe_webhook(app)
 ## How It Works
 
 ### User Flow:
+
 1. **Day 1-13**: User uses bot freely, no payment mentions
 2. **Day 14**: Bot sends ONE reminder about trial ending
 3. **Day 15**: Trial expires, features lock
 4. **Payment**: User clicks subscribe → Stripe Checkout → Auto-activation
 
 ### Subscription Features:
+
 - ✅ Monthly billing only
 - ✅ Cancel anytime
 - ✅ 2-day grace period for failed payments
@@ -96,6 +100,7 @@ register_stripe_webhook(app)
 - ✅ Proration handled by Stripe
 
 ### What Happens on Events:
+
 - **Subscription Created**: User tier activates, features unlock
 - **Payment Success**: Features stay unlocked
 - **Payment Failed**: 2-day grace period starts
@@ -104,12 +109,14 @@ register_stripe_webhook(app)
 ## Testing
 
 Use these test cards:
+
 - Success: `4242 4242 4242 4242`
 - Decline: `4000 0000 0000 0002`
 
 ## Next Steps
 
 After setup:
+
 1. Test with a real subscription
 2. Monitor webhook logs
 3. Set up monitoring alerts
@@ -118,16 +125,19 @@ After setup:
 ## Common Issues
 
 **Webhook not working?**
+
 - Check endpoint URL is correct
 - Verify signing secret in .env
 - Check server logs for errors
 
 **Products not creating?**
+
 - Verify API key is live key
 - Check Stripe account is activated
 - Ensure no duplicate products exist
 
 **Payments failing?**
+
 - Check customer has valid payment method
 - Verify price IDs are correct
 - Check currency matches account

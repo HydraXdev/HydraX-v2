@@ -2,10 +2,10 @@
 """Add crash protection to bitten-production-bot"""
 import os
 
-file_path = '/root/HydraX-v2/bitten_production_bot.py'
+file_path = "/root/HydraX-v2/bitten_production_bot.py"
 
 # Read the bot file
-with open(file_path, 'r') as f:
+with open(file_path, "r") as f:
     lines = f.readlines()
 
 # Find the main loop and add protection
@@ -37,17 +37,17 @@ def safe_bot_run():
 
 # Find where bot.polling is called
 for i, line in enumerate(lines):
-    if 'bot.polling(' in line and not line.strip().startswith('#'):
+    if "bot.polling(" in line and not line.strip().startswith("#"):
         # Comment out the original line
-        lines[i] = '# ' + line
+        lines[i] = "# " + line
         # Add our protection after it
-        lines.insert(i+1, 'safe_bot_run()  # Protected polling\n')
+        lines.insert(i + 1, "safe_bot_run()  # Protected polling\n")
         break
 
 # Add the protection function before the main execution
 main_idx = -1
 for i, line in enumerate(lines):
-    if '__name__' in line and '__main__' in line:
+    if "__name__" in line and "__main__" in line:
         main_idx = i
         break
 
@@ -55,7 +55,7 @@ if main_idx > 0:
     lines.insert(main_idx, protection_code)
 
 # Write back
-with open(file_path, 'w') as f:
+with open(file_path, "w") as f:
     f.writelines(lines)
 
 print("✅ Added crash protection to bot")

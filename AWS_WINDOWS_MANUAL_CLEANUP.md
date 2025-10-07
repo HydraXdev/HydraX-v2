@@ -1,7 +1,7 @@
 # 🪟 AWS WINDOWS MANUAL CLEANUP & ORGANIZATION
 
-**Target Server**: 3.145.84.187  
-**Purpose**: Complete cleanup and organization of Windows side  
+**Target Server**: 3.145.84.187
+**Purpose**: Complete cleanup and organization of Windows side
 **Status**: MANUAL EXECUTION REQUIRED (Agent not responding)
 
 ---
@@ -9,6 +9,7 @@
 ## 🚨 STEP 1: RESTART AGENT & CONNECT
 
 ### Connect to AWS Windows:
+
 1. **RDP to 3.145.84.187**
 2. **Open PowerShell as Administrator**
 3. **Navigate to agent**: `cd C:\BITTEN_Agent`
@@ -20,6 +21,7 @@
 ## 🧹 STEP 2: CLEANUP OLD FILES
 
 ### Remove Old/Conflicting Files:
+
 ```powershell
 # Remove old bridge/hydra files (keep BITTEN files)
 Get-ChildItem -Path 'C:\' -Recurse -Include '*HydraX*', '*Bridge*', '*hydra*' -ErrorAction SilentlyContinue | Where-Object {$_.Name -notlike '*BITTENBridge*'} | Remove-Item -Force -Recurse
@@ -43,6 +45,7 @@ New-Item -ItemType Directory -Path 'C:\CLEANUP_TEMP' -Force
 ## 🏗️ STEP 3: ORGANIZE DIRECTORY STRUCTURE
 
 ### Create Proper Directory Structure:
+
 ```powershell
 # Main directories
 New-Item -ItemType Directory -Path 'C:\MT5_Farm' -Force
@@ -68,6 +71,7 @@ New-Item -ItemType Directory -Path 'C:\BITTEN_Bridge\Responses' -Force
 ## 📦 STEP 4: VERIFY EA DEPLOYMENT
 
 ### Check EA Files:
+
 ```powershell
 # Check main EA file
 Get-ChildItem -Path 'C:\MT5_Farm\EA\BITTENBridge_v3_ENHANCED.mq5' -ErrorAction SilentlyContinue
@@ -85,6 +89,7 @@ Get-ChildItem -Path 'C:\MT5_Farm' -Recurse -Filter '*.mq5' -ErrorAction Silently
 ## 🔍 STEP 5: CHECK MT5 INSTALLATIONS
 
 ### Find MT5 Installations:
+
 ```powershell
 # Find MT5 executables
 Write-Host "Searching for MT5 installations..." -ForegroundColor Cyan
@@ -123,6 +128,7 @@ if ($processes) {
 ## 📡 STEP 6: CREATE BRIDGE MONITOR
 
 ### Create Bridge Monitor Script:
+
 ```powershell
 # Create bridge monitor Python script
 $bridgeScript = @'
@@ -140,82 +146,82 @@ class BITTENBridgeMonitor:
         self.mt5_commands_dir = "C:\\MT5_Farm\\Commands"
         self.mt5_responses_dir = "C:\\MT5_Farm\\Responses"
         self.log_file = "C:\\MT5_Farm\\Logs\\bridge_monitor.log"
-        
+
         # Ensure directories exist
         os.makedirs(self.commands_dir, exist_ok=True)
         os.makedirs(self.responses_dir, exist_ok=True)
         os.makedirs(self.mt5_commands_dir, exist_ok=True)
         os.makedirs(self.mt5_responses_dir, exist_ok=True)
         os.makedirs(os.path.dirname(self.log_file), exist_ok=True)
-        
+
     def log(self, message):
         """Log messages with timestamp"""
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         log_entry = f"[{timestamp}] {message}\n"
-        
+
         print(log_entry.strip())
         with open(self.log_file, 'a') as f:
             f.write(log_entry)
-    
+
     def monitor_commands(self):
         """Monitor for new command files"""
         self.log("Bridge monitor started")
-        
+
         while True:
             try:
                 # Check for new command files
                 cmd_files = glob.glob(f"{self.commands_dir}\\*.json")
-                
+
                 for cmd_file in cmd_files:
                     self.process_command(cmd_file)
-                
+
                 # Check for responses from MT5
                 response_files = glob.glob(f"{self.mt5_responses_dir}\\*.json")
-                
+
                 for resp_file in response_files:
                     self.process_response(resp_file)
-                    
+
                 time.sleep(1)
-                
+
             except Exception as e:
                 self.log(f"Bridge monitor error: {e}")
                 time.sleep(5)
-    
+
     def process_command(self, cmd_file):
         """Process a command file"""
         try:
             with open(cmd_file, 'r') as f:
                 command = json.load(f)
-            
+
             self.log(f"Processing command: {command.get('type', 'unknown')}")
-            
+
             # Forward to MT5
             mt5_cmd_file = f"{self.mt5_commands_dir}\\cmd_{command.get('id', 'unknown')}.json"
             with open(mt5_cmd_file, 'w') as f:
                 json.dump(command, f, indent=2)
-            
+
             # Remove original command file
             os.remove(cmd_file)
-            
+
         except Exception as e:
             self.log(f"Error processing command: {e}")
-    
+
     def process_response(self, resp_file):
         """Process a response file from MT5"""
         try:
             with open(resp_file, 'r') as f:
                 response = json.load(f)
-            
+
             self.log(f"Processing response: {response.get('command_id', 'unknown')}")
-            
+
             # Forward to BITTEN Bridge
             bridge_resp_file = f"{self.responses_dir}\\resp_{response.get('command_id', 'unknown')}.json"
             with open(bridge_resp_file, 'w') as f:
                 json.dump(response, f, indent=2)
-            
+
             # Remove original response file
             os.remove(resp_file)
-            
+
         except Exception as e:
             self.log(f"Error processing response: {e}")
 
@@ -232,6 +238,7 @@ Set-Content -Path "C:\BITTEN_Bridge\bridge_monitor.py" -Value $bridgeScript
 ## 🚀 STEP 7: CREATE STARTUP SCRIPTS
 
 ### Create Startup Script:
+
 ```powershell
 $startupScript = @'
 @echo off
@@ -269,6 +276,7 @@ Set-Content -Path "C:\START_BITTEN.bat" -Value $startupScript
 ## 📋 STEP 8: CREATE DOCUMENTATION
 
 ### Create AWS Documentation:
+
 ```powershell
 $docContent = @'
 # AWS WINDOWS SERVER DOCUMENTATION
@@ -280,7 +288,7 @@ C:\
 ├── MT5_Farm\                    # Main MT5 farm directory
 │   ├── Masters\                 # Master MT5 instances
 │   │   ├── Forex_Demo\         # Demo trading master
-│   │   ├── Forex_Live\         # Live trading master  
+│   │   ├── Forex_Live\         # Live trading master
 │   │   ├── Coinexx_Live\       # Coinexx broker master
 │   │   └── Generic_Demo\       # Generic demo master
 │   ├── Clones\                 # User-specific clones
@@ -328,6 +336,7 @@ Set-Content -Path "C:\AWS_WINDOWS_DOCS.txt" -Value $docContent
 ## ✅ STEP 9: FINAL VERIFICATION
 
 ### Check Everything is in Place:
+
 ```powershell
 # Check directory structure
 Write-Host "=== DIRECTORY STRUCTURE ===" -ForegroundColor Green
@@ -360,6 +369,7 @@ Write-Host "Ready to run C:\START_BITTEN.bat" -ForegroundColor Yellow
 ## 🎯 FINAL STEPS TO GO LIVE
 
 ### After Cleanup:
+
 1. **Run**: `C:\START_BITTEN.bat`
 2. **Open MT5 instances** and login to brokers
 3. **Attach BITTENBridge EA** to 10 currency pair charts in each MT5
@@ -367,6 +377,7 @@ Write-Host "Ready to run C:\START_BITTEN.bat" -ForegroundColor Yellow
 5. **Test from Linux**: `python3 /root/HydraX-v2/check_mt5_live_status.py`
 
 ### Expected Result:
+
 - Agent responding on port 5555
 - Bridge monitor processing commands
 - MT5 instances running with EA attached

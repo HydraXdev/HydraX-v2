@@ -7,6 +7,7 @@ This document describes the HIGH-PERFORMANCE ZMQ-based market data pipeline that
 ## 🎯 Problem Solved
 
 **Previous Issues:**
+
 - EA sending truncated JSON via HTTP POST (cut off at 1922 bytes)
 - Market data receiver crashing on incomplete JSON
 - Watchdog constantly restarting the receiver
@@ -14,6 +15,7 @@ This document describes the HIGH-PERFORMANCE ZMQ-based market data pipeline that
 - No real-time streaming capability
 
 **ZMQ Solution:**
+
 - Binary protocol handles unlimited data sizes
 - Pub/Sub pattern for real-time streaming
 - No threading issues - clean event-driven design
@@ -38,6 +40,7 @@ Trading Signals
 ## 🔧 Components
 
 ### 1. ZMQ Market Streamer (`zmq_market_streamer.py`)
+
 - **Purpose**: Bridge between EA and VENOM
 - **Subscribe**: tcp://134.199.204.67:5555 (from EA)
 - **Publish**: tcp://127.0.0.1:5556 (to VENOM)
@@ -49,6 +52,7 @@ Trading Signals
   - Auto-reconnection
 
 ### 2. VENOM ZMQ Adapter (`venom_zmq_adapter.py`)
+
 - **Purpose**: Feed LIVE data to VENOM engine
 - **Subscribe**: tcp://127.0.0.1:5556
 - **Features**:
@@ -58,6 +62,7 @@ Trading Signals
   - Callback-based architecture
 
 ### 3. Test Suite (`test_zmq_market_flow.py`)
+
 - **Purpose**: Validate complete pipeline
 - **Tests**:
   - EA data availability
@@ -66,6 +71,7 @@ Trading Signals
   - End-to-end streaming
 
 ### 4. Systemd Service (`zmq_market_streamer.service`)
+
 - **Auto-start**: On system boot
 - **Auto-restart**: On failure
 - **Resource limits**: 512MB RAM, 25% CPU
@@ -102,7 +108,7 @@ void PublishMarketData(string symbol, double bid, double ask)
                      "\"bid\":" + DoubleToString(bid, 5) + "," +
                      "\"ask\":" + DoubleToString(ask, 5) + "," +
                      "\"source\":\"MT5_LIVE\"}";
-    
+
     zmq_send(zmq_socket, message, StringLen(message), ZMQ_DONTWAIT);
 }
 ```

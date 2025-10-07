@@ -8,31 +8,32 @@ Applies the same hardening measures used for ATHENA to all bots
 import os
 import re
 import sys
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 # Key bot files that need hardening
 PRODUCTION_BOTS = {
-    'bitten_production_bot.py': {
-        'token_var': 'BOT_TOKEN',
-        'authorized_users': ['7176191872'],  # Commander
-        'commands': ['start', 'help', 'war', 'live', 'brief', 'fire', 'me', 'balance', 'settings'],
-        'priority': 'CRITICAL'
+    "bitten_production_bot.py": {
+        "token_var": "BOT_TOKEN",
+        "authorized_users": ["7176191872"],  # Commander
+        "commands": ["start", "help", "war", "live", "brief", "fire", "me", "balance", "settings"],
+        "priority": "CRITICAL",
     },
-    'bitten_voice_personality_bot.py': {
-        'token_var': 'VOICE_BOT_TOKEN',
-        'authorized_users': ['7176191872'],
-        'commands': ['start', 'help', 'drill', 'nexus', 'doc', 'observer'],
-        'priority': 'HIGH'
+    "bitten_voice_personality_bot.py": {
+        "token_var": "VOICE_BOT_TOKEN",
+        "authorized_users": ["7176191872"],
+        "commands": ["start", "help", "drill", "nexus", "doc", "observer"],
+        "priority": "HIGH",
     },
-    'athena_mission_bot.py': {
-        'token_var': 'ATHENA_BOT_TOKEN',
-        'authorized_users': ['7176191872'],
-        'commands': ['start', 'status', 'brief', 'help'],
-        'priority': 'CRITICAL',
-        'status': 'ALREADY_SECURED'
-    }
+    "athena_mission_bot.py": {
+        "token_var": "ATHENA_BOT_TOKEN",
+        "authorized_users": ["7176191872"],
+        "commands": ["start", "status", "brief", "help"],
+        "priority": "CRITICAL",
+        "status": "ALREADY_SECURED",
+    },
 }
+
 
 def find_hardcoded_tokens():
     """Find all hardcoded tokens that need to be moved to environment variables"""
@@ -40,67 +41,67 @@ def find_hardcoded_tokens():
 
     hardcoded_tokens = []
     token_patterns = [
-        r'[0-9]+:AA[A-Za-z0-9_-]+',  # Standard bot token format
+        r"[0-9]+:AA[A-Za-z0-9_-]+",  # Standard bot token format
         r'"[0-9]+:AA[A-Za-z0-9_-]+"',  # Quoted tokens
-        r"'[0-9]+:AA[A-Za-z0-9_-]+'"   # Single quoted tokens
+        r"'[0-9]+:AA[A-Za-z0-9_-]+'",  # Single quoted tokens
     ]
 
-    for root, dirs, files in os.walk('/root/HydraX-v2'):
+    for root, dirs, files in os.walk("/root/HydraX-v2"):
         # Skip archived and cached directories
-        if 'LOCKED_ARCHIVE' in root or '__pycache__' in root:
+        if "LOCKED_ARCHIVE" in root or "__pycache__" in root:
             continue
 
         for file in files:
-            if file.endswith('.py'):
+            if file.endswith(".py"):
                 file_path = os.path.join(root, file)
                 try:
-                    with open(file_path, 'r', encoding='utf-8') as f:
+                    with open(file_path, "r", encoding="utf-8") as f:
                         content = f.read()
-                        for i, line in enumerate(content.split('\n'), 1):
+                        for i, line in enumerate(content.split("\n"), 1):
                             for pattern in token_patterns:
                                 matches = re.findall(pattern, line)
                                 for match in matches:
                                     # Skip if it's a placeholder or disabled token
-                                    if 'DISABLED' not in match and 'your_' not in match.lower():
-                                        hardcoded_tokens.append({
-                                            'file': file_path,
-                                            'line': i,
-                                            'token': match[:20] + '...',  # Truncate for security
-                                            'full_line': line.strip()
-                                        })
+                                    if "DISABLED" not in match and "your_" not in match.lower():
+                                        hardcoded_tokens.append(
+                                            {
+                                                "file": file_path,
+                                                "line": i,
+                                                "token": match[:20] + "...",  # Truncate for security
+                                                "full_line": line.strip(),
+                                            }
+                                        )
                 except Exception as e:
                     print(f"  ⚠️ Could not read {file_path}: {e}")
 
     return hardcoded_tokens
+
 
 def audit_catch_all_handlers():
     """Find all dangerous catch-all message handlers"""
     print("🔍 Scanning for dangerous catch-all handlers...")
 
     vulnerable_handlers = []
-    catch_all_pattern = r'@.*message_handler.*func=lambda.*True'
+    catch_all_pattern = r"@.*message_handler.*func=lambda.*True"
 
-    for root, dirs, files in os.walk('/root/HydraX-v2'):
-        if 'LOCKED_ARCHIVE' in root or '__pycache__' in root:
+    for root, dirs, files in os.walk("/root/HydraX-v2"):
+        if "LOCKED_ARCHIVE" in root or "__pycache__" in root:
             continue
 
         for file in files:
-            if file.endswith('.py'):
+            if file.endswith(".py"):
                 file_path = os.path.join(root, file)
                 try:
-                    with open(file_path, 'r', encoding='utf-8') as f:
+                    with open(file_path, "r", encoding="utf-8") as f:
                         content = f.read()
-                        for i, line in enumerate(content.split('\n'), 1):
+                        for i, line in enumerate(content.split("\n"), 1):
                             if re.search(catch_all_pattern, line):
-                                vulnerable_handlers.append({
-                                    'file': file_path,
-                                    'line': i,
-                                    'handler': line.strip()
-                                })
+                                vulnerable_handlers.append({"file": file_path, "line": i, "handler": line.strip()})
                 except Exception as e:
                     print(f"  ⚠️ Could not read {file_path}: {e}")
 
     return vulnerable_handlers
+
 
 def check_authorization_systems():
     """Check which bots have authorization systems"""
@@ -109,28 +110,29 @@ def check_authorization_systems():
     auth_status = {}
 
     for bot_file in PRODUCTION_BOTS.keys():
-        file_path = f'/root/HydraX-v2/{bot_file}'
+        file_path = f"/root/HydraX-v2/{bot_file}"
         if os.path.exists(file_path):
             try:
-                with open(file_path, 'r') as f:
+                with open(file_path, "r") as f:
                     content = f.read()
 
-                has_auth_check = 'is_authorized_user' in content or 'AUTHORIZED_USERS' in content
-                has_security_logging = 'log_security_event' in content or 'SECURITY' in content
-                has_command_whitelist = 'ALLOWED_COMMANDS' in content
+                has_auth_check = "is_authorized_user" in content or "AUTHORIZED_USERS" in content
+                has_security_logging = "log_security_event" in content or "SECURITY" in content
+                has_command_whitelist = "ALLOWED_COMMANDS" in content
 
                 auth_status[bot_file] = {
-                    'has_authorization': has_auth_check,
-                    'has_security_logging': has_security_logging,
-                    'has_command_whitelist': has_command_whitelist,
-                    'security_score': sum([has_auth_check, has_security_logging, has_command_whitelist])
+                    "has_authorization": has_auth_check,
+                    "has_security_logging": has_security_logging,
+                    "has_command_whitelist": has_command_whitelist,
+                    "security_score": sum([has_auth_check, has_security_logging, has_command_whitelist]),
                 }
             except Exception as e:
-                auth_status[bot_file] = {'error': str(e)}
+                auth_status[bot_file] = {"error": str(e)}
         else:
-            auth_status[bot_file] = {'status': 'FILE_NOT_FOUND'}
+            auth_status[bot_file] = {"status": "FILE_NOT_FOUND"}
 
     return auth_status
+
 
 def generate_security_guard_template(bot_config):
     """Generate security guard code template"""
@@ -178,6 +180,7 @@ def generate_security_guard_template(bot_config):
             self.bot.send_message(message.chat.id, "Use `/help` for available commands.")
 '''
 
+
 def create_comprehensive_audit_report():
     """Create comprehensive security audit report"""
     print("📊 Creating comprehensive security audit report...")
@@ -203,12 +206,12 @@ def create_comprehensive_audit_report():
     for bot_file, config in PRODUCTION_BOTS.items():
         if bot_file in auth_systems:
             status = auth_systems[bot_file]
-            if 'error' in status:
+            if "error" in status:
                 report += f"- **{bot_file}**: ❌ ERROR - {status['error']}\n"
-            elif 'status' in status:
+            elif "status" in status:
                 report += f"- **{bot_file}**: ⚠️ {status['status']}\n"
             else:
-                score = status.get('security_score', 0)
+                score = status.get("security_score", 0)
                 if score == 3:
                     report += f"- **{bot_file}**: ✅ FULLY SECURED ({score}/3)\n"
                 elif score == 2:
@@ -269,6 +272,7 @@ python3 security_audit_all_bots.py
 
     return report
 
+
 def main():
     """Run comprehensive bot security audit"""
     print("🔒 BITTEN BOT SECURITY MASS AUDIT")
@@ -278,8 +282,8 @@ def main():
     report = create_comprehensive_audit_report()
 
     # Save report
-    report_file = '/root/HydraX-v2/BOT_SECURITY_AUDIT_REPORT.md'
-    with open(report_file, 'w') as f:
+    report_file = "/root/HydraX-v2/BOT_SECURITY_AUDIT_REPORT.md"
+    with open(report_file, "w") as f:
         f.write(report)
 
     print(f"📄 Security audit report saved: {report_file}")
@@ -299,6 +303,7 @@ def main():
     else:
         print(f"\n✅ NO CRITICAL VULNERABILITIES FOUND")
         print(f"🔒 All bots appear to be properly secured")
+
 
 if __name__ == "__main__":
     main()

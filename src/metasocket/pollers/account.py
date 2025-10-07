@@ -4,17 +4,14 @@ Polls account status every 3 seconds and publishes normalized account data
 """
 
 import asyncio
-import time
 import logging
-from typing import Dict, Any, Callable, Optional
+import time
+from typing import Any, Callable, Dict, Optional
 
 logger = logging.getLogger(__name__)
 
-async def poll_account(
-    conn: Any,
-    publish: Callable[[Dict[str, Any]], None],
-    metrics: Dict[str, Any]
-) -> None:
+
+async def poll_account(conn: Any, publish: Callable[[Dict[str, Any]], None], metrics: Dict[str, Any]) -> None:
     """
     Poll account status every 3 seconds
     Mirrors TypeScript pollAccount() function exactly
@@ -59,7 +56,7 @@ async def poll_account(
                 "leverage": safe_float(a.get("leverage")),
                 "currency": safe_string(a.get("currency"), "USD"),
                 "ts_epoch_ms": current_time,
-                "src": "metasocket"
+                "src": "metasocket",
             }
 
             # Publish normalized account data
@@ -80,17 +77,14 @@ async def poll_account(
         # Sleep for 3 seconds as per TypeScript implementation
         await asyncio.sleep(3.0)
 
+
 class AccountPoller:
     """Account polling manager with lifecycle control"""
 
     def __init__(self):
         self.poll_task: Optional[asyncio.Task] = None
         self.account_callbacks = []
-        self.metrics = {
-            "lastAccountTs": 0,
-            "accountPollErrors": 0,
-            "accountPollSuccess": 0
-        }
+        self.metrics = {"lastAccountTs": 0, "accountPollErrors": 0, "accountPollSuccess": 0}
         self.running = False
 
     def add_account_callback(self, callback: Callable[[Dict], None]) -> None:
@@ -151,7 +145,7 @@ class AccountPoller:
             "last_poll_age_ms": last_poll_age,
             "poll_success_count": self.metrics.get("accountPollSuccess", 0),
             "poll_error_count": self.metrics.get("accountPollErrors", 0),
-            "callbacks_registered": len(self.account_callbacks)
+            "callbacks_registered": len(self.account_callbacks),
         }
 
     def get_health_status(self) -> Dict[str, Any]:
@@ -163,8 +157,9 @@ class AccountPoller:
         return {
             "account_heartbeat_age_ms": age_ms,
             "account_polling_active": self.running,
-            "account_last_success": last_account_ts > 0
+            "account_last_success": last_account_ts > 0,
         }
+
 
 # Example usage and testing
 async def test_account_poller():
@@ -186,7 +181,7 @@ async def test_account_poller():
                 "margin": 50.25,
                 "free_margin": 955.50 + self.call_count,
                 "leverage": 100,
-                "currency": "USD"
+                "currency": "USD",
             }
 
     # Create test setup
@@ -235,6 +230,8 @@ async def test_account_poller():
 
     print("\n🎉 Account poller test completed!")
 
+
 if __name__ == "__main__":
     import asyncio
+
     asyncio.run(test_account_poller())

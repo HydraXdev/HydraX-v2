@@ -21,8 +21,8 @@ module.exports = {
         PYTHONUNBUFFERED: "1",
         WS_ACK_WINDOW: "256",
         HYDRASOCKET_ENV: "production",
-        FLASK_ENV: "production"
-      }
+        FLASK_ENV: "production",
+      },
     },
     {
       name: "elite_guard",
@@ -31,7 +31,7 @@ module.exports = {
       cwd: "/root/HydraX-v2",
       instances: 1,
       autorestart: true,
-      watch: false
+      watch: false,
     },
     {
       name: "zmq_telemetry_bridge",
@@ -40,7 +40,7 @@ module.exports = {
       cwd: "/root/HydraX-v2",
       instances: 1,
       autorestart: true,
-      watch: false
+      watch: false,
     },
     {
       name: "signals_zmq_to_redis",
@@ -49,7 +49,7 @@ module.exports = {
       cwd: "/root/HydraX-v2",
       instances: 1,
       autorestart: true,
-      watch: false
+      watch: false,
     },
     {
       name: "signals_to_alerts",
@@ -58,7 +58,7 @@ module.exports = {
       cwd: "/root/HydraX-v2",
       instances: 1,
       autorestart: true,
-      watch: false
+      watch: false,
     },
     {
       name: "telegram_broadcaster_alerts",
@@ -67,7 +67,7 @@ module.exports = {
       cwd: "/root/HydraX-v2",
       instances: 1,
       autorestart: true,
-      watch: false
+      watch: false,
     },
     {
       name: "command_router",
@@ -76,7 +76,7 @@ module.exports = {
       cwd: "/root/HydraX-v2",
       instances: 1,
       autorestart: true,
-      watch: false
+      watch: false,
     },
     {
       name: "confirm_listener",
@@ -85,7 +85,7 @@ module.exports = {
       cwd: "/root/HydraX-v2",
       instances: 1,
       autorestart: true,
-      watch: false
+      watch: false,
     },
     {
       name: "vcb_guard",
@@ -94,7 +94,7 @@ module.exports = {
       cwd: "/root/HydraX-v2",
       instances: 1,
       autorestart: true,
-      watch: false
+      watch: false,
     },
     {
       name: "srl_guard",
@@ -103,7 +103,7 @@ module.exports = {
       cwd: "/root/HydraX-v2",
       instances: 1,
       autorestart: true,
-      watch: false
-    }
-  ]
-}
+      watch: false,
+    },
+  ],
+};

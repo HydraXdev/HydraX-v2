@@ -5,6 +5,7 @@
 ### **Core Components Implemented**
 
 #### 1. **Symbol Configuration** (`symbols.py`)
+
 ```python
 SYMBOLS = [
     # Major Forex Pairs (6)
@@ -24,12 +25,14 @@ DISABLED = ["USDCAD"]  # High margin, low win rate
 #### 2. **Enhanced Subscription Manager** (`subscriptions_v2.py`)
 
 **🔗 TypeScript Logic Mirrored:**
+
 - `subscribeAll()` → `subscribe_all()` - subscribes to all 20 symbols
 - `resubscribeLoop()` → `resubscribe_loop()` - backoff + stale symbol detection
 - Connection protocol with `send()`, `is_open()`, `reopen()`
 - Per-symbol `last_tick_ts` dictionary tracking
 
 **🚀 Features:**
+
 - **Exponential Backoff**: `[1000, 2000, 5000, 10000, 15000, 30000]ms + 10% jitter`
 - **Stale Detection**: Symbols with no ticks in 3+ seconds auto-resubscribed
 - **Health Monitoring**: 15-second heartbeat cycle with freshness checks
@@ -102,18 +105,22 @@ async def handle_message(self, message: str):
 ### **Key Improvements Over Original**
 
 #### **🎯 Resilience**
+
 - **Original**: Basic reconnect on failure
 - **Enhanced**: Exponential backoff with jitter, per-symbol staleness detection
 
 #### **📊 Monitoring**
+
 - **Original**: Connection health only
 - **Enhanced**: Per-symbol tick rates, stale detection, subscription attempts
 
 #### **⚡ Performance**
+
 - **Original**: Bulk resubscription on any issue
 - **Enhanced**: Granular per-symbol resubscription only when needed
 
 #### **🔧 Maintainability**
+
 - **Original**: Monolithic subscription system
 - **Enhanced**: Protocol-based, testable components with mocks
 
@@ -128,6 +135,7 @@ async def handle_message(self, message: str):
 ```
 
 **Test Coverage:**
+
 - ✅ MetricsTracker: tick updates, stale detection, health stats
 - ✅ Subscription Logic: all 20 symbols, 40 messages (TRACK_PRICES + TRACK_OHLC)
 - ✅ Message Handling: tick/OHLC normalization to v1 schema
@@ -136,6 +144,7 @@ async def handle_message(self, message: str):
 ### **Production Deployment**
 
 #### **1. Basic Usage**
+
 ```python
 from subscriptions_v2 import EnhancedSubscriptionManager
 
@@ -153,6 +162,7 @@ await manager.start()
 ```
 
 #### **2. Health Monitoring**
+
 ```python
 health = manager.get_health_status()
 print(f"Connected: {health['connected']}")
@@ -161,6 +171,7 @@ print(f"Total ticks: {health['metrics']['total_ticks']}")
 ```
 
 #### **3. Integration with Existing Bootstrap**
+
 ```python
 # Replace original subscriptions in bootstrap.py
 from subscriptions_v2 import EnhancedSubscriptionManager
@@ -187,6 +198,7 @@ class MetaSocketBootstrap:
 The enhanced subscription system mirrors the TypeScript logic exactly while providing superior resilience and monitoring capabilities. It's ready for immediate deployment to replace the original subscription system in the MetaSocket → BITTEN integration.
 
 **Next Steps:**
+
 1. Replace `subscriptions.py` with `subscriptions_v2.py` in bootstrap
 2. Update Elite Guard callbacks to use enhanced manager
 3. Monitor health metrics in production

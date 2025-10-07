@@ -4,8 +4,8 @@
 # Global stealth settings
 stealth:
   enabled: true
-  default_level: medium  # low, medium, high, ghost
-  
+  default_level: medium # low, medium, high, ghost
+
   # Entry delay settings (seconds)
   entry_delay:
     low:
@@ -20,22 +20,22 @@ stealth:
     ghost:
       min: 3.0
       max: 12.0
-  
+
   # Lot size jitter settings (percentage)
   lot_jitter:
     low:
-      min: 0.01  # 1%
-      max: 0.03  # 3%
+      min: 0.01 # 1%
+      max: 0.03 # 3%
     medium:
-      min: 0.03  # 3%
-      max: 0.07  # 7%
+      min: 0.03 # 3%
+      max: 0.07 # 7%
     high:
-      min: 0.05  # 5%
-      max: 0.10  # 10%
+      min: 0.05 # 5%
+      max: 0.10 # 10%
     ghost:
-      min: 0.07  # 7%
-      max: 0.15  # 15%
-  
+      min: 0.07 # 7%
+      max: 0.15 # 15%
+
   # TP/SL offset settings (pips)
   tp_sl_offset:
     low:
@@ -58,37 +58,37 @@ stealth:
       tp_max: 7
       sl_min: 3
       sl_max: 7
-  
+
   # Ghost skip settings (skip rate)
   ghost_skip:
-    low: 0.05      # 5%
-    medium: 0.167  # ~16.7% (1 in 6)
-    high: 0.25     # 25%
-    ghost: 0.33    # 33%
-  
+    low: 0.05 # 5%
+    medium: 0.167 # ~16.7% (1 in 6)
+    high: 0.25 # 25%
+    ghost: 0.33 # 33%
+
   # Volume cap settings
   volume_cap:
     max_per_asset: 3
     max_total: 10
-    
+
   # Execution shuffle settings
   execution_shuffle:
     enabled: true
-    delay_min: 0.5  # seconds
-    delay_max: 2.0  # seconds
+    delay_min: 0.5 # seconds
+    delay_max: 2.0 # seconds
 
 # Tier-specific stealth permissions
 tier_stealth:
   nibbler:
     enabled: false
     max_level: off
-    
+
   fang:
     enabled: true
     max_level: low
     modes:
-      - chaingun  # Only with CHAINGUN mode
-      
+      - chaingun # Only with CHAINGUN mode
+
   commander:
     enabled: true
     max_level: medium
@@ -96,23 +96,23 @@ tier_stealth:
       - chaingun
       - auto_fire
       - semi_auto
-      
+
   apex:
     enabled: true
     max_level: ghost
     modes:
       - chaingun
       - auto_fire
-      - stealth  # Exclusive STEALTH mode
-      - all      # Can use with any mode
+      - stealth # Exclusive STEALTH mode
+      - all # Can use with any mode
 
 # Special stealth behaviors
 special_behaviors:
   # Win streak management
   win_streak:
-    threshold: 12  # Inject loss after 12 consecutive wins
-    loss_size_multiplier: 0.5  # Reduce size for injected losses
-    
+    threshold: 12 # Inject loss after 12 consecutive wins
+    loss_size_multiplier: 0.5 # Reduce size for injected losses
+
   # Pattern breaking
   pattern_break:
     enabled: true
@@ -120,7 +120,7 @@ special_behaviors:
     trade_interval:
       min: 8
       max: 15
-    
+
   # Time-based variations
   time_variations:
     enabled: true
@@ -141,8 +141,8 @@ logging:
   log_path: "/logs/stealth_log.txt"
   max_file_size_mb: 50
   backup_count: 5
-  log_level: INFO  # DEBUG, INFO, WARNING, ERROR
-  
+  log_level: INFO # DEBUG, INFO, WARNING, ERROR
+
   # What to log
   log_actions:
     - entry_delay

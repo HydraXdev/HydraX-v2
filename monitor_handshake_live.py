@@ -3,10 +3,11 @@
 Monitor for EA v3.003 handshake in real-time
 """
 
-import zmq
 import json
 import time
 from datetime import datetime
+
+import zmq
 
 print("=" * 70)
 print("🔍 MONITORING FOR EA v3.003 HANDSHAKE")
@@ -21,8 +22,8 @@ context = zmq.Context()
 
 # Monitor the published stream on port 5560
 sub = context.socket(zmq.SUB)
-sub.connect('tcp://localhost:5560')
-sub.subscribe(b'')
+sub.connect("tcp://localhost:5560")
+sub.subscribe(b"")
 sub.setsockopt(zmq.RCVTIMEO, 100)
 
 handshake_found = False
@@ -38,10 +39,10 @@ try:
             # Try to parse as JSON
             try:
                 data = json.loads(msg)
-                msg_type = data.get('type', 'unknown')
+                msg_type = data.get("type", "unknown")
 
                 # HANDSHAKE DETECTION
-                if msg_type == 'handshake' and not handshake_found:
+                if msg_type == "handshake" and not handshake_found:
                     print(f"\n🎯🎯🎯 HANDSHAKE DETECTED at {datetime.now().strftime('%H:%M:%S')} 🎯🎯🎯")
                     print(json.dumps(data, indent=2))
                     print("\n✅ Key information extracted:")
@@ -56,7 +57,7 @@ try:
                     handshake_found = True
 
                 # HEARTBEAT DETECTION
-                elif msg_type == 'heartbeat' and not heartbeat_found:
+                elif msg_type == "heartbeat" and not heartbeat_found:
                     print(f"\n💓 HEARTBEAT DETECTED at {datetime.now().strftime('%H:%M:%S')}")
                     print(f"   Balance: ${data.get('balance')}")
                     print(f"   Equity: ${data.get('equity')}")
@@ -67,7 +68,7 @@ try:
                     heartbeat_found = True
 
                 # TICK COUNTING
-                elif msg_type == 'tick':
+                elif msg_type == "tick":
                     tick_count += 1
                     if tick_count == 1:
                         print(f"\n📊 Ticks confirmed flowing (UUID: {data.get('uuid')})")

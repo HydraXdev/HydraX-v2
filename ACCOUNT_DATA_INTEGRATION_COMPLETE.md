@@ -21,11 +21,13 @@ Complete Brain-side infrastructure for capturing real-time account data from EAs
 ## 📁 FILES CREATED/MODIFIED
 
 ### **NEW: Account State Manager**
+
 **File**: `/root/HydraX-v2/account_state_manager.py`
 
 **Purpose**: Captures and maintains real-time account data from HydraSocket EAs
 
 **Key Methods**:
+
 ```python
 def on_portfolio_snapshot(event):
     """Parse portfolio_snapshot (sent once at EA startup or on-demand)"""
@@ -44,6 +46,7 @@ def calculate_lot_size(account_id, signal, risk_percent=0.01):
 ```
 
 **Tested Performance**:
+
 - ✅ Captures portfolio snapshots correctly
 - ✅ Calculates position sizes accurately (1.25 lots for $12,500 balance @ 1% risk, 10-pip SL)
 - ✅ Updates database with fresh account data
@@ -52,9 +55,11 @@ def calculate_lot_size(account_id, signal, risk_percent=0.01):
 ---
 
 ### **MODIFIED: HydraSocket Bridge**
+
 **File**: `/root/HydraX-v2/hydrasocket_to_elite_bridge.py`
 
 **Changes Applied**:
+
 1. **Imported AccountStateManager** (line 19)
 2. **Initialized account manager** (line 38)
 3. **Added account event processing** (lines 166-210):
@@ -68,6 +73,7 @@ def calculate_lot_size(account_id, signal, risk_percent=0.01):
    - `calculate_lot_size(account_id, signal, risk_percent)` - Position sizing
 
 **Removed Conflicts**:
+
 - ❌ Removed Elite Guard forwarding (port 5556 conflict with zmq_telemetry_bridge)
 - ✅ Now focuses purely on account data capture
 - ✅ Market data forwarding handled by existing zmq_telemetry_bridge
@@ -79,34 +85,36 @@ def calculate_lot_size(account_id, signal, risk_percent=0.01):
 ### **EA Event Types Sent**
 
 **1. portfolio_snapshot** (sent once at startup or on-demand):
+
 ```json
 {
   "type": "portfolio_snapshot",
   "account_id": "843859",
   "balances": {
-    "balance": 12500.00,
-    "equity": 12650.00,
-    "margin": 450.00,
-    "free_margin": 12200.00,
+    "balance": 12500.0,
+    "equity": 12650.0,
+    "margin": 450.0,
+    "free_margin": 12200.0,
     "margin_level": 2811.11,
     "currency": "USD"
   },
   "positions": [
-    {"ticket": 123456, "symbol": "EURUSD", "side": "buy", "volume": 0.10}
+    { "ticket": 123456, "symbol": "EURUSD", "side": "buy", "volume": 0.1 }
   ],
   "orders": []
 }
 ```
 
 **2. account_summary** (sent every second or on-change):
+
 ```json
 {
   "type": "account_summary",
   "account_id": "843859",
-  "balance": 12500.00,
-  "equity": 12650.00,
-  "margin": 450.00,
-  "free_margin": 12200.00,
+  "balance": 12500.0,
+  "equity": 12650.0,
+  "margin": 450.0,
+  "free_margin": 12200.0,
   "margin_level": 2811.11,
   "currency": "USD",
   "open_positions_count": 1
@@ -114,6 +122,7 @@ def calculate_lot_size(account_id, signal, risk_percent=0.01):
 ```
 
 **3. custom_bar_closed** (15-second bars for pattern detection):
+
 ```json
 {
   "type": "custom_bar_closed",
@@ -123,10 +132,10 @@ def calculate_lot_size(account_id, signal, risk_percent=0.01):
   "tf_seconds": 15,
   "feed_ver": 2,
   "t": 1727702580,
-  "o": 1.08500,
-  "h": 1.08550,
-  "l": 1.08490,
-  "c": 1.08520,
+  "o": 1.085,
+  "h": 1.0855,
+  "l": 1.0849,
+  "c": 1.0852,
   "v": 1234
 }
 ```
@@ -177,6 +186,7 @@ Execute Trade with Calculated Lots
 ## 💰 POSITION SIZING EXAMPLES
 
 ### **Example 1: EURUSD Signal**
+
 ```python
 account_data = {
     'balance': 12500.00,
@@ -199,6 +209,7 @@ lot_size = 125 / (10 × 10) = 1.25 lots
 ```
 
 ### **Example 2: USDJPY Signal**
+
 ```python
 account_data = {
     'balance': 10000.00
@@ -220,6 +231,7 @@ lot_size = 100 / (20 × 10) = 0.50 lots
 ```
 
 ### **Example 3: XAUUSD (Gold) Signal**
+
 ```python
 account_data = {
     'balance': 15000.00
@@ -249,6 +261,7 @@ lot_size = 150 / (10 × 10) = 1.50 lots
 **File**: `/root/HydraX-v2/webapp_server_optimized.py`
 
 **Usage Example**:
+
 ```python
 from hydrasocket_to_elite_bridge import bridge_instance  # Global bridge instance
 
@@ -287,6 +300,7 @@ def execute_fire(user_id, account_id, signal):
 **File**: `/root/HydraX-v2/bitten_production_bot.py`
 
 **Usage Example**:
+
 ```python
 from hydrasocket_to_elite_bridge import bridge_instance
 
@@ -323,6 +337,7 @@ Confirm? /yes or /no
 **File**: `/root/HydraX-v2/elite_guard_with_citadel.py`
 
 **Usage Example**:
+
 ```python
 # When generating signal, include position size suggestion:
 def generate_signal(pattern):
@@ -352,6 +367,7 @@ def generate_signal(pattern):
 ## 🚀 DEPLOYMENT STATUS
 
 ### **✅ COMPLETED:**
+
 1. ✅ Account state manager implemented and tested
 2. ✅ HydraSocket bridge updated to capture account events
 3. ✅ Position sizing calculations verified (all pair types)
@@ -359,6 +375,7 @@ def generate_signal(pattern):
 5. ✅ Custom 15-second bars infrastructure ready
 
 ### **⏳ PENDING:**
+
 1. ⏳ HydraSocket bridge needs restart to apply changes
 2. ⏳ Verify EA is actually sending account events (check router logs)
 3. ⏳ Integrate position sizing into webapp fire execution
@@ -369,6 +386,7 @@ def generate_signal(pattern):
 ## 🔍 VERIFICATION STEPS
 
 ### **1. Verify EA is Sending Events**
+
 ```bash
 # Monitor HydraSocket router for account events
 tail -f /var/log/hydra-router-5559-6000.log | grep -E "account_summary|portfolio_snapshot"
@@ -378,6 +396,7 @@ tail -f /var/log/hydra-router-5559-6000.log | grep -E "account_summary|portfolio
 ```
 
 ### **2. Verify Bridge is Capturing Events**
+
 ```bash
 # Check bridge logs
 tail -f /var/log/hydrasocket_account_capture.log
@@ -388,6 +407,7 @@ tail -f /var/log/hydrasocket_account_capture.log
 ```
 
 ### **3. Test Position Sizing**
+
 ```python
 python3 << 'EOF'
 from account_state_manager import AccountStateManager
@@ -409,6 +429,7 @@ EOF
 ```
 
 ### **4. Verify Database Updates**
+
 ```sql
 -- Check ea_instances table for fresh balance/equity
 SELECT
@@ -429,14 +450,17 @@ WHERE account_login = '843859';
 ### **Common Issues:**
 
 **Issue 1**: "Account data not available"
+
 - **Cause**: EA hasn't sent portfolio_snapshot or account_summary yet
 - **Fix**: Trigger snapshot request or wait for next account_summary (sent every second)
 
 **Issue 2**: "Balance showing $0.00"
+
 - **Cause**: Account events not being processed by bridge
 - **Fix**: Check bridge logs, verify HydraSocket router is receiving events
 
 **Issue 3**: "Lot size calculation wrong"
+
 - **Cause**: Incorrect pip size for symbol type
 - **Fix**: Verify symbol type handling in `calculate_lot_size()` method
 
@@ -461,6 +485,7 @@ sqlite3 /root/HydraX-v2/bitten.db "SELECT * FROM ea_instances WHERE account_logi
 ## 🎯 NEXT STEPS
 
 ### **Immediate Actions:**
+
 1. **Restart HydraSocket Bridge** with updated code
 2. **Verify EA events** are being received by router
 3. **Test account data capture** with live EA connection
@@ -468,6 +493,7 @@ sqlite3 /root/HydraX-v2/bitten.db "SELECT * FROM ea_instances WHERE account_logi
 5. **Add account data display** to War Room HUD
 
 ### **Future Enhancements:**
+
 1. **Multi-Account Support** - Track all connected EAs simultaneously
 2. **Risk Management Dashboard** - Show position sizing for all accounts
 3. **Account Health Monitoring** - Alert when margin levels critical
@@ -479,16 +505,19 @@ sqlite3 /root/HydraX-v2/bitten.db "SELECT * FROM ea_instances WHERE account_logi
 ## 📝 CONFIGURATION NOTES
 
 ### **Default Risk Settings:**
+
 - **Development**: 5% risk (for testing small accounts)
 - **Production**: 2% risk (conservative)
 - **Aggressive**: 3-5% risk (for experienced traders)
 
 ### **Position Size Limits:**
+
 - **Minimum**: 0.01 lots (micro lots)
 - **Maximum**: 10.0 lots (standard accounts)
 - **Rounding**: 2 decimal places (broker standard)
 
 ### **Pip Value Calculations:**
+
 - **Standard Forex**: $10 per pip per 1.0 lot
 - **JPY Pairs**: $10 per pip per 1.0 lot (0.01 pip size)
 - **Gold (XAUUSD)**: $10 per pip per 1.0 lot (0.1 pip size)

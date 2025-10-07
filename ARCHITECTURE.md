@@ -54,11 +54,12 @@ BITTEN (Bot-Integrated Tactical Trading Engine/Network) v3.002 implements a comp
 ### 1. Message Formats
 
 #### Tick Data (Port 5556 - PUSH/PULL)
+
 ```json
 {
   "type": "tick",
   "symbol": "EURUSD",
-  "bid": 1.0950,
+  "bid": 1.095,
   "ask": 1.0952,
   "time": 1696329600,
   "volume": 1000
@@ -66,37 +67,40 @@ BITTEN (Bot-Integrated Tactical Trading Engine/Network) v3.002 implements a comp
 ```
 
 #### Position Updates (Port 5558 - PUSH/PULL)
+
 ```json
 {
   "type": "position_update",
   "ticket": 123456,
   "symbol": "EURUSD",
   "volume": 0.1,
-  "open_price": 1.0950,
+  "open_price": 1.095,
   "current_price": 1.0965,
-  "sl": 1.0920,
-  "tp": 1.1000,
-  "profit": 15.00,
+  "sl": 1.092,
+  "tp": 1.1,
+  "profit": 15.0,
   "status": "open"
 }
 ```
 
 #### Account Metrics (Port 5560 - PUSH/PULL)
+
 ```json
 {
   "type": "metrics",
   "account_id": 12345,
-  "balance": 10000.00,
-  "equity": 10015.00,
-  "margin": 100.00,
-  "free_margin": 9915.00,
-  "margin_level": 10015.00,
+  "balance": 10000.0,
+  "equity": 10015.0,
+  "margin": 100.0,
+  "free_margin": 9915.0,
+  "margin_level": 10015.0,
   "open_positions": 1,
   "timestamp": 1696329600
 }
 ```
 
 #### Trade Commands (Port 5555 - DEALER/ROUTER)
+
 ```json
 {
   "type": "open_trade",
@@ -104,8 +108,8 @@ BITTEN (Bot-Integrated Tactical Trading Engine/Network) v3.002 implements a comp
   "symbol": "EURUSD",
   "action": "buy",
   "volume": 0.1,
-  "sl": 1.0920,
-  "tp": 1.1000,
+  "sl": 1.092,
+  "tp": 1.1,
   "comment": "BITTEN-SIGNAL-123"
 }
 ```
@@ -113,6 +117,7 @@ BITTEN (Bot-Integrated Tactical Trading Engine/Network) v3.002 implements a comp
 ### 2. Server Components
 
 #### Tick Processor (Port 5556)
+
 ```python
 class TickProcessor:
     """
@@ -131,6 +136,7 @@ class TickProcessor:
 ```
 
 #### Position Tracker (Port 5558)
+
 ```python
 class PositionTracker:
     """
@@ -153,6 +159,7 @@ class PositionTracker:
 ```
 
 #### Command Router (Port 5555)
+
 ```python
 class CommandRouter:
     """
@@ -177,6 +184,7 @@ class CommandRouter:
 ### 3. Business Rules Engine
 
 #### Hedge Protection System
+
 ```python
 class HedgeProtector:
     """
@@ -200,6 +208,7 @@ class HedgeProtector:
 ```
 
 #### Slot Management
+
 ```python
 class SlotManager:
     """
@@ -222,6 +231,7 @@ class SlotManager:
 ```
 
 #### Risk Management
+
 ```python
 class RiskManager:
     """
@@ -243,6 +253,7 @@ class RiskManager:
 ### 4. Signal Flow & Integration
 
 #### Complete Signal Pipeline
+
 ```
                      BITTEN v3.002 SIGNAL FLOW
 
@@ -275,6 +286,7 @@ class RiskManager:
 ```
 
 #### Signal Distribution Channels
+
 ```python
 class SignalDistributor:
     """
@@ -298,6 +310,7 @@ class SignalDistributor:
 ### 5. Database Schema
 
 #### Position State Table
+
 ```sql
 CREATE TABLE position_state (
     ticket INTEGER PRIMARY KEY,
@@ -318,6 +331,7 @@ CREATE TABLE position_state (
 ```
 
 #### Signal Queue Table
+
 ```sql
 CREATE TABLE signal_queue (
     signal_id TEXT PRIMARY KEY,
@@ -336,6 +350,7 @@ CREATE TABLE signal_queue (
 ```
 
 #### EA Registry Table
+
 ```sql
 CREATE TABLE ea_registry (
     uuid TEXT PRIMARY KEY,
@@ -353,6 +368,7 @@ CREATE TABLE ea_registry (
 ### 6. Implementation Roadmap
 
 #### Phase 1: Core Infrastructure (Server-Side Ready)
+
 - [x] Define ZMQ port architecture
 - [x] Design message formats
 - [x] Plan server components
@@ -362,6 +378,7 @@ CREATE TABLE ea_registry (
 - [ ] Implement metrics collector (Port 5560)
 
 #### Phase 2: Business Logic
+
 - [ ] Implement hedge protection system
 - [ ] Implement slot management
 - [ ] Implement risk management rules
@@ -369,12 +386,14 @@ CREATE TABLE ea_registry (
 - [ ] Build pattern detection engine
 
 #### Phase 3: Integration
+
 - [ ] Connect to existing webapp infrastructure
 - [ ] Integrate with Telegram bot
 - [ ] Create WebSocket bridge for real-time updates
 - [ ] Implement database persistence layer
 
 #### Phase 4: Testing & Validation
+
 - [ ] Unit tests for all components
 - [ ] Integration testing with mock EA
 - [ ] Load testing for tick processing
@@ -383,21 +402,24 @@ CREATE TABLE ea_registry (
 ### 7. Performance Specifications
 
 #### Expected Latencies
-| Operation | Target | Notes |
-|-----------|--------|-------|
-| Tick Processing | < 10ms | Per tick |
-| Pattern Detection | < 100ms | Per symbol scan |
-| Signal Distribution | < 50ms | All channels |
-| Trade Execution | < 250ms | End-to-end |
-| Position Update | < 20ms | Per update |
+
+| Operation           | Target  | Notes           |
+| ------------------- | ------- | --------------- |
+| Tick Processing     | < 10ms  | Per tick        |
+| Pattern Detection   | < 100ms | Per symbol scan |
+| Signal Distribution | < 50ms  | All channels    |
+| Trade Execution     | < 250ms | End-to-end      |
+| Position Update     | < 20ms  | Per update      |
 
 #### Throughput Targets
+
 - Tick Processing: 1000+ ticks/second
 - Pattern Scans: 20 symbols every 15 seconds
 - Signal Generation: 6-7 signals/hour (market hours)
 - Command Routing: 100+ commands/minute capacity
 
 #### Resource Requirements
+
 - CPU: 4 cores minimum (8 recommended)
 - RAM: 8GB minimum (16GB recommended)
 - Network: 100Mbps dedicated bandwidth
@@ -406,6 +428,7 @@ CREATE TABLE ea_registry (
 ### 8. Current Status & Next Steps
 
 #### What's Ready (Server-Side)
+
 - ✅ Complete architecture documented
 - ✅ ZMQ port topology defined (5555, 5556, 5558, 5560)
 - ✅ Message formats specified for all data types
@@ -414,6 +437,7 @@ CREATE TABLE ea_registry (
 - ✅ Signal flow mapped end-to-end
 
 #### What's Needed (EA-Side)
+
 - EA implementation with ZMQ library (libzmq)
 - DEALER socket connection to port 5555
 - PUSH socket connections to ports 5556, 5558, 5560
@@ -422,6 +446,7 @@ CREATE TABLE ea_registry (
 - Heartbeat system (30-second intervals)
 
 #### Implementation Priority
+
 1. **Immediate**: Create ZMQ server handlers for all ports
 2. **High**: Implement position state management
 3. **High**: Build hedge protection logic
@@ -442,6 +467,7 @@ This architecture is designed for scalability, reliability, and real-time perfor
 **Confirmation Listener**: `/root/HydraX-v2/confirm_listener_v207.py` (PID 580393)
 
 **HARDENING VERIFIED:**
+
 - ✅ **Burst Resilience**: Handled 10 rapid fire commands flawlessly
 - ✅ **Real-time Updates**: Position lifecycle events tracked
 - ✅ **Database Integration**: Fires table updated with confirmations
@@ -455,6 +481,7 @@ This architecture is designed for scalability, reliability, and real-time perfor
 #### **ROUTER⇄DEALER Pattern Implementation**
 
 **ZMQ Message Flow**:
+
 ```
 WebApp → HydraSocket API → Router (ROUTER:5555) → EA (DEALER) → cmd_result → Router → HTTP Response
     │                            │                                              │
@@ -465,11 +492,13 @@ WebApp → HydraSocket API → Router (ROUTER:5555) → EA (DEALER) → cmd_resu
 ```
 
 **Frame Format**: `[identity][empty][jsonl_bytes]`
+
 - **Identity**: EA's unique identifier (e.g., "COMMANDER_DEV_001")
 - **Empty Frame**: ZMQ multipart delimiter
 - **JSONL Bytes**: Command JSON serialized as JSONL
 
 **Core Features**:
+
 - ✅ **Identity Routing**: Commands routed to specific EA instances
 - ✅ **Request Correlation**: (account_id, request_ref) tracking
 - ✅ **10-Second Timeout**: Automatic cleanup of pending commands
@@ -478,6 +507,7 @@ WebApp → HydraSocket API → Router (ROUTER:5555) → EA (DEALER) → cmd_resu
 #### **Schema Validation & Error Handling**
 
 **Comprehensive Error Codes** (16 total):
+
 ```json
 {
   "E_SCHEMA_INVALID": "Command schema validation failed",
@@ -496,6 +526,7 @@ WebApp → HydraSocket API → Router (ROUTER:5555) → EA (DEALER) → cmd_resu
 ```
 
 **Business Logic Validation**:
+
 - **Spread Guard**: Symbol-specific spread thresholds
 - **Hedge Protection**: Prevents large opposing positions
 - **Market Hours**: Time-based trading restrictions
@@ -505,6 +536,7 @@ WebApp → HydraSocket API → Router (ROUTER:5555) → EA (DEALER) → cmd_resu
 #### **Idempotency System**
 
 **Implementation Details**:
+
 - **TTL**: 24-hour time-to-live for duplicate prevention
 - **Persistence**: Survives router restarts
 - **Key Format**: Client-provided idempotency_key string
@@ -512,6 +544,7 @@ WebApp → HydraSocket API → Router (ROUTER:5555) → EA (DEALER) → cmd_resu
 - **Cleanup**: Automatic expiration handling
 
 **Storage Structure**:
+
 ```sql
 CREATE TABLE idempotency (
     key TEXT PRIMARY KEY,
@@ -524,6 +557,7 @@ CREATE TABLE idempotency (
 #### **RBAC & Security Implementation**
 
 **API Key System**:
+
 - **Format**: `hsk_<32-char-secure-token>`
 - **Roles**: viewer (read-only), closer (read+close), admin (full)
 - **Tenant Isolation**: Users can only access their account_id
@@ -537,6 +571,7 @@ CREATE TABLE idempotency (
 | admin | ✅ | ✅ | ✅ | ✅ |
 
 **Security Features**:
+
 - Cross-tenant access prevention
 - API key expiration support
 - Rate limiting per key
@@ -545,18 +580,21 @@ CREATE TABLE idempotency (
 #### **WebSocket Streaming & Backpressure**
 
 **Real-time Event Streaming**:
+
 - **Protocol**: WebSocket with MessagePack + gzip encoding
 - **Endpoint**: `ws://host:8888/socket.io/?account_id=X&token=Y`
 - **Event Types**: events, account, heartbeat, trade confirmations
 - **Symbol Filtering**: Optional symbol-specific subscriptions
 
 **Backpressure Handling**:
+
 - **Never Drop**: Lifecycle events (position_opened, closed, sl_hit, tp_hit)
 - **Coalescing**: position_heartbeat limited to ≤2 Hz per ticket
 - **Window Size**: 256 event buffer with acknowledgment
 - **Binary Encoding**: MessagePack for efficiency
 
 **Event Source Tagging**:
+
 ```json
 {
   "type": "position_opened",
@@ -570,6 +608,7 @@ CREATE TABLE idempotency (
 #### **Performance & Monitoring**
 
 **Metrics Collection** (Prometheus format):
+
 - **Response Times**: P50, P95, P99 latency tracking
 - **Event Lag**: Real-time vs processing time delta
 - **Backpressure Drops**: Count of dropped non-critical events
@@ -577,12 +616,14 @@ CREATE TABLE idempotency (
 - **WebSocket Clients**: Active connection count
 
 **Health Endpoints**:
+
 - `GET /healthz` - Basic health check with uptime
 - `GET /api/health` - Detailed system statistics
 - `GET /metrics` - Prometheus format metrics
 - `GET /metrics/json` - JSON debug format
 
 **Performance Targets** (All VERIFIED ✅):
+
 - **P95 Response Time**: < 250ms (achieved: 127.8ms)
 - **Backpressure Drops**: < 0.1% (achieved: 0.02%)
 - **Error Rate**: < 1% (achieved: 0.8%)
@@ -591,6 +632,7 @@ CREATE TABLE idempotency (
 #### **Database Schema Extensions**
 
 **New Tables for HydraSocket**:
+
 ```sql
 -- Monotonic sequence tracking per account
 CREATE TABLE account_sequences (
@@ -620,6 +662,7 @@ CREATE TABLE api_keys (
 ```
 
 **Enhanced Events Table**:
+
 ```sql
 -- Added columns for sequencing and replay
 ALTER TABLE events ADD COLUMN seq INTEGER;
@@ -634,18 +677,21 @@ CREATE INDEX idx_events_account_time ON events(account_id, ingest_time);
 #### **API Endpoints (Production Ready)**
 
 **Trade Management**:
+
 - `POST /v1/trades/open` - Open new position with RBAC
 - `POST /v1/trades/{ticket}/close` - Close position with validation
 - `GET /v1/trades` - List positions for account
 - `GET /v1/trades/{ticket}` - Get position details
 
 **Event Streaming & Replay**:
+
 - `GET /api/events?account_id=X&from_seq=Y` - Sequence-based replay
 - `GET /api/events?account_id=X&since_ts=Y` - Timestamp cursors
 - `GET /api/events/gaps?account_id=X` - Gap detection
 - `POST /api/events/resync` - Trigger portfolio resync
 
 **Authentication & Management**:
+
 - `GET /api/auth/keys` - List API keys for account
 - `POST /api/auth/keys` - Create new API key
 - `DELETE /api/auth/keys/<key>` - Revoke API key
@@ -653,6 +699,7 @@ CREATE INDEX idx_events_account_time ON events(account_id, ingest_time);
 #### **Production Deployment Status**
 
 **Go-Live Validation Results** (100% PASS RATE):
+
 - ✅ **Schema Validation**: All 16 error codes tested
 - ✅ **Load Testing**: P95 < 250ms sustained (127.8ms achieved)
 - ✅ **Security Testing**: RBAC enforcement verified
@@ -660,12 +707,14 @@ CREATE INDEX idx_events_account_time ON events(account_id, ingest_time);
 - ✅ **End-to-End**: Complete fire path validated
 
 **Migration Status**:
+
 - ✅ **Database Migration**: 2,076 events migrated successfully
 - ✅ **Process Integration**: All services operational
 - ✅ **Backward Compatibility**: Legacy BITTEN commands supported
 - ✅ **WebSocket Streaming**: Real-time events flowing
 
 **Production Cutover Ready**:
+
 - Router can run parallel with existing command_router
 - Gradual migration supported via FEED_PRIORITY flag
 - Rollback capability in <30 seconds
@@ -675,6 +724,7 @@ CREATE INDEX idx_events_account_time ON events(account_id, ingest_time);
 - ✅ **Single Binder**: Exclusive port 5558 binding verified
 
 **Confirmation Flow:**
+
 ```
 EA v2.082 ──[JSON]──> Port 5558 ──> Confirmation Listener ──> Database Update
     │                     │                    │                      │
@@ -686,6 +736,7 @@ EA v2.082 ──[JSON]──> Port 5558 ──> Confirmation Listener ──> Da
 ```
 
 **Confirmation JSON Format (EA v2.082):**
+
 ```json
 {
   "type": "confirmation",
@@ -713,17 +764,20 @@ EA v2.082 ──[JSON]──> Port 5558 ──> Confirmation Listener ──> Da
 **Telemetry Bridge**: `/root/HydraX-v2/zmq_telemetry_bridge_v207.py` (PID 1185238)
 
 **VERIFIED METRICS (September 24, 2025):**
+
 - ✅ **Cadence**: 60-second intervals consistently maintained
 - ✅ **Post-Restart Recovery**: Metrics resume within 60s after restart
 - ✅ **Dual Port Binding**: Port 5556 (PULL) + Port 5560 (PUB)
 - ✅ **HEARTBEAT_METRICS**: Structured logging every ~60 seconds
 
 **Metrics Format:**
+
 ```
 📈 STATS: Ticks: 0, Heartbeats: 0, Metrics: 0, Positions: 0
 ```
 
 **Port Functions:**
+
 - **Port 5556**: Receives market data from EA via PUSH socket
 - **Port 5560**: Republishes data to pattern detectors via PUB socket
 
@@ -732,6 +786,7 @@ EA v2.082 ──[JSON]──> Port 5558 ──> Confirmation Listener ──> Da
 **WebApp**: `/root/HydraX-v2/webapp_server_optimized.py` (Port 8888)
 
 **VERIFIED API ENDPOINTS:**
+
 - ✅ `/api/signals` - Signal ingestion from Elite Guard
 - ✅ `/api/fire` - Fire command processing with validation
 - ✅ `/api/account` - User account information
@@ -739,6 +794,7 @@ EA v2.082 ──[JSON]──> Port 5558 ──> Confirmation Listener ──> Da
 - ✅ `/me` - War Room personal dashboard
 
 **Fire API Processing (VERIFIED):**
+
 1. **Request Validation**: User permissions, tier checks, slot availability
 2. **BittenCore Integration**: Risk rules, position sizing, validation
 3. **IPC Enqueue**: Send to `ipc:///tmp/bitten_cmdqueue`
@@ -747,6 +803,7 @@ EA v2.082 ──[JSON]──> Port 5558 ──> Confirmation Listener ──> Da
 ### 8. Security Architecture (MULTI-LAYER VERIFIED)
 
 #### EA Connection Security
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                  EA CONNECTION SECURITY                      │
@@ -769,6 +826,7 @@ EA v2.082 ──[JSON]──> Port 5558 ──> Confirmation Listener ──> Da
 ```
 
 #### IPC Security
+
 - ✅ **Connect-Only Policy**: Scripts must CONNECT to IPC, never bind
 - ✅ **Wrapped Payload Support**: Secure JSON unwrapping with validation
 - ✅ **Malformed Rejection**: REJECT_MALFORMED logging for invalid data
@@ -777,19 +835,23 @@ EA v2.082 ──[JSON]──> Port 5558 ──> Confirmation Listener ──> Da
 ### 9. Testing Infrastructure (COMPREHENSIVE VERIFICATION)
 
 #### Smoke Test Suite
+
 **File**: `/root/HydraX-v2/smoke_test.py`
 **Report**: `/root/HydraX-v2/_reports/smoke_<timestamp>.json`
 
 **VERIFIED TEST CASES:**
+
 - ✅ **MF-1**: Fire without SL/TP → REJECTED (SL/TP required)
 - ✅ **MF-2**: BUY with wrong ordering → REJECTED (validation error)
 - ✅ **MF-3**: SELL with extreme bounds → SUCCESS (ticket generated)
 
 #### E2E Test Suite
+
 **File**: `/root/HydraX-v2/e2e_runner.py`
 **Report**: `/root/HydraX-v2/_reports/e2e_1758748020_consolidated.json`
 
 **COMPREHENSIVE VALIDATION:**
+
 - ✅ **28 Fire Commands Tested**: All processed through full pipeline
 - ✅ **15 Successful Confirmations**: Proper ticket generation
 - ✅ **13 Expected Failures**: Validation working correctly
@@ -803,6 +865,7 @@ EA v2.082 ──[JSON]──> Port 5558 ──> Confirmation Listener ──> Da
 **Magic Number**: `7176191872`
 
 #### EA Capabilities (VERIFIED)
+
 ```mq5
 ✅ DEALER Socket Connection (Port 5555)
 ✅ Tick Data Publishing (Port 5556)
@@ -816,16 +879,18 @@ EA v2.082 ──[JSON]──> Port 5558 ──> Confirmation Listener ──> Da
 ```
 
 #### EA JSON Outputs (VERIFIED FORMATS)
-| Type | Purpose | Port | Status |
-|------|---------|------|--------|
-| `confirmation` | Trade results | 5558 | ✅ VERIFIED |
-| `heartbeat` | System state | 5556 | ✅ VERIFIED |
+
+| Type              | Purpose         | Port | Status      |
+| ----------------- | --------------- | ---- | ----------- |
+| `confirmation`    | Trade results   | 5558 | ✅ VERIFIED |
+| `heartbeat`       | System state    | 5556 | ✅ VERIFIED |
 | `signal_snapshot` | OHLC + overlays | 5558 | ✅ VERIFIED |
-| `pong` | Ping response | 5558 | ✅ VERIFIED |
+| `pong`            | Ping response   | 5558 | ✅ VERIFIED |
 
 ### 11. Development & Deployment Guidelines
 
 #### Code Organization (VERIFIED STRUCTURE)
+
 ```
 /root/HydraX-v2/
 ├── ARCHITECTURE.md                 # This file - TRUTH SOURCE
@@ -843,6 +908,7 @@ EA v2.082 ──[JSON]──> Port 5558 ──> Confirmation Listener ──> Da
 ```
 
 #### Critical Operational Rules
+
 1. **NEVER bind production ports 5555-5560 from test scripts**
 2. **ALWAYS use CONNECT to IPC queue `/tmp/bitten_cmdqueue`**
 3. **NEVER restart production processes without explicit permission**
@@ -852,6 +918,7 @@ EA v2.082 ──[JSON]──> Port 5558 ──> Confirmation Listener ──> Da
 ### 12. Monitoring & Health Checks (ACTIVE SYSTEMS)
 
 #### System Health Endpoint
+
 ```bash
 curl http://localhost:8888/healthz
 {
@@ -867,6 +934,7 @@ curl http://localhost:8888/healthz
 ```
 
 #### Process Monitoring
+
 ```bash
 # Check all critical processes
 pm2 list | grep -E "command_router|confirm_listener|telemetry_bridge|elite_guard"
@@ -881,6 +949,7 @@ ss -tnp | grep ":5558" | grep "185.244.67.11"
 #### 🛡️ Operational Runbook
 
 For comprehensive system verification and troubleshooting procedures, see **[RUNBOOK.md](./RUNBOOK.md)**:
+
 - **60-second health check**: Complete system verification in under a minute
 - **End-to-end testing**: Tick feed → Command plane → Alert delivery
 - **Emergency procedures**: L1/L2/L3 escalation protocols
@@ -891,14 +960,14 @@ The runbook covers the complete operational workflow verified during our infrast
 
 ### 13. Performance Characteristics (MEASURED)
 
-| Metric | Value | Status |
-|--------|-------|--------|
-| Fire Command Latency | 2.1s avg | ✅ VERIFIED |
-| Pattern Detection Rate | 3-10/hour | ✅ ACTIVE |
-| Confirmation Success Rate | 100% | ✅ VERIFIED |
-| System Uptime | >99.9% | ✅ PM2 Managed |
-| EA Heartbeat Interval | 30s | ✅ VERIFIED |
-| Telemetry Cadence | 60s | ✅ VERIFIED |
+| Metric                    | Value     | Status         |
+| ------------------------- | --------- | -------------- |
+| Fire Command Latency      | 2.1s avg  | ✅ VERIFIED    |
+| Pattern Detection Rate    | 3-10/hour | ✅ ACTIVE      |
+| Confirmation Success Rate | 100%      | ✅ VERIFIED    |
+| System Uptime             | >99.9%    | ✅ PM2 Managed |
+| EA Heartbeat Interval     | 30s       | ✅ VERIFIED    |
+| Telemetry Cadence         | 60s       | ✅ VERIFIED    |
 
 ### 14. Performance Analytics System (TRUE METRICS SOURCE)
 
@@ -909,12 +978,14 @@ The runbook covers the complete operational workflow verified during our infrast
 #### Core Components
 
 **1. Signal Performance API** (`signal_performance_api.py`)
+
 - **Port**: 8892 (Flask REST API)
 - **Data Source**: `/root/HydraX-v2/comprehensive_tracking.jsonl` (TRUE source of signal outcomes)
 - **Caching**: Redis with 5-minute TTL
 - **PM2 Process ID**: 164 (analytics_api)
 
 **Available Endpoints**:
+
 ```bash
 GET /api/performance/by_pattern        # Performance grouped by pattern type
 GET /api/performance/by_confidence     # Performance grouped by confidence buckets (70-75%, 75-80%, etc.)
@@ -925,6 +996,7 @@ GET /api/performance/recent            # Recent signals with outcomes
 ```
 
 **2. Performance Dashboard** (`performance_dashboard.html`)
+
 - **URL**: `http://134.199.204.67:8892/analytics/performance_dashboard.html`
 - **Features**: Dark military-themed dashboard with 6 preset report buttons
 - **Visualization**: Chart.js bar charts with color-coded win rates
@@ -932,6 +1004,7 @@ GET /api/performance/recent            # Recent signals with outcomes
 - **Access**: Linked from Commander Throne dashboard
 
 **3. Event Bus Integration** (`performance_event_publisher.py`)
+
 - **PM2 Process ID**: 165 (analytics_events)
 - **Function**: Monitors comprehensive_tracking.jsonl for new outcomes
 - **Publishes**:
@@ -940,6 +1013,7 @@ GET /api/performance/recent            # Recent signals with outcomes
   - `analytics.pattern.threshold` - Pattern performance alerts
 
 **4. Real Signal Tracker** (`REAL_signal_tracker.py`)
+
 - **PM2 Process ID**: 163 (real_signal_tracker)
 - **Function**: Tracks signals from generation to TP/SL hit (no artificial timeouts)
 - **Output**: Writes to comprehensive_tracking.jsonl
@@ -947,6 +1021,7 @@ GET /api/performance/recent            # Recent signals with outcomes
 #### Data Source Truth
 
 **PRIMARY TRACKING FILE**: `/root/HydraX-v2/comprehensive_tracking.jsonl`
+
 - **Format**: JSONL (one JSON object per line)
 - **Fields**: signal_id, symbol, direction, pattern_type, confidence, outcome (WIN/LOSS/TIMEOUT/PENDING), pips_result, entry_price, tp_price, sl_price, created_at, outcome_at
 - **Current Data**: 326 total signals (143 WINS, 71 LOSSES, 105 TIMEOUTS, 7 PENDING)
@@ -954,6 +1029,7 @@ GET /api/performance/recent            # Recent signals with outcomes
 - **File Size**: 136KB
 
 **Win Rate Calculation**:
+
 ```python
 win_rate = wins / (wins + losses)  # Excludes TIMEOUT and PENDING
 # Current: 143 / (143 + 71) = 66.8% win rate
@@ -962,22 +1038,26 @@ win_rate = wins / (wins + losses)  # Excludes TIMEOUT and PENDING
 #### Performance Metrics Available
 
 **By Pattern Type**:
+
 - Signal count per pattern
 - Win rate per pattern
 - Average pips per pattern
 - Average signal lifespan
 
 **By Confidence Level**:
+
 - Win rate by confidence bucket (70-75%, 75-80%, 80-85%, 85-90%, 90%+)
 - Signal volume per bucket
 - Confidence calibration analysis
 
 **By Trading Session**:
+
 - LONDON, NY_OPEN, OVERLAP, ASIAN performance
 - Session-specific win rates
 - Best performing sessions
 
 **By Currency Pair**:
+
 - Performance per symbol (EURUSD, GBPUSD, XAUUSD, etc.)
 - Pair-specific win rates
 - Volume per pair
@@ -985,20 +1065,26 @@ win_rate = wins / (wins + losses)  # Excludes TIMEOUT and PENDING
 #### Integration Points
 
 **Commander Throne Integration**:
+
 ```html
 <!-- Link added to throne_dashboard.html -->
-<a href="/analytics/performance_dashboard.html" target="_blank"
-   style="color: #00ff41; border: 1px solid #00ff41;">
-    📊 SYSTEM PERFORMANCE
+<a
+  href="/analytics/performance_dashboard.html"
+  target="_blank"
+  style="color: #00ff41; border: 1px solid #00ff41;"
+>
+  📊 SYSTEM PERFORMANCE
 </a>
 ```
 
 **Event Bus Integration**:
+
 - Publishers monitor comprehensive_tracking.jsonl
 - Publishes hourly summaries (e.g., "214 signals, 66.8% win rate")
 - Other systems can subscribe for real-time analytics
 
 **Redis Caching**:
+
 - 5-minute TTL on all API responses
 - Automatic cache invalidation
 - Reduces database load
@@ -1006,6 +1092,7 @@ win_rate = wins / (wins + losses)  # Excludes TIMEOUT and PENDING
 #### Access & Usage
 
 **Quick Health Check**:
+
 ```bash
 # Check analytics processes
 pm2 list | grep analytics
@@ -1018,6 +1105,7 @@ open http://134.199.204.67:8892/analytics/performance_dashboard.html
 ```
 
 **Verify Data Source**:
+
 ```bash
 # Count total signals
 wc -l /root/HydraX-v2/comprehensive_tracking.jsonl
@@ -1032,11 +1120,13 @@ grep -o '"outcome":"[^"]*"' comprehensive_tracking.jsonl | sort | uniq -c
 #### Important Notes
 
 **⚠️ DO NOT USE OUTDATED FILES**:
+
 - ❌ `/root/HydraX-v2/truth_log.jsonl` - STOPPED UPDATING AUGUST 22, 2025
 - ❌ Various `signal_outcomes.jsonl` files - ARCHIVED
 - ✅ ONLY USE: `/root/HydraX-v2/comprehensive_tracking.jsonl`
 
 **Current Status**:
+
 - Analytics API: ✅ OPERATIONAL (PM2 ID 164)
 - Event Publisher: ✅ OPERATIONAL (PM2 ID 165)
 - Signal Tracker: ✅ OPERATIONAL (PM2 ID 163)
@@ -1046,16 +1136,18 @@ grep -o '"outcome":"[^"]*"' comprehensive_tracking.jsonl | sort | uniq -c
 ### 15. Disaster Recovery (PROVEN RESILIENCE)
 
 #### Failure Recovery (TESTED)
-| Component | Recovery Time | Method | Status |
-|-----------|---------------|--------|--------|
-| Command Router | <30s | PM2 auto-restart | ✅ VERIFIED |
-| Confirm Listener | <1s | PM2 auto-restart | ✅ TESTED |
-| Telemetry Bridge | <60s | PM2 auto-restart | ✅ TESTED |
-| Elite Guard | <30s | Immortal resurrection | ✅ ACTIVE |
-| EA Connection | <30s | Auto-reconnect | ✅ MONITORED |
-| Analytics API | <30s | PM2 auto-restart | ✅ VERIFIED |
+
+| Component        | Recovery Time | Method                | Status       |
+| ---------------- | ------------- | --------------------- | ------------ |
+| Command Router   | <30s          | PM2 auto-restart      | ✅ VERIFIED  |
+| Confirm Listener | <1s           | PM2 auto-restart      | ✅ TESTED    |
+| Telemetry Bridge | <60s          | PM2 auto-restart      | ✅ TESTED    |
+| Elite Guard      | <30s          | Immortal resurrection | ✅ ACTIVE    |
+| EA Connection    | <30s          | Auto-reconnect        | ✅ MONITORED |
+| Analytics API    | <30s          | PM2 auto-restart      | ✅ VERIFIED  |
 
 #### Backup Procedures (OPERATIONAL)
+
 ```bash
 # Daily automated backup
 cp bitten.db bitten.db.backup_$(date +%Y%m%d)
@@ -1067,6 +1159,7 @@ tar -czf system_backup_$(date +%Y%m%d).tar.gz *.py *.json *.md
 ## ARCHITECTURE TRUTH VERIFICATION
 
 **This ARCHITECTURE.md has been completely updated based on:**
+
 - ✅ **PHASE-2 REBUILD**: Comprehensive testing of all 8 components
 - ✅ **28 Fire Commands**: End-to-end pipeline validation
 - ✅ **Infrastructure Hardening**: Burst, malformed data, restart resilience

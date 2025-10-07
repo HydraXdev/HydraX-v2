@@ -13,9 +13,9 @@ Created at `/root/HydraX-v2/src/bitten_core/bit_warnings.py`
 This module contains:
 
 - **BitWarningSystem Class**: Main engine for generating warnings and tracking wisdom
-- **Warning Levels**: 
+- **Warning Levels**:
   - EXTREME (< 60% TCS): Most severe, requires double confirmation
-  - HIGH (60-69% TCS): High risk, requires double confirmation  
+  - HIGH (60-69% TCS): High risk, requires double confirmation
   - MODERATE (70-75% TCS): Moderate risk, single confirmation
   - LOW (76-79% TCS): Minimal risk, informational warning
 
@@ -42,6 +42,7 @@ Modified `/root/HydraX-v2/src/bitten_core/fire_router.py`:
 ### 1. Yoda-Style Wisdom Quotes
 
 Bit delivers warnings in Yoda's speech pattern:
+
 - "Dangerous this path is, young trader. 65% confidence only, I sense."
 - "The Force is weak here. 72% TCS, strengthen your position you must."
 - "Patience, for the moment when the setup reveals itself, you must have."
@@ -49,6 +50,7 @@ Bit delivers warnings in Yoda's speech pattern:
 ### 2. Dynamic Warning Content
 
 Each warning includes:
+
 - **Risk Statistics**: Current TCS, minimum required, risk multiplier
 - **Discipline Reminders**: Based on recent trading performance
 - **Patience Wisdom**: Random motivational quotes from Bit
@@ -57,6 +59,7 @@ Each warning includes:
 ### 3. Wisdom Score Tracking
 
 The system tracks how well users heed Bit's warnings:
+
 - **100% Score**: "Jedi Master Trader" - Always heeds warnings
 - **80-99%**: "Jedi Knight" - Usually makes wise choices
 - **60-79%**: "Padawan Learner" - Learning discipline
@@ -66,6 +69,7 @@ The system tracks how well users heed Bit's warnings:
 ### 4. Enhanced Warnings for Serial Risk-Takers
 
 Users with wisdom scores below 40% receive enhanced warnings:
+
 - "🚨 SERIAL RISK IGNORER DETECTED 🚨"
 - Additional emphasis on the dangers
 - More stern tone from Bit
@@ -73,6 +77,7 @@ Users with wisdom scores below 40% receive enhanced warnings:
 ### 5. Double Confirmation for High Risk
 
 For trades under 70% TCS:
+
 - First warning dialog with risk analysis
 - If user proceeds, second confirmation required
 - Must type "I ACCEPT THE RISK" to continue
@@ -81,9 +86,10 @@ For trades under 70% TCS:
 ### 6. Bit's Reactions
 
 Different reactions based on user decisions:
-- **Cancel/Review**: "*purrs approvingly* Wise choice, this is."
-- **Override Extreme Risk**: "*hisses disapprovingly* Foolish, you are!"
-- **Confirm High Risk**: "*worried chirp* Dangerous path you choose."
+
+- **Cancel/Review**: "_purrs approvingly_ Wise choice, this is."
+- **Override Extreme Risk**: "_hisses disapprovingly_ Foolish, you are!"
+- **Confirm High Risk**: "_worried chirp_ Dangerous path you choose."
 
 ## Usage Flow
 
@@ -103,24 +109,29 @@ Different reactions based on user decisions:
 Different actions available based on warning level:
 
 ### Extreme Risk (< 60%)
+
 - ❌ Cancel Trade
 - ⚠️ Yes, I understand the extreme risk
 
 ### High Risk (60-69%)
-- ❌ Cancel Trade  
+
+- ❌ Cancel Trade
 - ⚠️ Yes, I accept the high risk
 
 ### Moderate Risk (70-75%)
+
 - ❌ Wait for Better Setup
 - ✅ I understand the risk
 
 ### Low Risk (76-79%)
+
 - 🔍 Review Setup
 - ✅ Proceed with Trade
 
 ## Integration Points
 
 The system integrates seamlessly with:
+
 - **Fire Mode Validator**: Intercepts low TCS trades during validation
 - **Fire Router**: Manages warning state and user responses
 - **Trade Confirmation System**: Can send warnings via Telegram
@@ -129,6 +140,7 @@ The system integrates seamlessly with:
 ## Testing
 
 Created demonstration script at `/root/HydraX-v2/demo_bit_warnings.py` that shows:
+
 - Warning generation for different TCS levels
 - Wisdom score tracking across multiple trades
 - Bit's various reactions to user decisions
@@ -137,6 +149,7 @@ Created demonstration script at `/root/HydraX-v2/demo_bit_warnings.py` that show
 ## Future Enhancements
 
 Potential improvements:
+
 1. Store wisdom scores in database
 2. Add achievements for maintaining high wisdom scores
 3. Integrate with XP system (wisdom affects XP gains/losses)
@@ -146,6 +159,7 @@ Potential improvements:
 ## Summary
 
 This implementation successfully creates a character-driven risk warning system that:
+
 - Protects traders from low-confidence trades
 - Uses Bit's personality to deliver wisdom
 - Tracks user behavior and adapts warnings

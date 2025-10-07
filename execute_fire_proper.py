@@ -3,14 +3,16 @@
 Proper Fire Execution with Database-First Approach
 Creates database record BEFORE sending command to ensure confirmations can be stored
 """
-import zmq
+import json
 import sqlite3
 import time
-import json
 from collections import OrderedDict
 
-DB_PATH = '/root/HydraX-v2/bitten.db'
-QUEUE_ADDR = 'ipc:///tmp/bitten_cmdqueue'
+import zmq
+
+DB_PATH = "/root/HydraX-v2/bitten.db"
+QUEUE_ADDR = "ipc:///tmp/bitten_cmdqueue"
+
 
 def execute_fire_proper(
     fire_id: str,
@@ -22,7 +24,7 @@ def execute_fire_proper(
     sl: float = 0,
     tp: float = 0,
     lot: float = 0.01,
-    mission_id: str = None
+    mission_id: str = None,
 ):
     """
     Execute fire command with proper database-first approach
@@ -53,26 +55,29 @@ def execute_fire_proper(
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
 
-        cursor.execute('''
+        cursor.execute(
+            """
             INSERT INTO fires (
                 fire_id, mission_id, user_id, status,
                 symbol, direction, sl, tp, lot,
                 target_uuid, created_at, updated_at
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (
-            fire_id,
-            mission_id or fire_id,
-            user_id,
-            'SENT',
-            symbol,
-            direction,
-            sl,
-            tp,
-            lot,
-            target_uuid,
-            current_time,
-            current_time
-        ))
+        """,
+            (
+                fire_id,
+                mission_id or fire_id,
+                user_id,
+                "SENT",
+                symbol,
+                direction,
+                sl,
+                tp,
+                lot,
+                target_uuid,
+                current_time,
+                current_time,
+            ),
+        )
 
         conn.commit()
         conn.close()
@@ -81,11 +86,7 @@ def execute_fire_proper(
 
     except Exception as e:
         print(f"❌ STEP 1 FAILED: Database record creation failed: {e}")
-        return {
-            'success': False,
-            'error': f'Database creation failed: {e}',
-            'fire_id': fire_id
-        }
+        return {"success": False, "error": f"Database creation failed: {e}", "fire_id": fire_id}
 
     # STEP 2: Send fire command to IPC queue
     try:
@@ -94,17 +95,19 @@ def execute_fire_proper(
         push.connect(QUEUE_ADDR)
         push.setsockopt(zmq.LINGER, 0)
 
-        fire_cmd = OrderedDict([
-            ('type', 'fire'),
-            ('target_uuid', target_uuid),
-            ('fire_id', fire_id),
-            ('symbol', symbol),
-            ('direction', direction),
-            ('entry', entry),
-            ('sl', sl),
-            ('tp', tp),
-            ('lot', lot)
-        ])
+        fire_cmd = OrderedDict(
+            [
+                ("type", "fire"),
+                ("target_uuid", target_uuid),
+                ("fire_id", fire_id),
+                ("symbol", symbol),
+                ("direction", direction),
+                ("entry", entry),
+                ("sl", sl),
+                ("tp", tp),
+                ("lot", lot),
+            ]
+        )
 
         push.send_json(dict(fire_cmd))
         push.close()
@@ -117,10 +120,10 @@ def execute_fire_proper(
         print(f"   Lot: {lot}")
 
         return {
-            'success': True,
-            'fire_id': fire_id,
-            'status': 'SENT',
-            'message': 'Fire command sent, awaiting EA confirmation'
+            "success": True,
+            "fire_id": fire_id,
+            "status": "SENT",
+            "message": "Fire command sent, awaiting EA confirmation",
         }
 
     except Exception as e:
@@ -131,19 +134,15 @@ def execute_fire_proper(
             conn = sqlite3.connect(DB_PATH)
             cursor = conn.cursor()
             cursor.execute(
-                "UPDATE fires SET status='FAILED', updated_at=? WHERE fire_id=?",
-                (int(time.time()), fire_id)
+                "UPDATE fires SET status='FAILED', updated_at=? WHERE fire_id=?", (int(time.time()), fire_id)
             )
             conn.commit()
             conn.close()
         except:
             pass
 
-        return {
-            'success': False,
-            'error': f'Command routing failed: {e}',
-            'fire_id': fire_id
-        }
+        return {"success": False, "error": f"Command routing failed: {e}", "fire_id": fire_id}
+
 
 def check_fire_status(fire_id: str):
     """Check the status of a fire command"""
@@ -151,23 +150,26 @@ def check_fire_status(fire_id: str):
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
 
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT fire_id, status, ticket, price, created_at, updated_at
             FROM fires WHERE fire_id = ?
-        """, (fire_id,))
+        """,
+            (fire_id,),
+        )
 
         row = cursor.fetchone()
         conn.close()
 
         if row:
             return {
-                'fire_id': row[0],
-                'status': row[1],
-                'ticket': row[2],
-                'price': row[3],
-                'created_at': row[4],
-                'updated_at': row[5],
-                'age_seconds': int(time.time()) - row[4]
+                "fire_id": row[0],
+                "status": row[1],
+                "ticket": row[2],
+                "price": row[3],
+                "created_at": row[4],
+                "updated_at": row[5],
+                "age_seconds": int(time.time()) - row[4],
             }
         else:
             return None
@@ -175,6 +177,7 @@ def check_fire_status(fire_id: str):
     except Exception as e:
         print(f"Error checking status: {e}")
         return None
+
 
 if __name__ == "__main__":
     # Test execution
@@ -192,39 +195,39 @@ if __name__ == "__main__":
 
     fire_id = f"PROPER_TEST_{symbol}_{int(time.time())}"
 
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("🔥 PROPER FIRE EXECUTION TEST")
-    print("="*60)
+    print("=" * 60)
 
     result = execute_fire_proper(
         fire_id=fire_id,
-        user_id='7176191872',
-        target_uuid='COMMANDER_DEV_001',
+        user_id="7176191872",
+        target_uuid="COMMANDER_DEV_001",
         symbol=symbol,
         direction=direction,
         sl=sl,
         tp=tp,
-        lot=0.01
+        lot=0.01,
     )
 
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("RESULT:")
     print(json.dumps(result, indent=2))
-    print("="*60)
+    print("=" * 60)
 
     print("\nWaiting 5 seconds for EA confirmation...")
     time.sleep(5)
 
     status = check_fire_status(fire_id)
     if status:
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print("FINAL STATUS:")
         print(json.dumps(status, indent=2))
-        print("="*60)
+        print("=" * 60)
 
-        if status['ticket']:
+        if status["ticket"]:
             print(f"\n✅ SUCCESS: Trade executed with ticket #{status['ticket']}")
-        elif status['status'] == 'SENT':
+        elif status["status"] == "SENT":
             print(f"\n⏳ PENDING: Waiting for EA confirmation (age: {status['age_seconds']}s)")
         else:
             print(f"\n❌ FAILED: Status = {status['status']}")

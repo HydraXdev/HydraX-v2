@@ -9,12 +9,15 @@ The HydraX v2 Flask API provides programmatic access to trading operations, syst
 ## 🚀 **Quick Start**
 
 ### Authentication
+
 Most endpoints require API key authentication via header:
+
 ```bash
 curl -H "X-API-Key: your_dev_api_key" http://localhost:5000/api/endpoint
 ```
 
 ### Environment Setup
+
 ```env
 DEV_API_KEY=your_secure_api_key_here
 FLASK_ENV=development
@@ -26,39 +29,45 @@ FLASK_DEBUG=True
 ### **System Endpoints**
 
 #### `GET /`
-**Description**: System home page and basic status  
-**Authentication**: None  
+
+**Description**: System home page and basic status
+**Authentication**: None
 **Response**: HTML page with system overview
 
 **Example**:
+
 ```bash
 curl http://localhost:5000/
 ```
 
 #### `GET /status`
-**Description**: Detailed system status and current trading mode  
-**Authentication**: None  
+
+**Description**: Detailed system status and current trading mode
+**Authentication**: None
 **Response**: HTML page with tactical mode and system health
 
 **Example**:
+
 ```bash
 curl http://localhost:5000/status
 ```
 
-#### `POST /status` 
-**Description**: Telegram webhook endpoint  
-**Authentication**: Telegram webhook validation  
-**Payload**: Telegram update object  
+#### `POST /status`
+
+**Description**: Telegram webhook endpoint
+**Authentication**: Telegram webhook validation
+**Payload**: Telegram update object
 **Response**: JSON confirmation
 
 **Example Telegram Payload**:
+
 ```json
 {
   "update_id": 123456789,
   "message": {
     "message_id": 1,
-    "from": {"id": 12345, "username": "trader"},
-    "chat": {"id": -1001234567890, "type": "supergroup"},
+    "from": { "id": 12345, "username": "trader" },
+    "chat": { "id": -1001234567890, "type": "supergroup" },
     "text": "/status"
   }
 }
@@ -67,23 +76,26 @@ curl http://localhost:5000/status
 ### **Trading Endpoints**
 
 #### `POST /fire`
-**Description**: Execute trading operations  
-**Authentication**: API Key required  
+
+**Description**: Execute trading operations
+**Authentication**: API Key required
 **Content-Type**: `application/json`
 
 **Request Body**:
+
 ```json
 {
   "action": "buy|sell|close",
   "symbol": "XAUUSD",
   "volume": 0.1,
-  "sl": 1950.00,
-  "tp": 1980.00,
+  "sl": 1950.0,
+  "tp": 1980.0,
   "comment": "HydraX Auto Trade"
 }
 ```
 
 **Response**:
+
 ```json
 {
   "status": "success",
@@ -97,13 +109,14 @@ curl http://localhost:5000/status
 ```
 
 **Example**:
+
 ```bash
 curl -X POST http://localhost:5000/fire \
   -H "Content-Type: application/json" \
   -H "X-API-Key: your_api_key" \
   -d '{
     "action": "buy",
-    "symbol": "XAUUSD", 
+    "symbol": "XAUUSD",
     "volume": 0.1,
     "sl": 1950.00,
     "tp": 1980.00
@@ -113,13 +126,16 @@ curl -X POST http://localhost:5000/fire \
 ### **Development Endpoints**
 
 #### `GET /dev`
-**Description**: Development commands and system utilities  
-**Authentication**: DEV_API_KEY required  
+
+**Description**: Development commands and system utilities
+**Authentication**: DEV_API_KEY required
 **Query Parameters**:
+
 - `cmd`: Command to execute
 - `args`: Command arguments (optional)
 
 **Available Commands**:
+
 - `status`: System status check
 - `restart`: Restart trading engine
 - `logs`: Retrieve system logs
@@ -127,12 +143,14 @@ curl -X POST http://localhost:5000/fire \
 - `test`: Run system tests
 
 **Example**:
+
 ```bash
 curl "http://localhost:5000/dev?cmd=status" \
   -H "X-API-Key: your_dev_api_key"
 ```
 
 **Response**:
+
 ```json
 {
   "status": "success",
@@ -147,13 +165,16 @@ curl "http://localhost:5000/dev?cmd=status" \
 ```
 
 #### `GET /logs`
-**Description**: Access system logs  
-**Authentication**: DEV_API_KEY required  
+
+**Description**: Access system logs
+**Authentication**: DEV_API_KEY required
 **Query Parameters**:
+
 - `lines`: Number of log lines (default: 100)
 - `level`: Log level filter (debug, info, warning, error)
 
 **Example**:
+
 ```bash
 curl "http://localhost:5000/logs?lines=50&level=info" \
   -H "X-API-Key: your_dev_api_key"
@@ -162,16 +183,21 @@ curl "http://localhost:5000/logs?lines=50&level=info" \
 ## 🔐 **Authentication**
 
 ### **API Key Authentication**
+
 Include API key in request headers:
+
 ```
 X-API-Key: your_secure_api_key_here
 ```
 
 ### **Telegram Webhook Validation**
+
 Telegram webhooks are validated using bot token verification.
 
 ### **Error Responses**
+
 **401 Unauthorized**:
+
 ```json
 {
   "error": "Unauthorized",
@@ -180,9 +206,10 @@ Telegram webhooks are validated using bot token verification.
 ```
 
 **403 Forbidden**:
+
 ```json
 {
-  "error": "Forbidden", 
+  "error": "Forbidden",
   "message": "Invalid API key"
 }
 ```
@@ -190,6 +217,7 @@ Telegram webhooks are validated using bot token verification.
 ## 📊 **Response Formats**
 
 ### **Success Response**
+
 ```json
 {
   "status": "success",
@@ -202,6 +230,7 @@ Telegram webhooks are validated using bot token verification.
 ```
 
 ### **Error Response**
+
 ```json
 {
   "status": "error",
@@ -215,6 +244,7 @@ Telegram webhooks are validated using bot token verification.
 ## 🛠️ **Trading Operations**
 
 ### **Order Types**
+
 - `buy`: Market buy order
 - `sell`: Market sell order
 - `buy_limit`: Limit buy order
@@ -223,12 +253,15 @@ Telegram webhooks are validated using bot token verification.
 - `close_all`: Close all positions
 
 ### **Symbol Format**
+
 Use standard broker symbol format:
+
 - Forex: `EURUSD`, `GBPJPY`, `USDCAD`
 - Metals: `XAUUSD`, `XAGUSD`
 - Indices: `US30`, `SPX500`, `USTEC`
 
 ### **Volume Specification**
+
 - Forex: Standard lots (0.01 = 1,000 units)
 - Metals: Troy ounces (0.1 = 10 oz)
 - Indices: Contract size varies by instrument
@@ -236,7 +269,9 @@ Use standard broker symbol format:
 ## 📈 **Webhook Integration**
 
 ### **Telegram Webhook Setup**
+
 Configure webhook URL with Telegram:
+
 ```bash
 curl -X POST "https://api.telegram.org/bot<TOKEN>/setWebhook" \
   -H "Content-Type: application/json" \
@@ -244,11 +279,14 @@ curl -X POST "https://api.telegram.org/bot<TOKEN>/setWebhook" \
 ```
 
 ### **Webhook Processing**
+
 The `/status` endpoint handles both GET and POST requests:
+
 - **GET**: Display status page
 - **POST**: Process Telegram updates
 
 ### **Supported Telegram Commands**
+
 - `/start`: Bot initialization
 - `/status`: System status check
 - `/mode bit|commander`: Switch trading modes
@@ -257,6 +295,7 @@ The `/status` endpoint handles both GET and POST requests:
 ## 🔧 **Configuration Management**
 
 ### **Environment Variables**
+
 ```env
 # Flask Configuration
 FLASK_APP=src/core/TEN_elite_commands_FULL.py
@@ -278,17 +317,20 @@ MAX_CONCURRENT_TRADES=3
 ```
 
 ### **Runtime Configuration**
+
 System configuration can be modified via development endpoints or environment variables.
 
 ## 📝 **Logging**
 
 ### **Log Levels**
+
 - `DEBUG`: Detailed diagnostic information
 - `INFO`: General operational messages
 - `WARNING`: Warning messages for unusual events
 - `ERROR`: Error messages for failed operations
 
 ### **Log Format**
+
 ```
 2025-07-04 15:30:00 [INFO] Trading: Buy order executed - XAUUSD 0.1 @ 1965.45
 2025-07-04 15:30:05 [DEBUG] API: /fire endpoint called with valid authentication
@@ -298,6 +340,7 @@ System configuration can be modified via development endpoints or environment va
 ## 🚨 **Error Handling**
 
 ### **Common Error Codes**
+
 - `400`: Bad Request - Invalid parameters
 - `401`: Unauthorized - Missing or invalid API key
 - `403`: Forbidden - Access denied
@@ -305,6 +348,7 @@ System configuration can be modified via development endpoints or environment va
 - `500`: Internal Server Error - System error
 
 ### **Trading Errors**
+
 - `INSUFFICIENT_MARGIN`: Not enough margin for trade
 - `INVALID_SYMBOL`: Unknown trading instrument
 - `MARKET_CLOSED`: Trading not available
@@ -313,16 +357,19 @@ System configuration can be modified via development endpoints or environment va
 ## 🧪 **Testing**
 
 ### **Health Check**
+
 ```bash
 curl http://localhost:5000/status
 ```
 
 ### **API Authentication Test**
+
 ```bash
 curl -H "X-API-Key: SECRET123" http://localhost:5000/dev?cmd=status
 ```
 
 ### **Trading API Test**
+
 ```bash
 curl -X POST http://localhost:5000/fire \
   -H "Content-Type: application/json" \

@@ -43,26 +43,31 @@ Comprehensive test suite for the TCS++ scoring engine and stealth protocol imple
 ## Running Tests
 
 ### Run All Tests
+
 ```bash
 python tests/run_all_tests.py
 ```
 
 ### Run Specific Test Suite
+
 ```bash
 python tests/run_all_tests.py --suite test_tcs_plus_engine.py
 ```
 
 ### Run with Verbose Output
+
 ```bash
 python tests/run_all_tests.py --verbose
 ```
 
 ### Validate Test Files
+
 ```bash
 python tests/validate_tests.py
 ```
 
 ### Using pytest Directly
+
 ```bash
 # Run all tests
 pytest tests/
@@ -85,6 +90,7 @@ pytest tests/ --cov=core --cov=src.bitten_core --cov-report=html
 The test suite covers:
 
 ### TCS++ Engine
+
 - ✓ Scoring accuracy with various market conditions
 - ✓ Trade classification (Hammer, Shadow Strike, Scalp)
 - ✓ All component scoring functions
@@ -92,6 +98,7 @@ The test suite covers:
 - ✓ Performance benchmarks
 
 ### Stealth Protocol
+
 - ✓ Entry delay randomization
 - ✓ Lot size jitter
 - ✓ TP/SL offset calculations
@@ -101,6 +108,7 @@ The test suite covers:
 - ✓ Different stealth levels
 
 ### Integration
+
 - ✓ TCS score to stealth level mapping
 - ✓ Fire mode compatibility
 - ✓ Concurrent execution scenarios
@@ -109,6 +117,7 @@ The test suite covers:
 - ✓ Scalping scenarios
 
 ### Performance
+
 - ✓ Single operation latency
 - ✓ Batch processing throughput
 - ✓ Concurrent load handling
@@ -119,16 +128,19 @@ The test suite covers:
 ## Performance Requirements
 
 ### TCS++ Engine
+
 - Single scoring: < 0.1ms average, < 1ms max
 - Batch scoring: > 1000 operations/second
 - Memory usage: < 100MB for 10,000 signals
 
 ### Stealth Protocol
+
 - Single application: < 1ms average, < 10ms max
 - Volume cap checks: > 10,000 operations/second
 - Shuffle performance: Linear time complexity
 
 ### Integrated System
+
 - Full pipeline: > 1000 signals/second
 - Latency percentiles:
   - P50: < 1ms
@@ -139,6 +151,7 @@ The test suite covers:
 ## Test Reports
 
 Test reports are saved to `tests/reports/` with:
+
 - Detailed JSON report: `test_report_YYYYMMDD_HHMMSS.json`
 - Summary text file: `test_summary_YYYYMMDD_HHMMSS.txt`
 
@@ -149,6 +162,7 @@ Test reports are saved to `tests/reports/` with:
 - psutil (for performance monitoring)
 
 Install test dependencies:
+
 ```bash
 pip install pytest pytest-cov psutil
 ```
@@ -165,5 +179,6 @@ The test suite is designed to work with CI/CD pipelines:
 ```
 
 Exit codes:
+
 - 0: All tests passed
 - 1: One or more tests failed

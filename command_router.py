@@ -1,10 +1,18 @@
 #!/usr/bin/env python3
-import os, json, time, zmq, logging, threading
+import json
+import logging
+import os
+import threading
+import time
+
+import zmq
+
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s")
 LOG = logging.getLogger("CMD")
 
 # CUTOVER: MetaSocket integration
 SOURCE = os.getenv("SOURCE", "ea")  # ea | metasocket | both
+
 
 def _route_to_metasocket(cmd):
     """Route fire command to MetaSocket adapter"""
@@ -19,7 +27,7 @@ def _route_to_metasocket(cmd):
             volume=cmd.get("lot", 0.01),
             sl_pips=cmd.get("sl_pips", 0),
             tp_pips=cmd.get("tp_pips", 0),
-            idempotency_key=cmd.get("fire_id")
+            idempotency_key=cmd.get("fire_id"),
         )
 
         if result.get("success"):
@@ -35,10 +43,11 @@ def _route_to_metasocket(cmd):
         LOG.error(f"[METASOCKET] Route failed: {e}")
         return False
 
-PUSH_BIND     = os.getenv("BITTEN_PUSH_ADDR",      "tcp://*:5555")         # EA PULL connects here
-QUEUE_PULL    = os.getenv("BITTEN_QUEUE_ADDR",    "ipc:///tmp/bitten_cmdqueue")  # webapp PUSHes here
-CONFIRM_BIND  = os.getenv("BITTEN_CONFIRM_ADDR",  "tcp://*:5558")         # EA PUSH confirmations here
-HEARTBEAT_SEC = int(os.getenv("BITTEN_EA_TTL_SEC","120"))
+
+PUSH_BIND = os.getenv("BITTEN_PUSH_ADDR", "tcp://*:5555")  # EA PULL connects here
+QUEUE_PULL = os.getenv("BITTEN_QUEUE_ADDR", "ipc:///tmp/bitten_cmdqueue")  # webapp PUSHes here
+CONFIRM_BIND = os.getenv("BITTEN_CONFIRM_ADDR", "tcp://*:5558")  # EA PUSH confirmations here
+HEARTBEAT_SEC = int(os.getenv("BITTEN_EA_TTL_SEC", "120"))
 
 ctx = zmq.Context.instance()
 
@@ -47,9 +56,10 @@ heartbeat_push = None
 router = None
 pull = None
 
+import queue
+
 # Thread management and queuing
 import threading
-import queue
 import traceback
 
 # Globals for robust queue worker
@@ -61,13 +71,17 @@ current_ea_uuid = None  # Store the actual EA UUID from heartbeats
 
 # DB update functions
 import sqlite3
+
+
 def _ea_db():
-    db=os.environ.get("BITTEN_DB","/root/HydraX-v2/bitten.db")
-    conn=sqlite3.connect(db, timeout=5)
+    db = os.environ.get("BITTEN_DB", "/root/HydraX-v2/bitten.db")
+    conn = sqlite3.connect(db, timeout=5)
     conn.execute("PRAGMA journal_mode=WAL;")
     return conn
 
+
 _last_upd_cache = {}  # uuid -> ts
+
 
 def _normalize(val):
     """Convert empty strings to None"""
@@ -75,6 +89,7 @@ def _normalize(val):
         return None
     s = str(val).strip()
     return s if s else None
+
 
 def _handle_handshake(payload):
     """Handle EA handshake with position reconciliation"""
@@ -87,7 +102,7 @@ def _handle_handshake(payload):
 
     # Store positions in memory for tracking
     global ea_positions_by_uuid
-    if 'ea_positions_by_uuid' not in globals():
+    if "ea_positions_by_uuid" not in globals():
         ea_positions_by_uuid = {}
 
     if not is_reconnect:
@@ -102,8 +117,7 @@ def _handle_handshake(payload):
 
         if ea_tickets != server_tickets:
             LOG.warning(
-                f"[RECONCILE] Position mismatch for {uuid}: "
-                f"EA has {ea_tickets}, Server has {server_tickets}"
+                f"[RECONCILE] Position mismatch for {uuid}: " f"EA has {ea_tickets}, Server has {server_tickets}"
             )
             LOG.info(f"[RECONCILE] Trusting EA state with {len(ea_positions)} positions")
         else:
@@ -122,6 +136,7 @@ def _handle_handshake(payload):
                 f"PnL: {pos.get('pnl', 0):.2f}"
             )
 
+
 def _upsert_ea_instance(payload):
     # Handle handshake messages for position reconciliation
     msg_type = str(payload.get("type", "")).lower()
@@ -129,7 +144,7 @@ def _upsert_ea_instance(payload):
         _handle_handshake(payload)
 
     # Rate-limit to 1/sec per UUID
-    uuid = str(payload.get("target_uuid","")).strip()
+    uuid = str(payload.get("target_uuid", "")).strip()
     if not uuid:
         uuid = str(payload.get("uuid", "")).strip()  # Handshakes use 'uuid' not 'target_uuid'
     if not uuid:
@@ -141,23 +156,24 @@ def _upsert_ea_instance(payload):
     _last_upd_cache[uuid] = now
 
     # Normalize values - empty strings become None
-    user_id       = _normalize(payload.get("user_id"))
-    acct_login    = _normalize(payload.get("account_login") or payload.get("account"))
-    broker        = _normalize(payload.get("broker"))
-    currency      = _normalize(payload.get("currency") or payload.get("account_currency"))
-    leverage      = int(payload.get("leverage", 0) or 0)
-    balance       = float(payload.get("balance", payload.get("account_balance", 0)) or 0)
-    equity        = float(payload.get("equity",  payload.get("account_equity",  0)) or 0)
-    last_seen     = int(payload.get("ts", now) or now)
-    created_at    = now
-    updated_at    = now
+    user_id = _normalize(payload.get("user_id"))
+    acct_login = _normalize(payload.get("account_login") or payload.get("account"))
+    broker = _normalize(payload.get("broker"))
+    currency = _normalize(payload.get("currency") or payload.get("account_currency"))
+    leverage = int(payload.get("leverage", 0) or 0)
+    balance = float(payload.get("balance", payload.get("account_balance", 0)) or 0)
+    equity = float(payload.get("equity", payload.get("account_equity", 0)) or 0)
+    last_seen = int(payload.get("ts", now) or now)
+    created_at = now
+    updated_at = now
 
     try:
-        conn=_ea_db()
-        cur=conn.cursor()
-        
+        conn = _ea_db()
+        cur = conn.cursor()
+
         # Create table if needed
-        cur.execute("""
+        cur.execute(
+            """
         CREATE TABLE IF NOT EXISTS ea_instances (
             target_uuid     TEXT PRIMARY KEY,
             user_id         TEXT,
@@ -171,10 +187,12 @@ def _upsert_ea_instance(payload):
             created_at      INTEGER,
             updated_at      INTEGER
         );
-        """)
-        
+        """
+        )
+
         # UPSERT with user_id preservation using COALESCE
-        cur.execute("""
+        cur.execute(
+            """
             INSERT INTO ea_instances(
               target_uuid,user_id,account_login,broker,currency,leverage,
               last_balance,last_equity,last_seen,created_at,updated_at
@@ -189,19 +207,22 @@ def _upsert_ea_instance(payload):
               last_equity=excluded.last_equity,
               last_seen=excluded.last_seen,
               updated_at=excluded.updated_at
-        """,(uuid,user_id,acct_login,broker,currency,leverage,balance,equity,last_seen,created_at,updated_at))
-        
+        """,
+            (uuid, user_id, acct_login, broker, currency, leverage, balance, equity, last_seen, created_at, updated_at),
+        )
+
         # Log if user_id changed
         if user_id is not None:
             cur.execute("SELECT user_id FROM ea_instances WHERE target_uuid=?", (uuid,))
             row = cur.fetchone()
             if row and row[0] != user_id:
                 LOG.info(f"[CMD] EA {uuid} user_id changed: {row[0]} → {user_id}")
-        
+
         conn.commit()
         conn.close()
     except Exception as e:
         LOG.warning("DB update failed: %s", e)
+
 
 def _insert_fire_record(cmd):
     """Insert fire command into database for tracking"""
@@ -209,21 +230,22 @@ def _insert_fire_record(cmd):
         fire_id = cmd.get("fire_id")
         if not fire_id:
             return
-            
+
         # Extract user_id from the EA instance that will execute this
         target_uuid = cmd.get("target_uuid")
         if not target_uuid:
             return
-            
+
         # Get user_id from ea_instances table
         conn = _ea_db()
         cur = conn.cursor()
         cur.execute("SELECT user_id FROM ea_instances WHERE target_uuid = ?", (target_uuid,))
         row = cur.fetchone()
         user_id = row[0] if row and row[0] else "unknown"
-        
+
         # Create fires table if needed (with trade data columns)
-        cur.execute("""
+        cur.execute(
+            """
         CREATE TABLE IF NOT EXISTS fires (
             fire_id TEXT PRIMARY KEY,
             mission_id TEXT NOT NULL,
@@ -232,7 +254,7 @@ def _insert_fire_record(cmd):
             ticket INTEGER,
             price REAL,
             symbol TEXT,               -- Trade symbol for confirmation lookup
-            direction TEXT,            -- BUY/SELL for confirmation lookup  
+            direction TEXT,            -- BUY/SELL for confirmation lookup
             sl REAL,                   -- Stop loss for live_positions
             tp REAL,                   -- Take profit for live_positions
             lot REAL,                  -- Lot size for live_positions
@@ -242,27 +264,31 @@ def _insert_fire_record(cmd):
             equity_used REAL,
             risk_pct_used REAL
         )
-        """)
-        
+        """
+        )
+
         # Extract trade data from command
         symbol = cmd.get("symbol")
-        direction = cmd.get("direction")  
+        direction = cmd.get("direction")
         sl = cmd.get("sl", 0)
         tp = cmd.get("tp", 0)
         lot = cmd.get("lot", 0)
-        
+
         # Insert fire record with SENT status and trade data
         now = int(time.time())
-        cur.execute("""
-            INSERT OR IGNORE INTO fires 
+        cur.execute(
+            """
+            INSERT OR IGNORE INTO fires
             (fire_id, mission_id, user_id, status, symbol, direction, sl, tp, lot, created_at, updated_at)
             VALUES (?, ?, ?, 'SENT', ?, ?, ?, ?, ?, ?, ?)
-        """, (fire_id, fire_id, user_id, symbol, direction, sl, tp, lot, now, now))
-        
+        """,
+            (fire_id, fire_id, user_id, symbol, direction, sl, tp, lot, now, now),
+        )
+
         conn.commit()
         conn.close()
         LOG.info(f"[CMD] 📝 Fire record created: {fire_id} for user {user_id}")
-        
+
     except Exception as e:
         LOG.warning(f"[CMD] Fire record insert error: {e}")
 
@@ -276,6 +302,7 @@ ea_last_seen = {}
 # Map UUID to socket identity for routing back
 uuid_to_identity = {}
 
+
 def recv_router_forever():
     while True:
         # ROUTER frames: [identity, empty, payload] OR [identity, payload]
@@ -285,7 +312,8 @@ def recv_router_forever():
         elif len(parts) == 2:
             ident, payload = parts
         else:
-            LOG.warning("ROUTER invalid frame parts=%d", len(parts)); continue
+            LOG.warning("ROUTER invalid frame parts=%d", len(parts))
+            continue
 
         # CRITICAL: Log EA's actual identity bytes for debugging
         LOG.info(f"[IDENTITY] EA identity bytes={ident} hex={ident.hex()}")
@@ -294,20 +322,23 @@ def recv_router_forever():
             msg = json.loads(payload.decode("utf-8", "ignore"))
             LOG.info(f"[DEBUG] Received message: type={msg.get('type')}")
             # Log full payload for heartbeats to debug UUID
-            if msg.get('type') in ['HEARTBEAT', 'ROUTER_HEARTBEAT']:
+            if msg.get("type") in ["HEARTBEAT", "ROUTER_HEARTBEAT"]:
                 LOG.info(f"[UUID_DEBUG] Full heartbeat payload: {msg}")
         except Exception:
-            LOG.warning("ROUTER non-json payload from identity=%s", ident.hex()); continue
+            LOG.warning("ROUTER non-json payload from identity=%s", ident.hex())
+            continue
 
         # Extract UUID from payload (this becomes the routing key)
         typ = (msg.get("type") or "").lower()  # FIXED: Normalize to lowercase for EA compatibility
         uuid = msg.get("target_uuid") or msg.get("user_uuid") or msg.get("uuid")
 
         # CRITICAL: Parse and store EA's actual UUID for exact matching
-        if uuid and typ in ['heartbeat', 'router_heartbeat', 'dealer_heartbeat']:  # FIXED: Added dealer_heartbeat
+        if uuid and typ in ["heartbeat", "router_heartbeat", "dealer_heartbeat"]:  # FIXED: Added dealer_heartbeat
             global current_ea_uuid
             ea_uuid_str = str(uuid).strip()  # Clean but preserve exact case
-            LOG.info(f"[EA_UUID] Learned: {repr(ea_uuid_str)} len={len(ea_uuid_str)} hex={ea_uuid_str.encode('utf-8').hex()}")
+            LOG.info(
+                f"[EA_UUID] Learned: {repr(ea_uuid_str)} len={len(ea_uuid_str)} hex={ea_uuid_str.encode('utf-8').hex()}"
+            )
             current_ea_uuid = ea_uuid_str  # Store globally for commands
             # Store for future command routing
             identity_map[ea_uuid_str] = ident
@@ -358,7 +389,14 @@ def recv_router_forever():
             _upsert_ea_instance(msg)  # Update DB
 
         # Log specific message types
-        if typ in ("hello","heartbeat","ping","router_hello","router_heartbeat","dealer_heartbeat"):  # FIXED: Added dealer_heartbeat
+        if typ in (
+            "hello",
+            "heartbeat",
+            "ping",
+            "router_hello",
+            "router_heartbeat",
+            "dealer_heartbeat",
+        ):  # FIXED: Added dealer_heartbeat
             LOG.info("[EA] %s %s", typ, uuid)
 
             # Forward enhanced heartbeats with position data to confirm_listener
@@ -369,12 +407,19 @@ def recv_router_forever():
                         LOG.info("[HEARTBEAT] Forwarded enhanced heartbeat to confirm_listener")
                     except Exception as e:
                         LOG.warning("[HEARTBEAT] Failed to forward: %s", e)
-        elif typ in ("pong", "confirmation", "close_confirmation", "position_closed", "hybrid_event"):  # FIXED: lowercase + all EA confirm types
+        elif typ in (
+            "pong",
+            "confirmation",
+            "close_confirmation",
+            "position_closed",
+            "hybrid_event",
+        ):  # FIXED: lowercase + all EA confirm types
             # PRODUCTION-SAFE FALLBACK: Route confirmations over 5555 channel
             unified_confirmation_handler(msg, "5555")
         else:
             # EAs generally shouldn't send other types here; ignore
             pass
+
 
 def unified_confirmation_handler(msg, source_socket):
     """Unified handler for confirmations from both 5555 and 5558"""
@@ -403,17 +448,19 @@ def start_queue_worker():
     worker.start()
     LOG.info("[BOOT] queue2router started")
 
+
 def _extract_payload_bytes(payload_field):
     """Extract raw payload bytes from various formats"""
     if isinstance(payload_field, (bytes, bytearray)):
         return payload_field
     elif isinstance(payload_field, str):
-        return payload_field.encode('utf-8')
+        return payload_field.encode("utf-8")
     elif isinstance(payload_field, dict):
-        return json.dumps(payload_field, separators=(",", ":"), ensure_ascii=True).encode('utf-8')
+        return json.dumps(payload_field, separators=(",", ":"), ensure_ascii=True).encode("utf-8")
     else:
         # Fallback: convert to string then bytes
-        return str(payload_field).encode('utf-8')
+        return str(payload_field).encode("utf-8")
+
 
 def queue_to_router_forever():
     """Robust queue processing with timeout and error handling"""
@@ -438,25 +485,29 @@ def queue_to_router_forever():
             payload_bytes = _extract_payload_bytes(payload_field)
 
             # FRAME LOGGING: Log exact payload before sending (as per surgical checklist)
-            payload_str = payload_bytes.decode('utf-8')
+            payload_str = payload_bytes.decode("utf-8")
             LOG.info("[FRAME_SEND] First 120 chars: %s", payload_str[:120])
             LOG.info("[FRAME_SEND] Payload length: %d bytes", len(payload_bytes))
 
             # Hex of "type" key region to catch weird quotes
             type_region = payload_str[:50] if len(payload_str) >= 50 else payload_str
-            LOG.info("[FRAME_SEND] Type region hex: %s", type_region.encode('utf-8').hex())
+            LOG.info("[FRAME_SEND] Type region hex: %s", type_region.encode("utf-8").hex())
 
             # Send with DEALER/ROUTER 3-frame protocol: [identity, empty delimiter, payload]
-            uuid_bytes = tu.encode('utf-8')
-            router.send_multipart([uuid_bytes, b'', payload_bytes])
+            uuid_bytes = tu.encode("utf-8")
+            router.send_multipart([uuid_bytes, b"", payload_bytes])
 
             # Parse payload to log target_uuid details
             try:
-                cmd = json.loads(payload_bytes.decode('utf-8'))
-                sent_uuid = cmd.get('target_uuid', 'MISSING')
-                LOG.info("[DEQ] → target_uuid=%r len=%d hex=%s bytes=%d",
-                        sent_uuid, len(sent_uuid) if sent_uuid != 'MISSING' else 0,
-                        sent_uuid.encode('utf-8').hex() if sent_uuid != 'MISSING' else 'N/A', len(payload_bytes))
+                cmd = json.loads(payload_bytes.decode("utf-8"))
+                sent_uuid = cmd.get("target_uuid", "MISSING")
+                LOG.info(
+                    "[DEQ] → target_uuid=%r len=%d hex=%s bytes=%d",
+                    sent_uuid,
+                    len(sent_uuid) if sent_uuid != "MISSING" else 0,
+                    sent_uuid.encode("utf-8").hex() if sent_uuid != "MISSING" else "N/A",
+                    len(payload_bytes),
+                )
             except:
                 LOG.info("[DEQ] → %s bytes=%d (payload parse failed)", tu, len(payload_bytes))
             backoff = 0.2
@@ -464,6 +515,7 @@ def queue_to_router_forever():
             LOG.exception("[queue2router] loop error")
             time.sleep(backoff)
             backoff = min(5.0, backoff * 2.0)
+
 
 def enqueue_cmd(uuid: str, obj: dict):
     """Enqueue command for processing"""
@@ -477,8 +529,16 @@ def enqueue_cmd(uuid: str, obj: dict):
 
     payload = json.dumps(obj, separators=(",", ":"), ensure_ascii=True).encode("utf-8")
     ipc_q.put({"target_uuid": target_uuid, "payload": payload})
-    LOG.info("[ENQ] %s %s bytes=%d target_uuid=%r len=%d hex=%s",
-             target_uuid, obj.get("type"), len(payload), target_uuid, len(target_uuid), target_uuid.encode('utf-8').hex())
+    LOG.info(
+        "[ENQ] %s %s bytes=%d target_uuid=%r len=%d hex=%s",
+        target_uuid,
+        obj.get("type"),
+        len(payload),
+        target_uuid,
+        len(target_uuid),
+        target_uuid.encode("utf-8").hex(),
+    )
+
 
 def ipc_bridge_forever():
     """Bridge old IPC queue to new internal queue with UUID firewall"""
@@ -511,11 +571,15 @@ def ipc_bridge_forever():
                     cmd_type = raw_cmd.get("type", "UNKNOWN")
                     fire_id = raw_cmd.get("fire_id", "NO_ID")
 
-                    LOG.info(f"[IPC_BRIDGE] FORWARDED_RAW {cmd_type} {fire_id} target_uuid='{uuid}' unwrapped from wrapper")
+                    LOG.info(
+                        f"[IPC_BRIDGE] FORWARDED_RAW {cmd_type} {fire_id} target_uuid='{uuid}' unwrapped from wrapper"
+                    )
 
                     # UUID FIREWALL: Reject commands with wrong UUID
                     if current_ea_uuid and uuid != current_ea_uuid:
-                        LOG.warning(f"[UUID_FIREWALL] REJECTED command {cmd_type} {fire_id} - target_uuid='{uuid}' != learned_uuid='{current_ea_uuid}'")
+                        LOG.warning(
+                            f"[UUID_FIREWALL] REJECTED command {cmd_type} {fire_id} - target_uuid='{uuid}' != learned_uuid='{current_ea_uuid}'"
+                        )
                         continue
 
                     # Forward the raw command JSON (unwrapped)
@@ -535,11 +599,15 @@ def ipc_bridge_forever():
 
                 # Log EVERY inbound command with UUID details
                 if uuid:
-                    LOG.info(f"[IPC_IN] {cmd_type} {fire_id} target_uuid='{uuid}' len={len(uuid)} hex={uuid.encode('utf-8').hex()}")
+                    LOG.info(
+                        f"[IPC_IN] {cmd_type} {fire_id} target_uuid='{uuid}' len={len(uuid)} hex={uuid.encode('utf-8').hex()}"
+                    )
 
                     # UUID FIREWALL: Reject commands with wrong UUID
                     if current_ea_uuid and uuid != current_ea_uuid:
-                        LOG.warning(f"[UUID_FIREWALL] REJECTED command {cmd_type} {fire_id} - target_uuid='{uuid}' != learned_uuid='{current_ea_uuid}'")
+                        LOG.warning(
+                            f"[UUID_FIREWALL] REJECTED command {cmd_type} {fire_id} - target_uuid='{uuid}' != learned_uuid='{current_ea_uuid}'"
+                        )
                         continue  # Drop the command
 
                     # CUTOVER: SOURCE routing
@@ -561,6 +629,7 @@ def ipc_bridge_forever():
             LOG.exception("[ipc-bridge] error")
             time.sleep(0.2)
 
+
 def ping_self_test(uuid: str):
     """Built-in self-test - simplified version without confirm socket dependency"""
     LOG.info(f"[SELF_TEST] Testing command enqueue for {uuid}")
@@ -573,6 +642,7 @@ def ping_self_test(uuid: str):
     except Exception as e:
         LOG.error(f"[SELF_TEST] Failed to enqueue ping: {e}")
         return False
+
 
 def main():
     global heartbeat_push, router, pull
@@ -600,7 +670,6 @@ def main():
     ipc_thread.start()
     LOG.info("[THREAD] IPC bridge thread started: %s", ipc_thread.name)
 
-
     # Start queue worker
     start_queue_worker()
 
@@ -620,6 +689,7 @@ def main():
     except KeyboardInterrupt:
         LOG.info("[MAIN] Shutdown requested")
         stop_evt.set()
+
 
 if __name__ == "__main__":
     main()

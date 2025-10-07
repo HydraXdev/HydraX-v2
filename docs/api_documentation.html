@@ -1,25 +1,30 @@
-
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
+  <head>
     <title>HydraX BITTEN API Documentation</title>
-    <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@3.52.5/swagger-ui.css" />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://unpkg.com/swagger-ui-dist@3.52.5/swagger-ui.css"
+    />
     <style>
-        .swagger-ui .topbar { display: none; }
+      .swagger-ui .topbar {
+        display: none;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div id="swagger-ui"></div>
     <script src="https://unpkg.com/swagger-ui-dist@3.52.5/swagger-ui-bundle.js"></script>
     <script>
-        SwaggerUIBundle({
-            url: 'api_documentation.json',
-            dom_id: '#swagger-ui',
-            presets: [
-                SwaggerUIBundle.presets.apis,
-                SwaggerUIBundle.presets.standalone
-            ]
-        });
+      SwaggerUIBundle({
+        url: "api_documentation.json",
+        dom_id: "#swagger-ui",
+        presets: [
+          SwaggerUIBundle.presets.apis,
+          SwaggerUIBundle.presets.standalone,
+        ],
+      });
     </script>
-</body>
+  </body>
 </html>

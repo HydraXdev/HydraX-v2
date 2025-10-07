@@ -5,7 +5,6 @@
 
 # v5.0 Trading pairs with ultra-aggressive TCS settings
 trading_pairs:
-  
   # MAJOR PAIRS - Core trading with v5.0 optimized TCS
   major_pairs:
     EURUSD:
@@ -13,28 +12,28 @@ trading_pairs:
       min_volume: 0.01
       max_volume: 100.0
       spread_limit: 2.0
-      session_hours: 
-        - "08:00-17:00"  # London
-        - "13:00-22:00"  # NY
+      session_hours:
+        - "08:00-17:00" # London
+        - "13:00-22:00" # NY
       volatility_filter: true
       contract_size: 100000
       min_lot: 0.01
       max_lot: 100
-      tcs_requirement: 40  # v5.0 minimum
+      tcs_requirement: 40 # v5.0 minimum
       v5_boost: 1.1
       v5_tcs_reduction: 2
       category: "major"
       pair_type: "standard"
       description: "Euro vs US Dollar - Major pair"
-      
+
     GBPUSD:
       pip_value: 0.0001
       min_volume: 0.01
       max_volume: 100.0
       spread_limit: 3.0
-      session_hours: 
-        - "08:00-17:00"  # London focus
-        - "13:00-22:00"  # NY
+      session_hours:
+        - "08:00-17:00" # London focus
+        - "13:00-22:00" # NY
       volatility_filter: true
       contract_size: 100000
       min_lot: 0.01
@@ -45,15 +44,15 @@ trading_pairs:
       category: "major"
       pair_type: "standard"
       description: "British Pound vs US Dollar - Major pair"
-      
+
     USDJPY:
       pip_value: 0.01
       min_volume: 0.01
       max_volume: 100.0
       spread_limit: 2.5
-      session_hours: 
-        - "00:00-09:00"  # Asian
-        - "13:00-22:00"  # NY
+      session_hours:
+        - "00:00-09:00" # Asian
+        - "13:00-22:00" # NY
       volatility_filter: true
       contract_size: 100000
       min_lot: 0.01
@@ -64,14 +63,14 @@ trading_pairs:
       category: "major"
       pair_type: "standard"
       description: "US Dollar vs Japanese Yen - Major pair"
-      
+
     USDCAD:
       pip_value: 0.0001
       min_volume: 0.01
       max_volume: 100.0
       spread_limit: 2.5
-      session_hours: 
-        - "13:00-22:00"  # NY focus
+      session_hours:
+        - "13:00-22:00" # NY focus
       volatility_filter: true
       contract_size: 100000
       min_lot: 0.01
@@ -90,9 +89,9 @@ trading_pairs:
       min_volume: 0.01
       max_volume: 100.0
       spread_limit: 4.0
-      session_hours: 
-        - "00:00-09:00"  # Asian
-        - "08:00-17:00"  # London
+      session_hours:
+        - "00:00-09:00" # Asian
+        - "08:00-17:00" # London
       volatility_filter: true
       contract_size: 100000
       min_lot: 0.01
@@ -103,14 +102,14 @@ trading_pairs:
       category: "volatile"
       pair_type: "volatile"
       description: "British Pound vs Japanese Yen - High volatility"
-      
+
     EURJPY:
       pip_value: 0.01
       min_volume: 0.01
       max_volume: 100.0
       spread_limit: 3.5
-      session_hours: 
-        - "08:00-17:00"  # London focus
+      session_hours:
+        - "08:00-17:00" # London focus
       volatility_filter: true
       contract_size: 100000
       min_lot: 0.01
@@ -121,14 +120,14 @@ trading_pairs:
       category: "volatile"
       pair_type: "volatile"
       description: "Euro vs Japanese Yen - High volatility"
-      
+
     AUDJPY:
       pip_value: 0.01
       min_volume: 0.01
       max_volume: 100.0
       spread_limit: 4.0
-      session_hours: 
-        - "00:00-09:00"  # Asian focus
+      session_hours:
+        - "00:00-09:00" # Asian focus
       volatility_filter: true
       contract_size: 100000
       min_lot: 0.01
@@ -139,14 +138,14 @@ trading_pairs:
       category: "volatile"
       pair_type: "volatile"
       description: "Australian Dollar vs Japanese Yen - Volatile cross"
-      
+
     GBPCHF:
       pip_value: 0.0001
       min_volume: 0.01
       max_volume: 100.0
       spread_limit: 4.0
-      session_hours: 
-        - "08:00-17:00"  # European hours
+      session_hours:
+        - "08:00-17:00" # European hours
       volatility_filter: true
       contract_size: 100000
       min_lot: 0.01
@@ -165,8 +164,8 @@ trading_pairs:
       min_volume: 0.01
       max_volume: 100.0
       spread_limit: 3.0
-      session_hours: 
-        - "00:00-09:00"  # Asian focus
+      session_hours:
+        - "00:00-09:00" # Asian focus
       volatility_filter: true
       contract_size: 100000
       min_lot: 0.01
@@ -177,14 +176,14 @@ trading_pairs:
       category: "commodity"
       pair_type: "commodity"
       description: "Australian Dollar vs US Dollar - Commodity pair"
-      
+
     NZDUSD:
       pip_value: 0.0001
       min_volume: 0.01
       max_volume: 100.0
       spread_limit: 3.5
-      session_hours: 
-        - "00:00-09:00"  # Asian focus
+      session_hours:
+        - "00:00-09:00" # Asian focus
       volatility_filter: true
       contract_size: 100000
       min_lot: 0.01
@@ -195,15 +194,15 @@ trading_pairs:
       category: "commodity"
       pair_type: "commodity"
       description: "New Zealand Dollar vs US Dollar - Commodity pair"
-      
+
     USDCHF:
       pip_value: 0.0001
       min_volume: 0.01
       max_volume: 100.0
       spread_limit: 3.0
-      session_hours: 
-        - "08:00-17:00"  # European
-        - "13:00-22:00"  # NY
+      session_hours:
+        - "08:00-17:00" # European
+        - "13:00-22:00" # NY
       volatility_filter: true
       contract_size: 100000
       min_lot: 0.01
@@ -214,14 +213,14 @@ trading_pairs:
       category: "safe"
       pair_type: "safe"
       description: "US Dollar vs Swiss Franc - Safe haven pair"
-      
+
     EURGBP:
       pip_value: 0.0001
       min_volume: 0.01
       max_volume: 100.0
       spread_limit: 3.0
-      session_hours: 
-        - "08:00-17:00"  # European focus
+      session_hours:
+        - "08:00-17:00" # European focus
       volatility_filter: true
       contract_size: 100000
       min_lot: 0.01
@@ -239,30 +238,30 @@ trading_pairs:
       pip_value: 0.0001
       min_volume: 0.01
       max_volume: 100.0
-      spread_limit: 8.0  # Higher spread tolerance
-      session_hours: 
-        - "00:00-09:00"  # Asian
-        - "08:00-17:00"  # London
-      volatility_filter: false  # Allow high volatility
+      spread_limit: 8.0 # Higher spread tolerance
+      session_hours:
+        - "00:00-09:00" # Asian
+        - "08:00-17:00" # London
+      volatility_filter: false # Allow high volatility
       contract_size: 100000
       min_lot: 0.01
-      max_lot: 50  # Reduced max due to volatility
-      tcs_requirement: 35  # Ultra low for maximum extraction
+      max_lot: 50 # Reduced max due to volatility
+      tcs_requirement: 35 # Ultra low for maximum extraction
       v5_boost: 1.5
       v5_tcs_reduction: 7
       category: "monster"
       pair_type: "monster"
       description: "British Pound vs New Zealand Dollar - 200+ pip daily range"
       risk_multiplier: 1.3
-      
+
     GBPAUD:
       pip_value: 0.0001
       min_volume: 0.01
       max_volume: 100.0
       spread_limit: 6.0
-      session_hours: 
-        - "00:00-09:00"  # Asian
-        - "08:00-17:00"  # London
+      session_hours:
+        - "00:00-09:00" # Asian
+        - "08:00-17:00" # London
       volatility_filter: false
       contract_size: 100000
       min_lot: 0.01
@@ -274,15 +273,15 @@ trading_pairs:
       pair_type: "monster"
       description: "British Pound vs Australian Dollar - Extreme volatility"
       risk_multiplier: 1.2
-      
+
     EURAUD:
       pip_value: 0.0001
       min_volume: 0.01
       max_volume: 100.0
       spread_limit: 5.0
-      session_hours: 
-        - "00:00-09:00"  # Asian
-        - "08:00-17:00"  # European
+      session_hours:
+        - "00:00-09:00" # Asian
+        - "08:00-17:00" # European
       volatility_filter: false
       contract_size: 100000
       min_lot: 0.01
@@ -297,7 +296,6 @@ trading_pairs:
 
 # v5.0 Strategy assignments optimized for ultra-aggressive trading
 apex_v5_strategies:
-  
   ultra_volume_strategy:
     description: "v5.0 ultra-volume strategy - 40+ signals/day"
     allowed_pairs:
@@ -314,18 +312,18 @@ apex_v5_strategies:
       - NZDUSD
       - USDCHF
       - EURGBP
-      - GBPNZD  # Monster
-      - GBPAUD  # Monster
-      - EURAUD  # Monster
-    min_tcs: 35  # Ultra-aggressive minimum
+      - GBPNZD # Monster
+      - GBPAUD # Monster
+      - EURAUD # Monster
+    min_tcs: 35 # Ultra-aggressive minimum
     target_signals_per_day: 40
     max_signals_per_day: 200
     session_boosts:
       ASIAN: 1.5
       LONDON: 2.0
       NY: 1.8
-      OVERLAP: 3.0  # Triple boost
-    
+      OVERLAP: 3.0 # Triple boost
+
   m3_focus_strategy:
     description: "M3 timeframe focus (60% of signals)"
     allowed_pairs:
@@ -347,10 +345,10 @@ apex_v5_strategies:
     min_tcs: 35
     timeframe_weights:
       M1: 0.20
-      M3: 0.60  # Primary focus
+      M3: 0.60 # Primary focus
       M5: 0.15
       M15: 0.05
-    
+
   confluence_hunter_strategy:
     description: "Hunt for 2+ pattern confluence signals"
     allowed_pairs:
@@ -370,8 +368,8 @@ apex_v5_strategies:
       - GBPAUD
       - EURAUD
     min_tcs: 40
-    confluence_bonus: 25  # +25 TCS for confluence
-    ultra_confluence_bonus: 35  # +35 TCS for 4+ patterns
+    confluence_bonus: 25 # +25 TCS for confluence
+    ultra_confluence_bonus: 35 # +35 TCS for 4+ patterns
 
 # MT5 Bridge symbol mappings for all 15 pairs
 mt5_mappings:
@@ -407,7 +405,7 @@ apex_v5_sessions:
       - AUDJPY
       - EURAUD
       - GBPAUD
-      
+
   london:
     hours: "07:00-12:00"
     timezone: "UTC"
@@ -421,7 +419,7 @@ apex_v5_sessions:
       - GBPCHF
       - GBPNZD
       - GBPAUD
-      
+
   new_york:
     hours: "12:00-21:00"
     timezone: "UTC"
@@ -433,13 +431,13 @@ apex_v5_sessions:
       - USDCAD
       - USDCHF
       - USDJPY
-      
+
   overlap_london_ny:
     hours: "12:00-16:00"
     timezone: "UTC"
-    boost_multiplier: 3.0  # TRIPLE BOOST
+    boost_multiplier: 3.0 # TRIPLE BOOST
     tcs_reduction: 10
-    optimal_pairs: "ALL"  # All 15 pairs active
+    optimal_pairs: "ALL" # All 15 pairs active
 
 # Heat map tracking for all 15 pairs
 heat_map_config:
@@ -460,7 +458,7 @@ heat_map_config:
     - GBPNZD
     - GBPAUD
     - EURAUD
-  update_interval_seconds: 5  # Faster updates for v5.0
+  update_interval_seconds: 5 # Faster updates for v5.0
   history_retention_days: 30
 
 # v5.0 Risk management settings per pair type
@@ -471,14 +469,14 @@ risk_management:
     commodity: 0.9
     safe: 0.8
     cross: 0.9
-    monster: 1.3  # Higher risk for monsters
-  
+    monster: 1.3 # Higher risk for monsters
+
   correlation_limits:
-    max_usd_exposure: 60.0  # 60% max USD exposure
-    max_eur_exposure: 40.0  # 40% max EUR exposure
-    max_gbp_exposure: 30.0  # 30% max GBP exposure
-    max_jpy_exposure: 25.0  # 25% max JPY exposure
-    max_pair_correlation: 70.0  # 70% max correlation
+    max_usd_exposure: 60.0 # 60% max USD exposure
+    max_eur_exposure: 40.0 # 40% max EUR exposure
+    max_gbp_exposure: 30.0 # 30% max GBP exposure
+    max_jpy_exposure: 25.0 # 25% max JPY exposure
+    max_pair_correlation: 70.0 # 70% max correlation
 
 # Configuration metadata
 metadata:

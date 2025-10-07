@@ -40,9 +40,11 @@
    - Self-improving
 
 ## 📁 New Files Created:
+
 - `/strategies/strategy_validator.py`
 - `/strategies/market_analyzer.py`
 - `/strategies/strategy_orchestrator.py`
 
 ## 🎯 Result:
+
 The trading strategies are now **MUCH smarter** - they adapt to market conditions, avoid dangerous situations, and select the best approach for each scenario. This should significantly improve win rates and reduce drawdowns.

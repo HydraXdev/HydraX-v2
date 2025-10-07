@@ -3,16 +3,19 @@
 ## 🎯 EA File Location
 
 ### On Linux Server:
+
 ```
 /root/HydraX-v2/BITTEN_Windows_Package/EA/BITTENBridge_v3_ENHANCED.mq5
 ```
 
 ### Where it needs to go on Windows (each MT5):
+
 ```
 C:\MT5_Farm\Masters\[InstanceType]\MQL5\Experts\BITTENBridge_v3_ENHANCED.mq5
 ```
 
 ### After MT5 Installation:
+
 1. **Copy EA** to each master's `MQL5\Experts\` folder
 2. **Open MT5** terminal for that instance
 3. **Press F4** to open MetaEditor
@@ -32,12 +35,14 @@ C:\MT5_Farm\Masters\[InstanceType]\MQL5\Experts\BITTENBridge_v3_ENHANCED.mq5
 ### Yes, we built an allocator\! (`mt5_instance_allocator.py`)
 
 **What it does:**
+
 - Automatically assigns MT5 instances to users based on tier
 - Tracks which user has which instance
 - Handles Press Pass 7-day recycling
 - Manages broker preferences (regulated vs offshore)
 
 ### Allocation Logic:
+
 ```
 PRESS_PASS → Generic_Demo (instant, no login needed)
 NIBBLER/FANG → Forex_Demo (default) or Coinexx_Demo (if user prefers)
@@ -45,12 +50,14 @@ COMMANDER/→ Forex_Live (conservative) or Coinexx_Live (high leverage)
 ```
 
 ### Key Features:
+
 - **Smart Assignment**: Finds next available instance
 - **Preference Tracking**: Remembers user's broker preference
 - **Automatic Recycling**: Press Pass instances cleaned after 7 days
 - **Database Tracking**: All allocations logged in SQLite
 
 ### Usage Examples:
+
 ```python
 from mt5_instance_allocator import MT5InstanceAllocator
 
@@ -72,6 +79,7 @@ recycled = allocator.recycle_expired_instances()
 ## 📊 Quick Reference
 
 ### Instance Distribution:
+
 - **200x Generic_Demo**: Press Pass trials (7-day auto-recycle)
 - **20x Forex_Demo**: Regulated broker testing
 - **10x Coinexx_Demo**: Offshore broker testing
@@ -79,6 +87,7 @@ recycled = allocator.recycle_expired_instances()
 - **10x Coinexx_Live**: High-leverage live trading
 
 ### Magic Number Ranges:
+
 - 10001-10010: Coinexx Live
 - 20001-20005: Forex Live
 - 30001-30020: Forex Demo
@@ -86,6 +95,7 @@ recycled = allocator.recycle_expired_instances()
 - 50001-50200: Generic Demo (Press Pass)
 
 ### Port Ranges:
+
 - 9001-9010: Coinexx Live
 - 9101-9105: Forex Live
 - 9201-9220: Forex Demo
@@ -97,6 +107,7 @@ recycled = allocator.recycle_expired_instances()
 Since the EA file is large, you can:
 
 1. **Download from webapp**:
+
    ```
    https://joinbitten.com/static/BITTENBridge_v3_ENHANCED.mq5
    ```

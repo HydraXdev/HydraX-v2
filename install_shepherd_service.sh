@@ -13,7 +13,7 @@ echo -e "${GREEN}Installing SHEPHERD systemd service...${NC}"
 
 # Check if running as root
 if [[ $EUID -ne 0 ]]; then
-   echo -e "${RED}This script must be run as root${NC}" 
+   echo -e "${RED}This script must be run as root${NC}"
    exit 1
 fi
 

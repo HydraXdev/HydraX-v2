@@ -7,18 +7,21 @@ The BITTEN trading system now includes automatic news event detection and tradin
 ## Features
 
 ### 1. Automatic News Event Fetching
+
 - Fetches economic calendar data from ForexFactory (or other providers)
 - Updates every 30 minutes by default
 - Monitors high and medium impact events
 - Tracks events for all major currency pairs (USD, EUR, GBP, JPY, CHF, CAD, AUD, NZD)
 
 ### 2. Trading Auto-Pause
+
 - Automatically pauses trading 30 minutes before high-impact news
 - Resumes trading 30 minutes after the event
 - Integrated with the existing risk management system
 - Trading state shows as `NEWS_LOCKOUT` during blackout periods
 
 ### 3. Telegram Integration
+
 - `/news` command shows upcoming economic events
 - `/news [hours]` - Show events for next N hours (default: 24, max: 72)
 - Displays current blackout status if active
@@ -27,6 +30,7 @@ The BITTEN trading system now includes automatic news event detection and tradin
 ## Configuration
 
 ### Environment Variables (.env)
+
 ```bash
 # News API Configuration
 NEWS_API_PROVIDER=forexfactory  # Options: forexfactory, investing, fxstreet
@@ -36,12 +40,13 @@ NEWS_CACHE_DURATION=3600         # Cache duration in seconds (1 hour default)
 ```
 
 ### News Filter Configuration (config/trading.yml)
+
 ```yaml
 news_filter:
   enabled: true
   impact_levels: ["high", "medium"]
-  time_before: 30  # minutes before news
-  time_after: 30   # minutes after news
+  time_before: 30 # minutes before news
+  time_after: 30 # minutes after news
   currencies: ["USD", "EUR", "GBP", "JPY"]
 ```
 
@@ -73,6 +78,7 @@ news_filter:
 ## Usage Examples
 
 ### Telegram Command
+
 ```
 /news
 📰 Economic Calendar
@@ -100,17 +106,20 @@ Last updated: 5 min ago
 ```
 
 ### API Endpoints
+
 - `GET /news` - Get news scheduler status and upcoming events
 - `GET /health` - Check webhook server health (includes news scheduler status)
 
 ## Testing
 
 Run the test script to verify the integration:
+
 ```bash
 python test_news_integration.py
 ```
 
 For local testing without real API:
+
 ```bash
 # Start mock API server
 python mock_news_api.py
@@ -123,6 +132,7 @@ NEWS_API_PROVIDER=forexfactory
 ## High Impact Events Monitored
 
 The system specifically monitors these event types:
+
 - Non-Farm Payrolls (NFP)
 - Interest Rate Decisions
 - Central Bank meetings (FOMC, ECB, BoE, BoJ)

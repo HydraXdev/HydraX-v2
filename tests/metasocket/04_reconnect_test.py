@@ -4,13 +4,14 @@ CUTOVER TEST 04: Reconnection/Recovery Test
 Tests that MetaSocket adapter handles connection loss and graceful recovery
 """
 
+import json
 import os
 import sys
 import time
-import json
 from datetime import datetime
 
-sys.path.append('/root/HydraX-v2')
+sys.path.append("/root/HydraX-v2")
+
 
 def test_reconnect_recovery():
     """Test that MetaSocket handles reconnection and recovery gracefully"""
@@ -18,8 +19,8 @@ def test_reconnect_recovery():
     print("=" * 50)
 
     # Verify SOURCE setting
-    source = os.getenv('SOURCE', 'ea')
-    if source not in ['metasocket', 'both']:
+    source = os.getenv("SOURCE", "ea")
+    if source not in ["metasocket", "both"]:
         print(f"❌ SKIP: SOURCE={source}, need 'metasocket' or 'both'")
         return False
 
@@ -35,7 +36,7 @@ def test_reconnect_recovery():
         initial_health = adapter.get_health_status()
         print(f"📊 Initial Health: {initial_health['status']}")
 
-        if initial_health['status'] != 'OK':
+        if initial_health["status"] != "OK":
             print(f"❌ FAIL: Initial connection not healthy - {initial_health}")
             return False
 
@@ -50,10 +51,10 @@ def test_reconnect_recovery():
             volume=0.01,
             sl_pips=20,
             tp_pips=20,
-            idempotency_key=f"pre_disconnect_{timestamp}"
+            idempotency_key=f"pre_disconnect_{timestamp}",
         )
 
-        if not pre_disconnect_order.get('success'):
+        if not pre_disconnect_order.get("success"):
             print(f"❌ FAIL: Pre-disconnect order failed - {pre_disconnect_order}")
             return False
 
@@ -73,7 +74,7 @@ def test_reconnect_recovery():
                     volume=0.01,
                     sl_pips=20,
                     tp_pips=20,
-                    idempotency_key=f"force_fail_{i}_{timestamp}"
+                    idempotency_key=f"force_fail_{i}_{timestamp}",
                 )
             except:
                 pass  # Expected to fail
@@ -96,7 +97,7 @@ def test_reconnect_recovery():
         recovery_health = adapter.get_health_status()
         print(f"📊 Recovery Health: {recovery_health['status']}")
 
-        if recovery_health['status'] != 'OK':
+        if recovery_health["status"] != "OK":
             print(f"⚠️  WARNING: Recovery health not OK, but continuing test...")
 
         # Attempt order after recovery
@@ -109,10 +110,10 @@ def test_reconnect_recovery():
             volume=0.01,
             sl_pips=20,
             tp_pips=20,
-            idempotency_key=f"post_recovery_{timestamp}"
+            idempotency_key=f"post_recovery_{timestamp}",
         )
 
-        if not post_recovery_order.get('success'):
+        if not post_recovery_order.get("success"):
             print(f"❌ FAIL: Post-recovery order failed - {post_recovery_order}")
             return False
 
@@ -121,9 +122,9 @@ def test_reconnect_recovery():
         # Step 6: Cleanup
         print("🧹 Cleanup: Closing test positions...")
         for order in [pre_disconnect_order, post_recovery_order]:
-            if order.get('success') and order.get('ticket'):
+            if order.get("success") and order.get("ticket"):
                 try:
-                    adapter.close_ticket(order['ticket'], comment="CLEANUP_RECONNECT_TEST")
+                    adapter.close_ticket(order["ticket"], comment="CLEANUP_RECONNECT_TEST")
                     time.sleep(0.2)
                 except:
                     pass  # Ignore cleanup failures
@@ -138,10 +139,12 @@ def test_reconnect_recovery():
     except Exception as e:
         print(f"❌ FAIL: Exception during test - {e}")
         import traceback
+
         traceback.print_exc()
         return False
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     success = test_reconnect_recovery()
     print(f"\n🎯 TEST 04 RESULT: {'✅ PASS' if success else '❌ FAIL'}")
     sys.exit(0 if success else 1)

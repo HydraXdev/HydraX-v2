@@ -27,7 +27,7 @@ Write-Host "Creating BITTEN directories..." -ForegroundColor Yellow
 $directories = @(
     "C:\BITTEN_Bridge",
     "C:\BITTEN_Bridge\Instance1",
-    "C:\BITTEN_Bridge\Instance2", 
+    "C:\BITTEN_Bridge\Instance2",
     "C:\BITTEN_Bridge\Instance3",
     "C:\BITTEN_Bridge\Logs",
     "C:\BITTEN_Bridge\Config"
@@ -102,15 +102,15 @@ for ($i = 0; $i -lt [Math]::Min($mt5Paths.Count, 3); $i++) {
     $mt5Path = $mt5Paths[$i]
     $config = $configs[$i]
     $instance = $i + 1
-    
+
     Write-Host ""
     Write-Host "Configuring Instance $instance ($($config.Name))..." -ForegroundColor Cyan
-    
+
     # Copy EA
     $eaPath = "$mt5Path\MQL5\Experts\BITTEN_Instance$instance.mq5"
     Copy-Item -Path "BITTENBridge_v3_ENHANCED.mq5" -Destination $eaPath -Force
     Write-Host "  - EA copied to: $eaPath" -ForegroundColor Gray
-    
+
     # Create set file for EA configuration
     $setContent = @"
 ; BITTEN Instance $instance Configuration
@@ -138,7 +138,7 @@ MaxRiskPercent=$($config.MaxRisk)
 MaxDailyTrades=$($config.MaxTrades)
 MaxConcurrentTrades=10
 "@
-    
+
     $setPath = "$mt5Path\MQL5\Presets\BITTEN_Instance$instance.set"
     New-Item -ItemType Directory -Force -Path "$mt5Path\MQL5\Presets" | Out-Null
     Set-Content -Path $setPath -Value $setContent
@@ -222,18 +222,18 @@ def send_test_signal(instance=1):
         "comment": f"BITTEN Test {datetime.now().strftime('%H:%M:%S')}",
         "timestamp": datetime.now().isoformat()
     }
-    
+
     filename = f"C:\\BITTEN_Bridge\\Instance{instance}\\bitten{instance}_instructions_secure.txt"
-    
+
     with open(filename, 'w') as f:
         json.dump(instruction, f)
-    
+
     print(f"Test signal sent to Instance {instance}")
     print(f"Check: {filename}")
-    
+
     # Wait for result
     time.sleep(2)
-    
+
     result_file = f"C:\\BITTEN_Bridge\\Instance{instance}\\bitten{instance}_results_secure.txt"
     try:
         with open(result_file, 'r') as f:

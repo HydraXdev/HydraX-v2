@@ -1,4 +1,5 @@
 # 🐑 SHEPHERD System Audit Report
+
 **Generated**: July 13, 2025
 **Status**: System Analysis Complete
 
@@ -9,14 +10,16 @@ SHEPHERD audit reveals system is operational with recent v5.0 deployment introdu
 ## ⚠️ Critical Findings
 
 ### 1. **TCS Threshold Conflict**
+
 - **Old System**: Fixed 87% TCS threshold (conservative)
 - **v5.0**: 35-95% TCS range (ultra-aggressive)
 - **Impact**: Conflicting signal generation criteria
-- **Files Affected**: 
+- **Files Affected**:
   - AUTHORIZED_SIGNAL_ENGINE.py (uses 87%)
   - core/tcs_engine_v5.py (uses 35-95%)
 
 ### 2. **Signal Engine Duplication**
+
 - Multiple signal engines found:
   - AuthorizedSignalEngine (87% TCS)
   - v5.0 Engine (35-95% TCS)
@@ -24,6 +27,7 @@ SHEPHERD audit reveals system is operational with recent v5.0 deployment introdu
 - **Risk**: Conflicting signals being generated
 
 ### 3. **Trading Pairs Expansion**
+
 - **Old System**: 10 standard pairs
 - **v5.0**: 15 pairs including volatility monsters (GBPNZD, GBPAUD, EURAUD)
 - **Impact**: Risk management needs recalibration
@@ -39,6 +43,7 @@ SHEPHERD audit reveals system is operational with recent v5.0 deployment introdu
 ## 🔧 Integration Status
 
 ### v5.0 Components:
+
 - ✅ apex_v5_integration.py - Main integration script
 - ✅ apex_v5_simplified.py - Simplified version
 - ✅ risk_management_v5.py - Enhanced risk system
@@ -46,6 +51,7 @@ SHEPHERD audit reveals system is operational with recent v5.0 deployment introdu
 - ✅ tcs_engine_v5.py - New scoring system
 
 ### Missing Integration Points:
+
 - ❌ SHEPHERD not indexing v5.0 components
 - ❌ No conflict resolution between old/new TCS
 - ❌ Tier-based access not updated for v5.0
@@ -55,7 +61,7 @@ SHEPHERD audit reveals system is operational with recent v5.0 deployment introdu
 - **Total Python Files**: 464
 - **Recently Modified**: 20 files (last 24h)
 - **Signal Engines**: 3 concurrent (potential conflict)
-- **TCS Ranges**: 
+- **TCS Ranges**:
   - Conservative: 87% fixed
   - Aggressive: 35-95% dynamic
 - **Trading Pairs**: 10 vs 15 (mismatch)
@@ -80,14 +86,17 @@ SHEPHERD audit reveals system is operational with recent v5.0 deployment introdu
 ## 🎯 Configuration Conflicts
 
 ### CLAUDE.md States:
+
 - "Currently using 87% TCS for both signal types"
 - But v5.0 deployed with 35-95% range
 
 ### Risk Profile Mismatch:
+
 - Original: Conservative approach
 - v5.0: Ultra-aggressive "ALL-IN" mode
 
 ### User Expectations:
+
 - Documentation says 87% quality signals
 - Reality: 35% minimum threshold active
 

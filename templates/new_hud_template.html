@@ -43,7 +43,7 @@
 
         .hud-container {
             display: grid;
-            grid-template-areas: 
+            grid-template-areas:
                 "mission-overview mission-overview"
                 "trade-details account-summary"
                 "execution-panel execution-panel";
@@ -226,7 +226,7 @@
         /* Mobile responsive */
         @media (max-width: 768px) {
             .hud-container {
-                grid-template-areas: 
+                grid-template-areas:
                     "mission-overview"
                     "trade-details"
                     "account-summary"
@@ -234,17 +234,17 @@
                 grid-template-columns: 1fr;
                 grid-template-rows: auto auto auto auto;
             }
-            
+
             .mission-title-large {
                 font-size: 2em;
             }
-            
+
             .stats-grid {
                 grid-template-columns: 1fr;
                 gap: 12px;
             }
         }
-        
+
         /* Timer styling */
         .timer {
             background: var(--danger-red);
@@ -254,11 +254,11 @@
             margin-bottom: 16px;
             font-weight: bold;
         }
-        
+
         .urgent {
             animation: pulse 2s infinite;
         }
-        
+
         @keyframes pulse {
             0% { opacity: 1; }
             50% { opacity: 0.7; }
@@ -275,12 +275,12 @@
         <div class="mission-overview">
             <div class="mission-title-large">{{ symbol }}</div>
             <div class="confidence-badge">🎯 TCS: {{ tcs_score }}% CONFIDENCE</div>
-            
+
             <div class="section-header">
                 <div class="section-title">Mission Overview</div>
                 <div class="tier-indicator">{{ user_stats.tier|upper }}</div>
             </div>
-            
+
             <div style="color: #94a3b8; line-height: 1.6;">
                 High-probability {{ symbol }} opportunity identified. Market structure aligned for tactical entry.
                 Risk management protocols active. Position sizing calculated for {{ user_stats.tier|title }}-tier account.
@@ -290,7 +290,7 @@
                 <span class="risk-text">✅ Risk Parameters: Optimal</span>
                 <span style="color: var(--elite-gold); font-weight: 600;">R:R 1:{{ rr_ratio }}</span>
             </div>
-            
+
             <!-- Expiry Timer -->
             {% if expiry_seconds > 0 %}
             <div class="timer urgent" id="timer" style="margin-top: 16px;">
@@ -303,7 +303,7 @@
             <div class="section-header">
                 <div class="section-title">Trade Parameters</div>
             </div>
-            
+
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-label">Entry Price</div>
@@ -328,7 +328,7 @@
             <div class="section-header">
                 <div class="section-title">Account Status</div>
             </div>
-            
+
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-label">Account Balance</div>
@@ -361,7 +361,7 @@
             <div style="margin-top: 16px; color: #64748b; font-size: 0.9em;">
                 {{ user_stats.tier|title }}-level position sizing applied • 3% account risk
             </div>
-            
+
             <div style="margin-top: 16px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
                 <button onclick="openChart()" style="background: var(--border-color); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.9em;">📈 Live Chart</button>
                 <button onclick="openPerformance()" style="background: var(--border-color); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.9em;">📊 Performance</button>
@@ -370,7 +370,7 @@
             </div>
         </div>
     </div>
-    
+
     <script>
         // Telegram WebApp API
         const tg = window.Telegram?.WebApp;
@@ -378,7 +378,7 @@
             tg.ready();
             tg.expand();
         }
-        
+
         // Check mission status on page load
         async function checkMissionStatus() {
             try {
@@ -388,11 +388,11 @@
                         'X-User-ID': '{{ user_id }}'
                     }
                 });
-                
+
                 if (response.ok) {
                     const mission = await response.json();
                     const fireButton = document.querySelector('.execute-button');
-                    
+
                     if (mission.status === 'fired' || mission.mission_stats?.user_fired) {
                         // Mission already fired - disable button and show status
                         fireButton.disabled = true;
@@ -411,22 +411,22 @@
                 console.log('Mission status check failed:', error);
             }
         }
-        
+
         // Run status check when page loads
         checkMissionStatus();
-        
+
         // Fire signal function
         async function fireSignal() {
             const fireButton = document.querySelector('.execute-button');
             const signalId = '{{ signal_id }}';
             const userId = '{{ user_id }}';
-            
+
             try {
                 // Update button to show firing state
                 fireButton.disabled = true;
                 fireButton.style.background = 'linear-gradient(135deg, #ffc107, #fd7e14)';
                 fireButton.textContent = '🔥 FIRING...';
-                
+
                 // Make API call to fire the signal
                 const response = await fetch('/api/fire', {
                     method: 'POST',
@@ -439,31 +439,31 @@
                         mission_id: signalId
                     })
                 });
-                
+
                 const result = await response.json();
-                
+
                 if (response.ok && result.success) {
                     // Success - show success state
                     fireButton.style.background = 'linear-gradient(135deg, #28a745, #20c997)';
                     fireButton.textContent = '✅ MISSION FIRED!';
-                    
+
                     // Show success message with tactical flair
                     alert('🎯 MISSION EXECUTED!\n\nTarget acquired. Trade has been fired.\nTracking bullet to target...');
-                    
+
                     // Redirect to live tracking page after short delay
                     setTimeout(() => {
                         const symbol = '{{ symbol }}';
                         const direction = '{{ direction }}';
                         window.location.href = `/track-trade?mission_id=${signalId}&symbol=${symbol}&direction=${direction}`;
                     }, 2000);
-                    
+
                 } else {
                     // Error - show error state and re-enable
                     fireButton.style.background = 'linear-gradient(135deg, #dc3545, #c82333)';
                     fireButton.textContent = '❌ MISSION FAILED';
-                    
+
                     alert('❌ MISSION FAILED\n\n' + (result.error || 'Unable to fire signal. Please try again.'));
-                    
+
                     // Reset button after delay
                     setTimeout(() => {
                         fireButton.disabled = false;
@@ -471,16 +471,16 @@
                         fireButton.textContent = '🚀 EXECUTE TRADE 🚀';
                     }, 3000);
                 }
-                
+
             } catch (error) {
                 console.error('Fire signal error:', error);
-                
+
                 // Error - show error state and re-enable
                 fireButton.style.background = 'linear-gradient(135deg, #dc3545, #c82333)';
                 fireButton.textContent = '❌ FIRE FAILED';
-                
+
                 alert('❌ COMMUNICATION FAILURE\n\nUnable to contact command. Check connection and try again.');
-                
+
                 // Reset button after delay
                 setTimeout(() => {
                     fireButton.disabled = false;
@@ -489,24 +489,24 @@
                 }, 3000);
             }
         }
-        
+
         // Timer countdown
         {% if expiry_seconds > 0 %}
         let timeLeft = {{ expiry_seconds }};
         const countdownElement = document.getElementById('countdown');
         const countdownMainElement = document.getElementById('countdown-main');
-        
+
         const timer = setInterval(function() {
             timeLeft--;
-            
+
             if (timeLeft <= 0) {
                 clearInterval(timer);
                 if (countdownElement) countdownElement.textContent = 'EXPIRED';
                 if (countdownMainElement) countdownMainElement.textContent = 'EXPIRED';
-                
+
                 const timerDiv = document.getElementById('timer');
                 if (timerDiv) timerDiv.style.background = '#666';
-                
+
                 const fireButton = document.querySelector('.execute-button');
                 if (fireButton) {
                     fireButton.disabled = true;
@@ -517,28 +517,28 @@
                 const minutes = Math.floor(timeLeft / 60);
                 const seconds = timeLeft % 60;
                 const timeString = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-                
+
                 if (countdownElement) countdownElement.textContent = timeString;
                 if (countdownMainElement) countdownMainElement.textContent = timeString;
             }
         }, 1000);
         {% endif %}
-        
+
         // Navigation functions
         function openChart() {
             // TODO: Implement chart opening
             alert('📈 Chart view coming soon!');
         }
-        
+
         function openPerformance() {
             window.open('/stats/{{ user_id }}', '_blank');
         }
-        
+
         function openNotebook() {
             const userId = '{{ user_id }}';
             window.open(`/notebook/${userId}`, '_blank');
         }
-        
+
         function openHistory() {
             window.open('/history', '_blank');
         }

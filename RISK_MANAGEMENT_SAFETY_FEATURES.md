@@ -1,41 +1,48 @@
 # BITTEN Risk Management Safety Features
 
 ## Overview
+
 The enhanced risk management system now includes comprehensive safety features to protect traders from common pitfalls and enforce discipline.
 
 ## New Safety Features
 
 ### 1. Daily Loss Limits by Tier
+
 - **NIBBLER**: -7% daily loss limit
 - **FANG/COMMANDER/**: -10% daily loss limit
 - Automatic position closure when limit is reached
 - Trading disabled for remainder of the day
 
 ### 2. Tilt Detection & Forced Breaks
+
 - **Warning Level**: 3 consecutive losses
 - **Lockout Level**: 4+ consecutive losses
 - **Forced Break**: 1 hour mandatory pause after lockout
 - Tilt strikes reset on winning trade
 
 ### 3. Medic Mode
+
 - **Activation**: -5% daily drawdown
 - **Risk Reduction**: 50% of normal risk
 - **Position Limit**: Maximum 1 open position
 - **Purpose**: Helps traders recover carefully
 
 ### 4. Weekend Trading Limits
+
 - **Max Positions**: 1 (reduced from normal)
 - **Risk Multiplier**: 0.5 (50% of normal risk)
 - **Active**: Saturday & Sunday
 - **Rationale**: Lower liquidity weekends
 
 ### 5. News Event Lockouts
+
 - **Lockout Window**: 30 minutes before/after high impact news
 - **Affected Pairs**: Any pair containing the news currency
 - **Impact Levels**: Only "high" impact events trigger lockout
 - **Real-time Updates**: News events tracked dynamically
 
 ### 6. Trading States
+
 ```python
 class TradingState(Enum):
     NORMAL = "normal"
@@ -50,7 +57,9 @@ class TradingState(Enum):
 ## Integration with Existing Systems
 
 ### RiskCalculator Integration
+
 The `RiskCalculator` now checks all restrictions before allowing position sizing:
+
 ```python
 # Example usage
 calculator = RiskCalculator(risk_manager)
@@ -71,7 +80,9 @@ else:
 ```
 
 ### Session Tracking
+
 Each user has a persistent trading session that tracks:
+
 - Daily P&L
 - Consecutive wins/losses
 - Tilt strikes
@@ -79,6 +90,7 @@ Each user has a persistent trading session that tracks:
 - Trade count
 
 ### Safety Utilities
+
 ```python
 # Get formatted warnings
 warnings = SafetySystemIntegration.format_risk_warning(restrictions)

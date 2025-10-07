@@ -2,7 +2,7 @@
   "README": "CRITICAL: This file must contain REAL broker credentials only",
   "WARNING": "NO FAKE passwords allowed - use actual MT5 account details",
   "INSTRUCTIONS": "Update with real account credentials before system use",
-  
+
   "user_7176191872": {
     "broker": "Coinexx",
     "server": "REAL_SERVER_NAME_REQUIRED",

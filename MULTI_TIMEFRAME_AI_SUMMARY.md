@@ -1,36 +1,42 @@
 # Multi-Timeframe AI Engine - The Proven Winner
 
 ## 🏆 Previous Results (6 pairs)
+
 - **RAPID ASSAULT**: 83.3% win rate, 286 pips
-- **SNIPER OPS**: 100% win rate, 259 pips  
+- **SNIPER OPS**: 100% win rate, 259 pips
 - **Total**: 5.5 signals/day
 
 ## 🚀 Scaled Configuration (10 pairs)
 
 ### Key Features:
+
 1. **Multi-timeframe scanning**: 1min to 1hour
 2. **80% TCS threshold** for both signal types (proven optimal)
 3. **10 active pairs** (expanded from 6)
 4. **Clean separation** between AI generation and gaming logic
 
 ### Timeframe Strategy:
+
 - **RAPID ASSAULT**: ≤15min (1min, 3min, 5min, 15min)
 - **SNIPER OPS**: >15min (30min, 1hour)
 
 ### Active Pairs:
+
 ```python
-['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD', 
+['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD',
  'EURJPY', 'USDCHF', 'NZDUSD', 'GBPJPY', 'EURGBP']
 ```
 
 ## 📊 Expected Results with 10 pairs
 
 ### Signal Frequency:
+
 - **6 pairs**: 5.5 signals/day
 - **10 pairs**: ~9-10 signals/day (1.67x scaling)
 - With multi-timeframe: ~15-20 signals/day
 
 ### Quality Maintained:
+
 - RAPID: 80-85% win rate
 - SNIPER: 95-100% win rate
 - Both at 80% TCS threshold
@@ -45,9 +51,10 @@
 ## 🔧 Configuration Highlights
 
 ### Timeframe Targets:
+
 ```
 1min:  8 pips in 5-10 min
-3min:  12 pips in 10-20 min  
+3min:  12 pips in 10-20 min
 5min:  18 pips in 15-30 min
 15min: 25 pips in 30-45 min
 30min: 35 pips in 45-75 min
@@ -55,17 +62,20 @@
 ```
 
 ### Risk/Reward:
+
 - RAPID: 1:2 ratio
 - SNIPER: 1:3 ratio
 
 ## 📈 Advantages Over Other Versions
 
 ### vs Mathematical Engine:
+
 - Simpler, proven approach
 - No complex per-pair models
 - Consistent 80% threshold works
 
 ### vs Hybrid/Complex Engines:
+
 - Clean, single approach
 - No mixing of strategies
 - Multi-timeframe provides frequency

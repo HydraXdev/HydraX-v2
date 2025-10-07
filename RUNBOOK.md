@@ -129,16 +129,19 @@ redis-cli XADD alerts:v1 * type signal_alert alert_id OPS-TEST text "[OPS TEST]"
 ## 🚨 Critical Process Dependencies
 
 **Required for Signal Generation:**
+
 ```bash
 pm2 list | grep -E "elite_guard|zmq_telemetry_bridge"
 ```
 
 **Required for Fire Execution:**
+
 ```bash
 pm2 list | grep -E "command_router|confirm_listener"
 ```
 
 **Required for Alert Delivery:**
+
 ```bash
 pm2 list | grep -E "athena_broadcaster_secure"
 ```
@@ -176,15 +179,18 @@ echo -e "\n✅ Health check complete"
 ## 📞 Emergency Contacts & Escalation
 
 **L1 - System Restart:**
+
 ```bash
 pm2 restart elite_guard command_router confirm_listener athena_broadcaster_secure
 ```
 
 **L2 - Full System Reset:**
+
 ```bash
 pm2 restart all
 ```
 
 **L3 - EA Connection Issues:**
+
 - Check EA heartbeat: `sqlite3 /root/HydraX-v2/bitten.db "SELECT target_uuid, (strftime('%s','now') - last_seen) AS age_seconds FROM ea_instances;"`
 - If age >120s, restart EA or check ForexVPS connection

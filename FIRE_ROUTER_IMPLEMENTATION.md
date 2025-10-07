@@ -42,6 +42,7 @@ The BITTEN Fire Router has been successfully upgraded to combine the simple sock
 ### Key Classes
 
 #### 1. BridgeConnectionManager
+
 ```python
 class BridgeConnectionManager:
     def __init__(self, host="127.0.0.1", port=9000, max_retries=3, retry_delay=1.0)
@@ -50,12 +51,14 @@ class BridgeConnectionManager:
 ```
 
 **Features:**
+
 - Thread-safe socket connection handling
 - Exponential backoff retry logic
 - Connection health tracking
 - Timeout management
 
 #### 2. AdvancedValidator
+
 ```python
 class AdvancedValidator:
     def validate_trade(self, request, user_profile=None) -> Tuple[bool, str]
@@ -63,6 +66,7 @@ class AdvancedValidator:
 ```
 
 **Validation Layers:**
+
 - Basic field validation (symbol format, volume limits)
 - Stop loss/take profit logic validation
 - TCS score requirements (tier-based)
@@ -71,6 +75,7 @@ class AdvancedValidator:
 - Risk management (weekend restrictions, high-risk symbols)
 
 #### 3. FireRouter
+
 ```python
 class FireRouter:
     def __init__(self, bridge_host="127.0.0.1", bridge_port=9000, execution_mode=ExecutionMode.LIVE)
@@ -80,6 +85,7 @@ class FireRouter:
 ```
 
 **Core Features:**
+
 - Legacy mission format support
 - Advanced validation integration
 - Dual execution modes (simulation/live)
@@ -89,6 +95,7 @@ class FireRouter:
 ## Usage Examples
 
 ### Basic Usage (Legacy Format)
+
 ```python
 from bitten_core.fire_router import execute_trade
 import os
@@ -113,6 +120,7 @@ print(f"Result: {result}")  # "sent_to_bridge" or "failed"
 ```
 
 ### Advanced Usage (New Format)
+
 ```python
 from bitten_core.fire_router import FireRouter, TradeRequest, TradeDirection, ExecutionMode
 
@@ -151,6 +159,7 @@ print(f"Execution time: {result.execution_time_ms}ms")
 ```
 
 ### System Monitoring
+
 ```python
 # Get comprehensive system status
 status = router.get_system_status()
@@ -165,6 +174,7 @@ print(f"Validation stats: {status['validation_statistics']}")
 ## Configuration
 
 ### Environment Variables
+
 ```bash
 # Set simulation mode (default: false)
 export BITTEN_SIMULATION_MODE=true
@@ -175,7 +185,9 @@ export BITTEN_BRIDGE_PORT=9000
 ```
 
 ### Bridge Payload Format
+
 The system sends JSON payloads to the MT5 bridge:
+
 ```json
 {
     \"symbol\": \"EURUSD\",
@@ -193,29 +205,34 @@ The system sends JSON payloads to the MT5 bridge:
 ## Validation Rules
 
 ### Tier-Based TCS Requirements
+
 - **Nibbler**: 75% minimum
 - **Fang**: 80% minimum
 - **Commander**: 85% minimum
 - **Apex**: 90% minimum
 
 ### Daily Trade Limits
+
 - **Nibbler**: 6 trades/day
 - **Fang**: 10 trades/day
 - **Commander**: 20 trades/day
 - **Apex**: 50 trades/day
 
 ### Position Limits
+
 - **Nibbler**: 1 concurrent position
 - **Fang**: 2 concurrent positions
 - **Commander**: 3 concurrent positions
 - **Apex**: 5 concurrent positions
 
 ### Rate Limiting
+
 - Maximum 5 trades per minute
 - 30-second cooldown between trades
 - Weekend trading restrictions
 
 ### Risk Management
+
 - High-risk symbols (XAUUSD, BTCUSD, ETHUSD) require Commander+ tier
 - Symbol-specific volume limits
 - Maximum 10% account exposure
@@ -223,6 +240,7 @@ The system sends JSON payloads to the MT5 bridge:
 ## Error Handling
 
 ### Error Codes
+
 - `VALIDATION_FAILED` - Trade failed validation
 - `BRIDGE_ERROR` - Bridge communication failed
 - `EMERGENCY_STOP` - Emergency stop active
@@ -230,6 +248,7 @@ The system sends JSON payloads to the MT5 bridge:
 - `SIMULATION_TIMEOUT` - Simulated failure (testing only)
 
 ### Retry Logic
+
 - Bridge connections: 3 retries with exponential backoff
 - Timeout handling: 10s connection, 5s send timeout
 - Graceful degradation on failures
@@ -237,6 +256,7 @@ The system sends JSON payloads to the MT5 bridge:
 ## Testing
 
 ### Test Suite
+
 ```bash
 # Run comprehensive tests
 python3 test_standalone_fire_router.py
@@ -251,6 +271,7 @@ print('Fire Router loaded successfully')
 ```
 
 ### Test Scenarios
+
 1. **Legacy Interface** - Backward compatibility
 2. **New Interface** - Advanced validation
 3. **System Status** - Monitoring functionality
@@ -260,11 +281,13 @@ print('Fire Router loaded successfully')
 ## Deployment
 
 ### Requirements
+
 - Python 3.7+
 - Socket access to MT5 bridge (port 9000)
 - Write permissions for logging
 
 ### Installation
+
 ```bash
 # Copy to bitten_core directory
 cp fire_router.py /path/to/bitten_core/
@@ -274,6 +297,7 @@ chmod 644 /path/to/bitten_core/fire_router.py
 ```
 
 ### Production Configuration
+
 ```python
 # Production router setup
 router = FireRouter(
@@ -289,18 +313,21 @@ router.set_emergency_stop(True)
 ## Security Considerations
 
 ### Data Validation
+
 - All inputs are validated before processing
 - SQL injection prevention (if database integration added)
 - Rate limiting prevents abuse
 - Emergency stop provides immediate halt capability
 
 ### Connection Security
+
 - Local socket connections only (127.0.0.1)
 - No external network access
 - Connection timeout prevents hanging
 - Retry limits prevent resource exhaustion
 
 ### Logging Security
+
 - No sensitive data in logs
 - Configurable log levels
 - Audit trail for compliance
@@ -309,12 +336,14 @@ router.set_emergency_stop(True)
 ## Performance Metrics
 
 ### Benchmarks
+
 - **Validation time**: ~1-5ms per trade
 - **Bridge communication**: ~10-50ms per trade
 - **Total execution time**: ~15-100ms per trade
 - **Memory usage**: ~1-2MB per router instance
 
 ### Optimization
+
 - Connection pooling for high-frequency trading
 - Validation caching for repeated checks
 - Asynchronous execution for parallel trades
@@ -323,6 +352,7 @@ router.set_emergency_stop(True)
 ## Maintenance
 
 ### Health Monitoring
+
 ```python
 # Regular health check
 status = router.get_system_status()
@@ -332,6 +362,7 @@ if status['bridge_health']['success_rate'] < 95:
 ```
 
 ### Log Management
+
 ```python
 # Access trade history
 history = router.get_trade_history(limit=50)
@@ -340,6 +371,7 @@ for trade in history:
 ```
 
 ### Updates
+
 - Backward compatible interface maintained
 - Gradual migration path provided
 - Testing framework included
@@ -364,6 +396,7 @@ for trade in history:
    - Use `router.set_emergency_stop(False)` to clear
 
 ### Debug Mode
+
 ```python
 import logging
 logging.basicConfig(level=logging.DEBUG)
@@ -375,6 +408,7 @@ router = FireRouter(execution_mode=ExecutionMode.SIMULATION)
 ## Future Enhancements
 
 ### Planned Features
+
 1. **Advanced Analytics** - Performance dashboards
 2. **Machine Learning** - Predictive validation
 3. **Multi-Bridge Support** - Connection pooling
@@ -382,6 +416,7 @@ router = FireRouter(execution_mode=ExecutionMode.SIMULATION)
 5. **API Integration** - REST endpoints for external systems
 
 ### Scalability
+
 - Horizontal scaling with multiple router instances
 - Database integration for persistent storage
 - Message queue integration for high-throughput
@@ -392,6 +427,7 @@ router = FireRouter(execution_mode=ExecutionMode.SIMULATION)
 ## Summary
 
 The BITTEN Fire Router successfully combines:
+
 - ✅ **Simple socket communication** from deployment version
 - ✅ **Comprehensive validation** from complex version
 - ✅ **Robust error handling** with retry logic

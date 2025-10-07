@@ -16,21 +16,19 @@ The server detects the protocol type and routes accordingly:
 - TCP traffic: Processed as JSONL over native sockets
 """
 
-import zmq
-import socket
-import select
 import json
-import time
 import logging
-import threading
-import sqlite3
 import os
+import select
+import socket
+import sqlite3
+import threading
+import time
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger('HybridServer')
+import zmq
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logger = logging.getLogger("HybridServer")
 
 
 class HybridCommandServer:
@@ -51,12 +49,7 @@ class HybridCommandServer:
         self.ea_connections = {}  # {socket: {'address': addr, 'buffer': bytes}}
 
         # Statistics
-        self.stats = {
-            'zmq_messages': 0,
-            'tcp_messages': 0,
-            'ea_connections': 0,
-            'commands_forwarded': 0
-        }
+        self.stats = {"zmq_messages": 0, "tcp_messages": 0, "ea_connections": 0, "commands_forwarded": 0}
 
     def setup_zmq_router(self):
         """Set up ZMQ ROUTER for Brain communication"""
@@ -88,7 +81,7 @@ class HybridCommandServer:
             self.tcp_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.tcp_server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             self.tcp_server.setblocking(False)  # Non-blocking for select()
-            self.tcp_server.bind(('0.0.0.0', self.port))
+            self.tcp_server.bind(("0.0.0.0", self.port))
             self.tcp_server.listen(5)
             logger.info(f"✅ TCP server bound to port {self.port}")
             return True
@@ -101,12 +94,8 @@ class HybridCommandServer:
         try:
             client_socket.setblocking(False)
             addr = client_socket.getpeername()
-            self.ea_connections[client_socket] = {
-                'address': addr,
-                'buffer': b'',
-                'connected_at': time.time()
-            }
-            self.stats['ea_connections'] += 1
+            self.ea_connections[client_socket] = {"address": addr, "buffer": b"", "connected_at": time.time()}
+            self.stats["ea_connections"] += 1
             logger.info(f"📡 EA connected from {addr} (total connections: {self.stats['ea_connections']})")
         except Exception as e:
             logger.error(f"❌ Failed to handle new connection: {e}")
@@ -122,23 +111,23 @@ class HybridCommandServer:
 
             if not data:
                 # Connection closed
-                addr = self.ea_connections[client_socket]['address']
+                addr = self.ea_connections[client_socket]["address"]
                 logger.info(f"🔌 EA disconnected: {addr}")
                 del self.ea_connections[client_socket]
                 client_socket.close()
                 return
 
             conn_info = self.ea_connections[client_socket]
-            conn_info['buffer'] += data
+            conn_info["buffer"] += data
 
             # Process complete JSONL messages (terminated with \n)
-            while b'\n' in conn_info['buffer']:
-                line, conn_info['buffer'] = conn_info['buffer'].split(b'\n', 1)
+            while b"\n" in conn_info["buffer"]:
+                line, conn_info["buffer"] = conn_info["buffer"].split(b"\n", 1)
 
                 if line.strip():
                     try:
-                        message = json.loads(line.decode('utf-8'))
-                        self.stats['tcp_messages'] += 1
+                        message = json.loads(line.decode("utf-8"))
+                        self.stats["tcp_messages"] += 1
                         self.process_ea_message(message, client_socket)
                     except json.JSONDecodeError as e:
                         logger.error(f"❌ Invalid JSON from EA: {e}")
@@ -156,12 +145,12 @@ class HybridCommandServer:
 
     def process_ea_message(self, message, client_socket):
         """Process message received from EA"""
-        msg_type = message.get('type', 'unknown')
+        msg_type = message.get("type", "unknown")
         logger.info(f"📥 EA message: {msg_type}")
 
         # EA might send heartbeats or confirmations
         # Forward confirmations to confirm_listener via ZMQ
-        if msg_type in ('confirmation', 'position_opened', 'position_closed', 'sl_hit', 'tp_hit'):
+        if msg_type in ("confirmation", "position_opened", "position_closed", "sl_hit", "tp_hit"):
             self.forward_confirmation(message)
 
     def forward_confirmation(self, confirmation):
@@ -171,8 +160,8 @@ class HybridCommandServer:
 
     def send_to_ea(self, command_dict, target_socket=None):
         """Send command to EA via TCP as JSONL"""
-        command_json = json.dumps(command_dict, separators=(',', ':'))
-        payload = (command_json + '\n').encode('utf-8')
+        command_json = json.dumps(command_dict, separators=(",", ":"))
+        payload = (command_json + "\n").encode("utf-8")
 
         if target_socket:
             # Send to specific EA
@@ -197,10 +186,10 @@ class HybridCommandServer:
         try:
             if self.ipc_pull.poll(0):  # Non-blocking poll
                 command = self.ipc_pull.recv_json(zmq.NOBLOCK)
-                self.stats['commands_forwarded'] += 1
+                self.stats["commands_forwarded"] += 1
 
-                cmd_type = command.get('type', 'unknown')
-                cmd_id = command.get('fire_id') or command.get('request_ref', 'NO_ID')
+                cmd_type = command.get("type", "unknown")
+                cmd_id = command.get("fire_id") or command.get("request_ref", "NO_ID")
                 logger.info(f"📥 IPC command: {cmd_type} {cmd_id}")
 
                 # Forward to EA
@@ -213,13 +202,13 @@ class HybridCommandServer:
 
     def run(self):
         """Main server loop using select()"""
-        logger.info("="*70)
+        logger.info("=" * 70)
         logger.info("🚀 HYBRID COMMAND SERVER STARTING")
-        logger.info("="*70)
+        logger.info("=" * 70)
         logger.info(f"TCP Server: 0.0.0.0:{self.port} (for EA connections)")
         logger.info(f"ZMQ ROUTER: tcp://*:5554 (for Brain)")
         logger.info(f"IPC PULL: {self.ipc_path}")
-        logger.info("="*70)
+        logger.info("=" * 70)
 
         # Setup all endpoints
         if not self.setup_tcp_server():
@@ -286,6 +275,6 @@ class HybridCommandServer:
         self.zmq_context.term()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     server = HybridCommandServer()
     server.run()

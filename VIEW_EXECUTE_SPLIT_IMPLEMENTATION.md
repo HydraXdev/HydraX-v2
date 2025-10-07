@@ -6,6 +6,7 @@
 ## Summary
 
 Implemented View vs Execute split on Mission Brief page to allow:
+
 - **View Mode**: Users can open same alert link multiple times for up to 8 hours (read-only)
 - **Execute Mode**: Requires fresh authorization with short-lived token (10 min TTL) for order execution
 
@@ -14,9 +15,11 @@ Implemented View vs Execute split on Mission Brief page to allow:
 ### 1. Backend: `/root/HydraX-v2/webapp_server_optimized.py`
 
 #### Added: `/mission/authorize` endpoint (Line 1592)
+
 **Purpose**: Generate short-lived execute token for mission execution
 
 **Request**:
+
 ```json
 POST /mission/authorize
 Content-Type: application/json
@@ -29,6 +32,7 @@ Content-Type: application/json
 ```
 
 **Response (200)**:
+
 ```json
 {
   "success": true,
@@ -40,12 +44,14 @@ Content-Type: application/json
 ```
 
 **Error Responses**:
+
 - `404`: Invalid view code / alert not found
 - `409`: Mission already executed
 - `410`: Alert expired (8h lifetime)
 - `422`: Validation failed
 
 **Key Features**:
+
 - Generates fresh nonce per authorization attempt
 - 10-minute TTL for execute tokens
 - JWT with scopes: `["mission:view", "order:execute"]`
@@ -53,9 +59,11 @@ Content-Type: application/json
 - Risk guardrails integrated
 
 #### Modified: Short code resolver (Lines 3683-3694)
+
 **Change**: Removed `used_at` marking to allow multiple view accesses
 
 **Before**:
+
 ```python
 # Check if already used
 if used_at is not None:
@@ -71,6 +79,7 @@ cursor.execute("""
 ```
 
 **After**:
+
 ```python
 # VIEW MODE: Allow multiple accesses (don't mark as used)
 # Execute authorization handled by /mission/authorize endpoint
@@ -87,6 +96,7 @@ return redirect(f'https://joinbitten.com/mission?ms={mission_session_id}', code=
 ### 2. Frontend: `/root/HydraX-v2/bitten-ui/app/mission/page.tsx`
 
 #### Added State Variables (Lines 45-50)
+
 ```typescript
 // Execute token state (View vs Execute split)
 const [executeToken, setExecuteToken] = useState<string | null>(null);
@@ -97,6 +107,7 @@ const [isFiring, setIsFiring] = useState<boolean>(false);
 ```
 
 #### Added Token Expiry Check (Lines 61-77)
+
 ```typescript
 // Check token expiry (15s skew)
 useEffect(() => {
@@ -118,14 +129,17 @@ useEffect(() => {
 ```
 
 #### Replaced Execute Handler (Lines 216-362)
+
 **Two-Step Flow**: Authorize → Fire
 
 **New Functions**:
+
 1. `handleExecute()` - Main handler that checks token and triggers flow
 2. `authorizeExecution()` - Calls `/mission/authorize` to get execute token
 3. `fireWithToken()` - Calls `/api/fire` with Bearer token
 
 **Flow**:
+
 ```
 User clicks Execute
     ↓
@@ -143,13 +157,16 @@ Redirect to /status (on success)
 ```
 
 **Error Handling**:
+
 - **409**: Already executed → show status CTA
 - **422**: Risk validation failed → show error, keep view
 - **401/403**: Token expired → show "Get New Execute Token" button
 - **410**: Session expired → show expired message
 
 #### Modified Error Display (Lines 441-473)
+
 Added conditional rendering for token expiry:
+
 ```typescript
 {tokenExpired ? (
   <button
@@ -175,12 +192,14 @@ Added conditional rendering for token expiry:
 ## Behavior Changes
 
 ### Before (Single Token, One-Time Use):
+
 1. User clicks Telegram link → Gets mission page with view+execute token
 2. User clicks Execute → Trade fires with same token
 3. **If user refreshes page → "Code already used" error**
 4. **Cannot view mission again after first access**
 
 ### After (View vs Execute Split):
+
 1. User clicks Telegram link → Gets mission page (VIEW MODE - read-only)
 2. **User can refresh/re-open link multiple times** (up to 8h lifetime)
 3. User clicks Execute → Authorize → Fire (two-step flow)
@@ -215,12 +234,14 @@ Added conditional rendering for token expiry:
 ## Testing Checklist
 
 ### ✅ View Mode (Repeatable Access):
+
 - [ ] Open same alert link multiple times → Mission loads each time
 - [ ] No "Code already used" errors
 - [ ] Mission data renders from resolver payload
 - [ ] WebSocket not blocking initial page render
 
 ### ✅ Execute Flow (Two-Step):
+
 - [ ] Click Execute → Authorize → Fire sequence works
 - [ ] `/mission/authorize` returns execute token
 - [ ] `/api/fire` receives Bearer token in headers
@@ -228,23 +249,27 @@ Added conditional rendering for token expiry:
 - [ ] Network tab shows two separate API calls
 
 ### ✅ Idempotency:
+
 - [ ] Re-press Execute within 10 min → Same execute token used
 - [ ] Duplicate clientRequestId → Same opId or 409
 - [ ] Already executed mission → 409 with executed_at timestamp
 
 ### ✅ Error Handling:
+
 - [ ] Risk exceeded → 422, error shown, view remains
 - [ ] Expired execute token → 401/403, "Get New Execute Token" button
 - [ ] Already executed → 409, "Go to Status" CTA
 - [ ] Expired alert (>8h) → 410, "Alert expired" message
 
 ### ✅ Token Expiry:
+
 - [ ] Wait 10 min after authorization → Token marked expired
 - [ ] Execute button shows "Get New Execute Token"
 - [ ] Click button → Re-authorizes successfully
 - [ ] New token has fresh exp timestamp
 
 ### ✅ Layout Stability:
+
 - [ ] Screenshot before/after → Pixel-identical layout
 - [ ] No component restructuring
 - [ ] No style changes
@@ -255,12 +280,14 @@ Added conditional rendering for token expiry:
 ## Lines Changed Summary
 
 ### Backend (`webapp_server_optimized.py`):
+
 - **Inserted**: Lines 1592-1768 (177 lines) - `/mission/authorize` endpoint
 - **Modified**: Lines 3683-3694 (12 lines) - Short code resolver changes
 
 **Total Backend Changes**: ~189 lines
 
 ### Frontend (`mission/page.tsx`):
+
 - **Added**: Lines 45-50 (6 lines) - State variables
 - **Added**: Lines 61-77 (17 lines) - Token expiry check
 - **Replaced**: Lines 216-362 (147 lines) - Execute handler split into 3 functions

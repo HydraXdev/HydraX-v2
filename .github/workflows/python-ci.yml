@@ -8,7 +8,7 @@ on:
       - "requirements*.txt"
       - "pyproject.toml"
   push:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   test:

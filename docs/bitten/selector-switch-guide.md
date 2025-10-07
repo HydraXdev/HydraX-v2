@@ -7,18 +7,21 @@ The Selector Switch is an exclusive feature for COMMANDER tier that controls how
 ## Three Modes
 
 ### 🟢 **SAFE MODE** (Default)
+
 - **Manual execution only**
 - Signals are displayed with FIRE button
 - You decide every shot
 - Perfect for learning or careful trading
 
 ### 🟡 **SEMI MODE**
+
 - **Confirmation required**
 - Popup appears for each signal
 - 60-second timeout to decide
 - Shows full analysis before firing
 
 ### 🔴 **FULL AUTO MODE**
+
 - **24/7 Autonomous trading**
 - No human intervention needed
 - 91%+ TCS signals only
@@ -29,7 +32,7 @@ The Selector Switch is an exclusive feature for COMMANDER tier that controls how
 ```
 /selector          - Show current mode & status
 /selector safe     - Switch to SAFE mode
-/selector semi     - Switch to SEMI mode  
+/selector semi     - Switch to SEMI mode
 /selector full     - Switch to FULL AUTO mode
 /selector stop     - Emergency stop (→ SAFE)
 /selector config   - Configure AUTO settings
@@ -89,29 +92,32 @@ Your COMMANDER is working 24/7! 🎖️
 ## Best Practices
 
 ### For New Commanders:
+
 1. Start in SAFE mode
 2. Try SEMI mode when comfortable
 3. Use FULL AUTO only with proven success
 
 ### For Experienced Commanders:
+
 1. Configure AUTO for your style
 2. Disable arcade for sniper-only focus
 3. Adjust min_tcs for higher quality
 
 ### For Warriors:
+
 1. Full AUTO with STEALTH enabled
 2. Let the system work 24/7
 3. Monitor performance weekly
 
 ## Mode Comparison
 
-| Feature | SAFE | SEMI | FULL |
-|---------|------|------|------|
-| Manual Control | 100% | 50% | 0% |
-| Speed | Slow | Medium | Instant |
-| Stress | Low | Medium | None |
-| Potential | Limited | Good | Maximum |
-| Sleep Trading | No | No | Yes |
+| Feature        | SAFE    | SEMI   | FULL    |
+| -------------- | ------- | ------ | ------- |
+| Manual Control | 100%    | 50%    | 0%      |
+| Speed          | Slow    | Medium | Instant |
+| Stress         | Low     | Medium | None    |
+| Potential      | Limited | Good   | Maximum |
+| Sleep Trading  | No      | No     | Yes     |
 
 ## Integration with Fire Modes
 

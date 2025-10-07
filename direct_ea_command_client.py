@@ -15,16 +15,13 @@ This client connects directly to the EA and sends commands,
 bypassing the need for ZMQ translation.
 """
 
-import socket
 import json
-import time
 import logging
+import socket
+import time
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger('EACommandClient')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logger = logging.getLogger("EACommandClient")
 
 
 class DirectEACommandClient:
@@ -65,8 +62,8 @@ class DirectEACommandClient:
 
         try:
             # Convert to JSON and add newline (JSONL format)
-            command_json = json.dumps(command_dict, separators=(',', ':'))
-            payload = (command_json + '\n').encode('utf-8')
+            command_json = json.dumps(command_dict, separators=(",", ":"))
+            payload = (command_json + "\n").encode("utf-8")
 
             logger.info(f"📤 Sending command: {command_dict.get('type', 'unknown')}")
             logger.debug(f"   Payload: {command_json[:100]}...")
@@ -102,7 +99,7 @@ class DirectEACommandClient:
             "tfs": timeframes,
             "lookback": lookback,
             "midbar": 0,
-            "midbar_sec": 10
+            "midbar_sec": 10,
         }
 
         return self.send_command(command)
@@ -129,7 +126,7 @@ class DirectEACommandClient:
             "entry": entry,
             "sl": sl,
             "tp": tp,
-            "lot": round(lot, 2)  # MT5 requires 2 decimal places
+            "lot": round(lot, 2),  # MT5 requires 2 decimal places
         }
 
         return self.send_command(command)
@@ -156,18 +153,18 @@ class DirectEACommandClient:
 
 def test_feed_set():
     """Test function to send feed_set command"""
-    logger.info("="*70)
+    logger.info("=" * 70)
     logger.info("🧪 Testing Direct EA Command Client - feed_set")
-    logger.info("="*70)
+    logger.info("=" * 70)
 
     with DirectEACommandClient() as client:
         if client.connection:
             success = client.send_feed_set()
 
             if success:
-                logger.info("\n" + "="*70)
+                logger.info("\n" + "=" * 70)
                 logger.info("✅ SUCCESS - feed_set command sent to EA")
-                logger.info("="*70)
+                logger.info("=" * 70)
                 logger.info("\n📊 Expected EA behavior:")
                 logger.info("   1. EA calls BuildWatchlist() with 19 symbols")
                 logger.info("   2. EA calls EmitBootstrap() - sends historical bars")
@@ -176,12 +173,12 @@ def test_feed_set():
                 logger.info("   5. Elite Guard receives data and starts pattern scanning")
                 logger.info("\n⏱️  Check logs in 30 seconds:")
                 logger.info("   tail -f /var/log/hydrasocket_universal_bridge.log | grep 'bar_closed\\|custom_bar'")
-                logger.info("="*70)
+                logger.info("=" * 70)
             else:
                 logger.error("\n❌ FAILED - Could not send feed_set command")
         else:
             logger.error("\n❌ FAILED - Could not connect to EA")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     test_feed_set()

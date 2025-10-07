@@ -27,52 +27,52 @@ Successfully implemented a **secure, event-driven mission session architecture**
 
 ### Phase 1: Foundation Components (Complete)
 
-| Component | File | Lines | Status |
-|-----------|------|-------|--------|
-| **Database Schema** | `migrations/002_mission_sessions.sql` | 60 | ✅ Applied |
-| **JWT Token Manager** | `src/security/jwt_manager.py` | 245 | ✅ Complete |
-| **Mission Session Manager** | `src/mission_session/session_manager.py` | 312 | ✅ Complete |
-| **Idempotency Manager** | `src/idempotency/idempotency_manager.py` | 215 | ✅ Complete |
-| **WebSocket Auth** | `src/websocket/auth_middleware.py` | 187 | ✅ Complete |
-| **Deep Link Generator** | `src/telegram/deep_link_generator.py` | 98 | ✅ Complete |
-| **Trade Event Emitter** | `src/events/trade_event_emitter.py` | 185 | ✅ Complete |
-| **Security Audit Logger** | `src/security/audit_logger.py` | 387 | ✅ Complete |
+| Component                   | File                                     | Lines | Status      |
+| --------------------------- | ---------------------------------------- | ----- | ----------- |
+| **Database Schema**         | `migrations/002_mission_sessions.sql`    | 60    | ✅ Applied  |
+| **JWT Token Manager**       | `src/security/jwt_manager.py`            | 245   | ✅ Complete |
+| **Mission Session Manager** | `src/mission_session/session_manager.py` | 312   | ✅ Complete |
+| **Idempotency Manager**     | `src/idempotency/idempotency_manager.py` | 215   | ✅ Complete |
+| **WebSocket Auth**          | `src/websocket/auth_middleware.py`       | 187   | ✅ Complete |
+| **Deep Link Generator**     | `src/telegram/deep_link_generator.py`    | 98    | ✅ Complete |
+| **Trade Event Emitter**     | `src/events/trade_event_emitter.py`      | 185   | ✅ Complete |
+| **Security Audit Logger**   | `src/security/audit_logger.py`           | 387   | ✅ Complete |
 
 **Total Foundation Code**: ~1,689 lines
 
 ### Phase 2: Integration (Complete)
 
-| Integration Point | File | Changes | Status |
-|-------------------|------|---------|--------|
-| **WebApp WebSocket Auth** | `webapp_server_optimized.py` | Lines 42-56, 224-239, 2274-2392 | ✅ Integrated |
-| **WebApp /api/fire** | `webapp_server_optimized.py` | Lines 1586-1688, 1843-1865 | ✅ Integrated |
-| **Mission Brief UI** | `bitten-ui/app/mission/page.tsx` | 334 lines total | ✅ Integrated |
+| Integration Point         | File                             | Changes                         | Status        |
+| ------------------------- | -------------------------------- | ------------------------------- | ------------- |
+| **WebApp WebSocket Auth** | `webapp_server_optimized.py`     | Lines 42-56, 224-239, 2274-2392 | ✅ Integrated |
+| **WebApp /api/fire**      | `webapp_server_optimized.py`     | Lines 1586-1688, 1843-1865      | ✅ Integrated |
+| **Mission Brief UI**      | `bitten-ui/app/mission/page.tsx` | 334 lines total                 | ✅ Integrated |
 
 **Total Integration Changes**: ~500 lines
 
 ### Phase 3: Testing & Documentation (Complete)
 
-| Document | File | Size | Status |
-|----------|------|------|--------|
-| **Go/No-Go Validation** | `tests/go_no_go_validation.py` | 782 lines | ✅ 27/28 tests pass |
-| **Dry-Run Test Suite** | `tests/dry_run_mission_flow.py` | 709 lines | ✅ Complete |
-| **Security Audit Tests** | `tests/test_audit_logger.py` | 567 lines | ✅ 22/22 tests pass |
-| **Operator Runbook** | `OPERATOR_RUNBOOK.md` | 15KB | ✅ Complete |
-| **Wiring Points** | `WIRING_POINTS_DEPLOYMENT.md` | 18KB | ✅ Complete |
-| **Implementation Plan** | `MISSION_SESSION_IMPLEMENTATION_PLAN.md` | 25KB | ✅ Complete |
-| **Implementation Status** | `MISSION_SESSION_IMPLEMENTATION_STATUS.md` | 35KB | ✅ Complete |
-| **Quick Start Guide** | `MISSION_SESSION_QUICKSTART.md` | 12KB | ✅ Complete |
+| Document                  | File                                       | Size      | Status              |
+| ------------------------- | ------------------------------------------ | --------- | ------------------- |
+| **Go/No-Go Validation**   | `tests/go_no_go_validation.py`             | 782 lines | ✅ 27/28 tests pass |
+| **Dry-Run Test Suite**    | `tests/dry_run_mission_flow.py`            | 709 lines | ✅ Complete         |
+| **Security Audit Tests**  | `tests/test_audit_logger.py`               | 567 lines | ✅ 22/22 tests pass |
+| **Operator Runbook**      | `OPERATOR_RUNBOOK.md`                      | 15KB      | ✅ Complete         |
+| **Wiring Points**         | `WIRING_POINTS_DEPLOYMENT.md`              | 18KB      | ✅ Complete         |
+| **Implementation Plan**   | `MISSION_SESSION_IMPLEMENTATION_PLAN.md`   | 25KB      | ✅ Complete         |
+| **Implementation Status** | `MISSION_SESSION_IMPLEMENTATION_STATUS.md` | 35KB      | ✅ Complete         |
+| **Quick Start Guide**     | `MISSION_SESSION_QUICKSTART.md`            | 12KB      | ✅ Complete         |
 
 **Total Documentation**: ~105KB, 8 comprehensive guides
 
 ### Phase 4: Infrastructure (Complete)
 
-| Component | Location | Status |
-|-----------|----------|--------|
-| **JWT Keys** | `/root/HydraX-v2/keys/jwt_*.pem` | ✅ Generated (RS256 2048-bit) |
-| **Database Tables** | `bitten.db` | ✅ 3 tables created |
-| **Audit Log Directory** | `/var/log/bitten/` | ✅ Created (700 perms) |
-| **Python Packages** | PyJWT, ulid-py | ✅ Installed |
+| Component               | Location                         | Status                        |
+| ----------------------- | -------------------------------- | ----------------------------- |
+| **JWT Keys**            | `/root/HydraX-v2/keys/jwt_*.pem` | ✅ Generated (RS256 2048-bit) |
+| **Database Tables**     | `bitten.db`                      | ✅ 3 tables created           |
+| **Audit Log Directory** | `/var/log/bitten/`               | ✅ Created (700 perms)        |
+| **Python Packages**     | PyJWT, ulid-py                   | ✅ Installed                  |
 
 ---
 
@@ -81,6 +81,7 @@ Successfully implemented a **secure, event-driven mission session architecture**
 ### 1. Secure Token System
 
 **JWT RS256 Tokens** with:
+
 - 5-10 minute TTL (configurable)
 - Scopes: `mission:view`, `order:execute`
 - Claims: `sub` (user_id), `ms` (session_id), `aid` (alert_id), `riskMaxUsd`
@@ -88,6 +89,7 @@ Successfully implemented a **secure, event-driven mission session architecture**
 - Nonce for one-time use
 
 **Example Token Claims**:
+
 ```json
 {
   "iss": "bitten-backend",
@@ -108,12 +110,14 @@ Successfully implemented a **secure, event-driven mission session architecture**
 ### 2. Mission Session Lifecycle
 
 **State Machine**:
+
 ```
 PENDING → EXECUTED (on successful fire)
 PENDING → EXPIRED (on TTL expiration)
 ```
 
 **Database Schema**:
+
 - `mission_session_id` (PK): ULID format (`ms_01JXXXXXXXXX`)
 - `user_id`: Foreign key to users
 - `signal_id`: Foreign key to signals
@@ -123,6 +127,7 @@ PENDING → EXPIRED (on TTL expiration)
 - `executed_at`: Execution timestamp
 
 **Validation Logic**:
+
 1. Session exists
 2. Status = PENDING
 3. Not expired (current_time < expires_at)
@@ -134,6 +139,7 @@ PENDING → EXPIRED (on TTL expiration)
 **Cache Key Format**: `{user_id}:{mission_session_id}:{client_request_id}`
 
 **Flow**:
+
 ```
 Client sends request with clientRequestId
   ↓
@@ -144,6 +150,7 @@ If new → Execute + Cache response (10-min TTL)
 ```
 
 **Benefits**:
+
 - Prevents double orders from retry storms
 - Network errors safe to retry
 - Client-side bugs (double-click) protected
@@ -152,6 +159,7 @@ If new → Execute + Cache response (10-min TTL)
 ### 4. WebSocket Authentication
 
 **Connection Flow**:
+
 ```
 Client: ws://host:8888?t=<JWT>
   ↓
@@ -167,6 +175,7 @@ Server: Authorize each topic subscription
 ```
 
 **Topic Authorization**:
+
 - `user.profile` → User's own profile only
 - `mission.alert/{aid}` → Alert belongs to user's session
 - `trades.open` → User's positions only
@@ -179,6 +188,7 @@ Server: Authorize each topic subscription
 **Events Emitted**:
 
 **trades.delta** (Position Lifecycle):
+
 ```javascript
 // ARMING (immediately after execute)
 {
@@ -219,6 +229,7 @@ Server: Authorize each topic subscription
 ```
 
 **ops.confirmation** (Execution Results):
+
 ```javascript
 {
   type: "ops.confirmation",
@@ -232,18 +243,21 @@ Server: Authorize each topic subscription
 ### 6. Security Audit Logging
 
 **16 Event Types**:
+
 - Mission Session: created, validated, executed, expired
 - Fire: requested, idempotent_hit, risk_violation, scope_violation
 - WebSocket: connected, auth_failed, subscribed, disconnected
 - Auth: success, failed, authz.denied, rate_limit.exceeded
 
 **PII Protection**:
+
 - Automatically redacts: passwords, tokens, balances, emails
 - Logs only IDs: `sub`, `ms`, `aid`, `opId`
 - Structured JSON format
 - ISO 8601 UTC timestamps
 
 **Example Log Entry**:
+
 ```json
 {
   "timestamp": "2025-10-05T17:38:27.683195+00:00",
@@ -280,6 +294,7 @@ Exit Code: 1 (warning present, not blocker)
 **Current Status**: Ready for execution after full deployment
 
 **Test Coverage**:
+
 1. ✅ Generate Mission Session
 2. ✅ Simulate Telegram Alert
 3. ⏳ Mission Page Load (requires UI deployment)
@@ -308,16 +323,16 @@ Exit Code: 1 (warning present, not blocker)
 
 ## 📊 Performance Benchmarks
 
-| Metric | Target | Expected | Notes |
-|--------|--------|----------|-------|
-| **Page Load** | < 2000ms | ~1500ms | Next.js optimized build |
-| **WebSocket Auth** | < 100ms | ~50ms | JWT validation cached |
-| **Event Delivery** | < 250ms P95 | ~80ms | User-scoped rooms |
-| **ARMING Event** | < 100ms | ~60ms | Immediate emit |
-| **FILLED Event** | < 250ms | ~150ms | EA round-trip |
-| **Token Generation** | < 50ms | ~10ms | RS256 signing |
-| **Session Validation** | < 20ms | ~5ms | Indexed DB queries |
-| **Idempotency Check** | < 10ms | ~3ms | Cache lookup |
+| Metric                 | Target      | Expected | Notes                   |
+| ---------------------- | ----------- | -------- | ----------------------- |
+| **Page Load**          | < 2000ms    | ~1500ms  | Next.js optimized build |
+| **WebSocket Auth**     | < 100ms     | ~50ms    | JWT validation cached   |
+| **Event Delivery**     | < 250ms P95 | ~80ms    | User-scoped rooms       |
+| **ARMING Event**       | < 100ms     | ~60ms    | Immediate emit          |
+| **FILLED Event**       | < 250ms     | ~150ms   | EA round-trip           |
+| **Token Generation**   | < 50ms      | ~10ms    | RS256 signing           |
+| **Session Validation** | < 20ms      | ~5ms     | Indexed DB queries      |
+| **Idempotency Check**  | < 10ms      | ~3ms     | Cache lookup            |
 
 ---
 
@@ -326,6 +341,7 @@ Exit Code: 1 (warning present, not blocker)
 ### Quick Deploy (30 Minutes)
 
 **1. Prerequisites Check** (5 min):
+
 ```bash
 # Verify all services running
 pm2 list
@@ -338,11 +354,13 @@ node --version && npm --version
 ```
 
 **2. Apply Migration** (2 min):
+
 ```bash
 sqlite3 /root/HydraX-v2/bitten.db < /root/HydraX-v2/migrations/002_mission_sessions.sql
 ```
 
 **3. Generate Keys** (already done):
+
 ```bash
 ls -la /root/HydraX-v2/keys/jwt_*.pem
 # Should show both private and public keys
@@ -350,6 +368,7 @@ ls -la /root/HydraX-v2/keys/jwt_*.pem
 
 **4. Set Environment Variables** (5 min):
 Add to `/root/HydraX-v2/.env`:
+
 ```bash
 JWT_PRIVATE_KEY_PATH=/root/HydraX-v2/keys/jwt_private.pem
 JWT_PUBLIC_KEY_PATH=/root/HydraX-v2/keys/jwt_public.pem
@@ -363,24 +382,28 @@ BITTEN_UI_URL=https://www.joinbitten.com
 ```
 
 **5. Restart Services** (3 min):
+
 ```bash
 pm2 restart webapp
 pm2 restart bitten-ui  # If UI changes deployed
 ```
 
 **6. Run Go/No-Go Validation** (2 min):
+
 ```bash
 python3 /root/HydraX-v2/tests/go_no_go_validation.py
 # Should show: 27/28 PASS
 ```
 
 **7. Generate Test Link** (1 min):
+
 ```bash
 python3 /root/HydraX-v2/src/telegram/deep_link_generator.py
 # Copy the generated deep link
 ```
 
 **8. Manual Smoke Test** (10 min):
+
 ```bash
 # Open deep link in browser
 # Verify page loads
@@ -390,6 +413,7 @@ python3 /root/HydraX-v2/src/telegram/deep_link_generator.py
 ```
 
 **9. Monitor Logs** (2 min):
+
 ```bash
 pm2 logs webapp --lines 50
 tail -20 /var/log/bitten/audit.log | jq
@@ -499,6 +523,7 @@ See `/root/HydraX-v2/WIRING_POINTS_DEPLOYMENT.md` for complete step-by-step inst
 ### Pre-Launch Checklist
 
 **Infrastructure**:
+
 - [x] Database migration applied
 - [x] JWT keys generated with correct permissions
 - [x] Environment variables configured
@@ -506,18 +531,21 @@ See `/root/HydraX-v2/WIRING_POINTS_DEPLOYMENT.md` for complete step-by-step inst
 - [x] Python packages installed
 
 **Code**:
+
 - [x] Foundation modules complete (8 modules)
 - [x] WebApp integration complete
 - [x] UI integration complete
 - [x] No breaking changes to existing functionality
 
 **Testing**:
+
 - [x] Go/No-Go validation: 96.4% pass
 - [x] Security audit tests: 100% pass
 - [x] Dry-run test suite ready
 - [x] Manual test procedures documented
 
 **Documentation**:
+
 - [x] Implementation plan
 - [x] Integration guide
 - [x] Quick start guide
@@ -526,6 +554,7 @@ See `/root/HydraX-v2/WIRING_POINTS_DEPLOYMENT.md` for complete step-by-step inst
 - [x] Wiring points documented
 
 **Deployment**:
+
 - [x] Rollback procedure documented
 - [x] Monitoring strategy defined
 - [x] Incident response plan ready
@@ -533,23 +562,27 @@ See `/root/HydraX-v2/WIRING_POINTS_DEPLOYMENT.md` for complete step-by-step inst
 ### Recommended Launch Strategy
 
 **Phase 1: Shadow Mode** (1 day):
+
 - Deploy with `MISSION_SESSION_ENABLED=false` (feature flag off)
 - Verify no regressions in existing flow
 - Run Go/No-Go validation in production
 
 **Phase 2: Single User Beta** (1 day):
+
 - Enable for Commander test account (7176191872)
 - Generate test deep links
 - Execute full operator runbook tests
 - Monitor audit logs and performance
 
 **Phase 3: Limited Rollout** (2-3 days):
+
 - Enable for COMMANDER tier users only
 - Monitor error rates and performance
 - Collect user feedback
 - Tune TTLs and thresholds if needed
 
 **Phase 4: Full Rollout** (after validation):
+
 - Enable for all tiers (NIBBLER, FANG, COMMANDER)
 - Monitor at scale
 - Disable legacy flow after 48 hours stable
@@ -595,14 +628,17 @@ See `/root/HydraX-v2/WIRING_POINTS_DEPLOYMENT.md` → Troubleshooting section
 ## 🎓 Training Resources
 
 **For QA Engineers**:
+
 - Read: `OPERATOR_RUNBOOK.md` (manual testing procedures)
 - Run: `tests/dry_run_mission_flow.py` (automated tests)
 
 **For DevOps Engineers**:
+
 - Read: `WIRING_POINTS_DEPLOYMENT.md` (deployment guide)
 - Read: `MISSION_SESSION_QUICKSTART.md` (30-min quick start)
 
 **For Developers**:
+
 - Read: `MISSION_SESSION_IMPLEMENTATION_PLAN.md` (architecture)
 - Read: `MISSION_SESSION_IMPLEMENTATION_STATUS.md` (integration)
 - Review: `src/security/AUDIT_LOGGER_README.md` (logging)
@@ -643,6 +679,7 @@ See `/root/HydraX-v2/WIRING_POINTS_DEPLOYMENT.md` → Troubleshooting section
    - QA Team → `OPERATOR_RUNBOOK.md`
 
 2. **Run Pre-Deploy Validation**:
+
    ```bash
    python3 /root/HydraX-v2/tests/go_no_go_validation.py
    ```
@@ -728,19 +765,20 @@ api_tokens              -- JWT key management
 
 ### C. HTTP Status Codes
 
-| Code | Meaning | User Action |
-|------|---------|-------------|
-| 202 | Accepted | Wait for events, redirect to /status |
-| 400 | Bad Request | Show error, allow retry |
-| 401 | Unauthorized | Show "Session Expired" |
-| 403 | Forbidden | Show "Access Denied" |
-| 409 | Conflict | Show "Already Executed" |
-| 410 | Gone | Show "Session Expired" |
-| 422 | Unprocessable | Show validation error, allow retry |
+| Code | Meaning       | User Action                          |
+| ---- | ------------- | ------------------------------------ |
+| 202  | Accepted      | Wait for events, redirect to /status |
+| 400  | Bad Request   | Show error, allow retry              |
+| 401  | Unauthorized  | Show "Session Expired"               |
+| 403  | Forbidden     | Show "Access Denied"                 |
+| 409  | Conflict      | Show "Already Executed"              |
+| 410  | Gone          | Show "Session Expired"               |
+| 422  | Unprocessable | Show validation error, allow retry   |
 
 ### D. Event Types
 
 **WebSocket Events**:
+
 - `authenticated` - Connection authenticated
 - `subscribed` - Topic subscription confirmed
 - `trades.delta` - Position lifecycle updates
@@ -748,6 +786,7 @@ api_tokens              -- JWT key management
 - `stats.*` - Statistics updates
 
 **Audit Events**:
+
 - `session.*` - Mission session lifecycle
 - `fire.*` - Fire command events
 - `ws.*` - WebSocket events

@@ -9,8 +9,9 @@ echo '{"cmd":"ORDER_SEND","symbol":"XAUUSD","type":"buy","volume":0.10,"sl":1932
 ```
 
 **Expected Response:**
+
 ```json
-{"status":"ok","ticket":1234567,"price":1935.20}
+{ "status": "ok", "ticket": 1234567, "price": 1935.2 }
 ```
 
 ## 💰 Get Account Status (ACCOUNT_STATUS)
@@ -20,15 +21,16 @@ echo '{"cmd":"ACCOUNT_STATUS"}' | nc -w 5 127.0.0.1 8777
 ```
 
 **Expected Response:**
+
 ```json
 {
-  "cmd":"ACCOUNT_STATUS",
-  "balance":10000.00,
-  "equity":10025.40,
-  "margin":120.00,
-  "free_margin":9905.40,
-  "leverage":500,
-  "timestamp":1700000012000
+  "cmd": "ACCOUNT_STATUS",
+  "balance": 10000.0,
+  "equity": 10025.4,
+  "margin": 120.0,
+  "free_margin": 9905.4,
+  "leverage": 500,
+  "timestamp": 1700000012000
 }
 ```
 
@@ -39,6 +41,7 @@ echo '{"cmd":"POSITION_LIST"}' | nc -w 5 127.0.0.1 8777
 ```
 
 **Expected Response:**
+
 ```json
 {
   "positions": [
@@ -46,11 +49,11 @@ echo '{"cmd":"POSITION_LIST"}' | nc -w 5 127.0.0.1 8777
       "ticket": 1234567,
       "symbol": "XAUUSD",
       "type": "buy",
-      "volume": 0.10,
-      "price": 1935.20,
-      "sl": 1932.00,
-      "tp": 1939.00,
-      "profit": 25.40,
+      "volume": 0.1,
+      "price": 1935.2,
+      "sl": 1932.0,
+      "tp": 1939.0,
+      "profit": 25.4,
       "comment": "MSKT",
       "magic": 900001
     }
@@ -65,8 +68,9 @@ echo '{"cmd":"ORDER_CLOSE","ticket":1234567,"comment":"MANUAL_CLOSE"}' | nc -w 5
 ```
 
 **Expected Response:**
+
 ```json
-{"status":"ok","ticket":1234567,"close_price":1937.10,"profit":19.00}
+{ "status": "ok", "ticket": 1234567, "close_price": 1937.1, "profit": 19.0 }
 ```
 
 ## 📡 Listen to Event Stream
@@ -77,6 +81,7 @@ timeout 10 nc 127.0.0.1 8778
 ```
 
 **Expected Events:**
+
 ```json
 {"event":"ORDER_OPENED","ticket":1234567,"symbol":"XAUUSD","type":"buy","price":1935.20,"volume":0.10,"timestamp":1700000000000}
 {"event":"ORDER_CLOSED","ticket":1234567,"reason":"manual","price":1937.10,"timestamp":1700000010000}
@@ -92,8 +97,9 @@ echo '{"cmd":"PING"}' | nc -w 2 127.0.0.1 8777
 ```
 
 **Expected Response:**
+
 ```json
-{"status":"ok","message":"pong","timestamp":1700000000000}
+{ "status": "ok", "message": "pong", "timestamp": 1700000000000 }
 ```
 
 ## 📊 Verify Adapter Bus Messages

@@ -1,5 +1,6 @@
 # 🗺️ BITTEN Dependency Map
-*Based on Shepherd Full Audit*
+
+_Based on Shepherd Full Audit_
 
 ## System Architecture Flow
 
@@ -37,8 +38,9 @@
 ## Critical Dependency Chains
 
 ### 1. Signal Generation → Trade Execution
+
 ```
-Market Data (MT5) 
+Market Data (MT5)
     ↓
 Signal Engine (TCS Calculation)
     ↓
@@ -64,6 +66,7 @@ XP Award System
 ```
 
 ### 2. User Command → System Response
+
 ```
 Telegram Command
     ↓
@@ -83,6 +86,7 @@ Telegram Reply
 ```
 
 ### 3. Risk Management Flow
+
 ```
 Trade Request
     ↓
@@ -102,6 +106,7 @@ Audit Trail
 ## Component Statistics
 
 ### By Trigger Type:
+
 - **Direct Call**: 3,980 (65%) - Internal function calls
 - **User Action**: 829 (14%) - User-initiated events
 - **Signal**: 783 (13%) - Trading signal triggers
@@ -111,6 +116,7 @@ Audit Trail
 - **Scheduled**: 34 (1%) - Cron jobs
 
 ### By Flag Type:
+
 - **External API**: 3,543 - Components making external calls
 - **Writes DB**: 1,256 - Database write operations
 - **Critical**: 985 - Critical system operations
@@ -120,16 +126,19 @@ Audit Trail
 ## High-Risk Dependencies
 
 ### 1. Single Points of Failure
+
 - **BittenCore**: Central controller (143 connections)
 - **MT5 Bridge**: Trading execution gateway
 - **Database Connection**: Data persistence
 
 ### 2. Circular Dependencies Detected
+
 - Signal System ↔ XP System
 - Trade Manager ↔ Risk Controller
 - Notification Engine ↔ User Manager
 
 ### 3. External Dependencies
+
 - **Telegram API**: User interface
 - **MT5 API**: Trade execution
 - **Stripe API**: Payments
@@ -138,11 +147,13 @@ Audit Trail
 ## Security Considerations
 
 ### Authentication Chain
+
 ```
 User → Telegram ID → Database Lookup → Tier Check → Access Grant
 ```
 
 ### Critical Operations Protection
+
 - Emergency stops: Multi-layer validation
 - Trade execution: 5-step verification
 - Payment processing: Stripe webhook validation
@@ -150,16 +161,19 @@ User → Telegram ID → Database Lookup → Tier Check → Access Grant
 ## Optimization Opportunities
 
 ### 1. Connection Reduction
+
 - Implement event bus for decoupling
 - Use dependency injection
 - Create service facades
 
 ### 2. Performance Improvements
+
 - Cache frequently accessed data
 - Batch database operations
 - Implement connection pooling
 
 ### 3. Code Organization
+
 - Consolidate duplicate validators
 - Extract common utilities
 - Standardize error handling
@@ -167,20 +181,23 @@ User → Telegram ID → Database Lookup → Tier Check → Access Grant
 ## Recommended Refactoring Priority
 
 ### High Priority (Tier 1 & 2 components)
+
 1. Signal generation pipeline
 2. Trade execution path
 3. Risk management system
 
 ### Medium Priority (Tier 3 & 4)
+
 1. XP calculation logic
 2. Notification delivery
 3. WebApp integration
 
 ### Low Priority (Tier 5 & General)
+
 1. Educational content
 2. Squad features
 3. Utility functions
 
 ---
 
-*This dependency map helps identify critical paths and potential bottlenecks in the BITTEN system architecture.*
+_This dependency map helps identify critical paths and potential bottlenecks in the BITTEN system architecture._

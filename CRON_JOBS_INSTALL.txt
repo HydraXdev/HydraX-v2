@@ -1,0 +1,28 @@
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# BITTEN MAINTENANCE SUITE - CRON JOB INSTALLATION
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#
+# INSTRUCTIONS:
+# 1. Run: crontab -e
+# 2. Copy the 3 lines below (excluding comments)
+# 3. Paste at the END of your crontab (after existing entries)
+# 4. Save and exit
+#
+# IMPORTANT: DO NOT replace existing cron jobs - only ADD these new ones
+#
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# Weekly full maintenance (Sunday 3 AM)
+0 3 * * 0 /usr/bin/python3 /root/HydraX-v2/maintenance/run_maintenance.py --weekly >> /root/HydraX-v2/maintenance/logs/maintenance_cron.log 2>&1
+
+# Daily health checks (every 6 hours)
+0 */6 * * * /usr/bin/python3 /root/HydraX-v2/maintenance/health_check.py --quick >> /root/HydraX-v2/maintenance/logs/health_cron.log 2>&1
+
+# Weekly cache cleanup (Sunday 2 AM)
+0 2 * * 0 /usr/bin/python3 /root/HydraX-v2/maintenance/run_maintenance.py --cleanup-only >> /root/HydraX-v2/maintenance/logs/cleanup_cron.log 2>&1
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# VERIFICATION:
+# After saving, run: crontab -l | grep maintenance
+# You should see the 3 new maintenance cron jobs listed above
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

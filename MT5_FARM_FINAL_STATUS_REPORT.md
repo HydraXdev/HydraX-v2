@@ -5,12 +5,14 @@
 ### **Current Infrastructure Status**
 
 #### **AWS Server: 3.145.84.187**
+
 - ✅ **Bulletproof Agents**: Primary agent operational (port 5555)
 - ✅ **Auto-Restart**: Windows Task Scheduler active (every 5 minutes)
 - ✅ **Server Clean**: Previous junk files successfully removed
 - ✅ **MT5 Terminal**: terminal64.exe running (PID 6700)
 
 #### **MT5 Farm Structure - ACTUAL IMPLEMENTATION** ✅
+
 ```
 C:\MT5_Farm\
 ├── EA.mq5 (29,942 bytes) ✅ TRANSFERRED SUCCESSFULLY
@@ -25,12 +27,14 @@ C:\MT5_Farm\
 ```
 
 #### **Actual Architecture Benefits**:
+
 - **Single Source of Truth**: One BITTEN_MASTER for all users
 - **<3 Second Deployment**: shutil.copytree() + credential injection
 - **Dynamic Scaling**: No pre-allocated broker types, pure on-demand
 - **Smart Recycling**: Upgrade = new instance, old destroyed instantly
 
 #### **EA Deployment Status** ✅
+
 - ✅ **Main EA**: Successfully transferred (29,942 bytes)
 - ✅ **Clone Deployment**: EAs already in clone directories
 - ✅ **Master Directories**: Ready for MT5 installations
@@ -39,6 +43,7 @@ C:\MT5_Farm\
 ### **What's Already Working**
 
 #### **Infrastructure**
+
 - ✅ Server clean and organized
 - ✅ Directory structure perfect
 - ✅ EA file successfully transferred
@@ -46,6 +51,7 @@ C:\MT5_Farm\
 - ✅ Auto-healing agents active
 
 #### **Existing MT5 Components**
+
 - ✅ One MT5 terminal already running (terminal64.exe)
 - ✅ EA files distributed to clone directories
 - ✅ Master directories prepared for broker installations
@@ -54,6 +60,7 @@ C:\MT5_Farm\
 ### **Remaining Manual Steps (30-45 minutes)**
 
 #### **Phase 1: MT5 Broker Installations (20 minutes)**
+
 1. **Download MT5 Installers**:
    - MetaQuotes Generic: https://download.mql5.com/cdn/web/metaquotes.software.corp/mt5/mt5setup.exe
    - Forex.com MT5: https://www.forex.com/en-us/platforms/metatrader-5/
@@ -67,7 +74,9 @@ C:\MT5_Farm\
    - Coinexx Live → `C:\MT5_Farm\Masters\Coinexx_Live\`
 
 #### **Phase 2: EA Configuration (15 minutes)**
+
 1. **Copy EA to Each Installation**:
+
    ```batch
    copy "C:\MT5_Farm\EA.mq5" "C:\MT5_Farm\Masters\Generic_Demo\MQL5\Experts\BITTENBridge_v3_ENHANCED.mq5"
    copy "C:\MT5_Farm\EA.mq5" "C:\MT5_Farm\Masters\Forex_Demo\MQL5\Experts\BITTENBridge_v3_ENHANCED.mq5"
@@ -84,6 +93,7 @@ C:\MT5_Farm\
    - Enable AutoTrading (Ctrl+E)
 
 #### **Phase 3: Connection Testing (10 minutes)**
+
 1. **Test Linux Connection**: Verify EAs connect to BITTEN Linux server
 2. **Signal Flow**: Confirm signals reach MT5 instances
 3. **Monitor All**: Check all 5 masters are operational
@@ -91,12 +101,14 @@ C:\MT5_Farm\
 ### **Expected MT5 Farm Architecture**
 
 #### **Target Configuration**
+
 - **5 Master MT5 Instances**: One per broker type
 - **10 Currency Pairs**: Each master monitoring all pairs
 - **350+ Clone Capability**: Masters ready for mass cloning
 - **Bulletproof Connectivity**: Auto-healing connection to Linux
 
 #### **User Distribution (Actual Implementation)**
+
 - **Press Pass (200 users)**: Cloned from BITTEN_MASTER with demo credentials
 - **NIBBLER+ (150 users)**: Same BITTEN_MASTER + injected live credentials
 - **Users**: Same BITTEN_MASTER + premium broker credentials
@@ -105,6 +117,7 @@ C:\MT5_Farm\
 ### **Critical Success Factors**
 
 #### **Already Achieved** ✅
+
 1. **Infrastructure**: Bulletproof server connectivity
 2. **File Transfer**: EA successfully deployed (solved the "impossible")
 3. **Directory Structure**: Perfect farm organization
@@ -112,6 +125,7 @@ C:\MT5_Farm\
 5. **Clean Installation**: Removed all junk files
 
 #### **Manual Completion Required**
+
 1. **MT5 Downloads**: 3 broker installers needed
 2. **Installation**: 5 master MT5 instances
 3. **EA Setup**: Compile and attach to charts
@@ -120,6 +134,7 @@ C:\MT5_Farm\
 ### **Success Metrics (Expected)**
 
 #### **Performance Targets**
+
 - **5 Master MT5s**: All operational with EAs
 - **50 Active Charts**: 10 pairs × 5 masters
 - **Live Data Flow**: Real-time connection to Linux BITTEN
@@ -127,6 +142,7 @@ C:\MT5_Farm\
 - **350 Clone Ready**: Infrastructure for mass scaling
 
 #### **Quality Indicators**
+
 - ✅ Zero broker detection (stealth protocols active)
 - ✅ Bulletproof uptime (auto-restart every 5 minutes)
 - ✅ Clean data flow (no simulation, all live MT5 data)
@@ -135,17 +151,20 @@ C:\MT5_Farm\
 ### **Current Achievement Summary**
 
 #### **Problem Solved**: ✅ **COMPLETELY**
+
 - **Original Issue**: "EA to the aws server for the agents" - SOLVED
 - **User Request**: Clean server and prepare for MT5 installation - DONE
 - **Infrastructure**: Bulletproof 24/7 connectivity - OPERATIONAL
 
 #### **Server Preparation**: ✅ **COMPLETE**
+
 - **Cleanup**: All junk files removed successfully
 - **Structure**: Perfect MT5 farm organization created
 - **EA Transfer**: 29,942-byte EA file successfully delivered
 - **Scripts**: Automation tools ready for deployment
 
 #### **Installation Ready**: ✅ **95% COMPLETE**
+
 - **Server**: Clean and organized for fresh MT5 installations
 - **EA**: Ready for deployment to all instances
 - **Configuration**: Master directories prepared
@@ -162,6 +181,7 @@ The "impossible" EA transfer has been solved, the server is perfectly clean and 
 ## 📋 Quick Commands for Final Setup
 
 ### Check Current Status
+
 ```powershell
 # View farm structure
 tree C:\MT5_Farm /F
@@ -174,12 +194,14 @@ dir C:\MT5_Farm\EA.mq5
 ```
 
 ### Deploy EA to Masters (After MT5 Installation)
+
 ```batch
 # Copy EA to all masters
 for %i in (Generic_Demo Forex_Demo Forex_Live Coinexx_Demo Coinexx_Live) do copy "C:\MT5_Farm\EA.mq5" "C:\MT5_Farm\Masters\%i\MQL5\Experts\BITTENBridge_v3_ENHANCED.mq5"
 ```
 
 ### Monitor Farm Status
+
 ```powershell
 # Count MT5 instances
 (Get-Process terminal64 -ErrorAction SilentlyContinue).Count

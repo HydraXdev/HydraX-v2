@@ -7,9 +7,9 @@
  * @example fmtUSD(1234.56) => "$1,234.56"
  */
 export function fmtUSD(value: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(value);
@@ -20,7 +20,7 @@ export function fmtUSD(value: number): string {
  * @example fmtNum(1234.56) => "1,234.56"
  */
 export function fmtNum(value: number, decimals: number = 2): string {
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat("en-US", {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
   }).format(value);
@@ -32,7 +32,7 @@ export function fmtNum(value: number, decimals: number = 2): string {
  * @example fmtSigned(-12.34) => "-12.34"
  */
 export function fmtSigned(value: number, decimals: number = 2): string {
-  const sign = value >= 0 ? '+' : '';
+  const sign = value >= 0 ? "+" : "";
   return sign + fmtNum(value, decimals);
 }
 
@@ -85,11 +85,11 @@ export function fmtRelative(isoTimestamp: string): string {
  */
 export function fmtTime(isoTimestamp: string): string {
   const date = new Date(isoTimestamp);
-  return date.toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-    timeZone: 'UTC',
-    timeZoneName: 'short',
+  return date.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "UTC",
+    timeZoneName: "short",
   });
 }
 
@@ -100,7 +100,7 @@ export function fmtTime(isoTimestamp: string): string {
 export function fmtDuration(seconds: number): string {
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
-  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
 }
 
 /**

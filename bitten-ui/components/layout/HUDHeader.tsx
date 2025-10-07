@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import React from 'react'
-import { motion } from 'framer-motion'
+import React from "react";
+import { motion } from "framer-motion";
 import {
   Bell,
   User,
@@ -9,8 +9,8 @@ import {
   TrendingUp,
   AlertCircle,
   Battery,
-  Activity
-} from 'lucide-react'
+  Activity,
+} from "lucide-react";
 
 export function HUDHeader() {
   return (
@@ -24,7 +24,9 @@ export function HUDHeader() {
               <DollarSign size={16} className="text-success" />
               <div className="flex flex-col">
                 <span className="text-xs text-tertiary">Balance</span>
-                <span className="text-sm font-semibold mono text-primary">$12,450</span>
+                <span className="text-sm font-semibold mono text-primary">
+                  $12,450
+                </span>
               </div>
             </div>
 
@@ -33,7 +35,9 @@ export function HUDHeader() {
               <TrendingUp size={16} className="text-mint" />
               <div className="flex flex-col">
                 <span className="text-xs text-tertiary">Win Rate</span>
-                <span className="text-sm font-semibold mono text-primary">68.5%</span>
+                <span className="text-sm font-semibold mono text-primary">
+                  68.5%
+                </span>
               </div>
             </div>
 
@@ -42,7 +46,9 @@ export function HUDHeader() {
               <Activity size={16} className="text-cyan" />
               <div className="flex flex-col">
                 <span className="text-xs text-tertiary">Positions</span>
-                <span className="text-sm font-semibold mono text-primary">2/3</span>
+                <span className="text-sm font-semibold mono text-primary">
+                  2/3
+                </span>
               </div>
             </div>
           </div>
@@ -108,5 +114,5 @@ export function HUDHeader() {
         </div>
       </div>
     </header>
-  )
+  );
 }

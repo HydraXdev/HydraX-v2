@@ -25,7 +25,7 @@ if "%ERRORLEVEL%"=="0" (
     echo Terminating MT5 processes...
     taskkill /IM "terminal64.exe" /F >NUL 2>&1
     timeout /t 3 >NUL
-    
+
     REM Verify termination
     tasklist /FI "IMAGENAME eq terminal64.exe" 2>NUL | find /I /N "terminal64.exe">NUL
     if "%ERRORLEVEL%"=="0" (
@@ -79,26 +79,26 @@ set "LOGS_PATH=%MASTER_PATH%\Logs"
 REM Clean MQL5\Files directory
 if exist "%MQL5_FILES%" (
     echo Cleaning MQL5\Files directory...
-    
+
     REM Count contaminated files
     set /a FILE_COUNT=0
     for %%f in ("%MQL5_FILES%\*.json" "%MQL5_FILES%\*.txt" "%MQL5_FILES%\*.log") do (
         if exist "%%f" set /a FILE_COUNT+=1
     )
-    
+
     echo [INFO] CONTAMINATED FILES DETECTED: %FILE_COUNT%
-    
+
     if %FILE_COUNT% gtr 0 (
         REM Create backup directory
         set "BACKUP_PATH=%MASTER_PATH%\CONTAMINATION_BACKUP_%date:~10,4%%date:~4,2%%date:~7,2%_%time:~0,2%%time:~3,2%%time:~6,2%"
         set "BACKUP_PATH=%BACKUP_PATH: =%"
         mkdir "%BACKUP_PATH%" 2>NUL
-        
+
         REM Move contaminated files to backup
         move "%MQL5_FILES%\*.json" "%BACKUP_PATH%\" >NUL 2>&1
         move "%MQL5_FILES%\*.txt" "%BACKUP_PATH%\" >NUL 2>&1
         move "%MQL5_FILES%\*.log" "%BACKUP_PATH%\" >NUL 2>&1
-        
+
         echo [SUCCESS] CONTAMINATED FILES QUARANTINED TO: %BACKUP_PATH%
     ) else (
         echo [SUCCESS] MQL5\Files DIRECTORY ALREADY CLEAN
@@ -110,13 +110,13 @@ if exist "%MQL5_FILES%" (
 REM Clean Logs directory
 if exist "%LOGS_PATH%" (
     echo Cleaning EA logs...
-    
+
     REM Remove EA-generated log files (keep MT5 system logs)
     del "%LOGS_PATH%\*EA*" /Q >NUL 2>&1
     del "%LOGS_PATH%\*Expert*" /Q >NUL 2>&1
     del "%LOGS_PATH%\*Bridge*" /Q >NUL 2>&1
     del "%LOGS_PATH%\*BITTEN*" /Q >NUL 2>&1
-    
+
     echo [SUCCESS] EA LOG FILES REMOVED
 ) else (
     echo [WARNING] LOGS DIRECTORY NOT FOUND

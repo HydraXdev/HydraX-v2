@@ -4,28 +4,20 @@
     "bitten_production_bot.py": {
       "purpose": "Main Telegram bot - handles signals, tactics, execution, drill reports",
       "status": "ACTIVE - Currently running",
-      "dependencies": [
-        "src/bitten_core/*",
-        "config/*"
-      ],
+      "dependencies": ["src/bitten_core/*", "config/*"],
       "tokens": "BOT_TOKEN (7854827710...)"
     },
     "webapp_server_optimized.py": {
       "purpose": "WebApp server - mission HUD, onboarding, War Room",
       "status": "ACTIVE - Currently running",
       "port": "8888",
-      "dependencies": [
-        "src/bitten_core/*",
-        "templates/*"
-      ]
+      "dependencies": ["src/bitten_core/*", "templates/*"]
     },
     "commander_throne.py": {
       "purpose": "Command center dashboard",
       "status": "ACTIVE - Currently running",
       "port": "8899",
-      "dependencies": [
-        "minimal"
-      ]
+      "dependencies": ["minimal"]
     },
     "bridge_fortress_daemon.py": {
       "purpose": "Bridge health monitoring and heartbeat system",

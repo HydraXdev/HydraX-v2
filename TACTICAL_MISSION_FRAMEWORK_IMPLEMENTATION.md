@@ -57,6 +57,7 @@ tactical_mission_integration.py      # BITTEN system bridge
 **Hidden Learning**: Execute first live trade with proper risk management
 
 #### Pre-Mission Briefing (`tactical_mission_briefing.html`)
+
 - **Classification Header**: Creates authentic military feel
 - **Situation Assessment**: Market analysis disguised as intelligence
 - **Mission Objectives**: Learning goals as tactical objectives
@@ -65,6 +66,7 @@ tactical_mission_integration.py      # BITTEN system bridge
 - **Authorization**: Command approval for mission execution
 
 #### Mission Execution (`tactical_mission_execution.html`)
+
 - **Tactical HUD**: Military command interface
 - **Real-time Intel**: Market updates as battlefield intelligence
 - **Communications**: Command guidance during execution
@@ -73,6 +75,7 @@ tactical_mission_integration.py      # BITTEN system bridge
 - **Emergency Protocols**: Risk management as tactical withdrawal
 
 #### Post-Mission Debrief (`tactical_mission_debrief.html`)
+
 - **Performance Assessment**: Military grades hide educational evaluation
 - **Objectives Review**: Learning extraction without feeling like school
 - **Story Revelations**: Norman's parallel experiences revealed
@@ -83,28 +86,34 @@ tactical_mission_integration.py      # BITTEN system bridge
 ### Norman's Story Integration
 
 **Phase 1 - Early Struggle**: Basic missions, learning fundamentals
-- *"Every master was once a beginner - Norman's journey starts here"*
+
+- _"Every master was once a beginner - Norman's journey starts here"_
 - Bit appears during doubt, Grandmama's patience wisdom
 
-**Phase 2 - Awakening**: Breakthrough moments, building confidence  
-- *"The patterns start making sense, like Norman's first success"*
+**Phase 2 - Awakening**: Breakthrough moments, building confidence
+
+- _"The patterns start making sense, like Norman's first success"_
 - Mother's protection wisdom, Delta metaphors
 
 **Phase 3 - Discipline**: Systematic improvement, emotional control
-- *"Building something real, just like Norman did"*
+
+- _"Building something real, just like Norman did"_
 - Work ethic lessons, community values
 
 **Phase 4 - Mastery**: Advanced techniques, consistent profits
-- *"From student to teacher, Norman's vision realized"*
+
+- _"From student to teacher, Norman's vision realized"_
 - Leadership preparation, helping others
 
 **Phase 5 - Legacy**: Community building, passing on wisdom
-- *"Norman's successor emerges - the legend continues"*
+
+- _"Norman's successor emerges - the legend continues"_
 - Full story revelation, mentor capabilities
 
 ### Progression System
 
 #### Military Ranks & Unlocks
+
 ```
 RECRUIT    → Basic training, Operation Normandy Echo
 PRIVATE    → Standard missions, risk management tools
@@ -118,9 +127,10 @@ GENERAL    → Norman's successor, ultimate mastery
 ```
 
 #### Capability Progression
+
 ```
 Level 1: Position Sizing, Stop Loss Discipline
-Level 2: Advanced Risk Management, Pattern Recognition  
+Level 2: Advanced Risk Management, Pattern Recognition
 Level 3: Multiple Positions, News Trading
 Level 4: Correlation Trading, Swing Positions
 Level 5: Hedging Strategies, Mentor Abilities
@@ -140,7 +150,7 @@ def convert_bitten_signal_to_mission(signal_data, user_id, user_tier):
     # Adds tactical mission overlay
     # Returns enhanced experience or fallback
 
-# Mission Execution  
+# Mission Execution
 def execute_tactical_mission(mission_id, user_id, params):
     # Uses existing fire_router for trade execution
     # Adds tactical context and monitoring
@@ -230,15 +240,15 @@ from bitten_core.tactical_mission_integration import tactical_mission_integrator
 
 # 2. Register event handlers
 tactical_mission_integrator.register_event_handler(
-    'mission_completed', 
+    'mission_completed',
     handle_mission_completion
 )
 
 # 3. Convert existing signals to missions
 for signal in active_signals:
     mission_result = convert_bitten_signal_to_mission(
-        signal, 
-        user_id, 
+        signal,
+        user_id,
         user_tier
     )
 
@@ -251,7 +261,7 @@ app.register_blueprint(tactical_mission_routes)
 ```python
 # Run comprehensive tests
 python test_tactical_missions.py
-python test_mission_progression.py  
+python test_mission_progression.py
 python test_story_integration.py
 python test_bitten_integration.py
 
@@ -296,18 +306,21 @@ python load_test_missions.py --users 50 --duration 300
 ## Success Metrics
 
 ### Engagement Metrics
+
 - Mission completion rates vs signal follow rates
 - Time spent in tactical interfaces vs standard UI
 - Story engagement and progression tracking
 - Community participation and mentoring activity
 
-### Educational Effectiveness  
+### Educational Effectiveness
+
 - Skill score improvements through disguised assessment
 - Risk management adherence in tactical vs standard modes
 - Retention of forex concepts through story integration
 - Progressive capability unlocks and advanced technique adoption
 
 ### Emotional Response
+
 - User sentiment analysis in mission debriefs
 - Norman's story impact on trading psychology
 - Bit companion effectiveness in stress reduction
@@ -316,18 +329,21 @@ python load_test_missions.py --users 50 --duration 300
 ## Future Enhancements
 
 ### Advanced Mission Types
+
 - **Operation Market Siege**: Economic event trading
-- **Stealth Reconnaissance**: Correlation analysis missions  
+- **Stealth Reconnaissance**: Correlation analysis missions
 - **Combined Arms Assault**: Portfolio management operations
 - **Legendary Campaigns**: Multi-week advanced strategies
 
 ### Social Features
+
 - **Squad Operations**: Team-based missions
 - **Mentorship Program**: CAPTAIN+ ranks teaching RECRUITS
 - **War Room**: Community strategy discussions
 - **Hall of Legends**: Top operator recognition
 
 ### Story Expansions
+
 - **Extended Norman Biography**: Deeper family history
 - **Bit's Origins**: How the companion came to be
 - **Delta Wisdom Archive**: Cultural metaphor database
@@ -341,7 +357,7 @@ The Tactical Mission Framework transforms forex education from boring lessons in
 
 ---
 
-*"Remember: Every legend started with their first mission. Norman's journey began with a single trade. Yours starts today."*
+_"Remember: Every legend started with their first mission. Norman's journey began with a single trade. Yours starts today."_
 
 **🎯 FRAMEWORK STATUS: FULLY OPERATIONAL**
 **🎖️ READY FOR DEPLOYMENT**

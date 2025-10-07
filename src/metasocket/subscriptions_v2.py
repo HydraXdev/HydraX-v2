@@ -5,23 +5,26 @@ Implements asyncio, backoff, and per-symbol tick freshness tracking
 
 import asyncio
 import json
-import time
-import random
 import logging
-from typing import Dict, List, Optional, Protocol, Any
+import random
+import time
 from datetime import datetime
-import websockets
+from typing import Any, Dict, List, Optional, Protocol
 
+import websockets
 from symbols import SYMBOLS
 
 logger = logging.getLogger(__name__)
 
+
 class Connection(Protocol):
     """Connection interface matching TypeScript Conn type"""
+
     async def send(self, message: dict) -> None: ...
     def is_open(self) -> bool: ...
     async def reopen(self) -> None: ...
     def on(self, event: str, callback) -> None: ...
+
 
 class WebSocketConnection:
     """WebSocket connection implementation"""
@@ -50,12 +53,7 @@ class WebSocketConnection:
         except:
             pass
 
-        self.websocket = await websockets.connect(
-            self.url,
-            ping_interval=20,
-            ping_timeout=10,
-            close_timeout=5
-        )
+        self.websocket = await websockets.connect(self.url, ping_interval=20, ping_timeout=10, close_timeout=5)
         logger.info(f"🔗 WebSocket reconnected to {self.url}")
 
     def on(self, event: str, callback) -> None:
@@ -63,6 +61,7 @@ class WebSocketConnection:
         if event not in self.event_handlers:
             self.event_handlers[event] = []
         self.event_handlers[event].append(callback)
+
 
 class MetricsTracker:
     """Track per-symbol metrics"""
@@ -101,11 +100,9 @@ class MetricsTracker:
             "symbols_tracked": len(self.last_tick_ts),
             "total_ticks": sum(self.tick_counts.values()),
             "stale_symbols": self.get_stale_symbols(),
-            "last_tick_ages": {
-                symbol: int(now - ts)
-                for symbol, ts in self.last_tick_ts.items()
-            }
+            "last_tick_ages": {symbol: int(now - ts) for symbol, ts in self.last_tick_ts.items()},
         }
+
 
 async def subscribe_all(conn: Connection) -> None:
     """Subscribe to all symbols for price tracking and OHLC"""
@@ -114,24 +111,18 @@ async def subscribe_all(conn: Connection) -> None:
     for symbol in SYMBOLS:
         try:
             # Subscribe to price tracking
-            await conn.send({
-                "op": "TRACK_PRICES",
-                "symbol": symbol
-            })
+            await conn.send({"op": "TRACK_PRICES", "symbol": symbol})
 
             # Prefer native OHLC if platform supports it
             # If unsupported, our candle builder will handle it
-            await conn.send({
-                "op": "TRACK_OHLC",
-                "symbol": symbol,
-                "timeframe": "M1"
-            })
+            await conn.send({"op": "TRACK_OHLC", "symbol": symbol, "timeframe": "M1"})
 
             # Small delay to avoid overwhelming server
             await asyncio.sleep(0.05)
 
         except Exception as e:
             logger.warning(f"⚠️ Failed to subscribe to {symbol}: {e}")
+
 
 async def resubscribe_loop(conn: Connection, metrics: MetricsTracker) -> None:
     """
@@ -167,15 +158,8 @@ async def resubscribe_loop(conn: Connection, metrics: MetricsTracker) -> None:
 
                 for symbol in stale_symbols:
                     try:
-                        await conn.send({
-                            "op": "TRACK_PRICES",
-                            "symbol": symbol
-                        })
-                        await conn.send({
-                            "op": "TRACK_OHLC",
-                            "symbol": symbol,
-                            "timeframe": "M1"
-                        })
+                        await conn.send({"op": "TRACK_PRICES", "symbol": symbol})
+                        await conn.send({"op": "TRACK_OHLC", "symbol": symbol, "timeframe": "M1"})
 
                         metrics.subscription_attempts[symbol] = metrics.subscription_attempts.get(symbol, 0) + 1
 
@@ -194,6 +178,7 @@ async def resubscribe_loop(conn: Connection, metrics: MetricsTracker) -> None:
 
             await asyncio.sleep(total_wait_ms / 1000)  # Convert to seconds
             idx += 1
+
 
 class EnhancedSubscriptionManager:
     """Enhanced subscription manager with TypeScript-mirrored logic"""
@@ -235,9 +220,13 @@ class EnhancedSubscriptionManager:
                         "symbol": symbol,
                         "bid": data.get("bid"),
                         "ask": data.get("ask"),
-                        "mid": (data.get("bid", 0) + data.get("ask", 0)) / 2 if data.get("bid") and data.get("ask") else None,
+                        "mid": (
+                            (data.get("bid", 0) + data.get("ask", 0)) / 2
+                            if data.get("bid") and data.get("ask")
+                            else None
+                        ),
                         "ts_epoch_ms": int(time.time() * 1000),
-                        "src": "metasocket"
+                        "src": "metasocket",
                     }
                     await self.tick_callback(normalized_tick)
 
@@ -253,7 +242,7 @@ class EnhancedSubscriptionManager:
                         "close": data.get("close"),
                         "volume": data.get("volume", 0),
                         "ts_epoch_ms": int(time.time() * 1000),
-                        "src": "metasocket"
+                        "src": "metasocket",
                     }
                     await self.ohlc_callback(normalized_ohlc)
 
@@ -288,7 +277,7 @@ class EnhancedSubscriptionManager:
             self.tasks = [
                 asyncio.create_task(resubscribe_loop(self.connection, self.metrics)),
                 asyncio.create_task(self.message_listener()),
-                asyncio.create_task(self.stats_reporter())
+                asyncio.create_task(self.stats_reporter()),
             ]
 
             # Wait for tasks
@@ -337,8 +326,9 @@ class EnhancedSubscriptionManager:
             "connected": self.connection.is_open(),
             "running": self.running,
             "metrics": self.metrics.get_health_stats(),
-            "symbols_configured": len(SYMBOLS)
+            "symbols_configured": len(SYMBOLS),
         }
+
 
 # Example usage matching TypeScript patterns
 async def main():
@@ -357,11 +347,7 @@ async def main():
     async def handle_error(error):
         print(f"ERROR: {error}")
 
-    manager.set_callbacks(
-        tick_cb=handle_tick,
-        ohlc_cb=handle_ohlc,
-        error_cb=handle_error
-    )
+    manager.set_callbacks(tick_cb=handle_tick, ohlc_cb=handle_ohlc, error_cb=handle_error)
 
     # Start manager
     try:
@@ -371,10 +357,8 @@ async def main():
     finally:
         await manager.stop()
 
+
 if __name__ == "__main__":
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    )
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
     asyncio.run(main())

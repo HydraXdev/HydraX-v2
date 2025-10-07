@@ -9,11 +9,13 @@
 ## 🎯 Decision: Pick Your Launch Mode
 
 ### Option A: Real Data (Backend Ready) ✅ Recommended
+
 - Backend event bus running
 - REST endpoints `/api/fire` and `/api/trades/close-all` ready
 - Go to **Section 1: Production Deployment**
 
 ### Option B: Public Demo (Backend Not Ready)
+
 - No backend needed
 - Shows realistic mock data
 - Go to **Section 2: Demo Deployment**
@@ -42,6 +44,7 @@ curl -i -X POST http://134.199.204.67:8888/api/trades/close-all \
 ```
 
 **Expected:**
+
 - ✅ WebSocket connects and receives messages
 - ✅ Fire endpoint returns 202 Accepted
 - ✅ Close-all returns 202 Accepted
@@ -55,6 +58,7 @@ cat .env.production
 ```
 
 Should show:
+
 ```
 NEXT_PUBLIC_USE_MOCKS=0                    # Real data!
 NEXT_PUBLIC_BUS_URL=ws://134.199.204.67:8888/socket.io
@@ -71,6 +75,7 @@ cd /root/HydraX-v2/bitten-ui
 ```
 
 **What it does:**
+
 1. Builds locally to catch errors
 2. Sets all environment variables
 3. Deploys to production
@@ -86,6 +91,7 @@ cd /root/HydraX-v2/bitten-ui
 ```
 
 **What it does:**
+
 1. Builds optimized Docker image
 2. Runs container on port 3000
 3. Auto-restarts on failure
@@ -119,6 +125,7 @@ server {
 ```
 
 **Must pass:**
+
 - ✅ Homepage (200 OK)
 - ✅ /mission (200 OK)
 - ✅ /status (200 OK)
@@ -129,6 +136,7 @@ server {
 Open in browser: `https://your-url.vercel.app/mission`
 
 **Mission Brief Checklist:**
+
 - [ ] See pattern name and confidence %
 - [ ] Chart shows TP/Entry/SL markers
 - [ ] Dossier shows risk/reward data
@@ -138,6 +146,7 @@ Open in browser: `https://your-url.vercel.app/mission`
 - [ ] See loading indicator → trade appears within 5s
 
 **Status Board Checklist:**
+
 - [ ] Header shows Operational/Secure beacons
 - [ ] Balance and equity display correctly
 - [ ] Open trades show with progress bars
@@ -158,12 +167,14 @@ Test on phone or DevTools mobile emulator:
 ### Step 7: A11y Check
 
 **Screen Reader Test:**
+
 - [ ] Turn on VoiceOver/NVDA
 - [ ] Navigate with Tab key
 - [ ] All interactive elements announced
 - [ ] Live regions announce changes
 
 **Motion Preference:**
+
 - [ ] Set `prefers-reduced-motion: reduce` in DevTools
 - [ ] Animations disabled, UI still premium
 
@@ -182,11 +193,13 @@ NEXT_PUBLIC_USE_MOCKS=1
 ### Step 2: Deploy (Same as Production)
 
 **Vercel:**
+
 ```bash
 ./deploy-vercel.sh
 ```
 
 **Docker:**
+
 ```bash
 ./deploy-docker.sh
 ```
@@ -194,6 +207,7 @@ NEXT_PUBLIC_USE_MOCKS=1
 ### Step 3: Verify Mock Events
 
 Open `/mission` → should see:
+
 - ✅ Mock user profile (VIPER_SIX, COMMANDER level)
 - ✅ Mission alerts appear every 20-40s
 - ✅ Execute → shows mock live trades on /status
@@ -260,11 +274,13 @@ Contains: `{ fps, memoryMb, latencyMs }`
 ### Issue: WebSocket Won't Connect
 
 **Check:**
+
 1. Backend running? `curl http://134.199.204.67:8888/healthz`
 2. Firewall blocking? `telnet 134.199.204.67 8888`
 3. CORS headers? Check browser DevTools Network tab
 
 **Fix:**
+
 ```nginx
 # NGINX config
 proxy_set_header Upgrade $http_upgrade;
@@ -274,6 +290,7 @@ proxy_set_header Connection "upgrade";
 ### Issue: Fire Endpoint 404
 
 **Check:**
+
 1. Endpoint exists? `curl -i http://134.199.204.67:8888/api/fire`
 2. CORS headers? Check browser console
 
@@ -282,6 +299,7 @@ proxy_set_header Connection "upgrade";
 ### Issue: Trades Not Updating
 
 **Check:**
+
 1. WebSocket connected? See `[EventBus] Connected` in console
 2. Backend emitting deltas? Check server logs
 3. Topic name correct? Should be `trades.delta`
@@ -292,14 +310,14 @@ proxy_set_header Connection "upgrade";
 
 Monitor these metrics:
 
-| Metric | Target | Critical |
-|--------|--------|----------|
-| Page Load (FCP) | < 1.5s | < 3s |
-| WebSocket Latency | < 100ms | < 250ms |
-| Fire API Response | < 500ms | < 1s |
-| Delta Frequency | 1-5s | 10s max |
-| Memory Usage | < 150MB | < 300MB |
-| CPU (idle) | < 10% | < 30% |
+| Metric            | Target  | Critical |
+| ----------------- | ------- | -------- |
+| Page Load (FCP)   | < 1.5s  | < 3s     |
+| WebSocket Latency | < 100ms | < 250ms  |
+| Fire API Response | < 500ms | < 1s     |
+| Delta Frequency   | 1-5s    | 10s max  |
+| Memory Usage      | < 150MB | < 300MB  |
+| CPU (idle)        | < 10%   | < 30%    |
 
 ---
 
@@ -319,6 +337,7 @@ Within 24 hours:
 ## Section 8: Emergency Contacts
 
 **If live trading is affected:**
+
 1. Set `NEXT_PUBLIC_USE_MOCKS=1` immediately
 2. Redeploy to disable real trading
 3. Investigate backend issue
@@ -358,6 +377,7 @@ vercel rollback <url>
 ## Success Criteria ✅
 
 **Go-live is successful when:**
+
 - ✅ /mission and /status respond 200 OK
 - ✅ WebSocket connects and receives messages
 - ✅ Execute trade → 202 Accepted → position appears

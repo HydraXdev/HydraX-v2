@@ -52,7 +52,7 @@ This package contains everything needed to set up a BITTEN MT5 trading farm on W
 
 Contents:
 - EA/             : Enhanced MT5 Expert Advisor
-- Scripts/        : PowerShell setup scripts  
+- Scripts/        : PowerShell setup scripts
 - API/            : Python API server files
 - Docs/           : Complete documentation
 

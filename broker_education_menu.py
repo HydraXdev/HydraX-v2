@@ -1,4 +1,4 @@
-#\!/usr/bin/env python3
+# \!/usr/bin/env python3
 """
 Broker Education Menu - Explaining regulated vs offshore accounts
 Part of the Intel Command Center education system
@@ -14,10 +14,9 @@ BROKER_EDUCATION = {
             {"id": "comparison", "label": "⚖️ Side-by-Side Comparison", "emoji": "📊"},
             {"id": "recommendations", "label": "🎯 Which Should I Choose?", "emoji": "💡"},
             {"id": "leverage", "label": "🔧 Understanding Leverage", "emoji": "📈"},
-            {"id": "regulations", "label": "🏛️ Regulation Deep Dive", "emoji": "📚"}
-        ]
+            {"id": "regulations", "label": "🏛️ Regulation Deep Dive", "emoji": "📚"},
+        ],
     },
-    
     "regulated": {
         "title": "🛡️ REGULATED BROKERS - FOREX.COM",
         "content": """
@@ -48,9 +47,8 @@ Forex.com is regulated by the CFTC (Commodity Futures Trading Commission) and NF
 • US-based traders (required)
 • Conservative approach
 • Long-term investors
-        """
+        """,
     },
-    
     "offshore": {
         "title": "🚀 OFFSHORE BROKERS - COINEXX",
         "content": """
@@ -87,9 +85,8 @@ With great leverage comes great responsibility:
 • Small account growth strategies
 • Scalping (need tight spreads)
 • Non-US traders
-        """
+        """,
     },
-    
     "comparison": {
         "title": "⚖️ REGULATED VS OFFSHORE COMPARISON",
         "content": """
@@ -116,7 +113,7 @@ With great leverage comes great responsibility:
 • Safer but slower growth
 
 *Offshore (500:1):*
-• Max position: $500,000 (5 lots) 
+• Max position: $500,000 (5 lots)
 • 20 pip move = $1,000 (100% account)
 • Higher risk, higher reward
 
@@ -124,9 +121,8 @@ With great leverage comes great responsibility:
 Our 2% risk rule works with BOTH:
 • Regulated: Smaller positions, steadier growth
 • Offshore: Requires MORE discipline
-        """
+        """,
     },
-    
     "recommendations": {
         "title": "🎯 WHICH BROKER SHOULD I CHOOSE?",
         "content": """
@@ -169,9 +165,8 @@ Our 2% risk rule works with BOTH:
 4. **Month 4+**: Consider offshore if ready
 
 Remember: It's not about the broker, it's about YOUR discipline\!
-        """
+        """,
     },
-    
     "leverage": {
         "title": "🔧 UNDERSTANDING LEVERAGE",
         "content": """
@@ -183,7 +178,7 @@ Think of it as a loan from your broker for each trade.
 
 **THE MATH:**
 • 50:1 = Control $50 for every $1
-• 100:1 = Control $100 for every $1  
+• 100:1 = Control $100 for every $1
 • 500:1 = Control $500 for every $1
 
 **REAL EXAMPLES:**
@@ -214,9 +209,8 @@ Higher leverage = Higher SPEED of win/loss
 2. Start low, increase gradually
 3. Never use full available leverage
 4. Let BITTEN calculate position sizes
-        """
+        """,
     },
-    
     "regulations": {
         "title": "🏛️ REGULATION DEEP DIVE",
         "content": """
@@ -276,53 +270,52 @@ Higher leverage = Higher SPEED of win/loss
 • Keep most funds in regulated accounts
 • Use offshore for specific strategies
 • Never put all eggs in one basket
-        """
-    }
+        """,
+    },
 }
+
 
 def format_broker_menu():
     """Format broker education for Telegram bot integration"""
-    
+
     # Create callback data mapping
     callbacks = {}
     for key, data in BROKER_EDUCATION.items():
         if key == "main_menu":
             callbacks["broker_education"] = {
                 "text": data["title"] + "\n" + data["description"],
-                "buttons": [[{
-                    "text": opt["emoji"] + " " + opt["label"],
-                    "callback_data": f"broker_{opt['id']}"
-                }] for opt in data["options"]]
+                "buttons": [
+                    [{"text": opt["emoji"] + " " + opt["label"], "callback_data": f"broker_{opt['id']}"}]
+                    for opt in data["options"]
+                ],
             }
         else:
             callbacks[f"broker_{key}"] = {
                 "text": data["title"] + "\n" + data["content"],
-                "buttons": [[{
-                    "text": "⬅️ Back to Broker Menu",
-                    "callback_data": "broker_education"
-                }]]
+                "buttons": [[{"text": "⬅️ Back to Broker Menu", "callback_data": "broker_education"}]],
             }
-    
+
     return callbacks
+
 
 if __name__ == "__main__":
     # Export for bot integration
     import json
-    
+
     print("📚 Broker Education Menu Created")
     print("=" * 60)
-    
+
     callbacks = format_broker_menu()
-    
+
     # Save for bot integration
-    with open('/root/HydraX-v2/data/broker_education_menu.json', 'w') as f:
+    with open("/root/HydraX-v2/data/broker_education_menu.json", "w") as f:
         json.dump(callbacks, f, indent=2)
-    
+
     print("\n✅ Saved to: data/broker_education_menu.json")
     print("\n🔧 Integration:")
     print("Add to Intel Command Center under 'Field Manual' section")
     print("Callback: 'broker_education' opens the menu")
-    
+
     # Show sample content
     print("\n📋 Sample Menu Structure:")
     print(json.dumps(list(BROKER_EDUCATION.keys()), indent=2))

@@ -1,1 +1,11 @@
-{"cmd":"ORDER_SEND","symbol":"XAUUSD","type":"buy","volume":0.10,"sl":1932.00,"tp":1939.00,"comment":"MSKT","magic":900001,"idempotency_key":"test-1758839200"}
+{
+  "cmd": "ORDER_SEND",
+  "symbol": "XAUUSD",
+  "type": "buy",
+  "volume": 0.1,
+  "sl": 1932.0,
+  "tp": 1939.0,
+  "comment": "MSKT",
+  "magic": 900001,
+  "idempotency_key": "test-1758839200"
+}

@@ -3,22 +3,25 @@
 ## Emergency Rollback Decision Tree
 
 ### Rollback Triggers
+
 - **P0 (Immediate)**: Service won't start, critical API failures
 - **P1 (Within 5min)**: Performance degradation >50%, high error rates
 - **P2 (Within 15min)**: Non-critical feature failures, minor bugs
 
 ### Decision Matrix
-| Issue | Rollback | Fix Forward |
-|-------|----------|-------------|
-| Service crash on startup | ✅ Rollback | ❌ |
-| Schema migration failure | ✅ Rollback | ❌ |
-| API error rate >5% | ✅ Rollback | ❌ |
-| Performance degradation | ✅ Rollback | ⚠️ Case by case |
-| Minor UI bugs | ❌ | ✅ Fix forward |
+
+| Issue                    | Rollback    | Fix Forward     |
+| ------------------------ | ----------- | --------------- |
+| Service crash on startup | ✅ Rollback | ❌              |
+| Schema migration failure | ✅ Rollback | ❌              |
+| API error rate >5%       | ✅ Rollback | ❌              |
+| Performance degradation  | ✅ Rollback | ⚠️ Case by case |
+| Minor UI bugs            | ❌          | ✅ Fix forward  |
 
 ## Rollback Procedures
 
 ### 1. Code Rollback
+
 ```bash
 # Identify last known good version
 git log --oneline -10
@@ -31,6 +34,7 @@ git describe --tags
 ```
 
 ### 2. Database Rollback (if migrations applied)
+
 ```bash
 # Check if migration can be reversed
 ls -la migrations/
@@ -43,6 +47,7 @@ cp backups/bitten_events_$(date +%Y%m%d).db event_bus/bitten_events.db
 ```
 
 ### 3. Service Rollback
+
 ```bash
 # Stop current service
 pm2 stop hydrasocket-router
@@ -59,6 +64,7 @@ curl http://localhost:8888/api/health
 ```
 
 ### 4. Artifact Pinning
+
 ```bash
 # Pin to specific version in deployment config
 echo "HYDRASOCKET_VERSION=router-v1.0.0-prev" > /opt/hydrasocket/.version
@@ -72,6 +78,7 @@ curl -X POST http://grafana:3000/api/annotations \
 ## Schema Migration Rollback
 
 ### Safe Migration Rollback
+
 ```sql
 -- Example rollback for 001_add_sequencing.sql
 BEGIN TRANSACTION;
@@ -94,6 +101,7 @@ COMMIT;
 ```
 
 ### Unsafe Migration Recovery
+
 ```bash
 # If schema cannot be rolled back, restore from backup
 systemctl stop hydrasocket
@@ -110,6 +118,7 @@ systemctl start hydrasocket
 ## Rollback Verification
 
 ### Health Checks
+
 ```bash
 # Service health
 curl http://localhost:8888/healthz
@@ -126,6 +135,7 @@ fi
 ```
 
 ### Functionality Tests
+
 ```bash
 # API endpoints
 python3 tests/smoke/test_api_endpoints.py
@@ -139,15 +149,16 @@ python3 tests/smoke/test_event_flow.py
 
 ## Recovery Time Objectives
 
-| Rollback Type | Target RTO | Max RTO |
-|---------------|------------|---------|
-| Code only | 2 minutes | 5 minutes |
-| Code + DB | 5 minutes | 15 minutes |
-| Full restore | 15 minutes | 30 minutes |
+| Rollback Type | Target RTO | Max RTO    |
+| ------------- | ---------- | ---------- |
+| Code only     | 2 minutes  | 5 minutes  |
+| Code + DB     | 5 minutes  | 15 minutes |
+| Full restore  | 15 minutes | 30 minutes |
 
 ## Post-Rollback Actions
 
 ### 1. Incident Documentation
+
 ```bash
 # Create incident report
 echo "Rollback completed at $(date)" >> /var/log/hydrasocket/incidents.log
@@ -156,6 +167,7 @@ echo "Rolled back to: $(git describe --tags)" >> /var/log/hydrasocket/incidents.
 ```
 
 ### 2. Monitoring
+
 ```bash
 # Monitor for 30 minutes post-rollback
 watch -n 60 'curl -s http://localhost:8888/api/health | jq'
@@ -165,6 +177,7 @@ grep -c "ERROR" /var/log/hydrasocket/err.log | tail -10
 ```
 
 ### 3. Communication
+
 - Notify trading operations team
 - Update incident tracking system
 - Schedule post-mortem (if P0/P1 incident)
@@ -172,16 +185,19 @@ grep -c "ERROR" /var/log/hydrasocket/err.log | tail -10
 ## Prevention Strategies
 
 ### Pre-Deployment
+
 - Always test migrations on copy of production data
 - Verify rollback scripts before deployment
 - Maintain backup retention policy (7 days minimum)
 
 ### Deployment Automation
+
 - Automated health checks post-deployment
 - Automatic rollback triggers
 - Blue/green deployment strategy
 
 ### Monitoring
+
 - Real-time alerting on performance degradation
 - Schema drift detection
 - Database integrity monitoring

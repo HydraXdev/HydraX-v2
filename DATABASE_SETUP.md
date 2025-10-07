@@ -70,41 +70,49 @@ python test_press_pass_db.py
 The Press Pass Manager uses the following main tables:
 
 ### `press_pass_weekly_limits`
+
 - Tracks weekly limits for Press Pass account creation (max 200/week)
 - Automatically resets each Monday
 
 ### `press_pass_shadow_stats`
+
 - Tracks XP for Press Pass users
 - XP resets nightly at midnight UTC
 - Only current day's XP is preserved when upgrading to paid tier
 
 ### `trade_logs_all`
+
 - Comprehensive trade logging for all users
 - Includes Press Pass demo account activations
 - Tracks tier upgrades
 
 ### `conversion_signal_tracker`
+
 - Analytics for Press Pass to paid tier conversions
 - Tracks conversion rates and user journey
 
 ## Key Features
 
 ### Weekly Limit Management
+
 - Maximum 200 Press Pass accounts per week
 - Automatic tracking and enforcement
 - Monday-to-Sunday week cycle
 
 ### XP Reset System
+
 - Press Pass users' XP resets nightly at midnight UTC
 - Only current day's XP is preserved when upgrading
 - 50 XP enlistment bonus when upgrading to paid tier
 
 ### Database Connection Pooling
+
 - Async connection pool for high performance
 - Configurable pool size (default: 10-20 connections)
 - Automatic connection management
 
 ### Error Handling
+
 - Graceful fallbacks for database errors
 - Transaction support for data integrity
 - Comprehensive logging
@@ -112,10 +120,12 @@ The Press Pass Manager uses the following main tables:
 ## Maintenance
 
 ### Daily Tasks
+
 - XP resets run automatically at midnight UTC
 - Monitor `press_pass_shadow_stats` for active users
 
 ### Weekly Tasks
+
 - Check `press_pass_weekly_limits` for usage patterns
 - Review conversion rates in `conversion_signal_tracker`
 
@@ -130,16 +140,19 @@ The system includes several PostgreSQL functions:
 ## Troubleshooting
 
 ### Connection Issues
+
 1. Check PostgreSQL is running: `sudo systemctl status postgresql`
 2. Verify credentials in `.env` file
 3. Test connection: `psql -U bitten_app -d bitten_db -c "SELECT 1"`
 
 ### Migration Issues
+
 1. Check user has CREATE privileges
 2. Run migrations as database owner
 3. Check migration history table
 
 ### Performance Issues
+
 1. Monitor connection pool usage
 2. Check for slow queries in PostgreSQL logs
 3. Ensure indexes are being used
@@ -155,6 +168,7 @@ The system includes several PostgreSQL functions:
 ## Support
 
 For issues or questions:
+
 1. Check application logs in `/var/log/bitten/`
 2. Review PostgreSQL logs
 3. Run test script for diagnostics

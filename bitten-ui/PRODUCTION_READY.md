@@ -30,35 +30,42 @@
 ### Core Files (24 new files)
 
 **Components (8):**
+
 - HeaderOps, FooterStatus, HelpMenuButtons
 - AmmoBar, DossierKV, Legend
 - MissionBrief, StatusBoard
 
 **Event Bus (4):**
+
 - contracts.ts - TypeScript contracts
 - adapter.ts - Mock adapter (dev)
 - realAdapter.ts - Production WebSocket adapter
 - mockSource.ts - Fake data generator
 
 **UI Utilities (4):**
+
 - format.ts - Number/currency/date formatting
 - hotkeys.ts - Keyboard navigation
 - a11y.ts - Accessibility helpers
 - themes.ts - Color system
 
 **API Client (1):**
+
 - fireApi.ts - REST endpoints (fire + close-all)
 
 **Pages (2):**
+
 - /mission - Mission Brief
 - /status - Status Board
 
 **Deployment (3):**
+
 - deploy-vercel.sh - Vercel deployment
 - deploy-docker.sh - Docker deployment
 - smoke-tests.sh - Automated testing
 
 **Documentation (3):**
+
 - BACKEND_INTEGRATION_GUIDE.md - For backend teams
 - GO_LIVE_RUNBOOK.md - Deployment steps
 - IMPLEMENTATION_COMPLETE.md - Technical details
@@ -75,6 +82,7 @@ cd /root/HydraX-v2/bitten-ui
 ```
 
 **Pros:**
+
 - Fastest deployment
 - Auto SSL/CDN
 - Preview URLs
@@ -88,6 +96,7 @@ cd /root/HydraX-v2/bitten-ui
 ```
 
 **Pros:**
+
 - Full control
 - No vendor lock-in
 - Custom infrastructure
@@ -103,6 +112,7 @@ NEXT_PUBLIC_USE_MOCKS=1
 ```
 
 **Pros:**
+
 - Works without backend
 - Perfect for demos
 - Fully interactive
@@ -140,6 +150,7 @@ See `BACKEND_INTEGRATION_GUIDE.md` for exact formats.
 ```
 
 **Tests:**
+
 - Homepage responds
 - /mission responds
 - /status responds
@@ -148,6 +159,7 @@ See `BACKEND_INTEGRATION_GUIDE.md` for exact formats.
 ### Manual Tests
 
 **Mission Brief:**
+
 - [ ] Loads without errors
 - [ ] Shows pattern + confidence
 - [ ] Chart displays TP/Entry/SL
@@ -155,6 +167,7 @@ See `BACKEND_INTEGRATION_GUIDE.md` for exact formats.
 - [ ] Redirects to /status after execute
 
 **Status Board:**
+
 - [ ] Shows account balance/equity
 - [ ] Displays open positions
 - [ ] Progress bars animate
@@ -162,12 +175,14 @@ See `BACKEND_INTEGRATION_GUIDE.md` for exact formats.
 - [ ] Close All works
 
 **Mobile:**
+
 - [ ] Responsive layout
 - [ ] Touch targets ≥ 44px
 - [ ] No horizontal scroll
 - [ ] Safe areas respected
 
 **Accessibility:**
+
 - [ ] Keyboard navigation works
 - [ ] Screen reader friendly
 - [ ] Reduced motion supported
@@ -176,12 +191,12 @@ See `BACKEND_INTEGRATION_GUIDE.md` for exact formats.
 
 ## 📊 Performance Targets
 
-| Metric | Target | Critical |
-|--------|--------|----------|
-| Page Load (FCP) | < 1.5s | < 3s |
-| WS Latency | < 100ms | < 250ms |
-| API Response | < 500ms | < 1s |
-| Memory Usage | < 150MB | < 300MB |
+| Metric          | Target  | Critical |
+| --------------- | ------- | -------- |
+| Page Load (FCP) | < 1.5s  | < 3s     |
+| WS Latency      | < 100ms | < 250ms  |
+| API Response    | < 500ms | < 1s     |
+| Memory Usage    | < 150MB | < 300MB  |
 
 ---
 
@@ -311,6 +326,7 @@ export NEXT_PUBLIC_USE_MOCKS=1
 6. Success! 🚀
 
 **Need help?** Check:
+
 - `GO_LIVE_RUNBOOK.md` for step-by-step guide
 - `BACKEND_INTEGRATION_GUIDE.md` for backend team
 - Browser console for `[EventBus]` logs

@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import React from 'react';
-import { Shield, Zap, Server } from 'lucide-react';
-import type { SystemStatus } from '@/lib/eventBus/contracts';
+import React from "react";
+import { Shield, Zap, Server } from "lucide-react";
+import type { SystemStatus } from "@/lib/eventBus/contracts";
 
 export interface FooterStatusProps {
   systemStatus?: SystemStatus;
@@ -20,11 +20,11 @@ export interface FooterStatusProps {
  */
 export function FooterStatus({
   systemStatus,
-  className = '',
+  className = "",
 }: FooterStatusProps) {
   const secure = systemStatus?.secure ?? true;
   const latency = systemStatus?.latencyMs ?? 0;
-  const hydraNode = systemStatus?.hydraNode ?? 'OK';
+  const hydraNode = systemStatus?.hydraNode ?? "OK";
 
   return (
     <footer
@@ -39,47 +39,78 @@ export function FooterStatus({
         {/* Left: Status indicators */}
         <div className="flex items-center gap-4">
           {/* Operational */}
-          <div className="flex items-center gap-1.5" role="status" aria-label="System operational">
+          <div
+            className="flex items-center gap-1.5"
+            role="status"
+            aria-label="System operational"
+          >
             <Shield className="w-3.5 h-3.5 text-[#34d399]" aria-hidden="true" />
             <span className="font-tactical text-[#34d399]">OPERATIONAL</span>
           </div>
 
           {/* Secure */}
-          <div className="flex items-center gap-1.5" role="status" aria-label={secure ? "Secure" : "Insecure"}>
-            <Zap className={`w-3.5 h-3.5 ${secure ? 'text-[#34d399]' : 'text-[#ef4444]'}`} aria-hidden="true" />
-            <span className={`font-tactical ${secure ? 'text-[#34d399]' : 'text-[#ef4444]'}`}>
-              {secure ? 'SECURE' : 'INSECURE'}
+          <div
+            className="flex items-center gap-1.5"
+            role="status"
+            aria-label={secure ? "Secure" : "Insecure"}
+          >
+            <Zap
+              className={`w-3.5 h-3.5 ${secure ? "text-[#34d399]" : "text-[#ef4444]"}`}
+              aria-hidden="true"
+            />
+            <span
+              className={`font-tactical ${secure ? "text-[#34d399]" : "text-[#ef4444]"}`}
+            >
+              {secure ? "SECURE" : "INSECURE"}
             </span>
           </div>
 
           {/* Hydra Node */}
-          <div className="flex items-center gap-1.5" role="status" aria-label={`Hydra node ${hydraNode}`}>
+          <div
+            className="flex items-center gap-1.5"
+            role="status"
+            aria-label={`Hydra node ${hydraNode}`}
+          >
             <Server
               className={`w-3.5 h-3.5 ${
-                hydraNode === 'OK' ? 'text-[#34d399]' :
-                hydraNode === 'WARN' ? 'text-[#fbbf24]' :
-                'text-[#ef4444]'
+                hydraNode === "OK"
+                  ? "text-[#34d399]"
+                  : hydraNode === "WARN"
+                    ? "text-[#fbbf24]"
+                    : "text-[#ef4444]"
               }`}
               aria-hidden="true"
             />
-            <span className={`font-tactical ${
-              hydraNode === 'OK' ? 'text-[#34d399]' :
-              hydraNode === 'WARN' ? 'text-[#fbbf24]' :
-              'text-[#ef4444]'
-            }`}>
+            <span
+              className={`font-tactical ${
+                hydraNode === "OK"
+                  ? "text-[#34d399]"
+                  : hydraNode === "WARN"
+                    ? "text-[#fbbf24]"
+                    : "text-[#ef4444]"
+              }`}
+            >
               HYDRA NODE {hydraNode}
             </span>
           </div>
         </div>
 
         {/* Right: Latency */}
-        <div className="flex items-center gap-1.5" role="status" aria-label={`Latency ${latency} milliseconds`}>
+        <div
+          className="flex items-center gap-1.5"
+          role="status"
+          aria-label={`Latency ${latency} milliseconds`}
+        >
           <span className="text-[#4a5568]">LATENCY:</span>
-          <span className={`font-mono tabular-nums ${
-            latency < 100 ? 'text-[#34d399]' :
-            latency < 200 ? 'text-[#fbbf24]' :
-            'text-[#ef4444]'
-          }`}>
+          <span
+            className={`font-mono tabular-nums ${
+              latency < 100
+                ? "text-[#34d399]"
+                : latency < 200
+                  ? "text-[#fbbf24]"
+                  : "text-[#ef4444]"
+            }`}
+          >
             {latency}ms
           </span>
         </div>

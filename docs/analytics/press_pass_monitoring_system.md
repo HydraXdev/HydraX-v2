@@ -42,27 +42,32 @@ The Press Pass Monitoring System provides comprehensive analytics, real-time mon
 ## Key Metrics and KPIs
 
 ### Conversion Metrics
+
 - **Landing to Claim Rate**: Percentage of landing page visitors who claim Press Pass
 - **Claim to Demo Rate**: Percentage of claimants who activate demo account
 - **Demo to Trade Rate**: Percentage of demo users who complete first trade
 - **Claim to Upgrade Rate**: Overall conversion from Press Pass to paid tier
 
 ### Activation Metrics
+
 - **Time to First Trade**: Average hours from registration to first trade
 - **Activation Rate by Cohort**: Daily cohort activation performance
 - **Feature Adoption**: Onboarding completion, profile completion rates
 
 ### XP Reset Metrics
+
 - **Daily Active Users**: Press Pass users earning XP
 - **Total XP Reset**: Amount of XP reset at midnight GMT
 - **Activity Rate**: Percentage of Press Pass users active daily
 
 ### Retention Metrics
+
 - **D1, D3, D7, D14, D30 Retention**: Login and trade activity retention
 - **Churn Rates**: 7-day, 14-day, 30-day churn rates
 - **At-risk Users**: Users showing signs of churning
 
 ### Revenue Metrics
+
 - **Total Revenue from Upgrades**: Revenue from Press Pass conversions
 - **Average Revenue Per User (ARPU)**: Revenue per upgraded user
 - **Revenue by Tier**: Breakdown by upgrade tier (Nibbler, Fang, Commander, Apex)
@@ -70,15 +75,15 @@ The Press Pass Monitoring System provides comprehensive analytics, real-time mon
 
 ## Alert Thresholds
 
-| Metric | Threshold | Severity | Description |
-|--------|-----------|----------|-------------|
-| Conversion Rate | < 0.5% | ERROR | Landing to claim conversion below threshold |
-| Activation Rate | < 20% | WARNING | New user activation rate low |
-| XP Reset Failures | > 5 | CRITICAL | Technical issues with nightly reset |
-| Churn Rate Spike | > 50% increase | ERROR | Significant increase in churn |
-| Upgrade Rate | < 5% | WARNING | Low conversion to paid tiers |
-| Response Time | > 1000ms | WARNING | API performance degradation |
-| Error Rate | > 5% | ERROR | High system error rate |
+| Metric            | Threshold      | Severity | Description                                 |
+| ----------------- | -------------- | -------- | ------------------------------------------- |
+| Conversion Rate   | < 0.5%         | ERROR    | Landing to claim conversion below threshold |
+| Activation Rate   | < 20%          | WARNING  | New user activation rate low                |
+| XP Reset Failures | > 5            | CRITICAL | Technical issues with nightly reset         |
+| Churn Rate Spike  | > 50% increase | ERROR    | Significant increase in churn               |
+| Upgrade Rate      | < 5%           | WARNING  | Low conversion to paid tiers                |
+| Response Time     | > 1000ms       | WARNING  | API performance degradation                 |
+| Error Rate        | > 5%           | ERROR    | High system error rate                      |
 
 ## Usage Examples
 
@@ -213,9 +218,11 @@ visualizer.export_dashboard_html(dashboard_fig, "realtime_dashboard.html")
 ## Dashboard Access
 
 ### Real-time Dashboard URL
+
 Access the real-time monitoring dashboard at: `/analytics/dashboard/press-pass`
 
 ### Key Dashboard Views
+
 1. **Overview**: High-level KPIs and conversion funnel
 2. **Activation**: New user activation and onboarding metrics
 3. **Retention**: Cohort retention analysis and churn indicators
@@ -283,6 +290,7 @@ Access the real-time monitoring dashboard at: `/analytics/dashboard/press-pass`
 ## Support
 
 For questions or issues with the monitoring system:
+
 - Technical Issues: #engineering-support
 - Metric Questions: #data-analytics
 - Alert Configuration: #ops-alerts

@@ -37,11 +37,7 @@
       "docker_compose": "v2.24.5",
       "podman": "not installed"
     },
-    "package_managers_installed": [
-      "pip",
-      "pip3",
-      "npm"
-    ]
+    "package_managers_installed": ["pip", "pip3", "npm"]
   },
 
   "repositories_and_languages": {
@@ -69,15 +65,8 @@
         }
       },
       "frameworks": {
-        "backend": [
-          "Flask",
-          "FastAPI"
-        ],
-        "frontend": [
-          "Next.js 15.5.3",
-          "React 19.1.0",
-          "Tailwind CSS v4"
-        ],
+        "backend": ["Flask", "FastAPI"],
+        "frontend": ["Next.js 15.5.3", "React 19.1.0", "Tailwind CSS v4"],
         "ui_libraries": [
           "Framer Motion 12.23.16",
           "Lucide React 0.544.0",
@@ -233,10 +222,7 @@
             },
             {
               "name": "build-validation",
-              "steps": [
-                "Verify production build",
-                "Check bundle size"
-              ]
+              "steps": ["Verify production build", "Check bundle size"]
             }
           ]
         }
@@ -329,17 +315,9 @@
       "total_test_files": 53
     },
     "linter_and_formatter_configs": {
-      "python": [
-        "flake8 (configured in CI)",
-        "black (configured in CI)"
-      ],
-      "javascript_typescript": [
-        "ESLint 9",
-        "eslint-config-next 15.5.3"
-      ],
-      "css": [
-        "Tailwind CSS 4 (PostCSS)"
-      ]
+      "python": ["flake8 (configured in CI)", "black (configured in CI)"],
+      "javascript_typescript": ["ESLint 9", "eslint-config-next 15.5.3"],
+      "css": ["Tailwind CSS 4 (PostCSS)"]
     },
     "code_quality_gates": {
       "ci_gates": [

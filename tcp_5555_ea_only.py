@@ -3,20 +3,21 @@
 TCP Server on port 5555 - Only accepts EA connections from 185.244.67.11
 Rejects all localhost connections
 """
-import socket
 import json
+import socket
 import sys
 import threading
 import time
 
 # Force unbuffered output
-sys.stdout = open(1, 'w', 1)
-sys.stderr = open(2, 'w', 1)
+sys.stdout = open(1, "w", 1)
+sys.stderr = open(2, "w", 1)
 
-EA_IP = '185.244.67.11'
+EA_IP = "185.244.67.11"
 
 print(f"Starting EA-only TCP server on port 5555 at {time.strftime('%Y-%m-%d %H:%M:%S')}", flush=True)
 print(f"Will only accept connections from {EA_IP}", flush=True)
+
 
 def handle_client(conn, addr):
     print(f"✅ EA CONNECTED from {addr}", flush=True)
@@ -29,7 +30,7 @@ def handle_client(conn, addr):
         "tfs": "M1,M5,H1",
         "lookback": 200,
         "midbar": 0,
-        "midbar_sec": 15
+        "midbar_sec": 15,
     }
 
     msg = json.dumps(feed_cmd) + "\n"
@@ -44,9 +45,9 @@ def handle_client(conn, addr):
             if not data:
                 break
 
-            buffer += data.decode('utf-8')
-            while '\n' in buffer:
-                line, buffer = buffer.split('\n', 1)
+            buffer += data.decode("utf-8")
+            while "\n" in buffer:
+                line, buffer = buffer.split("\n", 1)
                 if line.strip():
                     try:
                         cmd = json.loads(line)
@@ -56,11 +57,7 @@ def handle_client(conn, addr):
                         print(f"  Details: {json.dumps(cmd)}", flush=True)
 
                         # Send acknowledgment
-                        ack = {
-                            "type": "command_result",
-                            "request_ref": cmd.get('request_ref', ''),
-                            "status": "success"
-                        }
+                        ack = {"type": "command_result", "request_ref": cmd.get("request_ref", ""), "status": "success"}
                         conn.send((json.dumps(ack) + "\n").encode())
                     except Exception as e:
                         print(f"Error parsing: {e}", flush=True)
@@ -71,12 +68,13 @@ def handle_client(conn, addr):
     print(f"🔌 EA disconnected from {addr}", flush=True)
     conn.close()
 
+
 # Create server socket
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
 # Bind to 0.0.0.0:5555 (accept from anywhere)
-server.bind(('0.0.0.0', 5555))
+server.bind(("0.0.0.0", 5555))
 server.listen(10)
 
 print("✅ TCP Server listening on 0.0.0.0:5555", flush=True)

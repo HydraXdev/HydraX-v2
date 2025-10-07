@@ -4,44 +4,45 @@ ULTIMATE WAR ROOM - Gamified Trading Command Center
 Complete overhaul with real-time data, live P&L, and social features
 """
 
+
 def generate_ultimate_war_room(user_id, user_data=None):
     """
     Generate the Ultimate War Room HTML with gamification
-    
+
     Args:
         user_id: User's Telegram ID
         user_data: Dict containing all user stats and positions
     """
-    
+
     # Default data if not provided
     if not user_data:
         user_data = {
-            'callsign': f'VIPER-{user_id[-4:]}',
-            'rank': 'COMMANDER',
-            'level': 42,
-            'xp': 12450,
-            'xp_to_next': 15000,
-            'balance': 850.45,
-            'equity': 892.33,
-            'margin_used': 42.50,
-            'free_margin': 849.83,
-            'margin_level': 2099.60,
-            'total_trades': 127,
-            'win_rate': 48.5,
-            'current_streak': 3,
-            'best_streak': 12,
-            'total_pnl': 4783.22,
-            'today_pnl': 142.50,
-            'week_pnl': 892.33,
-            'month_pnl': 2341.15,
-            'open_positions': [],
-            'recent_trades': [],
-            'achievements': [],
-            'squad_size': 12,
-            'global_rank': 247,
-            'pattern_stats': {}
+            "callsign": f"VIPER-{user_id[-4:]}",
+            "rank": "COMMANDER",
+            "level": 42,
+            "xp": 12450,
+            "xp_to_next": 15000,
+            "balance": 850.45,
+            "equity": 892.33,
+            "margin_used": 42.50,
+            "free_margin": 849.83,
+            "margin_level": 2099.60,
+            "total_trades": 127,
+            "win_rate": 48.5,
+            "current_streak": 3,
+            "best_streak": 12,
+            "total_pnl": 4783.22,
+            "today_pnl": 142.50,
+            "week_pnl": 892.33,
+            "month_pnl": 2341.15,
+            "open_positions": [],
+            "recent_trades": [],
+            "achievements": [],
+            "squad_size": 12,
+            "global_rank": 247,
+            "pattern_stats": {},
         }
-    
+
     return f"""
 <!DOCTYPE html>
 <html lang="en">
@@ -55,7 +56,7 @@ def generate_ultimate_war_room(user_id, user_data=None):
             padding: 0;
             box-sizing: border-box;
         }}
-        
+
         body {{
             background: #000;
             color: #fff;
@@ -63,7 +64,7 @@ def generate_ultimate_war_room(user_id, user_data=None):
             overflow-x: hidden;
             position: relative;
         }}
-        
+
         /* Animated Background */
         body::before {{
             content: '';
@@ -72,19 +73,19 @@ def generate_ultimate_war_room(user_id, user_data=None):
             left: 0;
             width: 100%;
             height: 100%;
-            background: 
+            background:
                 radial-gradient(circle at 20% 50%, rgba(0, 217, 255, 0.1) 0%, transparent 50%),
                 radial-gradient(circle at 80% 80%, rgba(255, 0, 128, 0.1) 0%, transparent 50%),
                 radial-gradient(circle at 40% 20%, rgba(0, 255, 136, 0.1) 0%, transparent 50%);
             animation: backgroundPulse 20s ease-in-out infinite;
             z-index: -1;
         }}
-        
+
         @keyframes backgroundPulse {{
             0%, 100% {{ opacity: 0.5; }}
             50% {{ opacity: 1; }}
         }}
-        
+
         /* Header Section */
         .header {{
             background: linear-gradient(135deg, rgba(0,0,0,0.9), rgba(0,217,255,0.1));
@@ -93,7 +94,7 @@ def generate_ultimate_war_room(user_id, user_data=None):
             position: relative;
             overflow: hidden;
         }}
-        
+
         .header::after {{
             content: '';
             position: absolute;
@@ -104,11 +105,11 @@ def generate_ultimate_war_room(user_id, user_data=None):
             background: linear-gradient(90deg, transparent, rgba(0,217,255,0.3), transparent);
             animation: headerSweep 3s linear infinite;
         }}
-        
+
         @keyframes headerSweep {{
             to {{ left: 100%; }}
         }}
-        
+
         .header-content {{
             display: flex;
             justify-content: space-between;
@@ -118,13 +119,13 @@ def generate_ultimate_war_room(user_id, user_data=None):
             position: relative;
             z-index: 1;
         }}
-        
+
         .user-profile {{
             display: flex;
             align-items: center;
             gap: 20px;
         }}
-        
+
         .avatar {{
             width: 80px;
             height: 80px;
@@ -137,11 +138,11 @@ def generate_ultimate_war_room(user_id, user_data=None):
             position: relative;
             animation: avatarRotate 10s linear infinite;
         }}
-        
+
         @keyframes avatarRotate {{
             to {{ transform: rotate(360deg); }}
         }}
-        
+
         .avatar::before {{
             content: '';
             position: absolute;
@@ -151,7 +152,7 @@ def generate_ultimate_war_room(user_id, user_data=None):
             z-index: -1;
             animation: avatarRotate 5s linear infinite reverse;
         }}
-        
+
         .user-info h1 {{
             font-size: 28px;
             background: linear-gradient(90deg, #00D9FF, #FF0080);
@@ -161,7 +162,7 @@ def generate_ultimate_war_room(user_id, user_data=None):
             letter-spacing: 3px;
             margin-bottom: 5px;
         }}
-        
+
         .rank-badge {{
             display: inline-block;
             background: linear-gradient(135deg, #FFD700, #FFA500);
@@ -173,7 +174,7 @@ def generate_ultimate_war_room(user_id, user_data=None):
             text-transform: uppercase;
             letter-spacing: 1px;
         }}
-        
+
         .level-progress {{
             margin-top: 10px;
             background: rgba(255,255,255,0.1);
@@ -182,7 +183,7 @@ def generate_ultimate_war_room(user_id, user_data=None):
             overflow: hidden;
             position: relative;
         }}
-        
+
         .level-bar {{
             height: 100%;
             background: linear-gradient(90deg, #00D9FF, #00FF88);
@@ -190,34 +191,34 @@ def generate_ultimate_war_room(user_id, user_data=None):
             position: relative;
             animation: levelPulse 2s ease-in-out infinite;
         }}
-        
+
         @keyframes levelPulse {{
             0%, 100% {{ opacity: 1; }}
             50% {{ opacity: 0.8; }}
         }}
-        
+
         .header-stats {{
             display: flex;
             gap: 30px;
         }}
-        
+
         .header-stat {{
             text-align: center;
         }}
-        
+
         .header-stat-value {{
             font-size: 24px;
             font-weight: bold;
             color: #00D9FF;
         }}
-        
+
         .header-stat-label {{
             font-size: 11px;
             color: #888;
             text-transform: uppercase;
             letter-spacing: 1px;
         }}
-        
+
         /* Main Grid Layout */
         .dashboard {{
             display: grid;
@@ -227,13 +228,13 @@ def generate_ultimate_war_room(user_id, user_data=None):
             max-width: 1800px;
             margin: 0 auto;
         }}
-        
+
         @media (max-width: 1400px) {{
             .dashboard {{
                 grid-template-columns: 1fr;
             }}
         }}
-        
+
         /* Card Styles */
         .card {{
             background: linear-gradient(135deg, rgba(10,10,10,0.95), rgba(20,20,20,0.95));
@@ -245,13 +246,13 @@ def generate_ultimate_war_room(user_id, user_data=None):
             backdrop-filter: blur(10px);
             transition: all 0.3s ease;
         }}
-        
+
         .card:hover {{
             transform: translateY(-5px);
             border-color: #00D9FF;
             box-shadow: 0 10px 40px rgba(0,217,255,0.3);
         }}
-        
+
         .card::before {{
             content: '';
             position: absolute;
@@ -262,12 +263,12 @@ def generate_ultimate_war_room(user_id, user_data=None):
             background: linear-gradient(90deg, #00D9FF, #FF0080, #00FF88);
             animation: cardTopBar 3s linear infinite;
         }}
-        
+
         @keyframes cardTopBar {{
             0% {{ transform: translateX(-100%); }}
             100% {{ transform: translateX(100%); }}
         }}
-        
+
         .card-title {{
             font-size: 14px;
             font-weight: bold;
@@ -279,24 +280,24 @@ def generate_ultimate_war_room(user_id, user_data=None):
             align-items: center;
             gap: 10px;
         }}
-        
+
         .card-title::before {{
             content: '▶';
             color: #FF0080;
             animation: titlePulse 1s ease-in-out infinite;
         }}
-        
+
         @keyframes titlePulse {{
             0%, 100% {{ opacity: 1; }}
             50% {{ opacity: 0.5; }}
         }}
-        
+
         /* Account Overview */
         .account-stats {{
             display: grid;
             gap: 15px;
         }}
-        
+
         .account-stat {{
             display: flex;
             justify-content: space-between;
@@ -306,33 +307,33 @@ def generate_ultimate_war_room(user_id, user_data=None):
             border-radius: 8px;
             border-left: 3px solid #00D9FF;
         }}
-        
+
         .account-stat-label {{
             font-size: 12px;
             color: #888;
             text-transform: uppercase;
         }}
-        
+
         .account-stat-value {{
             font-size: 18px;
             font-weight: bold;
             color: #00D9FF;
         }}
-        
+
         .account-stat-value.positive {{
             color: #00FF88;
         }}
-        
+
         .account-stat-value.negative {{
             color: #FF0044;
         }}
-        
+
         /* Live Positions */
         .positions-list {{
             max-height: 400px;
             overflow-y: auto;
         }}
-        
+
         .position-item {{
             background: rgba(0,0,0,0.5);
             border: 1px solid rgba(255,255,255,0.1);
@@ -342,25 +343,25 @@ def generate_ultimate_war_room(user_id, user_data=None):
             position: relative;
             transition: all 0.3s ease;
         }}
-        
+
         .position-item:hover {{
             background: rgba(0,217,255,0.1);
             border-color: #00D9FF;
         }}
-        
+
         .position-header {{
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 10px;
         }}
-        
+
         .position-symbol {{
             font-size: 16px;
             font-weight: bold;
             color: #fff;
         }}
-        
+
         .position-direction {{
             padding: 3px 10px;
             border-radius: 5px;
@@ -368,55 +369,55 @@ def generate_ultimate_war_room(user_id, user_data=None):
             font-weight: bold;
             text-transform: uppercase;
         }}
-        
+
         .position-direction.buy {{
             background: rgba(0,255,136,0.2);
             color: #00FF88;
             border: 1px solid #00FF88;
         }}
-        
+
         .position-direction.sell {{
             background: rgba(255,0,68,0.2);
             color: #FF0044;
             border: 1px solid #FF0044;
         }}
-        
+
         .position-details {{
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 10px;
             font-size: 12px;
         }}
-        
+
         .position-detail {{
             display: flex;
             flex-direction: column;
         }}
-        
+
         .position-detail-label {{
             color: #666;
             font-size: 10px;
             text-transform: uppercase;
         }}
-        
+
         .position-detail-value {{
             color: #fff;
             font-weight: bold;
         }}
-        
+
         .position-pnl {{
             text-align: right;
             font-size: 18px;
             font-weight: bold;
             margin-top: 10px;
         }}
-        
+
         .position-actions {{
             display: flex;
             gap: 10px;
             margin-top: 15px;
         }}
-        
+
         .position-action {{
             flex: 1;
             padding: 8px;
@@ -431,24 +432,24 @@ def generate_ultimate_war_room(user_id, user_data=None):
             transition: all 0.3s ease;
             text-align: center;
         }}
-        
+
         .position-action:hover {{
             background: #00D9FF;
             color: #000;
             transform: scale(1.05);
         }}
-        
+
         .position-action.close {{
             background: linear-gradient(135deg, rgba(255,0,68,0.1), rgba(255,0,68,0.2));
             border-color: #FF0044;
             color: #FF0044;
         }}
-        
+
         .position-action.close:hover {{
             background: #FF0044;
             color: #fff;
         }}
-        
+
         /* Performance Chart */
         .chart-container {{
             height: 300px;
@@ -457,7 +458,7 @@ def generate_ultimate_war_room(user_id, user_data=None):
             border-radius: 10px;
             padding: 20px;
         }}
-        
+
         .chart-placeholder {{
             width: 100%;
             height: 100%;
@@ -467,14 +468,14 @@ def generate_ultimate_war_room(user_id, user_data=None):
             color: #666;
             font-size: 14px;
         }}
-        
+
         /* Pattern Performance */
         .pattern-grid {{
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 15px;
         }}
-        
+
         .pattern-card {{
             background: rgba(0,0,0,0.5);
             border: 1px solid rgba(255,255,255,0.1);
@@ -484,31 +485,31 @@ def generate_ultimate_war_room(user_id, user_data=None):
             transition: all 0.3s ease;
             cursor: pointer;
         }}
-        
+
         .pattern-card:hover {{
             background: rgba(0,217,255,0.1);
             border-color: #00D9FF;
             transform: scale(1.05);
         }}
-        
+
         .pattern-name {{
             font-size: 11px;
             color: #888;
             text-transform: uppercase;
             margin-bottom: 10px;
         }}
-        
+
         .pattern-winrate {{
             font-size: 24px;
             font-weight: bold;
             margin-bottom: 5px;
         }}
-        
+
         .pattern-trades {{
             font-size: 10px;
             color: #666;
         }}
-        
+
         /* Action Buttons */
         .action-grid {{
             display: grid;
@@ -516,7 +517,7 @@ def generate_ultimate_war_room(user_id, user_data=None):
             gap: 15px;
             margin-top: 20px;
         }}
-        
+
         .action-button {{
             padding: 15px;
             background: linear-gradient(135deg, rgba(0,217,255,0.1), rgba(0,217,255,0.2));
@@ -533,7 +534,7 @@ def generate_ultimate_war_room(user_id, user_data=None):
             position: relative;
             overflow: hidden;
         }}
-        
+
         .action-button::before {{
             content: '';
             position: absolute;
@@ -546,30 +547,30 @@ def generate_ultimate_war_room(user_id, user_data=None):
             transform: translate(-50%, -50%);
             transition: all 0.5s ease;
         }}
-        
+
         .action-button:hover::before {{
             width: 300px;
             height: 300px;
         }}
-        
+
         .action-button:hover {{
             background: #00D9FF;
             color: #000;
             transform: translateY(-3px);
             box-shadow: 0 10px 30px rgba(0,217,255,0.5);
         }}
-        
+
         .action-button.primary {{
             background: linear-gradient(135deg, rgba(0,255,136,0.1), rgba(0,255,136,0.2));
             border-color: #00FF88;
             color: #00FF88;
         }}
-        
+
         .action-button.primary:hover {{
             background: #00FF88;
             color: #000;
         }}
-        
+
         /* Social Features */
         .social-share {{
             background: linear-gradient(135deg, rgba(255,215,0,0.1), rgba(255,215,0,0.2));
@@ -579,7 +580,7 @@ def generate_ultimate_war_room(user_id, user_data=None):
             margin-top: 20px;
             text-align: center;
         }}
-        
+
         .share-title {{
             color: #FFD700;
             font-size: 16px;
@@ -588,13 +589,13 @@ def generate_ultimate_war_room(user_id, user_data=None):
             text-transform: uppercase;
             letter-spacing: 2px;
         }}
-        
+
         .share-buttons {{
             display: flex;
             gap: 10px;
             justify-content: center;
         }}
-        
+
         .share-button {{
             padding: 10px 20px;
             background: rgba(255,215,0,0.2);
@@ -604,13 +605,13 @@ def generate_ultimate_war_room(user_id, user_data=None):
             cursor: pointer;
             transition: all 0.3s ease;
         }}
-        
+
         .share-button:hover {{
             background: #FFD700;
             color: #000;
             transform: scale(1.1);
         }}
-        
+
         /* Norman's Notebook Integration */
         .notebook-quick {{
             background: linear-gradient(135deg, rgba(0,255,65,0.1), rgba(0,255,65,0.2));
@@ -619,7 +620,7 @@ def generate_ultimate_war_room(user_id, user_data=None):
             padding: 20px;
             margin-top: 20px;
         }}
-        
+
         .notebook-title {{
             color: #00FF41;
             font-size: 16px;
@@ -629,7 +630,7 @@ def generate_ultimate_war_room(user_id, user_data=None):
             align-items: center;
             gap: 10px;
         }}
-        
+
         .notebook-entry {{
             background: rgba(0,0,0,0.5);
             border: 1px solid rgba(0,255,65,0.3);
@@ -639,7 +640,7 @@ def generate_ultimate_war_room(user_id, user_data=None):
             font-size: 12px;
             color: #aaa;
         }}
-        
+
         .notebook-add {{
             width: 100%;
             padding: 10px;
@@ -650,12 +651,12 @@ def generate_ultimate_war_room(user_id, user_data=None):
             cursor: pointer;
             transition: all 0.3s ease;
         }}
-        
+
         .notebook-add:hover {{
             background: #00FF41;
             color: #000;
         }}
-        
+
         /* Loading States */
         .loading {{
             display: inline-block;
@@ -666,11 +667,11 @@ def generate_ultimate_war_room(user_id, user_data=None):
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }}
-        
+
         @keyframes spin {{
             to {{ transform: rotate(360deg); }}
         }}
-        
+
         /* Toast Notifications */
         .toast {{
             position: fixed;
@@ -684,7 +685,7 @@ def generate_ultimate_war_room(user_id, user_data=None):
             animation: slideIn 0.3s ease;
             z-index: 1000;
         }}
-        
+
         @keyframes slideIn {{
             from {{
                 transform: translateX(100%);
@@ -731,7 +732,7 @@ def generate_ultimate_war_room(user_id, user_data=None):
             </div>
         </div>
     </div>
-    
+
     <!-- Main Dashboard -->
     <div class="dashboard">
         <!-- Left Sidebar -->
@@ -758,7 +759,7 @@ def generate_ultimate_war_room(user_id, user_data=None):
                     </div>
                 </div>
             </div>
-            
+
             <!-- Quick Actions -->
             <div class="card">
                 <div class="card-title">Quick Actions</div>
@@ -769,7 +770,7 @@ def generate_ultimate_war_room(user_id, user_data=None):
                     <a href="#" onclick="showSettings()" class="action-button">Settings</a>
                 </div>
             </div>
-            
+
             <!-- Norman's Notebook Quick Access -->
             <div class="notebook-quick">
                 <div class="notebook-title">📓 Norman's Notebook</div>
@@ -777,7 +778,7 @@ def generate_ultimate_war_room(user_id, user_data=None):
                 <button class="notebook-add" onclick="openNotebook()">Add New Entry</button>
             </div>
         </div>
-        
+
         <!-- Center Content -->
         <div class="main-content">
             <!-- Live Positions -->
@@ -811,7 +812,7 @@ def generate_ultimate_war_room(user_id, user_data=None):
                     </div>
                 </div>
             </div>
-            
+
             <!-- Performance Chart -->
             <div class="card">
                 <div class="card-title">Performance Chart</div>
@@ -819,7 +820,7 @@ def generate_ultimate_war_room(user_id, user_data=None):
                     <canvas id="performanceChart"></canvas>
                 </div>
             </div>
-            
+
             <!-- Pattern Performance -->
             <div class="card">
                 <div class="card-title">Pattern Performance</div>
@@ -847,7 +848,7 @@ def generate_ultimate_war_room(user_id, user_data=None):
                 </div>
             </div>
         </div>
-        
+
         <!-- Right Sidebar -->
         <div class="sidebar-right">
             <!-- Recent Trades -->
@@ -857,7 +858,7 @@ def generate_ultimate_war_room(user_id, user_data=None):
                     <!-- Trades will be populated here -->
                 </div>
             </div>
-            
+
             <!-- Social Share -->
             <div class="social-share">
                 <div class="share-title">Share Your Success</div>
@@ -869,28 +870,28 @@ def generate_ultimate_war_room(user_id, user_data=None):
             </div>
         </div>
     </div>
-    
+
     <script>
         // Real-time data updates
         let ws = null;
         let updateInterval = null;
-        
+
         function connectWebSocket() {{
             // Connect to real-time data stream
             ws = new WebSocket('ws://localhost:8889/ws/user/{user_id}');
-            
+
             ws.onmessage = function(event) {{
                 const data = JSON.parse(event.data);
                 updateDashboard(data);
             }};
-            
+
             ws.onerror = function(error) {{
                 console.error('WebSocket error:', error);
                 // Fallback to polling
                 startPolling();
             }};
         }}
-        
+
         function startPolling() {{
             updateInterval = setInterval(() => {{
                 fetch('/api/user/{user_id}/live-data')
@@ -898,31 +899,31 @@ def generate_ultimate_war_room(user_id, user_data=None):
                     .then(data => updateDashboard(data));
             }}, 5000); // Update every 5 seconds
         }}
-        
+
         function updateDashboard(data) {{
             // Update account stats
             if (data.account) {{
                 document.querySelectorAll('.account-stat-value').forEach((el, i) => {{
                     const values = [data.account.balance, data.account.equity, data.account.free_margin, data.account.margin_level];
                     if (values[i] !== undefined) {{
-                        el.textContent = typeof values[i] === 'number' ? 
-                            (i === 3 ? values[i].toFixed(1) + '%' : '$' + values[i].toFixed(2)) : 
+                        el.textContent = typeof values[i] === 'number' ?
+                            (i === 3 ? values[i].toFixed(1) + '%' : '$' + values[i].toFixed(2)) :
                             values[i];
                     }}
                 }});
             }}
-            
+
             // Update positions
             if (data.positions) {{
                 updatePositions(data.positions);
             }}
-            
+
             // Update P&L
             if (data.pnl) {{
                 updatePnL(data.pnl);
             }}
         }}
-        
+
         function updatePositions(positions) {{
             const container = document.getElementById('positions-list');
             container.innerHTML = positions.map(pos => `
@@ -953,7 +954,7 @@ def generate_ultimate_war_room(user_id, user_data=None):
                 </div>
             `).join('');
         }}
-        
+
         function closePosition(positionId) {{
             if (confirm('Close this position?')) {{
                 fetch(`/api/position/${{positionId}}/close`, {{ method: 'POST' }})
@@ -966,17 +967,17 @@ def generate_ultimate_war_room(user_id, user_data=None):
                     }});
             }}
         }}
-        
+
         function shareToTwitter() {{
             const text = `Just hit {user_data['win_rate']}% win rate on BITTEN! 🎯\\n\\nToday's P&L: ${{user_data['today_pnl']:.2f}}\\nGlobal Rank: #{user_data['global_rank']}\\n\\nJoin me: bitten.app/ref/{user_id}`;
             window.open(`https://twitter.com/intent/tweet?text=${{encodeURIComponent(text)}}`, '_blank');
         }}
-        
+
         function shareToTelegram() {{
             const text = `🔥 BITTEN WAR ROOM Stats\\n\\nWin Rate: {user_data['win_rate']}%\\nToday P&L: ${{user_data['today_pnl']:.2f}}\\nGlobal Rank: #{user_data['global_rank']}`;
             window.open(`https://t.me/share/url?url=bitten.app&text=${{encodeURIComponent(text)}}`, '_blank');
         }}
-        
+
         function copyStats() {{
             const stats = `BITTEN Stats - {user_data['callsign']}
 Win Rate: {user_data['win_rate']}%
@@ -984,39 +985,39 @@ Today P&L: ${user_data['today_pnl']:.2f}
 Week P&L: ${user_data['week_pnl']:.2f}
 Global Rank: #{user_data['global_rank']}
 Current Streak: {user_data['current_streak']}`;
-            
+
             navigator.clipboard.writeText(stats);
             showToast('Stats copied to clipboard!');
         }}
-        
+
         function showToast(message) {{
             const toast = document.createElement('div');
             toast.className = 'toast';
             toast.textContent = message;
             document.body.appendChild(toast);
-            
+
             setTimeout(() => {{
                 toast.remove();
             }}, 3000);
         }}
-        
+
         function refreshData() {{
             fetch('/api/user/{user_id}/refresh', {{ method: 'POST' }})
                 .then(() => location.reload());
         }}
-        
+
         function openNotebook() {{
             window.open('/notebook/{user_id}', '_blank');
         }}
-        
+
         // Initialize on load
         document.addEventListener('DOMContentLoaded', () => {{
             // Try WebSocket first
             connectWebSocket();
-            
+
             // Initialize chart
             initPerformanceChart();
-            
+
             // Add keyboard shortcuts
             document.addEventListener('keydown', (e) => {{
                 if (e.ctrlKey && e.key === 'r') {{
@@ -1025,7 +1026,7 @@ Current Streak: {user_data['current_streak']}`;
                 }}
             }});
         }});
-        
+
         function initPerformanceChart() {{
             // Placeholder for chart initialization
             // Would integrate with Chart.js or similar

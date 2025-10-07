@@ -5,8 +5,9 @@
 **THIS ACCOUNT IS PERMANENTLY RESERVED FOR ENGINE DATA FEED**
 
 **Account Details:**
+
 - **Account Number**: 5038318494
-- **Password**: Hx*8PoXq
+- **Password**: Hx\*8PoXq
 - **Investor Password**: Ag_qGkR7
 - **Server**: MetaQuotes-Demo
 - **Account Name**: chr kim
@@ -16,6 +17,7 @@
 ## 🛡️ PROTECTION RULES
 
 ### ❌ NEVER ALLOWED:
+
 - **DO NOT use for Press Pass rotation**
 - **DO NOT delete or modify credentials**
 - **DO NOT assign to users**
@@ -24,6 +26,7 @@
 - **DO NOT expire or recycle**
 
 ### ✅ ONLY PURPOSE:
+
 - **Engine market data feed ONLY**
 - **24/7 live price data for signal generation**
 - **Independent of all user accounts**
@@ -49,6 +52,7 @@ MetaQuotes-Demo (100007013135) → Signal Generation → User Individual Account
 ## 📋 SYSTEM INTEGRITY CHECKS
 
 ### Daily Verification:
+
 1. ✅ Account 100007013135 is NOT in press pass rotation
 2. ✅ Account is NOT assigned to any users
 3. ✅ engine connects successfully
@@ -56,6 +60,7 @@ MetaQuotes-Demo (100007013135) → Signal Generation → User Individual Account
 5. ✅ No credential modifications
 
 ### Emergency Contact:
+
 - If this account is compromised or deleted, the ENTIRE SYSTEM will go offline
 - All signal generation will stop
 - Trading system will be non-functional
@@ -63,6 +68,7 @@ MetaQuotes-Demo (100007013135) → Signal Generation → User Individual Account
 ## 🚨 VIOLATION CONSEQUENCES
 
 **If this account is modified, deleted, or recycled:**
+
 - engine will crash
 - No signals will be generated
 - All users will lose trading capability
@@ -70,10 +76,10 @@ MetaQuotes-Demo (100007013135) → Signal Generation → User Individual Account
 
 ## 📝 CHANGE LOG
 
-| Date | Action | Notes |
-|------|--------|-------|
-| 2025-07-20 | Created | Established permanent data feed |
-| | | PROTECTED from Press Pass rotation |
+| Date       | Action  | Notes                              |
+| ---------- | ------- | ---------------------------------- |
+| 2025-07-20 | Created | Established permanent data feed    |
+|            |         | PROTECTED from Press Pass rotation |
 
 ---
 

@@ -1,6 +1,7 @@
 # BITTEN WebApp: Sniper Mission Brief HUD
 
 ## PURPOSE
+
 A futuristic WebApp interface for BITTEN users (Nibbler tier and above) to view mission briefs, real-time stats, encrypted sniper setups, and upgrade triggers in an immersive, AI war-room style HUD.
 
 ---
@@ -8,6 +9,7 @@ A futuristic WebApp interface for BITTEN users (Nibbler tier and above) to view 
 ## STRUCTURE
 
 ### WebApp Modules
+
 - `index.html`: Static HUD layout shell
 - `style.css` (optional): Currently inline but can be modularized
 - `app.js` (planned): JavaScript handling dynamic countdown, upgrade prompts, etc.
@@ -44,9 +46,9 @@ A futuristic WebApp interface for BITTEN users (Nibbler tier and above) to view 
 
 ## STATUS (JULY 5)
 
-✅ UI Mockup complete  
-✅ Countdown logic live  
-✅ Visual theme stable  
-⏳ Backend auth + data  
-⏳ Flask tier middleware  
+✅ UI Mockup complete
+✅ Countdown logic live
+✅ Visual theme stable
+⏳ Backend auth + data
+⏳ Flask tier middleware
 ⏳ Post-trade kill cards + XP feedback

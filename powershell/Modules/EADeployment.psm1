@@ -6,21 +6,21 @@ class EADeploymentManager {
     [string]$FilesPath
     [string]$BittenPath
     [hashtable]$CurrencyPairs
-    
+
     EADeploymentManager() {
         $this.InitializeManager()
     }
-    
+
     [void] InitializeManager() {
         # Auto-detect MT5 installation
         $this.MT5Path = $this.FindMT5Installation()
-        
+
         if ($this.MT5Path) {
             $this.ExpertsPath = Join-Path $this.MT5Path "MQL5\Experts"
             $this.FilesPath = Join-Path $this.MT5Path "MQL5\Files"
             $this.BittenPath = Join-Path $this.FilesPath "BITTEN"
         }
-        
+
         # Define the official 15 currency pairs (NO XAUUSD)
         $this.CurrencyPairs = @{
             1  = "EURUSD"
@@ -40,7 +40,7 @@ class EADeploymentManager {
             15 = "AUDJPY"
         }
     }
-    
+
     # Find MT5 installation path
     [string] FindMT5Installation() {
         $possiblePaths = @(
@@ -50,7 +50,7 @@ class EADeploymentManager {
             "D:\Program Files\MetaTrader 5",
             "D:\MetaTrader 5"
         )
-        
+
         foreach ($path in $possiblePaths) {
             if ($path -match '\*') {
                 # Handle wildcard paths
@@ -67,25 +67,25 @@ class EADeploymentManager {
                 return $path
             }
         }
-        
+
         Write-Warning "MT5 installation not found automatically"
         return $null
     }
-    
+
     # Deploy EA to MT5
     [bool] DeployEA() {
         Write-Host "`n🤖 Deploying BITTENBridge EA..." -ForegroundColor Cyan
-        
+
         if (-not $this.ExpertsPath) {
             Write-Error "MT5 path not found. Please install MT5 first."
             return $false
         }
-        
+
         # Create Experts directory if it doesn't exist
         if (-not (Test-Path $this.ExpertsPath)) {
             New-Item -ItemType Directory -Path $this.ExpertsPath -Force | Out-Null
         }
-        
+
         # EA source code
         $eaCode = @'
 //+------------------------------------------------------------------+
@@ -125,16 +125,16 @@ string symbols[] = {
 int OnInit()
 {
     Print("🟢 BITTENBridge v2 initialized (No XAUUSD, HTTP Streaming)");
-    
+
     // Load UUID
     LoadUUID();
-    
+
     // Set timer for frequent checks
     EventSetTimer(1);
-    
+
     // Initialize files
     InitializeFiles();
-    
+
     return INIT_SUCCEEDED;
 }
 
@@ -164,14 +164,14 @@ void InitializeFiles()
 {
     // Ensure BITTEN directory exists
     string bittenDir = "BITTEN\\";
-    
+
     // Create empty fire.txt if it doesn't exist
     int h = FileOpen(bittenDir + SignalFile, FILE_WRITE | FILE_TXT);
     if(h != INVALID_HANDLE)
     {
         FileClose(h);
     }
-    
+
     // Create empty result file
     h = FileOpen(bittenDir + ResultFile, FILE_WRITE | FILE_TXT);
     if(h != INVALID_HANDLE)
@@ -186,14 +186,14 @@ void InitializeFiles()
 void OnTimer()
 {
     datetime current_time = TimeCurrent();
-    
+
     // Check for trade signals every second
     if(current_time - last_check_time >= CheckInterval)
     {
         CheckFireSignal();
         last_check_time = current_time;
     }
-    
+
     // Stream market data every 5 seconds
     if(current_time - last_stream_time >= StreamInterval)
     {
@@ -208,15 +208,15 @@ void OnTimer()
 void CheckFireSignal()
 {
     string filepath = "BITTEN\\" + SignalFile;
-    
+
     // Check if file exists and has content
     if(!FileIsExist(filepath))
         return;
-        
+
     int handle = FileOpen(filepath, FILE_READ | FILE_TXT);
     if(handle == INVALID_HANDLE)
         return;
-    
+
     // Read content
     string content = "";
     while(!FileIsEnding(handle))
@@ -224,11 +224,11 @@ void CheckFireSignal()
         content += FileReadString(handle);
     }
     FileClose(handle);
-    
+
     // Skip if empty
     if(StringLen(content) == 0)
         return;
-    
+
     // Parse JSON signal
     string signal_id = GetJSONValue(content, "signal_id");
     string action = GetJSONValue(content, "action");
@@ -238,14 +238,14 @@ void CheckFireSignal()
     double sl = StringToDouble(GetJSONValue(content, "sl"));
     double tp = StringToDouble(GetJSONValue(content, "tp"));
     string comment = GetJSONValue(content, "comment");
-    
+
     // Prevent duplicate processing
     if(signal_id != "" && signal_id == last_signal_id)
     {
         Print("⏱ Duplicate signal: ", signal_id, ". Skipping.");
         return;
     }
-    
+
     // Validate symbol
     if(symbol == "")
     {
@@ -253,7 +253,7 @@ void CheckFireSignal()
         ClearSignalFile();
         return;
     }
-    
+
     // Ensure symbol is selected
     if(!SymbolSelect(symbol, true))
     {
@@ -262,7 +262,7 @@ void CheckFireSignal()
         ClearSignalFile();
         return;
     }
-    
+
     // Handle close action
     if(action == "close")
     {
@@ -271,7 +271,7 @@ void CheckFireSignal()
         ClearSignalFile();
         return;
     }
-    
+
     // Validate trade type
     if(type != "buy" && type != "sell")
     {
@@ -280,13 +280,13 @@ void CheckFireSignal()
         ClearSignalFile();
         return;
     }
-    
+
     // Execute trade
     ExecuteTrade(signal_id, symbol, type, lot, sl, tp, comment);
-    
+
     // Update last signal ID
     last_signal_id = signal_id;
-    
+
     // Clear the signal file
     ClearSignalFile();
 }
@@ -300,16 +300,16 @@ void ExecuteTrade(string signal_id, string symbol, string type, double lot, doub
     trade.SetExpertMagicNumber(777001);
     if(comment != "")
         trade.SetComment(comment);
-    
+
     bool result = false;
     ulong ticket = 0;
-    
+
     // Execute based on type
     if(type == "buy")
         result = trade.Buy(lot, symbol, 0, sl, tp);
     else if(type == "sell")
         result = trade.Sell(lot, symbol, 0, sl, tp);
-    
+
     // Process result
     if(result)
     {
@@ -334,7 +334,7 @@ void ClosePositionsBySymbol(string sym)
 {
     int total = PositionsTotal();
     int closed = 0;
-    
+
     for(int i = total - 1; i >= 0; i--)
     {
         ulong ticket = PositionGetTicket(i);
@@ -354,7 +354,7 @@ void ClosePositionsBySymbol(string sym)
             }
         }
     }
-    
+
     if(closed > 0)
         WriteResult("", "closed", 0, IntegerToString(closed) + " positions closed for " + sym);
     else
@@ -368,7 +368,7 @@ void WriteResult(string signal_id, string status, ulong ticket, string message)
 {
     string filepath = "BITTEN\\" + ResultFile;
     int handle = FileOpen(filepath, FILE_WRITE | FILE_TXT);
-    
+
     if(handle != INVALID_HANDLE)
     {
         // Build JSON result
@@ -378,7 +378,7 @@ void WriteResult(string signal_id, string status, ulong ticket, string message)
         json += "\"ticket\": " + IntegerToString(ticket) + ",";
         json += "\"message\": \"" + message + "\",";
         json += "\"timestamp\": \"" + TimeToString(TimeCurrent()) + "\",";
-        
+
         // Add account info
         json += "\"account\": {";
         json += "\"balance\": " + DoubleToString(AccountInfoDouble(ACCOUNT_BALANCE), 2) + ",";
@@ -387,12 +387,12 @@ void WriteResult(string signal_id, string status, ulong ticket, string message)
         json += "\"free_margin\": " + DoubleToString(AccountInfoDouble(ACCOUNT_MARGIN_FREE), 2) + ",";
         json += "\"profit\": " + DoubleToString(AccountInfoDouble(ACCOUNT_PROFIT), 2);
         json += "}";
-        
+
         json += "}";
-        
+
         FileWriteString(handle, json);
         FileClose(handle);
-        
+
         Print("📝 Result written: ", status);
     }
     else
@@ -424,7 +424,7 @@ void StreamMarketData()
     json += "\"uuid\": \"" + uuid + "\",";
     json += "\"timestamp\": " + IntegerToString(TimeCurrent()) + ",";
     json += "\"ticks\": [";
-    
+
     bool first = true;
     for(int i = 0; i < ArraySize(symbols); i++)
     {
@@ -433,7 +433,7 @@ void StreamMarketData()
         {
             if(!first) json += ",";
             first = false;
-            
+
             json += "{";
             json += "\"symbol\": \"" + symbols[i] + "\",";
             json += "\"bid\": " + DoubleToString(tick.bid, (int)SymbolInfoInteger(symbols[i], SYMBOL_DIGITS)) + ",";
@@ -444,9 +444,9 @@ void StreamMarketData()
             json += "}";
         }
     }
-    
+
     json += "]}";
-    
+
     // Send HTTP POST request
     SendHTTPPost(MarketDataURL, json);
 }
@@ -459,16 +459,16 @@ void SendHTTPPost(string url, string json_data)
     char post[];
     char result[];
     string headers;
-    
+
     // Convert string to char array
     StringToCharArray(json_data, post, 0, StringLen(json_data));
-    
+
     // Set headers
     headers = "Content-Type: application/json\r\n";
-    
+
     // Send request
     int res = WebRequest("POST", url, headers, 5000, post, result, headers);
-    
+
     if(res == 200)
     {
         Print("📡 Market data streamed successfully");
@@ -492,22 +492,22 @@ string GetJSONValue(string json, string key)
     // Simple JSON parser for string values
     int key_pos = StringFind(json, "\"" + key + "\"");
     if(key_pos < 0) return "";
-    
+
     int colon_pos = StringFind(json, ":", key_pos);
     if(colon_pos < 0) return "";
-    
+
     // Check if value is a string (starts with quote)
     int value_start = colon_pos + 1;
-    while(value_start < StringLen(json) && 
-          (StringGetCharacter(json, value_start) == ' ' || 
-           StringGetCharacter(json, value_start) == '\t' || 
+    while(value_start < StringLen(json) &&
+          (StringGetCharacter(json, value_start) == ' ' ||
+           StringGetCharacter(json, value_start) == '\t' ||
            StringGetCharacter(json, value_start) == '\n'))
     {
         value_start++;
     }
-    
+
     if(value_start >= StringLen(json)) return "";
-    
+
     // String value
     if(StringGetCharacter(json, value_start) == '"')
     {
@@ -553,7 +553,7 @@ void WriteTickDataFiles()
         {
             string filename = "tick_data_" + symbols[i] + ".json";
             int fileHandle = FileOpen(filename, FILE_WRITE | FILE_TXT | FILE_ANSI);
-            
+
             if(fileHandle != INVALID_HANDLE)
             {
                 string data = "{";
@@ -563,7 +563,7 @@ void WriteTickDataFiles()
                 data += "\"spread\": " + DoubleToString((tick.ask - tick.bid) / SymbolInfoDouble(symbols[i], SYMBOL_POINT), 1) + ",";
                 data += "\"volume\": " + IntegerToString(tick.volume) + ",";
                 data += "\"time\": " + IntegerToString(tick.time) + "}";
-                
+
                 FileWriteString(fileHandle, data);
                 FileClose(fileHandle);
             }
@@ -571,24 +571,24 @@ void WriteTickDataFiles()
     }
 }
 '@
-        
+
         # Write EA to file
         $eaPath = Join-Path $this.ExpertsPath "BITTENBridge_TradeExecutor.mq5"
-        
+
         # Backup existing EA if present
         if (Test-Path $eaPath) {
             $backupPath = $eaPath -replace '\.mq5$', "_backup_$(Get-Date -Format 'yyyyMMdd_HHmmss').mq5"
             Copy-Item $eaPath $backupPath -Force
             Write-Host "   📋 Backed up existing EA to: $([System.IO.Path]::GetFileName($backupPath))" -ForegroundColor Gray
         }
-        
+
         # Write new EA
         $eaCode | Set-Content $eaPath -Encoding UTF8
         Write-Host "   ✅ EA deployed to: $eaPath" -ForegroundColor Green
-        
+
         # Create BITTEN directory structure
         $this.SetupBittenDirectory()
-        
+
         Write-Host "`n   ⚠️ IMPORTANT: You must compile the EA in MetaEditor:" -ForegroundColor Yellow
         Write-Host "      1. Open MT5 Terminal" -ForegroundColor Gray
         Write-Host "      2. Press F4 or Tools → MetaQuotes Language Editor" -ForegroundColor Gray
@@ -596,23 +596,23 @@ void WriteTickDataFiles()
         Write-Host "      4. Open BITTENBridge_TradeExecutor.mq5" -ForegroundColor Gray
         Write-Host "      5. Press F7 or click Compile button" -ForegroundColor Gray
         Write-Host "      6. Drag EA to a chart to activate" -ForegroundColor Gray
-        
+
         return $true
     }
-    
+
     # Setup BITTEN directory structure
     [void] SetupBittenDirectory() {
         if (-not $this.BittenPath) {
             Write-Warning "MT5 Files path not found"
             return
         }
-        
+
         # Create BITTEN directory
         if (-not (Test-Path $this.BittenPath)) {
             New-Item -ItemType Directory -Path $this.BittenPath -Force | Out-Null
             Write-Host "   📁 Created BITTEN directory" -ForegroundColor Gray
         }
-        
+
         # Create subdirectories
         @("processed", "failed", "archive", "logs") | ForEach-Object {
             $subPath = Join-Path $this.BittenPath $_
@@ -620,7 +620,7 @@ void WriteTickDataFiles()
                 New-Item -ItemType Directory -Path $subPath -Force | Out-Null
             }
         }
-        
+
         # Create empty fire.txt and trade_result.txt
         @("fire.txt", "trade_result.txt") | ForEach-Object {
             $filePath = Join-Path $this.BittenPath $_
@@ -628,7 +628,7 @@ void WriteTickDataFiles()
                 "" | Set-Content $filePath -Force
             }
         }
-        
+
         # Create UUID file with machine identifier
         $uuidPath = Join-Path $this.FilesPath "uuid.txt"
         if (-not (Test-Path $uuidPath)) {
@@ -636,40 +636,40 @@ void WriteTickDataFiles()
             $uuid | Set-Content $uuidPath -Force
             Write-Host "   🆔 Created UUID: $uuid" -ForegroundColor Gray
         }
-        
+
         Write-Host "   ✅ BITTEN directory structure ready" -ForegroundColor Green
     }
-    
+
     # Create fire signal
     [bool] CreateFireSignal([hashtable]$signal) {
         if (-not $this.BittenPath) {
             Write-Error "BITTEN path not configured"
             return $false
         }
-        
+
         # Validate signal
         if (-not $signal.symbol -or -not $signal.type) {
             Write-Error "Invalid signal: missing symbol or type"
             return $false
         }
-        
+
         # Check if symbol is in our 15 pairs
         if ($signal.symbol -notin $this.CurrencyPairs.Values) {
             Write-Error "Invalid symbol: $($signal.symbol). Must be one of the 15 currency pairs."
             return $false
         }
-        
+
         # Block XAUUSD explicitly
         if ($signal.symbol -eq "XAUUSD" -or $signal.symbol -match "GOLD|XAU") {
             Write-Error "BLOCKED: XAUUSD/GOLD trading is not allowed"
             return $false
         }
-        
+
         # Generate signal ID
         if (-not $signal.signal_id) {
             $signal.signal_id = "S" + [math]::Round((Get-Date).ToFileTimeUtc() / 10000)
         }
-        
+
         # Build fire.txt content
         $fireContent = @{
             signal_id = $signal.signal_id
@@ -681,10 +681,10 @@ void WriteTickDataFiles()
             tp = $signal.tp ?? 0
             comment = $signal.comment ?? "BiTTen Signal"
         } | ConvertTo-Json -Compress
-        
+
         # Write to fire.txt
         $firePath = Join-Path $this.BittenPath "fire.txt"
-        
+
         try {
             $fireContent | Set-Content $firePath -Force
             Write-Host "🔥 Fire signal created: $($signal.signal_id)" -ForegroundColor Green
@@ -696,14 +696,14 @@ void WriteTickDataFiles()
             return $false
         }
     }
-    
+
     # Monitor trade result
     [hashtable] MonitorTradeResult([string]$signalId, [int]$timeoutSeconds = 30) {
         $resultPath = Join-Path $this.BittenPath "trade_result.txt"
         $startTime = Get-Date
-        
+
         Write-Host "⏳ Waiting for trade result..." -ForegroundColor Yellow
-        
+
         while ((Get-Date) - $startTime -lt [TimeSpan]::FromSeconds($timeoutSeconds)) {
             if (Test-Path $resultPath) {
                 $content = Get-Content $resultPath -Raw
@@ -712,10 +712,10 @@ void WriteTickDataFiles()
                         $result = $content | ConvertFrom-Json
                         if ($result.signal_id -eq $signalId) {
                             Write-Host "✅ Trade result received: $($result.status)" -ForegroundColor Green
-                            
+
                             # Clear result file
                             "" | Set-Content $resultPath -Force
-                            
+
                             return $result
                         }
                     }
@@ -724,10 +724,10 @@ void WriteTickDataFiles()
                     }
                 }
             }
-            
+
             Start-Sleep -Milliseconds 500
         }
-        
+
         Write-Warning "Trade result timeout after $timeoutSeconds seconds"
         return @{
             signal_id = $signalId
@@ -735,11 +735,11 @@ void WriteTickDataFiles()
             message = "No response from EA within timeout period"
         }
     }
-    
+
     # Test EA communication
     [bool] TestEACommunication() {
         Write-Host "`n🧪 Testing EA communication..." -ForegroundColor Cyan
-        
+
         # Create test signal
         $testSignal = @{
             symbol = "EURUSD"
@@ -749,15 +749,15 @@ void WriteTickDataFiles()
             tp = 0
             comment = "BiTTen Communication Test"
         }
-        
+
         if ($this.CreateFireSignal($testSignal)) {
             # Wait a moment for EA to process
             Start-Sleep -Seconds 2
-            
+
             # Check if fire.txt was cleared (EA read it)
             $firePath = Join-Path $this.BittenPath "fire.txt"
             $content = Get-Content $firePath -Raw
-            
+
             if (-not $content -or $content.Trim().Length -eq 0) {
                 Write-Host "✅ EA communication test passed" -ForegroundColor Green
                 return $true
@@ -767,27 +767,27 @@ void WriteTickDataFiles()
                 return $false
             }
         }
-        
+
         return $false
     }
-    
+
     # Get currency pairs list
     [array] GetCurrencyPairs() {
         return $this.CurrencyPairs.Values | Sort-Object
     }
-    
+
     # Validate all pairs available
     [hashtable] ValidatePairsAvailable() {
         $validation = @{}
-        
+
         foreach ($pair in $this.CurrencyPairs.Values) {
             # This would need actual MT5 API to check, for now assume all valid
             $validation[$pair] = $true
         }
-        
+
         # Explicitly mark XAUUSD as invalid
         $validation["XAUUSD"] = $false
-        
+
         return $validation
     }
 }

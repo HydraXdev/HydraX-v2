@@ -1,13 +1,14 @@
-"use client"
+"use client";
 
 /**
  * Trading API Client - Fire & Close Operations
  * Handles all trading actions with backend
  */
 
-const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8888';
-const FIRE_ENDPOINT = process.env.NEXT_PUBLIC_API_FIRE || '/api/fire';
-const CLOSE_ALL_ENDPOINT = process.env.NEXT_PUBLIC_API_CLOSE_ALL || '/api/trades/close-all';
+const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8888";
+const FIRE_ENDPOINT = process.env.NEXT_PUBLIC_API_FIRE || "/api/fire";
+const CLOSE_ALL_ENDPOINT =
+  process.env.NEXT_PUBLIC_API_CLOSE_ALL || "/api/trades/close-all";
 
 export interface FireRequest {
   alertId: string | number;
@@ -25,7 +26,7 @@ export interface FireResponse {
 }
 
 export interface CloseAllRequest {
-  reason: 'manual' | 'risk' | 'weekend';
+  reason: "manual" | "risk" | "weekend";
 }
 
 export interface CloseAllResponse {
@@ -42,9 +43,9 @@ export interface CloseAllResponse {
 export async function executeFire(request: FireRequest): Promise<FireResponse> {
   try {
     const response = await fetch(`${API_BASE}${FIRE_ENDPOINT}`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         // TODO: Add auth header if needed
         // 'Authorization': `Bearer ${token}`,
       },
@@ -66,10 +67,10 @@ export async function executeFire(request: FireRequest): Promise<FireResponse> {
       message: data.message,
     };
   } catch (error) {
-    console.error('[Fire API] Error:', error);
+    console.error("[Fire API] Error:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error instanceof Error ? error.message : "Unknown error",
     };
   }
 }
@@ -78,12 +79,14 @@ export async function executeFire(request: FireRequest): Promise<FireResponse> {
  * Close all open positions
  * Returns 202 Accepted - closures stream via event bus
  */
-export async function closeAllTrades(request: CloseAllRequest): Promise<CloseAllResponse> {
+export async function closeAllTrades(
+  request: CloseAllRequest,
+): Promise<CloseAllResponse> {
   try {
     const response = await fetch(`${API_BASE}${CLOSE_ALL_ENDPOINT}`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         // TODO: Add auth header if needed
         // 'Authorization': `Bearer ${token}`,
       },
@@ -106,10 +109,10 @@ export async function closeAllTrades(request: CloseAllRequest): Promise<CloseAll
       closedCount: data.closedCount,
     };
   } catch (error) {
-    console.error('[Close All API] Error:', error);
+    console.error("[Close All API] Error:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error instanceof Error ? error.message : "Unknown error",
     };
   }
 }
@@ -120,7 +123,7 @@ export async function closeAllTrades(request: CloseAllRequest): Promise<CloseAll
 export async function testConnection(): Promise<boolean> {
   try {
     const response = await fetch(`${API_BASE}/healthz`, {
-      method: 'GET',
+      method: "GET",
     });
     return response.ok;
   } catch {

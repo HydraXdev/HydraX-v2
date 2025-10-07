@@ -6,14 +6,16 @@ Handles historical data backfill and maintains rolling OHLC store
 
 import asyncio
 import json
-import time
 import logging
-from typing import Dict, List, Optional, Tuple
+import time
+from collections import defaultdict, deque
 from datetime import datetime, timedelta
-from collections import deque, defaultdict
+from typing import Dict, List, Optional, Tuple
+
 import websockets
 
 logger = logging.getLogger(__name__)
+
 
 class OHLCBar:
     """Represents a single OHLC bar"""
@@ -51,8 +53,9 @@ class OHLCBar:
             "low": self.low,
             "close": self.close,
             "volume": self.volume,
-            "tick_count": self.tick_count
+            "tick_count": self.tick_count,
         }
+
 
 class MetaSocketBackfill:
     """Handles backfill and maintains OHLC data store"""
@@ -74,14 +77,29 @@ class MetaSocketBackfill:
         # Active symbols (same as subscriptions)
         self.active_symbols = [
             # Major Forex Pairs (6)
-            "EURUSD", "GBPUSD", "USDCHF", "USDJPY", "AUDUSD", "NZDUSD",
+            "EURUSD",
+            "GBPUSD",
+            "USDCHF",
+            "USDJPY",
+            "AUDUSD",
+            "NZDUSD",
             # Cross Pairs (10)
-            "EURJPY", "GBPJPY", "EURGBP", "EURAUD", "GBPCAD", "AUDJPY", "NZDJPY",
-            "CHFJPY", "CADJPY", "AUDCAD",
+            "EURJPY",
+            "GBPJPY",
+            "EURGBP",
+            "EURAUD",
+            "GBPCAD",
+            "AUDJPY",
+            "NZDJPY",
+            "CHFJPY",
+            "CADJPY",
+            "AUDCAD",
             # Additional Pairs (2)
-            "USDCNH", "AUDNZD",
+            "USDCNH",
+            "AUDNZD",
             # Precious Metals (2)
-            "XAUUSD", "XAGUSD"
+            "XAUUSD",
+            "XAGUSD",
         ]
 
         # Callbacks
@@ -114,7 +132,7 @@ class MetaSocketBackfill:
                     "symbol": symbol,
                     "timeframe": "M1",
                     "count": bars,
-                    "ts": int(time.time() * 1000)
+                    "ts": int(time.time() * 1000),
                 }
 
                 await websocket.send(json.dumps(request))
@@ -128,10 +146,7 @@ class MetaSocketBackfill:
 
                     # Store historical bars
                     for bar_data in bars_data:
-                        ohlc_bar = OHLCBar(
-                            timestamp=bar_data.get("timestamp"),
-                            open_price=bar_data.get("open")
-                        )
+                        ohlc_bar = OHLCBar(timestamp=bar_data.get("timestamp"), open_price=bar_data.get("open"))
                         ohlc_bar.high = bar_data.get("high")
                         ohlc_bar.low = bar_data.get("low")
                         ohlc_bar.close = bar_data.get("close")
@@ -196,7 +211,7 @@ class MetaSocketBackfill:
                 "close": bar.close,
                 "volume": bar.volume,
                 "ts_epoch_ms": int(bar.timestamp * 1000),
-                "src": "metasocket"
+                "src": "metasocket",
             }
 
             asyncio.create_task(self.ohlc_update_callback(normalized_ohlc))
@@ -224,7 +239,7 @@ class MetaSocketBackfill:
                 "ask": current_bar.close + 0.00005,
                 "mid": current_bar.close,
                 "ts_epoch_ms": int(time.time() * 1000),
-                "src": "metasocket"
+                "src": "metasocket",
             }
 
         # Fallback to last completed bar
@@ -236,7 +251,7 @@ class MetaSocketBackfill:
                 "ask": last_bar.close + 0.00005,
                 "mid": last_bar.close,
                 "ts_epoch_ms": int(last_bar.timestamp * 1000),
-                "src": "metasocket"
+                "src": "metasocket",
             }
 
         return None
@@ -273,17 +288,10 @@ class MetaSocketBackfill:
             "symbol": symbol,
             "timeframe": "M1",
             "ohlc": ohlc_data,
-            "price": {
-                "bid": current_price["bid"],
-                "ask": current_price["ask"],
-                "mid": current_price["mid"]
-            },
-            "overlays": {
-                "spread": spread,
-                "rr_hint": rr_hint
-            },
+            "price": {"bid": current_price["bid"], "ask": current_price["ask"], "mid": current_price["mid"]},
+            "overlays": {"spread": spread, "rr_hint": rr_hint},
             "ts_epoch_ms": int(time.time() * 1000),
-            "src": "metasocket"
+            "src": "metasocket",
         }
 
         return snapshot
@@ -297,7 +305,7 @@ class MetaSocketBackfill:
             "total_symbols": len(self.active_symbols),
             "ohlc_bars_per_symbol": {},
             "current_bars_active": len(self.current_bars),
-            "last_bar_ages": {}
+            "last_bar_ages": {},
         }
 
         for symbol in self.active_symbols:
@@ -311,8 +319,10 @@ class MetaSocketBackfill:
 
         return stats
 
+
 # Example usage and testing
 if __name__ == "__main__":
+
     async def test_backfill():
         async def ohlc_handler(ohlc):
             print(f"OHLC Update: {ohlc['symbol']} = {ohlc['close']:.5f}")
@@ -329,4 +339,5 @@ if __name__ == "__main__":
             print(f"Snapshot created for EURUSD with {len(snapshot['ohlc'])} bars")
 
     import asyncio
+
     asyncio.run(test_backfill())

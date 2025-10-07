@@ -4,10 +4,11 @@ Generates simple user_id URLs for HUD access
 """
 
 import time
-from typing import Dict, Optional, Any
+from typing import Any, Dict, Optional
 
 # Base URL for the HUD interface - Using working HTTPS domain
 BASE_URL = "https://joinbitten.com"
+
 
 class URLSigner:
     def __init__(self, base_url: str = BASE_URL):
@@ -26,13 +27,14 @@ class URLSigner:
             Simple URL like: http://host:3000/path?user_id=uid&param=value
         """
         # Build parameters - start with user_id
-        params = {'user_id': uid}
+        params = {"user_id": uid}
 
         if additional_params:
             params.update(additional_params)
 
         # Build URL
         from urllib.parse import urlencode
+
         query_string = urlencode(params)
         return f"{self.base_url}{path}?{query_string}"
 
@@ -40,34 +42,36 @@ class URLSigner:
         """Create simple URL for mission brief"""
         params = {}
         if mission_id:
-            params['missionId'] = mission_id
-        return self.create_simple_url(uid, '/mission-brief', params)
+            params["missionId"] = mission_id
+        return self.create_simple_url(uid, "/mission-brief", params)
 
     def create_live_trade_url(self, uid: str, ticket_id: Optional[str] = None) -> str:
         """Create simple URL for live trade monitor"""
         params = {}
         if ticket_id:
-            params['ticketId'] = ticket_id
-        return self.create_simple_url(uid, '/live-trade', params)
+            params["ticketId"] = ticket_id
+        return self.create_simple_url(uid, "/live-trade", params)
 
     def create_war_room_url(self, uid: str) -> str:
         """Create simple URL for war room"""
-        return self.create_simple_url(uid, '/war-room')
+        return self.create_simple_url(uid, "/war-room")
 
     def create_notebook_url(self, uid: str) -> str:
         """Create simple URL for notebook"""
-        return self.create_simple_url(uid, '/notebook')
+        return self.create_simple_url(uid, "/notebook")
 
     def create_status_url(self, uid: str) -> str:
         """Create simple URL for status board"""
-        return self.create_simple_url(uid, '/status')
+        return self.create_simple_url(uid, "/status")
 
     def create_stats_url(self, uid: str) -> str:
         """Create simple URL for stats page"""
-        return self.create_simple_url(uid, '/stats')
+        return self.create_simple_url(uid, "/stats")
+
 
 # Global instance
 url_signer = URLSigner()
+
 
 # Mission and ticket validation functions
 async def get_latest_mission_for_user(user_id: str) -> Optional[str]:
@@ -79,6 +83,7 @@ async def get_latest_mission_for_user(user_id: str) -> Optional[str]:
     """
     return f"msn-{user_id}-{int(time.time())}"
 
+
 async def validate_mission_access(user_id: str, mission_id: str) -> bool:
     """
     Validate that user has access to the specified mission
@@ -86,6 +91,7 @@ async def validate_mission_access(user_id: str, mission_id: str) -> bool:
     TODO: Implement actual validation against mission database
     """
     return True
+
 
 async def get_active_trades_for_user(user_id: str) -> list:
     """
@@ -96,6 +102,7 @@ async def get_active_trades_for_user(user_id: str) -> list:
     """
     return [f"84231{197 + int(user_id[-1:]) if user_id[-1:].isdigit() else 197}"]
 
+
 async def validate_ticket_access(user_id: str, ticket_id: str) -> bool:
     """
     Validate that user has access to the specified ticket
@@ -103,6 +110,7 @@ async def validate_ticket_access(user_id: str, ticket_id: str) -> bool:
     TODO: Implement actual validation against trades database
     """
     return True
+
 
 def format_help_message() -> str:
     """Format help message with command examples"""

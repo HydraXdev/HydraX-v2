@@ -6,10 +6,11 @@ For EA WebRequest() fallback when TCP sockets are blocked
 """
 
 import asyncio
-import socket
-from fastapi import FastAPI, Request, Response
-import uvicorn
 import os
+import socket
+
+import uvicorn
+from fastapi import FastAPI, Request, Response
 
 # Configuration
 ROUTER_HOST = "127.0.0.1"
@@ -18,6 +19,7 @@ MET_PORT = int(os.getenv("HY_MET_PORT", "6000"))
 HTTP_PORT = int(os.getenv("HY_HTTP_PORT", "8088"))
 
 app = FastAPI(title="HydraSocket HTTP Adapter")
+
 
 async def forward_lines(port: int, raw: bytes):
     """Forward JSONL lines to TCP socket"""
@@ -41,12 +43,14 @@ async def forward_lines(port: int, raw: bytes):
     except Exception as e:
         print(f"[HTTP Adapter] Decode error - {e}")
 
+
 @app.post("/events")
 async def post_events(req: Request):
     """Accept event stream from EA WebRequest"""
     raw = await req.body()
     await forward_lines(EVT_PORT, raw)
     return Response(content="ok\n", media_type="text/plain")
+
 
 @app.post("/metrics")
 async def post_metrics(req: Request):
@@ -55,10 +59,12 @@ async def post_metrics(req: Request):
     await forward_lines(MET_PORT, raw)
     return Response(content="ok\n", media_type="text/plain")
 
+
 @app.get("/health")
 async def health():
     """Health check"""
     return {"status": "ok", "adapter": "http_fallback", "version": "1.0"}
+
 
 if __name__ == "__main__":
     print(f"[HydraSocket HTTP Adapter] Starting on port {HTTP_PORT}")

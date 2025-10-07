@@ -24,15 +24,19 @@ Normalized data pipeline connecting MetaSocket streams to Elite Guard, XP, and U
 ## Supported Symbols (22 Active)
 
 ### Major Forex Pairs (6)
+
 - EURUSD, GBPUSD, USDCHF, USDJPY, AUDUSD, NZDUSD
 
 ### Cross Pairs (10)
+
 - EURJPY, GBPJPY, EURGBP, EURAUD, GBPCAD, AUDJPY, NZDJPY, CHFJPY, CADJPY, AUDCAD
 
 ### Additional Pairs (2)
+
 - USDCNH, AUDNZD
 
 ### Metals (2)
+
 - XAUUSD (Gold), XAGUSD (Silver)
 
 **Note:** USDCAD excluded (high margin, low win rate)
@@ -40,10 +44,11 @@ Normalized data pipeline connecting MetaSocket streams to Elite Guard, XP, and U
 ## Output Schemas (v1 Strict)
 
 ### Tick Event
+
 ```json
 {
   "symbol": "EURUSD",
-  "bid": 1.10500,
+  "bid": 1.105,
   "ask": 1.10502,
   "mid": 1.10501,
   "ts_epoch_ms": 1703001234567,
@@ -52,6 +57,7 @@ Normalized data pipeline connecting MetaSocket streams to Elite Guard, XP, and U
 ```
 
 ### Position Event
+
 ```json
 {
   "ticket": "12345",
@@ -59,21 +65,22 @@ Normalized data pipeline connecting MetaSocket streams to Elite Guard, XP, and U
   "side": "BUY",
   "state": "OPEN|CLOSE",
   "reason": "sl|tp|manual|other",
-  "price": 1.10500,
+  "price": 1.105,
   "volume": 0.1,
-  "sl": 1.10000,
-  "tp": 1.11000,
+  "sl": 1.1,
+  "tp": 1.11,
   "ts_epoch_ms": 1703001234567,
   "src": "metasocket"
 }
 ```
 
 ### Account Summary
+
 ```json
 {
-  "balance": 1000.50,
+  "balance": 1000.5,
   "equity": 1025.75,
-  "margin": 200.00,
+  "margin": 200.0,
   "free_margin": 825.75,
   "leverage": 100,
   "currency": "USD",
@@ -83,17 +90,31 @@ Normalized data pipeline connecting MetaSocket streams to Elite Guard, XP, and U
 ```
 
 ### Signal Snapshot
+
 ```json
 {
   "type": "signal_snapshot",
   "symbol": "EURUSD",
   "timeframe": "M1",
-  "ohlc": [{"timestamp": 123, "open": 1.1, "high": 1.11, "low": 1.09, "close": 1.105, "volume": 100}],
-  "price": {"bid": 1.10500, "ask": 1.10502, "mid": 1.10501},
+  "ohlc": [
+    {
+      "timestamp": 123,
+      "open": 1.1,
+      "high": 1.11,
+      "low": 1.09,
+      "close": 1.105,
+      "volume": 100
+    }
+  ],
+  "price": { "bid": 1.105, "ask": 1.10502, "mid": 1.10501 },
   "overlays": {
     "spread": 0.00002,
-    "rr_hint": {"suggested_tp": 0.00075, "suggested_sl": 0.00025, "ratio": 3.0},
-    "atr": 0.00050,
+    "rr_hint": {
+      "suggested_tp": 0.00075,
+      "suggested_sl": 0.00025,
+      "ratio": 3.0
+    },
+    "atr": 0.0005,
     "volatility": 0.00032
   },
   "ts_epoch_ms": 1703001234567,
@@ -173,12 +194,14 @@ curl http://localhost:8890/healthz/components
 ### Health Criteria
 
 ✅ **Healthy** when ALL conditions met:
+
 - Last event age < 5000ms
 - Account heartbeat age < 5000ms
 - Tick rate ≥ 0.5/s for active symbols
 - Event lag p95 < 2000ms
 
 ❌ **Unhealthy** triggers:
+
 - No events in 5+ seconds
 - Position reconciliation stale (30+ seconds)
 - Backfill incomplete
@@ -193,10 +216,15 @@ curl http://localhost:8890/healthz/components
   "detailed_metrics": {
     "last_event_age_ms": 1245,
     "event_lag_ms_p95": 850,
-    "tick_rate_per_symbol": {"EURUSD": 1.2, "GBPUSD": 0.8},
+    "tick_rate_per_symbol": { "EURUSD": 1.2, "GBPUSD": 0.8 },
     "account_heartbeat_age_ms": 2100,
     "subscriptions": [
-      {"symbol": "EURUSD", "prices": true, "ohlc": true, "last_ts_ms": 1703001234567}
+      {
+        "symbol": "EURUSD",
+        "prices": true,
+        "ohlc": true,
+        "last_ts_ms": 1703001234567
+      }
     ]
   }
 }
@@ -229,6 +257,7 @@ curl http://localhost:8890/healthz/components | jq '.components.subscriptions'
 ### Troubleshooting
 
 #### No Tick Data
+
 ```bash
 # Check subscriptions
 curl http://localhost:8890/healthz/components | jq '.components.subscriptions'
@@ -238,6 +267,7 @@ telnet 185.244.67.11 8777
 ```
 
 #### Position Events Missing
+
 ```bash
 # Check normalizer stats
 curl http://localhost:8890/healthz/components | jq '.components.position_normalizer'
@@ -246,6 +276,7 @@ curl http://localhost:8890/healthz/components | jq '.components.position_normali
 ```
 
 #### Account Data Stale
+
 ```bash
 # Check poller status
 curl http://localhost:8890/healthz/components | jq '.components.account_poller'
@@ -316,16 +347,19 @@ python -m pytest tests/test_golden_path.py -v
 ## Error Handling & Resilience
 
 ### Connection Resilience
+
 - **Backoff Strategy**: 1s → 2s → 5s → 10s → 30s (max) + 10% jitter
 - **Auto-Reconnect**: Infinite retry with health monitoring
 - **Subscription Recovery**: Re-subscribe on connection restore
 
 ### Data Integrity
+
 - **Deduplication**: Hash-based event deduplication (1-hour window)
 - **Position Reconciliation**: Every 10s ORDER_LIST cross-check
 - **Gap Detection**: Missing tick alerts via health check
 
 ### Performance Degradation
+
 - **Cache Management**: TTL-based cleanup prevents memory leaks
 - **Rate Limiting**: 0.1s delays between bulk operations
 - **Circuit Breaker**: High error count triggers backoff
@@ -379,6 +413,7 @@ class CustomHealthCheck(MetaSocketHealthCheck):
 ## Production Checklist
 
 ✅ **Pre-Deployment**
+
 - [ ] All 22 symbols configured
 - [ ] Health endpoints responding
 - [ ] Golden path test passing
@@ -386,6 +421,7 @@ class CustomHealthCheck(MetaSocketHealthCheck):
 - [ ] Error handling tested
 
 ✅ **Deployment**
+
 - [ ] Bootstrap started successfully
 - [ ] All components initialized
 - [ ] Backfill completed (check logs)
@@ -393,6 +429,7 @@ class CustomHealthCheck(MetaSocketHealthCheck):
 - [ ] Tick data flowing to Elite Guard
 
 ✅ **Post-Deployment**
+
 - [ ] Monitor health for 1 hour
 - [ ] Verify signal generation
 - [ ] Check position tracking

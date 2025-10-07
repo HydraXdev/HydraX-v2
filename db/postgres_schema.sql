@@ -140,7 +140,7 @@ SELECT
   avg(t.duration_min)                                        AS avg_duration_min,
   max(t.ts_close)                                            AS last_trade_ts
 FROM users u
-LEFT JOIN trade_facts t ON t.user_id=u.user_id 
+LEFT JOIN trade_facts t ON t.user_id=u.user_id
 WHERE t.ts_close >= now() - interval '90 days' OR t.ts_close IS NULL
 GROUP BY u.user_id;
 
@@ -183,13 +183,13 @@ CREATE UNIQUE INDEX user_symbol_perf_mv_idx ON user_symbol_perf_mv (user_id, sym
 CREATE MATERIALIZED VIEW user_best_worst_mv AS
 WITH per_pair AS (
   SELECT user_id, symbol, sum(pnl_ccy) pnl, sum(pips_net) pips, count(*) n
-  FROM trade_facts 
+  FROM trade_facts
   WHERE ts_close >= now() - interval '90 days'
   GROUP BY user_id, symbol
 ),
 per_pattern AS (
   SELECT user_id, pattern, sum(pnl_ccy) pnl, sum(pips_net) pips, count(*) n
-  FROM trade_facts 
+  FROM trade_facts
   WHERE ts_close >= now() - interval '90 days'
   GROUP BY user_id, pattern
 )
@@ -208,10 +208,10 @@ CREATE VIEW user_profile_v AS
 SELECT
   u.user_id, u.username, u.telegram_id, u.status, u.created_at,
   -- Settings (editable)
-  s.tier, s.risk_mode, s.risk_per_trade_bp, s.max_concurrent, s.daily_dd_cap_bp, 
+  s.tier, s.risk_mode, s.risk_per_trade_bp, s.max_concurrent, s.daily_dd_cap_bp,
   s.slots, s.auto_fire_enabled, s.confidence_min, s.confidence_max, s.flags,
   -- Performance metrics (computed)
-  p.trades, p.wins, p.losses, p.breakevens, p.avg_rr, p.avg_pips, 
+  p.trades, p.wins, p.losses, p.breakevens, p.avg_rr, p.avg_pips,
   p.pips_total, p.pnl_total_ccy, p.win_rate_pct, p.avg_duration_min, p.last_trade_ts,
   -- Best/worst performers
   bw.best_pair_by_pnl, bw.worst_pair_by_pnl, bw.best_pattern_by_pnl, bw.worst_pattern_by_pnl,
@@ -232,7 +232,7 @@ LEFT JOIN user_best_worst_mv bw ON bw.user_id=u.user_id
 LEFT JOIN accounts           a  ON a.user_id=u.user_id AND a.is_primary=true;
 
 -- Initial data: Current BITTEN user
-INSERT INTO users (telegram_id, username, status) 
+INSERT INTO users (telegram_id, username, status)
 VALUES (7176191872, 'COMMANDER_DEV', 'active');
 
 INSERT INTO user_settings (user_id, tier, risk_mode, risk_per_trade_bp, max_concurrent, slots, auto_fire_enabled, confidence_min, confidence_max, flags)

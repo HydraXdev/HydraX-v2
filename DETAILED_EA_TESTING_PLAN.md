@@ -11,6 +11,7 @@
 ## 🔍 **PHASE 1: EA DISCOVERY & CONFIGURATION**
 
 ### **Task 1.1: Locate EA v2.07H Files**
+
 - [x] Search for `BITTEN_Universal_EA_v2.07*.mq5` files
 - [x] Check `BITTEN_ZMQ_v*.mq5` variants
 - [x] Look in `/root/HydraX-v2/` and subdirectories
@@ -20,6 +21,7 @@
 **✅ RESULT**: Found EA v7.01 at `/root/HydraX-v2/mq5/BITTENBridge_TradeExecutor_ZMQ_v7_PRODUCTION_CLEAN.mq5`
 
 **Commands to run:**
+
 ```bash
 find /root/HydraX-v2 -name "*v2.07*" -type f
 find /root/HydraX-v2 -name "*EA*" -name "*.mq5" | grep -i bitten
@@ -27,6 +29,7 @@ find /root/HydraX-v2 -name "*.ex5" | head -10
 ```
 
 ### **Task 1.2: Extract ZMQ Port Configuration**
+
 - [ ] Read EA source code for port definitions
 - [ ] Find `zmq_bind` and `zmq_connect` calls
 - [ ] Document all ports used (command, data, heartbeat)
@@ -34,11 +37,13 @@ find /root/HydraX-v2 -name "*.ex5" | head -10
 - [ ] Verify port directions (BIND vs CONNECT)
 
 **Files to check:**
+
 - EA source files found in 1.1
 - `/root/HydraX-v2/ARCHITECTURE.md`
 - Any EA README files
 
 ### **Task 1.3: Find Fire Packet Format**
+
 - [ ] Extract exact JSON structure from ARCHITECTURE.md
 - [ ] Find fire packet examples in codebase
 - [ ] Document required fields vs optional
@@ -46,6 +51,7 @@ find /root/HydraX-v2 -name "*.ex5" | head -10
 - [ ] Verify data types (string vs number)
 
 **Search commands:**
+
 ```bash
 grep -r "fire.*packet\|fire.*format" /root/HydraX-v2/
 grep -r "type.*fire" /root/HydraX-v2/ | grep -v node_modules
@@ -56,10 +62,12 @@ grep -r "type.*fire" /root/HydraX-v2/ | grep -v node_modules
 ## 🔌 **PHASE 2: PORT CONNECTIVITY TESTING**
 
 ### **Task 2.1: Windows VPS Port Check**
+
 **Location**: Windows VPS running MT5
 **Purpose**: Verify EA is binding to expected ports
 
 **PowerShell Commands:**
+
 ```powershell
 # Check if EA is listening on expected ports
 netstat -ano | findstr :5555
@@ -75,15 +83,18 @@ Get-NetFirewallRule -DisplayName "*5555*"
 ```
 
 **Expected Results:**
+
 - `LISTENING` status on command ports
 - MT5 terminal64.exe process running
 - Firewall rules allowing traffic
 
 ### **Task 2.2: Linux to Windows Connectivity**
+
 **Location**: Linux control server (134.199.204.67)
 **Purpose**: Test socket connectivity across network
 
 **Linux Commands:**
+
 ```bash
 # Test each ZMQ port
 nc -vz <WINDOWS_VPS_IP> 5555
@@ -99,15 +110,18 @@ telnet <WINDOWS_VPS_IP> 5555
 ```
 
 **Expected Results:**
+
 - `succeeded` for reachable ports
 - `Connection refused` for blocked ports
 - `Connection timed out` for firewall issues
 
 ### **Task 2.3: Firewall Configuration**
+
 **Location**: Windows VPS
 **Purpose**: Open required ports if blocked
 
 **PowerShell Commands:**
+
 ```powershell
 # Open ZMQ ports
 New-NetFirewallRule -DisplayName "BITTEN-5555" -Direction Inbound -Protocol TCP -LocalPort 5555 -Action Allow
@@ -124,9 +138,11 @@ Get-NetFirewallRule -DisplayName "BITTEN-*"
 ## 📨 **PHASE 3: MESSAGE FLOW TESTING**
 
 ### **Task 3.1: ZMQ Socket Testing**
+
 **Purpose**: Verify ZMQ library and socket creation
 
 **Python Test Script** (`test_zmq_sockets.py`):
+
 ```python
 import zmq
 import json
@@ -156,9 +172,11 @@ def test_zmq_connectivity():
 ```
 
 ### **Task 3.2: Fire Packet Testing**
+
 **Purpose**: Send realistic fire commands to EA
 
 **Test Fire Packet:**
+
 ```json
 {
   "type": "fire",
@@ -167,17 +185,19 @@ def test_zmq_connectivity():
   "symbol": "EURUSD",
   "direction": "BUY",
   "entry": 0,
-  "sl": 1.09800,
-  "tp": 1.10300,
+  "sl": 1.098,
+  "tp": 1.103,
   "lot": 0.01,
   "user_id": "7176191872"
 }
 ```
 
 ### **Task 3.3: Heartbeat Verification**
+
 **Purpose**: Check EA heartbeat and registration
 
 **Database Check:**
+
 ```sql
 SELECT target_uuid, last_seen, (strftime('%s','now') - last_seen) as age_seconds
 FROM ea_instances
@@ -191,11 +211,13 @@ WHERE target_uuid = 'COMMANDER_DEV_001';
 ## ⚡ **PHASE 4: COMPREHENSIVE INTEGRATION**
 
 ### **Task 4.1: Enhanced Testing Suite**
+
 **Purpose**: Add EA tests to existing test framework
 
 **File**: `/root/HydraX-v2/comprehensive_signal_flow_test.py`
 
 **New Test Methods:**
+
 - `test_ea_port_connectivity()`
 - `test_fire_packet_transmission()`
 - `test_ea_heartbeat_validation()`
@@ -203,9 +225,11 @@ WHERE target_uuid = 'COMMANDER_DEV_001';
 - `test_windows_firewall_status()`
 
 ### **Task 4.2: End-to-End Validation**
+
 **Purpose**: Complete signal → fire → EA → confirmation flow
 
 **Test Sequence:**
+
 1. Generate test signal
 2. Create fire command
 3. Send via ZMQ to EA
@@ -214,9 +238,11 @@ WHERE target_uuid = 'COMMANDER_DEV_001';
 6. Validate database updates
 
 ### **Task 4.3: Performance Benchmarking**
+
 **Purpose**: Measure EA response times
 
 **Metrics to Track:**
+
 - ZMQ message latency
 - EA command processing time
 - Network round-trip time
@@ -229,32 +255,40 @@ WHERE target_uuid = 'COMMANDER_DEV_001';
 ### **Common Issues & Solutions**
 
 #### **Issue 1: Port Not Listening**
+
 **Symptoms**: `netstat` shows no LISTENING on 5555
 **Solutions**:
+
 - [ ] Check EA is loaded in MT5
 - [ ] Verify EA inputs configuration
 - [ ] Restart MT5 terminal
 - [ ] Check EA logs for errors
 
 #### **Issue 2: Connection Refused**
+
 **Symptoms**: `nc -vz` returns connection refused
 **Solutions**:
+
 - [ ] Check Windows firewall rules
 - [ ] Verify EA is binding to 0.0.0.0 not 127.0.0.1
 - [ ] Test locally on Windows first
 - [ ] Check antivirus blocking
 
 #### **Issue 3: Connection Timeout**
+
 **Symptoms**: `nc -vz` hangs then times out
 **Solutions**:
+
 - [ ] Check network routing
 - [ ] Verify VPS public IP address
 - [ ] Test with VPN if needed
 - [ ] Check cloud provider firewall
 
 #### **Issue 4: EA Not Responding**
+
 **Symptoms**: Commands sent but no response
 **Solutions**:
+
 - [ ] Check EA error logs
 - [ ] Verify JSON format exactly
 - [ ] Test with minimal packet first
@@ -265,6 +299,7 @@ WHERE target_uuid = 'COMMANDER_DEV_001';
 ## 📋 **EXECUTION CHECKLIST**
 
 ### **Pre-Testing Setup**
+
 - [ ] Confirm Windows VPS access
 - [ ] Verify MT5 running with EA attached
 - [ ] Have Linux server command line ready
@@ -272,6 +307,7 @@ WHERE target_uuid = 'COMMANDER_DEV_001';
 - [ ] Backup any existing EA configurations
 
 ### **Testing Execution Order**
+
 1. [ ] **Discovery**: Find EA files and ports
 2. [ ] **Windows Check**: Verify EA port binding
 3. [ ] **Network Test**: Linux to Windows connectivity
@@ -282,6 +318,7 @@ WHERE target_uuid = 'COMMANDER_DEV_001';
 8. [ ] **Documentation**: Update results and findings
 
 ### **Success Criteria**
+
 - [ ] All ZMQ ports reachable from Linux
 - [ ] EA responds to ping/test messages
 - [ ] Fire packets accepted by EA
@@ -294,6 +331,7 @@ WHERE target_uuid = 'COMMANDER_DEV_001';
 ## 🎯 **DELIVERABLES**
 
 ### **Files to Create/Update**
+
 1. **`ea_connectivity_test.py`** - Standalone EA testing
 2. **`test_fire_packets.py`** - Fire command validation
 3. **`windows_setup_guide.md`** - VPS configuration steps
@@ -301,6 +339,7 @@ WHERE target_uuid = 'COMMANDER_DEV_001';
 5. **`EA_TESTING_RESULTS.md`** - Test execution results
 
 ### **Key Information to Document**
+
 - Exact EA version and filename
 - All ZMQ ports used by EA
 - Complete fire packet format with examples
@@ -313,6 +352,7 @@ WHERE target_uuid = 'COMMANDER_DEV_001';
 ## ⚡ **EXECUTION COMMANDS SUMMARY**
 
 **On Linux (Control Server):**
+
 ```bash
 # Phase 1: Discovery
 python3 enhanced_comprehensive_test.py --ea-discovery
@@ -328,6 +368,7 @@ python3 comprehensive_signal_flow_test.py --include-ea
 ```
 
 **On Windows (VPS):**
+
 ```powershell
 # Port verification
 .\check_ea_ports.ps1
@@ -353,26 +394,31 @@ python3 comprehensive_signal_flow_test.py --include-ea
 ### **🎯 PHASE COMPLETION STATUS**
 
 **Phase 1: Discovery & Configuration** ✅ **COMPLETED**
+
 - EA v7.01 files located and analyzed
 - ZMQ port configuration extracted from source
 - Fire packet format documented
 
 **Phase 2: Port Connectivity Testing** ✅ **COMPLETED**
+
 - All 5 ZMQ ports verified listening on Linux server
 - Windows VPS PowerShell test script created
 - Network connectivity framework established
 
 **Phase 3: Message Flow Testing** ✅ **COMPLETED**
+
 - Fire packet transmission tested via IPC queue
 - Direct ZMQ transmission verified
 - Command router connectivity confirmed
 
 **Phase 4: Comprehensive Integration** ✅ **COMPLETED**
+
 - Enhanced test suite with EA-specific validations
 - End-to-end validation pipeline created
 - Performance benchmarks verified
 
 **Phase 5: Troubleshooting Protocols** ✅ **COMPLETED**
+
 - Windows firewall configuration documented
 - Linux connectivity tests implemented
 - Comprehensive troubleshooting guides created
@@ -380,18 +426,21 @@ python3 comprehensive_signal_flow_test.py --include-ea
 ### **🔍 KEY FINDINGS**
 
 **EA Architecture Verified**:
+
 - ✅ EA v7.01 uses 2-socket ZMQ design
 - ✅ Command socket: ZMQ_PULL connects TO Linux port 5555
 - ✅ Heartbeat socket: ZMQ_PUSH connects TO Linux port 5556
 - ✅ EA connects TO Linux server (not reverse)
 
 **Linux Server Status**:
+
 - ✅ All ZMQ ports (5555, 5556, 5557, 5558, 5560) listening
 - ✅ Fire pipeline fully operational
 - ✅ Command router processing packets
 - ✅ Database connectivity verified
 
 **Current EA Status**:
+
 - ⚠️ COMMANDER_DEV_001 heartbeat is stale (2+ days)
 - ✅ EA registration exists in database
 - ✅ User mapping correct (7176191872)
@@ -400,16 +449,19 @@ python3 comprehensive_signal_flow_test.py --include-ea
 ### **🛠️ TOOLS CREATED**
 
 **Windows VPS Testing**:
+
 - `windows_ea_port_tests.ps1` - PowerShell port testing script
 - Firewall configuration commands
 - MT5 process verification commands
 
 **Linux Server Testing**:
+
 - `linux_ea_connectivity_tests.py` - Comprehensive connectivity tests
 - `test_dummy_fire_packet.py` - Fire packet transmission testing
 - `end_to_end_ea_validation.py` - Complete validation pipeline
 
 **Enhanced Test Suite**:
+
 - Updated `comprehensive_signal_flow_test.py` with EA-specific tests
 - ZMQ port binding verification
 - Fire packet format validation
@@ -418,12 +470,14 @@ python3 comprehensive_signal_flow_test.py --include-ea
 ### **📋 NEXT ACTIONS FOR WINDOWS VPS**
 
 **Immediate Steps**:
+
 1. Run `windows_ea_port_tests.ps1` on Windows VPS
 2. Ensure EA v7.01 is loaded and running in MT5
 3. Verify EA inputs configured for 134.199.204.67 connection
 4. Check MT5 terminal allows DLL imports
 
 **Expected Results**:
+
 - EA connects to Linux ports 5555 and 5556
 - Fresh heartbeat appears in database (< 2 minutes)
 - Fire packets reach EA successfully

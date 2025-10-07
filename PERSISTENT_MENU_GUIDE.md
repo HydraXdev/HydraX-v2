@@ -5,6 +5,7 @@
 The Intel Command Center menu can be made permanently accessible through **4 different methods**:
 
 ## **Method 1: Menu Button (📋) - RECOMMENDED**
+
 **Location**: Next to message input field, always visible
 
 ```python
@@ -17,12 +18,14 @@ await bot.set_chat_menu_button(
 )
 ```
 
-**User Experience**: 
+**User Experience**:
+
 - Click 📋 button → Intel Center opens instantly
 - No typing required, always visible
 - Official Telegram method
 
 ## **Method 2: Persistent Keyboard - ALWAYS VISIBLE**
+
 **Location**: Bottom of chat, never disappears
 
 ```python
@@ -34,11 +37,13 @@ keyboard = ReplyKeyboardMarkup([
 ```
 
 **User Experience**:
+
 - Buttons always visible at bottom
 - One-tap access to major sections
 - Quick access without typing
 
 ## **Method 3: Pinned Message - TOP OF CHAT**
+
 **Location**: Pinned at very top of chat
 
 ```python
@@ -55,11 +60,13 @@ await bot.pin_chat_message(
 ```
 
 **User Experience**:
+
 - Always at top of chat feed
 - Instant access to all 12 categories
 - Can't be missed or scrolled away
 
 ## **Method 4: Command Access - ANYTIME**
+
 **Location**: Available via typing
 
 ```
@@ -71,18 +78,21 @@ await bot.pin_chat_message(
 ## 🚀 **DEPLOYMENT STATUS**
 
 ### **Files Created:**
+
 - ✅ `setup_persistent_menu.py` - Simple deployment script
 - ✅ `DEPLOY_PERSISTENT_MENU.py` - Full deployment with all methods
 - ✅ `deploy_intel_command_center.py` - Core integration script
 
 ### **Integration Points:**
+
 - ✅ `src/bitten_core/intel_command_center.py` - Main menu system (700+ lines)
 - ✅ `src/bitten_core/telegram_router.py` - Bot integration handlers
 - ⏳ Main bot file - Needs menu handler imports
 
 ### **Menu Categories Available (12+):**
+
 1. 🔫 **COMBAT OPS** - Trading operations & execution
-2. 📚 **FIELD MANUAL** - Complete guides & tutorials  
+2. 📚 **FIELD MANUAL** - Complete guides & tutorials
 3. 💰 **TIER INTEL** - Subscription tiers & benefits
 4. 🎖️ **XP ECONOMY** - Rewards, shop & prestige
 5. 🎓 **WAR COLLEGE** - Trading education & theory
@@ -95,6 +105,7 @@ await bot.pin_chat_message(
 12. 🤖 **BOT CONCIERGE** - AI assistants
 
 ### **Hundreds of Sub-Options Include:**
+
 - Instructions for play (complete boot camp)
 - FAQ system (field manual FAQs)
 - Everything needed on battlefield
@@ -129,7 +140,7 @@ Chat messages appear here...
 **Use ALL 4 methods together** for maximum accessibility:
 
 1. **📋 Menu Button** - Primary access method
-2. **📌 Pinned Message** - Top of chat visibility  
+2. **📌 Pinned Message** - Top of chat visibility
 3. **⌨️ Persistent Keyboard** - Always available buttons
 4. **💬 Commands** - Fallback typing option
 

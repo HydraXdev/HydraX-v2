@@ -15,17 +15,17 @@ from citadel_core.bitten_integration import enhance_signal_with_citadel
 # In the generate_venom_signal method, after creating the signal:
 def generate_venom_signal(self, pair, timestamp):
     # ... existing signal generation code ...
-    
+
     signal_packet = {
         "signal_id": signal_id,
         "symbol": pair,
         "direction": direction,
         # ... rest of signal data ...
     }
-    
+
     # ADD THIS LINE - Enhance with CITADEL analysis
     signal_packet = enhance_signal_with_citadel(signal_packet)
-    
+
     return signal_packet
 ```
 
@@ -34,21 +34,23 @@ def generate_venom_signal(self, pair, timestamp):
 Edit `/root/HydraX-v2/bitten_production_bot.py`:
 
 1. Add import:
+
 ```python
 from citadel_core.bitten_integration import format_mission_with_citadel
 ```
 
 2. In the `generate_mission` method:
+
 ```python
 def generate_mission(self, signal, user_id):
     # ... existing mission generation code ...
-    
+
     # Create mission briefing
     mission_text = self._format_mission_briefing(signal)
-    
+
     # ADD THIS LINE - Enhance with CITADEL shield
     mission_text = format_mission_with_citadel(signal, mission_text)
-    
+
     return mission_text
 ```
 
@@ -57,25 +59,27 @@ def generate_mission(self, signal, user_id):
 Edit `/root/HydraX-v2/webapp_server_optimized.py`:
 
 1. Add import:
+
 ```python
 from citadel_core.bitten_integration import get_citadel_shield_data
 ```
 
 2. In the `/api/signals/<signal_id>` endpoint:
+
 ```python
 @app.route('/api/signals/<signal_id>')
 def get_signal_details(signal_id):
     # ... existing code ...
-    
+
     # ADD THESE LINES - Get shield data
     shield_data = get_citadel_shield_data(signal_id)
-    
+
     response = {
         'signal': signal_info,
         'shield': shield_data,  # ADD THIS
         # ... rest of response ...
     }
-    
+
     return jsonify(response)
 ```
 
@@ -107,10 +111,10 @@ After integration, signals will have this structure:
   "signal_id": "VENOM_EURUSD_001",
   "symbol": "EURUSD",
   "direction": "BUY",
-  "entry": 1.0850,
-  "sl": 1.0820,
-  "tp": 1.0900,
-  
+  "entry": 1.085,
+  "sl": 1.082,
+  "tp": 1.09,
+
   "citadel_shield": {
     "score": 8.5,
     "classification": "SHIELD_APPROVED",
@@ -175,18 +179,22 @@ user_stats = citadel.get_user_stats(user_id=12345)
 ## Configuration
 
 Adjust settings in:
+
 - `/root/HydraX-v2/citadel_core/config/market_dna.json` - Pair profiles
 - `/root/HydraX-v2/citadel_core/config/scoring_weights.json` - Scoring logic
 
 ## Troubleshooting
 
 ### Issue: "Shield analysis not found"
+
 **Solution**: Signal may have expired from cache. Re-analyze or check database.
 
 ### Issue: Low scores on all signals
+
 **Solution**: Verify market data is being fetched correctly in `_get_market_data()`.
 
 ### Issue: Database errors
+
 **Solution**: Ensure `/root/HydraX-v2/data/` directory exists with write permissions.
 
 ## Production Checklist
@@ -201,6 +209,7 @@ Adjust settings in:
 ## Support
 
 For issues:
+
 1. Check logs for errors
 2. Run test script for diagnosis
 3. Verify all integration points

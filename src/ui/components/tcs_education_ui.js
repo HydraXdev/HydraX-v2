@@ -5,36 +5,36 @@
  */
 
 class TCSEducationUI {
-    constructor(options = {}) {
-        this.config = {
-            userLevel: options.userLevel || 1,
-            apiEndpoint: options.apiEndpoint || '/api/tcs/education',
-            tooltipDelay: options.tooltipDelay || 500,
-            animationDuration: options.animationDuration || 300,
-            theme: options.theme || 'dark',
-            ...options
-        };
+  constructor(options = {}) {
+    this.config = {
+      userLevel: options.userLevel || 1,
+      apiEndpoint: options.apiEndpoint || "/api/tcs/education",
+      tooltipDelay: options.tooltipDelay || 500,
+      animationDuration: options.animationDuration || 300,
+      theme: options.theme || "dark",
+      ...options,
+    };
 
-        this.state = {
-            activeTooltips: new Map(),
-            loadedContent: new Map(),
-            userProgress: null,
-            currentTutorial: null
-        };
+    this.state = {
+      activeTooltips: new Map(),
+      loadedContent: new Map(),
+      userProgress: null,
+      currentTutorial: null,
+    };
 
-        this.init();
-    }
+    this.init();
+  }
 
-    init() {
-        this.injectStyles();
-        this.loadUserProgress();
-        this.attachGlobalListeners();
-    }
+  init() {
+    this.injectStyles();
+    this.loadUserProgress();
+    this.attachGlobalListeners();
+  }
 
-    injectStyles() {
-        if (document.getElementById('tcs-education-styles')) return;
+  injectStyles() {
+    if (document.getElementById("tcs-education-styles")) return;
 
-        const styles = `
+    const styles = `
             /* TCS Education Info Icons */
             .tcs-info-icon {
                 display: inline-flex;
@@ -371,105 +371,113 @@ class TCSEducationUI {
             }
         `;
 
-        const styleSheet = document.createElement('style');
-        styleSheet.id = 'tcs-education-styles';
-        styleSheet.textContent = styles;
-        document.head.appendChild(styleSheet);
+    const styleSheet = document.createElement("style");
+    styleSheet.id = "tcs-education-styles";
+    styleSheet.textContent = styles;
+    document.head.appendChild(styleSheet);
+  }
+
+  /**
+   * Create an info icon for a TCS element
+   */
+  createInfoIcon(factor, options = {}) {
+    const icon = document.createElement("span");
+    icon.className = "tcs-info-icon";
+    icon.innerHTML = "i";
+    icon.dataset.factor = factor;
+
+    if (options.pulsing && this.config.userLevel < 10) {
+      icon.classList.add("pulsing");
     }
 
-    /**
-     * Create an info icon for a TCS element
-     */
-    createInfoIcon(factor, options = {}) {
-        const icon = document.createElement('span');
-        icon.className = 'tcs-info-icon';
-        icon.innerHTML = 'i';
-        icon.dataset.factor = factor;
-        
-        if (options.pulsing && this.config.userLevel < 10) {
-            icon.classList.add('pulsing');
-        }
+    // Touch/click events for mobile
+    icon.addEventListener("click", (e) => {
+      e.stopPropagation();
+      this.showTooltip(icon, factor);
+    });
 
-        // Touch/click events for mobile
-        icon.addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.showTooltip(icon, factor);
-        });
+    // Hover events for desktop
+    let hoverTimeout;
+    icon.addEventListener("mouseenter", () => {
+      hoverTimeout = setTimeout(() => {
+        this.showTooltip(icon, factor);
+      }, this.config.tooltipDelay);
+    });
 
-        // Hover events for desktop
-        let hoverTimeout;
-        icon.addEventListener('mouseenter', () => {
-            hoverTimeout = setTimeout(() => {
-                this.showTooltip(icon, factor);
-            }, this.config.tooltipDelay);
-        });
+    icon.addEventListener("mouseleave", () => {
+      clearTimeout(hoverTimeout);
+      this.hideTooltip(factor);
+    });
 
-        icon.addEventListener('mouseleave', () => {
-            clearTimeout(hoverTimeout);
-            this.hideTooltip(factor);
-        });
+    return icon;
+  }
 
-        return icon;
+  /**
+   * Show tooltip for a factor
+   */
+  async showTooltip(element, factor) {
+    // Check if tooltip already exists
+    if (this.state.activeTooltips.has(factor)) {
+      return;
     }
 
-    /**
-     * Show tooltip for a factor
-     */
-    async showTooltip(element, factor) {
-        // Check if tooltip already exists
-        if (this.state.activeTooltips.has(factor)) {
-            return;
-        }
+    // Get or load content
+    const content = await this.getEducationContent(factor);
 
-        // Get or load content
-        const content = await this.getEducationContent(factor);
-        
-        // Create tooltip
-        const tooltip = this.createTooltipElement(content, factor);
-        document.body.appendChild(tooltip);
+    // Create tooltip
+    const tooltip = this.createTooltipElement(content, factor);
+    document.body.appendChild(tooltip);
 
-        // Position tooltip
-        this.positionTooltip(tooltip, element);
+    // Position tooltip
+    this.positionTooltip(tooltip, element);
 
-        // Show with animation
-        requestAnimationFrame(() => {
-            tooltip.classList.add('visible');
-        });
+    // Show with animation
+    requestAnimationFrame(() => {
+      tooltip.classList.add("visible");
+    });
 
-        // Store reference
-        this.state.activeTooltips.set(factor, tooltip);
+    // Store reference
+    this.state.activeTooltips.set(factor, tooltip);
 
-        // Track analytics
-        this.trackInteraction('tooltip_shown', { factor, userLevel: this.config.userLevel });
-    }
+    // Track analytics
+    this.trackInteraction("tooltip_shown", {
+      factor,
+      userLevel: this.config.userLevel,
+    });
+  }
 
-    /**
-     * Hide tooltip
-     */
-    hideTooltip(factor) {
-        const tooltip = this.state.activeTooltips.get(factor);
-        if (!tooltip) return;
+  /**
+   * Hide tooltip
+   */
+  hideTooltip(factor) {
+    const tooltip = this.state.activeTooltips.get(factor);
+    if (!tooltip) return;
 
-        tooltip.classList.remove('visible');
-        
-        setTimeout(() => {
-            tooltip.remove();
-            this.state.activeTooltips.delete(factor);
-        }, this.config.animationDuration);
-    }
+    tooltip.classList.remove("visible");
 
-    /**
-     * Create tooltip element
-     */
-    createTooltipElement(content, factor) {
-        const tooltip = document.createElement('div');
-        tooltip.className = 'tcs-tooltip';
-        
-        const factorTitle = factor.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-        const levelLabel = this.getLevelLabel(this.config.userLevel);
-        const progress = this.calculateProgress(this.config.userLevel, content.unlock_next_at);
+    setTimeout(() => {
+      tooltip.remove();
+      this.state.activeTooltips.delete(factor);
+    }, this.config.animationDuration);
+  }
 
-        tooltip.innerHTML = `
+  /**
+   * Create tooltip element
+   */
+  createTooltipElement(content, factor) {
+    const tooltip = document.createElement("div");
+    tooltip.className = "tcs-tooltip";
+
+    const factorTitle = factor
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (l) => l.toUpperCase());
+    const levelLabel = this.getLevelLabel(this.config.userLevel);
+    const progress = this.calculateProgress(
+      this.config.userLevel,
+      content.unlock_next_at,
+    );
+
+    tooltip.innerHTML = `
             <div class="tcs-tooltip-content">
                 <div class="tcs-tooltip-arrow top"></div>
                 <div class="tcs-tooltip-header">
@@ -479,12 +487,18 @@ class TCSEducationUI {
                 <div class="tcs-tooltip-body">
                     ${content.explanation}
                 </div>
-                ${content.mystery_hint ? `
+                ${
+                  content.mystery_hint
+                    ? `
                     <div class="tcs-tooltip-mystery">
                         ${content.mystery_hint}
                     </div>
-                ` : ''}
-                ${content.unlock_next_at > this.config.userLevel ? `
+                `
+                    : ""
+                }
+                ${
+                  content.unlock_next_at > this.config.userLevel
+                    ? `
                     <div class="tcs-tooltip-progress">
                         <div class="tcs-tooltip-unlock">
                             Next unlock at Level ${content.unlock_next_at}
@@ -493,29 +507,31 @@ class TCSEducationUI {
                             <div class="tcs-tooltip-progress-fill" style="width: ${progress}%"></div>
                         </div>
                     </div>
-                ` : ''}
+                `
+                    : ""
+                }
                 ${this.getVisualExample(factor, content)}
             </div>
         `;
 
-        // Add close on click outside
-        tooltip.addEventListener('click', (e) => {
-            if (e.target === tooltip) {
-                this.hideTooltip(factor);
-            }
-        });
+    // Add close on click outside
+    tooltip.addEventListener("click", (e) => {
+      if (e.target === tooltip) {
+        this.hideTooltip(factor);
+      }
+    });
 
-        return tooltip;
-    }
+    return tooltip;
+  }
 
-    /**
-     * Get visual example HTML
-     */
-    getVisualExample(factor, content) {
-        if (!content.visual_example || this.config.userLevel < 5) return '';
+  /**
+   * Get visual example HTML
+   */
+  getVisualExample(factor, content) {
+    if (!content.visual_example || this.config.userLevel < 5) return "";
 
-        const example = content.visual_example;
-        return `
+    const example = content.visual_example;
+    return `
             <div class="tcs-visual-example">
                 <div class="tcs-visual-header">
                     <span class="tcs-visual-icon">${example.icon}</span>
@@ -526,196 +542,213 @@ class TCSEducationUI {
                 <div class="tcs-visual-description">
                     ${example.example}
                 </div>
-                ${example.characteristics ? `
+                ${
+                  example.characteristics
+                    ? `
                     <ul class="tcs-visual-characteristics">
-                        ${example.characteristics.map(char => `<li>${char}</li>`).join('')}
+                        ${example.characteristics.map((char) => `<li>${char}</li>`).join("")}
                     </ul>
-                ` : ''}
+                `
+                    : ""
+                }
             </div>
         `;
+  }
+
+  /**
+   * Position tooltip relative to element
+   */
+  positionTooltip(tooltip, element) {
+    const rect = element.getBoundingClientRect();
+    const tooltipRect = tooltip.getBoundingClientRect();
+
+    // Calculate optimal position
+    let top = rect.bottom + 10;
+    let left = rect.left + rect.width / 2 - tooltipRect.width / 2;
+
+    // Adjust if going off screen
+    if (left < 10) left = 10;
+    if (left + tooltipRect.width > window.innerWidth - 10) {
+      left = window.innerWidth - tooltipRect.width - 10;
     }
 
-    /**
-     * Position tooltip relative to element
-     */
-    positionTooltip(tooltip, element) {
-        const rect = element.getBoundingClientRect();
-        const tooltipRect = tooltip.getBoundingClientRect();
-        
-        // Calculate optimal position
-        let top = rect.bottom + 10;
-        let left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
-
-        // Adjust if going off screen
-        if (left < 10) left = 10;
-        if (left + tooltipRect.width > window.innerWidth - 10) {
-            left = window.innerWidth - tooltipRect.width - 10;
-        }
-
-        // Flip to top if not enough space below
-        if (top + tooltipRect.height > window.innerHeight - 10) {
-            top = rect.top - tooltipRect.height - 10;
-            tooltip.querySelector('.tcs-tooltip-arrow').classList.remove('top');
-            tooltip.querySelector('.tcs-tooltip-arrow').classList.add('bottom');
-        }
-
-        tooltip.style.top = `${top}px`;
-        tooltip.style.left = `${left}px`;
+    // Flip to top if not enough space below
+    if (top + tooltipRect.height > window.innerHeight - 10) {
+      top = rect.top - tooltipRect.height - 10;
+      tooltip.querySelector(".tcs-tooltip-arrow").classList.remove("top");
+      tooltip.querySelector(".tcs-tooltip-arrow").classList.add("bottom");
     }
 
-    /**
-     * Get education content from API or cache
-     */
-    async getEducationContent(factor) {
-        const cacheKey = `${factor}_${this.config.userLevel}`;
-        
-        if (this.state.loadedContent.has(cacheKey)) {
-            return this.state.loadedContent.get(cacheKey);
-        }
+    tooltip.style.top = `${top}px`;
+    tooltip.style.left = `${left}px`;
+  }
 
-        try {
-            const response = await fetch(`${this.config.apiEndpoint}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    factor: factor,
-                    user_level: this.config.userLevel
-                })
-            });
+  /**
+   * Get education content from API or cache
+   */
+  async getEducationContent(factor) {
+    const cacheKey = `${factor}_${this.config.userLevel}`;
 
-            const data = await response.json();
-            this.state.loadedContent.set(cacheKey, data);
-            return data;
-        } catch (error) {
-            console.error('Failed to load education content:', error);
-            return this.getFallbackContent(factor);
-        }
+    if (this.state.loadedContent.has(cacheKey)) {
+      return this.state.loadedContent.get(cacheKey);
     }
 
-    /**
-     * Fallback content if API fails
-     */
-    getFallbackContent(factor) {
-        const fallbacks = {
-            market_structure: {
-                explanation: "Analyzes market patterns and trend quality to identify optimal trade setups.",
-                mystery_hint: "The market speaks in patterns only the trained eye can see...",
-                unlock_next_at: 10
-            },
-            momentum: {
-                explanation: "Measures the strength and direction of price movement using multiple indicators.",
-                mystery_hint: "Momentum reveals the invisible force driving prices...",
-                unlock_next_at: 15
-            },
-            default: {
-                explanation: "This factor contributes to the overall TCS calculation.",
-                mystery_hint: "More secrets unlock as you progress...",
-                unlock_next_at: 20
-            }
-        };
+    try {
+      const response = await fetch(`${this.config.apiEndpoint}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          factor: factor,
+          user_level: this.config.userLevel,
+        }),
+      });
 
-        return fallbacks[factor] || fallbacks.default;
+      const data = await response.json();
+      this.state.loadedContent.set(cacheKey, data);
+      return data;
+    } catch (error) {
+      console.error("Failed to load education content:", error);
+      return this.getFallbackContent(factor);
     }
+  }
 
-    /**
-     * Add education icons to TCS display
-     */
-    enhanceTCSDisplay(container) {
-        // Find all TCS-related elements
-        const elements = container.querySelectorAll('[data-tcs-factor]');
-        
-        elements.forEach(element => {
-            const factor = element.dataset.tcsFactor;
-            if (!element.querySelector('.tcs-info-icon')) {
-                const icon = this.createInfoIcon(factor, {
-                    pulsing: this.shouldPulse(factor)
-                });
-                element.appendChild(icon);
-            }
+  /**
+   * Fallback content if API fails
+   */
+  getFallbackContent(factor) {
+    const fallbacks = {
+      market_structure: {
+        explanation:
+          "Analyzes market patterns and trend quality to identify optimal trade setups.",
+        mystery_hint:
+          "The market speaks in patterns only the trained eye can see...",
+        unlock_next_at: 10,
+      },
+      momentum: {
+        explanation:
+          "Measures the strength and direction of price movement using multiple indicators.",
+        mystery_hint: "Momentum reveals the invisible force driving prices...",
+        unlock_next_at: 15,
+      },
+      default: {
+        explanation: "This factor contributes to the overall TCS calculation.",
+        mystery_hint: "More secrets unlock as you progress...",
+        unlock_next_at: 20,
+      },
+    };
+
+    return fallbacks[factor] || fallbacks.default;
+  }
+
+  /**
+   * Add education icons to TCS display
+   */
+  enhanceTCSDisplay(container) {
+    // Find all TCS-related elements
+    const elements = container.querySelectorAll("[data-tcs-factor]");
+
+    elements.forEach((element) => {
+      const factor = element.dataset.tcsFactor;
+      if (!element.querySelector(".tcs-info-icon")) {
+        const icon = this.createInfoIcon(factor, {
+          pulsing: this.shouldPulse(factor),
         });
+        element.appendChild(icon);
+      }
+    });
 
-        // Add to main TCS score
-        const mainScore = container.querySelector('.tcs-score-container');
-        if (mainScore && !mainScore.querySelector('.tcs-info-icon')) {
-            const icon = this.createInfoIcon('tcs_overview', { pulsing: true });
-            mainScore.appendChild(icon);
-        }
+    // Add to main TCS score
+    const mainScore = container.querySelector(".tcs-score-container");
+    if (mainScore && !mainScore.querySelector(".tcs-info-icon")) {
+      const icon = this.createInfoIcon("tcs_overview", { pulsing: true });
+      mainScore.appendChild(icon);
     }
+  }
 
-    /**
-     * Show interactive tutorial
-     */
-    showTutorial(topic = 'tcs_basics') {
-        const overlay = document.createElement('div');
-        overlay.className = 'tcs-tutorial-overlay';
-        
-        const content = this.getTutorialContent(topic);
-        
-        overlay.innerHTML = `
+  /**
+   * Show interactive tutorial
+   */
+  showTutorial(topic = "tcs_basics") {
+    const overlay = document.createElement("div");
+    overlay.className = "tcs-tutorial-overlay";
+
+    const content = this.getTutorialContent(topic);
+
+    overlay.innerHTML = `
             <div class="tcs-tutorial-content">
                 <button class="tcs-tutorial-close">✕</button>
                 <h2>${content.title}</h2>
                 <div class="tcs-tutorial-body">
-                    ${content.sections.map(section => `
+                    ${content.sections
+                      .map(
+                        (section) => `
                         <div class="tcs-tutorial-section">
                             <h3>${section.title}</h3>
                             <p>${section.content}</p>
-                            ${section.interactive ? `
+                            ${
+                              section.interactive
+                                ? `
                                 <button class="tcs-tutorial-action" data-action="${section.interactive}">
                                     Try It
                                 </button>
-                            ` : ''}
+                            `
+                                : ""
+                            }
                         </div>
-                    `).join('')}
+                    `,
+                      )
+                      .join("")}
                 </div>
                 <div class="tcs-tutorial-footer">
-                    <button class="tcs-tutorial-prev" ${content.prev ? '' : 'disabled'}>
+                    <button class="tcs-tutorial-prev" ${content.prev ? "" : "disabled"}>
                         Previous
                     </button>
                     <span class="tcs-tutorial-progress">
                         ${content.current} of ${content.total}
                     </span>
-                    <button class="tcs-tutorial-next" ${content.next ? '' : 'disabled'}>
+                    <button class="tcs-tutorial-next" ${content.next ? "" : "disabled"}>
                         Next
                     </button>
                 </div>
             </div>
         `;
 
-        document.body.appendChild(overlay);
-        
-        // Show with animation
-        requestAnimationFrame(() => {
-            overlay.classList.add('active');
-        });
+    document.body.appendChild(overlay);
 
-        // Event handlers
-        overlay.querySelector('.tcs-tutorial-close').addEventListener('click', () => {
-            this.closeTutorial(overlay);
-        });
+    // Show with animation
+    requestAnimationFrame(() => {
+      overlay.classList.add("active");
+    });
 
-        this.state.currentTutorial = { overlay, topic };
-    }
+    // Event handlers
+    overlay
+      .querySelector(".tcs-tutorial-close")
+      .addEventListener("click", () => {
+        this.closeTutorial(overlay);
+      });
 
-    /**
-     * Close tutorial
-     */
-    closeTutorial(overlay) {
-        overlay.classList.remove('active');
-        setTimeout(() => {
-            overlay.remove();
-            this.state.currentTutorial = null;
-        }, 300);
-    }
+    this.state.currentTutorial = { overlay, topic };
+  }
 
-    /**
-     * Show achievement popup
-     */
-    showAchievement(achievement) {
-        const popup = document.createElement('div');
-        popup.className = 'tcs-achievement-popup';
-        
-        popup.innerHTML = `
+  /**
+   * Close tutorial
+   */
+  closeTutorial(overlay) {
+    overlay.classList.remove("active");
+    setTimeout(() => {
+      overlay.remove();
+      this.state.currentTutorial = null;
+    }, 300);
+  }
+
+  /**
+   * Show achievement popup
+   */
+  showAchievement(achievement) {
+    const popup = document.createElement("div");
+    popup.className = "tcs-achievement-popup";
+
+    popup.innerHTML = `
             <div class="tcs-achievement-header">
                 <span class="tcs-achievement-icon">🏆</span>
                 <div>
@@ -725,191 +758,200 @@ class TCSEducationUI {
             </div>
         `;
 
-        document.body.appendChild(popup);
+    document.body.appendChild(popup);
 
-        // Show animation
-        requestAnimationFrame(() => {
-            popup.classList.add('show');
-        });
+    // Show animation
+    requestAnimationFrame(() => {
+      popup.classList.add("show");
+    });
 
-        // Auto hide after 5 seconds
-        setTimeout(() => {
-            popup.classList.remove('show');
-            setTimeout(() => popup.remove(), 500);
-        }, 5000);
+    // Auto hide after 5 seconds
+    setTimeout(() => {
+      popup.classList.remove("show");
+      setTimeout(() => popup.remove(), 500);
+    }, 5000);
+  }
+
+  /**
+   * Calculate progress percentage
+   */
+  calculateProgress(current, target) {
+    return Math.min(100, (current / target) * 100);
+  }
+
+  /**
+   * Get level label
+   */
+  getLevelLabel(level) {
+    if (level >= 76) return "Legend";
+    if (level >= 51) return "Master";
+    if (level >= 26) return "Trader";
+    if (level >= 11) return "Apprentice";
+    return "Novice";
+  }
+
+  /**
+   * Check if icon should pulse
+   */
+  shouldPulse(factor) {
+    // Pulse for new users on important factors
+    const importantFactors = [
+      "tcs_overview",
+      "market_structure",
+      "risk_reward",
+    ];
+    return this.config.userLevel < 5 && importantFactors.includes(factor);
+  }
+
+  /**
+   * Track user interactions
+   */
+  trackInteraction(action, data) {
+    // Send to analytics
+    if (window.gtag) {
+      window.gtag("event", action, {
+        event_category: "TCS_Education",
+        ...data,
+      });
     }
+  }
 
-    /**
-     * Calculate progress percentage
-     */
-    calculateProgress(current, target) {
-        return Math.min(100, (current / target) * 100);
+  /**
+   * Load user progress
+   */
+  async loadUserProgress() {
+    try {
+      const response = await fetch(`${this.config.apiEndpoint}/progress`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const progress = await response.json();
+      this.state.userProgress = progress;
+
+      // Check for new unlocks
+      this.checkForUnlocks(progress);
+    } catch (error) {
+      console.error("Failed to load user progress:", error);
     }
+  }
 
-    /**
-     * Get level label
-     */
-    getLevelLabel(level) {
-        if (level >= 76) return 'Legend';
-        if (level >= 51) return 'Master';
-        if (level >= 26) return 'Trader';
-        if (level >= 11) return 'Apprentice';
-        return 'Novice';
-    }
+  /**
+   * Check for new unlocks
+   */
+  checkForUnlocks(progress) {
+    const unlocks = progress.recent_unlocks || [];
 
-    /**
-     * Check if icon should pulse
-     */
-    shouldPulse(factor) {
-        // Pulse for new users on important factors
-        const importantFactors = ['tcs_overview', 'market_structure', 'risk_reward'];
-        return this.config.userLevel < 5 && importantFactors.includes(factor);
-    }
+    unlocks.forEach((unlock) => {
+      this.showAchievement({
+        title: "New Unlock!",
+        description: unlock.feature,
+      });
+    });
+  }
 
-    /**
-     * Track user interactions
-     */
-    trackInteraction(action, data) {
-        // Send to analytics
-        if (window.gtag) {
-            window.gtag('event', action, {
-                event_category: 'TCS_Education',
-                ...data
-            });
+  /**
+   * Get tutorial content
+   */
+  getTutorialContent(topic) {
+    const tutorials = {
+      tcs_basics: {
+        title: "Understanding TCS Basics",
+        current: 1,
+        total: 3,
+        next: "tcs_factors",
+        prev: null,
+        sections: [
+          {
+            title: "What is TCS?",
+            content:
+              "Token Confidence Score (TCS) is a proprietary algorithm that analyzes 20+ market factors to score trade quality from 0-100.",
+            interactive: "score_simulator",
+          },
+          {
+            title: "Score Ranges",
+            content:
+              "94+: Hammer (Elite) | 84-93: Shadow Strike | 75-83: Scalp | 65-74: Watchlist",
+            interactive: "visual_examples",
+          },
+        ],
+      },
+    };
+
+    return tutorials[topic] || tutorials.tcs_basics;
+  }
+
+  /**
+   * Attach global event listeners
+   */
+  attachGlobalListeners() {
+    // Listen for TCS updates
+    document.addEventListener("tcs-updated", (e) => {
+      const container = e.detail.container;
+      if (container) {
+        this.enhanceTCSDisplay(container);
+      }
+    });
+
+    // Mobile touch handling
+    if ("ontouchstart" in window) {
+      document.addEventListener("touchstart", (e) => {
+        if (
+          !e.target.closest(".tcs-info-icon") &&
+          !e.target.closest(".tcs-tooltip")
+        ) {
+          this.hideAllTooltips();
         }
+      });
     }
+  }
 
-    /**
-     * Load user progress
-     */
-    async loadUserProgress() {
-        try {
-            const response = await fetch(`${this.config.apiEndpoint}/progress`, {
-                method: 'GET',
-                headers: { 'Content-Type': 'application/json' }
-            });
-            
-            const progress = await response.json();
-            this.state.userProgress = progress;
-            
-            // Check for new unlocks
-            this.checkForUnlocks(progress);
-        } catch (error) {
-            console.error('Failed to load user progress:', error);
-        }
+  /**
+   * Hide all tooltips
+   */
+  hideAllTooltips() {
+    this.state.activeTooltips.forEach((tooltip, factor) => {
+      this.hideTooltip(factor);
+    });
+  }
+
+  /**
+   * Public API
+   */
+
+  setUserLevel(level) {
+    this.config.userLevel = level;
+    this.state.loadedContent.clear(); // Clear cache to reload with new level
+  }
+
+  destroy() {
+    this.hideAllTooltips();
+    this.state.loadedContent.clear();
+    if (this.state.currentTutorial) {
+      this.closeTutorial(this.state.currentTutorial.overlay);
     }
-
-    /**
-     * Check for new unlocks
-     */
-    checkForUnlocks(progress) {
-        const unlocks = progress.recent_unlocks || [];
-        
-        unlocks.forEach(unlock => {
-            this.showAchievement({
-                title: 'New Unlock!',
-                description: unlock.feature
-            });
-        });
-    }
-
-    /**
-     * Get tutorial content
-     */
-    getTutorialContent(topic) {
-        const tutorials = {
-            tcs_basics: {
-                title: 'Understanding TCS Basics',
-                current: 1,
-                total: 3,
-                next: 'tcs_factors',
-                prev: null,
-                sections: [
-                    {
-                        title: 'What is TCS?',
-                        content: 'Token Confidence Score (TCS) is a proprietary algorithm that analyzes 20+ market factors to score trade quality from 0-100.',
-                        interactive: 'score_simulator'
-                    },
-                    {
-                        title: 'Score Ranges',
-                        content: '94+: Hammer (Elite) | 84-93: Shadow Strike | 75-83: Scalp | 65-74: Watchlist',
-                        interactive: 'visual_examples'
-                    }
-                ]
-            }
-        };
-
-        return tutorials[topic] || tutorials.tcs_basics;
-    }
-
-    /**
-     * Attach global event listeners
-     */
-    attachGlobalListeners() {
-        // Listen for TCS updates
-        document.addEventListener('tcs-updated', (e) => {
-            const container = e.detail.container;
-            if (container) {
-                this.enhanceTCSDisplay(container);
-            }
-        });
-
-        // Mobile touch handling
-        if ('ontouchstart' in window) {
-            document.addEventListener('touchstart', (e) => {
-                if (!e.target.closest('.tcs-info-icon') && !e.target.closest('.tcs-tooltip')) {
-                    this.hideAllTooltips();
-                }
-            });
-        }
-    }
-
-    /**
-     * Hide all tooltips
-     */
-    hideAllTooltips() {
-        this.state.activeTooltips.forEach((tooltip, factor) => {
-            this.hideTooltip(factor);
-        });
-    }
-
-    /**
-     * Public API
-     */
-    
-    setUserLevel(level) {
-        this.config.userLevel = level;
-        this.state.loadedContent.clear(); // Clear cache to reload with new level
-    }
-
-    destroy() {
-        this.hideAllTooltips();
-        this.state.loadedContent.clear();
-        if (this.state.currentTutorial) {
-            this.closeTutorial(this.state.currentTutorial.overlay);
-        }
-    }
+  }
 }
 
 // Auto-initialize if included in page
-if (typeof window !== 'undefined') {
-    window.TCSEducationUI = TCSEducationUI;
-    
-    // Auto-enhance on DOM ready
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => {
-            window.tcsEducation = new TCSEducationUI({
-                userLevel: window.userLevel || 1
-            });
-        });
-    } else {
-        window.tcsEducation = new TCSEducationUI({
-            userLevel: window.userLevel || 1
-        });
-    }
+if (typeof window !== "undefined") {
+  window.TCSEducationUI = TCSEducationUI;
+
+  // Auto-enhance on DOM ready
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => {
+      window.tcsEducation = new TCSEducationUI({
+        userLevel: window.userLevel || 1,
+      });
+    });
+  } else {
+    window.tcsEducation = new TCSEducationUI({
+      userLevel: window.userLevel || 1,
+    });
+  }
 }
 
 // Export for module usage
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = TCSEducationUI;
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = TCSEducationUI;
 }

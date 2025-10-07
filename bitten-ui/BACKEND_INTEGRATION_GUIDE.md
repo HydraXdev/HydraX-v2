@@ -49,15 +49,16 @@ All messages follow this structure:
 
 **Frequency:** On connect + on balance change
 **Payload:**
+
 ```json
 {
   "id": "u_123",
   "codename": "ShadowWolf",
-  "balance": 10000.00,
+  "balance": 10000.0,
   "maxTrades": 6,
   "activeTrades": 3,
-  "riskPerTrade": 100.00,
-  "potentialReward": 148.00,
+  "riskPerTrade": 100.0,
+  "potentialReward": 148.0,
   "level": "FANG_III"
 }
 ```
@@ -66,6 +67,7 @@ All messages follow this structure:
 
 **Frequency:** When pattern detected
 **Payload:**
+
 ```json
 {
   "pattern": "SWEEP_RETURN",
@@ -89,16 +91,17 @@ All messages follow this structure:
 
 **Frequency:** On connect + on request
 **Payload:**
+
 ```json
 [
   {
     "id": "t_789",
     "pair": "XAUUSD",
-    "entry": 2645.30,
-    "current": 2658.90,
-    "stopLoss": 2620.00,
-    "takeProfit": 2680.00,
-    "equity": 680.00,
+    "entry": 2645.3,
+    "current": 2658.9,
+    "stopLoss": 2620.0,
+    "takeProfit": 2680.0,
+    "equity": 680.0,
     "lots": 0.2,
     "startTime": "2025-10-05T15:22:00Z",
     "direction": "BUY",
@@ -111,11 +114,12 @@ All messages follow this structure:
 
 **Frequency:** Every 1-5s per open trade
 **Payload (full or partial):**
+
 ```json
 {
   "id": "t_789",
-  "current": 2660.20,
-  "equity": 705.00
+  "current": 2660.2,
+  "equity": 705.0
 }
 ```
 
@@ -125,6 +129,7 @@ All messages follow this structure:
 
 **Frequency:** Every 15s + on connection events
 **Payload:**
+
 ```json
 {
   "secure": true,
@@ -138,6 +143,7 @@ All messages follow this structure:
 ### Heartbeat
 
 **Server → Client:** Every 15s
+
 ```json
 {
   "type": "ping",
@@ -146,6 +152,7 @@ All messages follow this structure:
 ```
 
 **Client → Server:** Response
+
 ```json
 {
   "type": "pong",
@@ -176,17 +183,19 @@ All messages follow this structure:
 **Returns:** 202 Accepted (async operation)
 
 **Request:**
+
 ```json
 {
   "alertId": "ELITE_EURUSD_1728137123",
   "entry": 1.05234,
   "sl": 1.05134,
   "tp": 1.05382,
-  "riskUsd": 100.00
+  "riskUsd": 100.0
 }
 ```
 
 **Success Response (202):**
+
 ```json
 {
   "opId": "op_abc123",
@@ -196,18 +205,20 @@ All messages follow this structure:
 ```
 
 **Error Response (4xx/5xx):**
+
 ```json
 {
   "error": "Insufficient balance",
   "code": "INSUFFICIENT_FUNDS",
   "details": {
-    "required": 100.00,
-    "available": 50.00
+    "required": 100.0,
+    "available": 50.0
   }
 }
 ```
 
 **Important:**
+
 - UI expects 202 Accepted, NOT 200 OK
 - Actual position confirmation arrives via event bus `trades.delta`
 - Do NOT wait for MT5 confirmation before returning
@@ -219,6 +230,7 @@ All messages follow this structure:
 **Returns:** 202 Accepted (async operation)
 
 **Request:**
+
 ```json
 {
   "reason": "manual"
@@ -228,6 +240,7 @@ All messages follow this structure:
 **Reason values:** `"manual"` | `"risk"` | `"weekend"`
 
 **Success Response (202):**
+
 ```json
 {
   "opId": "op_xyz789",
@@ -237,6 +250,7 @@ All messages follow this structure:
 ```
 
 **Important:**
+
 - Each closure streams via event bus as separate `trades.delta`
 - UI removes trades from list when `equity` becomes final
 
@@ -256,14 +270,14 @@ Access-Control-Allow-Credentials: true
 
 ## 4. Error Codes
 
-| Code | HTTP | Meaning | UI Behavior |
-|------|------|---------|-------------|
-| `INSUFFICIENT_FUNDS` | 402 | Not enough balance | Show upgrade prompt |
-| `MAX_POSITIONS` | 429 | Slot capacity reached | Show "Close a position first" |
-| `SIGNAL_EXPIRED` | 410 | Signal too old | Remove from UI |
-| `INVALID_PARAMS` | 400 | Bad request data | Show validation error |
-| `UNAUTHORIZED` | 401 | Auth failed | Redirect to login |
-| `INTERNAL_ERROR` | 500 | Server error | Show retry button |
+| Code                 | HTTP | Meaning               | UI Behavior                   |
+| -------------------- | ---- | --------------------- | ----------------------------- |
+| `INSUFFICIENT_FUNDS` | 402  | Not enough balance    | Show upgrade prompt           |
+| `MAX_POSITIONS`      | 429  | Slot capacity reached | Show "Close a position first" |
+| `SIGNAL_EXPIRED`     | 410  | Signal too old        | Remove from UI                |
+| `INVALID_PARAMS`     | 400  | Bad request data      | Show validation error         |
+| `UNAUTHORIZED`       | 401  | Auth failed           | Redirect to login             |
+| `INTERNAL_ERROR`     | 500  | Server error          | Show retry button             |
 
 ---
 
@@ -272,6 +286,7 @@ Access-Control-Allow-Credentials: true
 UI can send heartbeat metrics for observability:
 
 **POST /api/telemetry/ui-heartbeat** (optional)
+
 ```json
 {
   "userId": "u_123",
@@ -306,6 +321,7 @@ Backend team checklist:
 ## 7. Testing
 
 ### WebSocket Test
+
 ```bash
 # Install wscat
 npm install -g wscat
@@ -317,6 +333,7 @@ wscat -c ws://api.yourdomain.com/socket.io
 ```
 
 ### REST Test
+
 ```bash
 # Fire endpoint
 curl -i -X POST https://api.yourdomain.com/api/fire \
@@ -357,18 +374,19 @@ curl -i -X POST https://api.yourdomain.com/api/trades/close-all \
 
 ## 9. Performance SLA
 
-| Metric | Target | Critical |
-|--------|--------|----------|
-| WS Latency (p95) | < 100ms | < 250ms |
-| Fire API (p95) | < 500ms | < 1s |
-| Delta frequency | 1-5s | 10s max |
-| Reconnect time | < 5s | < 15s |
+| Metric           | Target  | Critical |
+| ---------------- | ------- | -------- |
+| WS Latency (p95) | < 100ms | < 250ms  |
+| Fire API (p95)   | < 500ms | < 1s     |
+| Delta frequency  | 1-5s    | 10s max  |
+| Reconnect time   | < 5s    | < 15s    |
 
 ---
 
 ## 10. Contact
 
 **Questions?** Reference this document and:
+
 - UI repo: `/root/HydraX-v2/bitten-ui`
 - Event bus adapter: `lib/eventBus/realAdapter.ts`
 - API client: `lib/api/fireApi.ts`

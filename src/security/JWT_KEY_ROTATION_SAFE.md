@@ -3,6 +3,7 @@
 ## Current Key Configuration
 
 **Location**: `/root/HydraX-v2/keys/`
+
 - `jwt_private.pem` - RS256 private key (2048-bit)
 - `jwt_public.pem` - RS256 public key
 
@@ -87,6 +88,7 @@ mv /root/HydraX-v2/keys/jwt_public_new.pem /root/HydraX-v2/keys/jwt_public.pem
 **Recommended**: Rotate keys every 90 days
 
 **Next Rotation**: Add reminder to rotate keys on:
+
 - January 2026 (from October 2025)
 
 ## Emergency Key Compromise

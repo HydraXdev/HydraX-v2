@@ -4,11 +4,13 @@ BITTEN Onboarding Data Models
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Dict, Any, List
 from enum import Enum
+from typing import Any, Dict, List
+
 
 class OnboardingState(Enum):
     """Enumeration of all onboarding states"""
+
     FIRST_CONTACT = "first_contact"
     MARKET_WARFARE_INTRO = "market_warfare_intro"
     KNOWLEDGE_SOURCE = "knowledge_source"
@@ -25,9 +27,11 @@ class OnboardingState(Enum):
     PERSONAL_RECORD = "personal_record"
     COMPLETE = "complete"
 
+
 @dataclass
 class OnboardingSession:
     """Session data for tracking onboarding progress"""
+
     user_id: str
     telegram_id: int
     current_state: str
@@ -44,7 +48,7 @@ class OnboardingSession:
     variant: str = "standard"
     is_paused: bool = False
     skipped_states: List[str] = None
-    
+
     def __post_init__(self):
         if self.notifications is None:
             self.notifications = {}

@@ -4,31 +4,32 @@
 Pre-liberty safety brief for all operators before weekend market conditions
 """
 
+import logging
 from datetime import datetime, time
 from typing import Dict, List
-import logging
 
 logger = logging.getLogger(__name__)
+
 
 class WeekendSafetyBriefing:
     """
     Mandatory safety briefing before weekend liberty.
     Just like the military - you get briefed before you're released.
     """
-    
+
     def get_weekend_warning_message(self, user_tier: str, open_positions: int) -> str:
         """
         Generate tier-appropriate weekend warning
         """
-        
+
         if open_positions == 0:
             return self._get_no_positions_message(user_tier)
         else:
             return self._get_open_positions_message(user_tier, open_positions)
-    
+
     def _get_no_positions_message(self, tier: str) -> str:
         """Message when user has no open positions"""
-        
+
         base_message = (
             "📋 **WEEKEND SAFETY BRIEFING**\n"
             "────────────────────\n"
@@ -40,7 +41,7 @@ class WeekendSafetyBriefing:
             "• Gap Risk: ELEVATED\n"
             "• Chaos Level: HIGH\n\n"
         )
-        
+
         tier_specific = {
             "NIBBLER": (
                 "🟢 **NIBBLER LIBERTY STATUS: APPROVED**\n"
@@ -73,14 +74,14 @@ class WeekendSafetyBriefing:
                 "• Brief complete - Make your choice\n"
                 "• See you on the other side\n\n"
                 "_Liberty authorized. Hunt well._"
-            )
+            ),
         }
-        
+
         return base_message + tier_specific.get(tier, tier_specific["NIBBLER"])
-    
+
     def _get_open_positions_message(self, tier: str, positions: int) -> str:
         """Message when user has open positions"""
-        
+
         base_message = (
             f"🔴 **WEEKEND SAFETY BRIEF - POSITIONS DETECTED**\n"
             f"────────────────\n"
@@ -89,7 +90,7 @@ class WeekendSafetyBriefing:
             f"⚠️ Weekend gaps are NOT your friend.\n"
             f"📊 Friday close ≠ Sunday open.\n\n"
         )
-        
+
         tier_specific = {
             "NIBBLER": (
                 "🔴 **NIBBLER SAFETY DIRECTIVE:**\n"
@@ -129,11 +130,11 @@ class WeekendSafetyBriefing:
                 "🌀 **Liberty Status: UNRESTRICTED**\n\n"
                 "_Happy hunting. Or happy resting._\n"
                 "_Your choice, as always._"
-            )
+            ),
         }
-        
+
         return base_message + tier_specific.get(tier, tier_specific["NIBBLER"])
-    
+
     def should_send_warning(self, current_time: datetime) -> bool:
         """
         Check if it's time to send weekend warning
@@ -142,32 +143,33 @@ class WeekendSafetyBriefing:
         # Friday = 4
         if current_time.weekday() != 4:
             return False
-            
+
         # After noon UTC
         if current_time.hour >= 12:
             return True
-            
+
         return False
-    
+
     def get_weekend_stats_summary(self, user_stats: Dict) -> str:
         """
         Include user's weekend performance history
         """
-        weekend_wins = user_stats.get('weekend_wins', 0)
-        weekend_losses = user_stats.get('weekend_losses', 0)
+        weekend_wins = user_stats.get("weekend_wins", 0)
+        weekend_losses = user_stats.get("weekend_losses", 0)
         weekend_total = weekend_wins + weekend_losses
-        
+
         if weekend_total == 0:
             return "\n📊 _No weekend trading history yet._"
-        
+
         weekend_wr = (weekend_wins / weekend_total) * 100
-        
+
         if weekend_wr >= 70:
             return f"\n📊 Your weekend record: {weekend_wins}W-{weekend_losses}L ({weekend_wr:.0f}% WR) 💪"
         elif weekend_wr >= 50:
             return f"\n📊 Your weekend record: {weekend_wins}W-{weekend_losses}L ({weekend_wr:.0f}% WR) ⚖️"
         else:
             return f"\n📊 Your weekend record: {weekend_wins}W-{weekend_losses}L ({weekend_wr:.0f}% WR) ⚠️"
+
 
 # Integration function for telegram_router.py
 async def send_weekend_warnings(telegram_router, active_users: List[Dict]):
@@ -176,28 +178,21 @@ async def send_weekend_warnings(telegram_router, active_users: List[Dict]):
     Called by scheduler every Friday at noon UTC
     """
     warning_system = WeekendSafetyBriefing()
-    
+
     for user in active_users:
         try:
             # Get user's open positions
-            positions = await telegram_router.get_user_positions(user['user_id'])
-            
+            positions = await telegram_router.get_user_positions(user["user_id"])
+
             # Generate message
-            message = warning_system.get_weekend_warning_message(
-                user['tier'], 
-                len(positions)
-            )
-            
+            message = warning_system.get_weekend_warning_message(user["tier"], len(positions))
+
             # Add stats if available
-            if user.get('stats'):
-                message += warning_system.get_weekend_stats_summary(user['stats'])
-            
+            if user.get("stats"):
+                message += warning_system.get_weekend_stats_summary(user["stats"])
+
             # Send via Telegram
-            await telegram_router.send_message(
-                user['chat_id'],
-                message,
-                parse_mode='Markdown'
-            )
-            
+            await telegram_router.send_message(user["chat_id"], message, parse_mode="Markdown")
+
         except Exception as e:
             logger.error(f"Failed to send weekend warning to user {user['user_id']}: {e}")

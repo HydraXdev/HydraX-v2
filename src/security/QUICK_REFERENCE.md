@@ -150,36 +150,43 @@ audit.log_rate_limit_exceeded(
 ## 🔍 Quick Log Queries
 
 ### View Live Logs
+
 ```bash
 tail -f /var/log/bitten/audit.log | jq
 ```
 
 ### Last 10 Events
+
 ```bash
 tail -10 /var/log/bitten/audit.log | jq
 ```
 
 ### Find Failed Auths
+
 ```bash
 cat /var/log/bitten/audit.log | jq 'select(.event_type == "auth.failed")'
 ```
 
 ### Count Events by Type
+
 ```bash
 cat /var/log/bitten/audit.log | jq -r '.event_type' | sort | uniq -c
 ```
 
 ### Find User Activity
+
 ```bash
 cat /var/log/bitten/audit.log | jq 'select(.sub == "7176191872")'
 ```
 
 ### Find WARNING Events
+
 ```bash
 cat /var/log/bitten/audit.log | jq 'select(.level == "WARNING")'
 ```
 
 ### Fire Requests Last Hour
+
 ```bash
 cat /var/log/bitten/audit.log | \
   jq 'select(.event_type == "fire.requested" and .timestamp > "'$(date -u -d '1 hour ago' -Iseconds)'")'
@@ -190,6 +197,7 @@ cat /var/log/bitten/audit.log | \
 ## 🔒 Security Reminders
 
 ### ✅ DO Log
+
 - User IDs (`sub`)
 - Session IDs (`ms`)
 - Alert IDs (`aid`)
@@ -198,6 +206,7 @@ cat /var/log/bitten/audit.log | \
 - Timestamps (UTC)
 
 ### ❌ NEVER Log
+
 - Balances
 - Account numbers
 - Passwords
@@ -207,7 +216,9 @@ cat /var/log/bitten/audit.log | \
 - Trade amounts
 
 ### Auto-Sanitized Fields
+
 These are **automatically redacted** to `[REDACTED]`:
+
 - `balance`, `equity`, `profit`, `loss`, `amount`
 - `password`, `token`, `secret`, `key`, `nonce`
 - `account_number`, `email`, `phone`
@@ -216,30 +227,31 @@ These are **automatically redacted** to `[REDACTED]`:
 
 ## 📊 Event Types Reference
 
-| Code | Event Type | Level |
-|------|-----------|-------|
-| `session.created` | Session created | INFO |
-| `session.validated` | Session validated | INFO/WARN |
-| `session.executed` | Session executed | INFO |
-| `session.expired` | Session expired | WARN |
-| `fire.requested` | Fire requested | INFO |
-| `fire.idempotent_hit` | Duplicate request | INFO |
-| `fire.risk_violation` | Risk exceeded | WARN |
-| `fire.scope_violation` | Missing scope | WARN |
-| `ws.connected` | WS connected | INFO |
-| `ws.auth_failed` | WS auth failed | WARN |
-| `ws.subscribed` | WS subscribed | INFO/WARN |
-| `ws.disconnected` | WS disconnected | INFO |
-| `auth.success` | Auth success | INFO |
-| `auth.failed` | Auth failed | WARN |
-| `authz.denied` | Authorization denied | WARN |
-| `rate_limit.exceeded` | Rate limit hit | WARN |
+| Code                   | Event Type           | Level     |
+| ---------------------- | -------------------- | --------- |
+| `session.created`      | Session created      | INFO      |
+| `session.validated`    | Session validated    | INFO/WARN |
+| `session.executed`     | Session executed     | INFO      |
+| `session.expired`      | Session expired      | WARN      |
+| `fire.requested`       | Fire requested       | INFO      |
+| `fire.idempotent_hit`  | Duplicate request    | INFO      |
+| `fire.risk_violation`  | Risk exceeded        | WARN      |
+| `fire.scope_violation` | Missing scope        | WARN      |
+| `ws.connected`         | WS connected         | INFO      |
+| `ws.auth_failed`       | WS auth failed       | WARN      |
+| `ws.subscribed`        | WS subscribed        | INFO/WARN |
+| `ws.disconnected`      | WS disconnected      | INFO      |
+| `auth.success`         | Auth success         | INFO      |
+| `auth.failed`          | Auth failed          | WARN      |
+| `authz.denied`         | Authorization denied | WARN      |
+| `rate_limit.exceeded`  | Rate limit hit       | WARN      |
 
 ---
 
 ## 🛠️ Troubleshooting
 
 ### Logs Not Appearing?
+
 ```bash
 # Check directory exists
 ls -ld /var/log/bitten
@@ -253,6 +265,7 @@ tail -1 /var/log/bitten/audit.log | jq
 ```
 
 ### PII Leaking?
+
 ```bash
 # Search for sensitive data
 grep -E "(balance|password|token|email)" /var/log/bitten/audit.log
@@ -261,6 +274,7 @@ grep -E "(balance|password|token|email)" /var/log/bitten/audit.log
 ```
 
 ### Need to Clear Logs?
+
 ```bash
 # Backup first!
 sudo cp /var/log/bitten/audit.log /var/log/bitten/audit.log.backup
@@ -275,13 +289,13 @@ sudo rm /var/log/bitten/audit.log
 
 ## 📁 File Locations
 
-| File | Location |
-|------|----------|
-| **Logs** | `/var/log/bitten/audit.log` |
-| **Module** | `/root/HydraX-v2/src/security/audit_logger.py` |
-| **Tests** | `/root/HydraX-v2/tests/test_audit_logger.py` |
-| **README** | `/root/HydraX-v2/src/security/AUDIT_LOGGER_README.md` |
-| **Examples** | `/root/HydraX-v2/src/security/audit_logger_examples.py` |
+| File          | Location                                                |
+| ------------- | ------------------------------------------------------- |
+| **Logs**      | `/var/log/bitten/audit.log`                             |
+| **Module**    | `/root/HydraX-v2/src/security/audit_logger.py`          |
+| **Tests**     | `/root/HydraX-v2/tests/test_audit_logger.py`            |
+| **README**    | `/root/HydraX-v2/src/security/AUDIT_LOGGER_README.md`   |
+| **Examples**  | `/root/HydraX-v2/src/security/audit_logger_examples.py` |
 | **Checklist** | `/root/HydraX-v2/src/security/INTEGRATION_CHECKLIST.md` |
 
 ---

@@ -4,36 +4,43 @@ HydraSocket API Documentation Blueprint
 Provides OpenAPI schema and health endpoints with schema hash
 """
 
-from flask import Blueprint, send_file, jsonify, render_template_string
 import hashlib
 import json
 import pathlib
 import time
 
+from flask import Blueprint, jsonify, render_template_string, send_file
+
 bp_docs = Blueprint("docs", __name__)
 
 OPENAPI_PATH = pathlib.Path("/root/HydraX-v2/openapi/openapi.yaml")
+
 
 def get_ws_client_count():
     """Get current WebSocket client count"""
     try:
         from src.hydrasocket.websocket_handler import get_client_count
+
         return get_client_count()
     except ImportError:
         return 0
+
 
 def get_metrics_collector():
     """Get metrics collector instance"""
     try:
         from src.hydrasocket.metrics import get_metrics_collector
+
         return get_metrics_collector()
     except ImportError:
         return None
+
 
 @bp_docs.route("/openapi.yaml")
 def openapi_yaml():
     """Serve OpenAPI YAML schema"""
     return send_file(OPENAPI_PATH, mimetype="application/yaml")
+
 
 @bp_docs.route("/api/health")
 def api_health():
@@ -55,6 +62,7 @@ def api_health():
             data["event_lag_ms_p95"] = None
 
     return jsonify(data), 200
+
 
 @bp_docs.route("/docs")
 def swagger_ui():

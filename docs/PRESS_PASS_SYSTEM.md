@@ -7,17 +7,21 @@ The Press Pass system is a high-stakes XP mode that creates urgency and engageme
 ## Features
 
 ### 1. Nightly XP Reset
+
 - **Schedule**: Automatic reset at 00:00 UTC daily
 - **Scope**: Only affects users who have activated Press Pass
 - **Effect**: Current XP balance is set to 0, but shadow stats track real progress
 
 ### 2. Warning Notifications
+
 - **23:00 UTC**: 1-hour warning notification
 - **23:45 UTC**: 15-minute final warning
 - **Content**: Shows current XP that will be lost and urges spending
 
 ### 3. Shadow Stat Tracking
+
 Real stats are secretly maintained:
+
 - `real_total_xp`: Actual total XP earned (never reset)
 - `real_lifetime_earned`: True lifetime earnings
 - `total_xp_wiped`: Cumulative XP lost to resets
@@ -25,6 +29,7 @@ Real stats are secretly maintained:
 - `largest_wipe`: Biggest single XP loss
 
 ### 4. Dramatic Notifications
+
 - Warning messages create urgency with countdown timers
 - Reset notifications show exact amount of XP destroyed
 - Uses dramatic language and emojis for impact
@@ -79,20 +84,25 @@ sudo journalctl -u press_pass_reset -f
 ### For Users
 
 1. **Activate Press Pass**:
+
    ```
    /presspass activate
    ```
 
 2. **Check Status**:
+
    ```
    /xpstatus
    ```
+
    Shows current XP and time until reset
 
 3. **Spend XP Before Reset**:
+
    ```
    /xpshop
    ```
+
    Browse and purchase items before XP is wiped
 
 4. **Deactivate When Needed**:
@@ -103,11 +113,13 @@ sudo journalctl -u press_pass_reset -f
 ### For Administrators
 
 1. **Monitor Service**:
+
    ```bash
    sudo systemctl status press_pass_reset
    ```
 
 2. **Check Logs**:
+
    ```bash
    tail -f /root/HydraX-v2/logs/press_pass_scheduler.log
    ```
@@ -123,16 +135,19 @@ sudo journalctl -u press_pass_reset -f
 ## Integration Points
 
 ### Telegram Bot
+
 - Press Pass commands integrated into main command router
 - Notifications sent via TelegramMessenger
 - XP status commands show Press Pass warnings
 
 ### XP Economy
+
 - XP balance reset handled through XP economy system
 - Shadow stats maintained separately
 - Purchases still work normally until reset
 
 ### User Profile
+
 - Press Pass status included in user profiles
 - Shadow stats available for internal tracking
 - Real progress maintained for achievements
@@ -140,11 +155,13 @@ sudo journalctl -u press_pass_reset -f
 ## Testing
 
 Run the test suite:
+
 ```bash
 python test_press_pass.py
 ```
 
 This tests:
+
 - Press Pass activation/deactivation
 - XP awarding with shadow tracking
 - Warning notifications

@@ -9,16 +9,17 @@ Usage:
     python3 send_feed_control.py --providers account1,account2,account3
 """
 
-import socket
-import json
-import time
 import argparse
+import json
 import logging
+import socket
+import time
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
-logger = logging.getLogger('FeedControl')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
+logger = logging.getLogger("FeedControl")
 
-def send_feed_control(account_id, enabled, host='127.0.0.1', port=5555):
+
+def send_feed_control(account_id, enabled, host="127.0.0.1", port=5555):
     """
     Send feed_control command to specific EA
 
@@ -36,21 +37,21 @@ def send_feed_control(account_id, enabled, host='127.0.0.1', port=5555):
 
         # Create feed_control command
         command = {
-            'type': 'feed_control',
-            'request_ref': f'feed-{account_id}-{int(time.time())}',
-            'enabled': 1 if enabled else 0,
-            'account_id': account_id  # Router uses this for routing
+            "type": "feed_control",
+            "request_ref": f"feed-{account_id}-{int(time.time())}",
+            "enabled": 1 if enabled else 0,
+            "account_id": account_id,  # Router uses this for routing
         }
 
         # Send as JSONL (JSON with newline)
-        payload = json.dumps(command) + '\n'
-        sock.send(payload.encode('utf-8'))
+        payload = json.dumps(command) + "\n"
+        sock.send(payload.encode("utf-8"))
 
         logger.info(f"✅ Sent feed_control to {account_id}: {'ENABLED' if enabled else 'DISABLED'}")
 
         # Wait for command_result confirmation (optional)
         try:
-            response = sock.recv(4096).decode('utf-8')
+            response = sock.recv(4096).decode("utf-8")
             if response:
                 logger.info(f"📥 Response: {response.strip()}")
         except socket.timeout:
@@ -64,7 +65,7 @@ def send_feed_control(account_id, enabled, host='127.0.0.1', port=5555):
         return False
 
 
-def configure_providers(provider_list, host='127.0.0.1', port=5555):
+def configure_providers(provider_list, host="127.0.0.1", port=5555):
     """
     Configure specific accounts as data providers, disable all others
 
@@ -85,20 +86,20 @@ def configure_providers(provider_list, host='127.0.0.1', port=5555):
     return success_count
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Send feed_control commands to EAs')
-    parser.add_argument('--account', type=str, help='Single account ID to control')
-    parser.add_argument('--enable', action='store_true', help='Enable data feed')
-    parser.add_argument('--disable', action='store_true', help='Disable data feed')
-    parser.add_argument('--providers', type=str, help='Comma-separated list of provider accounts')
-    parser.add_argument('--host', type=str, default='127.0.0.1', help='Router host')
-    parser.add_argument('--port', type=int, default=5555, help='Router command port')
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Send feed_control commands to EAs")
+    parser.add_argument("--account", type=str, help="Single account ID to control")
+    parser.add_argument("--enable", action="store_true", help="Enable data feed")
+    parser.add_argument("--disable", action="store_true", help="Disable data feed")
+    parser.add_argument("--providers", type=str, help="Comma-separated list of provider accounts")
+    parser.add_argument("--host", type=str, default="127.0.0.1", help="Router host")
+    parser.add_argument("--port", type=int, default=5555, help="Router command port")
 
     args = parser.parse_args()
 
     if args.providers:
         # Configure multiple providers
-        provider_list = [acc.strip() for acc in args.providers.split(',')]
+        provider_list = [acc.strip() for acc in args.providers.split(",")]
         configure_providers(provider_list, host=args.host, port=args.port)
 
     elif args.account:

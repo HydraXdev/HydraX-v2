@@ -99,7 +99,7 @@ def health():
             }
         else:
             broker_status[broker] = {'path_exists': False}
-    
+
     return jsonify({
         'status': 'healthy',
         'timestamp': datetime.now().isoformat(),
@@ -109,49 +109,49 @@ def health():
 @app.route('/execute', methods=['POST'])
 def execute_trade():
     global current_broker
-    
+
     try:
         trade_data = request.json
-        
+
         # Round-robin broker selection
         broker_name = f'broker{(current_broker % 3) + 1}'
         current_broker += 1
-        
+
         # Ensure directory exists
         broker_path = BROKERS[broker_name]
         os.makedirs(broker_path, exist_ok=True)
-        
+
         # Add timestamp
         trade_data['timestamp'] = int(time.time())
-        
+
         # Write instruction file
         instruction_path = os.path.join(broker_path, 'bitten_instructions_secure.txt')
         with open(instruction_path, 'w') as f:
             json.dump(trade_data, f)
-        
+
         # Wait for result
         result_path = os.path.join(broker_path, 'bitten_results_secure.txt')
         start_time = time.time()
-        
+
         while time.time() - start_time < 30:
             if os.path.exists(result_path):
                 with open(result_path, 'r') as f:
                     result = json.load(f)
                 os.remove(result_path)
-                
+
                 return jsonify({
                     'success': True,
                     'broker': broker_name,
                     'result': result
                 })
             time.sleep(0.1)
-        
+
         return jsonify({
             'success': False,
             'error': 'Trade execution timeout',
             'broker': broker_name
         }), 500
-        
+
     except Exception as e:
         return jsonify({
             'success': False,
@@ -161,7 +161,7 @@ def execute_trade():
 @app.route('/positions')
 def get_positions():
     all_positions = []
-    
+
     for broker, path in BROKERS.items():
         positions_file = os.path.join(path, 'bitten_positions_secure.txt')
         if os.path.exists(positions_file):
@@ -173,7 +173,7 @@ def get_positions():
                     all_positions.extend(positions)
             except:
                 pass
-    
+
     return jsonify({
         'positions': all_positions,
         'count': len(all_positions),
@@ -184,19 +184,19 @@ def get_positions():
 def get_account(broker):
     if broker not in BROKERS:
         return jsonify({'error': 'Invalid broker'}), 404
-    
+
     account_file = os.path.join(BROKERS[broker], 'bitten_account_secure.txt')
     if os.path.exists(account_file):
         with open(account_file, 'r') as f:
             return jsonify(json.load(f))
-    
+
     return jsonify({'error': 'No account data'}), 404
 
 if __name__ == '__main__':
     # Create broker directories
     for path in BROKERS.values():
         os.makedirs(path, exist_ok=True)
-    
+
     print("Starting BITTEN MT5 API on port 8001...")
     app.run(host='0.0.0.0', port=8001, debug=False)
 '@
@@ -233,7 +233,7 @@ echo. > "$BASE_PATH\Broker$i\portable"
 echo Installation complete for Broker $i
 pause
 "@
-    
+
     $installScript | Out-File -FilePath "$BASE_PATH\install_mt5_broker$i.bat" -Encoding ASCII
 }
 
@@ -253,16 +253,16 @@ $BASE_PATH = "C:\BITTEN"
 # Start each MT5 instance
 for ($i = 1; $i -le 3; $i++) {
     $mt5Path = "$BASE_PATH\Broker$i\terminal64.exe"
-    
+
     if (Test-Path $mt5Path) {
         Write-Host "Starting Broker $i..." -ForegroundColor Yellow
-        
+
         if ($Hidden) {
             Start-Process -FilePath $mt5Path -ArgumentList "/portable" -WindowStyle Hidden
         } else {
             Start-Process -FilePath $mt5Path -ArgumentList "/portable"
         }
-        
+
         Start-Sleep -Seconds 5
     } else {
         Write-Host "MT5 not found for Broker $i at: $mt5Path" -ForegroundColor Red
@@ -291,7 +291,7 @@ $BASE_PATH = "C:\BITTEN"
 for ($i = 1; $i -le 3; $i++) {
     $sourcePath = "$BASE_PATH\Broker$i\BITTENBridge_v3_ENHANCED.mq5"
     $destPath = "$BASE_PATH\Broker$i\MQL5\Experts\BITTENBridge_v3_ENHANCED.mq5"
-    
+
     if (Test-Path $sourcePath) {
         Copy-Item -Path $sourcePath -Destination $destPath -Force
         Write-Host "✅ EA copied to Broker $i" -ForegroundColor Green

@@ -1,9 +1,11 @@
 # HYDRASOCKET v1 Chaos Engineering Tests
 
 ## Overview
+
 Chaos engineering tests validate system resilience under failure conditions. Run these tests regularly to ensure robust operation.
 
 ## Test Schedule
+
 - **Weekly**: Basic chaos tests (router kill, network partition)
 - **Monthly**: Advanced chaos tests (database corruption, resource exhaustion)
 - **Quarterly**: Full disaster recovery simulation
@@ -13,7 +15,9 @@ Chaos engineering tests validate system resilience under failure conditions. Run
 ### 1. Process Failures
 
 #### Test: Router Process Kill
+
 **Objective**: Verify automatic restart and state recovery
+
 ```bash
 #!/bin/bash
 echo "🔥 CHAOS TEST: Router Process Kill"
@@ -51,7 +55,9 @@ fi
 ```
 
 #### Test: Database Lock Simulation
+
 **Objective**: Test database recovery under lock conditions
+
 ```bash
 #!/bin/bash
 echo "🔥 CHAOS TEST: Database Lock Simulation"
@@ -89,7 +95,9 @@ fi
 ### 2. Network Failures
 
 #### Test: Port Blocking
+
 **Objective**: Test resilience to ZMQ port failures
+
 ```bash
 #!/bin/bash
 echo "🔥 CHAOS TEST: ZMQ Port Blocking"
@@ -128,7 +136,9 @@ fi
 ```
 
 #### Test: WebSocket Connection Flood
+
 **Objective**: Test WebSocket handling under load
+
 ```bash
 #!/bin/bash
 echo "🔥 CHAOS TEST: WebSocket Connection Flood"
@@ -185,7 +195,9 @@ fi
 ### 3. Resource Exhaustion
 
 #### Test: Memory Pressure
+
 **Objective**: Test behavior under memory pressure
+
 ```bash
 #!/bin/bash
 echo "🔥 CHAOS TEST: Memory Pressure"
@@ -222,7 +234,9 @@ fi
 ```
 
 #### Test: Disk Space Exhaustion
+
 **Objective**: Test behavior when disk space is low
+
 ```bash
 #!/bin/bash
 echo "🔥 CHAOS TEST: Disk Space Exhaustion"
@@ -269,7 +283,9 @@ fi
 ### 4. Data Corruption
 
 #### Test: Database Corruption Simulation
+
 **Objective**: Test recovery from database corruption
+
 ```bash
 #!/bin/bash
 echo "🔥 CHAOS TEST: Database Corruption Simulation"
@@ -325,7 +341,9 @@ rm -f "$BACKUP_PATH"
 ### 5. Configuration Chaos
 
 #### Test: Invalid Configuration
+
 **Objective**: Test handling of invalid configuration
+
 ```bash
 #!/bin/bash
 echo "🔥 CHAOS TEST: Invalid Configuration"
@@ -375,6 +393,7 @@ rm -f "$BACKUP_CONFIG"
 ## Chaos Test Suite
 
 ### Run All Tests
+
 ```bash
 #!/bin/bash
 echo "🎯 HYDRASOCKET CHAOS TEST SUITE"
@@ -425,6 +444,7 @@ fi
 ```
 
 ### Automated Chaos Testing
+
 ```bash
 # Crontab entry for weekly chaos testing
 # Run chaos tests every Sunday at 2 AM
@@ -434,12 +454,14 @@ fi
 ## Chaos Metrics
 
 ### Test Success Criteria
+
 - **Recovery Time**: Service should recover within 60 seconds
 - **Data Integrity**: No data loss during failures
 - **Client Impact**: <10% of WebSocket clients should disconnect
 - **Error Handling**: Graceful degradation, no crashes
 
 ### Monitoring During Chaos
+
 ```bash
 # Monitor script to run during chaos tests
 #!/bin/bash
@@ -452,6 +474,7 @@ done
 ## Post-Chaos Analysis
 
 ### Metrics to Review
+
 - Service downtime duration
 - Error rates during and after chaos
 - Resource usage patterns
@@ -459,6 +482,7 @@ done
 - Recovery time measurements
 
 ### Improvement Actions
+
 - Update restart thresholds
 - Improve error handling
 - Enhance monitoring coverage

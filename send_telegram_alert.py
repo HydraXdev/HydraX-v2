@@ -4,11 +4,12 @@ Send Telegram Alert for Test Signal
 Triggers the normal signal alert flow through Telegram
 """
 
+import json
 import os
 import sys
-import requests
-import json
 from datetime import datetime
+
+import requests
 
 # Load Telegram bot token from .env
 BOT_TOKEN = "7854827710:AAE9kCptkoSl8lmQwmX940UMqFWOb3TmTI0"
@@ -16,9 +17,10 @@ BOT_TOKEN = "7854827710:AAE9kCptkoSl8lmQwmX940UMqFWOb3TmTI0"
 # Your Telegram user ID (Commander)
 CHAT_ID = "7176191872"
 
+
 def send_signal_alert():
     """Send signal alert via Telegram bot"""
-    
+
     # Signal data for the test signal we created
     signal_data = {
         "signal_id": "ELITE_GUARD_TEST_1754681237",
@@ -34,9 +36,9 @@ def send_signal_alert():
         "shield_score": 8.5,
         "stop_pips": 10,
         "target_pips": 20,
-        "risk_reward": 2.0
+        "risk_reward": 2.0,
     }
-    
+
     # Create formatted message like Elite Guard would send
     message = f"""
 🔥 **ELITE GUARD SIGNAL ALERT** 🔥
@@ -60,37 +62,33 @@ def send_signal_alert():
 
 **This signal is ready for manual execution testing!**
 """
-    
+
     # Send via Telegram Bot API
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
-    
-    payload = {
-        "chat_id": CHAT_ID,
-        "text": message,
-        "parse_mode": "Markdown",
-        "disable_web_page_preview": True
-    }
-    
+
+    payload = {"chat_id": CHAT_ID, "text": message, "parse_mode": "Markdown", "disable_web_page_preview": True}
+
     try:
         response = requests.post(url, data=payload)
         result = response.json()
-        
-        if result.get('ok'):
+
+        if result.get("ok"):
             print("✅ Telegram alert sent successfully!")
             print(f"Message ID: {result['result']['message_id']}")
             return True
         else:
             print(f"❌ Telegram API error: {result}")
             return False
-            
+
     except Exception as e:
         print(f"❌ Error sending Telegram message: {e}")
         return False
 
+
 if __name__ == "__main__":
     print("📱 Sending Telegram signal alert...")
     success = send_signal_alert()
-    
+
     if success:
         print("\n🎯 **MANUAL EXECUTION TEST READY**")
         print("1. Check your Telegram for the signal alert")

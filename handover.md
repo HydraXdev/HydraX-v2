@@ -2,7 +2,7 @@
 
 ## 🚨 CRITICAL ISSUES REQUIRING EA MODIFICATION
 
-**Date:** September 11, 2025 00:30 UTC  
+**Date:** September 11, 2025 00:30 UTC
 **Priority:** URGENT - System trading unsafely without these fixes
 
 ### PROBLEMS IDENTIFIED
@@ -33,6 +33,7 @@
 ## 📋 EA MODIFICATION PLAN
 
 ### Estimated Impact
+
 - **Code Addition:** ~150-200 lines
 - **Performance Impact:** Minimal (<10ms per operation)
 - **Data Overhead:** ~200-500 bytes per heartbeat
@@ -40,39 +41,41 @@
 ### Required Features
 
 #### 1. Enhanced Heartbeat (Every 30 seconds)
+
 ```json
 {
   "type": "heartbeat",
   "uuid": "COMMANDER_DEV_001",
   "timestamp": 1234567890,
-  "account_balance": 10000.00,
-  "account_equity": 10250.00,
+  "account_balance": 10000.0,
+  "account_equity": 10250.0,
   "open_positions": 3,
-  "max_positions": 10,  // Hard limit of 10
+  "max_positions": 10, // Hard limit of 10
   "positions": [
     {
       "ticket": 12345,
       "symbol": "EURUSD",
       "direction": "BUY",
-      "lots": 0.10,
-      "open_price": 1.1000,
+      "lots": 0.1,
+      "open_price": 1.1,
       "current_price": 1.1015,
-      "pnl": 15.00
+      "pnl": 15.0
     },
     {
       "ticket": 12346,
       "symbol": "GBPUSD",
       "direction": "SELL",
       "lots": 0.15,
-      "open_price": 1.3500,
+      "open_price": 1.35,
       "current_price": 1.3485,
-      "pnl": 22.50
+      "pnl": 22.5
     }
   ]
 }
 ```
 
 #### 2. Hedge Prevention Check (Before Opening)
+
 ```mql5
 // Check existing positions before opening new trade
 bool HasPositionOnSymbol(string symbol, ENUM_POSITION_TYPE &existing_type) {
@@ -93,7 +96,7 @@ if(HasPositionOnSymbol(symbol, existing_type)) {
     if((cmd_direction == "BUY" && existing_type == POSITION_TYPE_SELL) ||
        (cmd_direction == "SELL" && existing_type == POSITION_TYPE_BUY)) {
         // Send hedge block notification
-        SendConfirmation("HEDGE_BLOCKED", fire_id, symbol, 
+        SendConfirmation("HEDGE_BLOCKED", fire_id, symbol,
                         "Already have opposite position");
         return;
     }
@@ -101,6 +104,7 @@ if(HasPositionOnSymbol(symbol, existing_type)) {
 ```
 
 #### 3. Close Notifications (On Position Close)
+
 ```json
 {
   "type": "position_closed",
@@ -110,13 +114,14 @@ if(HasPositionOnSymbol(symbol, existing_type)) {
   "symbol": "EURUSD",
   "direction": "BUY",
   "close_price": 1.1025,
-  "close_reason": "TP_HIT",  // or "SL_HIT", "MANUAL", "MARGIN_CALL"
-  "pnl": 25.50,
+  "close_reason": "TP_HIT", // or "SL_HIT", "MANUAL", "MARGIN_CALL"
+  "pnl": 25.5,
   "duration_minutes": 45
 }
 ```
 
 #### 4. Max Position Enforcement
+
 ```mql5
 // Before opening any new position
 if(PositionsTotal() >= MAX_POSITIONS) {  // MAX_POSITIONS = 10
@@ -156,6 +161,7 @@ if(PositionsTotal() >= MAX_POSITIONS) {  // MAX_POSITIONS = 10
 Once EA is updated:
 
 1. **Update heartbeat processor**
+
    ```python
    # Process enhanced heartbeat
    def process_heartbeat(data):
@@ -166,6 +172,7 @@ Once EA is updated:
    ```
 
 2. **Check before AUTO fire**
+
    ```python
    def can_auto_fire(user_id, symbol):
        positions = get_user_positions(user_id)
@@ -197,6 +204,7 @@ Once EA is updated:
 ## ⚠️ CURRENT WORKAROUNDS (Temporary)
 
 Until EA is modified:
+
 - Manually monitor position count
 - Disable AUTO fire if too many signals
 - Check MT5 directly for hedged positions

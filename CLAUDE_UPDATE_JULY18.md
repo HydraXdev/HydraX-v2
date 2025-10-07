@@ -5,11 +5,13 @@
 **STATUS**: ✅ **FULLY OPERATIONAL** - Live bridge writing fire packets to MT5 drop folder
 
 ## System Overview
+
 The **BITTEN Live File-Based Bridge** provides real-time trade execution through a socket-to-file relay system. FireRouter sends JSON trade data to the bridge server, which writes timestamped trade files for EA consumption and MT5 execution.
 
 ## 🔥 Complete Integration Flow
 
 ### **Signal → Fire → Bridge → File → EA → MT5**
+
 ```
 1. Engine (TCS 75+ threshold)
    ├── Generates high-probability signals
@@ -46,6 +48,7 @@ The **BITTEN Live File-Based Bridge** provides real-time trade execution through
 ## 🛠️ Technical Implementation
 
 ### **Bridge Server Code** (3.145.84.187:5556)
+
 ```python
 import socket
 import json
@@ -88,7 +91,7 @@ def raw_socket_server():
     server_socket.bind((host, port))
     server_socket.listen(5)
     print(f"[⚙️] BITTEN Raw Relay listening on {host}:{port}")
-    
+
     # Start cleanup thread
     cleanup_thread = threading.Thread(target=cleanup_old_files, daemon=True)
     cleanup_thread.start()
@@ -133,6 +136,7 @@ def raw_socket_server():
 ```
 
 ### **FireRouter Integration** (Updated - July 18, 2025)
+
 ```python
 # src/bitten_core/fire_router.py - Line 427
 def __init__(self, bridge_host: str = "3.145.84.187", bridge_port: int = 5556,
@@ -155,6 +159,7 @@ def __init__(self, bridge_host: str = "3.145.84.187", bridge_port: int = 5556,
 ## 📊 Current Status (July 18, 2025)
 
 ### **✅ FULLY OPERATIONAL COMPONENTS**
+
 - **Signal Generation**: engine with TCS 75%+ threshold
 - **Mission Creation**: Tactical briefings with real dollar calculations
 - **Fire API**: `/api/fire` endpoint with real bridge integration
@@ -165,6 +170,7 @@ def __init__(self, bridge_host: str = "3.145.84.187", bridge_port: int = 5556,
 - **Character Responses**: ATHENA confirms successful executions
 
 ### **✅ CONFIRMED WORKING FLOW**
+
 1. **Generate Signal**: `python3 apex_mission_integrated_flow.py` creates TCS 85% mission
 2. **Load HUD**: `https://joinbitten.com/hud?mission_id=MISSION_ID` displays briefing
 3. **Fire Trade**: Click FIRE button → API call to `/api/fire`
@@ -174,6 +180,7 @@ def __init__(self, bridge_host: str = "3.145.84.187", bridge_port: int = 5556,
 7. **EA Ready**: Files ready for EA pickup and MT5 execution
 
 ### **🔧 Technical Metrics**
+
 - **Bridge Response Time**: ~500ms for complete JSON → file cycle
 - **Connection Success Rate**: 100% to live bridge
 - **File Writing**: Timestamped files with user isolation
@@ -183,18 +190,21 @@ def __init__(self, bridge_host: str = "3.145.84.187", bridge_port: int = 5556,
 ## 🎯 Production Features
 
 ### **Multi-User Support**
+
 - **Per-User Folders**: `C:\MT5_Farm\Drop\user_USERID\` for account isolation
 - **Concurrent Trading**: Multiple users can fire simultaneously
 - **User Identification**: Each trade packet includes user_id for routing
 - **Account Safety**: User trades isolated to prevent conflicts
 
 ### **File Management**
+
 - **Timestamped Files**: `trade_20250718_001246_123456.json` format
 - **JSON Structure**: Complete trade parameters for EA consumption
 - **Automatic Cleanup**: Files deleted after 1 hour to prevent disk bloat
 - **Error Handling**: Failed writes don't crash bridge server
 
 ### **Production Safety**
+
 - **Volume Limits**: Built-in validation prevents dangerous position sizes
 - **TCS Validation**: Minimum 75% confidence required for execution
 - **User Authentication**: Valid user ID and authorization required
@@ -203,6 +213,7 @@ def __init__(self, bridge_host: str = "3.145.84.187", bridge_port: int = 5556,
 ## 🚀 Deployment Architecture
 
 ### **Production Network Flow**
+
 ```
 BITTEN Server (HydraX-v2)           Bridge Server (3.145.84.187)
 ├── FireRouter sends JSON       →   ├── Socket server receives
@@ -218,6 +229,7 @@ MT5 Terminal & EA
 ```
 
 ### **File Structure Example**
+
 ```
 C:\MT5_Farm\Drop\
 ├── user_7176191872\
@@ -231,6 +243,7 @@ C:\MT5_Farm\Drop\
 ## 🎯 For Next Developer
 
 ### **System is 100% Production Ready**
+
 The live file-based bridge system is completely operational and handling real trade execution:
 
 1. **Signals Generate** → TCS 75%+ missions created
@@ -241,6 +254,7 @@ The live file-based bridge system is completely operational and handling real tr
 6. **Characters Respond** → ATHENA confirms successful operations
 
 ### **Testing Commands (Verified Working)**
+
 ```bash
 # Generate test signal (✅ Working)
 python3 -c "from apex_mission_integrated_flow import process_apex_signal_direct; import asyncio; print(asyncio.run(process_apex_signal_direct({'symbol':'EURUSD','direction':'BUY','tcs':85}, '7176191872')))"
@@ -252,6 +266,7 @@ curl -X POST http://127.0.0.1:8888/api/fire -H "Content-Type: application/json" 
 ```
 
 ### **Bridge Monitoring**
+
 ```bash
 # Check bridge heartbeat (✅ Active)
 cat /var/run/bridge_troll_heartbeat.txt
@@ -264,12 +279,14 @@ python3 -c "import socket,json; s=socket.socket(); s.connect(('3.145.84.187',555
 ## 📝 Implementation Notes
 
 ### **Key Files Modified Today**
+
 1. **`/root/HydraX-v2/src/bitten_core/fire_router.py`** - Updated bridge_host to 3.145.84.187:5556
 2. **Bridge Server Code** - Enhanced socket server with user folders and cleanup
 3. **Character Responses** - ATHENA integrated for success confirmations
 4. **Mission Generation** - UUID tracking and real-time signal creation
 
 ### **Character Integration Success**
+
 - **ATHENA Responses**: "Direct hit confirmed. Mission parameters achieved."
 - **DRILL Responses**: Handles failed executions with learning focus
 - **Character Dispatcher**: Routes events to appropriate personalities
@@ -278,6 +295,7 @@ python3 -c "import socket,json; s=socket.socket(); s.connect(('3.145.84.187',555
 ## 🎊 ACHIEVEMENT SUMMARY
 
 **🚀 COMPLETE FILE-BASED BRIDGE SYSTEM OPERATIONAL**
+
 - ✅ Live bridge receiving fire packets at 3.145.84.187:5556
 - ✅ JSON trade files written to C:\MT5_Farm\Drop\ with user isolation
 - ✅ Per-user folder management and automatic cleanup
@@ -287,4 +305,4 @@ python3 -c "import socket,json; s=socket.socket(); s.connect(('3.145.84.187',555
 
 **The BITTEN trading system now has a complete, operational file-based bridge connecting real user trades to MT5 execution via professional-grade file relay architecture.**
 
-*"From signal to execution - the bridge is built, the path is clear, and the trades flow true."* 🎯
+_"From signal to execution - the bridge is built, the path is clear, and the trades flow true."_ 🎯

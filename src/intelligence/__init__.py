@@ -8,23 +8,16 @@ and analyzing data from multiple sources to generate trading signals.
 __version__ = "2.0.0"
 __author__ = "HydraX Intelligence Team"
 
-from .core.base import (
-    IntelligenceComponent,
-    DataSource,
-    Signal,
-    SignalType,
-    SignalStrength
-)
-
-from .core.orchestrator import IntelligenceOrchestrator
 from .config.manager import ConfigManager
+from .core.base import DataSource, IntelligenceComponent, Signal, SignalStrength, SignalType
+from .core.orchestrator import IntelligenceOrchestrator
 
 __all__ = [
-    'IntelligenceComponent',
-    'DataSource', 
-    'Signal',
-    'SignalType',
-    'SignalStrength',
-    'IntelligenceOrchestrator',
-    'ConfigManager'
+    "IntelligenceComponent",
+    "DataSource",
+    "Signal",
+    "SignalType",
+    "SignalStrength",
+    "IntelligenceOrchestrator",
+    "ConfigManager",
 ]

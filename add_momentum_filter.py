@@ -5,7 +5,7 @@ Only signal when price is actively moving in the direction
 """
 
 # Read the file
-with open('/root/HydraX-v2/elite_guard_with_citadel.py', 'r') as f:
+with open("/root/HydraX-v2/elite_guard_with_citadel.py", "r") as f:
     lines = f.readlines()
 
 # Find where signals are validated (around line 1065)
@@ -26,7 +26,7 @@ if insert_position > 0:
                             # Price must be moving in signal direction
                             price_change = recent_prices[-1] - recent_prices[0]
                             momentum_direction = "BUY" if price_change > 0 else "SELL"
-                            
+
                             # Signal direction must match momentum
                             if signal.direction != momentum_direction:
                                 logger.info(f"⚠️ {symbol} Signal rejected - momentum mismatch "
@@ -38,12 +38,12 @@ if insert_position > 0:
                                 if momentum_strength > 2:  # Strong momentum
                                     signal.confidence = min(90, signal.confidence + 5)
                                     logger.info(f"🚀 {symbol} Momentum boost: +5 confidence (momentum: {momentum_strength:.1f} pips)")
-                
+
 """
     lines.insert(insert_position, momentum_check)
 
 # Write back
-with open('/root/HydraX-v2/elite_guard_with_citadel.py', 'w') as f:
+with open("/root/HydraX-v2/elite_guard_with_citadel.py", "w") as f:
     f.writelines(lines)
 
 print("✅ Added momentum filter to Elite Guard")

@@ -7,12 +7,14 @@
 ## 🎯 **CRITICAL: ALWAYS READ THESE FIRST**
 
 ### **📋 PRIMARY SOURCES OF TRUTH**
+
 1. **CLAUDE.md** - Current system status and development log
 2. **TECHNICAL_DOCS_INDEX.md** - Navigation to all technical specifications
 3. **BITTEN_TECHNICAL_SPECIFICATION.md** - Master system specification
 4. **config/trading_pairs.yml** - Current trading configuration (v3.0.0)
 
 ### **🔧 CURRENT SYSTEM STATE (July 9, 2025)**
+
 - **Trading Pairs**: 10 active pairs (EURUSD, GBPUSD, USDJPY, USDCAD, GBPJPY, AUDUSD, NZDUSD, EURGBP, USDCHF, EURJPY)
 - **Self-Optimizing Engine**: 65 signals/day target, 70-78% TCS range, 85%+ win rate
 - **Status**: Production ready, awaiting MT5 farm connection
@@ -22,22 +24,27 @@
 ## 📁 **TECHNICAL DOCUMENTATION STRUCTURE**
 
 ### **For System Architecture Questions**
+
 - **Read**: `BITTEN_SYSTEM_ARCHITECTURE.md`
 - **Covers**: Technology stack, database design, API endpoints, security
 
 ### **For Trading Logic Questions**
+
 - **Read**: `TRADING_ENGINE_TECHNICAL_SPECIFICATION.md`
 - **Covers**: TCS system, self-optimization, predictive detection, fire modes
 
 ### **For User Management Questions**
+
 - **Read**: `docs/USER_MANAGEMENT_TIER_SYSTEM_SPECIFICATIONS.md`
 - **Covers**: Tier system, authentication, subscriptions, achievements
 
 ### **For Integration Questions**
+
 - **Read**: `BITTEN_INTEGRATION_SPECIFICATIONS.md`
 - **Covers**: MT5 farm, Telegram bot, WebApp, external APIs
 
 ### **For Deployment Questions**
+
 - **Read**: `DEPLOYMENT_OPERATIONS_SPECIFICATIONS.md`
 - **Covers**: Infrastructure, deployment, monitoring, security
 
@@ -46,6 +53,7 @@
 ## 🚨 **CRITICAL SYSTEM PARAMETERS**
 
 ### **Trading Configuration (LOCKED)**
+
 ```yaml
 # From config/trading_pairs.yml v3.0.0
 total_active_pairs: 10
@@ -57,14 +65,24 @@ self_optimizing: true
 ```
 
 ### **Tier Limits (FINAL)**
+
 ```yaml
-PRESS_PASS: {shots: 1, tcs: 60%, price: $0, duration: 7_days, weekly_limit: 200, xp_resets_nightly: true}
-NIBBLER: {shots: 6, tcs: 70%, price: $39}
-FANG: {shots: 10, tcs: 85%, price: $89}
-COMMANDER: {shots: unlimited, tcs: 85%, price: $189}
+PRESS_PASS:
+  {
+    shots: 1,
+    tcs: 60%,
+    price: $0,
+    duration: 7_days,
+    weekly_limit: 200,
+    xp_resets_nightly: true,
+  }
+NIBBLER: { shots: 6, tcs: 70%, price: $39 }
+FANG: { shots: 10, tcs: 85%, price: $89 }
+COMMANDER: { shots: unlimited, tcs: 85%, price: $189 }
 ```
 
 ### **Infrastructure**
+
 - **Linux Server**: 134.199.204.67 (main system)
 - **Windows MT5 Farm**: 3.145.84.187 (needs connection)
 - **Database**: PostgreSQL + SQLite for optimization
@@ -75,18 +93,21 @@ COMMANDER: {shots: unlimited, tcs: 85%, price: $189}
 ## 🔄 **BEFORE MAKING ANY CHANGES**
 
 ### **Step 1: Identify System Component**
+
 - **Trading Logic**: Use trading engine specifications
 - **User Features**: Use user management specifications
 - **System Architecture**: Use system architecture specifications
 - **Deployment**: Use deployment specifications
 
 ### **Step 2: Check Current Implementation**
+
 - **Read relevant specification document**
 - **Check config files for current parameters**
 - **Review CLAUDE.md for recent changes**
 - **Verify with actual file contents**
 
 ### **Step 3: Implement Changes**
+
 - **Update code/config as needed**
 - **Update relevant specification document**
 - **Update CLAUDE.md if major change**
@@ -97,17 +118,21 @@ COMMANDER: {shots: unlimited, tcs: 85%, price: $189}
 ## 🎯 **COMMON QUESTIONS & ANSWERS**
 
 ### **Q: How many trading pairs are active?**
+
 **A**: 10 active pairs (see config/trading_pairs.yml), 2 reserve pairs (AUDJPY, GBPCHF)
 
 ### **Q: What's the current TCS system?**
+
 **A**: Self-optimizing 70-78% range, targets 65 signals/day, 85%+ win rate
 
 ### **Q: What are the tier prices?**
 
 ### **Q: Where is the MT5 integration?**
+
 **A**: Local clone farm system, fully autonomous operation, see deployment specs
 
 ### **Q: What's the system architecture?**
+
 **A**: Multi-server (Linux + Windows), self-optimizing engine, read system architecture doc
 
 ---
@@ -115,12 +140,14 @@ COMMANDER: {shots: unlimited, tcs: 85%, price: $189}
 ## 🛡️ **CRITICAL RULES**
 
 ### **❌ NEVER DO**
+
 - Change trading pairs without updating config/trading_pairs.yml
 - Modify tier pricing without updating user management specs
 - Deploy without reading deployment specifications
 - Ignore the technical documentation
 
 ### **✅ ALWAYS DO**
+
 - Read relevant specification document first
 - Check CLAUDE.md for current system status
 - Update documentation when making changes
@@ -132,6 +159,7 @@ COMMANDER: {shots: unlimited, tcs: 85%, price: $189}
 ## 📊 **SYSTEM STATUS INDICATORS**
 
 ### **✅ Production Ready**
+
 - Self-optimizing TCS engine
 - 10-pair trading configuration
 - Complete tier system
@@ -139,12 +167,14 @@ COMMANDER: {shots: unlimited, tcs: 85%, price: $189}
 - Security systems
 
 ### **🔄 Pending**
+
 - MT5 farm connection
 - Live signal generation
 - Performance validation
 - User testing
 
 ### **📋 Future**
+
 - Mobile app
 - Advanced analytics
 - Social features expansion
@@ -155,6 +185,7 @@ COMMANDER: {shots: unlimited, tcs: 85%, price: $189}
 ## 🚀 **QUICK COMMANDS FOR COMMON TASKS**
 
 ### **Check System Status**
+
 ```bash
 # Check running services
 ps aux | grep python | grep -E "(webapp|bitten|mt5)"
@@ -167,6 +198,7 @@ python3 -c "import sqlite3; print('DB exists')"
 ```
 
 ### **Update Documentation**
+
 ```bash
 # Edit relevant specification
 nano /root/HydraX-v2/TRADING_ENGINE_TECHNICAL_SPECIFICATION.md
@@ -183,6 +215,7 @@ nano /root/HydraX-v2/CLAUDE.md
 ## 📞 **ESCALATION PATH**
 
 ### **For Technical Issues**
+
 1. **Check**: Relevant specification document
 2. **Verify**: Current system configuration
 3. **Review**: CLAUDE.md for recent changes
@@ -190,6 +223,7 @@ nano /root/HydraX-v2/CLAUDE.md
 5. **Deploy**: With proper monitoring
 
 ### **For System Changes**
+
 1. **Plan**: Read affected specification documents
 2. **Design**: Follow established architecture patterns
 3. **Implement**: Update code and configurations
@@ -202,4 +236,4 @@ nano /root/HydraX-v2/CLAUDE.md
 
 ---
 
-*This guide ensures consistent AI assistance and prevents configuration drift across the entire BITTEN platform.*
+_This guide ensures consistent AI assistance and prevents configuration drift across the entire BITTEN platform._

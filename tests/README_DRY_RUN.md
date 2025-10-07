@@ -7,52 +7,61 @@ Comprehensive test suite that simulates the complete user journey from Telegram 
 ## Test Coverage
 
 ### ✅ Test 1: Generate Mission Session
+
 - Creates mission session via session_manager
 - Generates JWT with proper scopes
 - Validates deep link URL format
 - Verifies TTL and risk parameters
 
 ### ✅ Test 2: Simulate Telegram Alert
+
 - Formats alert message
 - Includes deep link URL
 - Validates message structure
 
 ### ✅ Test 3: Mission Page Load
+
 - Parses deep link parameters
 - Validates JWT token
 - Fetches mission data
 - Verifies beacons (Operational/Secure/Latency)
 
 ### ✅ Test 4: Execute Action
+
 - Generates clientRequestId
 - Simulates POST to /api/fire
 - Verifies 202 response with opId
 - Checks redirect to /status page
 
 ### ✅ Test 5: Event Delivery
+
 - Simulates SSE events (ARMING, FILLED)
 - Validates latency < 250ms
 - Checks P&L updates
 - Verifies event sequence
 
 ### ✅ Test 6: Idempotency
+
 - Re-sends identical clientRequestId
 - Verifies same opId returned
 - Confirms no duplicate orders
 - Checks 202 or 409 response
 
 ### ✅ Test 7: Session Expiry
+
 - Tests expired session rejection
 - Validates "Session expired" message
 - Checks 410 response code
 
 ### ✅ Test 8: Risk Fuse
+
 - Tests risk limit enforcement
 - Validates riskUsd > riskMaxUsd rejection
 - Verifies 422 response
 - Checks no order emission
 
 ### ✅ Test 9: Stats Page
+
 - Verifies equity series updates
 - Checks trade appears in recent events
 - Validates stats endpoint data
@@ -60,6 +69,7 @@ Comprehensive test suite that simulates the complete user journey from Telegram 
 ## Prerequisites
 
 ### Required Modules
+
 ```bash
 # Ensure these modules exist:
 # - src/missions/session_manager.py
@@ -68,12 +78,14 @@ Comprehensive test suite that simulates the complete user journey from Telegram 
 ```
 
 ### Python Dependencies
+
 - Python 3.8+
 - Standard library only (no external dependencies for dry-run)
 
 ## Usage
 
 ### Basic Execution
+
 ```bash
 # Make script executable
 chmod +x /root/HydraX-v2/tests/dry_run_mission_flow.py
@@ -83,6 +95,7 @@ python3 /root/HydraX-v2/tests/dry_run_mission_flow.py
 ```
 
 ### Check Exit Code
+
 ```bash
 python3 /root/HydraX-v2/tests/dry_run_mission_flow.py
 if [ $? -eq 0 ]; then
@@ -93,6 +106,7 @@ fi
 ```
 
 ### View Results
+
 ```bash
 # Results saved to JSON automatically
 cat /root/HydraX-v2/tests/dry_run_results.json | python3 -m json.tool
@@ -101,12 +115,14 @@ cat /root/HydraX-v2/tests/dry_run_results.json | python3 -m json.tool
 ## Output Format
 
 ### Console Output
+
 - **Green ✓**: Test passed
 - **Red ✗**: Test failed
 - **Timing**: Duration in milliseconds for each test
 - **Details**: Key verification points and data
 
 ### JSON Output
+
 Location: `/root/HydraX-v2/tests/dry_run_results.json`
 
 ```json
@@ -135,6 +151,7 @@ Location: `/root/HydraX-v2/tests/dry_run_results.json`
 ## Expected Behavior
 
 ### All Tests Pass
+
 ```
 ==================================================
 🎯 BITTEN MISSION FLOW DRY-RUN TEST SUITE
@@ -163,6 +180,7 @@ Duration: 1234ms
 ```
 
 ### Some Tests Fail
+
 ```
 [STEP 3] Mission Page Load
   ✗ FAIL (23ms)
@@ -182,6 +200,7 @@ Duration: 987ms
 ## Integration with CI/CD
 
 ### Pre-Deployment Check
+
 ```bash
 #!/bin/bash
 # Run before deploying mission system
@@ -198,6 +217,7 @@ echo "✅ Dry-run tests passed - proceeding with deployment"
 ```
 
 ### PM2 Process Check
+
 ```bash
 # Run before PM2 restart
 pm2 stop webapp_server_optimized
@@ -212,18 +232,22 @@ fi
 ## Troubleshooting
 
 ### Test 1 Fails: session_manager not found
+
 **Cause**: Mission session manager module doesn't exist yet
 **Solution**: Implement `/root/HydraX-v2/src/missions/session_manager.py` first
 
 ### Test 3 Fails: Token validation error
+
 **Cause**: JWT secret key mismatch or token format issue
 **Solution**: Check JWT_SECRET in environment and token generation logic
 
 ### Test 5 Fails: Latency exceeds 250ms
+
 **Cause**: Simulated timing issue (shouldn't happen in dry-run)
 **Solution**: Review event simulation logic in test code
 
 ### Test 8 Fails: Risk check not triggered
+
 **Cause**: Risk validation logic missing
 **Solution**: Implement risk fuse in fire command handler
 
@@ -238,12 +262,14 @@ fi
 ## Maintenance
 
 ### Adding New Tests
+
 1. Create new test method following naming convention: `test_*`
 2. Add to `tests` list in `run_all_tests()`
 3. Update this README with new test description
 4. Increment total test count in documentation
 
 ### Modifying Tests
+
 1. Update test logic in method
 2. Update expected results in README
 3. Re-run full suite to ensure no regressions
@@ -252,6 +278,7 @@ fi
 ## Support
 
 For issues with test suite:
+
 1. Check logs in `/root/HydraX-v2/tests/dry_run_results.json`
 2. Review console output for specific error messages
 3. Verify all prerequisite modules exist
@@ -260,12 +287,14 @@ For issues with test suite:
 ## Performance Benchmarks
 
 Expected timing (reference system):
+
 - Test 1-3: < 100ms each (session operations)
 - Test 4-6: < 50ms each (validation logic)
 - Test 7-9: < 150ms each (includes sleep for expiry test)
 - **Total Suite**: < 2000ms (2 seconds)
 
 If tests exceed these benchmarks significantly, investigate:
+
 - Database connection issues
 - File I/O bottlenecks
 - Network latency (if not fully mocked)

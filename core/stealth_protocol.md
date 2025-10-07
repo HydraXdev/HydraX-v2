@@ -1,6 +1,7 @@
 # BITTEN Stealth Protocol — Modular Cloaking Layer
 
 ## Functions:
+
 - entry_delay(): Adds 1–12s delay
 - lot_size_jitter(): Adjusts lot ±3–7%
 - tp_sl_offset(): ±1–3 pip shift on TP/SL

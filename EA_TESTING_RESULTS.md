@@ -22,6 +22,7 @@
 **Production EA File**: `/root/HydraX-v2/mq5/BITTENBridge_TradeExecutor_ZMQ_v7_PRODUCTION_CLEAN.mq5`
 
 **Key Properties**:
+
 - Version: 7.01
 - Architecture: 2-socket ZMQ design
 - Magic Number: 20250101
@@ -37,6 +38,7 @@
 ```
 
 **EA Socket Architecture**:
+
 - **Command Socket**: ZMQ_PULL connects TO Linux server port 5555
 - **Heartbeat Socket**: ZMQ_PUSH connects TO Linux server port 5556
 - **Direction**: EA connects TO Linux (not reverse)
@@ -44,6 +46,7 @@
 ### **✅ Task 1.3: Fire Packet Format Documented**
 
 **Exact JSON Format Required**:
+
 ```json
 {
   "type": "fire",
@@ -52,13 +55,14 @@
   "symbol": "EURUSD",
   "direction": "BUY",
   "entry": 0,
-  "sl": 1.09800,
-  "tp": 1.10300,
+  "sl": 1.098,
+  "tp": 1.103,
   "lot": 0.01
 }
 ```
 
 **Critical Requirements**:
+
 - ✅ `type` must be "fire" and FIRST key
 - ✅ `direction` must be UPPERCASE ("BUY"/"SELL")
 - ✅ Numbers must be numeric (not quoted strings)
@@ -72,6 +76,7 @@
 ### **✅ Linux Server Port Verification**
 
 **All Required Ports LISTENING**:
+
 ```bash
 Port 5555: ✅ LISTENING (Fire Commands - EA connects TO this)
 Port 5556: ✅ LISTENING (Market Data - EA sends TO this)
@@ -81,6 +86,7 @@ Port 5560: ✅ LISTENING (Market Data Relay)
 ```
 
 **Processes Bound**:
+
 - Port 5555: command_router (PID 2530882)
 - Port 5556: zmq_telemetry_bridge (PID 2346356)
 - Port 5557: elite_guard (PID 651227)
@@ -94,6 +100,7 @@ Port 5560: ✅ LISTENING (Market Data Relay)
 **PowerShell Script Created**: `/root/HydraX-v2/windows_ea_port_tests.ps1`
 
 **Expected Windows VPS Commands**:
+
 ```powershell
 # Test EA connections to Linux server
 netstat -ano | findstr :5555
@@ -113,18 +120,21 @@ Test-NetConnection -ComputerName 134.199.204.67 -Port 5555
 ### **✅ Fire Packet Transmission Tests**
 
 **IPC Queue Test**: ✅ **SUCCESS**
+
 ```
 Test Fire Packet sent successfully via IPC queue
 Command Router: OPERATIONAL
 ```
 
 **Direct ZMQ Test**: ✅ **SUCCESS**
+
 ```
 Test Fire Packet sent successfully to ZMQ port 5555
 Ready for EA response when connected
 ```
 
 **Enqueue Function Test**: ✅ **SUCCESS**
+
 ```
 enqueue_fire() function succeeded
 Direction gate disabled for manual control
@@ -133,6 +143,7 @@ Direction gate disabled for manual control
 ### **⚠️ EA Heartbeat Status**
 
 **COMMANDER_DEV_001 Status**:
+
 - ✅ EA registered in database
 - ✅ User ID: 7176191872 (correctly mapped)
 - ❌ Last seen: 178,596 seconds ago (2+ days)
@@ -145,6 +156,7 @@ Direction gate disabled for manual control
 ### **✅ Fire Packet Format Validation**
 
 **All Format Requirements Met**:
+
 - ✅ type='fire'
 - ✅ direction uppercase
 - ✅ entry numeric (0 for market orders)
@@ -155,6 +167,7 @@ Direction gate disabled for manual control
 ### **✅ ZMQ Architecture Verified**
 
 **EA v7.01 Design Confirmed**:
+
 - ✅ 2-socket architecture (Command + Heartbeat)
 - ✅ EA connects TO Linux server (correct direction)
 - ✅ libzmq.dll integration verified
@@ -167,6 +180,7 @@ Direction gate disabled for manual control
 ### **✅ Enhanced Testing Framework**
 
 **New Tests Added to `comprehensive_signal_flow_test.py`**:
+
 - EA Heartbeat Verification
 - ZMQ Port Binding Checks
 - Fire Packet Format Validation
@@ -174,6 +188,7 @@ Direction gate disabled for manual control
 - EA Architecture Verification
 
 **Test Categories**:
+
 - Infrastructure Health
 - Signal Generation
 - Mission Creation
@@ -189,12 +204,14 @@ Direction gate disabled for manual control
 ### **Windows VPS Setup**
 
 **PowerShell Testing Script**: `/root/HydraX-v2/windows_ea_port_tests.ps1`
+
 - EA port binding verification
 - MT5 process checking
 - Firewall rule validation
 - Connectivity testing to Linux
 
 **Firewall Rules (if needed)**:
+
 ```powershell
 New-NetFirewallRule -DisplayName "BITTEN-5555-OUT" -Direction Outbound -Protocol TCP -RemotePort 5555 -Action Allow
 New-NetFirewallRule -DisplayName "BITTEN-5556-OUT" -Direction Outbound -Protocol TCP -RemotePort 5556 -Action Allow
@@ -203,12 +220,14 @@ New-NetFirewallRule -DisplayName "BITTEN-5556-OUT" -Direction Outbound -Protocol
 ### **Linux Server Validation**
 
 **Connectivity Testing Script**: `/root/HydraX-v2/linux_ea_connectivity_tests.py`
+
 - Port binding verification
 - Network connectivity tests (when Windows VPS IP available)
 - ZMQ functionality testing
 - Fire packet format validation
 
 **Fire Testing Script**: `/root/HydraX-v2/test_dummy_fire_packet.py`
+
 - IPC queue transmission
 - Direct ZMQ transmission
 - Function-based testing
@@ -235,6 +254,7 @@ New-NetFirewallRule -DisplayName "BITTEN-5556-OUT" -Direction Outbound -Protocol
    - Confirm confirmation system working
 
 ### **Success Criteria**:
+
 - ✅ EA heartbeat age < 120 seconds
 - ✅ Fire packet reaches EA successfully
 - ✅ Trade confirmations received on port 5558
@@ -247,6 +267,7 @@ New-NetFirewallRule -DisplayName "BITTEN-5556-OUT" -Direction Outbound -Protocol
 **Overall Assessment**: ✅ **90% READY**
 
 **Component Status**:
+
 - Linux Control Server: ✅ **100% READY**
 - ZMQ Architecture: ✅ **100% CONFIGURED**
 - Fire Pipeline: ✅ **100% OPERATIONAL**
@@ -260,6 +281,7 @@ New-NetFirewallRule -DisplayName "BITTEN-5556-OUT" -Direction Outbound -Protocol
 ## 🚀 **EXECUTION COMMANDS FOR WINDOWS VPS**
 
 **On Windows VPS (when available)**:
+
 ```powershell
 # Run comprehensive EA testing
 .\windows_ea_port_tests.ps1
@@ -269,6 +291,7 @@ New-NetFirewallRule -DisplayName "BITTEN-5556-OUT" -Direction Outbound -Protocol
 ```
 
 **On Linux Server (monitoring)**:
+
 ```bash
 # Monitor EA heartbeat
 python3 linux_ea_connectivity_tests.py
@@ -291,5 +314,5 @@ pm2 logs command_router
 
 ---
 
-*Generated by: Claude Code EA Testing Suite*
-*Contact: Ready for live market trading when EA connects! 🚀*
+_Generated by: Claude Code EA Testing Suite_
+_Contact: Ready for live market trading when EA connects! 🚀_

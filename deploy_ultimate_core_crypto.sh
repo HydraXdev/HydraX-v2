@@ -68,25 +68,25 @@ check_permissions() {
 # Create necessary directories
 setup_directories() {
     log_info "📁 Setting up directories..."
-    
+
     mkdir -p "$LOGS_DIR" 2>/dev/null && log_success "✅ Logs directory: $LOGS_DIR"
     mkdir -p "$MODELS_DIR" 2>/dev/null && log_success "✅ Models directory: $MODELS_DIR"
-    
+
     # Set proper permissions
     chmod 755 "$LOGS_DIR" "$MODELS_DIR" 2>/dev/null
-    
+
     log_success "📁 Directory structure ready"
 }
 
 # Check Python dependencies
 check_dependencies() {
     log_info "🔍 Checking Python dependencies..."
-    
+
     # Required packages
     REQUIRED_PACKAGES=("zmq" "numpy" "pandas" "sklearn" "scipy" "psutil" "requests")
-    
+
     MISSING_PACKAGES=()
-    
+
     for package in "${REQUIRED_PACKAGES[@]}"; do
         if python3 -c "import $package" 2>/dev/null; then
             log_success "✅ $package - Available"
@@ -95,11 +95,11 @@ check_dependencies() {
             MISSING_PACKAGES+=("$package")
         fi
     done
-    
+
     if [ ${#MISSING_PACKAGES[@]} -ne 0 ]; then
         log_error "❌ Missing dependencies: ${MISSING_PACKAGES[*]}"
         log_info "📦 Installing missing packages..."
-        
+
         # Install missing packages
         for package in "${MISSING_PACKAGES[@]}"; do
             case $package in
@@ -114,7 +114,7 @@ check_dependencies() {
                     ;;
             esac
         done
-        
+
         log_success "📦 Dependencies installation completed"
     else
         log_success "✅ All dependencies satisfied"
@@ -124,7 +124,7 @@ check_dependencies() {
 # Check system resources
 check_system_resources() {
     log_info "💻 Checking system resources..."
-    
+
     # Check available memory
     AVAILABLE_MEM=$(free -m | awk 'NR==2{printf "%.0f", $7}')
     if [ "$AVAILABLE_MEM" -gt 100 ]; then
@@ -132,11 +132,11 @@ check_system_resources() {
     else
         log_warn "⚠️ Low memory: ${AVAILABLE_MEM}MB available"
     fi
-    
+
     # Check disk space
     AVAILABLE_DISK=$(df -h "$SCRIPT_DIR" | awk 'NR==2 {print $4}')
     log_success "✅ Available disk space: $AVAILABLE_DISK"
-    
+
     # Check CPU cores
     CPU_CORES=$(nproc)
     log_success "✅ CPU cores: $CPU_CORES"
@@ -145,9 +145,9 @@ check_system_resources() {
 # Check network ports
 check_network_ports() {
     log_info "🌐 Checking network ports..."
-    
+
     REQUIRED_PORTS=(5558 5559 5560)
-    
+
     for port in "${REQUIRED_PORTS[@]}"; do
         if netstat -tuln 2>/dev/null | grep -q ":$port "; then
             log_warn "⚠️ Port $port - In use (may be normal)"
@@ -160,7 +160,7 @@ check_network_ports() {
 # Check existing processes
 check_existing_processes() {
     log_info "🔍 Checking for existing processes..."
-    
+
     # Check if C.O.R.E. engine is already running
     if [ -f "$PID_FILE" ]; then
         OLD_PID=$(cat "$PID_FILE")
@@ -181,10 +181,10 @@ check_existing_processes() {
             rm -f "$PID_FILE"
         fi
     fi
-    
+
     # Check related processes
     RELATED_PROCESSES=("elite_guard" "bitten_production" "webapp_server")
-    
+
     for process in "${RELATED_PROCESSES[@]}"; do
         if pgrep -f "$process" > /dev/null; then
             log_success "✅ $process - Running (good for integration)"
@@ -197,7 +197,7 @@ check_existing_processes() {
 # Test engine initialization
 test_engine() {
     log_info "🧪 Testing engine initialization..."
-    
+
     # Test Python imports and basic functionality
     python3 -c "
 import sys
@@ -207,21 +207,21 @@ try:
     from ultimate_core_crypto_engine import UltimateCORECryptoEngine
     engine = UltimateCORECryptoEngine()
     print('✅ Engine initialization - SUCCESS')
-    
+
     # Test key attributes
     assert hasattr(engine, 'crypto_symbols'), 'Missing crypto_symbols'
     assert hasattr(engine, 'risk_per_trade'), 'Missing risk_per_trade'
     assert hasattr(engine, 'max_daily_signals'), 'Missing max_daily_signals'
     print('✅ Engine attributes - SUCCESS')
-    
+
     # Test key methods
     methods = ['start_zmq_connections', '_detect_smc_patterns', '_enhance_with_ml']
     for method in methods:
         assert hasattr(engine, method), f'Missing method: {method}'
     print('✅ Engine methods - SUCCESS')
-    
+
     print('🚀 ENGINE TEST PASSED - READY FOR DEPLOYMENT')
-    
+
 except Exception as e:
     print(f'❌ ENGINE TEST FAILED: {e}')
     sys.exit(1)
@@ -238,40 +238,40 @@ except Exception as e:
 # Deploy the engine
 deploy_engine() {
     log_info "🚀 Deploying Ultimate C.O.R.E. Crypto Engine..."
-    
+
     # Make scripts executable
     chmod +x "$SCRIPT_DIR/ultimate_core_crypto_engine.py"
     chmod +x "$SCRIPT_DIR/start_ultimate_core_crypto.py"
     chmod +x "$SCRIPT_DIR/core_crypto_integration.py"
-    
+
     log_success "✅ Scripts made executable"
-    
+
     # Start the engine using the launcher
     log_info "🎯 Starting Ultimate C.O.R.E. Crypto Engine..."
-    
+
     # Start in background with proper logging
     nohup python3 "$SCRIPT_DIR/start_ultimate_core_crypto.py" \
         > "$LOGS_DIR/core_crypto_startup.log" 2>&1 &
-    
+
     ENGINE_PID=$!
     echo $ENGINE_PID > "$PID_FILE"
-    
+
     log_success "🚀 Engine started with PID: $ENGINE_PID"
-    
+
     # Wait a moment for startup
     sleep 5
-    
+
     # Check if process is still running
     if ps -p "$ENGINE_PID" > /dev/null 2>&1; then
         log_success "✅ Engine is running successfully"
-        
+
         # Display startup log
         echo ""
         log_info "📋 Startup log (last 20 lines):"
         echo "----------------------------------------"
         tail -n 20 "$LOGS_DIR/core_crypto_startup.log" 2>/dev/null || echo "Log file not yet available"
         echo "----------------------------------------"
-        
+
     else
         log_error "❌ Engine failed to start - Check logs"
         cat "$LOGS_DIR/core_crypto_startup.log" 2>/dev/null
@@ -287,7 +287,7 @@ show_summary() {
     echo "                    ✅ ULTIMATE C.O.R.E. CRYPTO ENGINE DEPLOYED"
     echo "                                                                                    "
     echo "🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯"
-    
+
     log_success "🚀 ENGINE STATUS: LIVE AND OPERATIONAL"
     log_success "📊 TARGET WIN RATE: 70-85%"
     log_success "💰 RISK MANAGEMENT: 1% per trade"
@@ -295,7 +295,7 @@ show_summary() {
     log_success "🎯 MAX DAILY SIGNALS: 10"
     log_success "📡 ZMQ PUBLISHER: Port 5558"
     log_success "🔍 SYMBOLS: BTCUSD, ETHUSD, XRPUSD"
-    
+
     echo ""
     log_info "📁 KEY FILES:"
     log_info "   • Engine: $SCRIPT_DIR/ultimate_core_crypto_engine.py"
@@ -303,24 +303,24 @@ show_summary() {
     log_info "   • Integration: $SCRIPT_DIR/core_crypto_integration.py"
     log_info "   • Logs: $LOGS_DIR/"
     log_info "   • PID File: $PID_FILE"
-    
+
     echo ""
     log_info "🔧 MANAGEMENT COMMANDS:"
     log_info "   • View Logs: tail -f $LOGS_DIR/ultimate_core_crypto_engine.log"
     log_info "   • Check Status: ps -ef | grep ultimate_core_crypto"
     log_info "   • Stop Engine: kill \$(cat $PID_FILE)"
     log_info "   • Restart: $0"
-    
+
     echo ""
     log_info "📊 MONITORING:"
     log_info "   • Signal Log: tail -f $LOGS_DIR/crypto_signals.jsonl"
     log_info "   • Truth Log: tail -f /root/HydraX-v2/truth_log.jsonl"
     log_info "   • Performance: Check WebApp at http://localhost:8888"
-    
+
     echo ""
     log_success "🎯 ULTIMATE C.O.R.E. CRYPTO ENGINE IS NOW LIVE!"
     log_success "🔥 The most sophisticated crypto signal engine is generating signals!"
-    
+
     echo ""
     echo "🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯"
 }
@@ -342,10 +342,10 @@ trap cleanup INT TERM
 # Main execution
 main() {
     log_info "🚀 Starting Ultimate C.O.R.E. Crypto Engine deployment..."
-    
+
     # Change to script directory
     cd "$SCRIPT_DIR" || exit 1
-    
+
     # Run all checks and setup
     check_permissions
     setup_directories
@@ -356,7 +356,7 @@ main() {
     test_engine
     deploy_engine
     show_summary
-    
+
     log_success "🎉 DEPLOYMENT COMPLETED SUCCESSFULLY!"
 }
 

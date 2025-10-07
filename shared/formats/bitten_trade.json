@@ -20,7 +20,14 @@
   "properties": {
     "event": {
       "type": "string",
-      "enum": ["new_trade", "close_trade", "modify_trade", "price_update", "balance_update", "heartbeat"],
+      "enum": [
+        "new_trade",
+        "close_trade",
+        "modify_trade",
+        "price_update",
+        "balance_update",
+        "heartbeat"
+      ],
       "description": "Event type from bridge"
     },
     "timestamp": {
@@ -35,7 +42,14 @@
     },
     "order_type": {
       "type": "string",
-      "enum": ["buy", "sell", "buy_limit", "sell_limit", "buy_stop", "sell_stop"],
+      "enum": [
+        "buy",
+        "sell",
+        "buy_limit",
+        "sell_limit",
+        "buy_stop",
+        "sell_stop"
+      ],
       "description": "Normalized order type (lowercase)"
     },
     "lot_size": {
@@ -134,10 +148,10 @@
       "timestamp": "2025-07-14T18:21:00.123Z",
       "symbol": "XAUUSD",
       "order_type": "buy",
-      "lot_size": 0.10,
-      "entry_price": 2374.10,
-      "sl": 2370.00,
-      "tp": 2382.00,
+      "lot_size": 0.1,
+      "entry_price": 2374.1,
+      "sl": 2370.0,
+      "tp": 2382.0,
       "bridge_id": "bridge_019",
       "account_id": "843859",
       "execution_id": "CMD123456",
@@ -145,8 +159,8 @@
       "tcs_score": 82,
       "current_price": 2374.15,
       "spread": 0.3,
-      "balance": 50000.00,
-      "equity": 50125.50,
+      "balance": 50000.0,
+      "equity": 50125.5,
       "margin_level": 2850.75,
       "metadata": {
         "session": "LONDON",

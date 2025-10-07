@@ -43,7 +43,7 @@ The report ALWAYS returns these sections in order:
 
 - **N**: Number of signals
 - **TP**: Take profit hits
-- **SL**: Stop loss hits  
+- **SL**: Stop loss hits
 - **TO**: Timeouts (counted as losses by default)
 - **Win%**: TP/(TP+SL+TO) percentage
 - **Exp(R)**: Average achieved R:R (expectancy)
@@ -87,22 +87,25 @@ python3 /root/HydraX-v2/tools/winloss_report.py last24h --bins raw
 ## Troubleshooting
 
 ### No Data in Report
+
 ```bash
 # Check if signals exist
 sqlite3 /root/HydraX-v2/bitten.db "SELECT COUNT(*) FROM signals_all"
 
-# Check if outcomes exist  
+# Check if outcomes exist
 sqlite3 /root/HydraX-v2/bitten.db "SELECT COUNT(*) FROM signal_outcomes_verified"
 sqlite3 /root/HydraX-v2/bitten.db "SELECT COUNT(*) FROM signal_outcomes_shadow"
 ```
 
 ### Missing Recent Signals
+
 ```bash
 # Populate from existing signals table
 python3 /root/HydraX-v2/tools/populate_signals_all.py
 ```
 
 ### Report Takes Too Long
+
 ```bash
 # Check indexes exist
 sqlite3 /root/HydraX-v2/bitten.db ".indexes signals_all"
@@ -111,6 +114,7 @@ sqlite3 /root/HydraX-v2/bitten.db ".indexes signals_all"
 ## Daily Report Automation
 
 A PM2 task runs the report at midnight UTC and saves to file:
+
 ```bash
 # Check if running
 pm2 status winloss_daily
@@ -132,7 +136,7 @@ If the report tool disappears, use these SQLite commands directly:
 
 ```sql
 -- Confidence bins
-SELECT 
+SELECT
     CASE
         WHEN calibrated_confidence >= 95 THEN '95+'
         WHEN calibrated_confidence >= 90 THEN '90-95'
@@ -149,7 +153,7 @@ WHERE ts_fire > strftime('%s', 'now', '-24 hours')
 GROUP BY bin;
 
 -- Pattern performance
-SELECT 
+SELECT
     pattern,
     COUNT(*) as N,
     AVG(CASE WHEN outcome='TP' THEN 100.0 ELSE 0 END) as win_pct,
@@ -162,6 +166,7 @@ GROUP BY pattern;
 ## Contact
 
 For issues or enhancements, check:
+
 - Log file: `/var/log/winloss_report.log` (if configured)
 - Source code: `/root/HydraX-v2/tools/winloss_report.py`
 - Migration script: `/root/HydraX-v2/tools/populate_signals_all.py`

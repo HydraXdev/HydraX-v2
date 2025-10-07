@@ -2,9 +2,11 @@
 """
 DIRECT EA FIRE - Bypass broken IPC bridge, send directly to ROUTER
 """
-import zmq
 import json
 import time
+
+import zmq
+
 
 def send_direct_fire():
     """Send fire command directly to EA via ROUTER socket"""
@@ -27,9 +29,9 @@ def send_direct_fire():
         "symbol": "XAUUSD",
         "direction": "BUY",
         "lot": 0.01,
-        "sl": 1950.0,   # Conservative distance
-        "tp": 1970.0,   # Conservative target
-        "snapshot_tf": "M1"
+        "sl": 1950.0,  # Conservative distance
+        "tp": 1970.0,  # Conservative target
+        "snapshot_tf": "M1",
     }
 
     print(f"🎯 Sending DIRECT FIRE to EA:")
@@ -71,6 +73,7 @@ def send_direct_fire():
         dealer.close()
         conf_listener.close()
         ctx.term()
+
 
 if __name__ == "__main__":
     success = send_direct_fire()

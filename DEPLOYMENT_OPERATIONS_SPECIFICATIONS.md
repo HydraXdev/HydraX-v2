@@ -1,6 +1,7 @@
 # HydraX-v2 Deployment and Operations Specifications
 
 ## Table of Contents
+
 1. [Infrastructure Requirements](#infrastructure-requirements)
 2. [Deployment Procedures](#deployment-procedures)
 3. [Environment Configuration](#environment-configuration)
@@ -17,6 +18,7 @@
 ### Multi-Server Architecture
 
 #### Linux Main Server (134.199.204.67)
+
 - **OS**: Ubuntu 20.04 LTS or higher
 - **CPU**: 8 cores minimum, 16 cores recommended
 - **RAM**: 16GB minimum, 32GB recommended
@@ -24,6 +26,7 @@
 - **Network**: 1Gbps connection, low latency to Windows farm
 
 #### Windows MT5 Farm (3.145.84.187)
+
 - **OS**: Windows Server 2019 or higher
 - **CPU**: 16 cores minimum, 32 cores recommended
 - **RAM**: 32GB minimum, 64GB recommended
@@ -33,6 +36,7 @@
 ### Port Requirements
 
 #### Linux Server
+
 - **80**: HTTP (redirects to HTTPS)
 - **443**: HTTPS (main application)
 - **5000**: Flask application
@@ -42,6 +46,7 @@
 - **22**: SSH (secured)
 
 #### Windows Server
+
 - **3389**: RDP (secured)
 - **5555**: Primary agent
 - **5556**: Backup agent
@@ -51,6 +56,7 @@
 ### Software Dependencies
 
 #### Linux Server
+
 ```bash
 # System packages
 sudo apt update && sudo apt upgrade -y
@@ -77,6 +83,7 @@ pip install -r requirements.txt
 ```
 
 #### Windows Server
+
 ```powershell
 # Required software
 - Python 3.9+
@@ -96,6 +103,7 @@ pip install requests flask asyncio websockets
 ### Initial Setup Process
 
 #### 1. Linux Server Setup
+
 ```bash
 # Clone repository
 git clone https://github.com/HydraXdev/HydraX-v2.git /root/HydraX-v2
@@ -124,6 +132,7 @@ chown -R $(whoami):$(whoami) /root/HydraX-v2
 ```
 
 #### 2. Windows Server Setup
+
 ```powershell
 # Create directory structure
 New-Item -ItemType Directory -Path 'C:\MT5_Farm' -Force
@@ -144,6 +153,7 @@ cd C:\BITTEN_Agent
 ### Deployment Script Usage
 
 #### Automated Linux Deployment
+
 ```bash
 # Run production setup
 ./scripts/setup_production.sh yourdomain.com hydrax
@@ -156,6 +166,7 @@ cd C:\BITTEN_Agent
 ```
 
 #### Windows Agent Deployment
+
 ```powershell
 # Manual deployment (required due to current agent status)
 # 1. RDP to 3.145.84.187
@@ -167,6 +178,7 @@ cd C:\BITTEN_Agent
 ### Service Management
 
 #### Linux Services
+
 ```bash
 # Main application service
 sudo systemctl start hydrax
@@ -187,6 +199,7 @@ sudo systemctl enable press_pass_reset
 ```
 
 #### Windows Services
+
 ```powershell
 # Task Scheduler for automatic restart
 schtasks /create /tn "BITTEN_Agents" /tr "C:\BITTEN_Agent\START_AGENTS.bat" /sc minute /mo 5 /ru SYSTEM
@@ -202,6 +215,7 @@ Get-Process | Where-Object {$_.ProcessName -like "*python*"}
 ### Development Environment
 
 #### Linux Configuration
+
 ```bash
 # .env.development
 export FLASK_ENV=development
@@ -216,6 +230,7 @@ export STEALTH_ENABLED=false
 ```
 
 #### Windows Configuration
+
 ```powershell
 # Set environment variables
 $env:BITTEN_ENV = "development"
@@ -227,6 +242,7 @@ $env:LOG_LEVEL = "DEBUG"
 ### Staging Environment
 
 #### Linux Configuration
+
 ```bash
 # .env.staging
 export FLASK_ENV=staging
@@ -242,6 +258,7 @@ export STEALTH_LEVEL=medium
 ```
 
 #### Windows Configuration
+
 ```powershell
 # Set environment variables
 $env:BITTEN_ENV = "staging"
@@ -253,6 +270,7 @@ $env:LOG_LEVEL = "INFO"
 ### Production Environment
 
 #### Linux Configuration
+
 ```bash
 # .env.production
 export FLASK_ENV=production
@@ -270,6 +288,7 @@ export SSL_KEY_PATH=/etc/letsencrypt/live/yourdomain.com/privkey.pem
 ```
 
 #### Windows Configuration
+
 ```powershell
 # Set environment variables
 $env:BITTEN_ENV = "production"
@@ -282,6 +301,7 @@ $env:STEALTH_ENABLED = "true"
 ### Configuration Management
 
 #### Centralized Configuration
+
 ```yaml
 # config/tier_settings.yml
 tiers:
@@ -289,17 +309,17 @@ tiers:
     max_trades_per_day: 5
     max_lot_size: 0.1
     risk_percent: 1.0
-    
+
   fang:
     max_trades_per_day: 20
     max_lot_size: 0.5
     risk_percent: 2.0
-    
+
   commander:
     max_trades_per_day: 50
     max_lot_size: 1.0
     risk_percent: 3.0
-    
+
   apex:
     max_trades_per_day: 100
     max_lot_size: 2.0
@@ -307,6 +327,7 @@ tiers:
 ```
 
 #### Trading Configuration
+
 ```yaml
 # config/trading.yml
 risk_management:
@@ -331,6 +352,7 @@ instruments:
 ### System Monitoring
 
 #### Linux Server Monitoring
+
 ```bash
 # CPU, Memory, Disk monitoring
 htop
@@ -347,6 +369,7 @@ sudo -u postgres psql -c "SELECT * FROM pg_stat_activity;"
 ```
 
 #### Windows Server Monitoring
+
 ```powershell
 # System resources
 Get-Process | Sort-Object CPU -Descending | Select-Object -First 10
@@ -361,6 +384,7 @@ netstat -an | findstr ":5555"
 ### Application Monitoring
 
 #### Health Checks
+
 ```python
 # Health check endpoints
 @app.route('/health')
@@ -378,6 +402,7 @@ def health_check():
 ```
 
 #### Monitoring Dashboard
+
 ```bash
 # Access monitoring dashboard
 http://yourdomain.com:8000/dashboard
@@ -393,6 +418,7 @@ http://yourdomain.com:8000/dashboard
 ### Alerting Configuration
 
 #### Alert Thresholds
+
 ```yaml
 # alerts.yml
 thresholds:
@@ -401,18 +427,19 @@ thresholds:
   disk_usage: 90
   error_rate: 5
   response_time: 5000
-  
+
 notifications:
   email:
     enabled: true
     recipients: ["admin@yourdomain.com"]
-  
+
   webhook:
     enabled: true
     url: "https://hooks.slack.com/services/YOUR/WEBHOOK/URL"
 ```
 
 #### Alert Types
+
 1. **System Alerts**: High CPU, memory, disk usage
 2. **Application Alerts**: High error rates, slow response times
 3. **Trading Alerts**: Failed trades, risk limit breaches
@@ -425,6 +452,7 @@ notifications:
 ### Backup Strategy
 
 #### Database Backups
+
 ```bash
 # Daily automated backups
 #!/bin/bash
@@ -450,6 +478,7 @@ find "$BACKUP_DIR" -type d -mtime +30 -exec rm -rf {} \;
 ```
 
 #### Application Backups
+
 ```bash
 # Full application backup
 #!/bin/bash
@@ -474,6 +503,7 @@ aws s3 cp "$APP_BACKUP" s3://hydrax-backups/application/
 ```
 
 #### Windows Server Backups
+
 ```powershell
 # Backup Windows configuration
 $BackupPath = "C:\BITTEN_Backup\$(Get-Date -Format 'yyyyMMdd_HHmmss')"
@@ -493,6 +523,7 @@ Compress-Archive -Path $BackupPath -DestinationPath "$BackupPath.zip"
 #### Recovery Procedures
 
 ##### Linux Server Recovery
+
 ```bash
 # 1. Restore from backup
 cd /root/HydraX-v2
@@ -513,6 +544,7 @@ sudo systemctl restart postgresql
 ```
 
 ##### Windows Server Recovery
+
 ```powershell
 # 1. Restore agent files
 if (Test-Path "C:\BITTEN_Backup\latest\Agent\") {
@@ -530,12 +562,14 @@ cd C:\BITTEN_Agent
 ```
 
 #### Recovery Time Objectives (RTO)
+
 - **Linux Server**: 30 minutes
 - **Windows Server**: 15 minutes
 - **Database**: 45 minutes
 - **Full System**: 1 hour
 
 #### Recovery Point Objectives (RPO)
+
 - **Database**: 1 hour (hourly backups)
 - **Application**: 24 hours (daily backups)
 - **Configuration**: 1 hour (versioned in Git)
@@ -547,6 +581,7 @@ cd C:\BITTEN_Agent
 ### Database Optimization
 
 #### PostgreSQL Configuration
+
 ```sql
 -- /etc/postgresql/13/main/postgresql.conf
 shared_buffers = 8GB
@@ -560,6 +595,7 @@ effective_io_concurrency = 200
 ```
 
 #### Database Indexing
+
 ```sql
 -- Critical indexes for performance
 CREATE INDEX CONCURRENTLY idx_trades_user_timestamp ON trades(user_id, created_at);
@@ -571,6 +607,7 @@ CREATE INDEX CONCURRENTLY idx_signals_timestamp ON signals(created_at);
 ### Application Performance
 
 #### Redis Configuration
+
 ```conf
 # /etc/redis/redis.conf
 maxmemory 4gb
@@ -581,12 +618,13 @@ save 60 10000
 ```
 
 #### Flask Application Tuning
+
 ```python
 # config/webapp.py
 class ProductionConfig:
     DEBUG = False
     TESTING = False
-    
+
     # Database connection pooling
     SQLALCHEMY_ENGINE_OPTIONS = {
         'pool_size': 20,
@@ -594,10 +632,10 @@ class ProductionConfig:
         'pool_pre_ping': True,
         'max_overflow': 30
     }
-    
+
     # Redis configuration
     REDIS_URL = 'redis://localhost:6379/0'
-    
+
     # Session configuration
     SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_HTTPONLY = True
@@ -609,6 +647,7 @@ class ProductionConfig:
 #### Horizontal Scaling
 
 ##### Load Balancer Configuration
+
 ```nginx
 # /etc/nginx/sites-available/hydrax_lb
 upstream hydrax_backend {
@@ -620,7 +659,7 @@ upstream hydrax_backend {
 server {
     listen 80;
     server_name yourdomain.com;
-    
+
     location / {
         proxy_pass http://hydrax_backend;
         proxy_set_header Host $host;
@@ -632,6 +671,7 @@ server {
 ```
 
 ##### Multi-Instance Deployment
+
 ```bash
 # Start multiple application instances
 for i in {0..2}; do
@@ -643,6 +683,7 @@ done
 #### Vertical Scaling
 
 ##### Resource Allocation
+
 ```bash
 # Optimize system resources
 echo 'vm.swappiness=10' >> /etc/sysctl.conf
@@ -654,6 +695,7 @@ sysctl -p
 ```
 
 ##### Process Optimization
+
 ```bash
 # Optimize Python processes
 export PYTHONUNBUFFERED=1
@@ -664,6 +706,7 @@ export PYTHONDONTWRITEBYTECODE=1
 ### Performance Monitoring
 
 #### Key Metrics
+
 ```python
 # Performance metrics to monitor
 metrics = {
@@ -678,6 +721,7 @@ metrics = {
 ```
 
 #### Performance Testing
+
 ```bash
 # Load testing with Apache Bench
 ab -n 1000 -c 10 http://yourdomain.com/status
@@ -696,6 +740,7 @@ pgbench -c 10 -j 2 -t 1000 hydrax_prod
 ### System Security
 
 #### Linux Server Hardening
+
 ```bash
 # Update system
 sudo apt update && sudo apt upgrade -y
@@ -724,6 +769,7 @@ sudo dpkg-reconfigure -plow unattended-upgrades
 ```
 
 #### Windows Server Hardening
+
 ```powershell
 # Enable Windows Defender
 Set-MpPreference -DisableRealtimeMonitoring $false
@@ -743,6 +789,7 @@ Set-Service -Name "Fax" -StartupType Disabled
 ### Application Security
 
 #### Authentication and Authorization
+
 ```python
 # src/bitten_core/security_config.py
 SECURITY_CONFIG = {
@@ -761,6 +808,7 @@ SECURITY_CONFIG = {
 ```
 
 #### Data Encryption
+
 ```python
 # Database encryption
 from cryptography.fernet import Fernet
@@ -768,15 +816,16 @@ from cryptography.fernet import Fernet
 class EncryptionManager:
     def __init__(self, key):
         self.cipher = Fernet(key)
-    
+
     def encrypt_sensitive_data(self, data):
         return self.cipher.encrypt(data.encode())
-    
+
     def decrypt_sensitive_data(self, encrypted_data):
         return self.cipher.decrypt(encrypted_data).decode()
 ```
 
 #### API Security
+
 ```python
 # Rate limiting and API security
 from flask_limiter import Limiter
@@ -799,6 +848,7 @@ def execute_trade():
 ### Security Monitoring
 
 #### Log Analysis
+
 ```bash
 # Security log monitoring
 grep "Failed password" /var/log/auth.log
@@ -811,6 +861,7 @@ grep "UNAUTHORIZED" /var/log/hydrax/application.log
 ```
 
 #### Intrusion Detection
+
 ```bash
 # Install and configure OSSEC
 wget https://github.com/ossec/ossec-hids/archive/3.6.0.tar.gz
@@ -831,6 +882,7 @@ sudo nano /var/ossec/rules/local_rules.xml
 #### Linux Server Issues
 
 ##### High Memory Usage
+
 ```bash
 # Identify memory-consuming processes
 ps aux --sort=-%mem | head -10
@@ -844,6 +896,7 @@ sysctl -p
 ```
 
 ##### Database Connection Issues
+
 ```bash
 # Check database status
 sudo systemctl status postgresql
@@ -856,6 +909,7 @@ sudo systemctl restart postgresql
 ```
 
 ##### Application Not Starting
+
 ```bash
 # Check service status
 sudo systemctl status hydrax
@@ -870,6 +924,7 @@ python -c "from src.core.config import Config; print(Config.validate())"
 #### Windows Server Issues
 
 ##### Agent Not Responding
+
 ```powershell
 # Check agent processes
 Get-Process | Where-Object {$_.ProcessName -like "*python*"}
@@ -883,6 +938,7 @@ cd C:\BITTEN_Agent
 ```
 
 ##### MT5 Connection Issues
+
 ```powershell
 # Check MT5 processes
 Get-Process | Where-Object {$_.ProcessName -like "*terminal*"}
@@ -896,6 +952,7 @@ Stop-Process -Name "terminal64" -Force
 ```
 
 ##### File System Issues
+
 ```powershell
 # Check disk space
 Get-Volume
@@ -911,6 +968,7 @@ Get-Acl "C:\BITTEN_Agent"
 ### Maintenance Procedures
 
 #### Daily Maintenance
+
 ```bash
 # Daily maintenance checklist
 #!/bin/bash
@@ -933,6 +991,7 @@ sudo apt update && sudo apt upgrade -y
 ```
 
 #### Weekly Maintenance
+
 ```bash
 # Weekly maintenance checklist
 #!/bin/bash
@@ -955,6 +1014,7 @@ iostat -x 1 10 > /tmp/io_stats.txt
 ```
 
 #### Monthly Maintenance
+
 ```bash
 # Monthly maintenance checklist
 #!/bin/bash
@@ -979,6 +1039,7 @@ python scripts/generate_monthly_report.py
 ### Emergency Procedures
 
 #### System Recovery
+
 ```bash
 # Emergency system recovery
 #!/bin/bash
@@ -1007,6 +1068,7 @@ echo "EMERGENCY RECOVERY COMPLETED"
 ```
 
 #### Incident Response
+
 ```bash
 # Incident response procedure
 #!/bin/bash
@@ -1031,6 +1093,7 @@ echo "$(date): Security incident detected and response initiated" >> /var/log/hy
 ### Monitoring Scripts
 
 #### Continuous Monitoring
+
 ```bash
 # Continuous monitoring script
 #!/bin/bash
@@ -1040,18 +1103,18 @@ while true; do
     # Check system health
     CPU=$(top -bn1 | grep "Cpu(s)" | sed "s/.*, *\([0-9.]*\)%* id.*/\1/" | awk '{print 100 - $1}')
     MEM=$(free | grep Mem | awk '{printf("%.2f", $3/$2 * 100.0)}')
-    
+
     # Check application health
     HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5000/health)
-    
+
     # Log metrics
     echo "$(date): CPU: ${CPU}%, MEM: ${MEM}%, HTTP: ${HTTP_STATUS}" >> /var/log/hydrax/metrics.log
-    
+
     # Alert if thresholds exceeded
     if (( $(echo "$CPU > 80" | bc -l) )); then
         echo "HIGH CPU USAGE: $CPU%" | mail -s "HydraX Alert" admin@yourdomain.com
     fi
-    
+
     sleep 60
 done
 ```
@@ -1059,6 +1122,7 @@ done
 ### Documentation Updates
 
 #### Change Log Maintenance
+
 ```bash
 # Update change log
 #!/bin/bash

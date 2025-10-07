@@ -164,7 +164,10 @@
     "trend_continuation": {
       "bonus": 1.0,
       "description": "Strong trend continuation setup",
-      "required_conditions": ["signal_type == 'CONTINUATION'", "trend_strength >= 3"]
+      "required_conditions": [
+        "signal_type == 'CONTINUATION'",
+        "trend_strength >= 3"
+      ]
     },
     "key_level_confluence": {
       "bonus": 1.0,
@@ -179,7 +182,11 @@
     "institutional_pattern": {
       "bonus": 1.5,
       "description": "Classic institutional setup",
-      "required_conditions": ["sweep_detected", "order_block_nearby", "no_retail_indicators"]
+      "required_conditions": [
+        "sweep_detected",
+        "order_block_nearby",
+        "no_retail_indicators"
+      ]
     }
   },
   "classification_thresholds": {
@@ -192,7 +199,7 @@
     },
     "SHIELD_ACTIVE": {
       "min_score": 6.0,
-      "label": "SHIELD ACTIVE", 
+      "label": "SHIELD ACTIVE",
       "emoji": "✅",
       "color": "blue",
       "recommendation_template": "Decent setup with {caution_count} caution(s). Consider {position_sizing}."

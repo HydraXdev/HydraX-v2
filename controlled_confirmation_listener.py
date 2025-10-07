@@ -3,10 +3,12 @@
 STEP MF-2: Controlled confirmation listener for EA responses
 Listens on port 5558 for EA trade confirmations
 """
-import zmq
 import json
 import time
 from datetime import datetime
+
+import zmq
+
 
 def capture_confirmation(timeout_seconds=60):
     """Capture EA confirmation from port 5558"""
@@ -25,7 +27,7 @@ def capture_confirmation(timeout_seconds=60):
         while len(confirmations) == 0:
             try:
                 # Receive confirmation data
-                message = socket.recv().decode('utf-8')
+                message = socket.recv().decode("utf-8")
                 timestamp = datetime.now().isoformat()
 
                 print(f"📨 RAW CONFIRMATION: {message}")
@@ -33,18 +35,14 @@ def capture_confirmation(timeout_seconds=60):
                 # Parse confirmation
                 try:
                     conf_data = json.loads(message)
-                    conf_data['received_at'] = timestamp
+                    conf_data["received_at"] = timestamp
                     confirmations.append(conf_data)
                     print(f"✅ PARSED CONFIRMATION: {json.dumps(conf_data, indent=2)}")
                     break
 
                 except json.JSONDecodeError:
                     # Store raw message
-                    confirmations.append({
-                        'raw_message': message,
-                        'received_at': timestamp,
-                        'parsed': False
-                    })
+                    confirmations.append({"raw_message": message, "received_at": timestamp, "parsed": False})
                     print(f"📄 RAW CONFIRMATION (unparsable): {message}")
                     break
 
@@ -60,6 +58,7 @@ def capture_confirmation(timeout_seconds=60):
         context.term()
 
     return confirmations
+
 
 if __name__ == "__main__":
     confirmations = capture_confirmation(60)

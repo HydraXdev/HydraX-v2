@@ -9,6 +9,7 @@ This document outlines the security measures implemented in the news event detec
 ### 1. Authentication & Authorization
 
 #### Webhook Authentication
+
 - **Token-based authentication** for all API endpoints except health check
 - **Telegram signature verification** for webhook endpoints
 - Environment variables for secure token storage:
@@ -16,20 +17,23 @@ This document outlines the security measures implemented in the news event detec
   - `TELEGRAM_WEBHOOK_SECRET` - Telegram-specific webhook validation
 
 #### Command Authorization
+
 - `/news` command requires `AUTHORIZED` user rank
 - Integrated with existing rank-based access control system
 
 ### 2. Rate Limiting
 
 Implemented tiered rate limiting to prevent DoS attacks:
+
 - **Webhook endpoint**: 30 requests per minute
-- **Stats/News endpoints**: 20 requests per minute  
+- **Stats/News endpoints**: 20 requests per minute
 - **Health endpoint**: 60 requests per minute
 - IP-based tracking with automatic blocking
 
 ### 3. Input Validation & Sanitization
 
 #### API Response Validation
+
 - Maximum 1000 events per API response
 - Currency code format validation (3 uppercase letters)
 - Event name sanitization (HTML/script tag removal)
@@ -37,6 +41,7 @@ Implemented tiered rate limiting to prevent DoS attacks:
 - Maximum string lengths enforced
 
 #### Request Validation
+
 - Request size limit: 1MB maximum
 - JSON schema validation
 - Content-Type enforcement
@@ -45,12 +50,14 @@ Implemented tiered rate limiting to prevent DoS attacks:
 ### 4. Secure Communication
 
 #### API Requests
+
 - Timeout reduced to 5 seconds (prevent slowloris)
 - Redirect following disabled
 - SSL/TLS verification enforced
 - Custom User-Agent header
 
 #### Response Headers
+
 - `X-Content-Type-Options: nosniff`
 - `X-Frame-Options: DENY`
 - `X-XSS-Protection: 1; mode=block`
@@ -68,12 +75,14 @@ Implemented tiered rate limiting to prevent DoS attacks:
 ### 6. Resource Protection
 
 #### Memory Protection
+
 - Cache size limited to 10 entries
 - Event list limited to 1000 items
 - String length limits on all inputs
 - Old cache entries automatically cleaned
 
 #### Thread Safety
+
 - Lock mechanism for concurrent access
 - Safe cleanup of old rate limit data
 - Graceful handling of scheduler failures
@@ -111,11 +120,12 @@ print(f"WEBHOOK_AUTH_TOKEN={webhook_token}")
 ### API Usage Examples
 
 #### Authenticated Request
+
 ```bash
 # Stats endpoint
 curl -H "X-Webhook-Token: your-token-here" http://localhost:9001/stats
 
-# News endpoint  
+# News endpoint
 curl -H "X-Webhook-Token: your-token-here" http://localhost:9001/news
 ```
 
@@ -155,6 +165,7 @@ curl -H "X-Webhook-Token: your-token-here" http://localhost:9001/news
 ## Testing Security
 
 Run security tests:
+
 ```bash
 # Test rate limiting
 for i in {1..50}; do curl http://localhost:9001/health; done

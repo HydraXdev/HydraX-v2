@@ -2,10 +2,11 @@
 
 ## BITTENBridge_TradeExecutor_ZMQ_v7_PRODUCTION_CLEAN.mq5
 
-**Date**: August 1, 2025  
+**Date**: August 1, 2025
 **Status**: PRODUCTION READY - CLEAN VERSION
 
 ### Features:
+
 - ✅ ZMQ Client connecting to 134.199.204.67:5555 (commands) and :5556 (heartbeat)
 - ✅ Tick streaming on every tick via port 5556
 - ✅ OHLC candle streaming every 5 seconds (M1, M5, M15 timeframes)
@@ -18,6 +19,7 @@
 - ✅ Position management and reporting
 
 ### Candle Data Format:
+
 ```json
 {
   "type": "candle_batch",
@@ -30,4 +32,5 @@
 ```
 
 ### Usage:
+
 This is the clean production version with all debug features properly configured and no test loops. Use this as the base for any future modifications.

@@ -1,12 +1,13 @@
 # 🎯 BITTEN v2.1 - Postgres Integration Guide
 
-**Date**: 2025-09-16  
-**Status**: Ready for Production Deployment  
-**Integration**: Parallel operation with existing stable v2.0 system  
+**Date**: 2025-09-16
+**Status**: Ready for Production Deployment
+**Integration**: Parallel operation with existing stable v2.0 system
 
 ## 🚀 **QUICK START - 5 MINUTE DEPLOYMENT**
 
 ### **Step 1: Run Automated Setup**
+
 ```bash
 # Make setup script executable and run
 chmod +x /root/HydraX-v2/services/postgres_setup.sh
@@ -14,12 +15,14 @@ sudo /root/HydraX-v2/services/postgres_setup.sh
 ```
 
 ### **Step 2: Start Postgres Projector**
+
 ```bash
 # Start with backfill to process existing data
 python3 /root/HydraX-v2/services/postgres_projector.py --backfill
 ```
 
 ### **Step 3: Add Admin Endpoints to WebApp**
+
 Add these lines to `/root/HydraX-v2/webapp_server_optimized.py`:
 
 ```python
@@ -32,6 +35,7 @@ register_admin_routes(app)
 ```
 
 ### **Step 4: Start Enhanced Services**
+
 ```bash
 # Start new PM2 services
 pm2 start /root/HydraX-v2/ecosystem_postgres.config.js
@@ -42,6 +46,7 @@ pm2 start services/mv_refresher.py --name mv_refresher
 ```
 
 ### **Step 5: Test Admin Interface**
+
 ```bash
 # Test user lookup
 curl "http://localhost:8888/admin/users/telegram/7176191872" | jq .
@@ -55,18 +60,21 @@ open http://localhost:8888/admin/dashboard
 ## 📋 **WHAT YOU GET IMMEDIATELY**
 
 ### ✅ **Single Source of Truth**
+
 - **Complete user profile** in one view (`user_profile_v`)
 - **Real-time performance metrics** (win rate, pips, P&L)
 - **Pattern analytics** (performance by pattern type)
 - **Admin controls** (risk%, slots, auto-fire settings)
 
-### ✅ **Event Bus Integration** 
+### ✅ **Event Bus Integration**
+
 - **100% data preservation** - no loss of existing tracking
 - **Parallel operation** - existing system keeps running
 - **Idempotent processing** - safe to restart/replay
 - **Real-time updates** - new trades appear immediately
 
 ### ✅ **Admin Interface**
+
 - **User management** - edit risk, slots, tiers
 - **Performance monitoring** - real-time analytics
 - **Audit trail** - complete change history
@@ -77,11 +85,12 @@ open http://localhost:8888/admin/dashboard
 ## 🎯 **API ENDPOINTS READY TO USE**
 
 ### **User Management**
+
 ```bash
 # Get user profile (all data in one call)
 GET /admin/users/telegram/7176191872
 
-# Update user settings  
+# Update user settings
 POST /admin/users/1/settings
 {
   "risk_per_trade_bp": 300,     // 3% risk
@@ -101,6 +110,7 @@ POST /admin/users/1/overrides
 ```
 
 ### **Analytics & Monitoring**
+
 ```bash
 # Pattern performance analysis
 GET /admin/patterns/performance?user_id=1
@@ -117,7 +127,8 @@ GET /admin/dashboard
 ## 🔧 **CURRENT USER MIGRATION**
 
 Your current user (7176191872) is automatically migrated with:
-- **Telegram ID**: 7176191872  
+
+- **Telegram ID**: 7176191872
 - **Tier**: COMMANDER
 - **Risk**: 500bp (5.0%)
 - **Slots**: 10 max concurrent
@@ -128,17 +139,20 @@ Your current user (7176191872) is automatically migrated with:
 ## 📊 **PERFORMANCE EXPECTATIONS**
 
 ### **Database Queries**
+
 - **User profile lookup**: <20ms
-- **Pattern analytics**: <50ms  
+- **Pattern analytics**: <50ms
 - **Admin dashboard**: <200ms
 - **Materialized view refresh**: 1-3 seconds
 
 ### **Event Processing**
+
 - **Signal ingestion**: <10ms per event
 - **XP calculation**: <5ms per trade
 - **Audit logging**: <15ms per change
 
 ### **System Resources**
+
 - **Postgres**: ~100MB RAM, minimal CPU
 - **Projector service**: ~50MB RAM, <5% CPU
 - **MV refresher**: ~30MB RAM, <2% CPU
@@ -148,6 +162,7 @@ Your current user (7176191872) is automatically migrated with:
 ## 🎯 **INTEGRATION WITH EXISTING SYSTEM**
 
 ### **Zero Disruption Migration**
+
 1. **Existing systems keep running** - no downtime
 2. **Event bus feeds both** - SQLite + Postgres parallel
 3. **Admin reads from Postgres** - fast materialized views
@@ -155,11 +170,12 @@ Your current user (7176191872) is automatically migrated with:
 5. **Gradual cutover** - test in parallel, switch when ready
 
 ### **Data Flow Architecture**
+
 ```
 comprehensive_tracking.jsonl (existing)
          ↓
     Event Bus (existing)
-         ↓ 
+         ↓
 ┌─────────────────┐    ┌──────────────────┐
 │ SQLite (old)    │    │ Postgres (new)   │
 │ - truth_log     │    │ - trade_facts    │
@@ -175,12 +191,14 @@ comprehensive_tracking.jsonl (existing)
 ## 🚨 **PRODUCTION SAFETY**
 
 ### **Rollback Plan**
+
 1. **Stop new services** - `pm2 stop postgres_projector mv_refresher`
 2. **Remove admin endpoints** - comment out `register_admin_routes(app)`
 3. **Existing system continues** - zero impact on trading
 4. **Data preserved** - Postgres keeps all data for future retry
 
 ### **Monitoring & Health Checks**
+
 ```bash
 # Check projector status
 pm2 logs postgres_projector --lines 20
@@ -202,18 +220,21 @@ psql -U bitten -d bitten -c "SELECT count(*) FROM user_perf_mv;"
 ## 🎮 **IMMEDIATE ADMIN CAPABILITIES**
 
 ### **Risk Management**
+
 - **Change risk per trade** - 1-20% (100-2000 basis points)
-- **Adjust slot limits** - 1-100 max concurrent positions  
+- **Adjust slot limits** - 1-100 max concurrent positions
 - **Auto-fire control** - enable/disable + confidence ranges
 - **Emergency overrides** - temporary settings with expiry
 
 ### **Performance Monitoring**
+
 - **Real-time win rates** - overall + per pattern
 - **Pip tracking** - total pips won/lost
 - **Trade analysis** - duration, symbols, patterns
 - **XP gamification** - points for engagement
 
-### **User Management** 
+### **User Management**
+
 - **Tier management** - PRESS/GLADIATOR/COMMANDER/FANG/APEX
 - **Feature flags** - enable/disable specific features
 - **Account linking** - multiple broker accounts per user
@@ -224,6 +245,7 @@ psql -U bitten -d bitten -c "SELECT count(*) FROM user_perf_mv;"
 ## 🔮 **FUTURE ENHANCEMENTS READY**
 
 The system is designed for:
+
 - **Multi-user scaling** - database ready for 1000+ users
 - **Advanced analytics** - pattern machine learning
 - **Real-time dashboards** - WebSocket integration
@@ -235,15 +257,17 @@ The system is designed for:
 ## 🏆 **SUCCESS CRITERIA**
 
 ### **Phase 1 Success** (This deployment)
+
 - [x] **Database setup** - schema created, user migrated
-- [x] **Event projection** - real-time data flow working  
+- [x] **Event projection** - real-time data flow working
 - [x] **Admin interface** - full user management
 - [x] **Performance** - sub-50ms admin queries
 - [x] **Safety** - parallel operation, rollback ready
 
 ### **Phase 2 Success** (Next week)
+
 - [ ] **Auto-fire integration** - settings drive trading logic
-- [ ] **Multi-user ready** - additional users onboarded  
+- [ ] **Multi-user ready** - additional users onboarded
 - [ ] **Advanced analytics** - pattern elimination automation
 - [ ] **Performance optimization** - query tuning
 - [ ] **Backup strategy** - automated daily backups
@@ -253,12 +277,13 @@ The system is designed for:
 ## 📞 **SUPPORT & TROUBLESHOOTING**
 
 ### **Common Issues**
+
 ```bash
 # Postgres connection failed
 sudo systemctl status postgresql
 sudo systemctl start postgresql
 
-# Projector not processing events  
+# Projector not processing events
 tail -f /root/HydraX-v2/logs/postgres_projector.log
 pm2 restart postgres_projector
 
@@ -268,11 +293,12 @@ pm2 logs webapp --lines 50
 ```
 
 ### **Reset & Clean Start**
+
 ```bash
 # Stop new services
 pm2 stop postgres_projector mv_refresher
 
-# Drop and recreate database  
+# Drop and recreate database
 sudo -u postgres psql -c "DROP DATABASE bitten;"
 sudo /root/HydraX-v2/services/postgres_setup.sh
 

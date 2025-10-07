@@ -6,7 +6,7 @@
     <title>{{ symbol }} {{ direction }} - BITTEN EVENT BUS HUD</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    
+
     <style>
         :root {
             --primary: #7c3aed;
@@ -282,7 +282,7 @@
                     <div class="data-value" id="rrRatio">1:{{ rr_ratio }}</div>
                 </div>
             </div>
-            
+
             <!-- Freshness Indicator -->
             <div class="freshness-container">
                 <div class="data-label">Signal Quality: <span id="freshnessPercent">{{ freshness }}</span>%</div>
@@ -376,7 +376,7 @@
 
         <!-- Fire Button -->
         <div class="fire-section">
-            <button class="fire-button" id="fireButton" onclick="executeTrade()" 
+            <button class="fire-button" id="fireButton" onclick="executeTrade()"
                     {{ 'disabled' if not can_fire else '' }}>
                 {{ '🔥 EXECUTE TRADE' if can_fire else '❌ NO SLOTS AVAILABLE' }}
             </button>
@@ -391,33 +391,33 @@
         const missionId = '{{ mission_id }}';
         const userId = '{{ user_id }}';
         let timeRemaining = {{ time_remaining }};
-        
+
         // Real-time update intervals
         let updateInterval;
         let countdownInterval;
-        
+
         // Initialize real-time updates
         function initializeRealTimeUpdates() {
             // Update every 5 seconds
             updateInterval = setInterval(fetchLatestData, 5000);
-            
+
             // Countdown timer
             countdownInterval = setInterval(updateCountdown, 1000);
-            
+
             // Initial countdown
             updateCountdown();
         }
-        
+
         // Fetch latest data from event bus
         async function fetchLatestData() {
             try {
                 // Show updating indicator
                 document.getElementById('liveBadge').textContent = '🔄 UPDATING...';
-                
+
                 // Fetch complete HUD data in ONE call
                 const response = await fetch(`/api/event-bus/hud/${missionId}?user_id=${userId}`);
                 const result = await response.json();
-                
+
                 if (result.success) {
                     updateDisplay(result.data);
                     document.getElementById('liveBadge').textContent = '🟢 LIVE EVENT BUS';
@@ -429,19 +429,19 @@
                 document.getElementById('liveBadge').textContent = '🔴 OFFLINE';
             }
         }
-        
+
         // Update display with new data
         function updateDisplay(data) {
             // Update user stats
             if (data.user) {
                 updateElement('userBalance', `$${data.user.balance.toFixed(2)}`);
                 updateElement('winRate', `${data.user.win_rate}%`);
-                
+
                 // Update slots
                 const slots = data.user.slots || {};
                 updateElement('manualSlots', `${slots.manual_available}/${slots.manual_total}`);
                 updateElement('autoSlots', `${slots.auto_available}/${slots.auto_total}`);
-                
+
                 // Update fire button
                 const fireButton = document.getElementById('fireButton');
                 if (slots.manual_available > 0) {
@@ -452,22 +452,22 @@
                     fireButton.textContent = '❌ NO SLOTS AVAILABLE';
                 }
             }
-            
+
             // Update freshness
             if (data.freshness) {
                 const freshness = data.freshness.freshness;
                 updateElement('freshnessPercent', freshness);
-                
+
                 const fill = document.getElementById('freshnessFill');
                 fill.style.width = `${freshness}%`;
-                
+
                 // Update color based on status
                 fill.className = 'freshness-fill';
                 if (freshness > 80) fill.classList.add('fresh');
                 else if (freshness > 50) fill.classList.add('active');
                 else fill.classList.add('stale');
             }
-            
+
             // Update pattern stats
             if (data.pattern_stats) {
                 updateElement('patternWinRate', `${data.pattern_stats.win_rate}%`);
@@ -476,7 +476,7 @@
                 updateElement('bestTrade', `+${data.pattern_stats.best_trade || '--'}`);
             }
         }
-        
+
         // Helper to update element with animation
         function updateElement(id, value) {
             const element = document.getElementById(id);
@@ -486,7 +486,7 @@
                 setTimeout(() => element.classList.remove('updating'), 300);
             }
         }
-        
+
         // Countdown timer
         function updateCountdown() {
             if (timeRemaining <= 0) {
@@ -495,21 +495,21 @@
                 clearInterval(countdownInterval);
                 return;
             }
-            
+
             const minutes = Math.floor(timeRemaining / 60);
             const seconds = timeRemaining % 60;
-            document.getElementById('timeRemaining').textContent = 
+            document.getElementById('timeRemaining').textContent =
                 `${minutes}:${seconds.toString().padStart(2, '0')}`;
-            
+
             timeRemaining--;
         }
-        
+
         // Execute trade
         async function executeTrade() {
             const button = document.getElementById('fireButton');
             button.disabled = true;
             button.textContent = '⏳ EXECUTING...';
-            
+
             try {
                 const response = await fetch('/api/fire', {
                     method: 'POST',
@@ -521,19 +521,19 @@
                         mission_id: missionId
                     })
                 });
-                
+
                 const result = await response.json();
-                
+
                 if (result.success) {
                     button.textContent = '✅ TRADE EXECUTED';
                     button.style.background = 'linear-gradient(45deg, #10b981, #059669)';
-                    
+
                     // Refresh data after trade
                     setTimeout(fetchLatestData, 2000);
                 } else {
                     button.textContent = '❌ EXECUTION FAILED';
                     button.style.background = '#ef4444';
-                    
+
                     // Re-enable after 3 seconds
                     setTimeout(() => {
                         button.disabled = false;
@@ -547,15 +547,15 @@
                 button.style.background = '#ef4444';
             }
         }
-        
+
         // Initialize on load
         document.addEventListener('DOMContentLoaded', function() {
             initializeRealTimeUpdates();
-            
+
             // Fetch initial data
             fetchLatestData();
         });
-        
+
         // Cleanup on unload
         window.addEventListener('beforeunload', function() {
             if (updateInterval) clearInterval(updateInterval);

@@ -1,4 +1,5 @@
 # BITTEN v2.078 — LAW Documentation
+
 ## Logging • Audit • Workflows (LAW) Architecture
 
 **Version**: 2.078 (PRO STABLE QUIET)
@@ -15,18 +16,21 @@
 **BITTEN v2.078** is a distributed automated trading system that processes market signals through a sophisticated pipeline:
 
 **Signal Flow Architecture:**
+
 ```
 Elite Guard (Pattern Detection) → WebApp (Risk Management) → Auto-Fire Logic →
 Command Router → EA v2.078 → MT5 Execution → Confirmation + Snapshots → Position Tracking
 ```
 
 **ZMQ Communication Channels:**
+
 - **DEALER 5555** (Core→EA): Fire commands with UUID routing - `{"type":"fire","target_uuid":"COMMANDER_DEV_001",...}`
 - **PUSH 5556** (EA→Core): Market telemetry (ticks, candles, connection status)
 - **PUSH 5558** (EA→Core): Trade confirmations + signal snapshots with OHLC data (v2.078)
 - **PUSH 5560** (EA→Core): Enhanced HEARTBEAT_METRICS with complete position arrays
 
 **Key System Features v2.078:**
+
 - **Enhanced Signal Snapshots**: Captures OHLC data with pattern overlays on every fire command
 - **Configurable Timeframes**: M1, M5, M15, M30, H1 snapshot support with configurable bar count
 - **Robust JSON Parser**: Fixed CharToString encoding issues for enhanced reliability
@@ -76,6 +80,7 @@ All Confirmations ──> 5558 Confirm Sender ◄──────────�
 ### 1.1 Execution Path Details
 
 **Fire Command Path:**
+
 1. Receive fire JSON from router (5555)
 2. Parse + validate: Direction (BUY/SELL), SL/TP requirements, spread/hedge guards
 3. **NEW v2.078**: Send signal snapshot JSON (before validation complete) with OHLC bars
@@ -83,14 +88,17 @@ All Confirmations ──> 5558 Confirm Sender ◄──────────�
 5. On execution: send confirmation JSON with ticket, lot, status, enhanced telemetry
 
 **Close Command Paths:**
+
 - `close_all`: loops positions with correct magic, closes them, sends aggregated confirmation
 - `close_ticket`: closes one ticket if valid, sends per-ticket confirmation
 
 **Ping/Wake Paths:**
+
 - Responds with pong including account metrics and hybrid status
 - Wake also echoes AWAKE + triggers ping response
 
 **Hybrid Management Path:**
+
 - Attached per trade if hybrid_enabled in fire command
 - Monitors: Partial closes at pip thresholds, breakeven move, trailing SL
 - Sends hybrid_event JSON on each adjustment with enhanced metrics
@@ -130,21 +138,25 @@ input string InpSnapshotTF         = "M1";   // Default timeframe for snapshots 
 **Magic Number**: `7176191872` (all BITTEN trades)
 
 **Telemetry Cadence:**
+
 - Router heartbeat: 5 seconds (configurable via InpRouterBeatSec)
 - Dealer + Metrics heartbeat: 30 seconds (configurable via InpTelemetryBeatSec)
 
 **Signal Snapshots (NEW v2.078):**
+
 - Default: M1 timeframe, 100 bars
 - Sent on every fire command before validation
 - Includes pattern overlays and market metrics
 - Configurable timeframe and bar count
 
 **UUID Configuration:**
+
 - DEV Account 843859 → "COMMANDER_DEV_001" (hardcoded override)
 - Production: Load from MQL5\Files\bitten_deployment.cfg
 - Format: UUID=COMMANDER_DEV_001
 
 **Hybrid Management:**
+
 - RAM-based (no persistence across EA restarts)
 - 25% partial close at trigger pip levels
 - Trailing stop with configurable distance
@@ -184,6 +196,7 @@ input string InpSnapshotTF         = "M1";   // Default timeframe for snapshots 
 ```
 
 **Why This Architecture:**
+
 - **DEALER Socket**: Bi-directional, supports UUID routing for multi-EA environments
 - **PUSH Sockets**: One-way, high-performance, no response needed
 - **Separate Channels**: Prevents trade confirmations from blocking market data
@@ -191,14 +204,15 @@ input string InpSnapshotTF         = "M1";   // Default timeframe for snapshots 
 
 ### 1.2 Port Assignments
 
-| Port | Type | Direction | Purpose | Messages | Update Frequency |
-|------|------|-----------|---------|----------|------------------|
-| 5555 | DEALER | Core→EA | Commands | fire, close_ticket, close_all, ping, wake | On-demand |
-| 5556 | PUSH | EA→Core | Telemetry | handshake, heartbeat, TICK, OHLC, disconnect | Every tick + 30s heartbeat |
-| 5558 | PUSH | EA→Core | Events | confirmation, position_closed, pong, signal_snapshot | Immediate on events |
-| 5560 | PUSH | EA→Core | Metrics | HEARTBEAT_METRICS with enhanced positions[] | Every 30s |
+| Port | Type   | Direction | Purpose   | Messages                                             | Update Frequency           |
+| ---- | ------ | --------- | --------- | ---------------------------------------------------- | -------------------------- |
+| 5555 | DEALER | Core→EA   | Commands  | fire, close_ticket, close_all, ping, wake            | On-demand                  |
+| 5556 | PUSH   | EA→Core   | Telemetry | handshake, heartbeat, TICK, OHLC, disconnect         | Every tick + 30s heartbeat |
+| 5558 | PUSH   | EA→Core   | Events    | confirmation, position_closed, pong, signal_snapshot | Immediate on events        |
+| 5560 | PUSH   | EA→Core   | Metrics   | HEARTBEAT_METRICS with enhanced positions[]          | Every 30s                  |
 
 **Critical System Dependencies:**
+
 - **Port 5555**: Must be available for trade execution (fire commands)
 - **Port 5558**: Required for confirmation tracking and position updates
 - **Port 5560**: Required for real-time position monitoring and auto-fire decisions
@@ -207,6 +221,7 @@ input string InpSnapshotTF         = "M1";   // Default timeframe for snapshots 
 ### 1.3 Auto-Fire Logic & Position Management
 
 **Auto-Fire Decision Tree:**
+
 ```
 1. Signal arrives with confidence X%
 2. Check: X ≥ 80% AND X ≤ 89% ? → Proceed to step 3 : Manual only
@@ -219,6 +234,7 @@ input string InpSnapshotTF         = "M1";   // Default timeframe for snapshots 
 ```
 
 **Identity & Routing Protocol:**
+
 ```
 EA UUID Loading:
 1. Account 843859 → UUID = "COMMANDER_DEV_001" (hardcoded)
@@ -229,6 +245,7 @@ EA UUID Loading:
 ```
 
 **Current Production Status:**
+
 - **User 7176191872**: AUTO mode enabled, 3 position slots
 - **Current Open**: 1 position (tracked in ea_instances.open_positions)
 - **Auto-Fire Range**: 80-89% confidence signals only
@@ -279,6 +296,7 @@ else:
 ### Auto-Fire vs Manual Fire Examples
 
 **Recent System Activity (September 22, 2025):**
+
 - **ELITE_RAPID_USDJPY_1758502680**: Manual fire → FILLED (ticket: 21754192)
 - **ELITE_RAPID_USDCNH_1758503291**: Auto-fire attempted → FAILED (position limit?)
 - **ELITE_RAPID_EURUSD_1758502385**: Auto-fire attempted → FAILED
@@ -286,6 +304,7 @@ else:
 ### 3.1 Commands (→ 5555 DEALER)
 
 #### FIRE Command
+
 ```json
 {
   "type": "fire",
@@ -301,6 +320,7 @@ else:
 ```
 
 **Field Requirements & Processing Logic:**
+
 - **type**: Must be "fire" (validated in command_router.py)
 - **target_uuid**: "COMMANDER_DEV_001" (UUID routing validation)
 - **fire_id**: Unique signal identifier (links to original Elite Guard signal)
@@ -312,6 +332,7 @@ else:
 - **lot**: Position size (calculated: 3% risk ÷ SL_distance)
 
 **Dynamic R:R Processing Example (USDCNH):**
+
 ```
 Original: SL=30.0p, TP=21.0p (R:R=0.70)
 System detects R:R < 1.5, adjusts TP to achieve 1.5:1
@@ -319,6 +340,7 @@ Final: SL=30.0p, TP=45.0p (R:R=1.50)
 ```
 
 #### CLOSE_TICKET Command
+
 ```json
 {
   "type": "close_ticket",
@@ -328,6 +350,7 @@ Final: SL=30.0p, TP=45.0p (R:R=1.50)
 ```
 
 #### CLOSE_ALL Command
+
 ```json
 {
   "type": "close_all",
@@ -336,6 +359,7 @@ Final: SL=30.0p, TP=45.0p (R:R=1.50)
 ```
 
 #### PING Command
+
 ```json
 {
   "type": "ping",
@@ -347,6 +371,7 @@ Final: SL=30.0p, TP=45.0p (R:R=1.50)
 ### 3.2 Events (← 5558 PUSH)
 
 #### CONFIRMATION (Fire Response - Enhanced v2.078)
+
 ```json
 {
   "type": "confirmation",
@@ -362,14 +387,15 @@ Final: SL=30.0p, TP=45.0p (R:R=1.50)
   "message": "OK SELL",
   "account": 843859,
   "currency": "USD",
-  "balance": 10000.00,
-  "equity": 10005.50,
-  "floating_pnl": 5.50,
+  "balance": 10000.0,
+  "equity": 10005.5,
+  "floating_pnl": 5.5,
   "timestamp": "2025.09.23 00:58:58"
 }
 ```
 
 #### SIGNAL_SNAPSHOT (NEW v2.078 - Before Every Fire)
+
 ```json
 {
   "type": "signal_snapshot",
@@ -389,7 +415,7 @@ Final: SL=30.0p, TP=45.0p (R:R=1.50)
   "bars": [
     {
       "t": 1758502800,
-      "o": 148.220,
+      "o": 148.22,
       "h": 148.245,
       "l": 148.198,
       "c": 148.215
@@ -397,9 +423,9 @@ Final: SL=30.0p, TP=45.0p (R:R=1.50)
     {
       "t": 1758502740,
       "o": 148.185,
-      "h": 148.230,
+      "h": 148.23,
       "l": 148.175,
-      "c": 148.220
+      "c": 148.22
     }
   ],
   "metrics": {
@@ -412,6 +438,7 @@ Final: SL=30.0p, TP=45.0p (R:R=1.50)
 ```
 
 **Status Values & Meanings:**
+
 - **FILLED**: Trade successfully executed on MT5 (ticket number provided)
 - **FAILED**: Generic failure (could be position limit, connection, or validation)
 - **REJECTED**: Broker rejected trade (insufficient margin, invalid stops, market closed)
@@ -419,6 +446,7 @@ Final: SL=30.0p, TP=45.0p (R:R=1.50)
 - **INVALID_STOPS**: SL/TP distances violate broker minimum stops level
 
 **Production Status Analysis (September 22, 2025):**
+
 - **Manual Fires**: ✅ Working (USDJPY FILLED - ticket: 21754192)
 - **Auto-Fire Logic**: ✅ Working (commands reach command router)
 - **Auto-Fire Execution**: ❌ Failing (USDCNH, EURUSD = FAILED status)
@@ -426,6 +454,7 @@ Final: SL=30.0p, TP=45.0p (R:R=1.50)
 - **Confidence Filtering**: ❌ Issue found (91.9% XAUUSD blocked, above 89% threshold)
 
 **Auto-Fire Troubleshooting:**
+
 ```
 Signal Flow Analysis:
 1. ELITE_RAPID_USDCNH_1758503597 @ 84.3% → AUTO fire attempted → FAILED
@@ -442,15 +471,16 @@ Possible Causes:
 ```
 
 #### POSITION_CLOSED
+
 ```json
 {
   "type": "position_closed",
   "ticket": 12345678,
   "fire_id": "ELITE_RAPID_XAUUSD_1758296000",
   "symbol": "XAUUSD",
-  "volume": 0.10,
-  "close_price": 2431.20,
-  "profit": 17.40,
+  "volume": 0.1,
+  "close_price": 2431.2,
+  "profit": 17.4,
   "reason": "TP_HIT",
   "uuid": "COMMANDER_DEV_001",
   "timestamp": 1758296061
@@ -458,6 +488,7 @@ Possible Causes:
 ```
 
 #### HYBRID_EVENT
+
 ```json
 {
   "type": "hybrid_event",
@@ -475,6 +506,7 @@ Possible Causes:
 ### 3.3 Telemetry (← 5556 PUSH)
 
 #### HANDSHAKE (On Init)
+
 ```json
 {
   "type": "handshake",
@@ -488,8 +520,8 @@ Possible Causes:
   "monitored_symbols": 53,
   "symbol_list": "XAUUSD,GBPJPY,EURUSD,USDJPY,...",
   "currency": "USD",
-  "balance": 10000.00,
-  "equity": 10005.50,
+  "balance": 10000.0,
+  "equity": 10005.5,
   "leverage": 500,
   "version": "2.07H",
   "hybrid_enabled": true,
@@ -499,6 +531,7 @@ Possible Causes:
 ```
 
 #### HEARTBEAT (Every ~30s)
+
 ```json
 {
   "type": "heartbeat",
@@ -506,11 +539,11 @@ Possible Causes:
   "user_uuid": "COMMANDER_DEV_001",
   "account": 843859,
   "currency": "USD",
-  "balance": 10005.50,
-  "equity": 10005.50,
+  "balance": 10005.5,
+  "equity": 10005.5,
   "leverage": 500,
-  "free_margin": 9890.00,
-  "margin_level": 460.00,
+  "free_margin": 9890.0,
+  "margin_level": 460.0,
   "symbols_monitored": 53,
   "ticks_processed": 1234,
   "hybrid_positions": 1,
@@ -522,18 +555,19 @@ Possible Causes:
 ### 3.4 Metrics (← 5560 PUSH)
 
 #### HEARTBEAT_METRICS (Every ~30s)
+
 ```json
 {
   "type": "HEARTBEAT_METRICS",
   "target_uuid": "COMMANDER_DEV_001",
   "node_id": "NODE_843859_123456",
   "currency": "USD",
-  "balance": 10012.40,
-  "equity": 10018.10,
+  "balance": 10012.4,
+  "equity": 10018.1,
   "leverage": 500,
-  "margin": 200.50,
-  "free_margin": 9817.60,
-  "margin_level": 498.00,
+  "margin": 200.5,
+  "free_margin": 9817.6,
+  "margin_level": 498.0,
   "ticks_processed": 1875,
   "hybrid_positions": 1,
   "open_positions": 2,
@@ -543,10 +577,10 @@ Possible Causes:
       "fire_id": "ELITE_RAPID_XAUUSD_1758296000",
       "symbol": "XAUUSD",
       "direction": "BUY",
-      "open_price": 2429.50,
-      "current_price": 2430.20,
-      "volume": 0.10,
-      "pnl": 7.00
+      "open_price": 2429.5,
+      "current_price": 2430.2,
+      "volume": 0.1,
+      "pnl": 7.0
     }
   ],
   "timestamp": "2025.09.19 15:22:00"
@@ -560,6 +594,7 @@ Possible Causes:
 ### 4.1 Real-Time Position Monitoring
 
 **Database Tracking:**
+
 ```sql
 -- EA instances table tracks open positions
 SELECT target_uuid, user_id, open_positions FROM ea_instances;
@@ -571,6 +606,7 @@ SELECT fire_id, status, ticket, price FROM fires ORDER BY created_at DESC;
 ```
 
 **Event Bus Architecture:**
+
 ```
 EA v2.07 → ZMQ 5558 → confirm_listener → Database Update → Event Bus Notification
                                               ↓
@@ -578,6 +614,7 @@ Position Count Update → Auto-Fire Decision Logic → Slot Availability Check
 ```
 
 **Position Slot Management:**
+
 - **Total Slots**: 3 concurrent positions per user
 - **Current Usage**: 1/3 positions occupied (tracked in real-time)
 - **Auto-Fire Check**: Only fires if slots available
@@ -642,12 +679,12 @@ Position Count Update → Auto-Fire Decision Logic → Slot Availability Check
 
 ### 5.1 Event Categories
 
-| Category | Events | Log Level | Retention |
-|----------|--------|-----------|-----------|
-| SECURITY | UUID mismatch, DLL disabled, trade blocked | ERROR | 1 year |
-| EXECUTION | confirmations, closes, hybrid events | INFO | 90 days |
-| TELEMETRY | handshake, heartbeat, ticks, metrics | DEBUG | 7 days |
-| ERRORS | DLL load, symbol unavailable, SL/TP invalid | ERROR | 90 days |
+| Category  | Events                                      | Log Level | Retention |
+| --------- | ------------------------------------------- | --------- | --------- |
+| SECURITY  | UUID mismatch, DLL disabled, trade blocked  | ERROR     | 1 year    |
+| EXECUTION | confirmations, closes, hybrid events        | INFO      | 90 days   |
+| TELEMETRY | handshake, heartbeat, ticks, metrics        | DEBUG     | 7 days    |
+| ERRORS    | DLL load, symbol unavailable, SL/TP invalid | ERROR     | 90 days   |
 
 ### 5.2 Structured Log Format
 
@@ -692,20 +729,20 @@ hedge_block_rate
 
 ## 6. Validation Test Matrix
 
-| Test Case | Input | Expected Output | Socket |
-|-----------|-------|-----------------|---------|
-| EA Init | Attach EA | handshake within 3s | 5556 |
-| Heartbeat | Wait 30s | heartbeat + HEARTBEAT_METRICS | 5556, 5560 |
-| Ping Test | {"type":"ping","target_uuid":"..."} | pong with ping_id | 5558 |
-| Fire Valid | BUY with valid SL/TP | confirmation{success} | 5558 |
-| Fire Invalid SL | BUY with tp<price | confirmation{failed,"REJECTED"} | 5558 |
-| Hedge Block | SELL when BUY exists | confirmation{failed,"HEDGE_BLOCKED"} | 5558 |
-| Close Ticket | Valid ticket | close_confirmation{success} | 5558 |
-| Close All | Any positions | close_confirmation summary | 5558 |
-| UUID Wrong | Wrong target_uuid | No response (dropped) | None |
-| TP Hit | Position hits TP | position_closed{reason:"TP_HIT"} | 5558 |
-| Hybrid +8p | Position +8 pips | hybrid_event{PARTIAL_CLOSE} | 5558 |
-| Disconnect | Detach EA | DISCONNECT message | 5556 |
+| Test Case       | Input                               | Expected Output                      | Socket     |
+| --------------- | ----------------------------------- | ------------------------------------ | ---------- |
+| EA Init         | Attach EA                           | handshake within 3s                  | 5556       |
+| Heartbeat       | Wait 30s                            | heartbeat + HEARTBEAT_METRICS        | 5556, 5560 |
+| Ping Test       | {"type":"ping","target_uuid":"..."} | pong with ping_id                    | 5558       |
+| Fire Valid      | BUY with valid SL/TP                | confirmation{success}                | 5558       |
+| Fire Invalid SL | BUY with tp<price                   | confirmation{failed,"REJECTED"}      | 5558       |
+| Hedge Block     | SELL when BUY exists                | confirmation{failed,"HEDGE_BLOCKED"} | 5558       |
+| Close Ticket    | Valid ticket                        | close_confirmation{success}          | 5558       |
+| Close All       | Any positions                       | close_confirmation summary           | 5558       |
+| UUID Wrong      | Wrong target_uuid                   | No response (dropped)                | None       |
+| TP Hit          | Position hits TP                    | position_closed{reason:"TP_HIT"}     | 5558       |
+| Hybrid +8p      | Position +8 pips                    | hybrid_event{PARTIAL_CLOSE}          | 5558       |
+| Disconnect      | Detach EA                           | DISCONNECT message                   | 5556       |
 
 ---
 
@@ -764,14 +801,14 @@ def check_command_health():
 
 ### 7.3 Incident Response
 
-| Symptom | Check | Fix |
-|---------|-------|-----|
-| No handshake | Core binding? | Start Core before EA |
-| No commands processed | UUID match? | Verify bitten_deployment.cfg |
-| DLL error 193 | Architecture? | Use x64 DLL for x64 MT5 |
-| DLL error 126 | Dependencies? | Add libsodium/MSVC runtime |
-| Trade rejected | SL/TP valid? | Check geometry and stops level |
-| Hedge blocked | Opposite position? | Close existing or use different symbol |
+| Symptom               | Check              | Fix                                    |
+| --------------------- | ------------------ | -------------------------------------- |
+| No handshake          | Core binding?      | Start Core before EA                   |
+| No commands processed | UUID match?        | Verify bitten_deployment.cfg           |
+| DLL error 193         | Architecture?      | Use x64 DLL for x64 MT5                |
+| DLL error 126         | Dependencies?      | Add libsodium/MSVC runtime             |
+| Trade rejected        | SL/TP valid?       | Check geometry and stops level         |
+| Hedge blocked         | Opposite position? | Close existing or use different symbol |
 
 ---
 
@@ -805,22 +842,22 @@ def check_command_health():
 
 ### 9.1 Data Classification
 
-| Data Type | Classification | Handling |
-|-----------|---------------|----------|
-| Account ID | Operational | Log retention 90 days |
-| Balances | Operational | Encrypted at rest |
-| Positions | Operational | Real-time tracking |
-| fire_id | Operational | ≤28 chars, no PII |
+| Data Type  | Classification | Handling              |
+| ---------- | -------------- | --------------------- |
+| Account ID | Operational    | Log retention 90 days |
+| Balances   | Operational    | Encrypted at rest     |
+| Positions  | Operational    | Real-time tracking    |
+| fire_id    | Operational    | ≤28 chars, no PII     |
 
 ### 9.2 Risk Register
 
-| ID | Risk | Impact | Mitigation |
-|----|------|--------|------------|
-| R-01 | DLL load failure | No automation | Pre-flight checks |
-| R-02 | UUID collision | Misrouted commands | UUID uniqueness validation |
-| R-03 | Tight broker stops | Trade rejections | Dynamic distance calculation |
-| R-04 | Network partition | Data loss | Health monitors + restart |
-| R-05 | Over-partial close | Position errors | Volume step validation |
+| ID   | Risk               | Impact             | Mitigation                   |
+| ---- | ------------------ | ------------------ | ---------------------------- |
+| R-01 | DLL load failure   | No automation      | Pre-flight checks            |
+| R-02 | UUID collision     | Misrouted commands | UUID uniqueness validation   |
+| R-03 | Tight broker stops | Trade rejections   | Dynamic distance calculation |
+| R-04 | Network partition  | Data loss          | Health monitors + restart    |
+| R-05 | Over-partial close | Position errors    | Volume step validation       |
 
 ### 9.3 Audit Requirements
 
@@ -836,6 +873,7 @@ def check_command_health():
 ### Auto-Fire Diagnosis Process
 
 **Step 1: Check Signal Processing**
+
 ```bash
 # Verify signals reaching webapp
 tail -f /root/.pm2/logs/webapp-main-out.log | grep "AUTO fire check"
@@ -846,6 +884,7 @@ tail -f /root/.pm2/logs/webapp-main-out.log | grep "AUTO fire check"
 ```
 
 **Step 2: Check Command Router Flow**
+
 ```bash
 # Verify commands reaching command router
 tail -f /root/.pm2/logs/command-router-error.log
@@ -854,6 +893,7 @@ tail -f /root/.pm2/logs/command-router-error.log
 ```
 
 **Step 3: Check EA Response**
+
 ```bash
 # Check for confirmations from EA
 # If no confirmations = EA-side issue
@@ -866,12 +906,14 @@ sqlite3 /root/HydraX-v2/bitten.db "SELECT open_positions FROM ea_instances WHERE
 ### Current Production Issues
 
 **Issue: Auto-Fire Commands Reaching EA but FAILING**
+
 - **Symptoms**: Commands in router logs, FAILED status in database
 - **Root Cause**: EA processing but broker rejecting
 - **Evidence**: Manual fire works, auto-fire fails
 - **Resolution**: Check EA logs, broker connection, margin requirements
 
 **Issue: 90%+ Confidence Signals Not Auto-Firing**
+
 - **Symptoms**: 91.9% XAUUSD signal not auto-fired
 - **Root Cause**: Auto-fire threshold capped at 89%
 - **By Design**: High confidence signals require manual decision
@@ -925,14 +967,14 @@ ss -tulpen | grep -E ":(5555|5556|5558|5560)"
 
 ## 11. Performance Benchmarks
 
-| Metric | Target | Acceptable | Critical |
-|--------|--------|------------|----------|
-| Handshake time | <1s | <3s | >5s |
-| Ping roundtrip | <50ms | <250ms | >1s |
-| Fire → Confirmation | <100ms | <500ms | >2s |
-| Heartbeat interval | 30s | 30-40s | >60s |
-| Metrics interval | 30s | 30-40s | >60s |
-| Tick rate | Market dependent | 1-100/s | 0/s |
+| Metric              | Target           | Acceptable | Critical |
+| ------------------- | ---------------- | ---------- | -------- |
+| Handshake time      | <1s              | <3s        | >5s      |
+| Ping roundtrip      | <50ms            | <250ms     | >1s      |
+| Fire → Confirmation | <100ms           | <500ms     | >2s      |
+| Heartbeat interval  | 30s              | 30-40s     | >60s     |
+| Metrics interval    | 30s              | 30-40s     | >60s     |
+| Tick rate           | Market dependent | 1-100/s    | 0/s      |
 
 ---
 
@@ -1025,4 +1067,4 @@ Config: InpVerboseLogging | InpSnapshotBars | InpSnapshotTF | InpTelemetryBeatSe
 
 ---
 
-*End of LAW Documentation v2.078 - Updated September 23, 2025*
+_End of LAW Documentation v2.078 - Updated September 23, 2025_

@@ -5,21 +5,27 @@
 ## 🚀 Quick Start
 
 ### 1. **Validate System**
+
 ```bash
 python quick_backtest_validation.py
 ```
+
 This runs a complete validation to ensure all components work.
 
 ### 2. **Setup Environment**
+
 ```bash
 python setup_backtesting.py
 ```
+
 Creates directories, databases, and sample data.
 
 ### 3. **Run Backtests**
+
 ```bash
 python run_backtest.py
 ```
+
 Interactive menu with 6 different backtesting scenarios.
 
 ---
@@ -27,29 +33,33 @@ Interactive menu with 6 different backtesting scenarios.
 ## 📊 What It Tests
 
 ### **Signal Quality Validation**
+
 - **TCS Accuracy**: Win rates at different TCS thresholds
 - **Signal Volume**: Target 60-70 signals per day across 10 pairs
 - **Classification**: ARCADE vs SNIPER signal types
 - **Risk-Velocity Engine**: Mathematical classification accuracy
 
 ### **Trading System Validation**
+
 - **Fire Mode Rules**: Tier-based access control
 - **Risk Management**: Drawdown limits, position sizing
 - **Execution Logic**: Realistic spreads, slippage, commissions
 - **Performance Metrics**: Win rates, profit factors, Sharpe ratios
 
 ### **Tier Performance Testing**
+
 - **NIBBLER**: 70%+ TCS, 6 shots/day
 - **FANG**: 85%+ TCS, 10 shots/day
 - **COMMANDER Manual**: 85%+ TCS, 12 shots/day
 - **COMMANDER Auto**: 91%+ TCS, 12 shots/day
-- ****: 91%+ TCS, unlimited shots
+- \*\*\*\*: 91%+ TCS, unlimited shots
 
 ---
 
 ## 🧪 Test Scenarios
 
 ### **1. Signal Quality Test**
+
 **Purpose**: Validate TCS accuracy and signal generation
 **Duration**: 1 month
 **Validation**: 85%+ win rate at 85%+ TCS
@@ -63,6 +73,7 @@ Interactive menu with 6 different backtesting scenarios.
 ```
 
 ### **2. Tier Performance Test**
+
 **Purpose**: Compare performance across tier configurations
 **Duration**: 1 month
 **Validation**: Each tier meets performance expectations
@@ -76,6 +87,7 @@ COMMANDER:  85-90% win rate, varies by mode
 ```
 
 ### **3. Stress Test**
+
 **Purpose**: Extended testing across market conditions
 **Duration**: 3 months, all 10 pairs
 **Validation**: System resilience and consistency
@@ -89,6 +101,7 @@ COMMANDER:  85-90% win rate, varies by mode
 ```
 
 ### **4. TCS Threshold Analysis**
+
 **Purpose**: Find optimal TCS thresholds for different goals
 **Validation**: Balance between signal volume and quality
 
@@ -99,10 +112,12 @@ Quality Goal: 85%+ win rate → Required TCS threshold
 ```
 
 ### **5. Custom Backtest**
+
 **Purpose**: User-defined parameters and date ranges
 **Flexibility**: Test specific periods or market conditions
 
 ### **6. Full Test Suite**
+
 **Purpose**: Run all tests sequentially
 **Duration**: ~30 minutes
 **Validation**: Complete system verification
@@ -111,14 +126,14 @@ Quality Goal: 85%+ win rate → Required TCS threshold
 
 ## 📈 Performance Targets
 
-| Metric | Target | Validation |
-|--------|--------|------------|
-| **Overall Win Rate** | 75%+ | ✅ Must achieve |
-| **85%+ TCS Win Rate** | 85%+ | ✅ Must achieve |
-| **Signal Volume** | 60-70/day | ✅ Must achieve |
-| **Max Drawdown** | <15% | ✅ Must not exceed |
-| **Profit Factor** | >1.5 | ✅ Must achieve |
-| **Consecutive Losses** | <5 | ✅ Must not exceed |
+| Metric                 | Target    | Validation         |
+| ---------------------- | --------- | ------------------ |
+| **Overall Win Rate**   | 75%+      | ✅ Must achieve    |
+| **85%+ TCS Win Rate**  | 85%+      | ✅ Must achieve    |
+| **Signal Volume**      | 60-70/day | ✅ Must achieve    |
+| **Max Drawdown**       | <15%      | ✅ Must not exceed |
+| **Profit Factor**      | >1.5      | ✅ Must achieve    |
+| **Consecutive Losses** | <5        | ✅ Must not exceed |
 
 ---
 
@@ -179,21 +194,25 @@ Historical Data Structure:
 ## 📋 Reports Generated
 
 ### **Performance Summary**
+
 - Win rate, profit/loss, drawdown metrics
 - Signal volume and frequency analysis
 - Risk-adjusted returns and Sharpe ratio
 
 ### **TCS Accuracy Analysis**
+
 - Win rates by TCS threshold (70%, 75%, 80%, 85%, 90%, 95%)
 - Signal quality validation
 - Threshold optimization recommendations
 
 ### **Trade Details**
+
 - Individual trade results with entry/exit data
 - Hold times and profit/loss breakdown
 - Success/failure pattern analysis
 
 ### **Risk Analysis**
+
 - Maximum drawdown periods
 - Consecutive loss streaks
 - Volatility and correlation analysis
@@ -218,6 +237,7 @@ config = BacktestConfig(
 ```
 
 ### **Customization Options**
+
 - Test specific date ranges
 - Select currency pairs
 - Adjust risk parameters
@@ -231,20 +251,24 @@ config = BacktestConfig(
 ### **Common Issues**
 
 **"No historical data found"**
+
 - Run `setup_backtesting.py` to create sample data
 - Add real historical data to `/data/historical/historical_data.db`
 
 **"Signal generation failed"**
+
 - Ensure hybrid risk-velocity engine is working
 - Check TCS calculation components
 - Verify fire mode configurations
 
 **"Trade simulation errors"**
+
 - Check spread and commission settings
 - Verify TP/SL level calculations
 - Ensure realistic market conditions
 
 ### **Performance Issues**
+
 - Reduce test duration for faster results
 - Test fewer currency pairs
 - Use sample data instead of full historical dataset
@@ -254,6 +278,7 @@ config = BacktestConfig(
 ## 🎯 Expected Outcomes
 
 ### **System Validation**
+
 Running the backtesting system will validate:
 
 1. **Signal Quality**: TCS scores accurately predict outcomes
@@ -264,12 +289,14 @@ Running the backtesting system will validate:
 6. **Performance**: System meets 85%+ win rate at high TCS
 
 ### **Business Validation**
+
 - Confirms user tier pricing is justified
 - Validates marketing claims (85%+ win rate)
 - Identifies optimal TCS thresholds
 - Demonstrates system edge over random trading
 
 ### **Technical Validation**
+
 - Proves signal algorithms work as intended
 - Confirms risk management is effective
 - Validates trading execution logic

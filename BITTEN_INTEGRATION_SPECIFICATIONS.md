@@ -1,12 +1,15 @@
 # BITTEN System Integration Specifications
 
 ## Overview
+
 This document provides comprehensive technical specifications for all integration points within the BITTEN trading system, including data formats, communication protocols, error handling, and integration patterns.
 
 ## 1. MT5 Farm Integration and Bridge System
 
 ### 1.1 Architecture Overview
+
 The BITTEN system uses a hybrid approach for MT5 integration:
+
 - **Remote MT5 Farm**: Remote server-based MT5 instances (129.212.185.102:8001)
 - **Local MT5 Bridge**: File-based communication via EA (Expert Advisor)
 - **Adaptive Routing**: Fallback mechanisms between remote and local bridges
@@ -14,6 +17,7 @@ The BITTEN system uses a hybrid approach for MT5 integration:
 ### 1.2 MT5 Farm Adapter (`mt5_farm_adapter.py`)
 
 #### Connection Configuration
+
 ```python
 {
     "farm_url": "http://129.212.185.102:8001",
@@ -24,6 +28,7 @@ The BITTEN system uses a hybrid approach for MT5 integration:
 ```
 
 #### API Endpoints
+
 - **Health Check**: `GET /health`
 - **Execute Trade**: `POST /execute`
 - **Get Status**: `GET /status`
@@ -32,61 +37,66 @@ The BITTEN system uses a hybrid approach for MT5 integration:
 - **Positions**: `GET /positions`
 
 #### Trade Execution Request Format
+
 ```json
 {
-    "action": "OPEN_TRADE",
-    "symbol": "EURUSD",
-    "direction": "BUY",
-    "lot_size": 0.01,
-    "stop_loss": 1.0950,
-    "take_profit": 1.1050,
-    "comment": "BITTEN",
-    "magic_number": 12345,
-    "timestamp": 1672531200
+  "action": "OPEN_TRADE",
+  "symbol": "EURUSD",
+  "direction": "BUY",
+  "lot_size": 0.01,
+  "stop_loss": 1.095,
+  "take_profit": 1.105,
+  "comment": "BITTEN",
+  "magic_number": 12345,
+  "timestamp": 1672531200
 }
 ```
 
 #### Response Format
+
 ```json
 {
-    "success": true,
-    "broker": "broker1",
-    "ticket": 12345678,
-    "message": "Trade executed successfully",
-    "execution_time": 1672531201,
-    "price": 1.1000
+  "success": true,
+  "broker": "broker1",
+  "ticket": 12345678,
+  "message": "Trade executed successfully",
+  "execution_time": 1672531201,
+  "price": 1.1
 }
 ```
 
 ### 1.3 Local MT5 Bridge Configuration (`mt5_bridge.json`)
 
 #### Bridge Settings
+
 ```json
 {
-    "mt5": {
-        "enabled": true,
-        "files_path": null,
-        "check_interval_ms": 100,
-        "trade_timeout": 30,
-        "max_retries": 3,
-        "slippage_points": 20,
-        "magic_number": 20250626
-    },
-    "bridge": {
-        "instruction_file": "bitten_instructions.txt",
-        "result_file": "bitten_results.txt",
-        "status_file": "bitten_status.txt",
-        "heartbeat_interval": 5
-    }
+  "mt5": {
+    "enabled": true,
+    "files_path": null,
+    "check_interval_ms": 100,
+    "trade_timeout": 30,
+    "max_retries": 3,
+    "slippage_points": 20,
+    "magic_number": 20250626
+  },
+  "bridge": {
+    "instruction_file": "bitten_instructions.txt",
+    "result_file": "bitten_results.txt",
+    "status_file": "bitten_status.txt",
+    "heartbeat_interval": 5
+  }
 }
 ```
 
 #### File Communication Protocol
+
 - **Instruction File**: Write trade instructions
 - **Result File**: Read execution results
 - **Status File**: Monitor EA status
 
 ### 1.4 Error Handling
+
 ```python
 # Connection failures
 {
@@ -110,6 +120,7 @@ The BITTEN system uses a hybrid approach for MT5 integration:
 ### 2.1 Bot Configuration (`config/telegram.py`)
 
 #### Core Settings
+
 ```python
 {
     "BOT_TOKEN": "7854827710:AAHnUNfP5GyxoYePoAV5BeOtDbmEJo6i_EQ",
@@ -124,6 +135,7 @@ The BITTEN system uses a hybrid approach for MT5 integration:
 ### 2.2 Command Router (`telegram_router.py`)
 
 #### Command Categories
+
 ```python
 {
     "System": ["start", "help", "intel", "status", "me", "callsign"],
@@ -139,6 +151,7 @@ The BITTEN system uses a hybrid approach for MT5 integration:
 ```
 
 #### Command Processing Flow
+
 1. **Input Validation**: Sanitize user input
 2. **Authentication**: Check user permissions
 3. **Rate Limiting**: Prevent spam
@@ -149,6 +162,7 @@ The BITTEN system uses a hybrid approach for MT5 integration:
 ### 2.3 Message Formats
 
 #### Signal Alert Format
+
 ```python
 {
     "type": "signal_alert",
@@ -164,6 +178,7 @@ The BITTEN system uses a hybrid approach for MT5 integration:
 ```
 
 #### User Status Response
+
 ```python
 {
     "user_id": 123456,
@@ -178,6 +193,7 @@ The BITTEN system uses a hybrid approach for MT5 integration:
 ### 2.4 Webhook Security (`webhook_security.py`)
 
 #### Security Middleware
+
 - **Signature Verification**: Verify Telegram webhook signature
 - **Rate Limiting**: 30 requests per minute
 - **Request Size Validation**: 1MB maximum
@@ -189,6 +205,7 @@ The BITTEN system uses a hybrid approach for MT5 integration:
 ### 3.1 Flask Application (`web_app.py`)
 
 #### Core Endpoints
+
 ```python
 @app.route('/')                    # Landing page
 @app.route('/terms')               # Terms of service
@@ -201,12 +218,14 @@ The BITTEN system uses a hybrid approach for MT5 integration:
 ### 3.2 WebApp Router (`webapp_router.py`)
 
 #### HUD Interfaces
+
 - **Sniper HUD**: `/sniper_hud` - Precision trading interface
 - **Commander HUD**: `/commander_hud` - Advanced command interface
 - **Mission HUD**: `/mission_hud` - Educational interface
 - **Fang HUD**: `/fang_hud` - Aggressive trading interface
 
 #### API Endpoints
+
 ```python
 GET /api/user/profile              # User profile data
 GET /api/trades/history            # Trade history
@@ -218,6 +237,7 @@ GET /api/analytics/performance     # Performance metrics
 ### 3.3 WebApp Signal Integration
 
 #### Signal Display Format
+
 ```javascript
 {
     "signal_id": "SIG_20240101_001",
@@ -242,6 +262,7 @@ GET /api/analytics/performance     # Performance metrics
 ### 4.1 News API Integration (`news_api_client.py`)
 
 #### Configuration
+
 ```python
 {
     "provider": "economic_calendar",
@@ -254,6 +275,7 @@ GET /api/analytics/performance     # Performance metrics
 ```
 
 #### Event Structure
+
 ```python
 {
     "event_time": "2024-01-01T14:30:00Z",
@@ -269,6 +291,7 @@ GET /api/analytics/performance     # Performance metrics
 ### 4.2 Market Data Integration
 
 #### TraderMade API Client
+
 ```python
 {
     "endpoint": "https://marketdata.tradermade.com/api/v1",
@@ -279,6 +302,7 @@ GET /api/analytics/performance     # Performance metrics
 ```
 
 #### Live Data Filter
+
 ```python
 {
     "max_positions": 10,
@@ -291,12 +315,13 @@ GET /api/analytics/performance     # Performance metrics
 ### 4.3 Stripe Payment Integration
 
 #### Webhook Handler
+
 ```python
 @app.route('/stripe/webhook', methods=['POST'])
 def handle_stripe_webhook():
     event_types = [
         'subscription_created',
-        'subscription_updated', 
+        'subscription_updated',
         'subscription_deleted',
         'payment_succeeded',
         'payment_failed',
@@ -305,6 +330,7 @@ def handle_stripe_webhook():
 ```
 
 #### Payment Processor
+
 ```python
 {
     "stripe_key": "sk_live_YOUR_SECRET_KEY_HERE",
@@ -322,17 +348,18 @@ def handle_stripe_webhook():
 ### 5.1 Database Connection (`database/connection.py`)
 
 #### Current Implementation
+
 ```python
 class DatabaseSession:
     def __enter__(self):
         return self
-    
+
     def __exit__(self, *args):
         pass
-    
+
     def commit(self):
         pass
-    
+
     def rollback(self):
         pass
 ```
@@ -340,6 +367,7 @@ class DatabaseSession:
 ### 5.2 Data Models
 
 #### User Profile
+
 ```python
 {
     "user_id": 123456,
@@ -353,6 +381,7 @@ class DatabaseSession:
 ```
 
 #### Trade Record
+
 ```python
 {
     "trade_id": "TRD_20240101_001",
@@ -372,12 +401,14 @@ class DatabaseSession:
 ### 5.3 Data Persistence
 
 #### File-Based Storage
+
 - **User Profiles**: `data/bitten_xp.db`
 - **Trade Records**: `data/trades/trades.db`
 - **Market Data**: `data/live_market.db`
 - **Onboarding**: `data/onboarding/active/`
 
 #### Migration System
+
 ```bash
 # Database migrations
 migrations/
@@ -392,6 +423,7 @@ migrations/
 ### 6.1 WebSocket Integration
 
 #### Signal Distribution
+
 ```python
 {
     "type": "signal_update",
@@ -406,6 +438,7 @@ migrations/
 ```
 
 #### Position Updates
+
 ```python
 {
     "type": "position_update",
@@ -422,6 +455,7 @@ migrations/
 ### 6.2 Event System (`event_system.py`)
 
 #### Event Types
+
 - **signal_generated**: New signal created
 - **trade_executed**: Trade opened/closed
 - **user_upgraded**: User tier upgrade
@@ -429,6 +463,7 @@ migrations/
 - **news_alert**: High-impact news event
 
 #### Event Handler Registration
+
 ```python
 @event_system.on('signal_generated')
 def handle_signal(event_data):
@@ -444,6 +479,7 @@ def handle_trade(event_data):
 ### 6.3 Notification System
 
 #### Multi-Channel Notifications
+
 - **Telegram**: Primary notification channel
 - **WebApp**: Real-time updates
 - **Email**: Important alerts
@@ -454,6 +490,7 @@ def handle_trade(event_data):
 ### 7.1 Logging Configuration
 
 #### Log Levels
+
 - **DEBUG**: Development debugging
 - **INFO**: General information
 - **WARNING**: Warning messages
@@ -461,6 +498,7 @@ def handle_trade(event_data):
 - **CRITICAL**: Critical failures
 
 #### Log Files
+
 ```
 logs/
 ├── bulletproof_agent.log
@@ -473,6 +511,7 @@ logs/
 ### 7.2 Health Monitoring
 
 #### Health Check Endpoints
+
 ```python
 @app.route('/health')
 def health_check():
@@ -492,6 +531,7 @@ def health_check():
 ### 7.3 Performance Metrics
 
 #### Key Performance Indicators
+
 - **Signal Latency**: Time from generation to delivery
 - **Trade Execution Time**: MT5 execution latency
 - **System Uptime**: Service availability
@@ -499,6 +539,7 @@ def health_check():
 - **User Engagement**: Activity metrics
 
 #### Metrics Collection
+
 ```python
 {
     "timestamp": "2024-01-01T12:00:00Z",
@@ -517,6 +558,7 @@ def health_check():
 ### 8.1 Email Service Integration
 
 #### Email Scheduler
+
 ```python
 {
     "provider": "smtp",
@@ -529,6 +571,7 @@ def health_check():
 ```
 
 #### Email Templates
+
 - **Welcome Email**: New user onboarding
 - **Press Pass**: 7-day trial activation
 - **Upgrade Notifications**: Tier upgrades
@@ -537,6 +580,7 @@ def health_check():
 ### 8.2 Payment Processing
 
 #### Stripe Integration
+
 ```python
 {
     "webhook_events": [
@@ -552,6 +596,7 @@ def health_check():
 ### 8.3 Social Media Integration
 
 #### Twitter/X Integration
+
 ```python
 {
     "api_key": "your_api_key",
@@ -567,18 +612,20 @@ def health_check():
 ### 9.1 Security Measures
 
 #### Input Validation
+
 ```python
 def validate_trade_request(request):
     required_fields = ['symbol', 'direction', 'lot_size']
     for field in required_fields:
         if field not in request:
             raise ValueError(f"Missing required field: {field}")
-    
+
     if request['lot_size'] <= 0 or request['lot_size'] > 10:
         raise ValueError("Invalid lot size")
 ```
 
 #### Rate Limiting
+
 ```python
 @rate_limit(max_requests=30, window=60)
 def protected_endpoint():
@@ -588,6 +635,7 @@ def protected_endpoint():
 ### 9.2 Error Handling Patterns
 
 #### Graceful Degradation
+
 ```python
 def execute_trade_with_fallback(trade_request):
     try:
@@ -597,7 +645,7 @@ def execute_trade_with_fallback(trade_request):
             return result
     except Exception as e:
         logger.warning(f"Farm failed: {e}")
-    
+
     try:
         # Fallback to local bridge
         result = local_bridge.execute_trade(trade_request)
@@ -608,6 +656,7 @@ def execute_trade_with_fallback(trade_request):
 ```
 
 #### Circuit Breaker Pattern
+
 ```python
 class CircuitBreaker:
     def __init__(self, failure_threshold=5, timeout=60):
@@ -616,14 +665,14 @@ class CircuitBreaker:
         self.failure_count = 0
         self.last_failure_time = None
         self.state = 'CLOSED'
-    
+
     def call(self, func, *args, **kwargs):
         if self.state == 'OPEN':
             if time.time() - self.last_failure_time > self.timeout:
                 self.state = 'HALF_OPEN'
             else:
                 raise Exception("Circuit breaker is OPEN")
-        
+
         try:
             result = func(*args, **kwargs)
             self.on_success()
@@ -671,6 +720,7 @@ News Filter   Tier Limits   Error Handle  PnL Track   Tilt Control
 ### 11.1 Configuration Files
 
 #### Core Configuration
+
 ```yaml
 # config/stealth_settings.yml
 stealth:
@@ -683,6 +733,7 @@ stealth:
 ```
 
 #### Trading Configuration
+
 ```yaml
 # config/trading.yml
 trading:

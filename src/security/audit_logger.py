@@ -17,9 +17,9 @@ import logging
 import logging.handlers
 import os
 from datetime import datetime, timezone
+from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, Optional
-from enum import Enum
 
 
 class AuditEventType(Enum):
@@ -54,22 +54,33 @@ class SanitizedJSONFormatter(logging.Formatter):
     """Custom JSON formatter that ensures no sensitive data leaks"""
 
     SENSITIVE_KEYS = {
-        'password', 'token', 'secret', 'key', 'nonce',
-        'balance', 'account_number', 'email', 'phone',
-        'equity', 'pnl', 'profit', 'loss', 'amount'
+        "password",
+        "token",
+        "secret",
+        "key",
+        "nonce",
+        "balance",
+        "account_number",
+        "email",
+        "phone",
+        "equity",
+        "pnl",
+        "profit",
+        "loss",
+        "amount",
     }
 
     def format(self, record: logging.LogRecord) -> str:
         """Format log record as sanitized JSON"""
         log_data = {
-            'timestamp': datetime.now(timezone.utc).isoformat(),
-            'level': record.levelname,
-            'event_type': getattr(record, 'event_type', 'unknown'),
-            'message': record.getMessage(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "level": record.levelname,
+            "event_type": getattr(record, "event_type", "unknown"),
+            "message": record.getMessage(),
         }
 
         # Add extra fields from record, sanitizing as needed
-        if hasattr(record, 'extra_data'):
+        if hasattr(record, "extra_data"):
             log_data.update(self._sanitize_dict(record.extra_data))
 
         return json.dumps(log_data, sort_keys=True)
@@ -84,10 +95,7 @@ class SanitizedJSONFormatter(logging.Formatter):
             elif isinstance(value, dict):
                 sanitized[key] = self._sanitize_dict(value)
             elif isinstance(value, list):
-                sanitized[key] = [
-                    self._sanitize_dict(item) if isinstance(item, dict) else item
-                    for item in value
-                ]
+                sanitized[key] = [self._sanitize_dict(item) if isinstance(item, dict) else item for item in value]
             else:
                 sanitized[key] = value
         return sanitized
@@ -107,7 +115,7 @@ class AuditLogger:
         log_file: str = "audit.log",
         max_bytes: int = 100 * 1024 * 1024,  # 100MB
         backup_count: int = 30,  # 30 days of daily logs
-        compression: bool = True
+        compression: bool = True,
     ):
         """
         Initialize audit logger with rotation.
@@ -129,7 +137,7 @@ class AuditLogger:
         os.chmod(self.log_dir, 0o700)
 
         # Create logger
-        self.logger = logging.getLogger('bitten.audit')
+        self.logger = logging.getLogger("bitten.audit")
         self.logger.setLevel(logging.INFO)
         self.logger.propagate = False  # Don't propagate to root logger
 
@@ -141,21 +149,18 @@ class AuditLogger:
             # Use TimedRotatingFileHandler for daily rotation with compression
             handler = logging.handlers.TimedRotatingFileHandler(
                 filename=str(self.log_file),
-                when='midnight',
+                when="midnight",
                 interval=1,
                 backupCount=backup_count,
-                encoding='utf-8',
-                utc=True
+                encoding="utf-8",
+                utc=True,
             )
             handler.namer = lambda name: name + ".gz"
             handler.rotator = self._compress_rotated_log
         else:
             # Use size-based rotation
             handler = logging.handlers.RotatingFileHandler(
-                filename=str(self.log_file),
-                maxBytes=max_bytes,
-                backupCount=backup_count,
-                encoding='utf-8'
+                filename=str(self.log_file), maxBytes=max_bytes, backupCount=backup_count, encoding="utf-8"
             )
 
         # Set formatter
@@ -173,37 +178,21 @@ class AuditLogger:
         import gzip
         import shutil
 
-        with open(source, 'rb') as f_in:
-            with gzip.open(dest, 'wb') as f_out:
+        with open(source, "rb") as f_in:
+            with gzip.open(dest, "wb") as f_out:
                 shutil.copyfileobj(f_in, f_out)
         os.remove(source)
 
-    def _log(
-        self,
-        level: int,
-        event_type: AuditEventType,
-        message: str,
-        **extra_data
-    ):
+    def _log(self, level: int, event_type: AuditEventType, message: str, **extra_data):
         """Internal logging method with sanitization"""
-        extra = {
-            'event_type': event_type.value,
-            'extra_data': extra_data
-        }
+        extra = {"event_type": event_type.value, "extra_data": extra_data}
         self.logger.log(level, message, extra=extra)
 
     # ============================================================
     # MISSION SESSION EVENTS
     # ============================================================
 
-    def log_session_created(
-        self,
-        sub: str,
-        ms: str,
-        aid: str,
-        ttl: int,
-        **extra
-    ):
+    def log_session_created(self, sub: str, ms: str, aid: str, ttl: int, **extra):
         """
         Log mission session creation.
 
@@ -221,17 +210,10 @@ class AuditLogger:
             ms=ms,
             aid=aid,
             ttl=ttl,
-            **extra
+            **extra,
         )
 
-    def log_session_validated(
-        self,
-        sub: str,
-        ms: str,
-        result: bool,
-        reason: Optional[str] = None,
-        **extra
-    ):
+    def log_session_validated(self, sub: str, ms: str, result: bool, reason: Optional[str] = None, **extra):
         """
         Log mission session validation attempt.
 
@@ -242,34 +224,16 @@ class AuditLogger:
             reason: Reason for failure (if applicable)
         """
         level = logging.INFO if result else logging.WARNING
-        message = (
-            f"Session validation {'succeeded' if result else 'failed'} for user {sub}"
-        )
+        message = f"Session validation {'succeeded' if result else 'failed'} for user {sub}"
 
-        data = {
-            'sub': sub,
-            'ms': ms,
-            'result': result,
-            **extra
-        }
+        data = {"sub": sub, "ms": ms, "result": result, **extra}
 
         if reason:
-            data['reason'] = reason
+            data["reason"] = reason
 
-        self._log(
-            level,
-            AuditEventType.SESSION_VALIDATED,
-            message,
-            **data
-        )
+        self._log(level, AuditEventType.SESSION_VALIDATED, message, **data)
 
-    def log_session_executed(
-        self,
-        sub: str,
-        ms: str,
-        op_id: str,
-        **extra
-    ):
+    def log_session_executed(self, sub: str, ms: str, op_id: str, **extra):
         """
         Log mission session execution.
 
@@ -285,15 +249,10 @@ class AuditLogger:
             sub=sub,
             ms=ms,
             op_id=op_id,
-            **extra
+            **extra,
         )
 
-    def log_session_expired(
-        self,
-        ms: str,
-        expired_at: str,
-        **extra
-    ):
+    def log_session_expired(self, ms: str, expired_at: str, **extra):
         """
         Log mission session expiration.
 
@@ -307,21 +266,14 @@ class AuditLogger:
             f"Mission session {ms} expired",
             ms=ms,
             expired_at=expired_at,
-            **extra
+            **extra,
         )
 
     # ============================================================
     # FIRE EVENTS
     # ============================================================
 
-    def log_fire_requested(
-        self,
-        sub: str,
-        ms: str,
-        aid: str,
-        op_id: str,
-        **extra
-    ):
+    def log_fire_requested(self, sub: str, ms: str, aid: str, op_id: str, **extra):
         """
         Log fire execution request.
 
@@ -339,17 +291,10 @@ class AuditLogger:
             ms=ms,
             aid=aid,
             op_id=op_id,
-            **extra
+            **extra,
         )
 
-    def log_fire_idempotent_hit(
-        self,
-        sub: str,
-        ms: str,
-        client_request_id: str,
-        cached_op_id: str,
-        **extra
-    ):
+    def log_fire_idempotent_hit(self, sub: str, ms: str, client_request_id: str, cached_op_id: str, **extra):
         """
         Log idempotency cache hit.
 
@@ -367,17 +312,10 @@ class AuditLogger:
             ms=ms,
             client_request_id=client_request_id,
             cached_op_id=cached_op_id,
-            **extra
+            **extra,
         )
 
-    def log_fire_risk_violation(
-        self,
-        sub: str,
-        ms: str,
-        requested_risk: float,
-        max_risk: float,
-        **extra
-    ):
+    def log_fire_risk_violation(self, sub: str, ms: str, requested_risk: float, max_risk: float, **extra):
         """
         Log risk guardrail violation.
 
@@ -395,17 +333,10 @@ class AuditLogger:
             ms=ms,
             requested_risk=requested_risk,
             max_risk=max_risk,
-            **extra
+            **extra,
         )
 
-    def log_fire_scope_violation(
-        self,
-        sub: str,
-        ms: str,
-        required_scope: str,
-        had_scopes: list,
-        **extra
-    ):
+    def log_fire_scope_violation(self, sub: str, ms: str, required_scope: str, had_scopes: list, **extra):
         """
         Log scope/permission violation.
 
@@ -423,19 +354,14 @@ class AuditLogger:
             ms=ms,
             required_scope=required_scope,
             had_scopes=had_scopes,
-            **extra
+            **extra,
         )
 
     # ============================================================
     # WEBSOCKET EVENTS
     # ============================================================
 
-    def log_ws_connected(
-        self,
-        sid: str,
-        sub: Optional[str] = None,
-        **extra
-    ):
+    def log_ws_connected(self, sid: str, sub: Optional[str] = None, **extra):
         """
         Log WebSocket connection attempt.
 
@@ -447,21 +373,9 @@ class AuditLogger:
         if sub:
             message += f" (user: {sub})"
 
-        self._log(
-            logging.INFO,
-            AuditEventType.WS_CONNECTED,
-            message,
-            sid=sid,
-            sub=sub,
-            **extra
-        )
+        self._log(logging.INFO, AuditEventType.WS_CONNECTED, message, sid=sid, sub=sub, **extra)
 
-    def log_ws_auth_failed(
-        self,
-        sid: str,
-        reason: str,
-        **extra
-    ):
+    def log_ws_auth_failed(self, sid: str, reason: str, **extra):
         """
         Log WebSocket authentication failure.
 
@@ -475,17 +389,10 @@ class AuditLogger:
             f"WebSocket auth failed for {sid}: {reason}",
             sid=sid,
             reason=reason,
-            **extra
+            **extra,
         )
 
-    def log_ws_subscribed(
-        self,
-        sid: str,
-        sub: str,
-        topic: str,
-        authorized: bool,
-        **extra
-    ):
+    def log_ws_subscribed(self, sid: str, sub: str, topic: str, authorized: bool, **extra):
         """
         Log WebSocket topic subscription attempt.
 
@@ -496,29 +403,13 @@ class AuditLogger:
             authorized: Whether subscription was authorized
         """
         level = logging.INFO if authorized else logging.WARNING
-        message = (
-            f"WebSocket subscription {'authorized' if authorized else 'denied'}: "
-            f"user {sub} -> topic {topic}"
-        )
+        message = f"WebSocket subscription {'authorized' if authorized else 'denied'}: " f"user {sub} -> topic {topic}"
 
         self._log(
-            level,
-            AuditEventType.WS_SUBSCRIBED,
-            message,
-            sid=sid,
-            sub=sub,
-            topic=topic,
-            authorized=authorized,
-            **extra
+            level, AuditEventType.WS_SUBSCRIBED, message, sid=sid, sub=sub, topic=topic, authorized=authorized, **extra
         )
 
-    def log_ws_disconnected(
-        self,
-        sid: str,
-        sub: Optional[str],
-        duration: float,
-        **extra
-    ):
+    def log_ws_disconnected(self, sid: str, sub: Optional[str], duration: float, **extra):
         """
         Log WebSocket disconnection.
 
@@ -532,26 +423,13 @@ class AuditLogger:
             message += f" (user: {sub})"
         message += f" after {duration:.2f}s"
 
-        self._log(
-            logging.INFO,
-            AuditEventType.WS_DISCONNECTED,
-            message,
-            sid=sid,
-            sub=sub,
-            duration=duration,
-            **extra
-        )
+        self._log(logging.INFO, AuditEventType.WS_DISCONNECTED, message, sid=sid, sub=sub, duration=duration, **extra)
 
     # ============================================================
     # GENERAL SECURITY EVENTS
     # ============================================================
 
-    def log_auth_success(
-        self,
-        sub: str,
-        method: str = "jwt",
-        **extra
-    ):
+    def log_auth_success(self, sub: str, method: str = "jwt", **extra):
         """
         Log successful authentication.
 
@@ -565,15 +443,10 @@ class AuditLogger:
             f"User {sub} authenticated via {method}",
             sub=sub,
             method=method,
-            **extra
+            **extra,
         )
 
-    def log_auth_failed(
-        self,
-        reason: str,
-        sub: Optional[str] = None,
-        **extra
-    ):
+    def log_auth_failed(self, reason: str, sub: Optional[str] = None, **extra):
         """
         Log failed authentication attempt.
 
@@ -585,22 +458,9 @@ class AuditLogger:
         if sub:
             message += f" (user: {sub})"
 
-        self._log(
-            logging.WARNING,
-            AuditEventType.AUTH_FAILED,
-            message,
-            reason=reason,
-            sub=sub,
-            **extra
-        )
+        self._log(logging.WARNING, AuditEventType.AUTH_FAILED, message, reason=reason, sub=sub, **extra)
 
-    def log_authorization_denied(
-        self,
-        sub: str,
-        resource: str,
-        action: str,
-        **extra
-    ):
+    def log_authorization_denied(self, sub: str, resource: str, action: str, **extra):
         """
         Log authorization denial.
 
@@ -616,16 +476,10 @@ class AuditLogger:
             sub=sub,
             resource=resource,
             action=action,
-            **extra
+            **extra,
         )
 
-    def log_rate_limit_exceeded(
-        self,
-        sub: str,
-        endpoint: str,
-        limit: int,
-        **extra
-    ):
+    def log_rate_limit_exceeded(self, sub: str, endpoint: str, limit: int, **extra):
         """
         Log rate limit violation.
 
@@ -641,7 +495,7 @@ class AuditLogger:
             sub=sub,
             endpoint=endpoint,
             limit=limit,
-            **extra
+            **extra,
         )
 
 
@@ -679,31 +533,12 @@ if __name__ == "__main__":
     logger = get_audit_logger()
 
     # Log various events
-    logger.log_session_created(
-        sub="7176191872",
-        ms="ms_abc123",
-        aid="alert_xyz789",
-        ttl=300
-    )
+    logger.log_session_created(sub="7176191872", ms="ms_abc123", aid="alert_xyz789", ttl=300)
 
-    logger.log_fire_requested(
-        sub="7176191872",
-        ms="ms_abc123",
-        aid="alert_xyz789",
-        op_id="fire_def456"
-    )
+    logger.log_fire_requested(sub="7176191872", ms="ms_abc123", aid="alert_xyz789", op_id="fire_def456")
 
-    logger.log_fire_risk_violation(
-        sub="7176191872",
-        ms="ms_abc123",
-        requested_risk=10.0,
-        max_risk=5.0
-    )
+    logger.log_fire_risk_violation(sub="7176191872", ms="ms_abc123", requested_risk=10.0, max_risk=5.0)
 
-    logger.log_ws_connected(
-        sid="socket_123",
-        sub="7176191872",
-        ip="192.168.1.100"
-    )
+    logger.log_ws_connected(sid="socket_123", sub="7176191872", ip="192.168.1.100")
 
     print("Audit logs written to /var/log/bitten/audit.log")

@@ -3,38 +3,41 @@ BITTEN Tactical Mission System
 Transform forex education into military operations that strip emotions and build discipline
 """
 
-from typing import Dict, List, Tuple, Optional, Any
-from datetime import datetime, timedelta
-from enum import Enum
 import json
 import logging
+from datetime import datetime, timedelta
+from enum import Enum
+from typing import Any, Dict, List, Optional, Tuple
+
 
 class MissionType(Enum):
-    RECON = "reconnaissance"          # Information gathering (education)
-    ASSAULT = "assault"              # Direct trading execution  
-    DEFENSE = "defense"              # Risk management and protection
-    SURVIVAL = "survival"            # Loss recovery and emotional control
-    TRAINING = "training"            # Skill building without risk
-    LIBERATION = "liberation"        # Breaking bad habits
+    RECON = "reconnaissance"  # Information gathering (education)
+    ASSAULT = "assault"  # Direct trading execution
+    DEFENSE = "defense"  # Risk management and protection
+    SURVIVAL = "survival"  # Loss recovery and emotional control
+    TRAINING = "training"  # Skill building without risk
+    LIBERATION = "liberation"  # Breaking bad habits
+
 
 class MissionTier(Enum):
-    RECRUIT = 1      # Level 1-10: Basic training
-    PRIVATE = 2      # Level 11-25: Discipline building
-    SERGEANT = 3     # Level 26-50: Pattern recognition
-    LIEUTENANT = 4   # Level 51-75: Advanced tactics
-    CAPTAIN = 5      # Level 76-100: Market mastery
-    COMMANDER = 6    # Level 100+: Teaching others
+    RECRUIT = 1  # Level 1-10: Basic training
+    PRIVATE = 2  # Level 11-25: Discipline building
+    SERGEANT = 3  # Level 26-50: Pattern recognition
+    LIEUTENANT = 4  # Level 51-75: Advanced tactics
+    CAPTAIN = 5  # Level 76-100: Market mastery
+    COMMANDER = 6  # Level 100+: Teaching others
+
 
 class TacticalMissionSystem:
     """
     The system that converts forex education into psychological warfare training
     """
-    
+
     def __init__(self, db_connection, emotion_engine, personality_system):
         self.db = db_connection
         self.emotion_engine = emotion_engine
         self.personality_system = personality_system
-        
+
         # Mission templates for progressive education
         self.mission_templates = {
             # RECRUIT TIER - Basics
@@ -45,27 +48,22 @@ class TacticalMissionSystem:
                 "objective": "Understand the battlefield layout",
                 "hidden_education": "Learn what pips, spreads, and leverage mean",
                 "briefing": """Soldier, you've entered a war zone. The enemy has weapons you don't understand yet.
-                
-Your mission: Study the terrain. Learn what these 'pips' and 'spreads' are. 
+
+Your mission: Study the terrain. Learn what these 'pips' and 'spreads' are.
 This isn't gambling - it's warfare. Every number has meaning.
 
 Intel Package: Watch the charts. Notice how price moves in small steps (pips).
 See how different pairs move differently. EURUSD isn't GBPJPY.
 
 Success Condition: Watch 5 signals without trading. Just observe.
-                
+
 Remember: Dead soldiers don't learn. Patience keeps you alive.""",
                 "success_reward": 20,
                 "failure_consequence": "Extension to training mode",
                 "personality_guide": "DRILL",
                 "duration_minutes": 60,
-                "requirements": {
-                    "signals_observed": 5,
-                    "no_trades_placed": True,
-                    "notes_taken": True
-                }
+                "requirements": {"signals_observed": 5, "no_trades_placed": True, "notes_taken": True},
             },
-            
             "reading_battlefield": {
                 "tier": MissionTier.RECRUIT,
                 "type": MissionType.RECON,
@@ -89,13 +87,8 @@ When it finally breaks, the breakthrough is violent.
 This knowledge separates soldiers from casualties.""",
                 "success_reward": 30,
                 "personality_guide": "OVERWATCH",
-                "requirements": {
-                    "levels_identified": 3,
-                    "chart_analysis": True,
-                    "documentation": True
-                }
+                "requirements": {"levels_identified": 3, "chart_analysis": True, "documentation": True},
             },
-            
             # PRIVATE TIER - Discipline
             "risk_protocols": {
                 "tier": MissionTier.PRIVATE,
@@ -119,13 +112,8 @@ If you won't follow the rules, you're already dead.
 The market doesn't care about your feelings. It only respects discipline.""",
                 "success_reward": 40,
                 "personality_guide": "DOC",
-                "requirements": {
-                    "position_size_calculated": True,
-                    "risk_percentage": 2.0,
-                    "math_documented": True
-                }
+                "requirements": {"position_size_calculated": True, "risk_percentage": 2.0, "math_documented": True},
             },
-            
             "first_blood": {
                 "tier": MissionTier.PRIVATE,
                 "type": MissionType.ASSAULT,
@@ -157,10 +145,9 @@ Discipline is what keeps you alive in this war.""",
                     "stop_loss_set": True,
                     "take_profit_set": True,
                     "risk_managed": True,
-                    "protocol_followed": True
-                }
+                    "protocol_followed": True,
+                },
             },
-            
             # SERGEANT TIER - Pattern Recognition
             "enemy_psychology": {
                 "tier": MissionTier.SERGEANT,
@@ -188,10 +175,9 @@ Intel: When 95% of retail traders lose, being different isn't optional.""",
                 "requirements": {
                     "retail_patterns_identified": 5,
                     "institutional_analysis": True,
-                    "sentiment_tracking": True
-                }
+                    "sentiment_tracking": True,
+                },
             },
-            
             # LIEUTENANT TIER - Advanced Tactics
             "institutional_thinking": {
                 "tier": MissionTier.LIEUTENANT,
@@ -221,10 +207,9 @@ Now you're becoming a professional.""",
                 "requirements": {
                     "institutional_patterns": 3,
                     "order_flow_analysis": True,
-                    "professional_thinking": True
-                }
+                    "professional_thinking": True,
+                },
             },
-            
             # CAPTAIN TIER - Market Mastery
             "market_commander": {
                 "tier": MissionTier.CAPTAIN,
@@ -242,7 +227,7 @@ Now create your own battle plan:
 
 This system must be:
 - Backtestable
-- Repeatable 
+- Repeatable
 - Emotionless
 - Profitable
 
@@ -257,10 +242,9 @@ Will you lead yourself to victory or defeat?""",
                     "methodology_created": True,
                     "backtesting_completed": True,
                     "rules_documented": True,
-                    "leadership_demonstrated": True
-                }
+                    "leadership_demonstrated": True,
+                },
             },
-            
             # COMMANDER TIER - Teaching Others
             "build_the_army": {
                 "tier": MissionTier.COMMANDER,
@@ -293,11 +277,11 @@ Together.""",
                     "recruits_trained": 3,
                     "knowledge_shared": True,
                     "mentoring_completed": True,
-                    "army_built": True
-                }
-            }
+                    "army_built": True,
+                },
+            },
         }
-        
+
         # Situational missions for emotional events
         self.situational_missions = {
             "revenge_trading_lockdown": {
@@ -320,13 +304,8 @@ Smart commanders retreat to fight another day.
 
 This isn't punishment. This is survival protocol.
 Live to fight when conditions improve.""",
-                "requirements": {
-                    "no_trading_hours": 2,
-                    "battle_report": True,
-                    "emotional_reset": True
-                }
+                "requirements": {"no_trading_hours": 2, "battle_report": True, "emotional_reset": True},
             },
-            
             "overconfidence_check": {
                 "trigger": "win_streak >= 5",
                 "type": MissionType.DEFENSE,
@@ -346,33 +325,29 @@ The market humbles everyone eventually.
 Stay sharp. Stay disciplined. Stay alive.
 
 Your next trade determines if you're lucky or skilled.""",
-                "requirements": {
-                    "trade_review": True,
-                    "discipline_check": True,
-                    "position_size_audit": True
-                }
-            }
+                "requirements": {"trade_review": True, "discipline_check": True, "position_size_audit": True},
+            },
         }
-    
+
     async def get_current_mission(self, user_id: str) -> Optional[Dict]:
         """
         Get user's current active mission
         """
         try:
             query = """
-            SELECT * FROM mission_progress 
+            SELECT * FROM mission_progress
             WHERE user_id = %s AND status IN ('assigned', 'in_progress')
             ORDER BY assigned_at DESC
             LIMIT 1
             """
-            
+
             result = await self.db.fetch_one(query, (user_id,))
             return dict(result) if result else None
-            
+
         except Exception as e:
             logging.error(f"Failed to get current mission for {user_id}: {e}")
             return None
-    
+
     async def assign_mission(self, user_id: str, mission_id: str, context: Dict = None) -> Dict:
         """
         Assign a new mission to user
@@ -380,48 +355,47 @@ Your next trade determines if you're lucky or skilled.""",
         try:
             if mission_id not in self.mission_templates:
                 return {"success": False, "error": "Unknown mission"}
-            
+
             template = self.mission_templates[mission_id]
-            
+
             # Create mission record
             query = """
-            INSERT INTO mission_progress 
-            (user_id, mission_id, mission_name, mission_tier, psychological_goal, 
+            INSERT INTO mission_progress
+            (user_id, mission_id, mission_name, mission_tier, psychological_goal,
              educational_goal, status, assigned_at)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING id
             """
-            
-            result = await self.db.fetch_one(query, (
-                user_id,
-                mission_id,
-                template["title"],
-                template["tier"].value,
-                template["objective"],
-                template["hidden_education"],
-                "assigned",
-                datetime.now()
-            ))
-            
-            # Send mission briefing via personality system
-            await self._send_mission_briefing(
-                user_id,
-                template,
-                template["personality_guide"]
+
+            result = await self.db.fetch_one(
+                query,
+                (
+                    user_id,
+                    mission_id,
+                    template["title"],
+                    template["tier"].value,
+                    template["objective"],
+                    template["hidden_education"],
+                    "assigned",
+                    datetime.now(),
+                ),
             )
-            
+
+            # Send mission briefing via personality system
+            await self._send_mission_briefing(user_id, template, template["personality_guide"])
+
             return {
                 "success": True,
                 "mission_id": mission_id,
                 "database_id": result["id"],
                 "title": template["title"],
-                "tier": template["tier"].value
+                "tier": template["tier"].value,
             }
-            
+
         except Exception as e:
             logging.error(f"Failed to assign mission {mission_id} to {user_id}: {e}")
             return {"success": False, "error": str(e)}
-    
+
     async def check_mission_progress(self, user_id: str, event_data: Dict) -> Dict:
         """
         Check if user's actions progress their current mission
@@ -430,17 +404,17 @@ Your next trade determines if you're lucky or skilled.""",
             current_mission = await self.get_current_mission(user_id)
             if not current_mission:
                 return {"success": False, "error": "No active mission"}
-            
+
             mission_id = current_mission["mission_id"]
             template = self.mission_templates.get(mission_id)
-            
+
             if not template:
                 return {"success": False, "error": "Mission template not found"}
-            
+
             # Check requirements against event data
             requirements = template.get("requirements", {})
             progress = await self._evaluate_requirements(user_id, requirements, event_data)
-            
+
             # Update mission progress
             if progress["completed"]:
                 await self._complete_mission(user_id, mission_id, template)
@@ -448,7 +422,7 @@ Your next trade determines if you're lucky or skilled.""",
                     "success": True,
                     "mission_completed": True,
                     "reward": template.get("success_reward", 0),
-                    "next_mission": await self._suggest_next_mission(user_id, template)
+                    "next_mission": await self._suggest_next_mission(user_id, template),
                 }
             else:
                 await self._update_mission_progress(user_id, mission_id, progress)
@@ -456,13 +430,13 @@ Your next trade determines if you're lucky or skilled.""",
                     "success": True,
                     "mission_completed": False,
                     "progress": progress["percentage"],
-                    "next_step": progress["next_requirement"]
+                    "next_step": progress["next_requirement"],
                 }
-                
+
         except Exception as e:
             logging.error(f"Failed to check mission progress for {user_id}: {e}")
             return {"success": False, "error": str(e)}
-    
+
     async def trigger_situational_mission(self, user_id: str, trigger_event: str, context: Dict) -> Optional[Dict]:
         """
         Create situational mission based on emotional triggers
@@ -471,54 +445,52 @@ Your next trade determines if you're lucky or skilled.""",
             # Find matching situational mission
             for mission_id, mission_data in self.situational_missions.items():
                 if self._evaluate_trigger(trigger_event, mission_data["trigger"], context):
-                    
+
                     # Cancel current mission if necessary
                     current_mission = await self.get_current_mission(user_id)
                     if current_mission and mission_data["type"] == MissionType.SURVIVAL:
                         await self._suspend_mission(user_id, current_mission["mission_id"])
-                    
+
                     # Create situational mission
                     situational_id = f"situational_{mission_id}_{int(datetime.now().timestamp())}"
-                    
+
                     query = """
-                    INSERT INTO mission_progress 
+                    INSERT INTO mission_progress
                     (user_id, mission_id, mission_name, mission_tier, psychological_goal,
                      status, assigned_at)
                     VALUES (%s, %s, %s, %s, %s, %s, %s)
                     RETURNING id
                     """
-                    
-                    result = await self.db.fetch_one(query, (
-                        user_id,
-                        situational_id,
-                        mission_data["title"],
-                        999,  # Emergency priority
-                        "Emotional intervention",
-                        "assigned",
-                        datetime.now()
-                    ))
-                    
-                    # Send emergency briefing
-                    await self.personality_system.send_intervention(
-                        user_id,
-                        "DRILL",
-                        mission_data["briefing"],
-                        context
+
+                    result = await self.db.fetch_one(
+                        query,
+                        (
+                            user_id,
+                            situational_id,
+                            mission_data["title"],
+                            999,  # Emergency priority
+                            "Emotional intervention",
+                            "assigned",
+                            datetime.now(),
+                        ),
                     )
-                    
+
+                    # Send emergency briefing
+                    await self.personality_system.send_intervention(user_id, "DRILL", mission_data["briefing"], context)
+
                     return {
                         "mission_id": situational_id,
                         "title": mission_data["title"],
                         "type": mission_data["type"].value,
-                        "emergency": True
+                        "emergency": True,
                     }
-            
+
             return None
-            
+
         except Exception as e:
             logging.error(f"Failed to trigger situational mission for {user_id}: {e}")
             return None
-    
+
     async def get_mission_briefing(self, user_id: str, mission_id: str) -> Dict:
         """
         Generate formatted mission briefing for user
@@ -526,12 +498,12 @@ Your next trade determines if you're lucky or skilled.""",
         try:
             if mission_id not in self.mission_templates:
                 return {"success": False, "error": "Mission not found"}
-            
+
             template = self.mission_templates[mission_id]
-            
+
             # Get user's psychological profile for personalization
             user_profile = await self._get_user_psychology_profile(user_id)
-            
+
             # Format briefing with military styling
             briefing = f"""🎖️ **MISSION BRIEFING**
 **Operation**: {template['title']}
@@ -547,50 +519,47 @@ Your next trade determines if you're lucky or skilled.""",
 
 **TYPE /missions TO ACCEPT THIS ASSIGNMENT**
 """
-            
+
             return {
                 "success": True,
                 "briefing": briefing,
                 "mission_data": template,
-                "personalization": self._personalize_briefing(template, user_profile)
+                "personalization": self._personalize_briefing(template, user_profile),
             }
-            
+
         except Exception as e:
             logging.error(f"Failed to generate briefing for {mission_id}: {e}")
             return {"success": False, "error": str(e)}
-    
+
     # Helper methods
     async def _send_mission_briefing(self, user_id: str, template: Dict, personality: str):
         """Send mission briefing through personality system"""
         await self.personality_system.send_message(
-            user_id,
-            personality,
-            template["briefing"],
-            {"mission": True, "educational": True}
+            user_id, personality, template["briefing"], {"mission": True, "educational": True}
         )
-    
+
     async def _evaluate_requirements(self, user_id: str, requirements: Dict, event_data: Dict) -> Dict:
         """Evaluate if user has met mission requirements"""
         completed_count = 0
         total_requirements = len(requirements)
         next_requirement = None
-        
+
         for req_key, req_value in requirements.items():
             if self._check_requirement(req_key, req_value, event_data):
                 completed_count += 1
             elif next_requirement is None:
                 next_requirement = req_key
-        
+
         percentage = (completed_count / total_requirements) * 100
-        
+
         return {
             "completed": completed_count == total_requirements,
             "percentage": percentage,
             "completed_count": completed_count,
             "total_requirements": total_requirements,
-            "next_requirement": next_requirement
+            "next_requirement": next_requirement,
         }
-    
+
     def _check_requirement(self, req_key: str, req_value: Any, event_data: Dict) -> bool:
         """Check if individual requirement is met"""
         if req_key in event_data:
@@ -601,7 +570,7 @@ Your next trade determines if you're lucky or skilled.""",
             else:
                 return event_data[req_key] == req_value
         return False
-    
+
     def _evaluate_trigger(self, trigger_event: str, trigger_condition: str, context: Dict) -> bool:
         """Evaluate if trigger condition is met"""
         # Parse trigger condition (e.g., "consecutive_losses >= 2")
@@ -613,63 +582,62 @@ Your next trade determines if you're lucky or skilled.""",
             field, value = trigger_condition.split("==")
             field, value = field.strip(), value.strip()
             return str(context.get(field, "")) == value
-        
+
         return False
-    
+
     async def _complete_mission(self, user_id: str, mission_id: str, template: Dict):
         """Mark mission as completed and award rewards"""
         query = """
-        UPDATE mission_progress 
+        UPDATE mission_progress
         SET status = 'completed', completed_at = %s
         WHERE user_id = %s AND mission_id = %s
         """
-        
+
         await self.db.execute(query, (datetime.now(), user_id, mission_id))
-        
+
         # Award XP
         reward = template.get("success_reward", 0)
         if reward > 0:
             await self._award_xp(user_id, reward, f"Mission: {template['title']}")
-        
+
         # Send completion message
         await self.personality_system.send_message(
             user_id,
             template["personality_guide"],
             f"Mission accomplished, soldier! {template['title']} completed. +{reward} XP earned.",
-            {"celebration": True, "mission_complete": True}
+            {"celebration": True, "mission_complete": True},
         )
-    
+
     async def _suggest_next_mission(self, user_id: str, completed_template: Dict) -> Optional[str]:
         """Suggest next logical mission based on progression"""
         user_level = await self._get_user_level(user_id)
         current_tier = completed_template["tier"]
-        
+
         # Find next mission in same tier or next tier
         for mission_id, template in self.mission_templates.items():
-            if (template["tier"] == current_tier or 
-                template["tier"].value == current_tier.value + 1):
-                
+            if template["tier"] == current_tier or template["tier"].value == current_tier.value + 1:
+
                 # Check if user already completed this mission
                 if not await self._mission_completed_by_user(user_id, mission_id):
                     return mission_id
-        
+
         return None
-    
+
     async def _get_user_psychology_profile(self, user_id: str) -> Dict:
         """Get user's psychological profile for personalization"""
         query = """
         SELECT trauma_type, tactical_identity, emotions_replaced, story_chapter
-        FROM user_psychology 
+        FROM user_psychology
         WHERE user_id = %s
         """
-        
+
         result = await self.db.fetch_one(query, (user_id,))
         return dict(result) if result else {}
-    
+
     def _personalize_briefing(self, template: Dict, profile: Dict) -> str:
         """Add personal touches based on user's psychological profile"""
         trauma_type = profile.get("trauma_type")
-        
+
         if trauma_type == "blown_account":
             return "Remember: Discipline prevents account destruction."
         elif trauma_type == "revenge_trade":
@@ -678,23 +646,23 @@ Your next trade determines if you're lucky or skilled.""",
             return "Risk only what you can afford. Protect your family."
         else:
             return "Follow protocol. Trust the process."
-    
+
     async def _award_xp(self, user_id: str, amount: int, reason: str):
         """Award XP to user"""
         # Integration with existing XP system
         pass
-    
+
     async def _get_user_level(self, user_id: str) -> int:
         """Get user's current level"""
         # Integration with existing level system
         return 1
-    
+
     async def _mission_completed_by_user(self, user_id: str, mission_id: str) -> bool:
         """Check if user already completed this mission"""
         query = """
-        SELECT 1 FROM mission_progress 
+        SELECT 1 FROM mission_progress
         WHERE user_id = %s AND mission_id = %s AND status = 'completed'
         """
-        
+
         result = await self.db.fetch_one(query, (user_id, mission_id))
         return result is not None

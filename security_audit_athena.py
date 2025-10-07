@@ -8,12 +8,13 @@ import os
 import re
 import sys
 
+
 def check_token_security():
     """Check if token is properly secured"""
     print("🔒 Checking token security...")
 
     # Check if token is loaded from environment
-    with open('/root/HydraX-v2/athena_mission_bot.py', 'r') as f:
+    with open("/root/HydraX-v2/athena_mission_bot.py", "r") as f:
         content = f.read()
         if 'os.getenv("ATHENA_BOT_TOKEN"' in content:
             print("  ✅ Token loaded from environment variable")
@@ -22,7 +23,7 @@ def check_token_security():
             return False
 
     # Check if environment file exists
-    if os.path.exists('/root/HydraX-v2/.secrets/athena.env'):
+    if os.path.exists("/root/HydraX-v2/.secrets/athena.env"):
         print("  ✅ Environment file exists")
     else:
         print("  ❌ Environment file missing")
@@ -30,20 +31,21 @@ def check_token_security():
 
     return True
 
+
 def check_authorization_system():
     """Check if authorization system is implemented"""
     print("🔒 Checking authorization system...")
 
-    with open('/root/HydraX-v2/athena_mission_bot.py', 'r') as f:
+    with open("/root/HydraX-v2/athena_mission_bot.py", "r") as f:
         content = f.read()
 
-        if 'AUTHORIZED_USERS' in content:
+        if "AUTHORIZED_USERS" in content:
             print("  ✅ Authorized users list implemented")
         else:
             print("  ❌ No authorized users list found")
             return False
 
-        if 'is_authorized_user' in content:
+        if "is_authorized_user" in content:
             print("  ✅ Authorization check function exists")
         else:
             print("  ❌ No authorization check function")
@@ -51,14 +53,15 @@ def check_authorization_system():
 
     return True
 
+
 def check_command_whitelist():
     """Check if command whitelist is implemented"""
     print("🔒 Checking command whitelist...")
 
-    with open('/root/HydraX-v2/athena_mission_bot.py', 'r') as f:
+    with open("/root/HydraX-v2/athena_mission_bot.py", "r") as f:
         content = f.read()
 
-        if 'ALLOWED_COMMANDS' in content:
+        if "ALLOWED_COMMANDS" in content:
             print("  ✅ Allowed commands whitelist implemented")
         else:
             print("  ❌ No command whitelist found")
@@ -66,20 +69,21 @@ def check_command_whitelist():
 
     return True
 
+
 def check_security_logging():
     """Check if security logging is implemented"""
     print("🔒 Checking security logging...")
 
-    with open('/root/HydraX-v2/athena_mission_bot.py', 'r') as f:
+    with open("/root/HydraX-v2/athena_mission_bot.py", "r") as f:
         content = f.read()
 
-        if 'log_security_event' in content:
+        if "log_security_event" in content:
             print("  ✅ Security logging function exists")
         else:
             print("  ❌ No security logging found")
             return False
 
-        if 'UNAUTHORIZED_ACCESS' in content:
+        if "UNAUTHORIZED_ACCESS" in content:
             print("  ✅ Unauthorized access logging implemented")
         else:
             print("  ❌ No unauthorized access logging")
@@ -87,27 +91,29 @@ def check_security_logging():
 
     return True
 
+
 def check_catch_all_handler():
     """Check if dangerous catch-all handler is secured"""
     print("🔒 Checking catch-all handler security...")
 
-    with open('/root/HydraX-v2/athena_mission_bot.py', 'r') as f:
+    with open("/root/HydraX-v2/athena_mission_bot.py", "r") as f:
         content = f.read()
 
-        if 'block_unauthorized_messages' in content:
+        if "block_unauthorized_messages" in content:
             print("  ✅ Secure message blocking implemented")
         else:
             print("  ❌ No secure message blocking found")
             return False
 
         # Check for dangerous patterns
-        if 'func=lambda message: True' in content and 'block_unauthorized_messages' in content:
+        if "func=lambda message: True" in content and "block_unauthorized_messages" in content:
             print("  ✅ Catch-all handler secured")
         else:
             print("  ❌ Catch-all handler not properly secured")
             return False
 
     return True
+
 
 def main():
     """Run complete security audit"""
@@ -121,7 +127,7 @@ def main():
         check_authorization_system,
         check_command_whitelist,
         check_security_logging,
-        check_catch_all_handler
+        check_catch_all_handler,
     ]
 
     for check in checks:
@@ -137,6 +143,7 @@ def main():
         print("❌ SECURITY VULNERABILITIES FOUND")
         print("🚨 Fix issues before running bot")
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

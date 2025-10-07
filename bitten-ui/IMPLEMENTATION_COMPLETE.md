@@ -7,6 +7,7 @@
 ## 🎯 Deliverables Completed
 
 ### 1. Event Bus Architecture ✅
+
 **Location:** `/lib/eventBus/`
 
 - **contracts.ts** - Typed contracts for all UI data needs
@@ -28,6 +29,7 @@
   - System status (every 10s)
 
 ### 2. Shared UI Utilities ✅
+
 **Location:** `/lib/ui/`
 
 - **format.ts** - Number/currency/date formatting
@@ -53,6 +55,7 @@
   - Typography scale with tabular numerals
 
 ### 3. Shared Components ✅
+
 **Location:** `/components/bitten/`
 
 - **HeaderOps.tsx** - Military HUD-style header
@@ -88,6 +91,7 @@
 ### 4. Main Components ✅
 
 **MissionBrief.tsx** - Signal briefing → Execute → Auto-redirect
+
 - Alert panel with pattern, pair, confidence, R:R
 - Tactical SVG chart with TP/Entry/SL visualization
 - Mission dossier (trade parameters, position sizing)
@@ -97,6 +101,7 @@
 - Props-driven, accepts callbacks for all actions
 
 **StatusBoard.tsx** - Live positions monitor
+
 - Account telemetry (balance, equity, total P/L)
 - Trade lanes with visual progress tracks
   - SL gate (red), TP gate (green), NOW cursor (yellow)
@@ -110,6 +115,7 @@
 ### 5. Next.js Pages ✅
 
 **`/app/mission/page.tsx`** - Mission Brief route
+
 - Composes MissionBrief component
 - Event bus integration (`useTopic`)
 - Starts mock events in dev mode
@@ -118,6 +124,7 @@
 - Auto-redirect to `/status` after execute
 
 **`/app/status/page.tsx`** - Status Board route
+
 - Composes StatusBoard component
 - Merges trades snapshot + deltas
 - Event bus integration
@@ -128,6 +135,7 @@
 ### 6. Configuration ✅
 
 **`.env.local`**
+
 ```env
 NEXT_PUBLIC_USE_MOCKS=1                    # Enable mock data
 NEXT_PUBLIC_BACKEND_URL=http://localhost:8888
@@ -184,6 +192,7 @@ NEXT_PUBLIC_TELEGRAM_ALERTS_URL=https://t.me/bitten_alerts
 ## 🧪 Verification Proof
 
 **Dev Server Status:**
+
 ```
 ✓ Next.js 15.5.3 (Turbopack)
 ✓ Local: http://localhost:3000
@@ -197,6 +206,7 @@ NEXT_PUBLIC_TELEGRAM_ALERTS_URL=https://t.me/bitten_alerts
 ```
 
 **Files Created:** 15 total
+
 - 8 components (bitten/)
 - 3 event bus files (eventBus/)
 - 4 utility files (ui/)
@@ -223,6 +233,7 @@ The following placeholders need real backend wiring:
 ## 🎨 Design Features
 
 **Military Ops Terminal Aesthetic:**
+
 - Dark backgrounds (#0a0e1a onyx, #1a1f2e slate)
 - Neon accents (mint #34d399, cyan #06b6d4, gold #fbbf24)
 - Tactical fonts (Rajdhani headers, JetBrains Mono numbers)
@@ -231,6 +242,7 @@ The following placeholders need real backend wiring:
 - Reduced motion support
 
 **Mobile-First:**
+
 - Responsive grid layouts
 - Stacked components on small screens
 - 44px+ touch targets
@@ -238,6 +250,7 @@ The following placeholders need real backend wiring:
 - Sticky headers/footers
 
 **Accessibility:**
+
 - ARIA roles and labels
 - Screen reader announcements
 - Keyboard navigation

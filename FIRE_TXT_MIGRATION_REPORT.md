@@ -18,44 +18,45 @@ Total references found: 115
 
 - Other: 34
 
-
 ## Critical Migrations Required
 
 These write operations need immediate migration to ZMQ:
 
-
 ### /root/HydraX-v2/zmq_fire_integration.py:109
+
 ```python
 with open(fire_path, 'w') as f:
 ```
+
 **Migration**: Replace with `execute_bitten_trade()` from zmq_bitten_controller
 
-
 ### /root/HydraX-v2/audit_fire_txt_references.py:178
+
 ```python
 report.append("    with open(fire_path, 'w') as f:\n")
 ```
+
 **Migration**: Replace with `execute_bitten_trade()` from zmq_bitten_controller
 
-
 ### /root/HydraX-v2/ZMQ_BRIDGE_DEPLOYMENT.md:123
+
 ```python
 with open(f"/mt5/user_{user_id}/fire.txt", "w") as f:
 ```
+
 **Migration**: Replace with `execute_bitten_trade()` from zmq_bitten_controller
 
-
 ### /root/HydraX-v2/src/toc/bridge_terminal_server.py:256
+
 ```python
 with open(fire_file_path, 'w') as f:
 ```
-**Migration**: Replace with `execute_bitten_trade()` from zmq_bitten_controller
 
+**Migration**: Replace with `execute_bitten_trade()` from zmq_bitten_controller
 
 ## Read Operations to Remove
 
 These read operations should be replaced with telemetry monitoring:
-
 
 ## Migration Strategy
 
@@ -66,7 +67,6 @@ These read operations should be replaced with telemetry monitoring:
 3. **Phase 3**: Stop reading fire.txt, only write for compatibility
 
 4. **Phase 4**: Remove all fire.txt writes
-
 
 ## Feature Flag Implementation
 

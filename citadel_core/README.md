@@ -21,12 +21,12 @@ VENOM Signal → CITADEL Analysis → Shield Scoring → Enhanced Display → Us
 
 ## 🛡️ Shield Classifications
 
-| Classification | Score Range | Emoji | Meaning |
-|----------------|-------------|-------|---------|
-| SHIELD APPROVED | 8.0 - 10.0 | 🛡️ | High-confidence institutional setup |
-| SHIELD ACTIVE | 6.0 - 7.9 | ✅ | Good setup with minor cautions |
-| VOLATILITY ZONE | 4.0 - 5.9 | ⚠️ | Trade with caution |
-| UNVERIFIED | 0.0 - 3.9 | 🔍 | Lacks confirmation |
+| Classification  | Score Range | Emoji | Meaning                             |
+| --------------- | ----------- | ----- | ----------------------------------- |
+| SHIELD APPROVED | 8.0 - 10.0  | 🛡️    | High-confidence institutional setup |
+| SHIELD ACTIVE   | 6.0 - 7.9   | ✅    | Good setup with minor cautions      |
+| VOLATILITY ZONE | 4.0 - 5.9   | ⚠️    | Trade with caution                  |
+| UNVERIFIED      | 0.0 - 3.9   | 🔍    | Lacks confirmation                  |
 
 ## 🔧 Quick Integration
 
@@ -76,33 +76,40 @@ response['shield'] = shield_data
 ## 📦 Module Overview
 
 ### Analyzers
+
 - **signal_inspector.py** - Classifies signal type (breakout, reversal, etc.)
 - **market_regime.py** - Detects market conditions (trending, ranging, volatile)
 - **liquidity_mapper.py** - Identifies sweeps, traps, and order blocks
 - **cross_tf_validator.py** - Validates alignment across M5/M15/H1/H4
 
 ### Scoring
+
 - **shield_engine.py** - Core scoring algorithm (0-10 scale)
 
 ### Storage
+
 - **shield_logger.py** - Performance tracking and analytics
 
 ### Formatting
+
 - **telegram_formatter.py** - Beautiful Telegram message formatting
 
 ### Integration
+
 - **citadel_analyzer.py** - Main orchestrator
 - **bitten_integration.py** - Easy integration helpers
 
 ## 🎮 Signal Display Examples
 
 ### Before CITADEL
+
 ```
 📍 EUR/USD SELL @ 1.0892
 🎯 TP: 1.0852 | SL: 1.0912
 ```
 
 ### After CITADEL
+
 ```
 📍 EUR/USD SELL @ 1.0892
 🎯 TP: 1.0852 | SL: 1.0912
@@ -142,6 +149,7 @@ citadel.log_trade_outcome(
 The shield score (0-10) is calculated from multiple components:
 
 ### Positive Factors
+
 - ✅ Liquidity sweep detected (+2.0)
 - ✅ Multi-timeframe alignment (+1.5)
 - ✅ Trend continuation (+1.0)
@@ -149,6 +157,7 @@ The shield score (0-10) is calculated from multiple components:
 - ✅ Optimal session timing (+0.5)
 
 ### Negative Factors
+
 - ❌ High-impact news nearby (-2.0)
 - ❌ Trap probability high (-2.5)
 - ❌ Extreme volatility (-1.5)
@@ -202,7 +211,9 @@ CREATE TABLE shield_outcomes (
 ## 🚀 Advanced Features
 
 ### Real-Time Signal Evolution
+
 Signals can evolve as market conditions change:
+
 ```python
 # Signal starts as UNVERIFIED
 Initial: 🔍 UNVERIFIED [3.2/10]
@@ -215,7 +226,9 @@ Final: 🛡️ SHIELD APPROVED [8.1/10]
 ```
 
 ### User Personalization
+
 CITADEL learns from each user's patterns:
+
 ```python
 # For users who ignore shields
 "📊 You typically ignore shield advice. This signal has strong protection - consider following it."
@@ -225,7 +238,9 @@ CITADEL learns from each user's patterns:
 ```
 
 ### Educational Insights
+
 Users can tap for detailed explanations:
+
 ```
 🛡️ SHIELD ANALYSIS
 Score: 8.4/10
@@ -245,12 +260,14 @@ This signal shows strong institutional characteristics. The post-sweep entry and
 ## 🔒 Configuration
 
 ### Market DNA (`config/market_dna.json`)
+
 - Pair-specific profiles
 - Session characteristics
 - Liquidity patterns
 - News impact matrix
 
 ### Scoring Weights (`config/scoring_weights.json`)
+
 - Component weights
 - Risk penalties
 - Quality bonuses
@@ -259,6 +276,7 @@ This signal shows strong institutional characteristics. The post-sweep entry and
 ## 📈 Success Metrics
 
 Expected improvements with CITADEL:
+
 - **25-40%** reduction in trap trades
 - **5-10%** win rate improvement
 - **Better R:R** on shield-approved trades
@@ -295,6 +313,7 @@ Expected improvements with CITADEL:
 ## 📚 API Reference
 
 ### Main Analyzer
+
 ```python
 from citadel_core.citadel_analyzer import get_citadel_analyzer
 
@@ -303,6 +322,7 @@ result = citadel.analyze_signal(signal, market_data, user_id)
 ```
 
 ### Integration Helpers
+
 ```python
 from citadel_core.bitten_integration import (
     enhance_signal_with_citadel,
@@ -321,6 +341,7 @@ from citadel_core.bitten_integration import (
 ## 📞 Support
 
 For issues or questions:
+
 - Check logs in `/root/HydraX-v2/logs/citadel.log`
 - Review shield analyses in database
 - Contact the HydraX team

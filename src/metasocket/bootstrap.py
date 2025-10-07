@@ -9,23 +9,22 @@ import logging
 import signal
 import sys
 import threading
-from typing import Optional
 import time
+from typing import Optional
 
-# Import all MetaSocket components
-from .subscriptions import MetaSocketSubscriptions
 from .backfill import MetaSocketBackfill
 from .normalizers.positions import PositionEventNormalizer
 from .pollers.account import AccountSummaryPoller
 from .signal_snapshots import SignalSnapshotProducer
+
+# Import all MetaSocket components
+from .subscriptions import MetaSocketSubscriptions
 from .web.healthz import MetaSocketHealthCheck
 
 # Setup logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
+
 
 class MetaSocketBootstrap:
     """Bootstrap system for MetaSocket integration"""
@@ -60,11 +59,11 @@ class MetaSocketBootstrap:
 
     def set_callbacks(self, **callbacks):
         """Set external callback functions for BITTEN integration"""
-        self.tick_callback = callbacks.get('tick_callback')
-        self.ohlc_callback = callbacks.get('ohlc_callback')
-        self.position_callback = callbacks.get('position_callback')
-        self.account_callback = callbacks.get('account_callback')
-        self.snapshot_callback = callbacks.get('snapshot_callback')
+        self.tick_callback = callbacks.get("tick_callback")
+        self.ohlc_callback = callbacks.get("ohlc_callback")
+        self.position_callback = callbacks.get("position_callback")
+        self.account_callback = callbacks.get("account_callback")
+        self.snapshot_callback = callbacks.get("snapshot_callback")
 
         logger.info(f"📡 External callbacks configured: {list(callbacks.keys())}")
 
@@ -85,11 +84,7 @@ class MetaSocketBootstrap:
         self.account_poller = AccountSummaryPoller(self.host, self.polling_port)
 
         # Initialize snapshot producer
-        self.snapshot_producer = SignalSnapshotProducer(
-            self.backfill,
-            self.subscriptions,
-            self.account_poller
-        )
+        self.snapshot_producer = SignalSnapshotProducer(self.backfill, self.subscriptions, self.account_poller)
 
         # Initialize health check system
         self.health_check = MetaSocketHealthCheck()
@@ -98,7 +93,7 @@ class MetaSocketBootstrap:
             backfill=self.backfill,
             position_normalizer=self.position_normalizer,
             account_poller=self.account_poller,
-            snapshot_producer=self.snapshot_producer
+            snapshot_producer=self.snapshot_producer,
         )
 
         logger.info("✅ All components initialized")
@@ -174,11 +169,7 @@ class MetaSocketBootstrap:
                 logger.error(f"❌ Snapshot handler error: {e}")
 
         # Set callbacks on components
-        self.subscriptions.set_callbacks(
-            tick_cb=tick_handler,
-            ohlc_cb=ohlc_handler,
-            position_cb=position_handler
-        )
+        self.subscriptions.set_callbacks(tick_cb=tick_handler, ohlc_cb=ohlc_handler, position_cb=position_handler)
 
         self.backfill.set_ohlc_callback(ohlc_handler)
         self.account_poller.set_account_callback(account_handler)
@@ -188,9 +179,10 @@ class MetaSocketBootstrap:
 
     def start_health_server(self):
         """Start health check server in separate thread"""
+
         def run_health_server():
             try:
-                self.health_check.run(host='0.0.0.0', port=8890, debug=False)
+                self.health_check.run(host="0.0.0.0", port=8890, debug=False)
             except Exception as e:
                 logger.error(f"❌ Health server error: {e}")
 
@@ -206,6 +198,7 @@ class MetaSocketBootstrap:
 
     def setup_signal_handlers(self):
         """Setup graceful shutdown signal handlers"""
+
         def signal_handler(signum, frame):
             logger.info(f"📡 Received signal {signum}, initiating graceful shutdown...")
             self.shutdown_requested = True
@@ -221,15 +214,12 @@ class MetaSocketBootstrap:
         tasks = [
             # Subscription system (handles reconnections internally)
             self.subscriptions.start(),
-
             # Account polling
             self.account_poller.start(),
-
             # Position reconciliation
             self.position_normalizer.start(),
-
             # Snapshot service
-            self.snapshot_producer.start()
+            self.snapshot_producer.start(),
         ]
 
         # Start all tasks concurrently
@@ -314,9 +304,11 @@ class MetaSocketBootstrap:
             return self.health_check.collect_health_data()
         return {"status": "not_initialized"}
 
+
 # Standalone execution
 async def main():
     """Main function for standalone execution"""
+
     # Example callbacks for testing
     async def test_tick_callback(tick):
         logger.info(f"TICK: {tick['symbol']} {tick['mid']:.5f}")
@@ -325,8 +317,7 @@ async def main():
         logger.info(f"ACCOUNT: ${account['balance']:.2f} / ${account['equity']:.2f}")
 
     async def test_position_callback(position):
-        logger.info(f"POSITION: {position['symbol']} {position['state']} "
-                   f"ticket={position['ticket']}")
+        logger.info(f"POSITION: {position['symbol']} {position['state']} " f"ticket={position['ticket']}")
 
     async def test_snapshot_callback(snapshot):
         logger.info(f"SNAPSHOT: {snapshot['symbol']} - {len(snapshot['ohlc'])} bars")
@@ -337,11 +328,12 @@ async def main():
         tick_callback=test_tick_callback,
         account_callback=test_account_callback,
         position_callback=test_position_callback,
-        snapshot_callback=test_snapshot_callback
+        snapshot_callback=test_snapshot_callback,
     )
 
     # Start system
     await bootstrap.start()
+
 
 if __name__ == "__main__":
     try:

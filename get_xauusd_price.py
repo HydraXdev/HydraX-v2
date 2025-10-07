@@ -2,9 +2,11 @@
 """
 Get current XAUUSD price from port 5556 for MF-3 test
 """
-import zmq
 import json
 import time
+
+import zmq
+
 
 def get_current_xauusd_price():
     """Get live XAUUSD price from telemetry"""
@@ -19,18 +21,18 @@ def get_current_xauusd_price():
     try:
         for _ in range(50):  # Try up to 50 messages
             try:
-                message = socket.recv().decode('utf-8')
+                message = socket.recv().decode("utf-8")
 
                 # Parse tick data
                 try:
                     tick_data = json.loads(message)
-                    symbol = tick_data.get('symbol', '')
+                    symbol = tick_data.get("symbol", "")
 
-                    if symbol == 'XAUUSD':
-                        bid = tick_data.get('bid', 0)
-                        ask = tick_data.get('ask', 0)
-                        point = tick_data.get('point', 0.01)  # Default point value
-                        digits = tick_data.get('digits', 2)   # Default digits
+                    if symbol == "XAUUSD":
+                        bid = tick_data.get("bid", 0)
+                        ask = tick_data.get("ask", 0)
+                        point = tick_data.get("point", 0.01)  # Default point value
+                        digits = tick_data.get("digits", 2)  # Default digits
 
                         if bid > 0 and ask > 0:
                             mid = (bid + ask) / 2
@@ -43,13 +45,7 @@ def get_current_xauusd_price():
 
                             socket.close()
                             context.term()
-                            return {
-                                'bid': bid,
-                                'ask': ask,
-                                'mid': mid,
-                                'point': point,
-                                'digits': digits
-                            }
+                            return {"bid": bid, "ask": ask, "mid": mid, "point": point, "digits": digits}
 
                 except json.JSONDecodeError:
                     continue  # Skip non-JSON messages
@@ -67,13 +63,8 @@ def get_current_xauusd_price():
 
     # Fallback with realistic XAUUSD values
     print("⚠️ Using fallback XAUUSD pricing")
-    return {
-        'bid': 2655.20,
-        'ask': 2655.30,
-        'mid': 2655.25,
-        'point': 0.01,
-        'digits': 2
-    }
+    return {"bid": 2655.20, "ask": 2655.30, "mid": 2655.25, "point": 0.01, "digits": 2}
+
 
 if __name__ == "__main__":
     price_data = get_current_xauusd_price()

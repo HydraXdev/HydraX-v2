@@ -1,9 +1,10 @@
 # 🧠 SHEPHERD USAGE GUIDE
+
 ## The Internal Memory Core and Truth Keeper of BITTEN
 
-**Status**: ✅ COMPLETE AND OPERATIONAL  
-**Build Time**: 4 hours (MVP achieved)  
-**Version**: 1.0.0  
+**Status**: ✅ COMPLETE AND OPERATIONAL
+**Build Time**: 4 hours (MVP achieved)
+**Version**: 1.0.0
 **Last Updated**: July 11, 2025
 
 ---
@@ -11,12 +12,14 @@
 ## 🎯 What is SHEPHERD?
 
 SHEPHERD is BITTEN's super-intelligent real-time system guardian that:
+
 - **Prevents AI Hallucinations**: Validates all code against the true system state
 - **Guards Trade Execution**: Blocks invalid or dangerous trades before they fire
 - **Maintains System Memory**: Indexes and tracks every function, connection, and rule
 - **Provides Truth**: Acts as the canonical source when agents contradict each other
 
 ### Core Motto
+
 > "The system forgets. The agents hallucinate. I do not. I am the gate."
 
 ---
@@ -24,6 +27,7 @@ SHEPHERD is BITTEN's super-intelligent real-time system guardian that:
 ## 🚀 Quick Start
 
 ### 1. Initialize SHEPHERD
+
 ```bash
 # One-time setup
 cd /root/HydraX-v2
@@ -34,6 +38,7 @@ python3 bitten/interfaces/shepherd_cli.py watch
 ```
 
 ### 2. Install as System Service
+
 ```bash
 # Install and enable auto-start
 sudo cp shepherd.service /etc/systemd/system/
@@ -46,6 +51,7 @@ sudo systemctl status shepherd
 ```
 
 ### 3. Verify Health
+
 ```bash
 # Run health check
 ./shepherd_healthcheck.py
@@ -59,7 +65,9 @@ journalctl -u shepherd -f
 ## 📚 Core Functions
 
 ### 1. **shepherd.trace(module)**
+
 Shows all connections for a module or function.
+
 ```python
 from bitten.core.shepherd import trace
 connections = trace("calculate_xp")
@@ -67,7 +75,9 @@ connections = trace("calculate_xp")
 ```
 
 ### 2. **shepherd.why(trigger)**
+
 Explains why something happened in the system.
+
 ```python
 from bitten.core.shepherd import why
 explanation = why("trade_fired")
@@ -75,7 +85,9 @@ explanation = why("trade_fired")
 ```
 
 ### 3. **shepherd.wrap(output)**
+
 Validates AI-generated code before execution.
+
 ```python
 from bitten.core.shepherd import wrap
 result = wrap(ai_generated_code)
@@ -86,7 +98,9 @@ else:
 ```
 
 ### 4. **shepherd.doc(function)**
+
 Gets plain-English documentation for any function.
+
 ```python
 from bitten.core.shepherd import doc
 docs = doc("fire_trade")
@@ -94,7 +108,9 @@ docs = doc("fire_trade")
 ```
 
 ### 5. **shepherd.simulate(change)**
+
 Tests what would break if a change is made.
+
 ```python
 from bitten.core.shepherd import simulate
 impact = simulate("delete function calculate_xp")
@@ -102,7 +118,9 @@ impact = simulate("delete function calculate_xp")
 ```
 
 ### 6. **shepherd.checkpoint(label)**
+
 Saves system state for recovery.
+
 ```python
 from bitten.core.shepherd import checkpoint
 checkpoint("before_major_update")
@@ -110,7 +128,9 @@ checkpoint("before_major_update")
 ```
 
 ### 7. **shepherd.summarize(md_path)**
+
 Creates digestible summaries of large documents.
+
 ```python
 from bitten.core.shepherd import summarize
 summary = summarize("BULLETPROOF_INFRASTRUCTURE_SUMMARY.md")
@@ -122,6 +142,7 @@ summary = summarize("BULLETPROOF_INFRASTRUCTURE_SUMMARY.md")
 ## 🔧 Command Line Interface
 
 ### Basic Commands
+
 ```bash
 # Show module connections
 python3 bitten/interfaces/shepherd_cli.py trace calculate_xp
@@ -143,6 +164,7 @@ python3 bitten/interfaces/shepherd_cli.py watch
 ```
 
 ### Index Management
+
 ```bash
 # Rebuild full index
 python3 bitten/core/shepherd/indexer.py
@@ -161,6 +183,7 @@ python3 bitten/core/shepherd/query.py --flag critical
 ## 🌐 Web API
 
 ### Start API Server
+
 ```bash
 python3 bitten/interfaces/shepherd_webhook.py --port 8888
 ```
@@ -168,6 +191,7 @@ python3 bitten/interfaces/shepherd_webhook.py --port 8888
 ### API Endpoints
 
 #### Validate Logic
+
 ```bash
 curl -X POST http://localhost:8888/api/v1/validate \
   -H "Authorization: Bearer YOUR_API_KEY" \
@@ -176,12 +200,14 @@ curl -X POST http://localhost:8888/api/v1/validate \
 ```
 
 #### Trace Module
+
 ```bash
 curl http://localhost:8888/api/v1/trace/calculate_xp \
   -H "Authorization: Bearer YOUR_API_KEY"
 ```
 
 #### Simulate Change
+
 ```bash
 curl -X POST http://localhost:8888/api/v1/simulate \
   -H "Authorization: Bearer YOUR_API_KEY" \
@@ -190,6 +216,7 @@ curl -X POST http://localhost:8888/api/v1/simulate \
 ```
 
 #### Health Check
+
 ```bash
 curl http://localhost:8888/api/v1/status
 ```
@@ -199,6 +226,7 @@ curl http://localhost:8888/api/v1/status
 ## 🛡️ Integration Examples
 
 ### 1. Protecting Trade Execution
+
 ```python
 from bitten.core.shepherd.fire_interceptor import FireInterceptor
 from bitten.core.mt5_bridge import MT5BridgeAdapter
@@ -219,6 +247,7 @@ success = interceptor.fire_trade('user123', trade_signal, 'NIBBLER')
 ```
 
 ### 2. Validating AI Code
+
 ```python
 from bitten.core.shepherd.hallucination_guard import validate_function
 
@@ -232,6 +261,7 @@ if not valid:
 ```
 
 ### 3. Document Summarization
+
 ```python
 from bitten.core.shepherd.summarizer import summarize_markdown
 
@@ -246,6 +276,7 @@ print(f"Key points: {summary['key_points'][:5]}")
 ## 📊 System Architecture
 
 ### File Structure
+
 ```
 /root/HydraX-v2/bitten/
 ├── core/shepherd/
@@ -266,6 +297,7 @@ print(f"Key points: {summary['key_points'][:5]}")
 ```
 
 ### Data Flow
+
 ```
 Code Changes → Indexer → shepherd_index.json
      ↓
@@ -305,6 +337,7 @@ Large Docs → Summarizer → md_digest_cache.json
 ### Common Issues
 
 #### 1. Index Build Timeout
+
 ```bash
 # Use quick index for testing
 python3 bitten/core/shepherd/quick_index.py
@@ -314,6 +347,7 @@ python3 -c "from bitten.core.shepherd.indexer import index_directory; index_dire
 ```
 
 #### 2. Import Errors
+
 ```bash
 # Ensure Python path is set
 export PYTHONPATH=/root/HydraX-v2:$PYTHONPATH
@@ -323,6 +357,7 @@ cd /root/HydraX-v2 && python3 -m bitten.core.shepherd.shepherd
 ```
 
 #### 3. Service Won't Start
+
 ```bash
 # Check logs
 journalctl -u shepherd -n 50
@@ -349,28 +384,32 @@ python3 bitten/interfaces/shepherd_cli.py watch --debug
 ## 🎯 Best Practices
 
 1. **Regular Checkpoints**
+
    ```bash
    # Before major changes
    python3 bitten/interfaces/shepherd_cli.py checkpoint "pre_update_$(date +%Y%m%d)"
    ```
 
 2. **Index Maintenance**
+
    ```bash
    # Weekly full rebuild
    0 3 * * 0 cd /root/HydraX-v2 && python3 bitten/core/shepherd/indexer.py
    ```
 
 3. **Monitor Health**
+
    ```bash
    # Add to crontab for alerts
    */5 * * * * /root/HydraX-v2/shepherd_healthcheck.py || mail -s "SHEPHERD Alert" admin@example.com
    ```
 
 4. **Use Wrappers**
+
    ```python
    # Always wrap AI outputs
    from bitten.core.shepherd import wrap
-   
+
    def process_ai_code(ai_output):
        result = wrap(ai_output)
        if result.passes:
@@ -395,6 +434,7 @@ The current MVP is complete. Future enhancements (4-6 hours) will add:
 ## 📞 Support
 
 For issues or questions:
+
 1. Check the logs: `journalctl -u shepherd -n 100`
 2. Run diagnostics: `./shepherd_healthcheck.py --verbose`
 3. Review this guide and examples in `/bitten/core/shepherd/`

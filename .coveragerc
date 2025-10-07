@@ -1,0 +1,21 @@
+[run]
+source = .
+omit =
+    **/tests/**
+    **/__pycache__/**
+    **/__init__.py
+    **/bitmode_diagnostic.py
+    **/inverse_signal_detector.py
+    **/rapid_elimination_analyzer.py
+    **/OBSOLETE_*/**
+    **/LOCKED_ARCHIVE*/**
+    **/BITTEN_BACKUP*/**
+    **/HydraX-MT5*/**
+    **/node_modules/**
+    **/.venv/**
+    **/venv/**
+
+[report]
+skip_covered = True
+sort = Cover
+precision = 1

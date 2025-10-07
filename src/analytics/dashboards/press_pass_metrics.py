@@ -5,27 +5,28 @@ Provides comprehensive SQL queries and data aggregation functions
 for monitoring Press Pass conversion metrics and KPIs.
 """
 
-from datetime import datetime, timedelta
-from typing import Dict, List, Any, Optional
-from decimal import Decimal
 import logging
+from datetime import datetime, timedelta
+from decimal import Decimal
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
+
 class PressPassMetricsDashboard:
     """Analytics dashboard for Press Pass conversion metrics"""
-    
+
     def __init__(self, db_connection):
         self.db = db_connection
-        
+
     # ==========================================
     # CORE CONVERSION METRICS
     # ==========================================
-    
+
     async def get_conversion_funnel(self, start_date: datetime, end_date: datetime) -> Dict[str, Any]:
         """
         Get full conversion funnel metrics for Press Pass
-        
+
         Returns:
             - Landing page views
             - Press Pass claims (conversions)
@@ -45,13 +46,13 @@ class PressPassMetricsDashboard:
         ),
         press_pass_claims AS (
             -- Stage 2: Press Pass activations
-            SELECT 
+            SELECT
                 COUNT(DISTINCT user_id) as total_claims,
-                COUNT(DISTINCT CASE 
-                    WHEN metadata->>'source' = 'organic' THEN user_id 
+                COUNT(DISTINCT CASE
+                    WHEN metadata->>'source' = 'organic' THEN user_id
                 END) as organic_claims,
-                COUNT(DISTINCT CASE 
-                    WHEN metadata->>'source' = 'paid' THEN user_id 
+                COUNT(DISTINCT CASE
+                    WHEN metadata->>'source' = 'paid' THEN user_id
                 END) as paid_claims
             FROM user_subscriptions
             WHERE plan_id = (SELECT plan_id FROM subscription_plans WHERE tier = 'PRESS_PASS')
@@ -70,22 +71,22 @@ class PressPassMetricsDashboard:
             SELECT COUNT(DISTINCT user_id) as completed_first_trade
             FROM trades
             WHERE trade_id IN (
-                SELECT MIN(trade_id) 
-                FROM trades 
+                SELECT MIN(trade_id)
+                FROM trades
                 GROUP BY user_id
             )
             AND created_at BETWEEN %s AND %s
         ),
         tier_upgrades AS (
             -- Stage 5: Upgrades from Press Pass
-            SELECT 
+            SELECT
                 COUNT(DISTINCT user_id) as total_upgrades,
                 SUM(CASE WHEN new_tier = 'NIBBLER' THEN 1 ELSE 0 END) as to_nibbler,
                 SUM(CASE WHEN new_tier = 'FANG' THEN 1 ELSE 0 END) as to_fang,
                 SUM(CASE WHEN new_tier = 'COMMANDER' THEN 1 ELSE 0 END) as to_commander,
                 SUM(CASE WHEN new_tier = '' THEN 1 ELSE 0 END) as to_apex
             FROM (
-                SELECT 
+                SELECT
                     user_id,
                     tier as new_tier,
                     LAG(tier) OVER (PARTITION BY user_id ORDER BY created_at) as prev_tier
@@ -95,7 +96,7 @@ class PressPassMetricsDashboard:
                 AND new_tier != 'PRESS_PASS'
                 AND created_at BETWEEN %s AND %s
         )
-        SELECT 
+        SELECT
             f.landing_views,
             p.total_claims,
             p.organic_claims,
@@ -118,42 +119,42 @@ class PressPassMetricsDashboard:
         CROSS JOIN first_trades t
         CROSS JOIN tier_upgrades u;
         """
-        
+
         params = [start_date, end_date] * 5
         result = await self.db.fetch_one(query, params)
-        
+
         return {
-            'funnel': {
-                'landing_views': result['landing_views'],
-                'claims': {
-                    'total': result['total_claims'],
-                    'organic': result['organic_claims'],
-                    'paid': result['paid_claims']
+            "funnel": {
+                "landing_views": result["landing_views"],
+                "claims": {
+                    "total": result["total_claims"],
+                    "organic": result["organic_claims"],
+                    "paid": result["paid_claims"],
                 },
-                'demo_activated': result['demo_activated'],
-                'first_trade': result['completed_first_trade'],
-                'upgrades': {
-                    'total': result['total_upgrades'],
-                    'by_tier': {
-                        'nibbler': result['to_nibbler'],
-                        'fang': result['to_fang'],
-                        'commander': result['to_commander'],
-                        'apex': result['to_apex']
-                    }
-                }
+                "demo_activated": result["demo_activated"],
+                "first_trade": result["completed_first_trade"],
+                "upgrades": {
+                    "total": result["total_upgrades"],
+                    "by_tier": {
+                        "nibbler": result["to_nibbler"],
+                        "fang": result["to_fang"],
+                        "commander": result["to_commander"],
+                        "apex": result["to_apex"],
+                    },
+                },
             },
-            'conversion_rates': {
-                'landing_to_claim': float(result['landing_to_claim_rate'] or 0),
-                'claim_to_demo': float(result['claim_to_demo_rate'] or 0),
-                'demo_to_trade': float(result['demo_to_trade_rate'] or 0),
-                'claim_to_upgrade': float(result['claim_to_upgrade_rate'] or 0)
-            }
+            "conversion_rates": {
+                "landing_to_claim": float(result["landing_to_claim_rate"] or 0),
+                "claim_to_demo": float(result["claim_to_demo_rate"] or 0),
+                "demo_to_trade": float(result["demo_to_trade_rate"] or 0),
+                "claim_to_upgrade": float(result["claim_to_upgrade_rate"] or 0),
+            },
         }
-    
+
     async def get_xp_reset_metrics(self, date: datetime) -> Dict[str, Any]:
         """
         Get XP reset metrics for midnight GMT
-        
+
         Returns:
             - Total users affected
             - Total XP reset
@@ -162,7 +163,7 @@ class PressPassMetricsDashboard:
         """
         query = """
         WITH daily_xp AS (
-            SELECT 
+            SELECT
                 u.user_id,
                 u.tier,
                 up.total_xp,
@@ -176,7 +177,7 @@ class PressPassMetricsDashboard:
                 AND u.subscription_status = 'ACTIVE'
             GROUP BY u.user_id, u.tier, up.total_xp
         )
-        SELECT 
+        SELECT
             COUNT(*) as total_users,
             SUM(xp_earned_today) as total_xp_reset,
             ROUND(AVG(xp_earned_today), 2) as avg_xp_per_user,
@@ -186,27 +187,27 @@ class PressPassMetricsDashboard:
             COUNT(CASE WHEN xp_earned_today = 0 THEN 1 END) as inactive_users
         FROM daily_xp;
         """
-        
+
         result = await self.db.fetch_one(query, [date])
-        
+
         return {
-            'reset_date': date.isoformat(),
-            'metrics': {
-                'total_users': result['total_users'],
-                'total_xp_reset': result['total_xp_reset'],
-                'avg_xp_per_user': float(result['avg_xp_per_user'] or 0),
-                'median_xp': float(result['median_xp'] or 0),
-                'max_xp_earned': result['max_xp_earned'],
-                'active_users': result['active_users'],
-                'inactive_users': result['inactive_users'],
-                'activity_rate': round(result['active_users'] / max(result['total_users'], 1) * 100, 2)
-            }
+            "reset_date": date.isoformat(),
+            "metrics": {
+                "total_users": result["total_users"],
+                "total_xp_reset": result["total_xp_reset"],
+                "avg_xp_per_user": float(result["avg_xp_per_user"] or 0),
+                "median_xp": float(result["median_xp"] or 0),
+                "max_xp_earned": result["max_xp_earned"],
+                "active_users": result["active_users"],
+                "inactive_users": result["inactive_users"],
+                "activity_rate": round(result["active_users"] / max(result["total_users"], 1) * 100, 2),
+            },
         }
-    
+
     async def get_activation_metrics(self, start_date: datetime, end_date: datetime) -> Dict[str, Any]:
         """
         Get detailed activation metrics for Press Pass users
-        
+
         Returns:
             - Time to first trade
             - Activation rate by cohort
@@ -214,7 +215,7 @@ class PressPassMetricsDashboard:
         """
         query = """
         WITH user_cohorts AS (
-            SELECT 
+            SELECT
                 u.user_id,
                 u.created_at,
                 DATE_TRUNC('day', u.created_at) as cohort_date,
@@ -229,7 +230,7 @@ class PressPassMetricsDashboard:
                 AND u.created_at BETWEEN %s AND %s
             GROUP BY u.user_id, u.created_at, up.onboarding_completed, up.profile_completed
         )
-        SELECT 
+        SELECT
             cohort_date,
             COUNT(*) as cohort_size,
             COUNT(CASE WHEN first_trade_at IS NOT NULL THEN 1 END) as activated_users,
@@ -241,7 +242,7 @@ class PressPassMetricsDashboard:
                 ORDER BY EXTRACT(EPOCH FROM (first_trade_at - created_at))/3600
             ) as median_hours_to_first_trade,
             -- Activation rates
-            ROUND(COUNT(CASE WHEN first_trade_at IS NOT NULL THEN 1 END)::numeric / 
+            ROUND(COUNT(CASE WHEN first_trade_at IS NOT NULL THEN 1 END)::numeric /
                   NULLIF(COUNT(*), 0) * 100, 2) as activation_rate,
             -- Average trades per activated user
             AVG(CASE WHEN total_trades > 0 THEN total_trades END) as avg_trades_per_active_user
@@ -249,43 +250,41 @@ class PressPassMetricsDashboard:
         GROUP BY cohort_date
         ORDER BY cohort_date DESC;
         """
-        
+
         results = await self.db.fetch_all(query, [start_date, end_date])
-        
+
         cohorts = []
         for row in results:
-            cohorts.append({
-                'date': row['cohort_date'].isoformat(),
-                'size': row['cohort_size'],
-                'activated': row['activated_users'],
-                'completed_onboarding': row['completed_onboarding'],
-                'completed_profile': row['completed_profile'],
-                'activation_rate': float(row['activation_rate'] or 0),
-                'avg_hours_to_activate': float(row['avg_hours_to_first_trade'] or 0),
-                'median_hours_to_activate': float(row['median_hours_to_first_trade'] or 0),
-                'avg_trades_per_user': float(row['avg_trades_per_active_user'] or 0)
-            })
-        
+            cohorts.append(
+                {
+                    "date": row["cohort_date"].isoformat(),
+                    "size": row["cohort_size"],
+                    "activated": row["activated_users"],
+                    "completed_onboarding": row["completed_onboarding"],
+                    "completed_profile": row["completed_profile"],
+                    "activation_rate": float(row["activation_rate"] or 0),
+                    "avg_hours_to_activate": float(row["avg_hours_to_first_trade"] or 0),
+                    "median_hours_to_activate": float(row["median_hours_to_first_trade"] or 0),
+                    "avg_trades_per_user": float(row["avg_trades_per_active_user"] or 0),
+                }
+            )
+
         return {
-            'period': {
-                'start': start_date.isoformat(),
-                'end': end_date.isoformat()
+            "period": {"start": start_date.isoformat(), "end": end_date.isoformat()},
+            "cohorts": cohorts,
+            "summary": {
+                "total_users": sum(c["size"] for c in cohorts),
+                "total_activated": sum(c["activated"] for c in cohorts),
+                "overall_activation_rate": round(
+                    sum(c["activated"] for c in cohorts) / max(sum(c["size"] for c in cohorts), 1) * 100, 2
+                ),
             },
-            'cohorts': cohorts,
-            'summary': {
-                'total_users': sum(c['size'] for c in cohorts),
-                'total_activated': sum(c['activated'] for c in cohorts),
-                'overall_activation_rate': round(
-                    sum(c['activated'] for c in cohorts) / 
-                    max(sum(c['size'] for c in cohorts), 1) * 100, 2
-                )
-            }
         }
-    
+
     async def get_retention_metrics(self, cohort_date: datetime) -> Dict[str, Any]:
         """
         Get retention metrics for a specific Press Pass cohort
-        
+
         Returns:
             - D1, D3, D7, D14, D30 retention
             - Activity retention (trades)
@@ -299,7 +298,7 @@ class PressPassMetricsDashboard:
                 AND DATE(created_at) = DATE(%s)
         ),
         retention_data AS (
-            SELECT 
+            SELECT
                 cu.user_id,
                 cu.created_at,
                 -- Login retention
@@ -328,7 +327,7 @@ class PressPassMetricsDashboard:
             LEFT JOIN users u ON cu.user_id = u.user_id
             GROUP BY cu.user_id, cu.created_at
         )
-        SELECT 
+        SELECT
             COUNT(*) as cohort_size,
             -- Login retention rates
             ROUND(AVG(d1_login) * 100, 2) as d1_login_retention,
@@ -346,35 +345,35 @@ class PressPassMetricsDashboard:
             ROUND(AVG(upgraded) * 100, 2) as upgrade_rate
         FROM retention_data;
         """
-        
+
         result = await self.db.fetch_one(query, [cohort_date])
-        
+
         return {
-            'cohort_date': cohort_date.isoformat(),
-            'cohort_size': result['cohort_size'],
-            'retention': {
-                'login': {
-                    'D1': float(result['d1_login_retention'] or 0),
-                    'D3': float(result['d3_login_retention'] or 0),
-                    'D7': float(result['d7_login_retention'] or 0),
-                    'D14': float(result['d14_login_retention'] or 0),
-                    'D30': float(result['d30_login_retention'] or 0)
+            "cohort_date": cohort_date.isoformat(),
+            "cohort_size": result["cohort_size"],
+            "retention": {
+                "login": {
+                    "D1": float(result["d1_login_retention"] or 0),
+                    "D3": float(result["d3_login_retention"] or 0),
+                    "D7": float(result["d7_login_retention"] or 0),
+                    "D14": float(result["d14_login_retention"] or 0),
+                    "D30": float(result["d30_login_retention"] or 0),
                 },
-                'trade_activity': {
-                    'D1': float(result['d1_trade_retention'] or 0),
-                    'D3': float(result['d3_trade_retention'] or 0),
-                    'D7': float(result['d7_trade_retention'] or 0),
-                    'D14': float(result['d14_trade_retention'] or 0),
-                    'D30': float(result['d30_trade_retention'] or 0)
-                }
+                "trade_activity": {
+                    "D1": float(result["d1_trade_retention"] or 0),
+                    "D3": float(result["d3_trade_retention"] or 0),
+                    "D7": float(result["d7_trade_retention"] or 0),
+                    "D14": float(result["d14_trade_retention"] or 0),
+                    "D30": float(result["d30_trade_retention"] or 0),
+                },
             },
-            'upgrade_rate': float(result['upgrade_rate'] or 0)
+            "upgrade_rate": float(result["upgrade_rate"] or 0),
         }
-    
+
     async def get_revenue_metrics(self, start_date: datetime, end_date: datetime) -> Dict[str, Any]:
         """
         Get revenue metrics from Press Pass conversions
-        
+
         Returns:
             - Total revenue from upgrades
             - LTV by cohort
@@ -382,7 +381,7 @@ class PressPassMetricsDashboard:
         """
         query = """
         WITH press_pass_users AS (
-            SELECT 
+            SELECT
                 u.user_id,
                 u.created_at as press_pass_start,
                 MIN(CASE WHEN u.tier != 'PRESS_PASS' THEN ush.created_at END) as upgrade_date,
@@ -391,13 +390,13 @@ class PressPassMetricsDashboard:
             LEFT JOIN user_subscription_history ush ON u.user_id = ush.user_id
             WHERE u.created_at BETWEEN %s AND %s
                 AND EXISTS (
-                    SELECT 1 FROM user_subscription_history 
+                    SELECT 1 FROM user_subscription_history
                     WHERE user_id = u.user_id AND tier = 'PRESS_PASS'
                 )
             GROUP BY u.user_id, u.created_at
         ),
         revenue_data AS (
-            SELECT 
+            SELECT
                 ppu.user_id,
                 ppu.press_pass_start,
                 ppu.upgrade_date,
@@ -411,7 +410,7 @@ class PressPassMetricsDashboard:
                 AND pt.created_at >= ppu.upgrade_date
             GROUP BY ppu.user_id, ppu.press_pass_start, ppu.upgrade_date, ppu.upgrade_tier
         )
-        SELECT 
+        SELECT
             COUNT(DISTINCT user_id) as total_users,
             COUNT(DISTINCT CASE WHEN upgrade_date IS NOT NULL THEN user_id END) as upgraded_users,
             SUM(total_revenue) as total_revenue,
@@ -428,41 +427,36 @@ class PressPassMetricsDashboard:
             ) as median_days_to_upgrade
         FROM revenue_data;
         """
-        
+
         result = await self.db.fetch_one(query, [start_date, end_date])
-        
+
         return {
-            'period': {
-                'start': start_date.isoformat(),
-                'end': end_date.isoformat()
+            "period": {"start": start_date.isoformat(), "end": end_date.isoformat()},
+            "users": {
+                "total": result["total_users"],
+                "upgraded": result["upgraded_users"],
+                "conversion_rate": round(result["upgraded_users"] / max(result["total_users"], 1) * 100, 2),
             },
-            'users': {
-                'total': result['total_users'],
-                'upgraded': result['upgraded_users'],
-                'conversion_rate': round(
-                    result['upgraded_users'] / max(result['total_users'], 1) * 100, 2
-                )
+            "revenue": {
+                "total": float(result["total_revenue"] or 0),
+                "avg_per_paying_user": float(result["avg_revenue_per_paying_user"] or 0),
+                "by_tier": {
+                    "nibbler": float(result["nibbler_revenue"] or 0),
+                    "fang": float(result["fang_revenue"] or 0),
+                    "commander": float(result["commander_revenue"] or 0),
+                    "apex": float(result["apex_revenue"] or 0),
+                },
             },
-            'revenue': {
-                'total': float(result['total_revenue'] or 0),
-                'avg_per_paying_user': float(result['avg_revenue_per_paying_user'] or 0),
-                'by_tier': {
-                    'nibbler': float(result['nibbler_revenue'] or 0),
-                    'fang': float(result['fang_revenue'] or 0),
-                    'commander': float(result['commander_revenue'] or 0),
-                    'apex': float(result['apex_revenue'] or 0)
-                }
+            "time_to_upgrade": {
+                "avg_days": float(result["avg_days_to_upgrade"] or 0),
+                "median_days": float(result["median_days_to_upgrade"] or 0),
             },
-            'time_to_upgrade': {
-                'avg_days': float(result['avg_days_to_upgrade'] or 0),
-                'median_days': float(result['median_days_to_upgrade'] or 0)
-            }
         }
-    
+
     async def get_churn_metrics(self, date: datetime) -> Dict[str, Any]:
         """
         Get churn metrics for Press Pass users
-        
+
         Returns:
             - Daily/weekly/monthly churn rates
             - Churn by engagement level
@@ -470,7 +464,7 @@ class PressPassMetricsDashboard:
         """
         query = """
         WITH press_pass_activity AS (
-            SELECT 
+            SELECT
                 u.user_id,
                 u.created_at,
                 u.subscription_expires_at,
@@ -480,8 +474,8 @@ class PressPassMetricsDashboard:
                 COUNT(DISTINCT DATE(t.created_at)) as trading_days,
                 MAX(t.created_at) as last_trade_date,
                 -- Engagement scoring
-                CASE 
-                    WHEN COUNT(DISTINCT t.trade_id) >= 10 AND 
+                CASE
+                    WHEN COUNT(DISTINCT t.trade_id) >= 10 AND
                          COUNT(DISTINCT DATE(t.created_at)) >= 5 THEN 'high'
                     WHEN COUNT(DISTINCT t.trade_id) >= 3 THEN 'medium'
                     WHEN COUNT(DISTINCT t.trade_id) >= 1 THEN 'low'
@@ -493,11 +487,11 @@ class PressPassMetricsDashboard:
                 AND t.created_at >= u.created_at
             WHERE u.tier = 'PRESS_PASS'
                 AND u.created_at <= %s - INTERVAL '30 days'
-            GROUP BY u.user_id, u.created_at, u.subscription_expires_at, 
+            GROUP BY u.user_id, u.created_at, u.subscription_expires_at,
                      up.last_trade_at, u.last_login_at
         ),
         churn_analysis AS (
-            SELECT 
+            SELECT
                 user_id,
                 created_at,
                 subscription_expires_at,
@@ -512,7 +506,7 @@ class PressPassMetricsDashboard:
                 EXTRACT(DAY FROM %s - last_trade_date) as days_since_last_trade
             FROM press_pass_activity
         )
-        SELECT 
+        SELECT
             COUNT(*) as total_users,
             -- Churn rates
             ROUND(AVG(churned_7d) * 100, 2) as churn_rate_7d,
@@ -530,28 +524,28 @@ class PressPassMetricsDashboard:
             AVG(days_since_last_trade) as avg_days_since_trade
         FROM churn_analysis;
         """
-        
+
         params = [date] * 7
         result = await self.db.fetch_one(query, params)
-        
+
         return {
-            'date': date.isoformat(),
-            'total_users': result['total_users'],
-            'churn_rates': {
-                '7_day': float(result['churn_rate_7d'] or 0),
-                '14_day': float(result['churn_rate_14d'] or 0),
-                '30_day': float(result['churn_rate_30d'] or 0),
-                'expired': float(result['expiry_rate'] or 0)
+            "date": date.isoformat(),
+            "total_users": result["total_users"],
+            "churn_rates": {
+                "7_day": float(result["churn_rate_7d"] or 0),
+                "14_day": float(result["churn_rate_14d"] or 0),
+                "30_day": float(result["churn_rate_30d"] or 0),
+                "expired": float(result["expiry_rate"] or 0),
             },
-            'churn_by_engagement': {
-                'high': result['high_engagement_churned'],
-                'medium': result['medium_engagement_churned'],
-                'low': result['low_engagement_churned'],
-                'inactive': result['inactive_churned']
+            "churn_by_engagement": {
+                "high": result["high_engagement_churned"],
+                "medium": result["medium_engagement_churned"],
+                "low": result["low_engagement_churned"],
+                "inactive": result["inactive_churned"],
             },
-            'win_back_potential': {
-                'high_value_churned': result['high_value_churned'],
-                'avg_days_inactive': float(result['avg_days_inactive'] or 0),
-                'avg_days_since_trade': float(result['avg_days_since_trade'] or 0)
-            }
+            "win_back_potential": {
+                "high_value_churned": result["high_value_churned"],
+                "avg_days_inactive": float(result["avg_days_inactive"] or 0),
+                "avg_days_since_trade": float(result["avg_days_since_trade"] or 0),
+            },
         }

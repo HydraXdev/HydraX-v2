@@ -7,16 +7,18 @@ Last Updated: 2025-01-04
 ---
 
 ## 🎯 **SINGLE SHOT** (All Tiers)
+
 **Access**: All subscription tiers (Nibbler, Fang, Commander)
 
 **Rules**:
+
 - **Risk**: 2% of account balance per shot
-- **Daily Limits**: 
+- **Daily Limits**:
   - Nibbler: 6 shots/day
   - Fang: 8-10 shots/day
   - Commander: 12+ shots/day
   - : Unlimited shots
-- **TCS Requirement**: 
+- **TCS Requirement**:
   - Nibbler: 70%+ TCS
   - Fang: 85%+ TCS
   - Commander: 91%+ TCS
@@ -27,9 +29,11 @@ Last Updated: 2025-01-04
 ---
 
 ## 🔥 **CHAINGUN MODE** (Fang+ Tiers)
+
 **Access**: Fang, Commander only
 
 **Progressive Risk**:
+
 - Shot 1: 2% risk (base)
 - Shot 2: 4% risk (2x)
 - Shot 3: 8% risk (4x)
@@ -38,6 +42,7 @@ Last Updated: 2025-01-04
 **Parachute System**: Exit option after each winning shot
 
 **Rules**:
+
 - **TCS Requirements**: 85%, 87%, 89%, 91% (progressive)
 - **Daily Limit**: 2 CHAINGUN sequences per day
 - **Time Limit**: 4 hours to complete sequence
@@ -46,9 +51,11 @@ Last Updated: 2025-01-04
 ---
 
 ## 🤖 **AUTO-FIRE** (Commander+ Tiers)
+
 **Access**: Commander only
 
 **Rules**:
+
 - **TCS Threshold**: 91%+ only
 - **Risk Per Shot**: 2% standard
 - **Maximum Daily Risk**: 10% of account
@@ -59,9 +66,11 @@ Last Updated: 2025-01-04
 ---
 
 ## 👻 **STEALTH MODE** (COMMANDER Exclusive)
+
 **Access**: COMMANDER tier only
 
 **Features**:
+
 - **Entry Randomization**: ±2-5 minutes
 - **Position Size Variation**: 80-120% of calculated
 - **Intentional Losses**: 5-8% of trades
@@ -71,14 +80,17 @@ Last Updated: 2025-01-04
 ---
 
 ## 🔨 **MIDNIGHT HAMMER** (Community Event)
+
 **Access**: Platform-wide special event
 
-**Trigger**: 
+**Trigger**:
+
 - 95%+ TCS score
 - 70%+ users online
 - 1-2 times per month max
 
 **Rules**:
+
 - **Risk**: 5% of account
 - **Reward**: 10-15R potential
 - **Window**: 5-minute entry
@@ -88,11 +100,11 @@ Last Updated: 2025-01-04
 
 ## 📊 **TIER CAPABILITIES MATRIX**
 
-| Tier | Price | Daily Shots | CHAINGUN | AUTO-FIRE | STEALTH |
-|------|-------|-------------|----------|-----------|---------|
-| NIBBLER | $39 | 6 | ❌ | ❌ | ❌ |
-| FANG | $89 | 8-10 | ✅ | ❌ | ❌ |
-| COMMANDER | $189 | ∞ | ✅ | ✅ | ✅ |
+| Tier      | Price | Daily Shots | CHAINGUN | AUTO-FIRE | STEALTH |
+| --------- | ----- | ----------- | -------- | --------- | ------- |
+| NIBBLER   | $39   | 6           | ❌       | ❌        | ❌      |
+| FANG      | $89   | 8-10        | ✅       | ❌        | ❌      |
+| COMMANDER | $189  | ∞           | ✅       | ✅        | ✅      |
 
 ---
 

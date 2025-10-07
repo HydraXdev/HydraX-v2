@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
-import os, re, sys, json, textwrap
+import json
+import os
+import re
+import sys
+import textwrap
 
 fp = os.environ.get("WEBAPP_FILE", "/root/HydraX-v2/webapp_server_optimized.py")
-src = open(fp, 'r', encoding='utf-8').read()
+src = open(fp, "r", encoding="utf-8").read()
 
 # Helper block to add Redis XADD
-helper = '''
+helper = """
 # ## FIRE_SHADOW_PATCH_START
 def _bitten_fire_xadd(redis_host, redis_port, stream, payload):
     try:
@@ -27,7 +31,7 @@ def _bitten_fire_xadd(redis_host, redis_port, stream, payload):
         except: pass
         return False
 # ## FIRE_SHADOW_PATCH_END
-'''.lstrip()
+""".lstrip()
 
 if "## FIRE_SHADOW_PATCH_START" not in src:
     # Insert helper after import section
@@ -40,7 +44,7 @@ if "## FIRE_SHADOW_PATCH_START" not in src:
 # Look for the END SERVER-SIDE FIRE MAPPING marker
 if "# --- END SERVER-SIDE FIRE MAPPING ---" in src and "_bitten_fire_xadd" not in "# --- FIRE SHADOW PUBLISH":
     # Insert right after the mapping block ends (before enqueue)
-    shadow_block = '''
+    shadow_block = """
     # --- FIRE SHADOW PUBLISH (Redis Streams) ---
     try:
         import os
@@ -51,13 +55,8 @@ if "# --- END SERVER-SIDE FIRE MAPPING ---" in src and "_bitten_fire_xadd" not i
         try: print("fire shadow publish err:", _e, flush=True)
         except: pass
     # --- END FIRE SHADOW PUBLISH ---
-'''
-    src = re.sub(
-        r"(# --- END SERVER-SIDE FIRE MAPPING ---\s*\n)",
-        r"\1" + shadow_block,
-        src,
-        count=1
-    )
+"""
+    src = re.sub(r"(# --- END SERVER-SIDE FIRE MAPPING ---\s*\n)", r"\1" + shadow_block, src, count=1)
     print("Added fire shadow publish block")
 
 # Add a guard to optionally skip IPC enqueue if FIRE_SHADOW_ONLY=1 (for future cutover)
@@ -72,7 +71,7 @@ if "s.send_json(data)" in src:
 \1# else: Redis-only; the bridge will forward to IPC
 """,
         src,
-        count=1
+        count=1,
     )
     print("Added shadow-only guard for IPC enqueue")
 elif "s.send_json(_req)" in src:
@@ -85,9 +84,9 @@ elif "s.send_json(_req)" in src:
 \1# else: Redis-only; the bridge will forward to IPC
 """,
         src,
-        count=1
+        count=1,
     )
     print("Added shadow-only guard for IPC enqueue")
 
-open(fp, 'w', encoding='utf-8').write(src)
+open(fp, "w", encoding="utf-8").write(src)
 print("[OK] /api/fire patched for Redis SHADOW publish with optional cutover guard.")

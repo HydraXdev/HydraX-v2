@@ -22,6 +22,7 @@ This document provides the complete procedure for switching the BITTEN trading s
 ### 2. MetaSocket Service Status
 
 Ensure MetaSocket is running and accessible:
+
 - **CMD TCP**: localhost:8777
 - **STREAM TCP**: localhost:8778
 - **Demo Account**: Ready for testing
@@ -172,11 +173,13 @@ curl -s http://localhost:8888/healthz | jq .
 ## Architecture Changes
 
 ### Before (EA Source)
+
 ```
 Signal → Command Router → EA (ZMQ) → MT5 → Confirmation
 ```
 
 ### After (MetaSocket Source)
+
 ```
 Signal → Command Router → MetaSocket (TCP) → MT5 → Confirmation
 ```
@@ -191,12 +194,14 @@ Signal → Command Router → MetaSocket (TCP) → MT5 → Confirmation
 ## Files Modified
 
 ### Core Integration
+
 - `adapters/metasocket/adapter.py` - MetaSocket client adapter
 - `command_router.py` - SOURCE-based routing logic
 - `webapp_server_optimized.py` - Health endpoint enhancement
 - `.env` - SOURCE configuration
 
 ### Testing & Operations
+
 - `tests/metasocket/01_order_latency_test.py`
 - `tests/metasocket/02_manual_close_test.py`
 - `tests/metasocket/03_sl_tp_test.py`
@@ -210,6 +215,7 @@ Signal → Command Router → MetaSocket (TCP) → MT5 → Confirmation
 These schemas MUST NOT change during cutover:
 
 ### Tick Event
+
 ```json
 {
   "symbol": "EURUSD",
@@ -220,26 +226,28 @@ These schemas MUST NOT change during cutover:
 ```
 
 ### Position Event
+
 ```json
 {
   "ticket": 123456789,
   "symbol": "EURUSD",
   "direction": "BUY",
-  "volume": 0.10,
-  "open_price": 1.08900,
-  "current_price": 1.08950,
-  "profit": 5.00,
+  "volume": 0.1,
+  "open_price": 1.089,
+  "current_price": 1.0895,
+  "profit": 5.0,
   "status": "OPEN"
 }
 ```
 
 ### Account Summary
+
 ```json
 {
-  "balance": 10000.00,
-  "equity": 10050.00,
-  "margin": 109.00,
-  "free_margin": 9941.00,
+  "balance": 10000.0,
+  "equity": 10050.0,
+  "margin": 109.0,
+  "free_margin": 9941.0,
   "margin_level": 9220.18
 }
 ```
@@ -247,6 +255,7 @@ These schemas MUST NOT change during cutover:
 ## Support Information
 
 ### Success Criteria
+
 - ✅ All fire commands route to MetaSocket when SOURCE=metasocket
 - ✅ Order latency <500ms p95
 - ✅ Error rate <1%
@@ -254,12 +263,15 @@ These schemas MUST NOT change during cutover:
 - ✅ Rollback capability tested and working
 
 ### Escalation
+
 If CUTOVER issues cannot be resolved within 15 minutes:
+
 1. Execute immediate rollback: `./scripts/rollback_to_ea.sh`
 2. Verify EA source working normally
 3. Schedule maintenance window for investigation
 
 ### Post-CUTOVER Tasks
+
 - [ ] Monitor for 24 hours
 - [ ] Update documentation with actual performance metrics
 - [ ] Plan gradual rollout to production accounts

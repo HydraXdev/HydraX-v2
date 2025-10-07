@@ -4,13 +4,14 @@ CUTOVER TEST 03: SL/TP Handling Test
 Tests that MetaSocket properly handles stop loss and take profit orders
 """
 
+import json
 import os
 import sys
 import time
-import json
 from datetime import datetime
 
-sys.path.append('/root/HydraX-v2')
+sys.path.append("/root/HydraX-v2")
+
 
 def test_sl_tp_handling():
     """Test that MetaSocket handles SL/TP correctly"""
@@ -18,8 +19,8 @@ def test_sl_tp_handling():
     print("=" * 50)
 
     # Verify SOURCE setting
-    source = os.getenv('SOURCE', 'ea')
-    if source not in ['metasocket', 'both']:
+    source = os.getenv("SOURCE", "ea")
+    if source not in ["metasocket", "both"]:
         print(f"❌ SKIP: SOURCE={source}, need 'metasocket' or 'both'")
         return False
 
@@ -27,13 +28,14 @@ def test_sl_tp_handling():
 
     try:
         from adapters.metasocket.adapter import MetaSocketAdapter
+
         adapter = MetaSocketAdapter()
 
         # Health check first
         health = adapter.get_health_status()
         print(f"📊 MetaSocket Health: {health['status']}")
 
-        if health['status'] != 'OK':
+        if health["status"] != "OK":
             print(f"❌ FAIL: MetaSocket not healthy - {health}")
             return False
 
@@ -50,10 +52,10 @@ def test_sl_tp_handling():
             volume=0.01,
             sl_pips=20,
             tp_pips=30,
-            idempotency_key=f"sltp_normal_{timestamp}"
+            idempotency_key=f"sltp_normal_{timestamp}",
         )
 
-        if result1.get('success'):
+        if result1.get("success"):
             print(f"✅ Normal SL/TP order successful: Ticket #{result1.get('ticket')}")
             results.append(True)
         else:
@@ -73,10 +75,10 @@ def test_sl_tp_handling():
             volume=0.01,
             sl_pips=0,  # No SL
             tp_pips=30,
-            idempotency_key=f"sltp_nosl_{timestamp}"
+            idempotency_key=f"sltp_nosl_{timestamp}",
         )
 
-        if result2.get('success'):
+        if result2.get("success"):
             print(f"✅ No-SL order successful: Ticket #{result2.get('ticket')}")
             results.append(True)
         else:
@@ -96,10 +98,10 @@ def test_sl_tp_handling():
             volume=0.01,
             sl_pips=20,
             tp_pips=0,  # No TP
-            idempotency_key=f"sltp_notp_{timestamp}"
+            idempotency_key=f"sltp_notp_{timestamp}",
         )
 
-        if result3.get('success'):
+        if result3.get("success"):
             print(f"✅ No-TP order successful: Ticket #{result3.get('ticket')}")
             results.append(True)
         else:
@@ -119,10 +121,10 @@ def test_sl_tp_handling():
             volume=0.01,
             sl_pips=0,  # No SL
             tp_pips=0,  # No TP
-            idempotency_key=f"sltp_market_{timestamp}"
+            idempotency_key=f"sltp_market_{timestamp}",
         )
 
-        if result4.get('success'):
+        if result4.get("success"):
             print(f"✅ Market order successful: Ticket #{result4.get('ticket')}")
             results.append(True)
         else:
@@ -132,9 +134,9 @@ def test_sl_tp_handling():
         # Clean up - close any open positions
         print("🧹 Cleanup: Closing test positions...")
         for result in [result1, result2, result3, result4]:
-            if result.get('success') and result.get('ticket'):
+            if result.get("success") and result.get("ticket"):
                 try:
-                    adapter.close_ticket(result['ticket'], comment="CLEANUP_SLTP_TEST")
+                    adapter.close_ticket(result["ticket"], comment="CLEANUP_SLTP_TEST")
                     time.sleep(0.2)
                 except:
                     pass  # Ignore cleanup failures
@@ -160,10 +162,12 @@ def test_sl_tp_handling():
     except Exception as e:
         print(f"❌ FAIL: Exception during test - {e}")
         import traceback
+
         traceback.print_exc()
         return False
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     success = test_sl_tp_handling()
     print(f"\n🎯 TEST 03 RESULT: {'✅ PASS' if success else '❌ FAIL'}")
     sys.exit(0 if success else 1)

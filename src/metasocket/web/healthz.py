@@ -3,9 +3,10 @@ web/healthz.py - Health endpoint handler mirroring TypeScript logic
 Provides comprehensive health monitoring for MetaSocket integration
 """
 
-import time
-from typing import Dict, Any, Callable
 import json
+import time
+from typing import Any, Callable, Dict
+
 
 def healthz_handler(metrics: Dict[str, Any]) -> Callable:
     """
@@ -18,6 +19,7 @@ def healthz_handler(metrics: Dict[str, Any]) -> Callable:
     Returns:
         Handler function for HTTP requests
     """
+
     def handler(request=None, response=None) -> Dict[str, Any]:
         """
         Health check handler function
@@ -93,8 +95,8 @@ def healthz_handler(metrics: Dict[str, Any]) -> Callable:
                 "tick_rates_ok": ok_tick_rates,
                 "event_ages_ok": ok_ages,
                 "symbols_active": len([s for s, age in tick_ages.items() if age < 10000]),
-                "total_symbols": len(tick_ages)
-            }
+                "total_symbols": len(tick_ages),
+            },
         }
 
         # Set response status if response object provided
@@ -108,21 +110,22 @@ def healthz_handler(metrics: Dict[str, Any]) -> Callable:
 
     return handler
 
+
 class HealthMonitor:
     """Health monitoring system for MetaSocket integration"""
 
     def __init__(self):
         self.metrics = {
-            "lastTickTs": {},          # symbol -> timestamp
-            "lastPositionTs": 0,       # last position event timestamp
-            "lastAccountTs": 0,        # last account poll timestamp
-            "tickRatePerSymbol": {},   # symbol -> ticks per second
-            "p95LagMs": 0,            # 95th percentile lag
-            "subscriptions": [],       # active subscriptions
+            "lastTickTs": {},  # symbol -> timestamp
+            "lastPositionTs": 0,  # last position event timestamp
+            "lastAccountTs": 0,  # last account poll timestamp
+            "tickRatePerSymbol": {},  # symbol -> ticks per second
+            "p95LagMs": 0,  # 95th percentile lag
+            "subscriptions": [],  # active subscriptions
             "connectionStartTime": int(time.time() * 1000),
             "totalTicksReceived": 0,
             "totalPositionEvents": 0,
-            "totalAccountPolls": 0
+            "totalAccountPolls": 0,
         }
         self.tick_windows = {}  # For calculating tick rates
         self.window_size = 60  # 60 second window for rate calculation
@@ -145,9 +148,7 @@ class HealthMonitor:
 
         # Remove timestamps older than window_size seconds
         cutoff = timestamp - (self.window_size * 1000)
-        self.tick_windows[symbol] = [
-            ts for ts in self.tick_windows[symbol] if ts > cutoff
-        ]
+        self.tick_windows[symbol] = [ts for ts in self.tick_windows[symbol] if ts > cutoff]
 
         # Calculate tick rate (ticks per second)
         tick_count = len(self.tick_windows[symbol])
@@ -190,6 +191,7 @@ class HealthMonitor:
         """Get system uptime in milliseconds"""
         return int(time.time() * 1000) - self.metrics["connectionStartTime"]
 
+
 # Flask integration helper
 def create_flask_health_endpoint(app, monitor: HealthMonitor, path: str = "/healthz"):
     """
@@ -200,15 +202,18 @@ def create_flask_health_endpoint(app, monitor: HealthMonitor, path: str = "/heal
         monitor: HealthMonitor instance
         path: Endpoint path (default: /healthz)
     """
+
     @app.route(path)
     def health_check():
         handler = monitor.get_handler()
         result = handler()
 
         from flask import jsonify
+
         response = jsonify(result)
         response.status_code = result["status_code"]
         return response
+
 
 # FastAPI integration helper
 def create_fastapi_health_endpoint(app, monitor: HealthMonitor, path: str = "/healthz"):
@@ -220,6 +225,7 @@ def create_fastapi_health_endpoint(app, monitor: HealthMonitor, path: str = "/he
         monitor: HealthMonitor instance
         path: Endpoint path (default: /healthz)
     """
+
     @app.get(path)
     async def health_check():
         handler = monitor.get_handler()
@@ -228,10 +234,8 @@ def create_fastapi_health_endpoint(app, monitor: HealthMonitor, path: str = "/he
         from fastapi import Response
         from fastapi.responses import JSONResponse
 
-        return JSONResponse(
-            content=result,
-            status_code=result["status_code"]
-        )
+        return JSONResponse(content=result, status_code=result["status_code"])
+
 
 # Example usage and testing
 def test_health_monitor():
@@ -253,7 +257,7 @@ def test_health_monitor():
 
     # Add position and account data
     monitor.update_position_metrics(current_time - 2000)  # 2 seconds ago
-    monitor.update_account_metrics(current_time - 1000)   # 1 second ago
+    monitor.update_account_metrics(current_time - 1000)  # 1 second ago
 
     # Update subscriptions
     monitor.update_subscription_list(["EURUSD", "GBPUSD", "USDJPY"])
@@ -295,6 +299,7 @@ def test_health_monitor():
     print(f"  Ages OK: {unhealthy_result['checks']['event_ages_ok']}")
 
     print("\n🎉 Health monitor test completed!")
+
 
 if __name__ == "__main__":
     test_health_monitor()

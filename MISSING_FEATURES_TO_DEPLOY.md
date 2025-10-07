@@ -6,12 +6,15 @@
 ## 1. Gamification System
 
 ### Status: Code exists but not integrated
+
 ### Files:
+
 - `src/bitten_core/xp_economy.py` - XP calculation system
 - `src/bitten_core/xp_integration.py` - XP award functions
 - Database tables exist but not populated
 
 ### What's Missing:
+
 - XP persistence between sessions
 - Achievement tracking implementation
 - Battle Pass system activation
@@ -19,6 +22,7 @@
 - Press Pass nightly XP reset mechanism
 
 ### Required Actions:
+
 1. Integrate XP awards into trade execution flow
 2. Create achievement trigger system
 3. Implement XP display in webapp/bot
@@ -27,17 +31,22 @@
 ## 2. Advanced Fire Modes
 
 ### Status: Partially implemented
+
 ### Current: Only MANUAL mode working
+
 ### Files:
+
 - `src/bitten_core/fire_modes.py` - Core logic exists
 - `config/fire_mode_config.py` - Configuration ready
 
 ### Missing Implementations:
+
 - **SEMI-AUTO Mode**: Assisted execution logic
 - **FULL AUTO Mode**: Slot-based autonomous execution
 - **Chaingun Mode**: Rapid-fire execution (future)
 
 ### Required Actions:
+
 1. Implement slot management for AUTO mode
 2. Create execution queue system
 3. Add mode switching interface
@@ -46,11 +55,14 @@
 ## 3. Risk Management System
 
 ### Status: Components exist but not fully active
+
 ### Files:
+
 - `src/bitten_core/risk_controller.py` - Basic framework
 - `src/bitten_core/risk_bot_responses.py` - Response templates
 
 ### Missing Features:
+
 - **Tilt Detection**: Monitor emotional trading patterns
 - **Post-Loss TCS Escalation**: Require higher confidence after losses
 - **Daily Loss Limits**: Hard stop at 7-10%
@@ -58,6 +70,7 @@
 - **News Lockouts**: Prevent trading during high-impact events
 
 ### Required Actions:
+
 1. Integrate risk checks into signal flow
 2. Implement loss tracking per user
 3. Create emergency stop mechanism
@@ -66,18 +79,22 @@
 ## 4. Multi-Broker Symbol System
 
 ### Status: Built but not fully integrated
+
 ### Files:
+
 - `src/bitten_core/symbol_mapper.py` - Translation engine
 - `src/bitten_core/bridge_symbol_integration.py` - Bridge integration
 - `src/bitten_core/fire_router_symbol_integration.py` - Fire router integration
 
 ### Missing:
+
 - Auto-discovery on user login
 - Symbol mapping persistence
 - Broker type detection
 - Integration with main execution flow
 
 ### Required Actions:
+
 1. Hook into user terminal assignment
 2. Persist mappings to database
 3. Add to fire router execution path
@@ -86,11 +103,14 @@
 ## 5. Terminal Assignment System
 
 ### Status: Code exists in TOC but not active
+
 ### Files:
+
 - `src/toc/terminal_assignment.py` - Assignment logic
 - Database schema exists
 
 ### Missing:
+
 - Actual terminal pool management
 - Assignment on user upgrade
 - Terminal health monitoring
@@ -99,7 +119,9 @@
 ## 6. Performance Analytics
 
 ### Status: Basic tracking only
+
 ### Missing:
+
 - Detailed trade analytics
 - Win rate calculations
 - Profit/loss tracking
@@ -107,6 +129,7 @@
 - Export functionality
 
 ### Required Actions:
+
 1. Create analytics calculation engine
 2. Add visualization components
 3. Integrate with webapp dashboard
@@ -115,7 +138,9 @@
 ## 7. Notification System Enhancements
 
 ### Status: Basic Telegram notifications only
+
 ### Missing:
+
 - Email notifications
 - Push notifications
 - Custom alert preferences
@@ -125,11 +150,14 @@
 ## 8. Payment System Integration
 
 ### Status: Stripe webhook exists but not fully integrated
+
 ### Files:
+
 - `stripe_webhook_production.py` - Webhook handler
 - `config/payment.py` - Pricing configuration
 
 ### Missing:
+
 - Automatic tier upgrades on payment
 - Subscription management
 - Payment failure handling

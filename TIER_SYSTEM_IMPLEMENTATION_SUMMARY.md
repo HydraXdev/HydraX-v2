@@ -9,18 +9,21 @@
 ## 🎯 TIER SYSTEM SPECIFICATIONS
 
 ### **NIBBLER TIER**
+
 - **Manual Slots**: 1
 - **Auto Slots**: 0 (NO auto-fire)
 - **Daily Trades**: 6 per trading session
 - **Target Users**: Entry-level traders
 
 ### **FANG TIER**
+
 - **Manual Slots**: 2
 - **Auto Slots**: 0 (NO auto-fire)
 - **Daily Trades**: 10 per trading session
 - **Target Users**: Intermediate traders
 
 ### **COMMANDER TIER**
+
 - **Manual Slots**: 10 (flexible allocation)
 - **Auto Slots**: 10 (flexible allocation)
 - **Total Slots**: 10 (can be any combination of manual/auto)
@@ -33,6 +36,7 @@
 ## 📊 DATABASE CHANGES IMPLEMENTED
 
 ### **1. Updated tier_slot_defaults Table**
+
 ```sql
 -- New tier configurations
 NIBBLER:   1 manual, 0 auto, 6 daily trades
@@ -41,7 +45,9 @@ COMMANDER: 10 manual, 10 auto, unlimited daily trades
 ```
 
 ### **2. Enhanced user_fire_modes Table**
+
 **New Columns Added:**
+
 - `max_manual_slots` - Tier-based manual slot limit
 - `max_auto_slots_separate` - Tier-based auto slot limit
 - `trades_used_today` - Daily trade counter
@@ -49,6 +55,7 @@ COMMANDER: 10 manual, 10 auto, unlimited daily trades
 - `tier_max_trades_per_day` - Tier-based daily limit
 
 ### **3. Real-Time Slot Tracking**
+
 - Uses `active_slots` table for live position counting
 - Distinguishes between MANUAL and AUTO slot types
 - Prevents database/reality sync issues
@@ -58,27 +65,33 @@ COMMANDER: 10 manual, 10 auto, unlimited daily trades
 ## 🔧 CORE FUNCTIONALITY IMPLEMENTED
 
 ### **1. Comprehensive Tier Validation Functions**
+
 **File**: `/root/HydraX-v2/src/bitten_core/fire_mode_database.py`
 
 **New Functions:**
+
 - `get_real_time_slot_usage()` - Live slot counting from active_slots
 - `check_daily_trade_limit()` - Session-based daily limit checking
 - `can_user_fire_trade()` - Comprehensive fire validation
 - `get_user_tier_summary()` - Complete tier status overview
 
 ### **2. Enhanced Auto-Fire Logic**
+
 **File**: `/root/HydraX-v2/webapp_server_optimized.py` (lines 430-470)
 
 **Changes:**
+
 - ✅ Only COMMANDER tier can use auto-fire
 - ✅ Real-time slot validation before auto-execution
 - ✅ Daily limit enforcement
 - ✅ Comprehensive debugging output
 
 ### **3. Enhanced Manual Fire API**
+
 **File**: `/root/HydraX-v2/webapp_server_optimized.py` (lines 1518-1540)
 
 **Changes:**
+
 - ✅ Tier-based slot validation before manual fires
 - ✅ Daily limit checking with session-based reset
 - ✅ Detailed error messages for blocked trades
@@ -89,6 +102,7 @@ COMMANDER: 10 manual, 10 auto, unlimited daily trades
 ## ⚡ TRADING SESSION-BASED DAILY RESET
 
 ### **Reset Logic**
+
 - **Trading Week Start**: Sunday 22:00 UTC (5PM EST)
 - **Reset Calculation**: Automatic based on current time vs last Sunday 22:00 UTC
 - **Benefit**: Aligns with actual forex market week structure
@@ -99,9 +113,11 @@ COMMANDER: 10 manual, 10 auto, unlimited daily trades
 ## 🧪 TESTING & VALIDATION
 
 ### **1. Comprehensive Test Suite**
+
 **File**: `/root/HydraX-v2/test_tier_system.py`
 
 **Tests Include:**
+
 - ✅ Tier slot limit validation
 - ✅ Real-time slot tracking accuracy
 - ✅ Daily trade limit functionality
@@ -110,9 +126,11 @@ COMMANDER: 10 manual, 10 auto, unlimited daily trades
 - ✅ Database integrity checks
 
 ### **2. Slot Reconciliation Utility**
+
 **File**: `/root/HydraX-v2/reconcile_slots.py`
 
 **Features:**
+
 - 🔍 Detects slot overflows from legacy data
 - 📊 Analyzes historical usage patterns
 - 🧹 Cleans up old closed positions
@@ -123,6 +141,7 @@ COMMANDER: 10 manual, 10 auto, unlimited daily trades
 ## 📈 CURRENT USER STATUS
 
 ### **User 7176191872 (COMMANDER)**
+
 - **Tier**: COMMANDER ✅
 - **Auto-Fire**: Enabled ✅
 - **Current Usage**: 27 open positions (6 manual + 21 auto)
@@ -130,6 +149,7 @@ COMMANDER: 10 manual, 10 auto, unlimited daily trades
 - **Action Required**: Consider closing excess positions or adjusting limits
 
 ### **Anonymous User**
+
 - **Tier**: NIBBLER ✅
 - **Auto-Fire**: Disabled ✅
 - **Limits**: 1 manual slot, 6 daily trades
@@ -139,6 +159,7 @@ COMMANDER: 10 manual, 10 auto, unlimited daily trades
 ## 🚀 SYSTEM OPERATIONAL STATUS
 
 ### **✅ WORKING COMPONENTS**
+
 1. **Database Schema**: All new columns and tables created
 2. **Tier Validation**: Real-time enforcement active
 3. **Auto-Fire Restriction**: Only COMMANDER tier can auto-fire
@@ -147,6 +168,7 @@ COMMANDER: 10 manual, 10 auto, unlimited daily trades
 6. **API Enforcement**: Both manual and auto fire endpoints protected
 
 ### **⚠️ CONSIDERATIONS**
+
 1. **Legacy Positions**: Existing user has 27 open positions vs 10 limit
 2. **Gradual Enforcement**: Consider grace period for existing users
 3. **Tier Upgrades**: Process needed for users wanting tier changes
@@ -157,6 +179,7 @@ COMMANDER: 10 manual, 10 auto, unlimited daily trades
 ## 📚 USAGE EXAMPLES
 
 ### **Check User Tier Status**
+
 ```python
 from src.bitten_core.fire_mode_database import fire_mode_db
 
@@ -168,6 +191,7 @@ print(f"Daily stats: {summary['daily_stats']}")
 ```
 
 ### **Validate Trade Before Execution**
+
 ```python
 # Check if user can fire a manual trade
 fire_check = fire_mode_db.can_user_fire_trade('7176191872', 'MANUAL')
@@ -179,6 +203,7 @@ else:
 ```
 
 ### **Run System Health Check**
+
 ```bash
 # Test entire tier system
 python3 /root/HydraX-v2/test_tier_system.py
@@ -202,6 +227,7 @@ python3 /root/HydraX-v2/reconcile_slots.py
 ## 🏆 IMPLEMENTATION SUMMARY
 
 ✅ **COMPLETE**: Comprehensive tier-based trading system with:
+
 - Real-time slot tracking
 - Session-based daily limits
 - Auto-fire tier restrictions

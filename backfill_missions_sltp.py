@@ -1,36 +1,43 @@
 #!/usr/bin/env python3
-import sqlite3
 import json
+import sqlite3
 import time
 
 DB = "/root/HydraX-v2/bitten.db"
 
+
 def pip_size(sym):
     s = sym.upper()
-    if s.endswith("JPY"): return 0.01
-    if s.startswith("XAU"): return 0.1
-    if s.startswith("XAG"): return 0.01
+    if s.endswith("JPY"):
+        return 0.01
+    if s.startswith("XAU"):
+        return 0.1
+    if s.startswith("XAG"):
+        return 0.01
     return 0.0001
+
 
 conn = sqlite3.connect(DB)
 conn.row_factory = sqlite3.Row
 cur = conn.cursor()
 
-cur.execute("""
+cur.execute(
+    """
 SELECT mission_id, payload_json
 FROM missions
 WHERE status='PENDING'
-""")
+"""
+)
 rows = cur.fetchall()
 
 updated = 0
 for r in rows:
     try:
         p = json.loads(r["payload_json"] or "{}")
-        
+
         # Handle nested signal structure
         signal = p.get("signal", p)
-        
+
         sym = (signal.get("symbol") or "").upper()
         side = (signal.get("direction") or signal.get("side") or "").upper()
         entry = float(signal.get("entry_price") or signal.get("entry") or 0.0)
@@ -63,8 +70,10 @@ for r in rows:
             else:
                 p["sl"] = round(sl, 6)
                 p["tp"] = round(tp, 6)
-            cur.execute("UPDATE missions SET payload_json=? WHERE mission_id=?",
-                        (json.dumps(p, separators=(',', ':')), r["mission_id"]))
+            cur.execute(
+                "UPDATE missions SET payload_json=? WHERE mission_id=?",
+                (json.dumps(p, separators=(",", ":")), r["mission_id"]),
+            )
             updated += 1
             print(f"Updated {r['mission_id']}: SL={sl:.5f}, TP={tp:.5f}")
     except Exception as e:

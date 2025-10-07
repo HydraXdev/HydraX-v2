@@ -5,6 +5,7 @@
 ### 🔑 CONNECTION METHODS
 
 #### Method 1: RDP (Recommended)
+
 ```bash
 # From Linux/Mac
 rdesktop -u Administrator -p [PASSWORD] 3.145.84.187:3389
@@ -16,6 +17,7 @@ mstsc /v:3.145.84.187
 ```
 
 #### Method 2: PowerShell Remoting
+
 ```powershell
 # Enable PS Remoting (if not already enabled)
 Enable-PSRemoting -Force
@@ -30,6 +32,7 @@ Invoke-Command -Session $session -FilePath "C:\temp\emergency_mt5_cleanup.ps1"
 ```
 
 #### Method 3: WinRM/WinRS
+
 ```cmd
 # From Windows command line
 winrs -r:3.145.84.187 -u:Administrator -p:[PASSWORD] cmd
@@ -51,17 +54,17 @@ def execute_remote_command(host, port, command):
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.connect((host, port))
-        
+
         request = {
             "action": "execute",
             "command": command,
             "target": "mt5_master_cleanup"
         }
-        
+
         sock.send(json.dumps(request).encode())
         response = sock.recv(4096).decode()
         sock.close()
-        
+
         return json.loads(response)
     except Exception as e:
         return {"error": str(e)}
@@ -83,6 +86,7 @@ for cmd in commands:
 ### 📁 FILE TRANSFER METHODS
 
 #### SCP/SFTP (if SSH enabled)
+
 ```bash
 # Copy cleanup scripts to server
 scp emergency_mt5_cleanup.ps1 administrator@3.145.84.187:C:/temp/
@@ -90,6 +94,7 @@ scp emergency_mt5_cleanup.bat administrator@3.145.84.187:C:/temp/
 ```
 
 #### SMB/CIFS Share
+
 ```bash
 # Mount Windows share
 sudo mount -t cifs //3.145.84.187/C$ /mnt/windows -o username=Administrator
@@ -99,6 +104,7 @@ cp emergency_mt5_cleanup.* /mnt/windows/temp/
 ```
 
 #### PowerShell Copy (from local to remote)
+
 ```powershell
 $session = New-PSSession -ComputerName 3.145.84.187 -Credential (Get-Credential)
 Copy-Item -Path "emergency_mt5_cleanup.ps1" -Destination "C:\temp\" -ToSession $session
@@ -109,6 +115,7 @@ Copy-Item -Path "emergency_mt5_cleanup.ps1" -Destination "C:\temp\" -ToSession $
 ## 🚀 EXECUTION STEPS
 
 ### Step 1: Upload Scripts
+
 ```bash
 # Choose your method above to copy these files to the server:
 # - emergency_mt5_cleanup.ps1
@@ -119,6 +126,7 @@ Copy-Item -Path "emergency_mt5_cleanup.ps1" -Destination "C:\temp\" -ToSession $
 ```
 
 ### Step 2: Execute Cleanup
+
 ```cmd
 # Connect to server via RDP/SSH/WinRS
 # Navigate to script location
@@ -132,6 +140,7 @@ emergency_mt5_cleanup.bat
 ```
 
 ### Step 3: Manual Configuration
+
 ```
 After automated cleanup, manually:
 1. Start MT5 terminal
@@ -142,6 +151,7 @@ After automated cleanup, manually:
 ```
 
 ### Step 4: Verification
+
 ```cmd
 # Verify no MT5 processes
 tasklist | findstr terminal64
@@ -157,12 +167,14 @@ dir "C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\173477FF1060D99C
 ## 🔧 TROUBLESHOOTING
 
 ### Cannot Connect to Server
+
 - Verify server is online: `ping 3.145.84.187`
 - Check firewall rules for RDP (3389) or WinRM (5985/5986)
 - Confirm credentials are correct
 - Try alternative connection methods
 
 ### PowerShell Execution Policy
+
 ```powershell
 # If script won't run due to execution policy
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
@@ -171,12 +183,14 @@ powershell -ExecutionPolicy Bypass -File script.ps1
 ```
 
 ### Access Denied Errors
+
 - Ensure running with Administrator privileges
 - Right-click > "Run as Administrator"
 - Check UAC settings
 - Verify file permissions
 
 ### MT5 Process Won't Terminate
+
 ```cmd
 # Force kill with more aggressive approach
 taskkill /IM terminal64.exe /F /T
@@ -187,6 +201,7 @@ sc query | findstr -i meta
 ```
 
 ### Files Won't Delete/Move
+
 ```cmd
 # Check file locks
 handle.exe "C:\path\to\file"
@@ -199,10 +214,10 @@ del /F /Q "C:\path\to\file"
 
 ## 📊 SUCCESS CRITERIA
 
-✅ **Phase 1:** All MT5 processes terminated  
-✅ **Phase 2:** Contaminated files quarantined (not lost)  
-✅ **Phase 3:** Algo Trading disabled globally  
-✅ **Phase 4:** Clean master template archived  
-✅ **Verification:** No contamination remains  
+✅ **Phase 1:** All MT5 processes terminated
+✅ **Phase 2:** Contaminated files quarantined (not lost)
+✅ **Phase 3:** Algo Trading disabled globally
+✅ **Phase 4:** Clean master template archived
+✅ **Verification:** No contamination remains
 
 **Result:** Master template ready for clean cloning

@@ -1,6 +1,7 @@
 # 🎯 ChatGPT Agent Deployment Handover
 
 ## Overview
+
 This document provides step-by-step instructions for deploying the PowerShell BiTTen Dual Agent system on Windows VPS for MT5 integration. The agent manages trade execution, market data streaming, and system monitoring.
 
 ---
@@ -8,6 +9,7 @@ This document provides step-by-step instructions for deploying the PowerShell Bi
 ## 📋 Quick Deployment Steps
 
 ### 1. Prerequisites
+
 - Windows VPS with Administrator access
 - MT5 Terminal installed
 - PowerShell 5.1 or higher
@@ -33,6 +35,7 @@ Replace `YOUR_USER_ID_HERE` with the actual user's Telegram ID or UUID.
 The agent will attempt to deploy the EA automatically. If manual deployment is needed:
 
 1. Copy `BITTENBridge_TradeExecutor_PRODUCTION.mq5` to:
+
    ```
    C:\Program Files\MetaTrader 5\MQL5\Experts\
    ```
@@ -73,6 +76,7 @@ Get-Content "C:\BiTTen\Agent\Logs\*.log" -Tail 20
 ## 🤖 Agent Features
 
 ### Core Capabilities
+
 - **Automated EA deployment** and management
 - **Fire signal creation** via fire.txt protocol
 - **Market data monitoring** for 15 currency pairs
@@ -81,14 +85,17 @@ Get-Content "C:\BiTTen\Agent\Logs\*.log" -Tail 20
 - **Automatic maintenance** and cleanup
 
 ### Currency Pairs Supported
+
 ```
 EURUSD, GBPUSD, USDJPY, USDCAD, AUDUSD,
 USDCHF, NZDUSD, EURGBP, EURJPY, GBPJPY,
 GBPNZD, GBPAUD, EURAUD, GBPCHF, AUDJPY
 ```
+
 ⚠️ **XAUUSD is BLOCKED at all levels**
 
 ### File Locations
+
 - **Agent**: `C:\BiTTen\Agent\`
 - **Config**: `C:\BiTTen\Agent\Config\agent_config.json`
 - **Logs**: `C:\BiTTen\Agent\Logs\`
@@ -100,6 +107,7 @@ GBPNZD, GBPAUD, EURAUD, GBPCHF, AUDJPY
 ## 🔧 Troubleshooting
 
 ### Agent Not Starting
+
 ```powershell
 # Start manually
 Start-Service BiTTenDualAgent
@@ -109,12 +117,14 @@ Get-EventLog -LogName Application -Source BiTTenDualAgent -Newest 10
 ```
 
 ### EA Not Working
+
 1. Ensure EA is compiled (no errors)
 2. Check smiley face on chart
 3. Verify WebRequest URL is added
 4. Check Experts tab for errors
 
 ### Fire Signals Not Processing
+
 ```powershell
 # Test signal creation
 Import-Module "C:\BiTTen\Agent\Modules\EADeployment.psm1"
@@ -128,6 +138,7 @@ $eaManager.CreateFireSignal($signal)
 ```
 
 ### No Market Data
+
 1. Ensure EA is attached to charts
 2. Check MT5 is logged in
 3. Verify localhost:8001 is accessible
@@ -138,6 +149,7 @@ $eaManager.CreateFireSignal($signal)
 ## 📊 Testing Commands
 
 ### Create Test Signal
+
 ```powershell
 $signal = @{
     symbol = "EURUSD"
@@ -152,11 +164,13 @@ $signal | Set-Content "C:\Program Files\MetaTrader 5\MQL5\Files\BITTEN\fire.txt"
 ```
 
 ### Check Trade Result
+
 ```powershell
 Get-Content "C:\Program Files\MetaTrader 5\MQL5\Files\BITTEN\trade_result.txt"
 ```
 
 ### Monitor Agent Health
+
 ```powershell
 # Service status
 Get-Service BiTTenDualAgent | Select-Object Name, Status, StartType
@@ -173,6 +187,7 @@ Test-Path "C:\Program Files\MetaTrader 5\MQL5\Experts\BITTENBridge_TradeExecutor
 ## 🚨 Important Notes
 
 ### For Master Clone Setup
+
 If setting up a master clone for replication:
 
 1. Use UUID: `"MASTER_TEMPLATE"` during installation
@@ -185,12 +200,14 @@ If setting up a master clone for replication:
 3. This prevents the agent from modifying EA files in cloned environments
 
 ### Security Considerations
+
 - Agent runs as Windows Service with appropriate permissions
 - No credentials are stored in plain text
 - All communication is local (no external connections)
 - Fire signals are validated before execution
 
 ### Performance Tips
+
 - Agent checks for signals every second
 - Market data streams every 5 seconds
 - Keep MT5 charts clean (minimal indicators)
@@ -201,17 +218,20 @@ If setting up a master clone for replication:
 ## 📞 Support Information
 
 ### Log Locations for Debugging
+
 - **Agent Logs**: `C:\BiTTen\Agent\Logs\bitten_agent_*.log`
 - **MT5 Logs**: `C:\Program Files\MetaTrader 5\MQL5\Logs\`
 - **Windows Event Log**: Application log, source "BiTTenDualAgent"
 
 ### Common Error Codes
+
 - **1001**: MT5 not found
 - **1002**: EA deployment failed
 - **1003**: File permission error
 - **1004**: Service registration failed
 
 ### Quick Health Check
+
 ```powershell
 # Run comprehensive check
 & "C:\BiTTen\Agent\Commission-BiTTenAgent.ps1" -UserUUID YOUR_UUID
@@ -222,6 +242,7 @@ If setting up a master clone for replication:
 ## ✅ Deployment Checklist
 
 Before considering deployment complete:
+
 - [ ] Agent service is running
 - [ ] EA is compiled and attached to charts
 - [ ] WebRequest URL is configured

@@ -1,10 +1,13 @@
 # 🔥 -FX v5.0 FINAL ALL-IN ENGINE - COMPLETE BLUEPRINT
+
 ## The Ultimate 150-200 Signals/Day Trading Engine
+
 ### Built on v4.0's 68.8% Foundation → Achieved 89% Win Rate in Testing
 
 ---
 
 ## 📋 TABLE OF CONTENTS
+
 1. [Executive Summary](#executive-summary)
 2. [Core Architecture](#core-architecture)
 3. [Configuration Settings](#configuration-settings)
@@ -23,6 +26,7 @@
 ## 🎯 EXECUTIVE SUMMARY
 
 ### Version Comparison
+
 ```python
 _EVOLUTION = {
     'v4.0_ULTRA_TURBO': {
@@ -44,6 +48,7 @@ _EVOLUTION = {
 ```
 
 ### 🚀 **PRODUCTION STATUS - FULLY OPERATIONAL**
+
 - **Status**: ✅ **DEPLOYED AND ACTIVE**
 - **Engine**: `/root/HydraX-v2/apex_v5_simplified.py`
 - **MT5 Farm**: ✅ **CONNECTED** (3.145.84.187:5555)
@@ -52,6 +57,7 @@ _EVOLUTION = {
 - **Performance**: ✅ **EXCEEDING TARGETS** (60+ signals/hour capability)
 
 ### Mission Statement
+
 Transform 12 original + 3 volatility pairs into a signal-generating monster that produces 150-200 opportunities daily while maintaining 65%+ win rate through ultra-aggressive pattern detection and intelligent filtering.
 
 ---
@@ -59,13 +65,14 @@ Transform 12 original + 3 volatility pairs into a signal-generating monster that
 ## 🏗️ CORE ARCHITECTURE
 
 ### System Components
+
 ```python
 class v5FinalAllIn:
     """
     The most aggressive signal generation engine possible
     while maintaining functional trading logic
     """
-    
+
     # INITIALIZATION PARAMETERS
     def __init__(self):
         # TCS Thresholds - ULTRA LOW
@@ -74,7 +81,7 @@ class v5FinalAllIn:
         self.M1_MIN_TCS = 38       # M1 hair trigger
         self.M5_MIN_TCS = 40       # M5 standard
         self.M15_MIN_TCS = 45      # M15 quality
-        
+
         # Execution Limits
         self.MAX_SIGNALS = 500     # No limit essentially
         self.scan_interval = 5     # 5-second hyperdrive
@@ -84,6 +91,7 @@ class v5FinalAllIn:
 ```
 
 ### Threading Architecture
+
 ```python
 THREADING_MODEL = {
     'main_thread': 'Signal scanning loop',
@@ -99,6 +107,7 @@ THREADING_MODEL = {
 ## ⚙️ CONFIGURATION SETTINGS
 
 ### 15 Currency Pairs
+
 ```python
 PAIRS = [
     # ORIGINAL 12 PAIRS
@@ -114,7 +123,7 @@ PAIRS = [
     'NZDUSD',   # Carry trade favorite
     'AUDJPY',   # Risk sentiment gauge
     'GBPCHF',   # Stable cross
-    
+
     # NEW VOLATILITY MONSTERS
     'GBPAUD',   # 200+ pip daily range
     'EURAUD',   # Trending machine
@@ -123,6 +132,7 @@ PAIRS = [
 ```
 
 ### Pair-Specific Optimizations
+
 ```python
 PAIR_SETTINGS = {
     # VOLATILITY MONSTERS (NEW)
@@ -150,7 +160,7 @@ PAIR_SETTINGS = {
         'best_sessions': ['LONDON', 'OVERLAP'],
         'special_patterns': ['trend_continuation', 'ma_rides']
     },
-    
+
     # HIGH VOLATILITY ORIGINALS
     'GBPJPY': {
         'boost': 1.3,
@@ -166,7 +176,7 @@ PAIR_SETTINGS = {
         'daily_range': '80-120 pips',
         'best_sessions': ['LONDON', 'ASIAN']
     },
-    
+
     # MAJORS
     'EURUSD': {
         'boost': 1.1,
@@ -175,7 +185,7 @@ PAIR_SETTINGS = {
         'daily_range': '50-80 pips',
         'best_sessions': ['LONDON', 'NY']
     },
-    
+
     # QUIET PAIRS (still get boosts!)
     'EURGBP': {
         'boost': 1.0,
@@ -188,6 +198,7 @@ PAIR_SETTINGS = {
 ```
 
 ### Timeframe Configuration
+
 ```python
 TIMEFRAMES = {
     mt5.TIMEFRAME_M1: {
@@ -225,6 +236,7 @@ TIMEFRAMES = {
 ```
 
 ### Session Configuration
+
 ```python
 SESSIONS = {
     'ASIAN': {
@@ -267,6 +279,7 @@ SESSIONS = {
 ## 🎯 PATTERN DETECTION SYSTEM
 
 ### M3 Pattern Suite (15+ Patterns)
+
 ```python
 M3_PATTERNS = {
     '1_LIGHTNING_SPEED': {
@@ -276,7 +289,7 @@ M3_PATTERNS = {
         'tp': 10,
         'description': 'Ultra-fast momentum detection'
     },
-    
+
     '2_MICRO_STRUCTURE_BREAK': {
         'trigger': 'Close >= 99.9% of 5-bar high/low',
         'strength': 75,
@@ -284,7 +297,7 @@ M3_PATTERNS = {
         'tp': 12,
         'description': 'Early breakout detection'
     },
-    
+
     '3_RSI_EXTREMES': {
         'levels': {
             'ultra_oversold': '<20 → strength 85',
@@ -295,68 +308,68 @@ M3_PATTERNS = {
             'ultra_overbought': '>80 → strength 85'
         }
     },
-    
+
     '4_BOLLINGER_TOUCHES': {
         'trigger': '95% touch = signal',
         'upper_touch': 'Sell signal',
         'lower_touch': 'Buy signal',
         'squeeze': 'Width < 70% average → strength 74'
     },
-    
+
     '5_DOJI_SIGNALS': {
         'trigger': 'Body < 50% of range',
         'strength': 68,
         'note': 'Relaxed from 20% for volume'
     },
-    
+
     '6_MA_TOUCHES': {
         'trigger': 'Price within 3 pips of MA',
         'periods': [5, 10, 20],
         'strength': 66
     },
-    
+
     '7_VOLATILITY_PATTERNS': {
         'explosion': 'Range > ATR * 1.5 → strength 75',
         'contraction': 'Range < ATR * 0.5 → strength 69'
     },
-    
+
     '8_SESSION_PATTERNS': {
         'trigger': 'First 15 mins of session',
         'london_blast': 'strength 78',
         'ny_blast': 'strength 78',
         'overlap_special': 'strength 80+'
     },
-    
+
     '9_TWO_BAR_PATTERNS': {
         'reversal': 'Engulfing + direction change → 72',
         'continuation': 'Same direction bars → 65'
     },
-    
+
     '10_RANGE_PATTERNS': {
         'extremes': 'Top/bottom 10% → 69',
         'breakouts': 'Close beyond 10-bar range → 74'
     },
-    
+
     '11_MACD_PATTERNS': {
         'cross': 'Line crosses signal → 73',
         'divergence': 'Price/MACD mismatch → 75'
     },
-    
+
     '12_STOCHASTIC_PATTERNS': {
         'oversold': '<20 → 68',
         'overbought': '>80 → 68'
     },
-    
+
     '13_PRICE_ACTION_SPIKE': {
         'trigger': 'Current move > prev * 2',
         'strength': 74
     },
-    
+
     '14_SUPPORT_RESISTANCE': {
         'trigger': 'Within 0.1% of S/R',
         'strength': 71
     },
-    
+
     '15_ENGULFING_PATTERNS': {
         'bullish': 'Full engulf + 10% bigger → 75',
         'bearish': 'Full engulf + 10% bigger → 75'
@@ -365,6 +378,7 @@ M3_PATTERNS = {
 ```
 
 ### M1 Ultra-Fast Patterns
+
 ```python
 M1_PATTERNS = {
     'INSTANT_MOMENTUM': {
@@ -395,6 +409,7 @@ M1_PATTERNS = {
 ```
 
 ### Confluence Detection
+
 ```python
 CONFLUENCE_RULES = {
     'SINGLE_STRONG': {
@@ -428,6 +443,7 @@ CONFLUENCE_RULES = {
 ## 🚀 SIGNAL GENERATION PIPELINE
 
 ### Signal Flow Architecture
+
 ```python
 SIGNAL_FLOW = {
     'step_1': 'Scan all 15 pairs',
@@ -444,6 +460,7 @@ SIGNAL_FLOW = {
 ```
 
 ### TCS Calculation Formula
+
 ```python
 def calculate_dynamic_tcs(pattern, timeframe, market_conditions, symbol):
     """
@@ -451,7 +468,7 @@ def calculate_dynamic_tcs(pattern, timeframe, market_conditions, symbol):
     """
     # Base strength from pattern
     tcs = pattern['strength']
-    
+
     # Timeframe adjustments (MASSIVE for M3)
     tf_adjustments = {
         mt5.TIMEFRAME_M1: -12,
@@ -460,7 +477,7 @@ def calculate_dynamic_tcs(pattern, timeframe, market_conditions, symbol):
         mt5.TIMEFRAME_M15: -5
     }
     tcs += tf_adjustments[timeframe]
-    
+
     # Pattern type bonuses
     if 'ULTRA_Confluence' in pattern['name']:
         tcs += 25
@@ -472,34 +489,35 @@ def calculate_dynamic_tcs(pattern, timeframe, market_conditions, symbol):
         tcs += 12
     elif 'M3_' in pattern['name']:
         tcs += 10
-    
+
     # Session reduction (from boosts)
     tcs -= pattern.get('session_tcs_reduction', 0)
-    
+
     # Pair-specific reduction
     tcs -= pattern.get('pair_tcs_reduction', 0)
-    
+
     # Market condition bonuses
     if market_conditions['volatility'] > 1.5:
         tcs += 10
     elif market_conditions['volatility'] > 1.2:
         tcs += 5
-    
+
     # Trend strength bonus
     if abs(market_conditions['trend']) > 2:
         tcs += 5
-    
+
     # Behind-target emergency reduction
     if current_hourly_signals < hourly_target * 0.5:
         tcs -= 10
     elif current_hourly_signals < hourly_target * 0.7:
         tcs -= 5
-    
+
     # Return with minimum threshold
     return max(timeframe_minimums[timeframe], tcs)
 ```
 
 ### Boost Stacking System
+
 ```python
 BOOST_STACKING = {
     'pattern_multipliers': {
@@ -542,6 +560,7 @@ BOOST_STACKING = {
 ## 🛡️ RISK MANAGEMENT FRAMEWORK
 
 ### Signal Type Configuration
+
 ```python
 SIGNAL_TYPES = {
     'RAPID_ASSAULT': {
@@ -567,6 +586,7 @@ SIGNAL_TYPES = {
 ```
 
 ### Risk/Reward Scaling
+
 ```python
 RR_SCALING = {
     'signal_type_base': {
@@ -589,13 +609,14 @@ RR_SCALING = {
 ```
 
 ### Position Sizing Rules
+
 ```python
 POSITION_RULES = {
     'max_risk_per_trade': '2%',
     'concurrent_positions': 1,
     'daily_trade_limit': 6,
     'daily_drawdown_limit': '7%',
-    
+
     'lot_calculation': {
         'formula': 'account_balance * 0.02 / (sl_pips * pip_value)',
         'rounding': 'Down to nearest 0.01',
@@ -610,6 +631,7 @@ POSITION_RULES = {
 ## 📐 MATHEMATICAL FORMULAS
 
 ### Core Calculations
+
 ```python
 # 1. Pip Calculation (5-digit brokers)
 def calculate_pips(entry, exit, symbol):
@@ -650,6 +672,7 @@ def calculate_trend(ma5, ma10, ma20):
 ```
 
 ### Indicator Formulas
+
 ```python
 # RSI Calculation
 def calculate_rsi(prices, period=14):
@@ -691,6 +714,7 @@ def calculate_stochastic(df, period=14, smooth=3):
 ## 🔗 BITTEN INTEGRATION
 
 ### Signal Delivery Protocol
+
 ```python
 BITTEN_INTEGRATION = {
     'signal_format': {
@@ -707,9 +731,9 @@ BITTEN_INTEGRATION = {
         'session': 'OVERLAP',
         'timestamp': '2025-07-13T14:30:25Z'
     },
-    
+
     'notification_format': '🔔 {symbol} {type} - TCS {tcs}',
-    
+
     'tier_filtering': {
         'engine_generates': 'ALL signals TCS 35+',
         'bitten_filters': 'Based on user tier/state',
@@ -719,6 +743,7 @@ BITTEN_INTEGRATION = {
 ```
 
 ### XP Integration
+
 ```python
 XP_REWARDS = {
     'signal_execution': {
@@ -737,6 +762,7 @@ XP_REWARDS = {
 ```
 
 ### Fire Mode Compatibility
+
 ```python
 FIRE_MODE_BEHAVIOR = {
     'MANUAL': {
@@ -762,6 +788,7 @@ FIRE_MODE_BEHAVIOR = {
 ## 📊 PERFORMANCE METRICS
 
 ### Testing Results (6 pairs, 60 days)
+
 ```python
 V5_TEST_RESULTS = {
     'total_signals': 2400,
@@ -769,14 +796,14 @@ V5_TEST_RESULTS = {
     'win_rate': 89.0%,
     'total_pips': 1119,
     'average_tcs': 95.0,
-    
+
     'by_timeframe': {
         'M1': {'count': 480, 'win_rate': '86%'},
         'M3': {'count': 1440, 'win_rate': '91%'},
         'M5': {'count': 360, 'win_rate': '88%'},
         'M15': {'count': 120, 'win_rate': '85%'}
     },
-    
+
     'by_session': {
         'ASIAN': {'signals': 300, 'win_rate': '87%'},
         'LONDON': {'signals': 800, 'win_rate': '90%'},
@@ -787,6 +814,7 @@ V5_TEST_RESULTS = {
 ```
 
 ### Expected Live Performance (15 pairs)
+
 ```python
 LIVE_PROJECTIONS = {
     'conservative': {
@@ -811,6 +839,7 @@ LIVE_PROJECTIONS = {
 ```
 
 ### Hourly Distribution
+
 ```python
 HOURLY_TARGETS = {
     0: 3, 1: 2, 2: 2, 3: 3,      # 10 (quiet Asian)
@@ -828,6 +857,7 @@ HOURLY_TARGETS = {
 ## 🔧 IMPLEMENTATION GUIDE
 
 ### System Requirements
+
 ```python
 REQUIREMENTS = {
     'hardware': {
@@ -856,6 +886,7 @@ REQUIREMENTS = {
 ```
 
 ### Deployment Steps
+
 ```python
 DEPLOYMENT = {
     'step_1': 'Install dependencies',
@@ -871,6 +902,7 @@ DEPLOYMENT = {
 ```
 
 ### Critical Files
+
 ```python
 FILE_STRUCTURE = {
     'core_engine': 'apex_v5_final_allin.py',
@@ -889,6 +921,7 @@ FILE_STRUCTURE = {
 ## 🎯 OPTIMIZATION PARAMETERS
 
 ### Adjustable Parameters
+
 ```python
 TUNING_PARAMETERS = {
     'tcs_thresholds': {
@@ -916,6 +949,7 @@ TUNING_PARAMETERS = {
 ```
 
 ### Performance Optimization
+
 ```python
 OPTIMIZATION_TIPS = {
     'cpu_usage': {
@@ -946,6 +980,7 @@ OPTIMIZATION_TIPS = {
 ## 🚨 WARNING & DISCLAIMERS
 
 ### Critical Warnings
+
 ```
 ⚠️ EXTREME AGGRESSION WARNING ⚠️
 This engine is configured for MAXIMUM signal extraction.
@@ -956,6 +991,7 @@ This engine is configured for MAXIMUM signal extraction.
 ```
 
 ### Risk Acknowledgment
+
 ```
 This system can generate 150-200+ signals daily.
 Without proper filtering and risk management:
@@ -975,6 +1011,7 @@ ONLY use with:
 ## 📝 VERSION NOTES
 
 ### v5.0 Changelog from v4.0
+
 ```
 MAJOR CHANGES:
 1. TCS reduced from 50 to 40 (35 for M3)
@@ -990,6 +1027,7 @@ MAJOR CHANGES:
 ```
 
 ### Future Enhancements
+
 ```
 PLANNED FEATURES:
 1. Machine learning pattern validation
@@ -1007,10 +1045,13 @@ PLANNED FEATURES:
 ## 🏁 FINAL NOTES
 
 ### The Design Philosophy
+
 The -FX v5.0 FINAL ALL-IN engine represents the absolute limit of aggressive signal generation while maintaining trading logic. It's not designed to be safe - it's designed to extract every possible opportunity from the market.
 
 ### The BITTEN Synergy
+
 This engine only makes sense within the BITTEN ecosystem where:
+
 - Users see TCS in notifications
 - Maximum 6 trades per day
 - Only 1 position at a time
@@ -1018,14 +1059,18 @@ This engine only makes sense within the BITTEN ecosystem where:
 - XP system reinforces quality selection
 
 ### The Mathematical Reality
+
 At 89% win rate with 1:2 RR:
+
 - Each trade expects +1.67 units
 - 6 trades = +10 units daily
 - Monthly compound = 300%+ possible
 - Yearly = $1k to $1M+ trajectory
 
 ### The Human Element
+
 Success requires:
+
 - Discipline to wait for high TCS
 - Patience during slow periods
 - Trust in the system
@@ -1036,7 +1081,7 @@ Success requires:
 
 **"The market has 150+ opportunities daily. You only need 6 good ones."**
 
-*Built to push limits. Designed to create wealth. Engineered for the disciplined.*
+_Built to push limits. Designed to create wealth. Engineered for the disciplined._
 
 ---
 

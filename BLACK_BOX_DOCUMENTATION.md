@@ -9,18 +9,20 @@ The Black Box Truth System replaces all legacy win/loss tracking with a single, 
 ## Architecture
 
 ### Single Source of Truth
-- **File**: `/root/HydraX-v2/truth_log.jsonl` 
+
+- **File**: `/root/HydraX-v2/truth_log.jsonl`
 - **Permissions**: 640 (read/write owner, read group)
-- **Writer**: ONLY `truth_tracker.py` 
+- **Writer**: ONLY `truth_tracker.py`
 - **Readers**: All dashboard, reporting, and analysis systems
 
 ### Data Format
+
 Each line in `truth_log.jsonl` contains a complete signal outcome:
 
 ```json
 {
   "signal_id": "VENOM_SCALP_EURUSD_000001",
-  "symbol": "EURUSD", 
+  "symbol": "EURUSD",
   "direction": "BUY",
   "signal_type": "RAPID_ASSAULT",
   "tcs_score": 84.2,
@@ -38,6 +40,7 @@ Each line in `truth_log.jsonl` contains a complete signal outcome:
 ## Terminology Changes
 
 ### OLD → NEW
+
 - "Win Rate" → **"Black Box Confirmed Win Rate"**
 - "Trades Taken" → **"Signals Tracked (Real-Time)"**
 - "Performance Data" → **"Black Box Truth Data"**
@@ -46,11 +49,13 @@ Each line in `truth_log.jsonl` contains a complete signal outcome:
 ## System Components
 
 ### 1. Truth Writer
+
 - **File**: `truth_tracker.py`
 - **Role**: ONLY system authorized to write to truth_log.jsonl
 - **Process**: Monitors signal outcomes and writes confirmed results
 
 ### 2. Truth Dashboard
+
 - **File**: `truth_dashboard_integration.py`
 - **Role**: Provides analytics interface for truth data
 - **Methods**:
@@ -59,11 +64,13 @@ Each line in `truth_log.jsonl` contains a complete signal outcome:
   - `get_time_series_data()` - Historical trends
 
 ### 3. Truth Query CLI
+
 - **File**: `truth_log_query.py`
 - **Role**: Command-line tool for operators
 - **Usage**: Analysis, debugging, data export
 
 ### 4. Commander Throne Integration
+
 - **File**: `commander_throne.py`
 - **Routes Updated**:
   - `/throne/api/black_box_truth` - Truth data API
@@ -73,13 +80,14 @@ Each line in `truth_log.jsonl` contains a complete signal outcome:
 ## Data Flow
 
 ```
-Signal Generated → truth_tracker.py monitors → Outcome determined → 
+Signal Generated → truth_tracker.py monitors → Outcome determined →
 truth_log.jsonl written → Dashboard reads → Truth displayed
 ```
 
 ## Removed Legacy Systems
 
 ### Archived Files
+
 - `signal_accuracy_tracker.py` → `/archive/legacy_trackers/`
 - `realtime_signal_tracker.py` → `/archive/legacy_trackers/`
 - `quick_analysis.py` → `/archive/legacy_trackers/`
@@ -87,6 +95,7 @@ truth_log.jsonl written → Dashboard reads → Truth displayed
 - `signal_postmortem_analysis.py` → `/archive/legacy_trackers/`
 
 ### Disabled Features
+
 - XP-based win tracking
 - Fake signal logs
 - Myfxbook references
@@ -97,6 +106,7 @@ truth_log.jsonl written → Dashboard reads → Truth displayed
 ## Usage Examples
 
 ### Query CLI Tool
+
 ```bash
 # Show summary of all confirmed truth data
 python3 truth_log_query.py --summary
@@ -112,6 +122,7 @@ python3 truth_log_query.py --result LOSS --runtime-max 30 --summary
 ```
 
 ### Dashboard Integration
+
 ```python
 from truth_dashboard_integration import truth_dashboard
 
@@ -124,11 +135,13 @@ print(f"Signals Tracked (Real-Time): {summary['signals_tracked_realtime']}")
 ## Security Measures
 
 ### File Permissions
+
 - **truth_log.jsonl**: 640 (owner rw-, group r--, other ---)
 - **Write Access**: ONLY truth_tracker.py process
 - **Read Access**: Dashboard systems, query tools
 
 ### Data Integrity
+
 - **No Simulation**: Zero tolerance for synthetic data
 - **No Estimation**: No calculated or theoretical values
 - **No Fallbacks**: System shows "No Data" rather than estimates
@@ -137,6 +150,7 @@ print(f"Signals Tracked (Real-Time): {summary['signals_tracked_realtime']}")
 ## Compliance Requirements
 
 ### For All Developers
+
 1. **NEVER** create alternative tracking systems
 2. **NEVER** use synthetic or estimated data
 3. **ALWAYS** read from truth_log.jsonl for performance data
@@ -144,6 +158,7 @@ print(f"Signals Tracked (Real-Time): {summary['signals_tracked_realtime']}")
 5. **NEVER** modify truth_log.jsonl outside of truth_tracker.py
 
 ### For Dashboard Updates
+
 - Replace all "win rate" references with "Black Box Confirmed Win Rate"
 - Replace "trades" with "Signals Tracked (Real-Time)"
 - Show confidence intervals where sample size is low
@@ -152,12 +167,14 @@ print(f"Signals Tracked (Real-Time): {summary['signals_tracked_realtime']}")
 ## Monitoring
 
 ### Health Checks
+
 - File existence: `/root/HydraX-v2/truth_log.jsonl`
 - Recent updates: Last entry within reasonable timeframe
 - Data integrity: Valid JSON format
 - Permission security: Correct 640 permissions
 
 ### Alerts
+
 - **No data for 1+ hours**: truth_tracker.py may be down
 - **Permission changes**: Security breach potential
 - **File corruption**: JSON parsing errors
@@ -166,6 +183,7 @@ print(f"Signals Tracked (Real-Time): {summary['signals_tracked_realtime']}")
 ## Migration Notes
 
 ### Completed
+
 - ✅ Legacy trackers archived
 - ✅ Commander Throne updated to use truth data
 - ✅ WebApp terminology updated to Black Box
@@ -173,6 +191,7 @@ print(f"Signals Tracked (Real-Time): {summary['signals_tracked_realtime']}")
 - ✅ Dashboard integration built
 
 ### Ongoing
+
 - Monitor truth_tracker.py for proper data writing
 - Validate all performance displays use truth data only
 - Train operators on new CLI query tool
@@ -180,4 +199,4 @@ print(f"Signals Tracked (Real-Time): {summary['signals_tracked_realtime']}")
 
 ---
 
-**REMEMBER**: The Black Box never lies. If truth_log.jsonl says 0% win rate, that's the truth. If it says 100%, that's also the truth. The system must always reflect exactly what happened in the market, nothing more, nothing less.**
+**REMEMBER**: The Black Box never lies. If truth_log.jsonl says 0% win rate, that's the truth. If it says 100%, that's also the truth. The system must always reflect exactly what happened in the market, nothing more, nothing less.\*\*

@@ -1,8 +1,8 @@
 # 🧠 SHEPHERD_BOOTSTRAP.md — Ultimate Agent Blueprint for BITTEN
 
-**Agent Codename:** SHEPHERD  
-**Agent Role:** Super-intelligent real-time system guardian, architect, memory keeper, hallucination blocker, and fire validator inside BITTEN.  
-**Mission Status:** ⏳ Needs to be built immediately by Claude or Codex  
+**Agent Codename:** SHEPHERD
+**Agent Role:** Super-intelligent real-time system guardian, architect, memory keeper, hallucination blocker, and fire validator inside BITTEN.
+**Mission Status:** ⏳ Needs to be built immediately by Claude or Codex
 **Goal:** Replace the need for human memory, documentation scrolls, and AI guesswork. Become the brain of BITTEN.
 
 ---
@@ -11,7 +11,8 @@
 
 > "I see all logic. I know all triggers. I remember every version. I allow no contradiction."
 
-SHEPHERD is BITTEN's internal *truth-keeper*. He understands:
+SHEPHERD is BITTEN's internal _truth-keeper_. He understands:
+
 - Every file
 - Every function
 - Every tier
@@ -95,24 +96,31 @@ Tag every module or function using:
 ## 🧪 SHEPHERD FUNCTIONS TO BUILD
 
 ### ✅ shepherd.trace(module)
+
 Returns all upstream/downstream connections, triggers, and usage.
 
 ### ✅ shepherd.why(trigger)
+
 Backtraces why a fire or behavior occurred.
 
 ### ✅ shepherd.wrap(output)
+
 Intercepts logic from Claude/Codex. Blocks anything that contradicts known logic.
 
 ### ✅ shepherd.doc(function)
+
 Returns clean, plain-English summary of any system logic.
 
 ### ✅ shepherd.simulate(change)
+
 Shows what breaks if a proposed edit is accepted.
 
 ### ✅ shepherd.checkpoint(label)
+
 Saves full snapshot of logic state.
 
 ### ✅ shepherd.summarize(md_path)
+
 Summarizes large docs for Claude and stores digest.
 
 ---
@@ -140,6 +148,7 @@ def fire_trade(signal):
 ## 📌 DAILY EXPECTATIONS
 
 SHEPHERD will:
+
 - Audit new builds
 - Summarize new .md files
 - Suggest logic simplifications
@@ -199,12 +208,14 @@ python bitten/core/shepherd/shepherd.py --mode=full --all-systems-go
 - **12-16 hours**: Full production with complete memory, change simulation, API
 
 ### MVP Features (4 hours):
+
 1. Basic hallucination protection
 2. System connection mapping
 3. Trade fire validation
 4. Simple CLI (trace, doc)
 
 ### Full Features (16 hours):
+
 1. Complete MD summarization
 2. Change impact simulation
 3. Full API/webhooks

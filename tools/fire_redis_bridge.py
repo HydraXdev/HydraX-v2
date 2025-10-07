@@ -1,5 +1,13 @@
 #!/usr/bin/env python3
-import os, time, json, redis, zmq, sqlite3, signal, sys
+import json
+import os
+import signal
+import sqlite3
+import sys
+import time
+
+import redis
+import zmq
 
 REDIS_HOST = os.environ.get("REDIS_HOST", "127.0.0.1")
 REDIS_PORT = int(os.environ.get("REDIS_PORT", "6379"))
@@ -17,10 +25,12 @@ if ENQUEUE:
     push.connect(IPC_ADDR)
     print(f"[FIRE_BRIDGE] Connected to IPC: {IPC_ADDR}")
 
+
 def db_conn():
     c = sqlite3.connect(DB_PATH)
     c.row_factory = lambda cur, row: {d[0]: row[i] for i, d in enumerate(cur.description)}
     return c
+
 
 def already_enqueued(conn, idem):
     if not idem:
@@ -31,7 +41,9 @@ def already_enqueued(conn, idem):
     except Exception:
         return False
 
+
 r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, decode_responses=True)
+
 
 # Discover existing per-EA streams
 def list_streams():
@@ -45,6 +57,7 @@ def list_streams():
             break
     return list(sorted(set(keys)))
 
+
 def ensure_group(stream):
     try:
         r.xgroup_create(stream, GROUP, id="0-0", mkstream=True)
@@ -52,6 +65,7 @@ def ensure_group(stream):
     except Exception as e:
         if "BUSYGROUP" not in str(e):
             print(f"[FIRE_BRIDGE] Group create error for {stream}: {e}")
+
 
 streams = list_streams()
 for s in streams:
@@ -64,6 +78,7 @@ print(f"[FIRE_BRIDGE] Group: {GROUP}, Consumer: {CONSUMER}")
 last_scan = time.time()
 conn = db_conn()
 
+
 def handle(stream, msg_id, fields):
     # IGNORE dry_run payloads for absolute safety
     # fields may contain event JSON or direct fields
@@ -75,26 +90,26 @@ def handle(stream, msg_id, fields):
             data = None
     if not data:
         data = fields
-    
+
     # Safety: never forward dry_run to IPC
-    if str(data.get('dry_run', '')).lower() in ('1', 'true', 'yes'):
+    if str(data.get("dry_run", "")).lower() in ("1", "true", "yes"):
         print(f'[FIRE_BRIDGE] Ignoring dry_run payload: {data.get("fire_id", "")}')
         r.xack(stream, GROUP, msg_id)
         return
-    
+
     idem = data.get("idem", "")
     fire_id = data.get("fire_id", "")
     target_uuid = data.get("target_uuid", "")
     symbol = data.get("symbol", "")
-    
+
     print(f"[FIRE_BRIDGE] Processing: fire_id={fire_id}, target={target_uuid}, symbol={symbol}, idem={idem}")
-    
+
     if ENQUEUE and already_enqueued(conn, idem):
         # Ack and drop duplicate
         r.xack(stream, GROUP, msg_id)
         print(f"[FIRE_BRIDGE] Duplicate detected (idem={idem}), skipping")
         return
-    
+
     if ENQUEUE:
         try:
             push.send_json(data)
@@ -104,9 +119,10 @@ def handle(stream, msg_id, fields):
             return
     else:
         print(f"[FIRE_BRIDGE] LOG-ONLY mode, would enqueue: {fire_id}")
-    
+
     # Ack after success or log-only
     r.xack(stream, GROUP, msg_id)
+
 
 try:
     print("[FIRE_BRIDGE] Listening for fire commands...")
@@ -121,14 +137,14 @@ try:
                     print(f"[FIRE_BRIDGE] Discovered new stream: {s}")
             streams = new_streams
             last_scan = now
-        
+
         # Read from all known streams
         # Build dict {stream: '>'}
         watch = {s: ">" for s in streams}
         if not watch:
             time.sleep(1)
             continue
-        
+
         try:
             msgs = r.xreadgroup(GROUP, CONSUMER, streams=watch, count=128, block=1500)
         except Exception as e:
@@ -138,19 +154,20 @@ try:
                     ensure_group(s)
                 continue
             raise
-        
+
         if not msgs:
             continue
-        
+
         for stream, entries in msgs:
             for msg_id, fields in entries:
                 handle(stream, msg_id, fields)
-                
+
 except KeyboardInterrupt:
     print("\n[FIRE_BRIDGE] Shutting down...")
 except Exception as e:
     print(f"[FIRE_BRIDGE] Fatal error: {e}")
     import traceback
+
     traceback.print_exc()
 finally:
     try:

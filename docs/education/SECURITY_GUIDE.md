@@ -1,6 +1,7 @@
 # BITTEN Security Implementation Guide
 
 ## Table of Contents
+
 1. [Security Architecture Overview](#security-architecture-overview)
 2. [Authentication & Authorization](#authentication--authorization)
 3. [Data Protection & Encryption](#data-protection--encryption)
@@ -81,10 +82,10 @@ class AuthenticationManager:
         # Verify Telegram authentication
         if not self.verify_telegram_auth(telegram_data):
             raise AuthenticationError("Invalid Telegram authentication")
-        
+
         # Check user registration
         user = self.get_or_create_user(telegram_data['id'])
-        
+
         # Generate JWT with claims
         token = self.generate_jwt({
             'user_id': user.id,
@@ -92,24 +93,24 @@ class AuthenticationManager:
             'permissions': user.get_permissions(),
             'exp': datetime.utcnow() + timedelta(hours=24)
         })
-        
+
         # Create Redis session
         self.create_session(user.id, token)
-        
+
         return token
 ```
 
 ### Authorization Matrix
 
-| Feature | Nibbler | Fang | Commander | | Required Checks |
-|---------|---------|------|-----------|------|-----------------|
-| Basic Trading | ✓ | ✓ | ✓ | ✓ | Valid subscription |
-| Master Filter | ✗ | ✓ | ✓ | ✓ | Tier >= Fang |
-| Arcade Filter | ✗ | ✓ | ✓ | ✓ | Tier >= Fang |
-| Sniper Filter | ✗ | ✗ | ✓ | ✓ | Tier >= Commander |
-| Auto Trading | ✗ | ✗ | ✓ | ✓ | Tier >= Commander |
-| API Access | ✗ | ✗ | ✗ | ✓ | Tier == |
-| Custom Strategies | ✗ | ✗ | ✗ | ✓ | Tier == |
+| Feature           | Nibbler | Fang | Commander |     | Required Checks    |
+| ----------------- | ------- | ---- | --------- | --- | ------------------ |
+| Basic Trading     | ✓       | ✓    | ✓         | ✓   | Valid subscription |
+| Master Filter     | ✗       | ✓    | ✓         | ✓   | Tier >= Fang       |
+| Arcade Filter     | ✗       | ✓    | ✓         | ✓   | Tier >= Fang       |
+| Sniper Filter     | ✗       | ✗    | ✓         | ✓   | Tier >= Commander  |
+| Auto Trading      | ✗       | ✗    | ✓         | ✓   | Tier >= Commander  |
+| API Access        | ✗       | ✗    | ✗         | ✓   | Tier ==            |
+| Custom Strategies | ✗       | ✗    | ✗         | ✓   | Tier ==            |
 
 ### Implementation Example
 
@@ -146,7 +147,7 @@ class MFAManager:
             name=user_id,
             issuer_name='BITTEN Trading'
         )
-    
+
     def verify_mfa(self, user_id, token):
         """Verify TOTP token"""
         secret = self.get_encrypted_secret(user_id)
@@ -184,15 +185,15 @@ class CryptoManager:
     def __init__(self):
         self.key = self._derive_key()
         self.cipher = Fernet(self.key)
-    
+
     def encrypt_sensitive_data(self, data: str) -> str:
         """Encrypt sensitive data like API keys"""
         return self.cipher.encrypt(data.encode()).decode()
-    
+
     def decrypt_sensitive_data(self, encrypted: str) -> str:
         """Decrypt sensitive data"""
         return self.cipher.decrypt(encrypted.encode()).decode()
-    
+
     def hash_password(self, password: str) -> str:
         """Hash passwords with bcrypt"""
         return bcrypt.hashpw(
@@ -240,33 +241,33 @@ class AntiCheatEngine:
         if daily_xp + xp_amount > 1000:
             self.flag_suspicious_activity(user_id, "XP_LIMIT_EXCEEDED")
             return False
-        
+
         # Check gain rate
         recent_gains = self.get_recent_xp_gains(user_id, minutes=5)
         if len(recent_gains) > 10:
             self.flag_suspicious_activity(user_id, "RAPID_XP_GAIN")
             return False
-        
+
         # Verify source legitimacy
         if not self.verify_xp_source(source):
             self.flag_suspicious_activity(user_id, "INVALID_XP_SOURCE")
             return False
-        
+
         return True
-    
+
     def verify_trade_result(self, user_id, trade_id, result):
         """Verify trade results against MT5 logs"""
         mt5_result = self.get_mt5_trade_result(trade_id)
-        
+
         if not mt5_result:
             self.flag_suspicious_activity(user_id, "UNVERIFIED_TRADE")
             return False
-        
+
         # Compare claimed vs actual
         if abs(result['profit'] - mt5_result['profit']) > 0.01:
             self.flag_suspicious_activity(user_id, "PROFIT_MISMATCH")
             return False
-        
+
         return True
 ```
 
@@ -279,14 +280,14 @@ class CooldownManager:
         """Server-side cooldown enforcement"""
         cooldown_key = f"cooldown:{user_id}:{action_type}"
         remaining = self.redis.ttl(cooldown_key)
-        
+
         if remaining > 0:
             raise CooldownError(f"Action on cooldown for {remaining} seconds")
-        
+
         # Set new cooldown
         cooldown_duration = self.get_cooldown_duration(user_id, action_type)
         self.redis.setex(cooldown_key, cooldown_duration, "1")
-        
+
         return True
 ```
 
@@ -303,9 +304,9 @@ class ExploitDetector:
             'api_abuse': self.check_api_patterns(user_id),
             'session_hijacking': self.check_session_anomalies(user_id)
         }
-        
+
         risk_score = sum(1 for p in patterns.values() if p)
-        
+
         if risk_score >= 2:
             self.initiate_security_review(user_id)
 ```
@@ -331,7 +332,7 @@ class TradeInputSchema(Schema):
     )
     stop_loss = fields.Float(required=True)
     take_profit = fields.Float(required=True)
-    
+
     def validate_risk(self, data, **kwargs):
         """Custom validation logic"""
         if data['stop_loss'] >= data['take_profit']:
@@ -355,27 +356,27 @@ class DatabaseManager:
     def get_user_trades(self, user_id, limit=100):
         """Safe parameterized query"""
         query = """
-            SELECT * FROM trades 
-            WHERE user_id = %s 
-            ORDER BY created_at DESC 
+            SELECT * FROM trades
+            WHERE user_id = %s
+            ORDER BY created_at DESC
             LIMIT %s
         """
         return self.execute_query(query, (user_id, limit))
-    
+
     def search_trades(self, user_id, search_term):
         """Safe search with validation"""
         # Validate search term
         if not re.match(r'^[a-zA-Z0-9\s\-_]+$', search_term):
             raise ValidationError("Invalid search term")
-        
+
         query = """
-            SELECT * FROM trades 
-            WHERE user_id = %s 
+            SELECT * FROM trades
+            WHERE user_id = %s
             AND (pair LIKE %s OR comment LIKE %s)
         """
         search_pattern = f"%{search_term}%"
         return self.execute_query(
-            query, 
+            query,
             (user_id, search_pattern, search_pattern)
         )
 ```
@@ -388,17 +389,17 @@ import os
 
 class FileManager:
     ALLOWED_PATHS = ['/data/exports', '/data/reports']
-    
+
     def validate_file_path(self, requested_path):
         """Prevent path traversal"""
         # Normalize and resolve path
         normalized = os.path.normpath(requested_path)
         resolved = os.path.realpath(normalized)
-        
+
         # Check if path is within allowed directories
         if not any(resolved.startswith(allowed) for allowed in self.ALLOWED_PATHS):
             raise SecurityError("Access denied: Invalid path")
-        
+
         return resolved
 ```
 
@@ -416,33 +417,33 @@ import time
 class RateLimiter:
     def __init__(self, redis_client):
         self.redis = redis_client
-    
+
     def rate_limit(self, max_requests=100, window=60):
         """Decorator for rate limiting"""
         def decorator(func):
             @wraps(func)
             def wrapper(self, user_id, *args, **kwargs):
                 key = f"rate_limit:{user_id}:{func.__name__}"
-                
+
                 try:
                     current = self.redis.incr(key)
                     if current == 1:
                         self.redis.expire(key, window)
-                    
+
                     if current > max_requests:
                         raise RateLimitError(
                             f"Rate limit exceeded: {max_requests}/{window}s"
                         )
-                    
+
                     return func(self, user_id, *args, **kwargs)
-                    
+
                 except RateLimitError:
                     raise
                 except Exception as e:
                     logger.error(f"Rate limiter error: {e}")
                     # Fail open to prevent service disruption
                     return func(self, user_id, *args, **kwargs)
-            
+
             return wrapper
         return decorator
 ```
@@ -457,7 +458,7 @@ class SecurityMiddleware:
     def __init__(self, app):
         self.app = app
         self.init_security_headers()
-    
+
     def init_security_headers(self):
         @self.app.after_request
         def add_security_headers(response):
@@ -465,7 +466,7 @@ class SecurityMiddleware:
             response.headers['X-Content-Type-Options'] = 'nosniff'
             response.headers['X-Frame-Options'] = 'DENY'
             response.headers['X-XSS-Protection'] = '1; mode=block'
-            
+
             # Content Security Policy
             response.headers['Content-Security-Policy'] = (
                 "default-src 'self'; "
@@ -475,12 +476,12 @@ class SecurityMiddleware:
                 "font-src 'self'; "
                 "connect-src 'self' wss: https://api.bitten.trading"
             )
-            
+
             # HSTS
             response.headers['Strict-Transport-Security'] = (
                 'max-age=31536000; includeSubDomains'
             )
-            
+
             return response
 ```
 
@@ -499,29 +500,29 @@ class WebhookSecurity:
             payload.encode(),
             hashlib.sha256
         ).hexdigest()
-        
+
         # Constant time comparison
         return hmac.compare_digest(expected, signature)
-    
+
     def validate_webhook_request(self, request):
         """Full webhook validation"""
         # Check signature
         signature = request.headers.get('X-Webhook-Signature')
         if not signature:
             raise SecurityError("Missing webhook signature")
-        
+
         if not self.verify_webhook_signature(
-            request.data, 
-            signature, 
+            request.data,
+            signature,
             self.webhook_secret
         ):
             raise SecurityError("Invalid webhook signature")
-        
+
         # Check timestamp (prevent replay attacks)
         timestamp = request.headers.get('X-Webhook-Timestamp')
         if not timestamp or abs(time.time() - float(timestamp)) > 300:
             raise SecurityError("Invalid or expired timestamp")
-        
+
         return True
 ```
 
@@ -541,7 +542,7 @@ class SecurityLogger:
     def __init__(self):
         self.logger = logging.getLogger('security')
         self.setup_handlers()
-    
+
     def log_security_event(self, event_type, user_id, details):
         """Log security-relevant events"""
         event = {
@@ -552,14 +553,14 @@ class SecurityLogger:
             'ip_address': self.get_client_ip(),
             'user_agent': self.get_user_agent()
         }
-        
+
         # Log to file
         self.logger.info(json.dumps(event))
-        
+
         # Alert on critical events
         if event_type in ['AUTH_FAILURE', 'EXPLOIT_ATTEMPT', 'DATA_BREACH']:
             self.send_security_alert(event)
-    
+
     def log_authentication_attempt(self, user_id, success, method):
         """Log authentication attempts"""
         self.log_security_event(
@@ -580,19 +581,19 @@ class SecurityMonitor:
             'api_errors': 50,      # per minute
             'suspicious_trades': 3, # per hour
         }
-    
+
     def check_anomalies(self):
         """Check for security anomalies"""
         # Failed authentication spike
         failed_auths = self.count_recent_events('AUTH_FAILURE', minutes=5)
         if failed_auths > self.thresholds['failed_auth']:
             self.trigger_alert('Authentication attack detected')
-        
+
         # API error rate
         api_errors = self.count_recent_events('API_ERROR', minutes=1)
         if api_errors > self.thresholds['api_errors']:
             self.trigger_alert('API abuse detected')
-        
+
         # Suspicious trading patterns
         suspicious = self.count_recent_events('SUSPICIOUS_TRADE', minutes=60)
         if suspicious > self.thresholds['suspicious_trades']:
@@ -614,10 +615,10 @@ class AuditLogger:
             'session_id': self.get_session_id(),
             'ip_address': self.get_ip_address()
         }
-        
+
         # Store in audit table (immutable)
         self.store_audit_entry(audit_entry)
-        
+
         # Cannot be deleted, only archived after 7 years
 ```
 
@@ -627,12 +628,12 @@ class AuditLogger:
 
 ### Incident Classification
 
-| Severity | Description | Response Time | Examples |
-|----------|-------------|---------------|----------|
-| Critical | System compromise, user funds at risk | < 15 minutes | Database breach, authentication bypass |
-| High | Data exposure, feature abuse | < 1 hour | API key leak, XP exploit |
-| Medium | Policy violations, minor vulnerabilities | < 4 hours | Rate limit bypass, input validation |
-| Low | Best practice issues | < 24 hours | Missing headers, verbose errors |
+| Severity | Description                              | Response Time | Examples                               |
+| -------- | ---------------------------------------- | ------------- | -------------------------------------- |
+| Critical | System compromise, user funds at risk    | < 15 minutes  | Database breach, authentication bypass |
+| High     | Data exposure, feature abuse             | < 1 hour      | API key leak, XP exploit               |
+| Medium   | Policy violations, minor vulnerabilities | < 4 hours     | Rate limit bypass, input validation    |
+| Low      | Best practice issues                     | < 24 hours    | Missing headers, verbose errors        |
 
 ### Response Workflow
 
@@ -643,23 +644,23 @@ class IncidentResponseManager:
         """Orchestrate incident response"""
         # 1. Detection & Triage
         severity = self.assess_severity(incident)
-        
+
         # 2. Containment
         if severity >= Severity.HIGH:
             self.emergency_mode_activate()
             self.notify_on_call_team()
-        
+
         # 3. Investigation
         investigation = self.investigate_incident(incident)
-        
+
         # 4. Remediation
         actions = self.determine_actions(investigation)
         for action in actions:
             self.execute_remediation(action)
-        
+
         # 5. Recovery
         self.restore_normal_operations()
-        
+
         # 6. Post-mortem
         self.schedule_postmortem(incident)
 ```
@@ -672,21 +673,21 @@ class EmergencyController:
     def emergency_shutdown(self, reason):
         """Emergency system shutdown"""
         logger.critical(f"EMERGENCY SHUTDOWN: {reason}")
-        
+
         # 1. Stop accepting new trades
         self.trading_enabled = False
-        
+
         # 2. Cancel pending orders
         self.cancel_all_pending_orders()
-        
+
         # 3. Notify all users
         self.broadcast_emergency_message(
             "System maintenance in progress. Trading suspended."
         )
-        
+
         # 4. Backup current state
         self.create_emergency_backup()
-        
+
         # 5. Lock down system
         self.enable_maintenance_mode()
 ```
@@ -770,10 +771,11 @@ class EmergencyController:
 ### OWASP Top 10 Mitigations
 
 #### 1. Injection
+
 ```python
 # Prevention: Parameterized queries
 cursor.execute(
-    "SELECT * FROM users WHERE id = %s", 
+    "SELECT * FROM users WHERE id = %s",
     (user_id,)  # Safe parameterization
 )
 
@@ -782,6 +784,7 @@ cursor.execute(
 ```
 
 #### 2. Broken Authentication
+
 ```python
 # Prevention: Strong session management
 class SessionManager:
@@ -799,6 +802,7 @@ class SessionManager:
 ```
 
 #### 3. Sensitive Data Exposure
+
 ```python
 # Prevention: Encrypt sensitive data
 class DataProtection:
@@ -811,6 +815,7 @@ class DataProtection:
 ```
 
 #### 4. XML External Entities (XXE)
+
 ```python
 # Prevention: Disable XML features, use JSON
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
@@ -818,6 +823,7 @@ app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
 ```
 
 #### 5. Broken Access Control
+
 ```python
 # Prevention: Verify permissions on every request
 @require_authentication
@@ -829,6 +835,7 @@ def access_sensitive_feature(user_id):
 ```
 
 #### 6. Security Misconfiguration
+
 ```python
 # Prevention: Secure defaults
 app.config.update(
@@ -841,6 +848,7 @@ app.config.update(
 ```
 
 #### 7. Cross-Site Scripting (XSS)
+
 ```python
 # Prevention: Output encoding
 from markupsafe import escape
@@ -853,6 +861,7 @@ def profile(username):
 ```
 
 #### 8. Insecure Deserialization
+
 ```python
 # Prevention: Validate deserialized data
 import json
@@ -868,6 +877,7 @@ def safe_deserialize(data):
 ```
 
 #### 9. Using Components with Known Vulnerabilities
+
 ```bash
 # Prevention: Regular dependency scanning
 pip install safety
@@ -879,6 +889,7 @@ pip-audit
 ```
 
 #### 10. Insufficient Logging & Monitoring
+
 ```python
 # Prevention: Comprehensive logging
 def log_security_event(event_type, details):
@@ -894,15 +905,17 @@ def log_security_event(event_type, details):
 ### Security Testing Requirements
 
 1. **Static Analysis**
+
    ```bash
    # Run Bandit
    bandit -r src/
-   
+
    # Run Semgrep
    semgrep --config=auto src/
    ```
 
 2. **Dependency Scanning**
+
    ```bash
    # Check for vulnerable packages
    safety check
@@ -910,6 +923,7 @@ def log_security_event(event_type, details):
    ```
 
 3. **Dynamic Testing**
+
    ```bash
    # Run OWASP ZAP
    zap-cli quick-scan http://localhost:5000
@@ -925,6 +939,7 @@ def log_security_event(event_type, details):
 ## Security Resources
 
 ### Tools
+
 - **Bandit**: Python security linter
 - **Safety**: Dependency vulnerability scanner
 - **OWASP ZAP**: Web application scanner
@@ -932,18 +947,21 @@ def log_security_event(event_type, details):
 - **TruffleHog**: Secret scanner
 
 ### Documentation
+
 - [OWASP Top 10](https://owasp.org/www-project-top-ten/)
 - [OWASP Cheat Sheets](https://cheatsheetseries.owasp.org/)
 - [NIST Cybersecurity Framework](https://www.nist.gov/cyberframework)
 - [CWE Top 25](https://cwe.mitre.org/top25/)
 
 ### Training
+
 - OWASP Security Shepherd
 - Secure Code Warrior
 - SANS Secure Coding
 - Internal Security Champions Program
 
 ### Contacts
+
 - Security Team: security@bitten.trading
 - Bug Bounty: bounty@bitten.trading
 - Incident Response: incident@bitten.trading
@@ -953,12 +971,12 @@ def log_security_event(event_type, details):
 
 ## Version History
 
-| Version | Date | Changes |
-|---------|------|---------|
-| 1.0 | 2025-07-06 | Initial security guide |
-| 1.1 | TBD | Add cloud security section |
-| 1.2 | TBD | Update incident response |
+| Version | Date       | Changes                    |
+| ------- | ---------- | -------------------------- |
+| 1.0     | 2025-07-06 | Initial security guide     |
+| 1.1     | TBD        | Add cloud security section |
+| 1.2     | TBD        | Update incident response   |
 
 ---
 
-*This document is classified as **INTERNAL USE ONLY** and should not be shared outside the development team.*
+_This document is classified as **INTERNAL USE ONLY** and should not be shared outside the development team._

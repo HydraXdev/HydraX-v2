@@ -3,18 +3,21 @@
 Force EA heartbeat to stay fresh - emergency fix
 """
 import sqlite3
-import time
 import threading
+import time
+
 
 def keep_ea_fresh():
     """Keep EA heartbeat fresh every 30 seconds"""
     while True:
         try:
-            conn = sqlite3.connect('/root/HydraX-v2/bitten.db')
+            conn = sqlite3.connect("/root/HydraX-v2/bitten.db")
             cursor = conn.cursor()
 
             # Update EA heartbeat
-            cursor.execute("UPDATE ea_instances SET last_seen = strftime('%s', 'now') WHERE target_uuid = 'COMMANDER_DEV_001'")
+            cursor.execute(
+                "UPDATE ea_instances SET last_seen = strftime('%s', 'now') WHERE target_uuid = 'COMMANDER_DEV_001'"
+            )
             conn.commit()
             conn.close()
 
@@ -24,6 +27,7 @@ def keep_ea_fresh():
             print(f"❌ Error updating heartbeat: {e}")
 
         time.sleep(30)  # Update every 30 seconds
+
 
 if __name__ == "__main__":
     print("🚀 Starting EA heartbeat keeper...")

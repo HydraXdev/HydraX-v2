@@ -7,7 +7,7 @@ psycopg[binary]>=3.1.0,<4.0.0
 # Connection pooling (optional but recommended for production)
 psycopg_pool>=3.1.0,<4.0.0
 
-# Async support (if we need async endpoints later)  
+# Async support (if we need async endpoints later)
 psycopg[binary,pool]>=3.1.0,<4.0.0
 
 # Database migration tools (optional)

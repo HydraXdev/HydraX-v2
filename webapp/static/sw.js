@@ -3,136 +3,139 @@
  * Provides offline functionality, caching, and performance optimization
  */
 
-const CACHE_NAME = 'hydrax-mobile-v1.0.0';
-const STATIC_CACHE_NAME = 'hydrax-static-v1.0.0';
-const DYNAMIC_CACHE_NAME = 'hydrax-dynamic-v1.0.0';
+const CACHE_NAME = "hydrax-mobile-v1.0.0";
+const STATIC_CACHE_NAME = "hydrax-static-v1.0.0";
+const DYNAMIC_CACHE_NAME = "hydrax-dynamic-v1.0.0";
 
 // Files to cache for offline functionality
 const STATIC_FILES = [
-  '/templates/mobile_navigation.html',
-  '/src/ui/mobile/navigation.js',
-  '/src/ui/mobile/mobile_optimized.css',
-  '/webapp/static/manifest.json',
-  '/assets/icons/favicon.svg',
-  '/assets/icons/apple-touch-icon.png',
+  "/templates/mobile_navigation.html",
+  "/src/ui/mobile/navigation.js",
+  "/src/ui/mobile/mobile_optimized.css",
+  "/webapp/static/manifest.json",
+  "/assets/icons/favicon.svg",
+  "/assets/icons/apple-touch-icon.png",
   // Core fonts and libraries
-  'https://telegram.org/js/telegram-web-app.js'
+  "https://telegram.org/js/telegram-web-app.js",
 ];
 
 // API endpoints to cache with network-first strategy
 const API_ENDPOINTS = [
-  '/api/signals',
-  '/api/portfolio',
-  '/api/positions',
-  '/api/education'
+  "/api/signals",
+  "/api/portfolio",
+  "/api/positions",
+  "/api/education",
 ];
 
 // Files that should always be fetched from network
-const NETWORK_ONLY = [
-  '/api/live-data',
-  '/api/real-time',
-  '/api/auth'
-];
+const NETWORK_ONLY = ["/api/live-data", "/api/real-time", "/api/auth"];
 
 /**
  * Install event - cache static resources
  */
-self.addEventListener('install', (event) => {
-  console.log('Service Worker: Installing...');
-  
+self.addEventListener("install", (event) => {
+  console.log("Service Worker: Installing...");
+
   event.waitUntil(
-    caches.open(STATIC_CACHE_NAME)
+    caches
+      .open(STATIC_CACHE_NAME)
       .then((cache) => {
-        console.log('Service Worker: Caching static files');
+        console.log("Service Worker: Caching static files");
         return cache.addAll(STATIC_FILES);
       })
       .then(() => {
-        console.log('Service Worker: Static files cached');
+        console.log("Service Worker: Static files cached");
         return self.skipWaiting();
       })
       .catch((error) => {
-        console.error('Service Worker: Error caching static files', error);
-      })
+        console.error("Service Worker: Error caching static files", error);
+      }),
   );
 });
 
 /**
  * Activate event - clean up old caches
  */
-self.addEventListener('activate', (event) => {
-  console.log('Service Worker: Activating...');
-  
+self.addEventListener("activate", (event) => {
+  console.log("Service Worker: Activating...");
+
   event.waitUntil(
-    caches.keys()
+    caches
+      .keys()
       .then((cacheNames) => {
         return Promise.all(
           cacheNames.map((cacheName) => {
-            if (cacheName !== STATIC_CACHE_NAME && 
-                cacheName !== DYNAMIC_CACHE_NAME &&
-                cacheName !== CACHE_NAME) {
-              console.log('Service Worker: Deleting old cache', cacheName);
+            if (
+              cacheName !== STATIC_CACHE_NAME &&
+              cacheName !== DYNAMIC_CACHE_NAME &&
+              cacheName !== CACHE_NAME
+            ) {
+              console.log("Service Worker: Deleting old cache", cacheName);
               return caches.delete(cacheName);
             }
-          })
+          }),
         );
       })
       .then(() => {
-        console.log('Service Worker: Activated');
+        console.log("Service Worker: Activated");
         return self.clients.claim();
-      })
+      }),
   );
 });
 
 /**
  * Fetch event - handle network requests with caching strategies
  */
-self.addEventListener('fetch', (event) => {
+self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
-  
+
   // Skip cross-origin requests that we don't control
-  if (url.origin !== location.origin && !url.href.includes('telegram.org')) {
+  if (url.origin !== location.origin && !url.href.includes("telegram.org")) {
     return;
   }
-  
+
   // Network-only resources
-  if (NETWORK_ONLY.some(endpoint => url.pathname.startsWith(endpoint))) {
+  if (NETWORK_ONLY.some((endpoint) => url.pathname.startsWith(endpoint))) {
     event.respondWith(
-      fetch(event.request)
-        .catch(() => {
-          // Return offline fallback for critical endpoints
-          return new Response(
-            JSON.stringify({ 
-              error: 'Offline', 
-              message: 'This feature requires an internet connection' 
-            }),
-            { 
-              status: 503,
-              headers: { 'Content-Type': 'application/json' }
-            }
-          );
-        })
+      fetch(event.request).catch(() => {
+        // Return offline fallback for critical endpoints
+        return new Response(
+          JSON.stringify({
+            error: "Offline",
+            message: "This feature requires an internet connection",
+          }),
+          {
+            status: 503,
+            headers: { "Content-Type": "application/json" },
+          },
+        );
+      }),
     );
     return;
   }
-  
+
   // API endpoints - network first, cache fallback
-  if (API_ENDPOINTS.some(endpoint => url.pathname.startsWith(endpoint))) {
+  if (API_ENDPOINTS.some((endpoint) => url.pathname.startsWith(endpoint))) {
     event.respondWith(networkFirstStrategy(event.request));
     return;
   }
-  
+
   // Static files - cache first, network fallback
-  if (STATIC_FILES.some(file => url.pathname === file || event.request.url.includes(file))) {
+  if (
+    STATIC_FILES.some(
+      (file) => url.pathname === file || event.request.url.includes(file),
+    )
+  ) {
     event.respondWith(cacheFirstStrategy(event.request));
     return;
   }
-  
+
   // Navigation requests - network first with offline fallback
-  if (event.request.mode === 'navigate') {
+  if (event.request.mode === "navigate") {
     event.respondWith(navigationStrategy(event.request));
     return;
   }
-  
+
   // Default strategy for other requests
   event.respondWith(staleWhileRevalidateStrategy(event.request));
 });
@@ -146,17 +149,17 @@ async function cacheFirstStrategy(request) {
     if (cachedResponse) {
       return cachedResponse;
     }
-    
+
     const networkResponse = await fetch(request);
     if (networkResponse.ok) {
       const cache = await caches.open(STATIC_CACHE_NAME);
       cache.put(request, networkResponse.clone());
     }
-    
+
     return networkResponse;
   } catch (error) {
-    console.error('Cache-first strategy failed:', error);
-    return new Response('Resource unavailable offline', { status: 503 });
+    console.error("Cache-first strategy failed:", error);
+    return new Response("Resource unavailable offline", { status: 503 });
   }
 }
 
@@ -166,17 +169,17 @@ async function cacheFirstStrategy(request) {
 async function networkFirstStrategy(request) {
   try {
     const networkResponse = await fetch(request);
-    
+
     if (networkResponse.ok) {
       const cache = await caches.open(DYNAMIC_CACHE_NAME);
       cache.put(request, networkResponse.clone());
       return networkResponse;
     }
-    
-    throw new Error('Network response not ok');
+
+    throw new Error("Network response not ok");
   } catch (error) {
-    console.log('Network failed, trying cache:', error);
-    
+    console.log("Network failed, trying cache:", error);
+
     const cachedResponse = await caches.match(request);
     if (cachedResponse) {
       // Add offline indicator to cached responses
@@ -185,22 +188,22 @@ async function networkFirstStrategy(request) {
         statusText: cachedResponse.statusText,
         headers: {
           ...cachedResponse.headers,
-          'X-Served-By': 'ServiceWorker-Cache',
-          'X-Cache-Date': new Date().toISOString()
-        }
+          "X-Served-By": "ServiceWorker-Cache",
+          "X-Cache-Date": new Date().toISOString(),
+        },
       });
       return modifiedResponse;
     }
-    
+
     return new Response(
-      JSON.stringify({ 
-        error: 'Offline', 
-        message: 'Data unavailable offline' 
+      JSON.stringify({
+        error: "Offline",
+        message: "Data unavailable offline",
       }),
-      { 
+      {
         status: 503,
-        headers: { 'Content-Type': 'application/json' }
-      }
+        headers: { "Content-Type": "application/json" },
+      },
     );
   }
 }
@@ -214,18 +217,21 @@ async function navigationStrategy(request) {
     if (networkResponse.ok) {
       return networkResponse;
     }
-    throw new Error('Network response not ok');
+    throw new Error("Network response not ok");
   } catch (error) {
-    console.log('Navigation network failed, serving offline page');
-    
+    console.log("Navigation network failed, serving offline page");
+
     // Try to serve cached version of the mobile navigation
-    const cachedResponse = await caches.match('/templates/mobile_navigation.html');
+    const cachedResponse = await caches.match(
+      "/templates/mobile_navigation.html",
+    );
     if (cachedResponse) {
       return cachedResponse;
     }
-    
+
     // Fallback offline page
-    return new Response(`
+    return new Response(
+      `
       <!DOCTYPE html>
       <html>
       <head>
@@ -233,9 +239,9 @@ async function navigationStrategy(request) {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>HydraX - Offline</title>
         <style>
-          body { 
+          body {
             font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-            text-align: center; 
+            text-align: center;
             padding: 50px;
             background: #f5f5f5;
           }
@@ -271,10 +277,12 @@ async function navigationStrategy(request) {
         </div>
       </body>
       </html>
-    `, {
-      status: 200,
-      headers: { 'Content-Type': 'text/html' }
-    });
+    `,
+      {
+        status: 200,
+        headers: { "Content-Type": "text/html" },
+      },
+    );
   }
 }
 
@@ -284,31 +292,33 @@ async function navigationStrategy(request) {
 async function staleWhileRevalidateStrategy(request) {
   const cache = await caches.open(DYNAMIC_CACHE_NAME);
   const cachedResponse = await cache.match(request);
-  
+
   // Fetch in background to update cache
-  const fetchPromise = fetch(request).then((networkResponse) => {
-    if (networkResponse.ok) {
-      cache.put(request, networkResponse.clone());
-    }
-    return networkResponse;
-  }).catch(() => null);
-  
+  const fetchPromise = fetch(request)
+    .then((networkResponse) => {
+      if (networkResponse.ok) {
+        cache.put(request, networkResponse.clone());
+      }
+      return networkResponse;
+    })
+    .catch(() => null);
+
   // Return cached version immediately if available
   if (cachedResponse) {
     return cachedResponse;
   }
-  
+
   // Otherwise wait for network
-  return fetchPromise || new Response('Service unavailable', { status: 503 });
+  return fetchPromise || new Response("Service unavailable", { status: 503 });
 }
 
 /**
  * Background sync for offline actions
  */
-self.addEventListener('sync', (event) => {
-  console.log('Service Worker: Background sync triggered', event.tag);
-  
-  if (event.tag === 'offline-actions') {
+self.addEventListener("sync", (event) => {
+  console.log("Service Worker: Background sync triggered", event.tag);
+
+  if (event.tag === "offline-actions") {
     event.waitUntil(processOfflineActions());
   }
 });
@@ -320,94 +330,99 @@ async function processOfflineActions() {
   try {
     // Get offline actions from IndexedDB or localStorage
     const offlineActions = await getOfflineActions();
-    
+
     for (const action of offlineActions) {
       try {
         await fetch(action.url, action.options);
         await removeOfflineAction(action.id);
-        console.log('Offline action processed:', action.id);
+        console.log("Offline action processed:", action.id);
       } catch (error) {
-        console.error('Failed to process offline action:', action.id, error);
+        console.error("Failed to process offline action:", action.id, error);
       }
     }
   } catch (error) {
-    console.error('Error processing offline actions:', error);
+    console.error("Error processing offline actions:", error);
   }
 }
 
 /**
  * Push notification handling
  */
-self.addEventListener('push', (event) => {
-  console.log('Service Worker: Push notification received');
-  
+self.addEventListener("push", (event) => {
+  console.log("Service Worker: Push notification received");
+
   const options = {
-    body: 'New trading signal available',
-    icon: '/assets/icons/icon-192x192.png',
-    badge: '/assets/icons/badge-72x72.png',
+    body: "New trading signal available",
+    icon: "/assets/icons/icon-192x192.png",
+    badge: "/assets/icons/badge-72x72.png",
     vibrate: [200, 100, 200],
-    tag: 'trading-signal',
+    tag: "trading-signal",
     requireInteraction: true,
     actions: [
       {
-        action: 'view',
-        title: 'View Signal',
-        icon: '/assets/icons/action-view.png'
+        action: "view",
+        title: "View Signal",
+        icon: "/assets/icons/action-view.png",
       },
       {
-        action: 'dismiss',
-        title: 'Dismiss',
-        icon: '/assets/icons/action-dismiss.png'
-      }
+        action: "dismiss",
+        title: "Dismiss",
+        icon: "/assets/icons/action-dismiss.png",
+      },
     ],
     data: {
-      url: '/templates/mobile_navigation.html#signals',
-      timestamp: Date.now()
-    }
+      url: "/templates/mobile_navigation.html#signals",
+      timestamp: Date.now(),
+    },
   };
-  
+
   if (event.data) {
     try {
       const pushData = event.data.json();
       options.body = pushData.message || options.body;
       options.data = { ...options.data, ...pushData };
     } catch (error) {
-      console.error('Error parsing push data:', error);
+      console.error("Error parsing push data:", error);
     }
   }
-  
+
   event.waitUntil(
-    self.registration.showNotification('HydraX Trading Alert', options)
+    self.registration.showNotification("HydraX Trading Alert", options),
   );
 });
 
 /**
  * Notification click handling
  */
-self.addEventListener('notificationclick', (event) => {
-  console.log('Service Worker: Notification clicked', event.action);
-  
+self.addEventListener("notificationclick", (event) => {
+  console.log("Service Worker: Notification clicked", event.action);
+
   event.notification.close();
-  
-  if (event.action === 'view') {
-    const url = event.notification.data?.url || '/templates/mobile_navigation.html';
-    
+
+  if (event.action === "view") {
+    const url =
+      event.notification.data?.url || "/templates/mobile_navigation.html";
+
     event.waitUntil(
-      clients.matchAll({ type: 'window', includeUncontrolled: true })
+      clients
+        .matchAll({ type: "window", includeUncontrolled: true })
         .then((clientList) => {
           // Check if app is already open
           for (const client of clientList) {
-            if (client.url.includes('mobile_navigation.html') && 'focus' in client) {
-              client.postMessage({ action: 'navigate', url });
+            if (
+              client.url.includes("mobile_navigation.html") &&
+              "focus" in client
+            ) {
+              client.postMessage({ action: "navigate", url });
               return client.focus();
             }
           }
-          
+
           // Open new window
           if (clients.openWindow) {
             return clients.openWindow(url);
           }
-        })
+        }),
     );
   }
 });
@@ -415,22 +430,22 @@ self.addEventListener('notificationclick', (event) => {
 /**
  * Message handling from main thread
  */
-self.addEventListener('message', (event) => {
-  console.log('Service Worker: Message received', event.data);
-  
+self.addEventListener("message", (event) => {
+  console.log("Service Worker: Message received", event.data);
+
   if (event.data && event.data.type) {
     switch (event.data.type) {
-      case 'SKIP_WAITING':
+      case "SKIP_WAITING":
         self.skipWaiting();
         break;
-      case 'CACHE_SIGNAL_DATA':
+      case "CACHE_SIGNAL_DATA":
         cacheSignalData(event.data.payload);
         break;
-      case 'STORE_OFFLINE_ACTION':
+      case "STORE_OFFLINE_ACTION":
         storeOfflineAction(event.data.payload);
         break;
-      case 'GET_CACHE_STATUS':
-        getCacheStatus().then(status => {
+      case "GET_CACHE_STATUS":
+        getCacheStatus().then((status) => {
           event.ports[0].postMessage(status);
         });
         break;
@@ -445,12 +460,12 @@ async function cacheSignalData(signalData) {
   try {
     const cache = await caches.open(DYNAMIC_CACHE_NAME);
     const response = new Response(JSON.stringify(signalData), {
-      headers: { 'Content-Type': 'application/json' }
+      headers: { "Content-Type": "application/json" },
     });
-    await cache.put('/api/signals/cached', response);
-    console.log('Signal data cached for offline access');
+    await cache.put("/api/signals/cached", response);
+    console.log("Signal data cached for offline access");
   } catch (error) {
-    console.error('Error caching signal data:', error);
+    console.error("Error caching signal data:", error);
   }
 }
 
@@ -460,20 +475,22 @@ async function cacheSignalData(signalData) {
 async function storeOfflineAction(actionData) {
   try {
     // In a real implementation, use IndexedDB for better storage
-    const actions = JSON.parse(localStorage.getItem('hydraX_offlineActions') || '[]');
+    const actions = JSON.parse(
+      localStorage.getItem("hydraX_offlineActions") || "[]",
+    );
     actions.push({
       id: Date.now() + Math.random(),
       timestamp: Date.now(),
-      ...actionData
+      ...actionData,
     });
-    localStorage.setItem('hydraX_offlineActions', JSON.stringify(actions));
-    
+    localStorage.setItem("hydraX_offlineActions", JSON.stringify(actions));
+
     // Register for background sync
-    if ('sync' in self.registration) {
-      await self.registration.sync.register('offline-actions');
+    if ("sync" in self.registration) {
+      await self.registration.sync.register("offline-actions");
     }
   } catch (error) {
-    console.error('Error storing offline action:', error);
+    console.error("Error storing offline action:", error);
   }
 }
 
@@ -482,9 +499,9 @@ async function storeOfflineAction(actionData) {
  */
 async function getOfflineActions() {
   try {
-    return JSON.parse(localStorage.getItem('hydraX_offlineActions') || '[]');
+    return JSON.parse(localStorage.getItem("hydraX_offlineActions") || "[]");
   } catch (error) {
-    console.error('Error getting offline actions:', error);
+    console.error("Error getting offline actions:", error);
     return [];
   }
 }
@@ -494,11 +511,16 @@ async function getOfflineActions() {
  */
 async function removeOfflineAction(actionId) {
   try {
-    const actions = JSON.parse(localStorage.getItem('hydraX_offlineActions') || '[]');
-    const filteredActions = actions.filter(action => action.id !== actionId);
-    localStorage.setItem('hydraX_offlineActions', JSON.stringify(filteredActions));
+    const actions = JSON.parse(
+      localStorage.getItem("hydraX_offlineActions") || "[]",
+    );
+    const filteredActions = actions.filter((action) => action.id !== actionId);
+    localStorage.setItem(
+      "hydraX_offlineActions",
+      JSON.stringify(filteredActions),
+    );
   } catch (error) {
-    console.error('Error removing offline action:', error);
+    console.error("Error removing offline action:", error);
   }
 }
 
@@ -508,40 +530,43 @@ async function removeOfflineAction(actionId) {
 async function getCacheStatus() {
   const cacheNames = await caches.keys();
   const status = {};
-  
+
   for (const cacheName of cacheNames) {
     const cache = await caches.open(cacheName);
     const keys = await cache.keys();
     status[cacheName] = {
       size: keys.length,
-      keys: keys.map(request => request.url)
+      keys: keys.map((request) => request.url),
     };
   }
-  
+
   return status;
 }
 
 /**
  * Periodic cache cleanup
  */
-setInterval(async () => {
-  try {
-    const cache = await caches.open(DYNAMIC_CACHE_NAME);
-    const keys = await cache.keys();
-    
-    // Remove old cached responses (older than 24 hours)
-    const cutoff = Date.now() - (24 * 60 * 60 * 1000);
-    
-    for (const key of keys) {
-      const response = await cache.match(key);
-      const cacheDate = response.headers.get('X-Cache-Date');
-      
-      if (cacheDate && new Date(cacheDate).getTime() < cutoff) {
-        await cache.delete(key);
-        console.log('Removed old cache entry:', key.url);
+setInterval(
+  async () => {
+    try {
+      const cache = await caches.open(DYNAMIC_CACHE_NAME);
+      const keys = await cache.keys();
+
+      // Remove old cached responses (older than 24 hours)
+      const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+
+      for (const key of keys) {
+        const response = await cache.match(key);
+        const cacheDate = response.headers.get("X-Cache-Date");
+
+        if (cacheDate && new Date(cacheDate).getTime() < cutoff) {
+          await cache.delete(key);
+          console.log("Removed old cache entry:", key.url);
+        }
       }
+    } catch (error) {
+      console.error("Error during cache cleanup:", error);
     }
-  } catch (error) {
-    console.error('Error during cache cleanup:', error);
-  }
-}, 60 * 60 * 1000); // Run every hour
+  },
+  60 * 60 * 1000,
+); // Run every hour

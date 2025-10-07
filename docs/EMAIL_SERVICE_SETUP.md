@@ -36,6 +36,7 @@ The BITTEN email service supports multiple providers and handles automated email
 Add these variables to your `.env` file:
 
 ### General Email Settings
+
 ```bash
 # Email Provider (smtp, sendgrid, or ses)
 EMAIL_PROVIDER=smtp
@@ -46,6 +47,7 @@ EMAIL_FROM_NAME=BITTEN Trading
 ```
 
 ### SMTP Configuration (Gmail Example)
+
 ```bash
 # SMTP Settings
 SMTP_HOST=smtp.gmail.com
@@ -56,12 +58,14 @@ SMTP_USE_TLS=true
 ```
 
 ### SendGrid Configuration
+
 ```bash
 # SendGrid API Key
 SENDGRID_API_KEY=SG.your-sendgrid-api-key
 ```
 
 ### AWS SES Configuration
+
 ```bash
 # AWS Region
 AWS_REGION=us-east-1
@@ -165,6 +169,7 @@ python test_email_service.py
 ```
 
 This will:
+
 1. Test your email provider connection
 2. Send a test email
 3. Test template rendering
@@ -173,11 +178,13 @@ This will:
 ## 6. Starting the Email Scheduler
 
 ### Development Mode
+
 ```bash
 python src/bitten_core/email_scheduler.py
 ```
 
 ### Production Mode (Systemd)
+
 ```bash
 # Copy service file
 sudo cp scripts/bitten_email_scheduler.service /etc/systemd/system/
@@ -203,6 +210,7 @@ sudo systemctl status bitten_email_scheduler
 ### Email Scheduling
 
 The scheduler runs these tasks:
+
 - **Every minute:** Process email queue
 - **Every 30 minutes:** Check for scheduled campaign emails
 - **Every hour:** Update campaign statistics
@@ -211,6 +219,7 @@ The scheduler runs these tasks:
 ## 8. Monitoring and Analytics
 
 ### View Email Statistics
+
 ```sql
 -- Campaign performance
 SELECT * FROM email_campaign_performance;
@@ -219,19 +228,20 @@ SELECT * FROM email_campaign_performance;
 SELECT * FROM user_email_engagement;
 
 -- Daily stats
-SELECT * FROM email_campaign_stats 
+SELECT * FROM email_campaign_stats
 WHERE date >= date('now', '-7 days');
 ```
 
 ### Check Email Queue
+
 ```sql
 -- Pending emails
-SELECT * FROM email_queue 
-WHERE status = 'pending' 
+SELECT * FROM email_queue
+WHERE status = 'pending'
 ORDER BY scheduled_for;
 
 -- Failed emails
-SELECT * FROM email_queue 
+SELECT * FROM email_queue
 WHERE status = 'failed'
 ORDER BY last_attempt_at DESC;
 ```
@@ -263,6 +273,7 @@ ORDER BY last_attempt_at DESC;
 ### Debug Mode
 
 Enable debug logging:
+
 ```python
 # In email_service.py
 logging.basicConfig(level=logging.DEBUG)
@@ -309,6 +320,7 @@ automation.trigger_welcome_email(user_id, email, username)
 ## 12. Email Service API
 
 ### Sending Individual Emails
+
 ```python
 from bitten_core.email_service import create_email_service
 
@@ -322,6 +334,7 @@ email_service.send_email(
 ```
 
 ### Sending Template Emails
+
 ```python
 email_service.send_template_email(
     to_email="user@example.com",
@@ -331,6 +344,7 @@ email_service.send_template_email(
 ```
 
 ### Batch Emails
+
 ```python
 recipients = [
     {"email": "user1@example.com", "data": {"username": "User1"}},
@@ -347,6 +361,7 @@ email_service.send_batch_emails(
 ## Support
 
 For issues or questions:
+
 1. Check the troubleshooting section
 2. Review logs in `/var/log/bitten/`
 3. Test with `test_email_service.py`

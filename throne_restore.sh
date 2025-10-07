@@ -119,7 +119,7 @@ for file in "$RESTORE_DIR"/*.html_* "$RESTORE_DIR"/*.md_* "$RESTORE_DIR"/*.servi
     if [ -f "$file" ]; then
         # Extract original filename
         original_name=$(basename "$file" | sed 's/_[0-9]\{8\}_[0-9]\{6\}$//')
-        
+
         # Determine destination based on file type
         case "$original_name" in
             *.html)
@@ -132,7 +132,7 @@ for file in "$RESTORE_DIR"/*.html_* "$RESTORE_DIR"/*.md_* "$RESTORE_DIR"/*.servi
                 dest="/root/HydraX-v2/$original_name"
                 ;;
         esac
-        
+
         if [ -n "$dest" ]; then
             mkdir -p "$(dirname "$dest")"
             cp "$file" "$dest"
@@ -165,7 +165,7 @@ if [ -f "$DB_PATH" ]; then
     sqlite3 "$DB_PATH" "PRAGMA integrity_check;" > /dev/null 2>&1
     if [ $? -eq 0 ]; then
         log "Database integrity check passed"
-        
+
         # Show restored data summary
         log "Restored database summary:"
         for table in $(sqlite3 "$DB_PATH" ".tables" 2>/dev/null); do

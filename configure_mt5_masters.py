@@ -3,12 +3,14 @@
 Configure MT5 Masters with appropriate settings for each type
 """
 
-import requests
-import json
 import base64
+import json
+
+import requests
 
 AWS_SERVER = "localhost"
 PORT = 5555
+
 
 def execute_command(command):
     """Execute command on Windows server"""
@@ -17,17 +19,18 @@ def execute_command(command):
         response = requests.post(url, json={"command": command}, timeout=30)
         if response.status_code == 200:
             result = response.json()
-            return result.get('success', False), result.get('stdout', ''), result.get('stderr', '')
-        return False, '', f"HTTP {response.status_code}"
+            return result.get("success", False), result.get("stdout", ""), result.get("stderr", "")
+        return False, "", f"HTTP {response.status_code}"
     except Exception as e:
-        return False, '', str(e)
+        return False, "", str(e)
+
 
 def create_master_configs():
     """Create configuration files for each master type"""
-    
+
     print("🔧 Creating MT5 Master Configurations")
     print("=" * 60)
-    
+
     # Master configurations
     masters = {
         "Coinexx_Live": {
@@ -38,7 +41,7 @@ def create_master_configs():
             "max_daily_loss": 5.0,
             "mode": "CONSERVATIVE",
             "broker": "Coinexx",
-            "account_type": "LIVE"
+            "account_type": "LIVE",
         },
         "Forex_Live": {
             "path": "C:\\MT5_Farm\\Masters\\Forex_Live",
@@ -48,7 +51,7 @@ def create_master_configs():
             "max_daily_loss": 5.0,
             "mode": "CONSERVATIVE",
             "broker": "Forex.com",
-            "account_type": "LIVE"
+            "account_type": "LIVE",
         },
         "Forex_Demo": {
             "path": "C:\\MT5_Farm\\Masters\\Forex_Demo",
@@ -58,7 +61,7 @@ def create_master_configs():
             "max_daily_loss": 10.0,
             "mode": "NORMAL",
             "broker": "Forex.com",
-            "account_type": "DEMO"
+            "account_type": "DEMO",
         },
         "Coinexx_Demo": {
             "path": "C:\\MT5_Farm\\Masters\\Coinexx_Demo",
@@ -68,7 +71,7 @@ def create_master_configs():
             "max_daily_loss": 10.0,
             "mode": "NORMAL",
             "broker": "Coinexx",
-            "account_type": "DEMO"
+            "account_type": "DEMO",
         },
         "Generic_Demo": {
             "path": "C:\\MT5_Farm\\Masters\\Generic_Demo",
@@ -78,10 +81,10 @@ def create_master_configs():
             "max_daily_loss": 20.0,
             "mode": "AGGRESSIVE",
             "broker": "MetaQuotes",
-            "account_type": "DEMO_AUTO"
-        }
+            "account_type": "DEMO_AUTO",
+        },
     }
-    
+
     # Create master directories
     print("\n📁 Creating master directories...")
     for master_name, config in masters.items():
@@ -89,12 +92,12 @@ def create_master_configs():
         success, stdout, stderr = execute_command(cmd)
         if success:
             print(f"   ✅ Created: {master_name}")
-        
+
         # Create MQL5 subdirectories
         for subdir in ["\\MQL5\\Experts\\BITTEN", "\\MQL5\\Files\\BITTEN"]:
             cmd = f'New-Item -ItemType Directory -Path "{config["path"]}{subdir}" -Force'
             execute_command(cmd)
-    
+
     # Create configuration files for each master
     print("\n📝 Creating configuration files...")
     for master_name, config in masters.items():
@@ -107,32 +110,40 @@ def create_master_configs():
             "risk_settings": {
                 "risk_per_trade": config["risk_percent"],
                 "max_daily_loss": config["max_daily_loss"],
-                "mode": config["mode"]
+                "mode": config["mode"],
             },
             "pairs": [
-                "EURUSD", "GBPUSD", "USDJPY", "USDCAD", "GBPJPY",
-                "AUDUSD", "NZDUSD", "EURGBP", "USDCHF", "EURJPY"
+                "EURUSD",
+                "GBPUSD",
+                "USDJPY",
+                "USDCAD",
+                "GBPJPY",
+                "AUDUSD",
+                "NZDUSD",
+                "EURGBP",
+                "USDCHF",
+                "EURJPY",
             ],
             "ea_settings": {
                 "trade_comment": f"BITTEN_{master_name}",
                 "slippage": 3,
                 "max_spread": 3.0 if "Live" in master_name else 5.0,
                 "news_filter": "Live" in master_name,
-                "stealth_mode": "Live" in master_name
-            }
+                "stealth_mode": "Live" in master_name,
+            },
         }
-        
+
         # Convert to JSON and encode
         config_json = json.dumps(bitten_config, indent=2)
         encoded = base64.b64encode(config_json.encode()).decode()
-        
+
         # Write config file
         config_path = f"{config['path']}\\MQL5\\Files\\BITTEN\\master_config.json"
         cmd = f'[System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String("{encoded}")) | Out-File -FilePath "{config_path}" -Encoding UTF8'
         success, stdout, stderr = execute_command(cmd)
         if success:
             print(f"   ✅ Config created for: {master_name}")
-    
+
     # Create EA initialization file for each master
     print("\n🤖 Creating EA initialization files...")
     for master_name, config in masters.items():
@@ -149,17 +160,17 @@ MAGIC_START={config['magic_start']}
 MAGIC_END={config['magic_end']}
 TRADING_MODE={config['mode']}
 """
-        
+
         encoded = base64.b64encode(ea_init.encode()).decode()
         init_path = f"{config['path']}\\MQL5\\Files\\BITTEN\\ea_init.txt"
         cmd = f'[System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String("{encoded}")) | Out-File -FilePath "{init_path}" -Encoding UTF8'
         success, stdout, stderr = execute_command(cmd)
         if success:
             print(f"   ✅ EA init created for: {master_name}")
-    
+
     # Create cloning helper script
     print("\n🔄 Creating cloning helper script...")
-    clone_script = '''
+    clone_script = """
 # MT5 Master Cloning Script
 param(
     [string]$MasterType,
@@ -187,12 +198,12 @@ Write-Host "Cloning $Count instances of $MasterType starting at index $StartInde
 
 for ($i = $StartIndex; $i -lt ($StartIndex + $Count); $i++) {
     $targetPath = "$clonePath\\${MasterType}_$i"
-    
+
     Write-Host "Creating clone $i..." -NoNewline
-    
+
     # Copy master to clone
     Copy-Item -Path $masterPath -Destination $targetPath -Recurse -Force
-    
+
     # Update magic number in config
     $configPath = "$targetPath\\MQL5\\Files\\BITTEN\\master_config.json"
     if (Test-Path $configPath) {
@@ -201,27 +212,27 @@ for ($i = $StartIndex; $i -lt ($StartIndex + $Count); $i++) {
         $config.magic_number_range[1] += $i
         $config | ConvertTo-Json -Depth 10 | Set-Content $configPath
     }
-    
+
     # Create unique instance ID
     $instanceId = [guid]::NewGuid().ToString()
     Set-Content -Path "$targetPath\\instance_id.txt" -Value $instanceId
-    
+
     Write-Host " Done!" -ForegroundColor Green
 }
 
 Write-Host "Cloning complete! Created $Count clones in $clonePath" -ForegroundColor Green
-'''
-    
+"""
+
     encoded = base64.b64encode(clone_script.encode()).decode()
     cmd = f'[System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String("{encoded}")) | Out-File -FilePath "C:\\MT5_Farm\\clone_masters.ps1" -Encoding UTF8'
     success, stdout, stderr = execute_command(cmd)
     if success:
         print("   ✅ Cloning script created")
-    
+
     # Summary
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("📊 MASTER CONFIGURATION SUMMARY")
-    print("="*60)
+    print("=" * 60)
     print("\n1. Coinexx Live: Conservative, 1% risk, Magic 10001-10100")
     print("2. Forex Live: Conservative, 1% risk, Magic 20001-20100")
     print("3. Forex Demo: Normal, 3% risk, Magic 30001-30100")
@@ -232,6 +243,7 @@ Write-Host "Cloning complete! Created $Count clones in $clonePath" -ForegroundCo
     print("2. Login to accounts (except Generic Demo)")
     print("3. Attach EA to all 10 pairs on each master")
     print("4. Test with: powershell C:\\MT5_Farm\\clone_masters.ps1 -MasterType Forex_Demo -Count 5")
+
 
 if __name__ == "__main__":
     create_master_configs()

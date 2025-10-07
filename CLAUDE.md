@@ -13,6 +13,7 @@
 📖 **[SIGNAL_FLOW_AND_AUTOFIRE_ARCHITECTURE.md](./SIGNAL_FLOW_AND_AUTOFIRE_ARCHITECTURE.md)**
 
 **This document contains**:
+
 - ✅ Complete signal flow (Elite Guard → MT5 → Telegram → Database)
 - ✅ Auto-fire system architecture (requirements, validation, debugging)
 - ✅ Telegram alert system (single dispatch, duplicate fix)
@@ -22,6 +23,7 @@
 - ✅ Common issues & debugging (with exact solutions)
 
 **Emergency Repairs Completed October 6, 2025**:
+
 1. ✅ Fixed duplicate Telegram alerts (webapp was double-dispatching)
 2. ✅ Fixed confirmation status downgrades (FILLED → UNKNOWN protection)
 3. ✅ Fixed confidence display (0% → actual percentages)
@@ -46,6 +48,7 @@
 ### **WHAT IT TRACKS (100% COMPLETE DATA)**
 
 Every signal tracked with:
+
 - ✅ **signal_id** - Unique identifier
 - ✅ **symbol** - Trading pair (EURUSD, GBPUSD, etc.)
 - ✅ **direction** - BUY or SELL
@@ -87,6 +90,7 @@ pm2 logs signal_tracker --lines 50
 All previous tracking systems have been **PERMANENTLY DELETED**:
 
 ❌ **NEVER recreate these:**
+
 - comprehensive_tracking.jsonl
 - truth_log.jsonl
 - optimized_tracking.jsonl
@@ -102,6 +106,7 @@ All previous tracking systems have been **PERMANENTLY DELETED**:
 **ONE TRACKER. ONE OUTPUT FILE. 100% ACCOUNTABILITY. FOREVER.**
 
 If you are asked to create ANY tracking file, reference, or system:
+
 1. ❌ DO NOT create it
 2. ✅ Use `/root/HydraX-v2/definitive_signal_tracker.py`
 3. ✅ Read from `/root/HydraX-v2/signal_tracking.jsonl`
@@ -140,6 +145,7 @@ GROUP BY pattern_type;"
 **URL**: `http://134.199.204.67:8892/analytics/performance_dashboard.html`
 
 **Features**:
+
 - Dark military-themed interface
 - 6 preset report buttons (Pattern, Confidence, Session, Pair, Time, Recent)
 - Chart.js visualizations with color-coded win rates
@@ -147,6 +153,7 @@ GROUP BY pattern_type;"
 - Linked from Commander Throne dashboard
 
 **Quick Test**:
+
 ```bash
 # Test API is responding
 curl -s http://localhost:8892/api/performance/by_pattern | jq '.[] | {pattern: .pattern_type, win_rate: .win_rate, signals: .signal_count}'
@@ -157,18 +164,21 @@ curl -s http://localhost:8892/api/performance/by_pattern | jq '.[] | {pattern: .
 ### **📊 Understanding the Metrics**
 
 **Win Rate Calculation**:
+
 ```python
 # Excludes TIMEOUT and PENDING - only counts completed signals
 win_rate = wins / (wins + losses)
 ```
 
 **Outcome Types**:
+
 - **WIN**: Signal hit TP (take profit)
 - **LOSS**: Signal hit SL (stop loss)
 - **TIMEOUT**: Signal expired without hitting TP/SL (excluded from win rate)
 - **PENDING**: Signal still active (excluded from win rate)
 
 **Current System Performance** (from comprehensive_tracking.jsonl):
+
 - Total Signals: 326
 - Completed: 214 (143 WINS + 71 LOSSES)
 - Win Rate: 66.8%
@@ -182,27 +192,30 @@ win_rate = wins / (wins + losses)
 
 ### **ZMQ Port Architecture (EA v3.005 Production)**
 
-| Port | Pattern | Direction | Purpose | EA v3.005 Message Types |
-|------|---------|-----------|---------|------------------------|
-| 5555 | DEALER/ROUTER | Bidirectional | Command routing & fire execution | fire, close, close_all, ping, dealer_heartbeat (5s) |
-| 5556 | PUSH/PULL | EA→Server | Market data + lifecycle events | handshake (startup), tick, heartbeat (1s), disconnect |
-| 5557 | PUB/SUB | Server→Clients | Signal publication (elite_guard) | Pattern detection signals (BUY/SELL only) |
-| 5558 | PUSH/PULL | EA→Server | Trade confirmations & events | position_opened, position_closed, confirmation, pong |
-| 5560 | PUB/SUB | Server→Clients | Market data redistribution + updates | position_update (1s per open position) |
+| Port | Pattern       | Direction      | Purpose                              | EA v3.005 Message Types                               |
+| ---- | ------------- | -------------- | ------------------------------------ | ----------------------------------------------------- |
+| 5555 | DEALER/ROUTER | Bidirectional  | Command routing & fire execution     | fire, close, close_all, ping, dealer_heartbeat (5s)   |
+| 5556 | PUSH/PULL     | EA→Server      | Market data + lifecycle events       | handshake (startup), tick, heartbeat (1s), disconnect |
+| 5557 | PUB/SUB       | Server→Clients | Signal publication (elite_guard)     | Pattern detection signals (BUY/SELL only)             |
+| 5558 | PUSH/PULL     | EA→Server      | Trade confirmations & events         | position_opened, position_closed, confirmation, pong  |
+| 5560 | PUB/SUB       | Server→Clients | Market data redistribution + updates | position_update (1s per open position)                |
 
 ### **Server-Side Intelligence**
 
 **Pattern Detection**:
+
 - All pattern detection on server (elite_guard)
 - Processes raw tick data from port 5560
 - 6 integrated pattern detectors
 
 **Position Management**:
+
 - Centralized hedge protection
 - Slot management (3/5/7 by tier)
 - Risk calculations server-side
 
 **Business Rules**:
+
 - **Hedge Protection**: No opposing positions on same symbol
 - **Slot Management**: Concurrent position limits by tier
 - **Risk Limits**: 2% per trade, 6% daily drawdown
@@ -211,9 +224,11 @@ win_rate = wins / (wins + losses)
 ### **EA v3.005 Critical Features**
 
 #### **1. Handshake with Position Reconciliation**
+
 **Message Type**: `handshake` (sent once on EA startup to port 5556)
 
 **New Fields**:
+
 ```json
 {
   "type": "handshake",
@@ -237,12 +252,14 @@ win_rate = wins / (wins + losses)
 ```
 
 **Server Action Required**:
+
 - If `reconnect=false`: Reset daily trade counter for this UUID
 - If `reconnect=true`: Validate open_positions against server state, DON'T reset counter
 - Update user_positions[uuid] with the positions array (EA state is source of truth)
 - **Why This Matters**: Prevents users from exceeding 6 trades/day limit after EA crash/restart
 
 #### **2. DEALER Keepalive Messages**
+
 **Message Type**: `dealer_heartbeat` (sent every 5 seconds to port 5555)
 
 ```json
@@ -257,6 +274,7 @@ win_rate = wins / (wins + losses)
 **Server Action**: Command router ignores these (no response needed), uses them to update "last seen" timestamp
 
 #### **3. Direction Canonicalization**
+
 **Change**: All outbound events now use standardized "BUY"/"SELL" (never "long", "sell", "b", etc.)
 
 **Affected Messages**: position_opened, position_closed, position_update
@@ -264,11 +282,13 @@ win_rate = wins / (wins + losses)
 **Impact**: Hedge protection logic can now rely on `direction` field being exactly "BUY" or "SELL"
 
 #### **4. SafeNum Protection**
+
 **Change**: Balance, equity, margin values are now sanitized to prevent NaN/Inf
 
 **Impact**: Server should never receive `NaN`, `Infinity`, or `-Infinity` in numeric fields. If you do, it means broker glitched and EA caught it.
 
 #### **5. Heartbeats Moved to Port 5556**
+
 **Change**: Heartbeats moved from port 5560 to port 5556 (same as ticks/handshake)
 
 **Reason**: Port 5560 was configured as PUB socket, EA needs PULL socket for PUSH messages
@@ -280,6 +300,7 @@ win_rate = wins / (wins + losses)
 #### **🎯 ROUTER⇄DEALER IMPLEMENTATION COMPLETE - MARKET READY**
 
 **ZMQ ROUTER Pattern**: ✅ FULLY IMPLEMENTED
+
 - Router binds ROUTER socket on tcp://0.0.0.0:5555
 - EA connects DEALER socket with proper identity routing
 - Frame format: [identity][empty][jsonl_bytes] implemented
@@ -288,19 +309,22 @@ win_rate = wins / (wins + losses)
 - Legacy BITTEN fire command conversion to open format
 
 **Schema Validation & Error Handling**: ✅ COMPREHENSIVE
+
 - 16 error codes: E_SCHEMA_INVALID, E_SPREAD_GUARD, E_HEDGE_BLOCKED, etc.
 - Business logic validation with spread guard, hedge blocking
 - Market hours validation and news event protection
 - 5-minute timestamp tolerance with timezone handling
 
 **Idempotency System**: ✅ PRODUCTION GRADE
+
 - 24-hour TTL with restart persistence
 - Duplicate prevention with byte-equal responses
 - Per-command correlation with request_ref tracking
 - Cache cleanup with automatic expiration
 
 **RBAC Implementation**: ✅ SECURE
-- API key system: hsk_<32-char-token>
+
+- API key system: hsk\_<32-char-token>
 - Three roles: viewer (read-only), closer (read+close), admin (full)
 - Tenant isolation: users can only access their account_id
 - HTTP endpoints protected with X-Api-Key header
@@ -308,38 +332,46 @@ win_rate = wins / (wins + losses)
 #### **🎯 PRODUCTION VALIDATION RESULTS - 100% PASS RATE**
 
 **Schema Hash Validation**: ✅ PASS
+
 - Repository schema hash: 93e800e46b3b59d3f6f21276099a9bbe8c8f5ccd739d8b17b76cc7c34003b076
 - API schema matches repository (SHA256 verified)
 
 **Security Tests**: ✅ PASS
+
 - RBAC endpoint restrictions validated
 - Idempotency duplicate prevention tested
 - API key authentication verified
 
 **Load Testing**: ✅ PASS
+
 - P95 response time: 127.8ms (< 250ms target)
 - Success rate: 99.2% (> 90% target)
 - 250 total requests, 248 successful
 
 **Chaos Engineering**: ✅ PASS
+
 - Recovery time: 8 seconds (< 30s target)
 - Service resilience validated
 
 **Documentation**: ✅ PASS
+
 - API documentation accessible at /docs
 - OpenAPI specification accessible at /openapi.yaml
 
 **Monitoring**: ✅ PASS
+
 - Prometheus alerts configuration verified
 - Metrics sample captured and validated
 
 **Health Checks**: ✅ PASS
+
 - System health endpoint responding correctly
 - All validation checks completed successfully
 
 #### **🎯 END-TO-END FIRE PATH VALIDATION - MARKET READY**
 
 **Complete Signal Flow Verified**: ✅ ALL STAGES OPERATIONAL
+
 1. **Elite Guard → Pattern**: Mission fixture creation and database storage
 2. **Mission → WebApp**: Signal returns Mission Brief JSON with request_ref
 3. **WebApp → Router (REST)**: POST /v1/trades/open with RBAC validation
@@ -350,11 +382,13 @@ win_rate = wins / (wins + losses)
 8. **Close Flow**: POST /v1/trades/{ticket}/close with idempotency
 
 **Test Implementation Files**:
+
 - `/root/HydraX-v2/test_hydrasocket_fire_path.py` (22,638 bytes)
 - `/root/HydraX-v2/test_hydrasocket_comprehensive.py` (21,922 bytes)
 - `/root/HydraX-v2/HYDRASOCKET_VALIDATION_REPORT.md` (Complete validation)
 
 **Performance Validation Results**:
+
 - Load test: 50 commands with avg < 100ms, P95 < 250ms ✅
 - Idempotency cache: 24h TTL with restart persistence ✅
 - WebSocket backpressure: 256 event limit with coalescing ✅
@@ -364,6 +398,7 @@ win_rate = wins / (wins + losses)
 #### **🚦 GO-LIVE CHECKLIST & CUTOVER SEQUENCE**
 
 **✅ Go/No-Go Checklist - ALL VERIFIED:**
+
 - ✅ Schemas v1 frozen & logged on /api/health (schema_hash matches docs)
 - ✅ 5555 ROUTER⇄DEALER live, account_id→identity map populated
 - ✅ 5558 ingest assigning per-account monotonic seq, replay returns contiguous slices
@@ -374,6 +409,7 @@ win_rate = wins / (wins + losses)
 - ✅ Parity (fixture) ≥99% on 100 trades; p95 delivery <250ms sustained
 
 **🚦 Cutover Sequence (Production Ready):**
+
 ```bash
 # 1. Freeze flags
 FEED_PRIORITY=MS (MetaSocket) still primary, EA shadow ON
@@ -394,6 +430,7 @@ Watch: event_lag_ms_p95 < 250ms, backpressure_drops_total < 0.1%, error_rate_pct
 ```
 
 **🛡️ Guardrails & Thresholds:**
+
 - event_lag_ms_p95 < 250 ms
 - backpressure_drops_total < 0.1% of heartbeats
 - error_rate_pct < 1%
@@ -401,6 +438,7 @@ Watch: event_lag_ms_p95 < 250ms, backpressure_drops_total < 0.1%, error_rate_pct
 - events_dropped_schema == 0
 
 **🔄 Rollback (one switch, <30s):**
+
 ```bash
 # 1. Set FEED_PRIORITY=MS (MetaSocket canonical), reload router
 # 2. Leave EA running (shadow) to maintain observability
@@ -410,6 +448,7 @@ Watch: event_lag_ms_p95 < 250ms, backpressure_drops_total < 0.1%, error_rate_pct
 #### **📁 FILES CREATED (COMPLETE MODULE)**
 
 **HydraSocket Core Module**: `/root/HydraX-v2/src/hydrasocket/`
+
 - `__init__.py` - Module initialization
 - `sequencer.py` - Monotonic sequence numbers per account_id
 - `events_api.py` - Replay API with cursors (/api/events)
@@ -420,6 +459,7 @@ Watch: event_lag_ms_p95 < 250ms, backpressure_drops_total < 0.1%, error_rate_pct
 - `auth.py` - API key authentication with viewer/closer/admin roles
 
 **Database & Testing**:
+
 - `migrations/001_add_sequencing.sql` - Schema migration (TESTED ✅)
 - `test_hydrasocket_migration.py` - Migration safety test (PASSED ✅)
 - `HYDRASOCKET_IMPLEMENTATION_COMPLETE.md` - Full documentation
@@ -458,15 +498,15 @@ Watch: event_lag_ms_p95 < 250ms, backpressure_drops_total < 0.1%, error_rate_pct
 
 ### **PORT BINDINGS VERIFIED**
 
-| Port | Process | PID | Status | Purpose |
-|------|---------|-----|--------|---------|
-| 5555 | command_router | 786209 | ✅ BOUND | EA command routing |
-| 5556 | zmq_telemetry_bridge | 897299 | ✅ BOUND | Market data ingestion |
-| 5557 | elite_guard | 3815271 | ✅ BOUND | Signal publishing |
-| 5558 | confirm_listener_v207 | 580393 | ✅ BOUND | Trade confirmations |
-| 5560 | zmq_telemetry_bridge | 897299 | ✅ BOUND | Market data relay |
-| 8888 | webapp (HydraSocket) | 897423 | ✅ BOUND | API + UI |
-| 8899 | dashboard_v2 | 723062 | ✅ BOUND | Admin dashboard |
+| Port | Process               | PID     | Status   | Purpose               |
+| ---- | --------------------- | ------- | -------- | --------------------- |
+| 5555 | command_router        | 786209  | ✅ BOUND | EA command routing    |
+| 5556 | zmq_telemetry_bridge  | 897299  | ✅ BOUND | Market data ingestion |
+| 5557 | elite_guard           | 3815271 | ✅ BOUND | Signal publishing     |
+| 5558 | confirm_listener_v207 | 580393  | ✅ BOUND | Trade confirmations   |
+| 5560 | zmq_telemetry_bridge  | 897299  | ✅ BOUND | Market data relay     |
+| 8888 | webapp (HydraSocket)  | 897423  | ✅ BOUND | API + UI              |
+| 8899 | dashboard_v2          | 723062  | ✅ BOUND | Admin dashboard       |
 
 ### **DATABASE STATE**
 
@@ -474,11 +514,13 @@ Watch: event_lag_ms_p95 < 250ms, backpressure_drops_total < 0.1%, error_rate_pct
 **Tables**: 35 total (BITTEN legacy + HydraSocket additions)
 
 **HydraSocket Tables** (Ready for migration):
+
 - `account_sequences` - Monotonic sequence tracking
 - `idempotency` - 24h TTL duplicate prevention
 - `api_keys` - API key management with RBAC
 
 **Active Tracking Files**:
+
 - ✅ `/root/HydraX-v2/comprehensive_tracking.jsonl` - CURRENT ACTIVE
 - ✅ `/root/HydraX-v2/optimized_tracking.jsonl` - CURRENT ACTIVE
 - ❌ `/root/HydraX-v2/truth_log.jsonl` - STOPPED AUGUST 22, 2025
@@ -490,6 +532,7 @@ Watch: event_lag_ms_p95 < 250ms, backpressure_drops_total < 0.1%, error_rate_pct
 **File**: `/root/HydraX-v2/elite_guard_with_citadel.py` (PID 3815271)
 
 **Active Features**:
+
 - 6 integrated pattern detectors (no separate processes needed)
 - News API integration for event-aware pattern generation
 - Scalping optimized with tight TP targets
@@ -499,6 +542,7 @@ Watch: event_lag_ms_p95 < 250ms, backpressure_drops_total < 0.1%, error_rate_pct
 #### **🔧 INTEGRATION COMPLETED**
 
 **WebApp Integration** (`webapp_server_optimized.py:3548-3581`):
+
 ```python
 # HydraSocket v1 Integration - ALL SYSTEMS OPERATIONAL
 from src.hydrasocket.events_api import EventsAPI, register_events_routes
@@ -513,6 +557,7 @@ from src.hydrasocket.auth import get_auth_manager, register_auth_routes
 ```
 
 **Database Migration** (TESTED, PRODUCTION READY):
+
 - Added `seq`, `account_id`, `ingest_time` columns to events table
 - Created `account_sequences`, `idempotency`, `api_keys` tables
 - Tested with 2,076 existing events - ALL MIGRATED SUCCESSFULLY ✅
@@ -521,23 +566,27 @@ from src.hydrasocket.auth import get_auth_manager, register_auth_routes
 #### **🌐 API ENDPOINTS IMPLEMENTED**
 
 **Events & Replay**:
+
 - `GET /api/events?account_id=X&from_seq=Y` - Sequence-based replay
 - `GET /api/events?account_id=X&since_ts=Y` - Timestamp-based cursors
 - `GET /api/events/gaps?account_id=X` - Gap detection
 - `POST /api/events/resync` - Trigger portfolio resync
 
 **Health & Metrics**:
+
 - `GET /healthz` - Health check with database metrics
 - `GET /health/detailed` - Detailed system statistics
 - `GET /metrics` - Prometheus format metrics
 - `GET /metrics/json` - JSON debug format
 
 **Authentication**:
+
 - `GET /api/auth/keys` - List API keys for account
 - `POST /api/auth/keys` - Create new API key
 - `DELETE /api/auth/keys/<key>` - Revoke API key
 
 **WebSocket Streaming**:
+
 - `ws://host:8888/socket.io/?account_id=X&token=Y&types=events,account,heartbeat&symbol=EURUSD,GBPUSD`
 - MessagePack + gzip binary encoding for efficiency
 - Backpressure handling with coalescing
@@ -546,12 +595,14 @@ from src.hydrasocket.auth import get_auth_manager, register_auth_routes
 #### **🔒 SECURITY IMPLEMENTED**
 
 **API Key System**:
+
 - Format: `hsk_<32-char-secure-token>`
 - Roles: viewer (read-only), closer (read + close), admin (full access)
 - Tenant isolation: Users can only access their own account_id
 - Optional expiration and descriptions
 
 **Authentication Flow**:
+
 - All protected endpoints require `X-Api-Key` header
 - WebSocket requires `token` query parameter
 - Role-based permissions enforced on all routes
@@ -560,12 +611,14 @@ from src.hydrasocket.auth import get_auth_manager, register_auth_routes
 #### **⚡ PERFORMANCE FEATURES**
 
 **WebSocket Backpressure**:
+
 - Never drops lifecycle events (position_opened, closed, sl_hit, tp_hit)
 - Coalesces position_heartbeat to ≤2 Hz per ticket
 - MessagePack + gzip binary encoding for efficiency
 - Source tagging: `source: "ea" | "ms"` on all events
 
 **Database Optimization**:
+
 - Monotonic sequencing per account_id for deterministic replay
 - Indexes on (account_id, seq) and (account_id, ingest_time)
 - Gap detection triggers automatic portfolio_snapshot resync
@@ -574,6 +627,7 @@ from src.hydrasocket.auth import get_auth_manager, register_auth_routes
 #### **🧪 TESTING STATUS**
 
 **Migration Test**: ✅ PASSED
+
 ```bash
 🎯 HydraSocket v1 Migration Test
 ✅ Migration complete: 2076 events migrated
@@ -581,6 +635,7 @@ from src.hydrasocket.auth import get_auth_manager, register_auth_routes
 ```
 
 **Integration Test**: ✅ WORKING
+
 - All modules import successfully
 - WebSocket handler initializes with SocketIO
 - EA event collector connects to ports 5558/5560
@@ -589,22 +644,26 @@ from src.hydrasocket.auth import get_auth_manager, register_auth_routes
 #### **🚀 DEPLOYMENT INSTRUCTIONS**
 
 **1. Apply Database Migration**:
+
 ```bash
 cd /root/HydraX-v2
 sqlite3 event_bus/bitten_events.db < migrations/001_add_sequencing.sql
 ```
 
 **2. Install Dependencies** (if needed):
+
 ```bash
 pip install msgpack flask-socketio
 ```
 
 **3. Restart WebApp**:
+
 ```bash
 pm2 restart webapp
 ```
 
 **4. Verify Deployment**:
+
 ```bash
 curl http://localhost:8888/healthz
 curl http://localhost:8888/metrics
@@ -613,6 +672,7 @@ curl http://localhost:8888/metrics
 #### **🎯 READY FOR EA TRUTH SWITCHING**
 
 **Pass/Fail Gate Status**: ✅ READY
+
 - ✅ WebSocket p95 < 250ms architecture implemented
 - ✅ Replay + snapshot = exact MT5 state (deterministic sequencing)
 - ✅ Idempotency proven across retries (24h TTL system)
@@ -620,11 +680,13 @@ curl http://localhost:8888/metrics
 - ✅ Metrics exported & health monitoring (Prometheus ready)
 
 **What's Needed for EA Integration**:
+
 1. EA must emit lifecycle events to port 5558 in JSON format
 2. EA must include `account_id` or `user_id` in event data
 3. Configure EA to send account_summary to port 5560 at 1 Hz
 
 **Next Steps**:
+
 1. Apply database migration (tested and safe)
 2. Deploy HydraSocket v1 to production
 3. Configure EA to emit HydraSocket events
@@ -649,6 +711,7 @@ curl http://localhost:8888/metrics
 6. **❌ Pre-Production Validation**: Any status before release lock validation completion
 
 #### **WHAT CHANGED:**
+
 - **HydraSocket v1.0.0**: Complete API layer added with RBAC, monitoring, idempotency
 - **Elite Guard v7.0**: BALANCED edition deployed focusing on 45-50% win rate
 - **Process Updates**: Multiple PM2 processes restarted with new PIDs
@@ -656,6 +719,7 @@ curl http://localhost:8888/metrics
 - **Production Validation**: 100% release lock validation completed
 
 #### **ACCURATE INFORMATION SOURCES:**
+
 - ✅ **CURRENT SYSTEM STATE** section above (September 28, 2025)
 - ✅ **ARCHITECTURE.md** (Updated September 28, 2025)
 - ✅ **HydraSocket v1.0.0 Production Ready Documentation**
@@ -695,6 +759,7 @@ Elite Guard (signals/patterns)
 ### **🎯 ROUTER⇄DEALER IMPLEMENTATION DETAILS**
 
 **ZMQ Message Flow:**
+
 ```
 [HTTP API] → [Router ROUTER:5555] → [EA DEALER] → [cmd_result] → [Router] → [HTTP Response]
      │                │                                              │
@@ -705,6 +770,7 @@ Elite Guard (signals/patterns)
 ```
 
 **State Management:**
+
 - EA emits authoritative truth: lifecycle (opened/modified/closed/sl/tp), heartbeats, account_summary
 - Router validates against frozen v1 schemas, assigns per-account seq, persists to store
 - 5555 uses ROUTER⇄DEALER with request correlation and 10s timeouts
@@ -713,6 +779,7 @@ Elite Guard (signals/patterns)
 - Prometheus + Grafana track health & performance
 
 **Expected Performance @ Market Open:**
+
 - /v1/trades/open with admin key + idempotency_key flows Router→EA→command_result in ~100–250ms
 - position_opened arrives on 5558, sequenced and streamed to clients
 - Re-posting same idempotency_key returns byte-equal response; no duplicate orders
@@ -731,11 +798,13 @@ Elite Guard (signals/patterns)
 ⚠️ **When asked about win rates, signal performance, or pattern analysis:**
 
 **CORRECT APPROACH** ✅:
+
 1. Check analytics dashboard: `http://134.199.204.67:8892/analytics/performance_dashboard.html`
 2. Query analytics API: `curl http://localhost:8892/api/performance/by_pattern`
 3. Read comprehensive_tracking.jsonl: `/root/HydraX-v2/comprehensive_tracking.jsonl`
 
 **WRONG APPROACH** ❌:
+
 - Reading truth_log.jsonl (STOPPED AUG 22, 2025)
 - Using old signal_outcomes.jsonl files (ARCHIVED)
 - Assuming any file is current without verification
@@ -743,17 +812,20 @@ Elite Guard (signals/patterns)
 ### **ACTIVE SIGNAL LOGS (October 2025)**
 
 **PRIMARY DATA SOURCE (Analytics System)**:
+
 - `/root/HydraX-v2/comprehensive_tracking.jsonl` - **THE TRUTH SOURCE**
   - 326 signals total (143 WINS, 71 LOSSES, 105 TIMEOUTS, 7 PENDING)
   - Historical data: Sept 15-24, 2025
   - Used by analytics API for all performance calculations
 
 **LEGACY/INACTIVE LOGS:**
+
 - `/root/HydraX-v2/truth_log.jsonl` - **STOPPED UPDATING AUG 22, 2025** ❌ DO NOT USE
 - `/root/HydraX-v2/optimized_tracking.jsonl` - Check if still active
 - Various `signal_outcomes.jsonl` files - **ARCHIVED** ❌ Outdated
 
 ### **SIGNAL STATUS CHECK COMMANDS:**
+
 ```bash
 # RECOMMENDED: Use analytics API
 curl http://localhost:8892/api/performance/by_pattern | jq
@@ -769,6 +841,7 @@ grep -o '"outcome":"LOSS"' /root/HydraX-v2/comprehensive_tracking.jsonl | wc -l
 ```
 
 ### **SYSTEM STATUS REALITY CHECK:**
+
 - **6 Enhanced Patterns**: ALL optimized with industry-standard logic
 - **16+ Trading Pairs**: Active monitoring
 - **Prime Trading Hours**: Should generate 3-10 signals/hour
@@ -782,15 +855,17 @@ grep -o '"outcome":"LOSS"' /root/HydraX-v2/comprehensive_tracking.jsonl | wc -l
 ### **ALL 6 PATTERNS NOW ENHANCED WITH INDUSTRY-STANDARD LOGIC**
 
 **Completed Today (August 27, 2025):**
+
 - **Pattern #6: MOMENTUM_BREAKOUT → MOMENTUM_BURST** - **ENHANCED** ✅
   - Multi-timeframe validation (M5 instead of M1)
   - Momentum acceleration detection (increasing velocity over 3 candles)
-  - Volume confirmation (1.3x volume surge requirement)  
+  - Volume confirmation (1.3x volume surge requirement)
   - Range breakout validation (2+ pip breakout requirement)
   - R:R feasibility (1.5:1 minimum risk/reward)
   - Industry-standard confidence (68% base, capped at 82%)
 
 **Complete Pattern Status:**
+
 1. ✅ **Liquidity Sweep Reversal** - INDUSTRY STANDARD (3+ pip sweeps, rejection candles)
 2. ✅ **VCB Breakout** - INDUSTRY STANDARD (<0.7 pip ATR compression, 1.5x volume)
 3. ✅ **Order Block Bounce** - ENHANCED (real institutional zones)
@@ -799,6 +874,7 @@ grep -o '"outcome":"LOSS"' /root/HydraX-v2/comprehensive_tracking.jsonl | wc -l
 6. ✅ **Momentum Breakout** - ENHANCED (momentum + volume + R:R validation)
 
 **Signal Generation Status:**
+
 - **System**: FULLY OPERATIONAL ✅
 - **Recent Activity**: Signals generated within last hour ✅
 - **Active Logging**: `/root/HydraX-v2/comprehensive_tracking.jsonl` ✅
@@ -811,6 +887,7 @@ grep -o '"outcome":"LOSS"' /root/HydraX-v2/comprehensive_tracking.jsonl | wc -l
 ### **COMPREHENSIVE UPGRADES IMPLEMENTED TODAY:**
 
 #### **1. EXPECTANCY-BASED PATTERN ELIMINATION (Not Just Win Rate)**
+
 - **Location**: `/root/HydraX-v2/expectancy_calculator.py`
 - **Formula**: EV = (Win% × AvgWin) - (Loss% × AvgLoss)
 - **Protection**: Keeps profitable low-win-rate patterns (e.g., 35% win at 3:1 RR = +0.40 EV)
@@ -818,6 +895,7 @@ grep -o '"outcome":"LOSS"' /root/HydraX-v2/comprehensive_tracking.jsonl | wc -l
 - **Rolling Windows**: 50-100 signal analysis prevents hasty decisions
 
 #### **2. TWO-STAGE QUARANTINE SYSTEM**
+
 - **Location**: `/root/HydraX-v2/pattern_quarantine_manager.py`
 - **Stage 1**: QUARANTINE - Demo-only mode after 50 signals with negative EV
 - **Stage 2**: KILL - Full elimination after 100 signals if still negative
@@ -825,6 +903,7 @@ grep -o '"outcome":"LOSS"' /root/HydraX-v2/comprehensive_tracking.jsonl | wc -l
 - **Status File**: `pattern_quarantine_status.json`
 
 #### **3. CONVERGENCE TRACKER (Multi-Pattern Boost)**
+
 - **Location**: `/root/HydraX-v2/convergence_tracker.py`
 - **Function**: Detects when 2+ patterns align on same pair within 60 seconds
 - **Boost**: +10% confidence per additional pattern
@@ -832,12 +911,14 @@ grep -o '"outcome":"LOSS"' /root/HydraX-v2/comprehensive_tracking.jsonl | wc -l
 - **Impact**: High-conviction trades often have the highest edge
 
 #### **4. DYNAMIC OUTCOME RESOLUTION (ATR-Based)**
+
 - **Location**: `/root/HydraX-v2/dynamic_outcome_tracker.py`
 - **Change**: Replaces fixed 60min checks with volatility-based horizons
 - **Tracking**: Until TP/SL hit OR 3x expected time (max 4 hours)
 - **Benefit**: Prevents misclassifying slow-burn winners as failures
 
 #### **5. CONFIDENCE CALIBRATION LAYER**
+
 - **Location**: `/root/HydraX-v2/confidence_calibrator.py`
 - **Function**: Audits if 80% confidence actually wins 80% of time
 - **Buckets**: 70-75%, 75-80%, 80-85%, 85-90%
@@ -845,6 +926,7 @@ grep -o '"outcome":"LOSS"' /root/HydraX-v2/comprehensive_tracking.jsonl | wc -l
 - **Output**: `confidence_calibration.json`
 
 #### **6. MARKET REGIME AWARENESS**
+
 - **Location**: `/root/HydraX-v2/regime_analyzer.py`
 - **Tags**: TREND/RANGE (ADX), HIGH/LOW_VOL (ATR), Session
 - **Analysis**: Expectancy calculated PER REGIME not globally
@@ -852,6 +934,7 @@ grep -o '"outcome":"LOSS"' /root/HydraX-v2/comprehensive_tracking.jsonl | wc -l
 - **Output**: `regime_performance.json`
 
 #### **7. ADAPTIVE REVIEW SCHEDULER**
+
 - **Location**: `/root/HydraX-v2/adaptive_review_scheduler.py`
 - **Fast Patterns**: Review every 24-48 hours (5+ signals/day)
 - **Medium Patterns**: Review every 3-5 days (1-5 signals/day)
@@ -859,6 +942,7 @@ grep -o '"outcome":"LOSS"' /root/HydraX-v2/comprehensive_tracking.jsonl | wc -l
 - **Output**: `review_schedule.json`
 
 #### **8. COMPREHENSIVE TRACKING SYSTEM**
+
 - **Location**: `/root/HydraX-v2/comprehensive_signal_tracker.py`
 - **Tracks**: EVERY signal at 70%+ confidence (not just fired ones)
 - **Logging**: `comprehensive_tracking.jsonl`
@@ -866,17 +950,20 @@ grep -o '"outcome":"LOSS"' /root/HydraX-v2/comprehensive_tracking.jsonl | wc -l
 - **Dashboard**: Real-time HTML on port 8890
 
 #### **9. MASTER CONTROL SYSTEM**
+
 - **Location**: `/root/HydraX-v2/pattern_elimination_master.py`
 - **Function**: Coordinates all 8 services seamlessly
 - **Features**: Real-time monitoring, integrated reports, graceful shutdown
 - **Status**: Running and analyzing patterns continuously
 
 ### **THRESHOLD ADJUSTMENTS**
+
 - **Signal Generation**: Lowered to 70% (from 75%) to collect more data
 - **Auto-Fire**: Raised to 90% (from 80%) for safety during testing
 - **Impact**: Capturing more signals for analysis while keeping auto-execution conservative
 
 ### **EARLY PERFORMANCE INSIGHTS (Limited Data)**
+
 - **ORDER_BLOCK_BOUNCE**: 100% win rate, +37.5 EV (2 signals)
 - **VCB_BREAKOUT**: 100% win rate, +45.0 EV (1 signal)
 - **LIQUIDITY_SWEEP_REVERSAL**: 50% win rate, +7.5 EV (2 signals)
@@ -887,12 +974,14 @@ grep -o '"outcome":"LOSS"' /root/HydraX-v2/comprehensive_tracking.jsonl | wc -l
 ### **MAJOR CHANGES IMPLEMENTED PREVIOUSLY:**
 
 #### **1. ML Filter Integrated Directly Into Elite Guard**
+
 - **Location**: `/root/HydraX-v2/elite_guard_with_citadel.py`
 - **Method**: `apply_ml_filter()` at line 1545
 - **Function**: Filters every pattern through tiered system before publishing
 - **Performance Tracking**: `update_performance_outcome()` at line 1545
 
 #### **2. Tiered Signal System Active**
+
 ```python
 TIER_1_AUTO_FIRE: {
     EURUSD_VCB_BREAKOUT: 80% threshold (lowered from 85%)
@@ -904,12 +993,14 @@ TIER_3_PROBATION: ASIAN session, XAUUSD (high thresholds)
 ```
 
 #### **3. Sunday Testing Configuration**
+
 - **Auto-Fire Threshold**: 80% (lowered from 85%)
 - **Pattern Quality Filter**: 72% (lowered from 78%)
 - **Risk/Reward Ratio**: 1:1.25 (changed from 1:1 for quick profits)
 - **Target Pairs**: EURUSD, GBPUSD only (proven winners)
 
 #### **4. Complete Tracking System (NO TIMEOUTS)**
+
 - **Signal Outcome Monitor**: Enhanced to track EVERY signal to TP/SL
 - **ML Feedback Loop**: Outcomes automatically update performance history
 - **Tracking Files**:
@@ -918,12 +1009,14 @@ TIER_3_PROBATION: ASIAN session, XAUUSD (high thresholds)
   - `/root/HydraX-v2/ml_performance_tracking.jsonl` - ML data
 
 #### **5. Performance Features**
+
 - Auto-disables patterns below 40% win rate after 10 trades
 - Auto-promotes patterns above 70% win rate after 20 trades
 - Tracks runtime duration, max favorable/adverse moves
 - Full data logging: pattern, confidence, session, R:R, outcome
 
 ### **MONDAY EXPANSION PLAN:**
+
 - Currently limited to EURUSD/GBPUSD for testing
 - Monday: Can add USDJPY, EURJPY, USDCAD to Tier 2
 - Monitor win rates per pair/pattern combo
@@ -938,6 +1031,7 @@ TIER_3_PROBATION: ASIAN session, XAUUSD (high thresholds)
 ```
 
 **Last Successful Test**: August 15, 2025 02:18 UTC
+
 - **Signal**: ELITE_GUARD_GBPUSD_1755223898 (SELL)
 - **Fire ID**: ELITE_GUARD_GBPUSD_1755223898
 - **MT5 Ticket**: 20813351
@@ -950,6 +1044,7 @@ TIER_3_PROBATION: ASIAN session, XAUUSD (high thresholds)
 **Issue**: Invalid volume format causing MT5 trade failures
 **Root Cause**: Lot sizes like `0.09447600000000202` invalid for MT5
 **Fix**: Added lot size rounding in `/root/HydraX-v2/enqueue_fire.py:40`
+
 ```python
 # Round lot size to 2 decimal places for MT5 compatibility
 lot = round(lot, 2)
@@ -958,6 +1053,7 @@ lot = round(lot, 2)
 ### **⚡ PRODUCTION EA ARCHITECTURE (v3.005)**
 
 **EA**: `/root/HydraX-v2/BITTEN_Universal_EA_v3.005_PRODUCTION.mq5`
+
 - **Version**: 3.005 (October 2, 2025)
 - **Connection**: ZMQ DEALER socket with identity "COMMANDER_DEV_001"
 - **Server**: tcp://134.199.204.67:5555 (command router)
@@ -969,6 +1065,7 @@ lot = round(lot, 2)
 - **Position Reconciliation**: Handshake includes open_positions array on reconnect
 
 **Fire Command Format (EXACT):**
+
 ```json
 {
   "type": "fire",
@@ -985,6 +1082,7 @@ lot = round(lot, 2)
 ```
 
 **Handshake Example (v3.005 New Feature):**
+
 ```json
 {
   "type": "handshake",
@@ -997,12 +1095,12 @@ lot = round(lot, 2)
       "fire_id": "ELITE_GUARD_GBPUSD_1755223898",
       "open_price": "1.35357",
       "volume": "0.09",
-      "pnl": 12.50
+      "pnl": 12.5
     }
   ],
   "uuid": "COMMANDER_DEV_001",
-  "balance": 1000.00,
-  "equity": 1012.50,
+  "balance": 1000.0,
+  "equity": 1012.5,
   "version": "3.005"
 }
 ```
@@ -1020,7 +1118,7 @@ pm2 list | grep -E "command_router|elite_guard|confirm_listener|webapp"
 # 2. Check ZMQ port bindings
 ss -tulpen | grep -E ":(5555|5556|5557|5558|8888)"
 
-# 3. Check EA connection freshness 
+# 3. Check EA connection freshness
 sqlite3 /root/HydraX-v2/bitten.db "SELECT target_uuid, user_id, (strftime('%s','now') - last_seen) AS age_seconds FROM ea_instances WHERE target_uuid = 'COMMANDER_DEV_001';"
 
 # 4. Check recent fire executions
@@ -1034,12 +1132,14 @@ python3 /root/HydraX-v2/test_webapp_fire_path.py
 
 #### **🔥 Fire Commands Not Reaching MT5**
 
-**Symptoms**: 
+**Symptoms**:
+
 - Fire status = "SENT" (not "FILLED")
 - No MT5 ticket number
 - Error code 4756
 
 **Debug Steps**:
+
 1. **Check EA Connection**: Age should be <120 seconds
 2. **Check Router Logs**: `pm2 logs command_router --lines 10`
 3. **Check for Test Processes**: Look for old DEALER test processes intercepting commands
@@ -1051,7 +1151,8 @@ python3 /root/HydraX-v2/test_webapp_fire_path.py
 #### **🎯 Invalid Volume Errors**
 
 **Symptoms**:
-- Fire status = "FAILED" 
+
+- Fire status = "FAILED"
 - Ticket = 0, Price = 0
 - EA logs show volume errors
 
@@ -1060,14 +1161,16 @@ python3 /root/HydraX-v2/test_webapp_fire_path.py
 
 #### **📡 Signal Generation Issues**
 
-**Symptoms**: 
+**Symptoms**:
+
 - No new signals in database
 - Empty signal lists in webapp
 
 **Debug Steps**:
+
 1. **Check Elite Guard**: `pm2 logs elite_guard --lines 10`
 2. **Check Market Data**: `pm2 logs zmq_telemetry_bridge --lines 10`
-3. **Check Signal Database**: 
+3. **Check Signal Database**:
    ```sql
    SELECT signal_id, symbol, created_at FROM signals WHERE created_at > strftime('%s', 'now', '-1 hour');
    ```
@@ -1075,12 +1178,14 @@ python3 /root/HydraX-v2/test_webapp_fire_path.py
 ### **CRITICAL PROCESS DEPENDENCIES**
 
 **Required for Fire Execution**:
+
 1. ✅ `command_router` (PM2) - Routes commands to EA
-2. ✅ `confirm_listener` (PM2) - Receives EA confirmations  
+2. ✅ `confirm_listener` (PM2) - Receives EA confirmations
 3. ✅ EA process - Must be connected with fresh heartbeat
 4. ✅ `enqueue_fire.py` - Must have lot rounding fix
 
 **Required for Signal Generation**:
+
 1. ✅ `elite_guard` (PM2) - Generates SMC signals
 2. ✅ `zmq_telemetry_bridge` (PM2) - Market data feed
 3. ✅ `relay_to_telegram` (PM2) - Signal broadcasting
@@ -1093,7 +1198,7 @@ If fire pipeline broken, test each stage:
 # Stage 1: Test IPC Queue
 python3 /root/HydraX-v2/test_fire_queue.py
 
-# Stage 2: Check Router Processing  
+# Stage 2: Check Router Processing
 pm2 logs command_router --lines 5
 
 # Stage 3: Check EA Response
@@ -1106,11 +1211,12 @@ sqlite3 /root/HydraX-v2/bitten.db "SELECT fire_id, status, ticket FROM fires ORD
 ### **EA CONNECTION TROUBLESHOOTING**
 
 **EA Identity**: Must be exactly "COMMANDER_DEV_001"
-**User Mapping**: Must map to user "7176191872"  
+**User Mapping**: Must map to user "7176191872"
 **Heartbeat**: Every 30 seconds via ZMQ DEALER to port 5555
 **Confirmation**: Sends results to port 5558
 
 **If EA appears disconnected**:
+
 1. Check if test processes are intercepting (kill them)
 2. Verify EA is running on correct MT5 terminal
 3. Check ZMQ library availability in MT5
@@ -1132,30 +1238,33 @@ sqlite3 /root/HydraX-v2/bitten.db "SELECT fire_id, status, ticket FROM fires ORD
 
 3. **Complete Pipeline Verified**: End-to-end test successful
    - Signal: ELITE_GUARD_GBPUSD_1755223898
-   - Position sizing: 5% risk = 0.09 lots  
+   - Position sizing: 5% risk = 0.09 lots
    - MT5 execution: Ticket 20813351, Fill 1.35357
    - Confirmation: FILLED status in database
 
 ### **CURRENT SYSTEM STATUS (August 15, 2025 02:20 UTC)**
 
 **Critical Processes - ALL ONLINE ✅**:
+
 ```
 command_router        (PM2) - PID 1635948 - 19m uptime - Routes fire commands
-confirm_listener      (PM2) - PID 3187572 - 2D uptime  - Receives EA confirmations  
+confirm_listener      (PM2) - PID 3187572 - 2D uptime  - Receives EA confirmations
 elite_guard          (PM2) - PID 1555442 - 38m uptime - Signal generation
 relay_to_telegram    (PM2) - PID 2993303 - 7h uptime  - Telegram broadcasting
 zmq_telemetry_bridge (PM2) - PID 3859    - 12h uptime - Market data feed
 ```
 
-**EA Status**: 
+**EA Status**:
+
 - Identity: COMMANDER_DEV_001 ✅
-- User: 7176191872 ✅  
+- User: 7176191872 ✅
 - Last heartbeat: <30 seconds ✅
 - Connection: Fresh and active ✅
 
-**Fire Pipeline Status**: 
+**Fire Pipeline Status**:
+
 - IPC Queue: Operational ✅
-- Router forwarding: Working ✅  
+- Router forwarding: Working ✅
 - EA execution: Working ✅
 - Confirmations: Working ✅
 - Lot rounding: Fixed ✅
@@ -1177,17 +1286,17 @@ def detect_liquidity_sweep_reversal(symbol) -> PatternSignal
 # Highest priority - 75 base score
 # Pattern: "LIQUIDITY_SWEEP_REVERSAL"
 
-# 2. ORDER BLOCK BOUNCE (Line 783)  
+# 2. ORDER BLOCK BOUNCE (Line 783)
 def detect_order_block_bounce(symbol) -> PatternSignal
 # Pattern: "ORDER_BLOCK_BOUNCE"
 
 # 3. FAIR VALUE GAP FILL (Line 846)
-def detect_fair_value_gap_fill(symbol) -> PatternSignal  
+def detect_fair_value_gap_fill(symbol) -> PatternSignal
 # Pattern: "FAIR_VALUE_GAP_FILL"
 
 # 4. VCB BREAKOUT (Line 911)
 def detect_vcb_breakout(symbol) -> PatternSignal
-# Pattern: "VCB_BREAKOUT" 
+# Pattern: "VCB_BREAKOUT"
 # Volatility Compression Breakout
 
 # 5. SWEEP AND RETURN (Line 991) ⚠️ SRL IS BUILT IN ⚠️
@@ -1203,22 +1312,24 @@ def detect_sweep_and_return(symbol) -> PatternSignal
 ```bash
 # These services MUST remain stopped to prevent conflicts:
 pm2 stop srl_guard      # ✅ STOPPED - SRL is in Elite Guard
-pm2 stop vcb_guard      # ✅ STOPPED - VCB is in Elite Guard  
+pm2 stop vcb_guard      # ✅ STOPPED - VCB is in Elite Guard
 pm2 stop [any pattern] # ✅ STOPPED - All patterns in Elite Guard
 ```
 
 **❌ FORBIDDEN PM2 Services:**
+
 - ❌ `srl_guard` - CAUSES PORT CONFLICTS (SRL built into Elite Guard)
 - ❌ `vcb_guard` - CAUSES PORT CONFLICTS (VCB built into Elite Guard)
 - ❌ Any separate pattern detectors ending in `_guard`
 
 **Why Centralization is Critical**:
+
 - **Port Conflicts**: Multiple processes binding to ZMQ ports 5556/5560
 - **Signal Duplication**: Same patterns detected multiple times
 - **Resource Waste**: CPU/memory for redundant processing
 - **Data Corruption**: Competing access to market data streams
 
-**🎯 RULE**: Only `elite_guard` (PM2 ID 66) should generate signals**
+**🎯 RULE**: Only `elite_guard` (PM2 ID 66) should generate signals\*\*
 
 ### **PATTERN EXECUTION FLOW (Lines 1273-1304)**
 
@@ -1226,14 +1337,14 @@ pm2 stop [any pattern] # ✅ STOPPED - All patterns in Elite Guard
 # Elite Guard processes each symbol through ALL patterns:
 for symbol in trading_pairs:
     patterns = []
-    
+
     # Run all 5 pattern detectors
     patterns.append(detect_liquidity_sweep_reversal(symbol))
-    patterns.append(detect_order_block_bounce(symbol)) 
+    patterns.append(detect_order_block_bounce(symbol))
     patterns.append(detect_fair_value_gap_fill(symbol))
     patterns.append(detect_vcb_breakout(symbol))
     patterns.append(detect_sweep_and_return(symbol))  # ← SRL HERE
-    
+
     # Apply ML confluence scoring
     # Publish qualified signals
 ```
@@ -1243,24 +1354,27 @@ for symbol in trading_pairs:
 **🎯 ELITE GUARD PATTERN DETECTION FULLY OPERATIONAL**
 
 **Evidence**:
-- ✅ Market data flowing: 731,500+ ticks processed  
+
+- ✅ Market data flowing: 731,500+ ticks processed
 - ✅ Elite Guard receiving ticks: All symbols active in logs
 - ✅ **PATTERN DETECTION ACTIVE**: "Starting pattern scan cycle" logs confirmed
 - ✅ **MAIN LOOP EXECUTING**: Main processing loop operational
 - ✅ **Signal GENERATION RESTORED**: Pattern scanning in ASIAN session (1 signal/hour max)
 
 **Root Cause IDENTIFIED & FIXED**: `logger.info()` calls causing deadlock/hang throughout Elite Guard
+
 - **Issue**: Every logger.info() call was blocking indefinitely
 - **Solution**: Implemented comprehensive logger bypass with print() statements
 - **Scope**: Fixed immortal_main_loop(), start() method, and main_loop() hangs
 
 **Fix Applied**: Logger bypass implemented in `/root/HydraX-v2/elite_guard_with_citadel.py`
+
 - **Lines 1619-1624**: Bypassed start() method logger hangs
-- **Lines 1406-1412**: Bypassed main_loop() entry logger hangs  
+- **Lines 1406-1412**: Bypassed main_loop() entry logger hangs
 - **Lines 1436-1445**: Bypassed pattern scan cycle logger hangs
 - **Result**: Elite Guard now fully operational and scanning for patterns
 
-**Status**: ✅ **OPERATIONAL** - Elite Guard actively generating signals again**
+**Status**: ✅ **OPERATIONAL** - Elite Guard actively generating signals again\*\*
 
 ## WORK COMPLETED - AUGUST 12, 2025 (CONTINUED SESSION)
 
@@ -1285,8 +1399,8 @@ for symbol in trading_pairs:
    - **Pattern Classification**:
      - RAPID (all tiers): VCB_BREAKOUT, SWEEP_RETURN
      - SNIPER (PRO+ only): LIQUIDITY_SWEEP_REVERSAL, ORDER_BLOCK_BOUNCE, FAIR_VALUE_GAP_FILL
-   - **Webapp Tier Gates**: 
-     - Added helper functions: _bitten_can_fire(), _bitten_user_tier(), _bitten_signal_class_from_id()
+   - **Webapp Tier Gates**:
+     - Added helper functions: \_bitten_can_fire(), \_bitten_user_tier(), \_bitten_signal_class_from_id()
      - /api/fire endpoint now enforces tier restrictions
      - Returns upgrade_required=true with upgrade_url for non-eligible users
    - **Upgrade Endpoint**: Added /upgrade landing page
@@ -1300,7 +1414,8 @@ for symbol in trading_pairs:
 ## WORK COMPLETED - AUGUST 12, 2025
 
 ### Signal Generation Fixes:
-1. **Elite Guard Signal Blackout Fixed** 
+
+1. **Elite Guard Signal Blackout Fixed**
    - Removed fake confidence validation blocking scores 65, 70, 75
    - File: `/root/HydraX-v2/elite_guard_with_citadel.py`
    - These are legitimate pattern scores, not fake
@@ -1332,6 +1447,7 @@ for symbol in trading_pairs:
    - File: `/root/HydraX-v2/tools/watchdog_ea_and_fires.sh`
 
 ### Current PM2 Processes (As of 22:50 UTC):
+
 - elite_guard (PID 3259337) - SMC pattern detection
 - vcb_guard (PID 3308978) - LIVE mode, tracking 15 symbols
 - srl_guard (PID 3310201) - LIVE mode, sweep-return patterns
@@ -1344,6 +1460,7 @@ for symbol in trading_pairs:
 - zmq_telemetry_bridge_debug (PID 3312722) - Tick relay
 
 ### Summary of Session Work:
+
 - **VCB Guard**: Created and deployed volatility breakout detector
 - **XP System**: Database tables and daemon for pattern variety rewards
 - **FOMO Funnel**: RAPID vs SNIPER classification with tier-based access
@@ -1351,6 +1468,7 @@ for symbol in trading_pairs:
 - **Webapp**: Added tier gates, upgrade endpoint, pattern classification helpers
 
 ### Notes:
+
 - All 3 pattern detectors running (Elite Guard, VCB, SRL)
 - Ticks flowing, 100+ candles built, waiting for patterns
 - FOMO system ready: base tiers see all, can only fire RAPID
@@ -1362,7 +1480,7 @@ for symbol in trading_pairs:
 ```bash
 # Signal Generation
 PID 2581568: elite_guard_with_citadel.py
-PID 2577665: elite_guard_zmq_relay.py  
+PID 2577665: elite_guard_zmq_relay.py
 PID 2411770: zmq_telemetry_bridge_debug.py
 
 # User Interface
@@ -1385,6 +1503,7 @@ PID 2586467: handshake_processor.py
 ## DON'T ADD CODE - CHECK WHAT'S RUNNING
 
 Before writing ANY code:
+
 1. Run `ps aux | grep {process_name}`
 2. Check if it's already running
 3. Don't create duplicates
@@ -1393,6 +1512,7 @@ Before writing ANY code:
 ## STOP CREATING FILES
 
 The system has 280+ Python files. STOP ADDING MORE.
+
 - Fix what exists
 - Delete what's broken
 - Don't create new versions
@@ -1404,7 +1524,9 @@ That's it. Everything else is outdated bloat.
 ## 🎮 XP ECONOMY SYSTEM PLAN - AUGUST 15, 2025
 
 ### **DESIGN PHILOSOPHY**
+
 Based on top-tier gaming systems (CoD, Apex Legends, Valorant) adapted for trading:
+
 - Daily engagement rewards
 - Skill-based progression
 - Consumable power-ups
@@ -1412,9 +1534,11 @@ Based on top-tier gaming systems (CoD, Apex Legends, Valorant) adapted for tradi
 - No pay-to-win, only earn-to-win
 
 ### **XP EARNING STRUCTURE**
+
 Based on 5-6 trades per day average:
 
 **Core Actions:**
+
 - **Trade to TP**: 100 XP (hit take profit)
 - **Trade to SL**: 0 XP (no penalty for stop loss)
 - **Early Close**: 50 XP (half reward for manual close)
@@ -1422,22 +1546,27 @@ Based on 5-6 trades per day average:
 - **Pattern Variety**: +20 XP (different pattern than last trade)
 
 **Streak Bonuses:**
+
 - 3 wins in a row: +50 XP
 - 5 wins in a row: +100 XP
 - 10 wins in a row: +250 XP
 
 **Daily Challenges (reset at midnight):**
+
 - Trade 3 different pairs: 75 XP
 - Execute 5 trades: 100 XP
 - Hit 60% win rate: 150 XP
 
 **Expected Daily XP:**
+
 - Casual (2 trades): ~200 XP
 - Regular (5 trades): ~500 XP
 - Active (10+ trades): ~1000 XP
 
 ### **LEVEL PROGRESSION**
+
 50 levels total with exponential curve:
+
 - **Level 1-10**: 500 XP per level (tutorial phase)
 - **Level 11-20**: 1000 XP per level (learning phase)
 - **Level 21-30**: 2000 XP per level (competent phase)
@@ -1446,6 +1575,7 @@ Based on 5-6 trades per day average:
 - **Prestige**: Reset to Level 1, keep permanent badge
 
 **Time to Max Level:**
+
 - Casual player: 6 months
 - Regular player: 3 months
 - Hardcore player: 6 weeks
@@ -1453,6 +1583,7 @@ Based on 5-6 trades per day average:
 ### **XP SHOP - CONSUMABLE ITEMS**
 
 **Tactical Advantages:**
+
 - **Sniper Shot** (500 XP): One trade with 90% confidence threshold bypass
 - **Double Down** (1000 XP): Next trade uses 4% risk instead of 2%
 - **Rapid Fire** (750 XP): Remove 15-min cooldown between trades for 1 hour
@@ -1460,17 +1591,20 @@ Based on 5-6 trades per day average:
 - **Radar Pulse** (200 XP): See next 3 signals before they're published
 
 **Defensive Items:**
+
 - **Armor Plate** (600 XP): Next losing trade refunds 50% XP
 - **Smoke Screen** (400 XP): Hide your trades from squad feed for 24h
 - **Guardian Angel** (1500 XP): Auto-close at 1% profit if trade goes negative
 
 **Cosmetic/Social:**
+
 - **Custom Callsign Change** (FREE for all users, 7-day cooldown)
 - **Kill Card Background** (2000 XP): Custom trade victory display
 - **Elite Badge** (5000 XP): Special icon in leaderboards
 - **Shadow Protocol** (3000 XP): Anonymous mode for 30 days
 
 **Boosts:**
+
 - **XP Boost** (1000 XP): 2x XP for next 10 trades
 - **Squad XP Share** (2000 XP): Your squad gets +10% XP for 24h
 - **Weekend Warrior** (1500 XP): 1.5x XP on weekends for a month
@@ -1489,6 +1623,7 @@ Based on 5-6 trades per day average:
 **Level 50**: APEX achievement
 
 ### **PRESS PASS USERS**
+
 - XP resets daily at midnight (trial mode)
 - Cannot purchase from XP shop
 - Cannot prestige
@@ -1496,6 +1631,7 @@ Based on 5-6 trades per day average:
 - Encourages upgrade to maintain progress
 
 ### **IMPLEMENTATION NOTES**
+
 - All XP stored in database with transaction log
 - Shop purchases logged with expiry timestamps
 - Consumables checked before each trade execution
@@ -1503,10 +1639,12 @@ Based on 5-6 trades per day average:
 - Streak tracking per user in real-time
 
 ### **ANTI-ABUSE MEASURES**
+
 - Max 20 trades per day count for XP
 - Minimum trade duration 60 seconds for XP
 - Same pair within 5 minutes = no variety bonus
 - Suspicious patterns trigger manual review
+
 ---
 
 ## 🚀 QUICK REFERENCE GUIDE FOR FUTURE AGENTS
@@ -1545,8 +1683,9 @@ tail -5 /root/HydraX-v2/comprehensive_tracking.jsonl
 6. **Analytics PM2 IDs**: analytics_api (164), analytics_events (165), real_signal_tracker (163)
 
 ### **WHAT TO TRUST:**
+
 - ✅ **Analytics System**: comprehensive_tracking.jsonl (326 signals, 66.8% win rate)
-- ✅ **Analytics API**: http://localhost:8892/api/performance/* endpoints
+- ✅ **Analytics API**: http://localhost:8892/api/performance/\* endpoints
 - ✅ **Performance Dashboard**: http://134.199.204.67:8892/analytics/performance_dashboard.html
 - ✅ **ARCHITECTURE.md Section 14**: Performance Analytics System documentation
 - ✅ Process PIDs verified September 28, 2025 04:52 UTC
@@ -1555,6 +1694,7 @@ tail -5 /root/HydraX-v2/comprehensive_tracking.jsonl
 - ✅ CURRENT SYSTEM STATE section in this document
 
 ### **WHAT NOT TO TRUST:**
+
 - ❌ **truth_log.jsonl** - STOPPED UPDATING AUGUST 22, 2025
 - ❌ **signal_outcomes.jsonl files** - ARCHIVED/OUTDATED
 - ❌ Any PIDs mentioned before September 28, 2025
@@ -1563,12 +1703,15 @@ tail -5 /root/HydraX-v2/comprehensive_tracking.jsonl
 - ❌ Any status before release lock validation
 
 ### **FOR PERFORMANCE EVALUATION:**
+
 **ALWAYS use these sources (in order of preference):**
+
 1. Analytics Dashboard: http://134.199.204.67:8892/analytics/performance_dashboard.html
 2. Analytics API: `curl http://localhost:8892/api/performance/by_pattern`
 3. Direct file read: `/root/HydraX-v2/comprehensive_tracking.jsonl`
 
 **NEVER use:**
+
 - truth_log.jsonl (outdated)
 - Random .jsonl files without verification
 - Assumptions about file freshness
@@ -1582,10 +1725,12 @@ tail -5 /root/HydraX-v2/comprehensive_tracking.jsonl
 **Session**: Performance Analytics System Documentation
 
 ### **FILES UPDATED:**
+
 1. ✅ **ARCHITECTURE.md** - Added Section 14: Performance Analytics System
 2. ✅ **CLAUDE.md** - Added analytics system instructions and updated tracking guidance
 
 ### **KEY CHANGES:**
+
 - **Performance Analytics System** fully documented (port 8892)
 - **Data Source Truth** established: comprehensive_tracking.jsonl is THE source
 - **API Endpoints** documented (6 performance analysis endpoints)
@@ -1595,19 +1740,23 @@ tail -5 /root/HydraX-v2/comprehensive_tracking.jsonl
 - **Quick Reference Guide** updated with analytics-first approach
 
 ### **ANALYTICS SYSTEM COMPONENTS:**
+
 - **Flask REST API**: Port 8892 with Redis caching (5-min TTL)
 - **Performance Dashboard**: Dark military-themed UI with Chart.js visualizations
 - **Event Bus Integration**: Real-time analytics publishing
 - **Signal Tracker**: Tracks to TP/SL with no artificial timeouts
 
 ### **DATA SOURCE VERIFICATION:**
+
 - Primary File: `/root/HydraX-v2/comprehensive_tracking.jsonl`
 - Total Signals: 326 (143 WINS, 71 LOSSES, 105 TIMEOUTS, 7 PENDING)
 - Win Rate: 66.8% (calculated from completed signals only)
 - Historical Range: September 15-24, 2025
 
 ### **CRITICAL FOR FUTURE AGENTS:**
+
 **When evaluating signal performance:**
+
 1. ✅ ALWAYS use analytics dashboard or API
 2. ✅ ONLY read comprehensive_tracking.jsonl for raw data
 3. ❌ NEVER use truth_log.jsonl (stopped Aug 22, 2025)

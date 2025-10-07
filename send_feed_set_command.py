@@ -6,9 +6,11 @@ This sends the command through the IPC queue that command_router monitors,
 which will then route it to the EA via ZMQ.
 """
 
-import zmq
 import json
 import time
+
+import zmq
+
 
 def send_feed_set_command():
     """Send feed_set command to initialize EA watchlist"""
@@ -24,14 +26,14 @@ def send_feed_set_command():
         "tfs": "M1,M5,H1",
         "lookback": 200,
         "midbar": 0,
-        "midbar_sec": 10
+        "midbar_sec": 10,
     }
 
     try:
         # Connect to IPC queue (same as webapp uses for fire commands)
         context = zmq.Context()
         sender = context.socket(zmq.PUSH)
-        sender.connect('ipc:///tmp/bitten_cmdqueue')
+        sender.connect("ipc:///tmp/bitten_cmdqueue")
 
         # Send command
         sender.send_json(command)
@@ -59,7 +61,8 @@ def send_feed_set_command():
         print(f"❌ Failed to send command: {e}")
         return False
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     print("=" * 60)
     print("🔧 Sending feed_set Command to EA")
     print("=" * 60)

@@ -3,59 +3,63 @@ HUD endpoint - Mission briefing display
 Critical for displaying signal details to users
 """
 
-import os
 import json
 import logging
-from flask import Blueprint, request, render_template_string
+import os
+
+from flask import Blueprint, render_template_string, request
+
 from webapp.database import SignalOperations, UserOperations
-from webapp.utils import pip_size, calculate_sl_tp
+from webapp.utils import calculate_sl_tp, pip_size
 
 logger = logging.getLogger(__name__)
 
-hud_bp = Blueprint('hud', __name__)
+hud_bp = Blueprint("hud", __name__)
 
-@hud_bp.route('/hud')
+
+@hud_bp.route("/hud")
 def mission_hud():
     """Mission HUD interface - displays signal details for trading"""
     try:
         from flask import render_template
+
         # Get parameters
-        mission_id = request.args.get('mission_id') or request.args.get('signal')
-        user_id = request.args.get('user_id', '7176191872')
-        
+        mission_id = request.args.get("mission_id") or request.args.get("signal")
+        user_id = request.args.get("user_id", "7176191872")
+
         if not mission_id:
             return "Missing mission_id parameter", 400
-        
+
         # Load signal data from database
         signal_data = SignalOperations.get_signal(mission_id)
-        
+
         # If not in database, try mission file
         if not signal_data:
-            mission_file = f'/root/HydraX-v2/missions/{mission_id}.json'
+            mission_file = f"/root/HydraX-v2/missions/{mission_id}.json"
             if os.path.exists(mission_file):
                 with open(mission_file) as f:
                     signal_data = json.load(f)
             else:
                 return f"Signal {mission_id} not found", 404
-        
+
         # Extract signal details
-        signal = signal_data.get('signal', signal_data)
-        symbol = signal.get('symbol', 'UNKNOWN')
-        direction = signal.get('direction', 'UNKNOWN')
-        entry = float(signal.get('entry', 0) or signal.get('entry_price', 0))
-        sl = float(signal.get('sl', 0) or signal.get('stop_loss', 0))
-        tp = float(signal.get('tp', 0) or signal.get('take_profit', 0))
-        confidence = float(signal.get('confidence', 0))
-        
+        signal = signal_data.get("signal", signal_data)
+        symbol = signal.get("symbol", "UNKNOWN")
+        direction = signal.get("direction", "UNKNOWN")
+        entry = float(signal.get("entry", 0) or signal.get("entry_price", 0))
+        sl = float(signal.get("sl", 0) or signal.get("stop_loss", 0))
+        tp = float(signal.get("tp", 0) or signal.get("take_profit", 0))
+        confidence = float(signal.get("confidence", 0))
+
         # Get pattern type from payload if available
-        pattern_type = 'UNKNOWN'
-        if signal_data.get('payload_json'):
+        pattern_type = "UNKNOWN"
+        if signal_data.get("payload_json"):
             try:
-                payload = json.loads(signal_data['payload_json'])
-                pattern_type = payload.get('pattern_type', 'UNKNOWN')
+                payload = json.loads(signal_data["payload_json"])
+                pattern_type = payload.get("pattern_type", "UNKNOWN")
             except:
                 pass
-        
+
         # Calculate pips if not provided
         if entry > 0 and sl > 0:
             pip = pip_size(symbol)
@@ -64,63 +68,63 @@ def mission_hud():
             rr_ratio = tp_pips / sl_pips if sl_pips > 0 else 0
         else:
             sl_pips = tp_pips = rr_ratio = 0
-        
+
         # Get user data
         user_data = UserOperations.get_user(user_id)
         ea_data = UserOperations.get_user_ea_instance(user_id)
-        
+
         # Get equity and calculate position size based on real-time balance
-        equity = ea_data['last_equity'] if ea_data and ea_data.get('last_equity') else 1000
-        balance = ea_data['last_balance'] if ea_data else 1000
+        equity = ea_data["last_equity"] if ea_data and ea_data.get("last_equity") else 1000
+        balance = ea_data["last_balance"] if ea_data else 1000
         risk_amount = equity * 0.02  # 2% risk of live equity (balance + floating P&L)
-        
+
         # Simple lot calculation
         if sl_pips > 0:
             lot_size = round(risk_amount / (sl_pips * 10), 2)
             lot_size = min(lot_size, 0.1)  # Safety cap
         else:
             lot_size = 0.01
-        
+
         # Try to use the existing template if available
         try:
             # Prepare template data
             template_data = {
-                'mission_data': {
-                    'signal': signal,
-                    'mission_id': mission_id,
-                    'symbol': symbol,
-                    'direction': direction,
-                    'entry_price': entry,
-                    'stop_loss': sl,
-                    'take_profit': tp,
-                    'confidence': confidence,
-                    'pattern_type': pattern_type,
-                    'sl_pips': sl_pips,
-                    'tp_pips': tp_pips,
-                    'rr_ratio': rr_ratio
+                "mission_data": {
+                    "signal": signal,
+                    "mission_id": mission_id,
+                    "symbol": symbol,
+                    "direction": direction,
+                    "entry_price": entry,
+                    "stop_loss": sl,
+                    "take_profit": tp,
+                    "confidence": confidence,
+                    "pattern_type": pattern_type,
+                    "sl_pips": sl_pips,
+                    "tp_pips": tp_pips,
+                    "rr_ratio": rr_ratio,
                 },
-                'user_stats': {
-                    'tier': user_data.get('tier', 'GRUNT') if user_data else 'GRUNT',
-                    'balance': balance,
-                    'equity': ea_data.get('last_equity', balance) if ea_data else balance,
-                    'win_rate': 68.5,
-                    'total_pnl': 0,
-                    'trades_remaining': 99
+                "user_stats": {
+                    "tier": user_data.get("tier", "GRUNT") if user_data else "GRUNT",
+                    "balance": balance,
+                    "equity": ea_data.get("last_equity", balance) if ea_data else balance,
+                    "win_rate": 68.5,
+                    "total_pnl": 0,
+                    "trades_remaining": 99,
                 },
-                'user_id': user_id,
-                'lot_size': lot_size,
-                'risk_amount': risk_amount
+                "user_id": user_id,
+                "lot_size": lot_size,
+                "risk_amount": risk_amount,
             }
-            
+
             # Try to render with comprehensive template
-            return render_template('comprehensive_mission_briefing.html', **template_data)
+            return render_template("comprehensive_mission_briefing.html", **template_data)
         except Exception as template_error:
             logger.warning(f"Could not use template: {template_error}")
             # Fall back to inline HTML
             pass
-        
+
         # Build HUD HTML if template fails
-        html = f'''
+        html = f"""
         <!DOCTYPE html>
         <html>
         <head>
@@ -271,15 +275,15 @@ def mission_hud():
                 <h1>🎯 BITTEN MISSION HUD</h1>
                 <div style="color: #888;">TACTICAL TRADING INTERFACE</div>
             </div>
-            
+
             <div class="mission-card" style="position: relative;">
                 <div class="confidence">{confidence:.1f}%</div>
-                
+
                 <div class="signal-header">
                     <div class="symbol">{symbol}</div>
                     <div class="direction {'buy' if direction.upper() == 'BUY' else 'sell'}">{direction.upper()}</div>
                 </div>
-                
+
                 <div class="price-levels">
                     <div class="level entry">
                         <span>ENTRY</span>
@@ -294,7 +298,7 @@ def mission_hud():
                         <span style="color: #00ff00;">{tp:.5f}</span>
                     </div>
                 </div>
-                
+
                 <div class="stats">
                     <div class="stat">
                         <div class="stat-label">Risk (pips)</div>
@@ -313,7 +317,7 @@ def mission_hud():
                         <div class="stat-value">{lot_size}</div>
                     </div>
                 </div>
-                
+
                 <div class="stats">
                     <div class="stat">
                         <div class="stat-label">Pattern</div>
@@ -324,24 +328,24 @@ def mission_hud():
                         <div class="stat-value">${risk_amount:.2f}</div>
                     </div>
                 </div>
-                
+
                 <button class="fire-button live" onclick="executeFire()">
                     🔫 FIRE TRADE
                 </button>
-                
+
                 <div class="user-info">
                     <div>OPERATIVE: {user_id}</div>
                     <div>BALANCE: ${balance:.2f}</div>
                     <div>MISSION: {mission_id[:20]}...</div>
                 </div>
             </div>
-            
+
             <script>
             function executeFire() {{
                 const button = document.querySelector('.fire-button');
                 button.disabled = true;
                 button.innerHTML = '⏳ EXECUTING...';
-                
+
                 fetch('/api/fire', {{
                     method: 'POST',
                     headers: {{
@@ -385,23 +389,24 @@ def mission_hud():
             </script>
         </body>
         </html>
-        '''
-        
+        """
+
         return render_template_string(html)
-        
+
     except Exception as e:
         logger.error(f"HUD error: {e}")
         return f"Error loading mission HUD: {str(e)}", 500
 
-@hud_bp.route('/brief')
+
+@hud_bp.route("/brief")
 def mission_brief():
     """Redirect to HUD - for compatibility"""
     from flask import redirect
-    
-    signal_id = request.args.get('signal_id')
-    user_id = request.args.get('user_id', '7176191872')
-    
+
+    signal_id = request.args.get("signal_id")
+    user_id = request.args.get("user_id", "7176191872")
+
     if not signal_id:
         return "Missing signal_id", 400
-    
-    return redirect(f'/hud?mission_id={signal_id}&user_id={user_id}')
+
+    return redirect(f"/hud?mission_id={signal_id}&user_id={user_id}")

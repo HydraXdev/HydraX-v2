@@ -7,16 +7,19 @@ The Telegram Connector has been successfully integrated, combining the best feat
 ## Key Features
 
 ### ✅ Environment Configuration
+
 - Loads bot token from `TELEGRAM_BOT_TOKEN` environment variable
 - Configurable chat ID via `CHAT_ID` environment variable
 - Fallback to hardcoded values if environment variables not set
 
 ### ✅ Async/Await Architecture
+
 - Modern Python async/await pattern for non-blocking operations
 - Proper error handling with try/catch blocks
 - Graceful shutdown on KeyboardInterrupt
 
 ### ✅ Signal Detection & Parsing
+
 - Monitors v5.0 log file in real-time
 - Supports multiple signal patterns:
   - `🎯 SIGNAL`
@@ -25,17 +28,20 @@ The Telegram Connector has been successfully integrated, combining the best feat
 - Robust parsing of symbol, direction, and TCS score
 
 ### ✅ Cooldown Protection
+
 - 60-second cooldown between identical signals
 - Prevents spam and duplicate alerts
 - Signal-specific cooldown keys
 
 ### ✅ Mission Generation
+
 - Generates persistent mission files in `./missions/` directory
 - Includes expiration timestamps (5 minutes)
 - Fallback implementation if main module unavailable
 - JSON format for easy integration with WebApp
 
 ### ✅ Telegram Integration
+
 - Proper message formatting with Markdown support
 - WebApp URL integration for mission briefings
 - Urgency levels based on TCS scores:
@@ -45,6 +51,7 @@ The Telegram Connector has been successfully integrated, combining the best feat
   - ⚪ LOW (<50%)
 
 ### ✅ Logging & Monitoring
+
 - Comprehensive logging to file and console
 - Error handling with Telegram notifications
 - Startup/shutdown messages
@@ -65,12 +72,14 @@ The Telegram Connector has been successfully integrated, combining the best feat
 ## Configuration
 
 ### Environment Variables (.env)
+
 ```bash
 TELEGRAM_BOT_TOKEN=your_bot_token_here
 CHAT_ID=your_chat_id_here  # Optional, defaults to 7176191872
 ```
 
 ### Configuration Class
+
 ```python
 class Config:
     BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
@@ -84,17 +93,20 @@ class Config:
 ## Usage
 
 ### Start the Connector
+
 ```bash
 cd /root/HydraX-v2
 python3 apex_telegram_connector.py
 ```
 
 ### Run Tests
+
 ```bash
 python3 test_apex_telegram.py
 ```
 
 ### Monitor Logs
+
 ```bash
 tail -f apex_telegram_connector.log
 ```
@@ -112,11 +124,13 @@ tail -f apex_telegram_connector.log
 ## Example Signal Processing
 
 ### Input Log Line
+
 ```
 2025-07-14 12:39:41,362 - v5.0 LIVE - INFO - 🎯 SIGNAL #1: EURUSD SELL TCS:76%
 ```
 
 ### Generated Mission
+
 ```json
 {
   "mission_id": "7176191872_1721826381",
@@ -136,6 +150,7 @@ tail -f apex_telegram_connector.log
 ```
 
 ### Telegram Message
+
 ```
 ⚡ **🟡 HIGH** Signal Alert
 **EURUSD** | SELL | 76% TCS
@@ -153,6 +168,7 @@ tail -f apex_telegram_connector.log
 ## Dependencies
 
 All required dependencies are in `requirements.txt`:
+
 - `python-telegram-bot>=20.5`
 - `python-dotenv>=1.0.0`
 - `asyncio` (built-in)
@@ -169,16 +185,19 @@ All required dependencies are in `requirements.txt`:
 ## Integration Points
 
 ### With v5.0
+
 - Monitors log file: `/root/HydraX-v2/apex_v5_live_real.log`
 - Supports multiple signal formats
 - Real-time monitoring with async I/O
 
 ### With BITTEN WebApp
+
 - Generates mission files in `./missions/`
 - WebApp URLs: `https://joinbitten.com/hud?mission_id=...`
 - Mission expiration handled automatically
 
 ### With Telegram
+
 - Uses official `python-telegram-bot` library
 - Markdown formatting for rich messages
 - WebApp button integration
@@ -186,6 +205,7 @@ All required dependencies are in `requirements.txt`:
 ## Testing
 
 The `test_apex_telegram.py` script validates:
+
 - ✅ Configuration loading
 - ✅ Signal parsing accuracy
 - ✅ Cooldown mechanism

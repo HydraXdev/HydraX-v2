@@ -3,12 +3,13 @@ normalizers/positions.py - Position event normalization mirroring TypeScript log
 Maps MetaSocket position events to normalized v1 schema with defensive parsing
 """
 
-import time
-from typing import Dict, Any, Set, Optional, Callable
 import asyncio
 import logging
+import time
+from typing import Any, Callable, Dict, Optional, Set
 
 logger = logging.getLogger(__name__)
+
 
 def normalize_trade_event(ev: Any) -> Dict[str, Any]:
     """
@@ -125,16 +126,17 @@ def normalize_trade_event(ev: Any) -> Dict[str, Any]:
     return {
         "ticket": ticket,
         "symbol": symbol,
-        "side": side,           # "BUY"|"SELL"
-        "state": state,         # "OPEN"|"CLOSE"
-        "reason": reason,       # "sl"|"tp"|"manual"|"other"
+        "side": side,  # "BUY"|"SELL"
+        "state": state,  # "OPEN"|"CLOSE"
+        "reason": reason,  # "sl"|"tp"|"manual"|"other"
         "price": price,
         "volume": volume,
         "sl": sl,
         "tp": tp,
         "ts_epoch_ms": ts_epoch_ms,
-        "src": "metasocket"
+        "src": "metasocket",
     }
+
 
 def idempotency_key(pe: Dict[str, Any]) -> str:
     """

@@ -16,12 +16,12 @@ echo "🔍 Finding service processes..."
 stop_service() {
     local service_name=$1
     local pids=$(pgrep -f "$service_name" | head -5)
-    
+
     if [ -n "$pids" ]; then
         echo "Stopping $service_name (PIDs: $pids)..."
         echo "$pids" | xargs kill
         sleep 2
-        
+
         # Force kill if still running
         local remaining=$(pgrep -f "$service_name")
         if [ -n "$remaining" ]; then
@@ -36,7 +36,7 @@ stop_service() {
 
 # Stop all services
 stop_service "node_registry.py"
-stop_service "heartbeat_monitor.py" 
+stop_service "heartbeat_monitor.py"
 stop_service "handshake_processor.py"
 stop_service "confirmation_logger.py"
 stop_service "position_tracker.py"

@@ -4,27 +4,26 @@
 Multi-personality voice-augmented AI system for Telegram bots
 """
 
+from .elevenlabs_voice_driver import ElevenLabsVoiceDriver, voice_driver
+from .personality_engine import PersonalityEngine, personality_engine
 from .voice_personality_map import (
-    VOICE_PERSONALITY_MAP,
-    PERSONALITY_ASSIGNMENT_RULES,
     EVOLUTION_TRIGGERS,
+    PERSONALITY_ASSIGNMENT_RULES,
+    VOICE_PERSONALITY_MAP,
+    calculate_personality_score,
     get_personality_config,
-    calculate_personality_score
 )
 
-from .personality_engine import PersonalityEngine, personality_engine
-from .elevenlabs_voice_driver import ElevenLabsVoiceDriver, voice_driver
-
 __all__ = [
-    'VOICE_PERSONALITY_MAP',
-    'PERSONALITY_ASSIGNMENT_RULES', 
-    'EVOLUTION_TRIGGERS',
-    'get_personality_config',
-    'calculate_personality_score',
-    'PersonalityEngine',
-    'personality_engine',
-    'ElevenLabsVoiceDriver',
-    'voice_driver'
+    "VOICE_PERSONALITY_MAP",
+    "PERSONALITY_ASSIGNMENT_RULES",
+    "EVOLUTION_TRIGGERS",
+    "get_personality_config",
+    "calculate_personality_score",
+    "PersonalityEngine",
+    "personality_engine",
+    "ElevenLabsVoiceDriver",
+    "voice_driver",
 ]
 
 # Version info

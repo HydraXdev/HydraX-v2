@@ -9,14 +9,14 @@ system:
 # Cache configuration
 cache:
   enabled: true
-  backend: hybrid  # memory, redis, or hybrid
+  backend: hybrid # memory, redis, or hybrid
   ttl_default: 300
   ttl_signals: 600
   ttl_market_data: 60
   max_size: 10000
   memory_config:
     max_size: 1000
-    max_memory: 104857600  # 100MB
+    max_memory: 104857600 # 100MB
   redis_config:
     connection_params:
       url: redis://localhost:6379/0
@@ -32,7 +32,7 @@ monitoring:
   file_logging: true
   structured_logs: true
   log_dir: logs/intelligence
-  max_log_size: 10485760  # 10MB
+  max_log_size: 10485760 # 10MB
   backup_count: 5
 
 # Processing configuration

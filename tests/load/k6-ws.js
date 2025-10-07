@@ -1,25 +1,25 @@
-import ws from 'k6/ws';
-import http from 'k6/http';
-import { check, sleep } from 'k6';
+import ws from "k6/ws";
+import http from "k6/http";
+import { check, sleep } from "k6";
 
 export const options = {
   vus: 20,
-  duration: '60s',
+  duration: "60s",
   thresholds: {
-    http_req_duration: ['p(95)<250'],
-    ws_connecting: ['p(95)<1000'],
-    ws_msgs_received: ['rate>10'],
-    checks: ['rate>0.9']
-  }
+    http_req_duration: ["p(95)<250"],
+    ws_connecting: ["p(95)<1000"],
+    ws_msgs_received: ["rate>10"],
+    checks: ["rate>0.9"],
+  },
 };
 
-const API = __ENV.API || 'http://localhost:8888';
-const KEY = __ENV.KEY || 'test-key';
+const API = __ENV.API || "http://localhost:8888";
+const KEY = __ENV.KEY || "test-key";
 
 export default function () {
   const wsUrl = `ws://localhost:8888/socket.io/?account_id=TEST&token=${KEY}&types=events,account,heartbeat&symbol=EURUSD,GBPUSD`;
   const params = {
-    headers: { 'X-API-Key': KEY }
+    headers: { "X-API-Key": KEY },
   };
 
   // WebSocket load test
@@ -28,22 +28,24 @@ export default function () {
       socket.ping();
     }, 5000);
 
-    socket.on('open', function () {
-      socket.send(JSON.stringify({
-        type: 'subscribe',
-        topic: 'events',
-        account_id: 'TEST'
-      }));
+    socket.on("open", function () {
+      socket.send(
+        JSON.stringify({
+          type: "subscribe",
+          topic: "events",
+          account_id: "TEST",
+        }),
+      );
     });
 
     let messageCount = 0;
-    socket.on('message', function (msg) {
+    socket.on("message", function (msg) {
       messageCount++;
       // Track message processing - just count for load testing
     });
 
-    socket.on('error', function (e) {
-      console.log('WebSocket error:', e);
+    socket.on("error", function (e) {
+      console.log("WebSocket error:", e);
     });
 
     // Generate API load while WebSocket is connected
@@ -54,22 +56,23 @@ export default function () {
         symbol: "EURUSD",
         side: "buy",
         volume: 0.01,
-        meta: { test: true }
+        meta: { test: true },
       };
 
-      const apiRes = http.post(`${API}/v1/trades/open`,
+      const apiRes = http.post(
+        `${API}/v1/trades/open`,
         JSON.stringify(tradeRequest),
         {
           headers: {
-            'Content-Type': 'application/json',
-            'X-API-Key': KEY
-          }
-        }
+            "Content-Type": "application/json",
+            "X-API-Key": KEY,
+          },
+        },
       );
 
       check(apiRes, {
-        'API status is 200 or 403': (r) => [200, 403].includes(r.status),
-        'API response time < 250ms': (r) => r.timings.duration < 250,
+        "API status is 200 or 403": (r) => [200, 403].includes(r.status),
+        "API response time < 250ms": (r) => r.timings.duration < 250,
       });
 
       sleep(0.1); // 10 requests per second per VU
@@ -80,6 +83,6 @@ export default function () {
   });
 
   check(res, {
-    'WebSocket status is 101': (r) => r && r.status === 101
+    "WebSocket status is 101": (r) => r && r.status === 101,
   });
 }

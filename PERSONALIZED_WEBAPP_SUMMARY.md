@@ -1,6 +1,6 @@
 # 🎯 Personalized Mission Briefs - ACTIVE
 
-**Date**: 2025-07-08  
+**Date**: 2025-07-08
 **Status**: ✅ Running on port 8888
 
 ## What's New
@@ -8,6 +8,7 @@
 The mission briefs now include **personal stats** that make users feel seen and help them make better trading decisions:
 
 ### Personal Stats Bar Shows:
+
 - **Gamertag & Level**: "Soldier_X LVL 5"
 - **Trades Today**: "3/6" (shows remaining trades)
 - **Win Rate**: "75%" (with color coding)
@@ -15,7 +16,9 @@ The mission briefs now include **personal stats** that make users feel seen and 
 - **Streak**: "W3" (win streak) or "L2" (loss streak)
 
 ### Decision Helper
+
 The system provides contextual advice based on user's current performance:
+
 - 🔥 "Strong signal + Good form = GO!" (high TCS + good win rate)
 - 🎯 "High confidence signal. Trust the process." (high TCS, lower win rate)
 - 💭 "Low score. Save shots for better setups?" (low TCS, few trades left)
@@ -43,6 +46,7 @@ The system provides contextual advice based on user's current performance:
 ## User Experience Impact
 
 This personalization makes the system feel more:
+
 - **Engaging**: Users see their progress in real-time
 - **Intelligent**: Contextual advice based on performance
 - **Protective**: Warnings when on tilt or at limits
@@ -51,11 +55,13 @@ This personalization makes the system feel more:
 ## Testing
 
 Send a test signal:
+
 ```bash
 python3 TEST_PERSONALIZED_SIGNAL.py
 ```
 
 Check webapp status:
+
 ```bash
 curl http://localhost:8888/test
 ```

@@ -25,6 +25,7 @@ Successfully captured the handshake when EA was restarted:
 ```
 
 **Key Data Extracted**:
+
 - Account: 843859
 - Balance: $7,765.21 USD
 - Equity: $7,754.42 USD
@@ -41,12 +42,16 @@ Successfully captured the handshake when EA was restarted:
 ## ⚠️ MISSING COMPONENTS
 
 ### 1. Heartbeats Not Detected
+
 Despite OnTimer() code in EA, heartbeats aren't appearing on port 5560.
+
 - Expected: Every 1 second with balance/equity/margin
 - Actual: Not detected in 2 minutes of monitoring
 
 ### 2. DEALER Socket Not Connected
+
 The EA hasn't connected its DEALER socket to port 5555:
+
 - Fire commands are queued but can't be delivered
 - Router doesn't know COMMANDER_DEV_001 identity
 - Only TEST_CLIENT_001 has connected previously
@@ -82,12 +87,14 @@ The EA hasn't connected its DEALER socket to port 5555:
 ## 📊 CURRENT CAPABILITIES
 
 **Working**:
+
 - ✅ Tick data for candle building
 - ✅ Pattern detection (once candles accumulate)
 - ✅ Signal generation
 - ✅ Account info from handshake
 
 **Not Working**:
+
 - ❌ Trade execution (needs DEALER connection)
 - ❌ Real-time balance updates (needs heartbeat)
 - ❌ Position monitoring (needs heartbeat)

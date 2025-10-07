@@ -1,8 +1,8 @@
 # 🏆 BITTEN ULTIMATE COMMANDER THRONE - DEPLOYED
 
-**Status**: 🟢 **LIVE AND OPERATIONAL**  
-**URL**: http://134.199.204.67:8899/throne  
-**Date**: July 14, 2025  
+**Status**: 🟢 **LIVE AND OPERATIONAL**
+**URL**: http://134.199.204.67:8899/throne
+**Date**: July 14, 2025
 **Time**: 19:57 UTC
 
 ---
@@ -12,20 +12,23 @@
 ### **✅ Core Modules Deployed**:
 
 **1. 🛰️ Mission Table (Live Stats)**
+
 - Active Users counter
-- Trades Today tracking  
+- Trades Today tracking
 - Real-time Win Rate display
 - Total XP Awarded
 - Bridge Status indicator
 - Mission count display
 
 **2. 🪖 Soldier Roster**
+
 - User table with Username, Tier, XP, Telegram status
 - Last seen timestamps
 - Trade count per user
 - Search and sort capabilities
 
 **3. 🎮 Command Panel**
+
 - Toggle Stealth Mode
 - Global Alert system
 - Double XP Event activation
@@ -34,17 +37,20 @@
 - SITREP generation
 
 **4. 🧠 XP Console**
+
 - Manual XP Award interface
 - User ID and amount input
 - Direct XP manipulation controls
 
 **5. 📜 Trade Log Explorer**
+
 - Real-time trade table display
 - Win/Loss color coding
 - Time, User, Pair, Direction tracking
 - Pips and XP earned columns
 
 **6. 📋 SITREP Panel**
+
 - Comprehensive system status modal
 - XP flow analytics
 - Signal volume metrics
@@ -56,11 +62,13 @@
 ## 🔐 **ACCESS SYSTEM**
 
 ### **Authentication**:
+
 - **URL**: http://134.199.204.67:8899/throne
-- **Username**: _COMMANDER
+- **Username**: \_COMMANDER
 - **Password**: [Empty for demo - in production use secure credentials]
 
 ### **Access Levels**:
+
 - **COMMANDER**: Full system control
 - **LIEUTENANT**: Moderate permissions (XP, cooldowns)
 - **RECRUITER**: Message-only access
@@ -71,17 +79,20 @@
 ## 🛡️ **SECURITY FEATURES**
 
 ### **Rate Limiting**:
+
 - XP Awards: 10 per hour
 - Global Overrides: 5 per hour
 - Mass Messages: 3 per hour
 
 ### **Audit Trail**:
+
 - All commands logged with timestamp
 - IP address tracking
 - Command parameters recorded
 - Success/failure logging
 
 ### **Session Management**:
+
 - Maximum 3 concurrent sessions
 - 8-hour session timeout
 - Activity tracking
@@ -92,12 +103,14 @@
 ## ⚡ **REAL-TIME FEATURES**
 
 ### **Live Updates**:
+
 - WebSocket integration for real-time data
 - Auto-refreshing mission stats
 - Live trade log updates
 - Real-time user activity monitoring
 
 ### **Command Execution**:
+
 - Instant command processing
 - Success/failure feedback
 - System status updates
@@ -108,6 +121,7 @@
 ## 🎛️ **AVAILABLE COMMANDS**
 
 ### **System Control**:
+
 ```
 ✅ Toggle Stealth Mode - Enable/disable global stealth
 ✅ Global Alert - Send system-wide notifications
@@ -118,6 +132,7 @@
 ```
 
 ### **User Management**:
+
 ```
 ✅ Award XP - Manual XP allocation
 ✅ View Soldier Roster - User overview
@@ -126,6 +141,7 @@
 ```
 
 ### **Intelligence & Analytics**:
+
 ```
 ✅ Live Performance Metrics - Real-time stats
 ✅ Trade Log Explorer - Complete trade history
@@ -138,6 +154,7 @@
 ## 🔧 **TECHNICAL SPECIFICATIONS**
 
 ### **Backend**:
+
 - **Framework**: Flask + Flask-SocketIO
 - **Database**: SQLite with audit logging
 - **Authentication**: Session-based with rate limiting
@@ -145,14 +162,16 @@
 - **Port**: 8899
 
 ### **Frontend**:
+
 - **Interface**: Military-themed dark UI
 - **Real-time Updates**: Socket.IO integration
 - **Responsive Design**: Grid-based layout
 - **Security**: Input validation and sanitization
 
 ### **Integration**:
+
 - **Live Performance Tracker**: Real-time metrics
-- **Bridge Troll**: Infrastructure monitoring  
+- **Bridge Troll**: Infrastructure monitoring
 - **Mission System**: File-based mission tracking
 - **XP System**: Direct database integration
 
@@ -161,13 +180,15 @@
 ## 🚀 **IMMEDIATE CAPABILITIES**
 
 ### **Ready to Use**:
+
 1. **Access Control**: http://134.199.204.67:8899/throne
-2. **Login**: _COMMANDER (empty password for demo)
+2. **Login**: \_COMMANDER (empty password for demo)
 3. **Full Command Authority**: All systems under direct control
 4. **Real-time Monitoring**: Live system oversight
 5. **Emergency Controls**: Instant system intervention
 
 ### **Live Data Sources**:
+
 - Bridge Troll health monitoring
 - Live performance metrics
 - Mission file tracking
@@ -177,12 +198,12 @@
 
 ## 💪 **OPERATIONAL STATUS**
 
-**🟢 Commander Throne**: ONLINE (Port 8899)  
-**🟢 Authentication System**: ACTIVE  
-**🟢 Real-time Updates**: FUNCTIONAL  
-**🟢 Command Processing**: OPERATIONAL  
-**🟢 Audit Logging**: RECORDING  
-**🟢 Security Controls**: ENFORCED  
+**🟢 Commander Throne**: ONLINE (Port 8899)
+**🟢 Authentication System**: ACTIVE
+**🟢 Real-time Updates**: FUNCTIONAL
+**🟢 Command Processing**: OPERATIONAL
+**🟢 Audit Logging**: RECORDING
+**🟢 Security Controls**: ENFORCED
 
 ---
 
@@ -196,4 +217,4 @@ The BITTEN system now has complete centralized command and control capabilities.
 
 ---
 
-*🏆 Commander, your throne awaits. The BITTEN empire is under your complete control.*
+_🏆 Commander, your throne awaits. The BITTEN empire is under your complete control._

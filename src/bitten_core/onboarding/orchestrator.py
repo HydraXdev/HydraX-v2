@@ -8,22 +8,24 @@ new users into trained market operatives.
 import asyncio
 import json
 import logging
+from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
-from typing import Dict, Optional, Any, List, Tuple
-from dataclasses import dataclass, asdict
 from enum import Enum
+from typing import Any, Dict, List, Optional, Tuple
 
-from .session_manager import OnboardingSessionManager
 from .dialogue_loader import DialogueLoader
-from .validators import OnboardingValidators
 from .handlers import OnboardingHandlers
 from .press_pass_manager import PressPassManager
+from .session_manager import OnboardingSessionManager
+from .validators import OnboardingValidators
 
 logger = logging.getLogger(__name__)
+
 
 # Move these to models.py to avoid circular import
 class OnboardingState(Enum):
     """Enumeration of all onboarding states"""
+
     FIRST_CONTACT = "first_contact"
     MARKET_WARFARE_INTRO = "market_warfare_intro"
     KNOWLEDGE_SOURCE = "knowledge_source"
@@ -41,9 +43,11 @@ class OnboardingState(Enum):
     PERSONAL_RECORD = "personal_record"
     COMPLETE = "complete"
 
+
 @dataclass
 class OnboardingSession:
     """Session data for tracking onboarding progress"""
+
     user_id: str
     telegram_id: int
     current_state: str
@@ -52,7 +56,7 @@ class OnboardingSession:
     last_activity: datetime
     completed_states: List[str]
     user_responses: Dict[str, Any]
-    
+
     # User data collected during onboarding
     has_experience: Optional[bool] = None
     first_name: Optional[str] = None
@@ -65,32 +69,33 @@ class OnboardingSession:
     is_press_pass: bool = False  # Track if user has Press Pass
     press_pass_code: Optional[str] = None  # Store Press Pass code if provided
     press_pass_expiry: Optional[datetime] = None  # Track 7-day expiry
-    
+
     # Progress tracking
     completion_percentage: float = 0.0
     variant: str = "standard"
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert session to dictionary for persistence"""
         data = asdict(self)
-        data['started_at'] = self.started_at.isoformat()
-        data['last_activity'] = self.last_activity.isoformat()
+        data["started_at"] = self.started_at.isoformat()
+        data["last_activity"] = self.last_activity.isoformat()
         if self.press_pass_expiry:
-            data['press_pass_expiry'] = self.press_pass_expiry.isoformat()
+            data["press_pass_expiry"] = self.press_pass_expiry.isoformat()
         return data
-    
+
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'OnboardingSession':
+    def from_dict(cls, data: Dict[str, Any]) -> "OnboardingSession":
         """Create session from dictionary"""
-        data['started_at'] = datetime.fromisoformat(data['started_at'])
-        data['last_activity'] = datetime.fromisoformat(data['last_activity'])
-        if data.get('press_pass_expiry'):
-            data['press_pass_expiry'] = datetime.fromisoformat(data['press_pass_expiry'])
+        data["started_at"] = datetime.fromisoformat(data["started_at"])
+        data["last_activity"] = datetime.fromisoformat(data["last_activity"])
+        if data.get("press_pass_expiry"):
+            data["press_pass_expiry"] = datetime.fromisoformat(data["press_pass_expiry"])
         return cls(**data)
+
 
 class OnboardingOrchestrator:
     """Main orchestrator for the BITTEN onboarding system"""
-    
+
     def __init__(self, persona_orchestrator=None, hud_webapp_url=None):
         self.session_manager = OnboardingSessionManager()
         self.dialogue_loader = DialogueLoader()
@@ -100,7 +105,7 @@ class OnboardingOrchestrator:
         self.press_pass_manager = PressPassManager()
         self.persona_orchestrator = persona_orchestrator
         self.hud_webapp_url = hud_webapp_url or "https://bitten.trading"
-        
+
         # State transition mapping
         self.state_transitions = {
             OnboardingState.FIRST_CONTACT: OnboardingState.MARKET_WARFARE_INTRO,
@@ -117,29 +122,31 @@ class OnboardingOrchestrator:
             OnboardingState.OPERATIONAL_INTERFACE: OnboardingState.CORE_MANEUVERS,
             OnboardingState.CORE_MANEUVERS: OnboardingState.FIELD_MANUAL,
             OnboardingState.FIELD_MANUAL: OnboardingState.PERSONAL_RECORD,
-            OnboardingState.PERSONAL_RECORD: OnboardingState.COMPLETE}
-        
+            OnboardingState.PERSONAL_RECORD: OnboardingState.COMPLETE,
+        }
+
         # Load dialogue content
         self.dialogue = self.dialogue_loader.load_dialogue()
-        
+
         logger.info("BITTEN Onboarding Orchestrator initialized")
-    
-    async def start_onboarding(self, user_id: str, telegram_id: int, 
-                              variant: str = "standard") -> Tuple[str, Dict[str, Any]]:
+
+    async def start_onboarding(
+        self, user_id: str, telegram_id: int, variant: str = "standard"
+    ) -> Tuple[str, Dict[str, Any]]:
         """
         Start new onboarding session or resume existing one
-        
+
         Returns:
             Tuple of (message_text, keyboard_markup)
         """
         try:
             # Check for existing session
             existing_session = await self.session_manager.load_session(user_id)
-            
+
             if existing_session:
                 logger.info(f"Resuming onboarding for user {user_id} at state {existing_session.current_state}")
                 return await self.resume_session(existing_session)
-            
+
             # Create new session
             session = OnboardingSession(
                 user_id=user_id,
@@ -150,36 +157,34 @@ class OnboardingOrchestrator:
                 last_activity=datetime.utcnow(),
                 completed_states=[],
                 user_responses={},
-                variant=variant
+                variant=variant,
             )
-            
+
             # Save session
             await self.session_manager.save_session(session)
-            
+
             # Track analytics
-            await self._track_event("onboarding_started", {
-                "user_id": user_id,
-                "variant": variant,
-                "timestamp": datetime.utcnow().isoformat()
-            })
-            
+            await self._track_event(
+                "onboarding_started",
+                {"user_id": user_id, "variant": variant, "timestamp": datetime.utcnow().isoformat()},
+            )
+
             # Process first state
             return await self.process_state(session, OnboardingState.FIRST_CONTACT)
-            
+
         except Exception as e:
             logger.error(f"Error starting onboarding for user {user_id}: {e}")
             return self._get_error_message("startup_error"), {}
-    
-    async def process_user_input(self, user_id: str, input_type: str, 
-                               input_data: Any) -> Tuple[str, Dict[str, Any]]:
+
+    async def process_user_input(self, user_id: str, input_type: str, input_data: Any) -> Tuple[str, Dict[str, Any]]:
         """
         Process user input and advance through onboarding
-        
+
         Args:
             user_id: User identifier
             input_type: Type of input (callback, text, etc.)
             input_data: The actual input data
-            
+
         Returns:
             Tuple of (message_text, keyboard_markup)
         """
@@ -188,118 +193,115 @@ class OnboardingOrchestrator:
             session = await self.session_manager.load_session(user_id)
             if not session:
                 return await self.start_onboarding(user_id, 0)
-            
+
             # Update activity
             session.last_activity = datetime.utcnow()
-            
+
             # Get current state
             current_state = OnboardingState(session.current_state)
-            
+
             # Process input based on state
-            result = await self.handlers.handle_input(
-                session, current_state, input_type, input_data
-            )
-            
-            if result.get('error'):
-                return result['message'], result.get('keyboard', {})
-            
+            result = await self.handlers.handle_input(session, current_state, input_type, input_data)
+
+            if result.get("error"):
+                return result["message"], result.get("keyboard", {})
+
             # Update session with response
             session.user_responses[f"{current_state.value}_{input_type}"] = input_data
-            
+
             # Check if state is complete
-            if result.get('advance_state'):
+            if result.get("advance_state"):
                 # Handle special state transitions
-                if result.get('next_state'):
-                    session.current_state = result['next_state']
+                if result.get("next_state"):
+                    session.current_state = result["next_state"]
                     await self.session_manager.save_session(session)
-                    return await self.process_state(session, OnboardingState(result['next_state']))
-                return await self.advance_state(session, result.get('state_data', {}))
-            
+                    return await self.process_state(session, OnboardingState(result["next_state"]))
+                return await self.advance_state(session, result.get("state_data", {}))
+
             # Save session
             await self.session_manager.save_session(session)
-            
-            return result['message'], result.get('keyboard', {})
-            
+
+            return result["message"], result.get("keyboard", {})
+
         except Exception as e:
             logger.error(f"Error processing input for user {user_id}: {e}")
             return self._get_error_message("processing_error"), {}
-    
-    async def advance_state(self, session: OnboardingSession, 
-                          state_data: Dict[str, Any] = None) -> Tuple[str, Dict[str, Any]]:
+
+    async def advance_state(
+        self, session: OnboardingSession, state_data: Dict[str, Any] = None
+    ) -> Tuple[str, Dict[str, Any]]:
         """
         Advance to next state in onboarding flow
-        
+
         Args:
             session: Current onboarding session
             state_data: Additional data from completed state
-            
+
         Returns:
             Tuple of (message_text, keyboard_markup)
         """
         try:
             current_state = OnboardingState(session.current_state)
-            
+
             # Mark current state as completed
             if current_state.value not in session.completed_states:
                 session.completed_states.append(current_state.value)
-            
+
             # Track completion
-            await self._track_event("onboarding_state_completed", {
-                "user_id": session.user_id,
-                "state": current_state.value,
-                "timestamp": datetime.utcnow().isoformat()
-            })
-            
+            await self._track_event(
+                "onboarding_state_completed",
+                {"user_id": session.user_id, "state": current_state.value, "timestamp": datetime.utcnow().isoformat()},
+            )
+
             # Update state data
             if state_data:
                 session.state_data.update(state_data)
-            
+
             # Get next state
             next_state = self.state_transitions.get(current_state)
-            
+
             # Special handling for Press Pass users
             if session.is_press_pass and current_state == OnboardingState.THEATER_SELECTION:
                 # Skip directly to callsign creation for Press Pass users
                 next_state = OnboardingState.CALLSIGN_CREATION
-            
+
             if not next_state:
                 # Onboarding complete
                 return await self.complete_onboarding(session)
-            
+
             # Update session
             session.current_state = next_state.value
             session.completion_percentage = (len(session.completed_states) / 14) * 100
-            
+
             # Save session
             await self.session_manager.save_session(session)
-            
+
             # Process next state
             return await self.process_state(session, next_state)
-            
+
         except Exception as e:
             logger.error(f"Error advancing state for user {session.user_id}: {e}")
             return self._get_error_message("state_advance_error"), {}
-    
-    async def process_state(self, session: OnboardingSession, 
-                          state: OnboardingState) -> Tuple[str, Dict[str, Any]]:
+
+    async def process_state(self, session: OnboardingSession, state: OnboardingState) -> Tuple[str, Dict[str, Any]]:
         """
         Process a specific onboarding state
-        
+
         Args:
             session: Current onboarding session
             state: State to process
-            
+
         Returns:
             Tuple of (message_text, keyboard_markup)
         """
         try:
             # Get state dialogue
-            state_dialogue = self.dialogue.get('phases', {}).get(state.value, {})
-            
+            state_dialogue = self.dialogue.get("phases", {}).get(state.value, {})
+
             if not state_dialogue:
                 logger.error(f"No dialogue found for state {state.value}")
                 return self._get_error_message("dialogue_missing"), {}
-            
+
             # Process state with persona system
             if self.persona_orchestrator:
                 persona_response = await self.persona_orchestrator.get_response(
@@ -308,41 +310,38 @@ class OnboardingOrchestrator:
                     context={
                         "state_data": session.state_data,
                         "user_responses": session.user_responses,
-                        "completion_percentage": session.completion_percentage
-                    }
+                        "completion_percentage": session.completion_percentage,
+                    },
                 )
-                
+
                 if persona_response:
                     # Use persona response if available
-                    message = persona_response.get('message', '')
-                    keyboard = persona_response.get('keyboard', {})
+                    message = persona_response.get("message", "")
+                    keyboard = persona_response.get("keyboard", {})
                     return message, keyboard
-            
+
             # Use dialogue content
             message = await self._format_dialogue_message(state_dialogue, session)
             keyboard = await self._create_state_keyboard(state, session)
-            
+
             return message, keyboard
-            
+
         except Exception as e:
             logger.error(f"Error processing state {state.value}: {e}")
             return self._get_error_message("state_processing_error"), {}
-    
+
     async def check_press_pass_status(self, session: OnboardingSession) -> Optional[Dict[str, Any]]:
         """Check Press Pass expiry and return status if applicable"""
         if not session.is_press_pass or not session.press_pass_expiry:
             return None
-            
-        expiry_check = await self.press_pass_manager.check_press_pass_expiry(
-            session.user_id,
-            session.press_pass_expiry
-        )
-        
-        if expiry_check['expired']:
+
+        expiry_check = await self.press_pass_manager.check_press_pass_expiry(session.user_id, session.press_pass_expiry)
+
+        if expiry_check["expired"]:
             # Press Pass expired - show upgrade message
             return {
-                'expired': True,
-                'message': (
+                "expired": True,
+                "message": (
                     "⏰ **PRESS PASS EXPIRED**\n\n"
                     "Your 7-day trial has ended. To continue using BITTEN:\n\n"
                     "💳 **Upgrade Options**:\n"
@@ -351,60 +350,57 @@ class OnboardingOrchestrator:
                     "• COMMANDER ($189/mo) - Everything included\n\n"
                     "Upgrade now to keep your progress and continue trading!"
                 ),
-                'keyboard': {
+                "keyboard": {
                     "inline_keyboard": [
                         [{"text": "💳 Upgrade Now", "callback_data": "upgrade_account"}],
-                        [{"text": "📊 View Pricing", "callback_data": "view_pricing"}]
+                        [{"text": "📊 View Pricing", "callback_data": "view_pricing"}],
                     ]
-                }
+                },
             }
         else:
             # Still active - show remaining time
-            remaining = expiry_check['remaining_time']
-            if remaining['days'] <= 3:
+            remaining = expiry_check["remaining_time"]
+            if remaining["days"] <= 3:
                 # Send reminder if 3 days or less
-                await self.press_pass_manager.send_expiry_reminder(
-                    session.user_id,
-                    remaining['days']
-                )
+                await self.press_pass_manager.send_expiry_reminder(session.user_id, remaining["days"])
             return expiry_check
-    
+
     async def resume_session(self, session: OnboardingSession) -> Tuple[str, Dict[str, Any]]:
         """
         Resume an existing onboarding session
-        
+
         Args:
             session: Session to resume
-            
+
         Returns:
             Tuple of (message_text, keyboard_markup)
         """
         try:
             # Check Press Pass status first
             press_pass_status = await self.check_press_pass_status(session)
-            if press_pass_status and press_pass_status.get('expired'):
-                return press_pass_status['message'], press_pass_status['keyboard']
-            
+            if press_pass_status and press_pass_status.get("expired"):
+                return press_pass_status["message"], press_pass_status["keyboard"]
+
             # Check if session is expired
             if datetime.utcnow() - session.last_activity > timedelta(days=7):
                 logger.info(f"Session expired for user {session.user_id}")
                 await self.session_manager.archive_session(session.user_id)
                 return await self.start_onboarding(session.user_id, session.telegram_id)
-            
+
             # Create welcome back message
             current_state = OnboardingState(session.current_state)
             progress = f"{len(session.completed_states)}/14 phases completed"
-            
+
             # Add Press Pass info if applicable
             press_pass_info = ""
             if session.is_press_pass and press_pass_status:
-                remaining = press_pass_status.get('remaining_time', {})
+                remaining = press_pass_status.get("remaining_time", {})
                 if remaining:
                     press_pass_info = (
                         f"\n🎟️ **Press Pass Status**: {remaining['days']} days, {remaining['hours']} hours remaining\n"
                         f"⚠️ **Remember**: XP resets nightly at midnight UTC\n"
                     )
-            
+
             welcome_message = (
                 f"🎖️ **Welcome back, {'Press Corps ' if session.is_press_pass else ''}recruit!**\n\n"
                 f"📊 **Progress**: {progress} ({session.completion_percentage:.1f}%)\n"
@@ -412,67 +408,70 @@ class OnboardingOrchestrator:
                 f"{press_pass_info}\n"
                 f"Ready to continue your training?"
             )
-            
+
             keyboard = {
                 "inline_keyboard": [
                     [{"text": "🚀 Continue Training", "callback_data": "resume_continue"}],
                     [{"text": "📊 Show Progress", "callback_data": "show_progress"}],
-                    [{"text": "🔄 Restart from Beginning", "callback_data": "restart_onboarding"}]
+                    [{"text": "🔄 Restart from Beginning", "callback_data": "restart_onboarding"}],
                 ]
             }
-            
+
             return welcome_message, keyboard
-            
+
         except Exception as e:
             logger.error(f"Error resuming session: {e}")
             return self._get_error_message("resume_error"), {}
-    
+
     async def complete_onboarding(self, session: OnboardingSession) -> Tuple[str, Dict[str, Any]]:
         """
         Complete onboarding and transition to main system
-        
+
         Args:
             session: Completed onboarding session
-            
+
         Returns:
             Tuple of (message_text, keyboard_markup)
         """
         try:
             # Import user manager
             from ..user_management.user_manager import user_manager
-            
+
             # Mark as complete
             session.current_state = OnboardingState.COMPLETE.value
             session.completion_percentage = 100.0
-            
+
             # Track completion
-            await self._track_event("onboarding_completed", {
-                "user_id": session.user_id,
-                "total_duration": (datetime.utcnow() - session.started_at).total_seconds(),
-                "theater_selected": session.selected_theater,
-                "callsign": session.callsign,
-                "variant": session.variant
-            })
-            
+            await self._track_event(
+                "onboarding_completed",
+                {
+                    "user_id": session.user_id,
+                    "total_duration": (datetime.utcnow() - session.started_at).total_seconds(),
+                    "theater_selected": session.selected_theater,
+                    "callsign": session.callsign,
+                    "variant": session.variant,
+                },
+            )
+
             # Create user account from onboarding session
             user_creation_result = await user_manager.create_user_from_onboarding(session.to_dict())
-            
-            if not user_creation_result['success']:
+
+            if not user_creation_result["success"]:
                 logger.error(f"Failed to create user account: {user_creation_result['error']}")
                 # If user already exists, try to authenticate
-                if user_creation_result['error'] == 'user_exists':
+                if user_creation_result["error"] == "user_exists":
                     auth_result = await user_manager.authenticate_user(session.telegram_id)
-                    if auth_result['authenticated']:
-                        session_token = auth_result['session_token']
-                        user_id = auth_result['user_id']
+                    if auth_result["authenticated"]:
+                        session_token = auth_result["session_token"]
+                        user_id = auth_result["user_id"]
                     else:
                         return self._get_error_message("completion_error"), {}
                 else:
                     return self._get_error_message("completion_error"), {}
             else:
-                session_token = user_creation_result['session_token']
-                user_id = user_creation_result['user_id']
-            
+                session_token = user_creation_result["session_token"]
+                user_id = user_creation_result["user_id"]
+
             # Create completion message
             if session.is_press_pass:
                 display_name = session.first_name or "Press Corps Operative"
@@ -484,7 +483,7 @@ class OnboardingOrchestrator:
                     f"⏰ **Expires**: {session.press_pass_expiry.strftime('%Y-%m-%d %H:%M UTC')}\n"
                     f"🔥 **Status**: Press Corps operative with full network access\n\n"
                     f"⚠️ **REMEMBER**: XP resets nightly at midnight UTC!\n\n"
-                    f"*\"Press Pass holders get the full experience. Use your 7 days wisely.\"*\n"
+                    f'*"Press Pass holders get the full experience. Use your 7 days wisely."*\n'
                     f"— **Sergeant Nexus**\n\n"
                     f"Welcome to the BITTEN Network, Press Corps operative!"
                 )
@@ -494,45 +493,44 @@ class OnboardingOrchestrator:
                     f"🎯 **Training Complete**: You've successfully completed Ground Zero\n"
                     f"⚔️ **Theater**: {session.selected_theater}\n"
                     f"🔥 **Status**: BITTEN operative ready for deployment\n\n"
-                    f"*\"Every mission begins with a plan. You've earned your place in the ranks.\"*\n"
+                    f'*"Every mission begins with a plan. You\'ve earned your place in the ranks."*\n'
                     f"— **Sergeant Nexus**\n\n"
                     f"Welcome to the BITTEN Network, operative. Your real training begins now."
                 )
-            
+
             # Enhanced keyboard with session token for web app
             keyboard = {
                 "inline_keyboard": [
                     [{"text": "🎯 Enter War Room", "web_app": {"url": f"{self.hud_webapp_url}?token={session_token}"}}],
                     [{"text": "📊 View Personal Record", "callback_data": "view_personal_record"}],
-                    [{"text": "🎖️ Show Achievements", "callback_data": "show_achievements"}]
+                    [{"text": "🎖️ Show Achievements", "callback_data": "show_achievements"}],
                 ]
             }
-            
+
             # Archive session
             await self.session_manager.archive_session(session.user_id)
-            
+
             return completion_message, keyboard
-            
+
         except Exception as e:
             logger.error(f"Error completing onboarding: {e}")
             return self._get_error_message("completion_error"), {}
-    
-    async def handle_command(self, user_id: str, command: str, 
-                           args: List[str] = None) -> Tuple[str, Dict[str, Any]]:
+
+    async def handle_command(self, user_id: str, command: str, args: List[str] = None) -> Tuple[str, Dict[str, Any]]:
         """
         Handle onboarding-specific commands
-        
+
         Args:
             user_id: User identifier
             command: Command to handle
             args: Optional command arguments
-            
+
         Returns:
             Tuple of (message_text, keyboard_markup)
         """
         try:
             session = await self.session_manager.load_session(user_id)
-            
+
             if command == "back":
                 return await self._handle_back_command(session)
             elif command == "skip":
@@ -545,166 +543,166 @@ class OnboardingOrchestrator:
                 return await self._handle_status_command(session)
             else:
                 return "Unknown command during onboarding.", {}
-                
+
         except Exception as e:
             logger.error(f"Error handling command {command}: {e}")
             return self._get_error_message("command_error"), {}
-    
-    async def _format_dialogue_message(self, state_dialogue: Dict[str, Any], 
-                                     session: OnboardingSession) -> str:
+
+    async def _format_dialogue_message(self, state_dialogue: Dict[str, Any], session: OnboardingSession) -> str:
         """Format dialogue message with dynamic variables"""
         # Get the message text
-        message = state_dialogue.get('message', '')
-        
+        message = state_dialogue.get("message", "")
+
         # Variable replacements
         replacements = {
-            '{NAME}': session.first_name or 'Recruit',
-            '{CALLSIGN}': session.callsign or 'Soldier',
-            '{THEATER}': session.selected_theater or 'Training',
-            '{EXPERIENCE}': 'veteran' if session.has_experience else 'recruit',
-            '{USER_ID}': str(session.telegram_id)}
-        
+            "{NAME}": session.first_name or "Recruit",
+            "{CALLSIGN}": session.callsign or "Soldier",
+            "{THEATER}": session.selected_theater or "Training",
+            "{EXPERIENCE}": "veteran" if session.has_experience else "recruit",
+            "{USER_ID}": str(session.telegram_id),
+        }
+
         # Replace all variables
         for var, value in replacements.items():
             message = message.replace(var, value)
-        
+
         return message
-    
-    async def _create_state_keyboard(self, state: OnboardingState, 
-                                   session: OnboardingSession) -> Dict[str, Any]:
+
+    async def _create_state_keyboard(self, state: OnboardingState, session: OnboardingSession) -> Dict[str, Any]:
         """Create AAA-quality keyboards with amazing UX for each state"""
-        
+
         # Show progress bar at top of every keyboard
         progress = self._calculate_progress(session)
-        progress_bar = self.handlers.format_progress_bar(progress['current'], progress['total'])
-        
+        progress_bar = self.handlers.format_progress_bar(progress["current"], progress["total"])
+
         keyboard = {"inline_keyboard": []}
-        
+
         if state == OnboardingState.FIRST_CONTACT:
             keyboard["inline_keyboard"] = [
                 [{"text": "✅ Yes, I've traded before", "callback_data": "onboarding_yes"}],
-                [{"text": "🌟 No, I'm new to this", "callback_data": "onboarding_no"}]
+                [{"text": "🌟 No, I'm new to this", "callback_data": "onboarding_no"}],
             ]
-            
+
         elif state == OnboardingState.KNOWLEDGE_SOURCE:
             keyboard["inline_keyboard"] = [
                 [{"text": "👥 Friend told me", "callback_data": "onboarding_friend"}],
                 [{"text": "📺 YouTube/Social Media", "callback_data": "onboarding_youtube"}],
                 [{"text": "📖 Article/Blog", "callback_data": "onboarding_article"}],
-                [{"text": "🌐 Other", "callback_data": "onboarding_other"}]
+                [{"text": "🌐 Other", "callback_data": "onboarding_other"}],
             ]
-            
+
         elif state == OnboardingState.THEATER_SELECTION:
             keyboard["inline_keyboard"] = [
                 [{"text": "🎮 DEMO (Practice Mode)", "callback_data": "onboarding_demo"}],
                 [{"text": "💰 LIVE (Real Money)", "callback_data": "onboarding_live"}],
-                [{"text": "🎟️ PRESS PASS (7-Day Trial)", "callback_data": "onboarding_press_pass"}]
+                [{"text": "🎟️ PRESS PASS (7-Day Trial)", "callback_data": "onboarding_press_pass"}],
             ]
-            
+
         elif state == OnboardingState.PRESS_PASS_INTRO:
             keyboard["inline_keyboard"] = [
                 [{"text": "🎟️ Activate Press Pass", "callback_data": "onboarding_activate_press_pass"}],
                 [{"text": "🔍 Learn More", "callback_data": "onboarding_press_pass_info"}],
-                [{"text": "↩️ Choose Different Mode", "callback_data": "onboarding_back"}]
+                [{"text": "↩️ Choose Different Mode", "callback_data": "onboarding_back"}],
             ]
-            
+
         elif state == OnboardingState.OATH_OF_ENLISTMENT:
             keyboard["inline_keyboard"] = [
                 [{"text": "🎖️ I ACCEPT THE OATH", "callback_data": "onboarding_accept_oath"}],
-                [{"text": "📖 Read Again", "callback_data": "onboarding_read_oath"}]
+                [{"text": "📖 Read Again", "callback_data": "onboarding_read_oath"}],
             ]
-            
+
         elif state == OnboardingState.SECURE_LINK:
             keyboard["inline_keyboard"] = [
                 [{"text": "🔗 Connect Broker", "callback_data": "onboarding_connect_broker"}],
-                [{"text": "⏭️ Do This Later", "callback_data": "onboarding_skip_broker"}]
+                [{"text": "⏭️ Do This Later", "callback_data": "onboarding_skip_broker"}],
             ]
-            
+
         elif state == OnboardingState.CALLSIGN_CREATION:
             # For text input states, show helpful buttons
             keyboard["inline_keyboard"] = [
                 [{"text": "🎲 Generate Random", "callback_data": "onboarding_random_callsign"}],
-                [{"text": "💡 Show Examples", "callback_data": "onboarding_callsign_examples"}]
+                [{"text": "💡 Show Examples", "callback_data": "onboarding_callsign_examples"}],
             ]
-            
+
         elif state == OnboardingState.OPERATIONAL_INTERFACE:
             keyboard["inline_keyboard"] = [
-                [{"text": "📱 Open Trading HUD", "url": self.hud_webapp_url if self.hud_webapp_url else "https://bitten.trading"}],
-                [{"text": "➡️ Continue Tour", "callback_data": "onboarding_continue"}]
+                [
+                    {
+                        "text": "📱 Open Trading HUD",
+                        "url": self.hud_webapp_url if self.hud_webapp_url else "https://bitten.trading",
+                    }
+                ],
+                [{"text": "➡️ Continue Tour", "callback_data": "onboarding_continue"}],
             ]
-            
+
         elif state == OnboardingState.CORE_MANEUVERS:
             keyboard["inline_keyboard"] = [
                 [{"text": "🎯 Understood!", "callback_data": "onboarding_understood"}],
-                [{"text": "🔄 Explain Again", "callback_data": "onboarding_explain_again"}]
+                [{"text": "🔄 Explain Again", "callback_data": "onboarding_explain_again"}],
             ]
-            
+
         elif state == OnboardingState.FIELD_MANUAL:
             keyboard["inline_keyboard"] = [
                 [{"text": "📚 View Field Manual", "callback_data": "onboarding_view_manual"}],
-                [{"text": "✅ Ready to Start", "callback_data": "onboarding_ready"}]
+                [{"text": "✅ Ready to Start", "callback_data": "onboarding_ready"}],
             ]
-            
+
         elif state == OnboardingState.PERSONAL_RECORD:
             keyboard["inline_keyboard"] = [
                 [{"text": "🔔 All Notifications", "callback_data": "onboarding_all"}],
                 [{"text": "📌 Essential Only", "callback_data": "onboarding_essential"}],
-                [{"text": "⚙️ Custom Setup", "callback_data": "onboarding_custom"}]
+                [{"text": "⚙️ Custom Setup", "callback_data": "onboarding_custom"}],
             ]
-            
+
         else:
             # Default continue button
-            keyboard["inline_keyboard"] = [
-                [{"text": "➡️ Continue", "callback_data": "onboarding_continue"}]
-            ]
-        
+            keyboard["inline_keyboard"] = [[{"text": "➡️ Continue", "callback_data": "onboarding_continue"}]]
+
         # Add navigation row at bottom (except for critical states)
         if state not in [OnboardingState.FIRST_CONTACT, OnboardingState.COMPLETE]:
             nav_row = []
-            
+
             # Back button (if allowed)
             back_button = self.handlers.get_back_button(state.value)
             if back_button:
                 nav_row.append(back_button)
-            
+
             # Help button (always available)
             nav_row.append({"text": "❓ Help", "callback_data": "onboarding_help"})
-            
+
             # Skip button (if allowed)
             skip_button = self.handlers.get_skip_button(state.value)
             if skip_button:
                 nav_row.append(skip_button)
-            
+
             if nav_row:
                 keyboard["inline_keyboard"].append(nav_row)
-        
+
         # Add progress indicator as last row
-        keyboard["inline_keyboard"].append([
-            {"text": progress_bar, "callback_data": "onboarding_progress"}
-        ])
-        
+        keyboard["inline_keyboard"].append([{"text": progress_bar, "callback_data": "onboarding_progress"}])
+
         return keyboard
-    
+
     async def _handle_back_command(self, session: OnboardingSession) -> Tuple[str, Dict[str, Any]]:
         """Handle back command"""
         pass
-    
+
     async def _handle_skip_command(self, session: OnboardingSession) -> Tuple[str, Dict[str, Any]]:
         """Handle skip command"""
         pass
-    
+
     async def _handle_help_command(self, session: OnboardingSession) -> Tuple[str, Dict[str, Any]]:
         """Handle help command"""
         pass
-    
+
     async def _handle_pause_command(self, session: OnboardingSession) -> Tuple[str, Dict[str, Any]]:
         """Handle pause command"""
         pass
-    
+
     async def _handle_status_command(self, session: OnboardingSession) -> Tuple[str, Dict[str, Any]]:
         """Handle status command"""
         pass
-    
+
     async def _track_event(self, event_type: str, data: Dict[str, Any]):
         """Track analytics event"""
         try:
@@ -712,7 +710,7 @@ class OnboardingOrchestrator:
             # Implementation would send to analytics system
         except Exception as e:
             logger.error(f"Error tracking event {event_type}: {e}")
-    
+
     def _get_error_message(self, error_type: str) -> str:
         """Get appropriate error message"""
         error_messages = {
@@ -723,24 +721,21 @@ class OnboardingOrchestrator:
             "state_processing_error": "🛠️ **Processing Error**: System hiccup detected. Retrying...",
             "resume_error": "🔄 **Resume Error**: Unable to restore session. Starting fresh.",
             "completion_error": "🎖️ **Completion Error**: Error during graduation. Contact command.",
-            "command_error": "❌ **Command Error**: Invalid operation. Try again, operative."
+            "command_error": "❌ **Command Error**: Invalid operation. Try again, operative.",
         }
-        
+
         return error_messages.get(error_type, "🚨 **Unknown Error**: Contact support immediately.")
-    
+
     def _calculate_progress(self, session: OnboardingSession) -> Dict[str, int]:
         """Calculate onboarding progress"""
         # Get all states except COMPLETE
         all_states = [s for s in OnboardingState if s != OnboardingState.COMPLETE]
-        
+
         # Find current state index
         try:
             current_index = all_states.index(OnboardingState(session.current_state))
             current_step = current_index + 1
         except (ValueError, KeyError):
             current_step = 1
-        
-        return {
-            'current': current_step,
-            'total': len(all_states)
-        }
+
+        return {"current": current_step, "total": len(all_states)}

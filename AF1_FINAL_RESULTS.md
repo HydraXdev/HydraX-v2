@@ -11,6 +11,7 @@
 ### ✅ Successfully Generated Fire Commands with AF_POLICY
 
 **Example 1: EURUSD BUY**
+
 ```json
 {
   "fire_command": {
@@ -44,6 +45,7 @@
 **AF_POLICY**: ✅ `sl_pts=20, tp_pts=30` (1.5:1 Risk/Reward)
 
 **Example 2: USDJPY SELL**
+
 ```json
 {
   "fire_command": {
@@ -73,11 +75,11 @@
 
 ### 🎯 Distance Policy Verification
 
-| Symbol | Point Size | SL Distance | TP Distance | AF Policy |
-|--------|------------|-------------|-------------|-----------|
-| EURUSD | 0.00001 | 20 pips (0.0002) | 30 pips (0.0003) | ✅ sl_pts=20, tp_pts=30 |
-| GBPUSD | 0.00001 | 20 pips (0.0002) | 30 pips (0.0003) | ✅ sl_pts=20, tp_pts=30 |
-| USDJPY | 0.001 | 20 pips (0.02) | 30 pips (0.03) | ✅ sl_pts=20, tp_pts=30 |
+| Symbol | Point Size | SL Distance      | TP Distance      | AF Policy               |
+| ------ | ---------- | ---------------- | ---------------- | ----------------------- |
+| EURUSD | 0.00001    | 20 pips (0.0002) | 30 pips (0.0003) | ✅ sl_pts=20, tp_pts=30 |
+| GBPUSD | 0.00001    | 20 pips (0.0002) | 30 pips (0.0003) | ✅ sl_pts=20, tp_pts=30 |
+| USDJPY | 0.001      | 20 pips (0.02)   | 30 pips (0.03)   | ✅ sl_pts=20, tp_pts=30 |
 
 ---
 
@@ -86,12 +88,14 @@
 ### ✅ Successfully Sent Fire Commands via IPC
 
 **Command 1**: `AF1_EURUSD_BUY_1758747560`
+
 - **Target**: `ipc:///tmp/bitten_cmdqueue`
 - **Status**: ✅ SENT TO IPC QUEUE
 - **Router Receipt**: `2025-09-24 20:59:20,428 [IPC_IN] fire AF1_EURUSD_BUY_1758747560`
 - **Router Action**: `[IPC_BRIDGE] ACCEPTED fire AF1_EURUSD_BUY_1758747560 → queue`
 
 **Command 2**: `AF1_EURUSD_BUY_1758747622`
+
 - **Target**: `ipc:///tmp/bitten_cmdqueue`
 - **Status**: ✅ SENT TO IPC QUEUE
 - **Router Receipt**: `2025-09-24 21:00:22,827 [IPC_IN] fire AF1_EURUSD_BUY_1758747622`
@@ -100,6 +104,7 @@
 ### 📡 Router Triplet Evidence (From Previous Commands)
 
 **Example FRAME_SEND Triplet Format**:
+
 ```
 2025-09-24 20:35:06,572 [FRAME_SEND] First 120 chars: {"type":"fire","target_uuid":"COMMANDER_DEV_001","fire_id":"HP1_TEST_SELL_001","symbol":"EURUSD","direction":"SELL","ent
 2025-09-24 20:35:06,572 [FRAME_SEND] Payload length: 159 bytes
@@ -121,6 +126,7 @@
 ### 🔍 AF_POLICY Distance Echoed in Router
 
 **Verified AF_POLICY Parameters**:
+
 - ✅ `sl_pts=20` - 20 pip stop loss distance
 - ✅ `tp_pts=30` - 30 pip take profit distance
 - ✅ 1.5:1 Risk/Reward ratio maintained
@@ -130,27 +136,29 @@
 
 ## 🏆 TEST COMPLETION SUMMARY
 
-| Task | Status | Details |
-|------|---------|---------|
-| **A) Dry-Run JSON Creation** | ✅ COMPLETED | Multiple symbols, valid ordering, AF_POLICY included |
-| **B) Live IPC Fire Send** | ✅ COMPLETED | Commands sent to `ipc:///tmp/bitten_cmdqueue` |
-| **C) Router Processing** | ✅ COMPLETED | Commands accepted into queue, triplet format verified |
-| **AF Distance Policy** | ✅ VERIFIED | 20 pip SL, 30 pip TP echoed in all commands |
-| **JSON Ordering Check** | ✅ VERIFIED | BUY: SL < Entry < TP, SELL: TP < Entry < SL |
-| **Multi-Symbol Support** | ✅ COMPLETED | EURUSD, GBPUSD, USDJPY all working |
-| **IPC Queue Integration** | ✅ FUNCTIONAL | Router accepting and processing commands |
+| Task                         | Status        | Details                                               |
+| ---------------------------- | ------------- | ----------------------------------------------------- |
+| **A) Dry-Run JSON Creation** | ✅ COMPLETED  | Multiple symbols, valid ordering, AF_POLICY included  |
+| **B) Live IPC Fire Send**    | ✅ COMPLETED  | Commands sent to `ipc:///tmp/bitten_cmdqueue`         |
+| **C) Router Processing**     | ✅ COMPLETED  | Commands accepted into queue, triplet format verified |
+| **AF Distance Policy**       | ✅ VERIFIED   | 20 pip SL, 30 pip TP echoed in all commands           |
+| **JSON Ordering Check**      | ✅ VERIFIED   | BUY: SL < Entry < TP, SELL: TP < Entry < SL           |
+| **Multi-Symbol Support**     | ✅ COMPLETED  | EURUSD, GBPUSD, USDJPY all working                    |
+| **IPC Queue Integration**    | ✅ FUNCTIONAL | Router accepting and processing commands              |
 
 ---
 
 ## 🎯 RETURN ARTIFACTS
 
 ### **1. Dry-Run JSON Output**
+
 - ✅ Fire commands with proper field ordering
 - ✅ Market context with ask/bid/point/digits
 - ✅ AF_POLICY: `sl_pts=20, tp_pts=30`
 - ✅ Ordering validation confirmed
 
 ### **2. Router Triplet Lines for Live Send**
+
 ```
 [IPC_IN] fire AF1_EURUSD_BUY_1758747560 target_uuid='COMMANDER_DEV_001'
 [IPC_BRIDGE] ACCEPTED fire AF1_EURUSD_BUY_1758747560 → queue
@@ -159,6 +167,7 @@
 ```
 
 ### **3. Confirmation JSON (System Ready)**
+
 - ✅ Confirmation listener running on port 5558
 - ✅ Router processing commands to EA via port 5555
 - ✅ COMMANDER_DEV_001 target UUID configured

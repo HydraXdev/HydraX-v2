@@ -1,11 +1,13 @@
 # BITTEN Bot Control System Documentation
 
 ## Overview
+
 The BITTEN Bot Control System provides comprehensive control over AI bot personalities, allowing users to customize their trading experience. The system includes a mandatory disclaimer, individual bot toggles, and immersion level settings.
 
 ## Features
 
 ### 1. Disclaimer Management
+
 - **Prominent onboarding disclaimer** about fictional AI personalities
 - Must be accepted before using BITTEN
 - Clearly states all characters are fictional motivational overlays
@@ -13,21 +15,25 @@ The BITTEN Bot Control System provides comprehensive control over AI bot persona
 ### 2. Bot Control Commands
 
 #### `/disclaimer`
+
 - View the full system disclaimer at any time
 - Available to all users (UserRank.USER+)
 
 #### `/bots [on/off]`
+
 - Master toggle for all AI bot personalities
 - No arguments: Shows current bot status
 - `on`: Enables all bots
 - `off`: Disables all bots
 
 #### `/toggle [BotName]`
+
 - Toggle individual bot on/off
 - Available bots: DrillBot, MedicBot, RecruiterBot, OverwatchBot, StealthBot
 - Only works when master bot switch is ON
 
 #### `/immersion [level]`
+
 - Set experience intensity level
 - Levels:
   - `full`: Maximum intensity, all features enabled
@@ -35,6 +41,7 @@ The BITTEN Bot Control System provides comprehensive control over AI bot persona
   - `minimal`: Just trading, minimal extras
 
 #### `/settings`
+
 - View comprehensive bot settings menu
 - Shows all bot statuses and current preferences
 - Organized in clear sections
@@ -64,22 +71,26 @@ The BITTEN Bot Control System provides comprehensive control over AI bot persona
 ### 4. Integration Features
 
 #### Message Filtering
+
 - Bot messages are automatically filtered based on user preferences
 - Messages from disabled bots are not shown
 - System respects individual bot toggles
 
 #### Immersion-Based Formatting
+
 - **Full**: Enhanced formatting with emojis and effects
 - **Moderate**: Standard formatting
 - **Minimal**: Toned-down messages with minimal formatting
 
 #### Status Display
+
 - Bot status automatically appears in `/status` command
 - Shows enabled/disabled state and active bot count
 
 ## Implementation Details
 
 ### File Structure
+
 ```
 src/bitten_core/
 ├── telegram_bot_controls.py      # Main bot control handlers
@@ -89,12 +100,14 @@ src/bitten_core/
 ```
 
 ### Key Classes
+
 - `TelegramBotControls`: Handles all bot control commands
 - `DisclaimerManager`: Manages user consent and preferences
 - `BotControlIntegration`: Integrates with main telegram router
 - `BotMessageMiddleware`: Filters messages based on preferences
 
 ### User Consent Storage
+
 - Stored per user_id
 - Tracks:
   - Disclaimer acceptance
@@ -104,7 +117,9 @@ src/bitten_core/
   - Timestamp of acceptance
 
 ## Legal Compliance
+
 The system ensures legal compliance by:
+
 1. Requiring explicit disclaimer acceptance
 2. Clearly stating all personalities are fictional
 3. Providing easy ON/OFF toggles
@@ -112,6 +127,7 @@ The system ensures legal compliance by:
 5. No bot messages sent when disabled
 
 ## Usage Example
+
 ```
 1. User joins BITTEN
 2. /start - Shows they need to accept disclaimer
@@ -124,6 +140,7 @@ The system ensures legal compliance by:
 ```
 
 ## Technical Notes
+
 - Commands are available to all users (UserRank.USER)
 - Preferences persist across sessions
 - Bot messages include formatting based on immersion level

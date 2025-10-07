@@ -13,11 +13,9 @@ from datetime import datetime
 from src.metasocket import MetaSocketBootstrap
 
 # Setup logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
+
 
 class EliteGuardMetaSocketIntegration:
     """Integration layer between MetaSocket and Elite Guard"""
@@ -39,10 +37,10 @@ class EliteGuardMetaSocketIntegration:
         self.ticks_received += 1
 
         # This would replace the existing tick processing in Elite Guard
-        symbol = tick_data.get('symbol')
-        bid = tick_data.get('bid')
-        ask = tick_data.get('ask')
-        mid = tick_data.get('mid')
+        symbol = tick_data.get("symbol")
+        bid = tick_data.get("bid")
+        ask = tick_data.get("ask")
+        mid = tick_data.get("mid")
 
         logger.debug(f"📊 TICK: {symbol} = {mid:.5f} (bid={bid:.5f}, ask={ask:.5f})")
 
@@ -51,9 +49,9 @@ class EliteGuardMetaSocketIntegration:
 
     async def handle_ohlc_data(self, ohlc_data):
         """Handle OHLC bar completion - wire to Elite Guard"""
-        symbol = ohlc_data.get('symbol')
-        timeframe = ohlc_data.get('timeframe')
-        close = ohlc_data.get('close')
+        symbol = ohlc_data.get("symbol")
+        timeframe = ohlc_data.get("timeframe")
+        close = ohlc_data.get("close")
 
         logger.info(f"📈 OHLC: {symbol} {timeframe} close={close:.5f}")
 
@@ -64,10 +62,10 @@ class EliteGuardMetaSocketIntegration:
         """Handle position events - wire to existing tracking"""
         self.positions_tracked += 1
 
-        ticket = position_data.get('ticket')
-        symbol = position_data.get('symbol')
-        state = position_data.get('state')
-        side = position_data.get('side')
+        ticket = position_data.get("ticket")
+        symbol = position_data.get("symbol")
+        state = position_data.get("state")
+        side = position_data.get("side")
 
         logger.info(f"🔥 POSITION: {symbol} {side} {state} (ticket={ticket})")
 
@@ -78,9 +76,9 @@ class EliteGuardMetaSocketIntegration:
         """Handle account summary updates"""
         self.account_updates += 1
 
-        balance = account_data.get('balance')
-        equity = account_data.get('equity')
-        free_margin = account_data.get('free_margin')
+        balance = account_data.get("balance")
+        equity = account_data.get("equity")
+        free_margin = account_data.get("free_margin")
 
         logger.info(f"💰 ACCOUNT: Balance=${balance:.2f}, Equity=${equity:.2f}, Free=${free_margin:.2f}")
 
@@ -91,9 +89,9 @@ class EliteGuardMetaSocketIntegration:
         """Handle signal snapshots - for fire confirmations"""
         self.snapshots_created += 1
 
-        symbol = snapshot_data.get('symbol')
-        bars_count = len(snapshot_data.get('ohlc', []))
-        trigger = snapshot_data.get('metadata', {}).get('trigger', 'unknown')
+        symbol = snapshot_data.get("symbol")
+        bars_count = len(snapshot_data.get("ohlc", []))
+        trigger = snapshot_data.get("metadata", {}).get("trigger", "unknown")
 
         logger.info(f"📸 SNAPSHOT: {symbol} ({bars_count} bars) trigger={trigger}")
 
@@ -104,16 +102,16 @@ class EliteGuardMetaSocketIntegration:
         """Print integration statistics"""
         uptime = datetime.now() - self.start_time
 
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print("📊 METASOCKET → ELITE GUARD INTEGRATION STATS")
-        print("="*60)
+        print("=" * 60)
         print(f"⏱️  Uptime: {uptime}")
         print(f"📈 Ticks Received: {self.ticks_received:,}")
         print(f"🔥 Positions Tracked: {self.positions_tracked}")
         print(f"💰 Account Updates: {self.account_updates}")
         print(f"📸 Snapshots Created: {self.snapshots_created}")
         print(f"🏥 Health: http://localhost:8890/healthz")
-        print("="*60)
+        print("=" * 60)
 
     async def start_integration(self):
         """Start the MetaSocket integration"""
@@ -125,7 +123,7 @@ class EliteGuardMetaSocketIntegration:
             ohlc_callback=self.handle_ohlc_data,
             position_callback=self.handle_position_event,
             account_callback=self.handle_account_update,
-            snapshot_callback=self.handle_signal_snapshot
+            snapshot_callback=self.handle_signal_snapshot,
         )
 
         # Start the MetaSocket system
@@ -138,19 +136,19 @@ class EliteGuardMetaSocketIntegration:
         snapshot = await self.bootstrap.on_fire_confirmation(fire_data)
 
         if snapshot:
-            logger.info(f"✅ Fire snapshot created: {snapshot['symbol']} "
-                       f"({len(snapshot['ohlc'])} bars)")
+            logger.info(f"✅ Fire snapshot created: {snapshot['symbol']} " f"({len(snapshot['ohlc'])} bars)")
             return snapshot
         else:
             logger.warning("⚠️ Failed to create fire snapshot")
             return None
+
 
 # Example usage showing integration points
 async def main():
     """Main function demonstrating the integration"""
 
     print("🎯 MetaSocket → BITTEN Integration Example")
-    print("="*50)
+    print("=" * 50)
 
     integration = EliteGuardMetaSocketIntegration()
 
@@ -172,6 +170,7 @@ async def main():
 
     finally:
         logger.info("👋 Integration shutdown complete")
+
 
 # Integration steps for Elite Guard
 def integration_checklist():
@@ -197,6 +196,7 @@ def integration_checklist():
     print("   - Run python metasocket_integration_example.py")
     print("   - Verify all data streams working")
     print("-" * 40)
+
 
 if __name__ == "__main__":
     # Print integration checklist

@@ -24,6 +24,7 @@ MT5 (Windows VPS)                     Linux VPS
 ### On MT5 Windows VPS
 
 1. **Download ZMQ Library**
+
    ```
    Download: https://github.com/zeromq/libzmq/releases/download/v4.3.4/zeromq-4.3.4.zip
    Extract: libzmq.dll (64-bit version)
@@ -43,6 +44,7 @@ MT5 (Windows VPS)                     Linux VPS
 ### On Linux VPS
 
 1. **Install Dependencies**
+
    ```bash
    pip install pyzmq flask cachetools
    ```
@@ -58,6 +60,7 @@ MT5 (Windows VPS)                     Linux VPS
 ### Step 1: Deploy EA on MT5
 
 1. **Copy EA to MT5**
+
    ```
    Copy: BITTENBridge_TradeExecutor_ZMQ_v6.mq5
    To: C:\Program Files\MetaTrader 5\MQL5\Experts\
@@ -73,17 +76,18 @@ MT5 (Windows VPS)                     Linux VPS
    - Open any chart (EA will stream all 15 pairs)
    - Drag EA to chart
    - Configure settings:
-     - ZMQ_BIND_ADDRESS: tcp://*:5555
+     - ZMQ_BIND_ADDRESS: tcp://\*:5555
      - StreamIntervalMS: 100 (for high frequency)
    - Click OK
 
 4. **Verify EA Running**
    - Check Experts tab for "ZMQ Publisher initialized"
-   - Should see "Publishing on: tcp://*:5555"
+   - Should see "Publishing on: tcp://\*:5555"
 
 ### Step 2: Deploy ZMQ Receiver on Linux
 
 1. **Stop Old Services**
+
    ```bash
    # Stop HTTP-based receivers
    systemctl stop market-data-receiver
@@ -91,37 +95,40 @@ MT5 (Windows VPS)                     Linux VPS
    ```
 
 2. **Configure Environment**
+
    ```bash
    # Edit the service file
    nano /root/HydraX-v2/zmq-market-receiver.service
-   
+
    # Update ZMQ_ENDPOINT with your MT5 IP
    Environment="ZMQ_ENDPOINT=tcp://YOUR_MT5_IP:5555"
    ```
 
 3. **Install Service**
+
    ```bash
    # Copy service file
    cp /root/HydraX-v2/zmq-market-receiver.service /etc/systemd/system/
-   
+
    # Reload systemd
    systemctl daemon-reload
-   
+
    # Enable service
    systemctl enable zmq-market-receiver
-   
+
    # Start service
    systemctl start zmq-market-receiver
    ```
 
 4. **Verify Service**
+
    ```bash
    # Check status
    systemctl status zmq-market-receiver
-   
+
    # Check logs
    journalctl -u zmq-market-receiver -f
-   
+
    # Test API
    curl http://localhost:8001/market-data/health
    ```
@@ -129,21 +136,24 @@ MT5 (Windows VPS)                     Linux VPS
 ### Step 3: Restart VENOM Pipeline
 
 1. **Kill Old VENOM Stream**
+
    ```bash
    pkill -f venom_stream_pipeline
    ```
 
 2. **Start VENOM with ZMQ Data**
+
    ```bash
    cd /root/HydraX-v2
    python3 venom_stream_pipeline.py > /tmp/venom_stream.log 2>&1 &
    ```
 
 3. **Verify Data Flow**
+
    ```bash
    # Check VENOM logs
    tail -f /tmp/venom_stream.log
-   
+
    # Should see "Processing 16 symbols" without "No live market data" errors
    ```
 
@@ -160,6 +170,7 @@ python3 start_zmq_infrastructure.py
 ## Monitoring
 
 ### Check Data Flow
+
 ```bash
 # Real-time symbol count
 watch -n 1 'curl -s http://localhost:8001/market-data/health | jq .'
@@ -169,6 +180,7 @@ curl -s http://localhost:8001/market-data/venom-feed?symbol=EURUSD | jq .
 ```
 
 ### Performance Metrics
+
 ```bash
 # ZMQ receiver stats
 journalctl -u zmq-market-receiver | grep "Messages received"
@@ -180,18 +192,21 @@ ping -c 10 MT5_IP_ADDRESS
 ## Troubleshooting
 
 ### EA Not Sending Data
+
 1. Check DLL imports enabled
 2. Verify libzmq.dll is accessible
 3. Check Windows firewall
 4. Look for errors in MT5 Experts tab
 
 ### No Data on Linux
+
 1. Check connectivity: `nc -zv MT5_IP 5555`
 2. Verify service running: `systemctl status zmq-market-receiver`
 3. Check logs: `journalctl -u zmq-market-receiver -n 100`
 4. Test direct connection: `python3 -c "import zmq; ctx=zmq.Context(); s=ctx.socket(zmq.SUB); s.setsockopt_string(zmq.SUBSCRIBE,''); s.connect('tcp://MT5_IP:5555'); print(s.recv_string())"`
 
 ### VENOM Not Generating Signals
+
 1. Verify data reception: `curl http://localhost:8001/market-data/all`
 2. Check TCS threshold in citadel_state.json
 3. Ensure truth tracker is running
@@ -200,6 +215,7 @@ ping -c 10 MT5_IP_ADDRESS
 ## Performance Tuning
 
 ### Linux Kernel
+
 ```bash
 # Add to /etc/sysctl.conf
 net.core.rmem_max = 134217728
@@ -213,6 +229,7 @@ sysctl -p
 ```
 
 ### Process Priority
+
 ```bash
 # Set high priority for receiver
 renice -n -10 -p $(pgrep -f zmq_market_data_receiver)

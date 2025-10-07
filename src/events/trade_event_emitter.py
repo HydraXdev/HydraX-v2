@@ -4,11 +4,12 @@ Trade Event Emitter
 Emits trade lifecycle events to WebSocket clients
 """
 
-import time
 import logging
+import time
 from typing import Dict, Optional
 
 logger = logging.getLogger(__name__)
+
 
 class TradeEventEmitter:
     """Emits trade events to Socket.IO"""
@@ -38,15 +39,7 @@ class TradeEventEmitter:
         logger.info(f"✅ Emitted {event_type} to user {user_id}")
 
     def emit_trade_arming(
-        self,
-        user_id: str,
-        op_id: str,
-        pair: str,
-        direction: str,
-        entry: float,
-        sl: float,
-        tp: float,
-        lot: float
+        self, user_id: str, op_id: str, pair: str, direction: str, entry: float, sl: float, tp: float, lot: float
     ):
         """
         Emit pre-position arming event
@@ -62,22 +55,22 @@ class TradeEventEmitter:
             lot: Lot size
         """
         data = {
-            'type': 'trades.delta',
-            'id': f"temp_{op_id}",
-            'pair': pair,
-            'direction': direction,
-            'entry': entry,
-            'current': entry,
-            'sl': sl,
-            'tp': tp,
-            'lot': lot,
-            'equity': 0,
-            'pnl': 0,
-            'status': 'ARMING',
-            'timestamp': int(time.time())
+            "type": "trades.delta",
+            "id": f"temp_{op_id}",
+            "pair": pair,
+            "direction": direction,
+            "entry": entry,
+            "current": entry,
+            "sl": sl,
+            "tp": tp,
+            "lot": lot,
+            "equity": 0,
+            "pnl": 0,
+            "status": "ARMING",
+            "timestamp": int(time.time()),
         }
 
-        self.emit_to_user(user_id, 'trades.delta', data)
+        self.emit_to_user(user_id, "trades.delta", data)
 
     def emit_trade_filled(
         self,
@@ -90,7 +83,7 @@ class TradeEventEmitter:
         filled_price: float,
         sl: float,
         tp: float,
-        lot: float
+        lot: float,
     ):
         """
         Emit position filled event
@@ -108,23 +101,23 @@ class TradeEventEmitter:
             lot: Lot size
         """
         data = {
-            'type': 'trades.delta',
-            'id': fire_id,
-            'ticket': ticket,
-            'pair': pair,
-            'direction': direction,
-            'entry': entry,
-            'current': filled_price,
-            'sl': sl,
-            'tp': tp,
-            'lot': lot,
-            'equity': 0,  # Will be updated with P&L
-            'pnl': 0,
-            'status': 'FILLED',
-            'timestamp': int(time.time())
+            "type": "trades.delta",
+            "id": fire_id,
+            "ticket": ticket,
+            "pair": pair,
+            "direction": direction,
+            "entry": entry,
+            "current": filled_price,
+            "sl": sl,
+            "tp": tp,
+            "lot": lot,
+            "equity": 0,  # Will be updated with P&L
+            "pnl": 0,
+            "status": "FILLED",
+            "timestamp": int(time.time()),
         }
 
-        self.emit_to_user(user_id, 'trades.delta', data)
+        self.emit_to_user(user_id, "trades.delta", data)
 
     def emit_operation_confirmation(
         self,
@@ -133,7 +126,7 @@ class TradeEventEmitter:
         status: str,
         ticket: Optional[int] = None,
         filled_price: Optional[float] = None,
-        reason: Optional[str] = None
+        reason: Optional[str] = None,
     ):
         """
         Emit operation confirmation event
@@ -146,30 +139,19 @@ class TradeEventEmitter:
             filled_price: Fill price (if filled)
             reason: Rejection reason (if rejected)
         """
-        data = {
-            'type': 'ops.confirmation',
-            'opId': op_id,
-            'status': status,
-            'timestamp': int(time.time())
-        }
+        data = {"type": "ops.confirmation", "opId": op_id, "status": status, "timestamp": int(time.time())}
 
         if ticket is not None:
-            data['ticket'] = ticket
+            data["ticket"] = ticket
         if filled_price is not None:
-            data['filledPrice'] = filled_price
+            data["filledPrice"] = filled_price
         if reason is not None:
-            data['reason'] = reason
+            data["reason"] = reason
 
-        self.emit_to_user(user_id, 'ops.confirmation', data)
+        self.emit_to_user(user_id, "ops.confirmation", data)
 
     def emit_position_update(
-        self,
-        user_id: str,
-        fire_id: str,
-        ticket: int,
-        current_price: float,
-        pnl: float,
-        equity: float
+        self, user_id: str, fire_id: str, ticket: int, current_price: float, pnl: float, equity: float
     ):
         """
         Emit position P&L update
@@ -183,26 +165,20 @@ class TradeEventEmitter:
             equity: Current equity
         """
         data = {
-            'type': 'trades.delta',
-            'id': fire_id,
-            'ticket': ticket,
-            'current': current_price,
-            'pnl': pnl,
-            'equity': equity,
-            'status': 'OPEN',
-            'timestamp': int(time.time())
+            "type": "trades.delta",
+            "id": fire_id,
+            "ticket": ticket,
+            "current": current_price,
+            "pnl": pnl,
+            "equity": equity,
+            "status": "OPEN",
+            "timestamp": int(time.time()),
         }
 
-        self.emit_to_user(user_id, 'trades.delta', data)
+        self.emit_to_user(user_id, "trades.delta", data)
 
     def emit_position_closed(
-        self,
-        user_id: str,
-        fire_id: str,
-        ticket: int,
-        close_price: float,
-        pnl: float,
-        reason: str
+        self, user_id: str, fire_id: str, ticket: int, close_price: float, pnl: float, reason: str
     ):
         """
         Emit position closed event
@@ -216,21 +192,22 @@ class TradeEventEmitter:
             reason: Close reason (TP_HIT, SL_HIT, MANUAL, etc.)
         """
         data = {
-            'type': 'trades.delta',
-            'id': fire_id,
-            'ticket': ticket,
-            'current': close_price,
-            'pnl': pnl,
-            'status': 'CLOSED',
-            'reason': reason,
-            'timestamp': int(time.time())
+            "type": "trades.delta",
+            "id": fire_id,
+            "ticket": ticket,
+            "current": close_price,
+            "pnl": pnl,
+            "status": "CLOSED",
+            "reason": reason,
+            "timestamp": int(time.time()),
         }
 
-        self.emit_to_user(user_id, 'trades.delta', data)
+        self.emit_to_user(user_id, "trades.delta", data)
 
 
 # Global instance
 _event_emitter = None
+
 
 def get_event_emitter() -> TradeEventEmitter:
     """Get or create global event emitter instance"""
@@ -240,7 +217,7 @@ def get_event_emitter() -> TradeEventEmitter:
     return _event_emitter
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Test
     emitter = get_event_emitter()
 
@@ -253,7 +230,7 @@ if __name__ == '__main__':
         entry=1.05234,
         sl=1.05134,
         tp=1.05382,
-        lot=0.10
+        lot=0.10,
     )
 
     print("✅ Emitted arming event")
@@ -269,18 +246,14 @@ if __name__ == '__main__':
         filled_price=1.05236,
         sl=1.05134,
         tp=1.05382,
-        lot=0.10
+        lot=0.10,
     )
 
     print("✅ Emitted filled event")
 
     # Test confirmation
     emitter.emit_operation_confirmation(
-        user_id="user_test",
-        op_id="op_123",
-        status="FILLED",
-        ticket=123456,
-        filled_price=1.05236
+        user_id="user_test", op_id="op_123", status="FILLED", ticket=123456, filled_price=1.05236
     )
 
     print("✅ Emitted confirmation event")

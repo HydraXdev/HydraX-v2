@@ -6,6 +6,7 @@
 ## ✅ WHAT'S WORKING
 
 ### Tick Stream Active
+
 - **UUID**: COMMANDER_DEV_001 confirmed in tick messages
 - **Symbols**: 26 pairs streaming
 - **Port 5560**: Publishing ticks successfully
@@ -14,36 +15,44 @@
 ## ⚠️ WHAT'S MISSING
 
 ### 1. No Handshake Received
+
 The EA v3.003 should send an initial handshake on port 5556:
+
 ```json
 {
   "type": "handshake",
   "uuid": "COMMANDER_DEV_001",
   "account": 843859,
-  "balance": 10000.00,
-  "equity": 10000.00,
+  "balance": 10000.0,
+  "equity": 10000.0,
   "currency": "USD",
   "version": "3.003"
 }
 ```
+
 **Status**: Not detected yet
 
 ### 2. No Heartbeats Detected
+
 EA should send heartbeats every second on port 5560:
+
 ```json
 {
   "type": "heartbeat",
-  "balance": 10000.00,
-  "equity": 10000.00,
-  "margin": 0.00,
-  "free_margin": 10000.00,
+  "balance": 10000.0,
+  "equity": 10000.0,
+  "margin": 0.0,
+  "free_margin": 10000.0,
   "open_positions": 0
 }
 ```
+
 **Status**: Not detected yet
 
 ### 3. DEALER Socket Not Connected
+
 The EA hasn't connected its DEALER socket to port 5555:
+
 - Command router only knows "TEST_CLIENT_001"
 - Needs to connect as "COMMANDER_DEV_001" for fire commands
 
@@ -62,11 +71,13 @@ The EA hasn't connected its DEALER socket to port 5555:
 ## 📊 CURRENT CAPABILITY
 
 With only ticks flowing, the system can:
+
 - ✅ Build candles for pattern detection
 - ✅ Generate trading signals (once enough candles accumulate)
 - ⏳ Send alerts to Telegram (signals will flow)
 
 But CANNOT:
+
 - ❌ Execute trades (needs DEALER connection)
 - ❌ Track account balance (needs heartbeat)
 - ❌ Initialize user data (needs handshake)
@@ -88,4 +99,5 @@ pm2 logs elite_guard --lines 20 | grep "candles"
 ```
 
 ---
+
 **STATUS: Ticks flowing, awaiting handshake and DEALER connection for full functionality**

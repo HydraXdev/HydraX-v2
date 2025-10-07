@@ -1,4 +1,5 @@
 # BITTEN System Cleanup Analysis Report
+
 **Date**: October 2, 2025 04:40 UTC
 **Scope**: /root/HydraX-v2 Python files
 **Total Files Scanned**: 467 files in root directory
@@ -7,17 +8,17 @@
 
 ## 📊 SUMMARY
 
-| Category | Count | Action | Storage Savings |
-|----------|-------|--------|-----------------|
-| **Test Files** | 61 | Archive | ~2.1 MB |
-| **Duplicate Bridges** | 10 | Archive | ~450 KB |
-| **Uppercase Scripts** | 34 | Archive | ~890 KB |
-| **Dev/Debug Scripts** | 23 | Archive | ~780 KB |
-| **Unused Trackers** | 3 | Archive | ~120 KB |
-| **Unused Monitors** | 5 | Archive | ~210 KB |
-| **Migration Scripts** | 22 | Archive | ~650 KB |
-| **Miscellaneous** | 13 | Archive | ~400 KB |
-| **TOTAL** | **171 files** | **Archive** | **~5.6 MB** |
+| Category              | Count         | Action      | Storage Savings |
+| --------------------- | ------------- | ----------- | --------------- |
+| **Test Files**        | 61            | Archive     | ~2.1 MB         |
+| **Duplicate Bridges** | 10            | Archive     | ~450 KB         |
+| **Uppercase Scripts** | 34            | Archive     | ~890 KB         |
+| **Dev/Debug Scripts** | 23            | Archive     | ~780 KB         |
+| **Unused Trackers**   | 3             | Archive     | ~120 KB         |
+| **Unused Monitors**   | 5             | Archive     | ~210 KB         |
+| **Migration Scripts** | 22            | Archive     | ~650 KB         |
+| **Miscellaneous**     | 13            | Archive     | ~400 KB         |
+| **TOTAL**             | **171 files** | **Archive** | **~5.6 MB**     |
 
 **Cleanup Impact**: Reducing root directory from 467 → 296 files (36% reduction)
 
@@ -26,6 +27,7 @@
 ## ✅ CRITICAL SYSTEMS - DO NOT TOUCH
 
 ### Running Production Processes (PM2)
+
 - ✅ `elite_guard_with_citadel.py` - Signal generation (PID 3815271)
 - ✅ `command_router.py` - Fire command routing
 - ✅ `confirm_listener_v207.py` - Trade confirmations
@@ -39,6 +41,7 @@
 - ✅ `grokkeeper_ml.py` - ML optimization
 
 ### Supporting Infrastructure
+
 - ✅ `bitten_production_bot.py` - Telegram bot
 - ✅ `enqueue_fire.py` - Fire command creation
 - ✅ All files in `/root/HydraX-v2/src/` directory (core modules)
@@ -79,6 +82,7 @@ ping_test*.py (3 files)                - Connection testing
 **Active Bridge**: `zmq_telemetry_bridge_debug.py` ✅ (Only one running)
 
 **Unused Duplicates**:
+
 ```
 ❌ zmq_telemetry_bridge_v207.py        - Superseded by debug version
 ❌ zmq_telemetry_bridge_resilient.py   - Older version
@@ -164,6 +168,7 @@ system_health_check.py                 - System checker
 **Active Trackers**: canonical_tracker, signal_tracker, redis_tracker, master_tracker ✅
 
 **Unused/Duplicate**:
+
 ```
 ❌ comprehensive_signal_tracker.py      - Replaced by canonical_tracker
 ❌ comprehensive_performance_tracker.py - Replaced by canonical_tracker
@@ -179,6 +184,7 @@ system_health_check.py                 - System checker
 **Active Monitors**: health_monitor, position_monitor, ea_position_monitor, slot_monitor ✅
 
 **Unused/Old**:
+
 ```
 ❌ enhanced_ea_heartbeat_monitor.py    - Old heartbeat monitor
 ❌ heartbeat_monitor.py                - Old version
@@ -234,11 +240,13 @@ ai_trading_engine_*.py (files)         - AI engine tests
 ## 🎯 RECOMMENDED ACTION PLAN
 
 ### Phase 1: Create Archive Directory
+
 ```bash
 mkdir -p /root/PYTHON_CLEANUP_ARCHIVE_2025_10_02
 ```
 
 ### Phase 2: Archive by Category (Surgical Approach)
+
 ```bash
 # Test files (61 files)
 mv /root/HydraX-v2/*test*.py /root/PYTHON_CLEANUP_ARCHIVE_2025_10_02/
@@ -262,6 +270,7 @@ mv /root/HydraX-v2/diagnose_*.py /root/PYTHON_CLEANUP_ARCHIVE_2025_10_02/
 ```
 
 ### Phase 3: Verification
+
 ```bash
 # Verify PM2 processes still running
 pm2 list
@@ -274,6 +283,7 @@ tail -f /root/HydraX-v2/comprehensive_tracking.jsonl
 ```
 
 ### Phase 4: Mark for Deletion (After 30 Days)
+
 ```bash
 # After 30 days of stable operation:
 rm -rf /root/PYTHON_CLEANUP_ARCHIVE_2025_10_02
@@ -284,6 +294,7 @@ rm -rf /root/PYTHON_CLEANUP_ARCHIVE_2025_10_02
 ## 🔒 SAFETY GUARANTEES
 
 ### Files That Will NEVER Be Moved:
+
 1. ✅ Any file currently running in PM2
 2. ✅ Any file in `/src/` directory (core modules)
 3. ✅ Any file in `/event_bus/` directory
@@ -296,12 +307,14 @@ rm -rf /root/PYTHON_CLEANUP_ARCHIVE_2025_10_02
 10. ✅ `zmq_telemetry_bridge_debug.py` (ONLY active bridge)
 
 ### What Could Break If Done Wrong:
+
 - ❌ Moving active PM2 process files → System crash
 - ❌ Moving core modules in `/src/` → Import errors
 - ❌ Moving active bridge → Market data loss
 - ❌ Moving tracker files that are running → Performance monitoring loss
 
 ### How We Prevent Breakage:
+
 1. ✅ Cross-reference every file against PM2 process list
 2. ✅ Check for imports in active code before archiving
 3. ✅ Test system health after each phase
@@ -313,6 +326,7 @@ rm -rf /root/PYTHON_CLEANUP_ARCHIVE_2025_10_02
 ## 📈 EXPECTED BENEFITS
 
 ### Immediate Benefits:
+
 - ✅ 36% reduction in root directory clutter (467 → 296 files)
 - ✅ Easier navigation for developers
 - ✅ Faster file searches and grepping
@@ -320,6 +334,7 @@ rm -rf /root/PYTHON_CLEANUP_ARCHIVE_2025_10_02
 - ✅ ~5.6 MB storage reclaimed
 
 ### Long-term Benefits:
+
 - ✅ Reduced confusion about which files are actually used
 - ✅ Faster onboarding for new developers
 - ✅ Lower risk of accidentally running old/test code
@@ -350,6 +365,7 @@ rm -rf /root/PYTHON_CLEANUP_ARCHIVE_2025_10_02
 ## 🎯 FINAL RECOMMENDATION
 
 **PROCEED WITH CLEANUP** - All identified files are safe to archive based on:
+
 1. ✅ None are running in PM2
 2. ✅ None are imported by production code
 3. ✅ All serve development/testing purposes only

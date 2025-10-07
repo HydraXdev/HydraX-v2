@@ -4,21 +4,22 @@ Deep Link Generator for Telegram Mission Alerts
 Creates secure mission session links with JWT tokens
 """
 
+import logging
 import os
 from typing import Dict
 from urllib.parse import urlencode
-import logging
 
-from src.security.jwt_manager import get_jwt_manager
 from src.mission_session.session_manager import get_session_manager
+from src.security.jwt_manager import get_jwt_manager
 
 logger = logging.getLogger(__name__)
+
 
 class DeepLinkGenerator:
     """Generates deep links for mission alerts"""
 
     def __init__(self, base_url: str = None):
-        self.base_url = base_url or os.getenv('BITTEN_UI_URL', 'https://www.joinbitten.com')
+        self.base_url = base_url or os.getenv("BITTEN_UI_URL", "https://www.joinbitten.com")
         self.jwt_manager = get_jwt_manager()
         self.session_manager = get_session_manager()
 
@@ -30,7 +31,7 @@ class DeepLinkGenerator:
         pair: str = None,
         timeframe: str = None,
         risk_max_usd: float = None,
-        session_ttl: int = 600  # 10 minutes
+        session_ttl: int = 600,  # 10 minutes
     ) -> Dict:
         """
         Generate a deep link for a mission alert
@@ -56,36 +57,33 @@ class DeepLinkGenerator:
                 pair=pair,
                 timeframe=timeframe,
                 risk_max_usd=risk_max_usd,
-                ttl_seconds=session_ttl
+                ttl_seconds=session_ttl,
             )
 
             # Generate JWT token
             token = self.jwt_manager.generate_mission_token(
                 user_id=user_id,
-                mission_session_id=session['mission_session_id'],
+                mission_session_id=session["mission_session_id"],
                 alert_id=alert_id,
                 scopes=["mission:view", "order:execute"],
                 pair=pair,
                 timeframe=timeframe,
                 risk_max_usd=risk_max_usd,
-                ttl_seconds=session_ttl
+                ttl_seconds=session_ttl,
             )
 
             # Build deep link
-            params = {
-                'ms': session['mission_session_id'],
-                'token': token
-            }
+            params = {"ms": session["mission_session_id"], "token": token}
 
             deep_link = f"{self.base_url}/mission?{urlencode(params)}"
 
             logger.info(f"✅ Generated deep link for user {user_id}, signal {signal_id}")
 
             return {
-                'deep_link': deep_link,
-                'mission_session_id': session['mission_session_id'],
-                'token': token,
-                'expires_at': session['expires_at']
+                "deep_link": deep_link,
+                "mission_session_id": session["mission_session_id"],
+                "token": token,
+                "expires_at": session["expires_at"],
             }
 
         except Exception as e:
@@ -108,6 +106,7 @@ class DeepLinkGenerator:
 # Global instance
 _link_generator = None
 
+
 def get_link_generator() -> DeepLinkGenerator:
     """Get or create global link generator instance"""
     global _link_generator
@@ -116,10 +115,11 @@ def get_link_generator() -> DeepLinkGenerator:
     return _link_generator
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Add parent directory to path for imports
     import sys
-    sys.path.insert(0, '/root/HydraX-v2')
+
+    sys.path.insert(0, "/root/HydraX-v2")
 
     # Test
     generator = get_link_generator()
@@ -131,7 +131,7 @@ if __name__ == '__main__':
         alert_id=999,
         pair="EURUSD",
         timeframe="M5",
-        risk_max_usd=150.0
+        risk_max_usd=150.0,
     )
 
     print(f"Deep link: {link_data['deep_link']}")

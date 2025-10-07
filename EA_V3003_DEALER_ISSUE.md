@@ -41,15 +41,19 @@
 ## 📊 EVIDENCE
 
 ### Command Router Logs
+
 ```
 [IPC_IN] fire TEST_FIRE_1759382306 target_uuid='COMMANDER_DEV_001'
 [IPC_BRIDGE] ACCEPTED fire TEST_FIRE_1759382306 → queue
 ```
+
 But no:
+
 - `[ROUTER] learned COMMANDER_DEV_001`
 - `[EA] fire COMMANDER_DEV_001`
 
 ### Missing DEALER Registration
+
 The EA hasn't sent its first message on the DEALER socket, so the router doesn't know its identity.
 
 ## 🎯 ROOT CAUSE
@@ -57,6 +61,7 @@ The EA hasn't sent its first message on the DEALER socket, so the router doesn't
 **ZMQ DEALER sockets are lazy-connect**: They don't register their identity until they send their first message.
 
 The EA has:
+
 1. Connected DEALER socket to port 5555 ✅
 2. NOT sent any message yet ❌
 3. Therefore router doesn't know COMMANDER_DEV_001 exists ❌
@@ -64,6 +69,7 @@ The EA has:
 ## 💡 SOLUTIONS
 
 ### Option 1: EA Code Fix (Recommended)
+
 The EA needs to send an initial message after connecting the DEALER socket:
 
 ```mql5
@@ -73,10 +79,13 @@ ZmqSend(dealer_socket, init_msg);
 ```
 
 ### Option 2: Force Registration
+
 The EA should respond to ping commands, but it's not receiving them because the router can't route to an unknown identity (chicken-egg problem).
 
 ### Option 3: Check EA Configuration
+
 Verify in MT5 Experts tab:
+
 1. All 4 sockets connected successfully
 2. No errors on DEALER socket connection
 3. Identity string is exactly "COMMANDER_DEV_001"
@@ -97,6 +106,7 @@ pm2 logs confirm_listener_v207 --lines 20
 ## 🚨 IMPACT
 
 Without DEALER registration:
+
 - ❌ No fire command execution
 - ❌ No live trading possible
 - ❌ Commands pile up in queue

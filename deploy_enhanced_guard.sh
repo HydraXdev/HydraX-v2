@@ -20,10 +20,10 @@ check_processes() {
 # Function to verify signal flow
 verify_signal_flow() {
     echo "Verifying signal flow..."
-    
+
     # Check if ZMQ ports are bound
     netstat -tuln | grep -E "5555|5556|5557|5558|5560" | head -5
-    
+
     # Check recent signals
     if [ -f /root/HydraX-v2/truth_log.jsonl ]; then
         echo "Recent signals:"

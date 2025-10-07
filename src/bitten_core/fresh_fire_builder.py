@@ -7,235 +7,215 @@ Ensures users never execute stale signals with outdated parameters
 
 import json
 import logging
-import sys
 import os
+import sys
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Dict, Optional, Tuple
-from dataclasses import dataclass
+
 from .signal_vitality_engine import VitalityMetrics
 
 # Add parent directory to path for imports
-sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
+sys.path.append(os.path.join(os.path.dirname(__file__), "../.."))
 from fix_individualized_risk import get_user_risk_profile
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class FreshFirePacket:
     """Fresh trade request packet with adjusted parameters"""
+
     signal_id: str
     symbol: str
     direction: str  # BUY or SELL
-    
+
     # Adjusted entry based on current market
     entry_price: float
     original_entry: float
     entry_adjustment_pips: float
-    
+
     # Adjusted SL/TP maintaining R:R ratio
     stop_loss: float
     take_profit: float
     original_sl: float
     original_tp: float
-    
+
     # Position sizing based on current balance
     lot_size: float
     risk_dollars: float
     risk_percent: float
-    
+
     # Market conditions at execution
     current_spread: float
     expected_slippage: float
-    
+
     # Vitality and warnings
     vitality_score: float
     execution_warnings: list
-    
+
     # Metadata
     timestamp: datetime
     user_balance: float
     account_currency: str
-    
+
 
 class FreshFireBuilder:
     """
     Builds fresh fire packets with real-time adjustments
     Ensures every trade execution uses current market data
     """
-    
+
     def __init__(self):
         self.pip_values = {
-            'EURUSD': 10.0,
-            'GBPUSD': 10.0,
-            'USDJPY': 10.0,
-            'USDCAD': 10.0,
-            'AUDUSD': 10.0,
-            'EURJPY': 6.8,   # JPY pairs have different pip values
-            'GBPJPY': 6.8,
-            'XAUUSD': 10.0,  # Gold - $10 per pip per standard lot
-            'XAGUSD': 5.0,   # Silver - $5 per pip per standard lot (5000 oz)
-            'BTCUSD': 0.01,  # Crypto pairs
-            'ETHUSD': 0.01,
-            'XRPUSD': 0.0001
+            "EURUSD": 10.0,
+            "GBPUSD": 10.0,
+            "USDJPY": 10.0,
+            "USDCAD": 10.0,
+            "AUDUSD": 10.0,
+            "EURJPY": 6.8,  # JPY pairs have different pip values
+            "GBPJPY": 6.8,
+            "XAUUSD": 10.0,  # Gold - $10 per pip per standard lot
+            "XAGUSD": 5.0,  # Silver - $5 per pip per standard lot (5000 oz)
+            "BTCUSD": 0.01,  # Crypto pairs
+            "ETHUSD": 0.01,
+            "XRPUSD": 0.0001,
         }
-        
+
     def build_fresh_packet(
-        self,
-        mission_data: Dict,
-        vitality_metrics: 'VitalityMetrics',
-        user_profile: Dict,
-        current_market: Dict
+        self, mission_data: Dict, vitality_metrics: "VitalityMetrics", user_profile: Dict, current_market: Dict
     ) -> FreshFirePacket:
         """
         Build a fresh fire packet with all adjustments applied
-        
+
         Args:
             mission_data: Original signal/mission data
             vitality_metrics: Current vitality calculation results
             user_profile: User account information
             current_market: Current market data
-            
+
         Returns:
             FreshFirePacket ready for execution
         """
-        
+
         # Extract original signal data
-        signal = mission_data.get('signal', mission_data)
-        symbol = signal.get('symbol', 'EURUSD')
-        direction = signal.get('direction', 'BUY').upper()
-        
+        signal = mission_data.get("signal", mission_data)
+        symbol = signal.get("symbol", "EURUSD")
+        direction = signal.get("direction", "BUY").upper()
+
         # Get adjusted parameters from vitality metrics
         adjusted_entry = vitality_metrics.adjusted_entry
         adjusted_sl = vitality_metrics.adjusted_sl
         adjusted_tp = vitality_metrics.adjusted_tp
-        
+
         # Calculate position size with current balance
-        user_balance = user_profile.get('balance', 10000)
+        user_balance = user_profile.get("balance", 10000)
         risk_percent = self._get_risk_percent(user_profile)
-        lot_size = self._calculate_position_size(
-            symbol, 
-            adjusted_entry,
-            adjusted_sl,
-            user_balance,
-            risk_percent
-        )
-        
+        lot_size = self._calculate_position_size(symbol, adjusted_entry, adjusted_sl, user_balance, risk_percent)
+
         # Calculate actual risk in dollars
         sl_pips = abs(adjusted_entry - adjusted_sl) * self._get_pip_multiplier(symbol)
         risk_dollars = sl_pips * self._get_pip_value(symbol) * lot_size
-        
+
         # Get current market conditions
-        current_spread = current_market.get('spread', 2.0)
+        current_spread = current_market.get("spread", 2.0)
         expected_slippage = vitality_metrics.expected_slippage_pips
-        
+
         # Generate execution warnings
         warnings = self._generate_execution_warnings(
-            vitality_metrics,
-            adjusted_entry,
-            signal.get('entry_price', adjusted_entry)
+            vitality_metrics, adjusted_entry, signal.get("entry_price", adjusted_entry)
         )
-        
+
         # Create fresh fire packet
         packet = FreshFirePacket(
-            signal_id=mission_data.get('signal_id', f"FRESH_{symbol}_{int(datetime.now().timestamp())}"),
+            signal_id=mission_data.get("signal_id", f"FRESH_{symbol}_{int(datetime.now().timestamp())}"),
             symbol=symbol,
             direction=direction,
-            
             # Adjusted entries
             entry_price=round(adjusted_entry, 5),
-            original_entry=signal.get('entry_price', adjusted_entry),
+            original_entry=signal.get("entry_price", adjusted_entry),
             entry_adjustment_pips=vitality_metrics.price_drift_pips,
-            
             # Adjusted SL/TP
             stop_loss=round(adjusted_sl, 5),
             take_profit=round(adjusted_tp, 5),
-            original_sl=signal.get('stop_loss', adjusted_sl),
-            original_tp=signal.get('take_profit', adjusted_tp),
-            
+            original_sl=signal.get("stop_loss", adjusted_sl),
+            original_tp=signal.get("take_profit", adjusted_tp),
             # Position sizing
             lot_size=round(lot_size, 2),
             risk_dollars=round(risk_dollars, 2),
             risk_percent=risk_percent,
-            
             # Market conditions
             current_spread=current_spread,
             expected_slippage=expected_slippage,
-            
             # Vitality
             vitality_score=vitality_metrics.vitality_score,
             execution_warnings=warnings,
-            
             # Metadata
             timestamp=datetime.now(),
             user_balance=user_balance,
-            account_currency=user_profile.get('currency', 'USD')
+            account_currency=user_profile.get("currency", "USD"),
         )
-        
+
         logger.info(f"Built fresh fire packet for {symbol}: Entry adjusted by {packet.entry_adjustment_pips:.1f} pips")
-        
+
         return packet
-    
+
     def _get_risk_percent(self, user_profile: Dict) -> float:
         """Get risk percent based on user tier and settings"""
-        tier = user_profile.get('tier', 'NIBBLER')
-        user_id = user_profile.get('user_id', user_profile.get('telegram_id'))
+        tier = user_profile.get("tier", "NIBBLER")
+        user_id = user_profile.get("user_id", user_profile.get("telegram_id"))
 
         # Get user-specific risk profile if user_id available
         if user_id:
             risk_profile = get_user_risk_profile(str(user_id))
-            return risk_profile.get('risk_percentage', 2.0)
+            return risk_profile.get("risk_percentage", 2.0)
 
         # Fallback based on tier for legacy compatibility
-        if tier == 'PRESS_PASS':
+        if tier == "PRESS_PASS":
             return 1.0  # Demo accounts use 1%
-        elif tier == 'COMMANDER':
+        elif tier == "COMMANDER":
             return 5.0  # Default for commanders
         else:
             return 2.0  # Default for other tiers
-    
+
     def _calculate_position_size(
-        self,
-        symbol: str,
-        entry: float,
-        stop_loss: float,
-        balance: float,
-        risk_percent: float
+        self, symbol: str, entry: float, stop_loss: float, balance: float, risk_percent: float
     ) -> float:
         """
         Calculate position size based on current balance and risk
-        
+
         Returns:
             Lot size (standard lots)
         """
         # Calculate risk amount in account currency
         risk_amount = balance * (risk_percent / 100)
-        
+
         # Calculate stop loss distance in pips
         pip_multiplier = self._get_pip_multiplier(symbol)
         sl_distance = abs(entry - stop_loss) * pip_multiplier
-        
+
         if sl_distance == 0:
             logger.warning(f"Zero SL distance for {symbol}, using minimum")
             sl_distance = 10  # Minimum 10 pips
-        
+
         # Get pip value for this symbol
         pip_value = self._get_pip_value(symbol)
-        
+
         # CRITICAL: Log the calculation for debugging
         logger.info(f"🔍 LOT CALC: {symbol} | Balance: ${balance:.2f} | Risk: {risk_percent}% (${risk_amount:.2f})")
         logger.info(f"   SL Distance: {sl_distance:.1f} pips | Pip Value: ${pip_value:.2f}")
-        
+
         # Calculate lot size
         # Formula: Lot Size = Risk Amount / (SL Pips × Pip Value)
         lot_size = risk_amount / (sl_distance * pip_value)
         logger.info(f"   Calculated: {lot_size:.4f} lots before limits")
-        
+
         # Apply limits
         min_lot = 0.01
         max_lot = self._get_max_lot_size(symbol, balance)
-        
+
         final_lot = max(min_lot, min(lot_size, max_lot))
-        
+
         # SAFETY CHECK: Verify actual risk doesn't exceed user's max (with 0.5% buffer)
         actual_risk = final_lot * sl_distance * pip_value
         actual_risk_pct = (actual_risk / balance) * 100
@@ -246,137 +226,135 @@ class FreshFireBuilder:
             final_lot = (balance * (risk_percent / 100)) / (sl_distance * pip_value)
             final_lot = round(final_lot, 2)
             logger.info(f"   Adjusted to {final_lot} lots for {risk_percent}% risk")
-        
+
         return final_lot
-    
+
     def _get_pip_multiplier(self, symbol: str) -> float:
         """Get pip multiplier for symbol"""
-        if 'JPY' in symbol:
+        if "JPY" in symbol:
             return 100
-        elif symbol in ['XAUUSD']:
+        elif symbol in ["XAUUSD"]:
             return 10  # For XAUUSD: 0.1 price movement = 1 pip (e.g., 2405.0 to 2405.1)
-        elif symbol in ['XAGUSD']:
+        elif symbol in ["XAGUSD"]:
             return 1000  # For XAGUSD: 0.001 price movement = 1 pip (e.g., 38.500 to 38.501)
-        elif symbol in ['BTCUSD', 'ETHUSD']:
+        elif symbol in ["BTCUSD", "ETHUSD"]:
             return 1
-        elif symbol == 'XRPUSD':
+        elif symbol == "XRPUSD":
             return 10000
         else:
             return 10000  # Standard forex
-    
+
     def _get_pip_value(self, symbol: str) -> float:
         """Get pip value per standard lot for symbol"""
         return self.pip_values.get(symbol, 10.0)
-    
+
     def _get_max_lot_size(self, symbol: str, balance: float) -> float:
         """Get maximum allowed lot size based on symbol and balance"""
         # Standard forex pairs - scale with account size
-        if any(x in symbol for x in ['EUR', 'GBP', 'USD', 'JPY', 'CHF', 'CAD', 'AUD', 'NZD']):
+        if any(x in symbol for x in ["EUR", "GBP", "USD", "JPY", "CHF", "CAD", "AUD", "NZD"]):
             # Allow up to 10 lots per $10k balance (scales with account)
             return balance / 1000.0
-        
+
         # Crypto pairs have different limits
-        if symbol in ['BTCUSD', 'ETHUSD', 'XRPUSD']:
+        if symbol in ["BTCUSD", "ETHUSD", "XRPUSD"]:
             # Max 5% of balance worth for crypto
-            if symbol == 'BTCUSD':
+            if symbol == "BTCUSD":
                 max_btc = (balance * 0.05) / 50000  # Assuming ~$50k per BTC
                 return min(5.0, max_btc)
-            elif symbol == 'ETHUSD':
+            elif symbol == "ETHUSD":
                 max_eth = (balance * 0.05) / 3000  # Assuming ~$3k per ETH
                 return min(50.0, max_eth)
             else:  # XRPUSD
                 max_xrp = (balance * 0.05) / 0.5  # Assuming ~$0.50 per XRP
                 return min(10000, max_xrp)
-        
+
         # Forex pairs - more reasonable limits for 5% risk trading
         # Allow up to 1% of balance per lot (e.g., $1000 balance = 1.0 max lot)
         return min(10.0, balance / 1000)
-    
+
     def _generate_execution_warnings(
-        self,
-        vitality_metrics: 'VitalityMetrics',
-        adjusted_entry: float,
-        original_entry: float
+        self, vitality_metrics: "VitalityMetrics", adjusted_entry: float, original_entry: float
     ) -> list:
         """Generate warnings about the fresh packet adjustments"""
         warnings = []
-        
+
         # Add vitality warnings
         warnings.extend(vitality_metrics.execution_warnings)
-        
+
         # Add entry adjustment warning if significant
         entry_diff_pips = abs(adjusted_entry - original_entry) * 10000
         if entry_diff_pips > 5:
             warnings.append(f"Entry adjusted by {entry_diff_pips:.0f} pips from original")
-        
+
         # Add spread warning if high
         if vitality_metrics.spread_ratio > 2:
             warnings.append(f"Spread increased {(vitality_metrics.spread_ratio - 1) * 100:.0f}%")
-        
+
         # Add slippage warning if expected
         if vitality_metrics.expected_slippage_pips > 2:
             warnings.append(f"Expect {vitality_metrics.expected_slippage_pips:.0f} pips slippage")
-        
+
         return warnings
-    
+
     def to_trade_request(self, packet: FreshFirePacket) -> Dict:
         """
         Convert fresh fire packet to trade request format for execution
-        
+
         Returns:
             Trade request dictionary ready for fire router
         """
         return {
-            'signal_id': packet.signal_id,
-            'symbol': packet.symbol,
-            'direction': packet.direction,
-            'entry_price': packet.entry_price,
-            'stop_loss': packet.stop_loss,
-            'take_profit': packet.take_profit,
-            'lot_size': packet.lot_size,
-            'risk_amount': packet.risk_dollars,
-            'metadata': {
-                'vitality_score': packet.vitality_score,
-                'entry_adjusted': packet.entry_adjustment_pips > 0,
-                'original_entry': packet.original_entry,
-                'warnings': packet.execution_warnings,
-                'timestamp': packet.timestamp.isoformat()
-            }
+            "signal_id": packet.signal_id,
+            "symbol": packet.symbol,
+            "direction": packet.direction,
+            "entry_price": packet.entry_price,
+            "stop_loss": packet.stop_loss,
+            "take_profit": packet.take_profit,
+            "lot_size": packet.lot_size,
+            "risk_amount": packet.risk_dollars,
+            "metadata": {
+                "vitality_score": packet.vitality_score,
+                "entry_adjusted": packet.entry_adjustment_pips > 0,
+                "original_entry": packet.original_entry,
+                "warnings": packet.execution_warnings,
+                "timestamp": packet.timestamp.isoformat(),
+            },
         }
-    
+
     def validate_packet(self, packet: FreshFirePacket) -> Tuple[bool, str]:
         """
         Validate that the fresh packet is safe to execute
-        
+
         Returns:
             (is_valid, error_message)
         """
         # Check vitality score
         if packet.vitality_score < 20:
             return False, "Signal expired - vitality too low"
-        
+
         # Check risk amount against user's max risk percentage
         max_risk = packet.user_balance * (packet.risk_percent / 100)  # Use user's risk percentage
         if packet.risk_dollars > max_risk:
             return False, f"Risk too high: ${packet.risk_dollars:.2f} exceeds {packet.risk_percent}% limit"
-        
+
         # Check lot size
         if packet.lot_size < 0.01:
             return False, "Lot size too small"
-        
+
         # Check entry adjustment
         if packet.entry_adjustment_pips > 50:
             return False, "Entry drifted too far from original signal"
-        
+
         # Check spread
         if packet.current_spread > 10:
             return False, "Spread too wide for safe execution"
-        
+
         return True, ""
 
 
 # Singleton instance
 _fresh_builder = None
+
 
 def get_fresh_fire_builder() -> FreshFireBuilder:
     """Get singleton instance of fresh fire builder"""

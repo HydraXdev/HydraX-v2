@@ -3,9 +3,10 @@
 Trigger EA DEALER socket registration with broadcast ping
 """
 
-import zmq
 import json
 import time
+
+import zmq
 
 print("=" * 60)
 print("🎯 TRIGGERING EA DEALER HANDSHAKE")
@@ -20,7 +21,7 @@ sender.connect("ipc:///tmp/bitten_cmdqueue")
 # Send ping WITHOUT target_uuid to force broadcast
 ping = {
     "type": "ping",
-    "ping_id": f"BROADCAST_{int(time.time())}"
+    "ping_id": f"BROADCAST_{int(time.time())}",
     # NO target_uuid - forces router to broadcast to all DEALERs
 }
 
@@ -35,9 +36,9 @@ time.sleep(1)
 print("\n🔍 Checking command router for EA identity...")
 
 import subprocess
+
 result = subprocess.run(
-    ["pm2", "logs", "command_router", "--lines", "10", "--nostream"],
-    capture_output=True, text=True
+    ["pm2", "logs", "command_router", "--lines", "10", "--nostream"], capture_output=True, text=True
 )
 
 if "COMMANDER_DEV_001" in result.stdout and ("learned" in result.stdout or "pong" in result.stdout):
@@ -53,8 +54,8 @@ else:
 print("\n💓 Checking for heartbeats on port 5560...")
 
 sub = context.socket(zmq.SUB)
-sub.connect('tcp://localhost:5560')
-sub.subscribe(b'')
+sub.connect("tcp://localhost:5560")
+sub.subscribe(b"")
 sub.setsockopt(zmq.RCVTIMEO, 2000)
 
 heartbeat_count = 0
@@ -65,10 +66,10 @@ for i in range(3):  # Check for 3 seconds
         msg = sub.recv_string()
         data = json.loads(msg)
 
-        if data.get('type') == 'heartbeat':
+        if data.get("type") == "heartbeat":
             heartbeat_count += 1
             print(f"✅ Heartbeat detected! Balance: ${data.get('balance')}, Equity: ${data.get('equity')}")
-        elif data.get('type') == 'tick':
+        elif data.get("type") == "tick":
             tick_count += 1
     except zmq.Again:
         pass

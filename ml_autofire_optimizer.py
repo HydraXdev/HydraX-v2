@@ -5,19 +5,21 @@ Real-time machine learning optimization for per-user auto-fire profiles
 Learns from event bus data and continuously adjusts parameters for best odds
 """
 
-import sqlite3
 import json
-import time
 import logging
-import numpy as np
-from datetime import datetime, timedelta
-from collections import defaultdict, deque
-from typing import Dict, List, Tuple, Optional
-import pickle
 import os
+import pickle
+import sqlite3
+import time
+from collections import defaultdict, deque
+from datetime import datetime, timedelta
+from typing import Dict, List, Optional, Tuple
+
+import numpy as np
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
 
 class MLAutoFireOptimizer:
     def __init__(self, user_id: str = "7176191872"):
@@ -53,12 +55,12 @@ class MLAutoFireOptimizer:
         """Load previous ML state if available"""
         try:
             if os.path.exists(self.state_file):
-                with open(self.state_file, 'rb') as f:
+                with open(self.state_file, "rb") as f:
                     state = pickle.load(f)
-                    self.session_performance = state.get('session_performance', self.session_performance)
-                    self.pattern_performance = state.get('pattern_performance', self.pattern_performance)
-                    self.pair_performance = state.get('pair_performance', self.pair_performance)
-                    self.dynamic_confidence_threshold = state.get('dynamic_confidence_threshold', 80.0)
+                    self.session_performance = state.get("session_performance", self.session_performance)
+                    self.pattern_performance = state.get("pattern_performance", self.pattern_performance)
+                    self.pair_performance = state.get("pair_performance", self.pair_performance)
+                    self.dynamic_confidence_threshold = state.get("dynamic_confidence_threshold", 80.0)
                     logger.info(f"✅ Loaded ML state for user {self.user_id}")
         except Exception as e:
             logger.warning(f"Could not load state: {e}")
@@ -68,13 +70,13 @@ class MLAutoFireOptimizer:
         try:
             os.makedirs(os.path.dirname(self.state_file), exist_ok=True)
             state = {
-                'session_performance': dict(self.session_performance),
-                'pattern_performance': dict(self.pattern_performance),
-                'pair_performance': dict(self.pair_performance),
-                'dynamic_confidence_threshold': self.dynamic_confidence_threshold,
-                'timestamp': time.time()
+                "session_performance": dict(self.session_performance),
+                "pattern_performance": dict(self.pattern_performance),
+                "pair_performance": dict(self.pair_performance),
+                "dynamic_confidence_threshold": self.dynamic_confidence_threshold,
+                "timestamp": time.time(),
             }
-            with open(self.state_file, 'wb') as f:
+            with open(self.state_file, "wb") as f:
                 pickle.dump(state, f)
         except Exception as e:
             logger.error(f"Could not save state: {e}")
@@ -104,14 +106,17 @@ class MLAutoFireOptimizer:
             cursor = conn.cursor()
 
             # Get trades from last 24 hours
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT f.fire_id, f.symbol, f.status, s.pattern_type, s.confidence
                 FROM fires f
                 LEFT JOIN signals s ON f.fire_id = s.signal_id
                 WHERE f.user_id = ?
                 AND f.created_at > strftime('%s', 'now', '-24 hours')
                 AND f.status IN ('FILLED', 'CLOSED', 'CLOSED_AUTO_DETECTED')
-            """, (self.user_id,))
+            """,
+                (self.user_id,),
+            )
 
             trades = cursor.fetchall()
             conn.close()
@@ -129,11 +134,11 @@ class MLAutoFireOptimizer:
     def get_trade_outcome(self, fire_id: str) -> Optional[str]:
         """Get trade outcome from comprehensive tracking"""
         try:
-            with open('/root/HydraX-v2/comprehensive_tracking.jsonl', 'r') as f:
+            with open("/root/HydraX-v2/comprehensive_tracking.jsonl", "r") as f:
                 for line in f:
                     if fire_id in line:
                         data = json.loads(line)
-                        return data.get('outcome')
+                        return data.get("outcome")
         except:
             pass
         return None
@@ -143,7 +148,7 @@ class MLAutoFireOptimizer:
         session = self.get_current_session()
 
         # Update session performance
-        if outcome == 'WIN':
+        if outcome == "WIN":
             self.session_performance[session]["wins"] += 1
             self.pair_performance[symbol]["wins"] += 1
             self.pattern_performance[pattern]["wins"] += 1
@@ -156,15 +161,15 @@ class MLAutoFireOptimizer:
 
         # Update confidence buckets
         bucket = int(confidence // 5) * 5  # 80-84, 85-89, etc.
-        if outcome == 'WIN':
+        if outcome == "WIN":
             self.confidence_buckets[bucket]["wins"] += 1
         else:
             self.confidence_buckets[bucket]["losses"] += 1
 
         # Track recent outcomes
-        self.recent_pattern_outcomes[pattern].append(1 if outcome == 'WIN' else 0)
-        self.recent_pair_outcomes[symbol].append(1 if outcome == 'WIN' else 0)
-        self.recent_session_outcomes[session].append(1 if outcome == 'WIN' else 0)
+        self.recent_pattern_outcomes[pattern].append(1 if outcome == "WIN" else 0)
+        self.recent_pair_outcomes[symbol].append(1 if outcome == "WIN" else 0)
+        self.recent_session_outcomes[session].append(1 if outcome == "WIN" else 0)
 
     def calculate_dynamic_thresholds(self) -> Dict:
         """Calculate dynamic thresholds based on recent performance"""
@@ -220,9 +225,9 @@ class MLAutoFireOptimizer:
         ML-driven decision on whether to auto-fire
         Returns: (should_fire, reason, confidence_adjustment)
         """
-        symbol = signal_data.get('symbol', '')
-        pattern = signal_data.get('pattern_type', '')
-        confidence = signal_data.get('confidence', 0)
+        symbol = signal_data.get("symbol", "")
+        pattern = signal_data.get("pattern_type", "")
+        confidence = signal_data.get("confidence", 0)
         session = self.get_current_session()
 
         # Check if pair is temporarily blocked
@@ -293,32 +298,40 @@ class MLAutoFireOptimizer:
             cursor = conn.cursor()
 
             # Update confidence range
-            cursor.execute("""
+            cursor.execute(
+                """
                 UPDATE auto_fire_profiles
                 SET min_confidence = ?,
                     max_confidence = ?,
                     updated_at = CURRENT_TIMESTAMP
                 WHERE user_id = ?
-            """, (self.dynamic_confidence_threshold, 89.0, self.user_id))
+            """,
+                (self.dynamic_confidence_threshold, 89.0, self.user_id),
+            )
 
             # Store ML adjustments as JSON in notes field
             ml_data = {
                 "blocked_pairs": blocked_pairs,
                 "session_boosts": dict(self.session_boost),
                 "dynamic_threshold": self.dynamic_confidence_threshold,
-                "last_update": datetime.utcnow().isoformat()
+                "last_update": datetime.utcnow().isoformat(),
             }
 
-            cursor.execute("""
+            cursor.execute(
+                """
                 UPDATE auto_fire_profiles
                 SET notes = ?
                 WHERE user_id = ?
-            """, (json.dumps(ml_data), self.user_id))
+            """,
+                (json.dumps(ml_data), self.user_id),
+            )
 
             conn.commit()
             conn.close()
 
-            logger.info(f"✅ Updated profile - Threshold: {self.dynamic_confidence_threshold:.1f}%, Blocked: {blocked_pairs}")
+            logger.info(
+                f"✅ Updated profile - Threshold: {self.dynamic_confidence_threshold:.1f}%, Blocked: {blocked_pairs}"
+            )
 
         except Exception as e:
             logger.error(f"Error updating profile: {e}")
@@ -342,13 +355,15 @@ class MLAutoFireOptimizer:
                 self.save_state()
 
                 # Log current status
-                logger.info(f"""
+                logger.info(
+                    f"""
                 📊 ML Status Update:
                 - Dynamic Threshold: {self.dynamic_confidence_threshold:.1f}%
                 - Session: {self.get_current_session()} (Boost: {self.session_boost[self.get_current_session()]:+d})
                 - Blocked Pairs: {list(self.blocked_pairs_temporary)}
                 - Recent Win Rate: {self.calculate_recent_win_rate():.1%}
-                """)
+                """
+                )
 
                 # Sleep for 30 seconds before next optimization
                 time.sleep(30)
@@ -367,8 +382,10 @@ class MLAutoFireOptimizer:
             return sum(all_outcomes) / len(all_outcomes)
         return 0.5
 
+
 if __name__ == "__main__":
     import sys
+
     user_id = sys.argv[1] if len(sys.argv) > 1 else "7176191872"
 
     optimizer = MLAutoFireOptimizer(user_id)

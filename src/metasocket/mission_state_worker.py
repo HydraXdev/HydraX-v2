@@ -3,16 +3,18 @@ Mission-State Worker for real-time signal viability computation
 Subscribes to MetaSocket ticks and computes mission states for active signals
 """
 
-import zmq
 import json
-import time
+import logging
+import os
 import sqlite3
 import threading
-import os
-from typing import Dict, Optional, Callable
-import logging
+import time
+from typing import Callable, Dict, Optional
+
+import zmq
 
 logger = logging.getLogger(__name__)
+
 
 class MissionStateWorker:
     def __init__(self):
@@ -24,17 +26,24 @@ class MissionStateWorker:
         self.callback = None  # Optional callback for in-process consumption
 
         # Config from env
-        self.MIN_RR = float(os.getenv('MIN_RR', '1.5'))
-        self.MAX_SPREAD_TO_SL_RATIO = float(os.getenv('MAX_SPREAD_TO_SL_RATIO', '0.20'))
-        self.EXPIRY_GRACE_MS = int(os.getenv('EXPIRY_GRACE_MS', '30000'))
+        self.MIN_RR = float(os.getenv("MIN_RR", "1.5"))
+        self.MAX_SPREAD_TO_SL_RATIO = float(os.getenv("MAX_SPREAD_TO_SL_RATIO", "0.20"))
+        self.EXPIRY_GRACE_MS = int(os.getenv("EXPIRY_GRACE_MS", "30000"))
 
         # Pip digits mapping
         self.pip_digits = {
-            'USDJPY': 3, 'EURJPY': 3, 'GBPJPY': 3, 'AUDJPY': 3, 'NZDJPY': 3,
-            'CADJPY': 3, 'CHFJPY': 3, 'XAUUSD': 2, 'XAGUSD': 3
+            "USDJPY": 3,
+            "EURJPY": 3,
+            "GBPJPY": 3,
+            "AUDJPY": 3,
+            "NZDJPY": 3,
+            "CADJPY": 3,
+            "CHFJPY": 3,
+            "XAUUSD": 2,
+            "XAGUSD": 3,
         }
 
-        self.stats = {'signals': 0, 'active': 0, 'blocked': 0, 'expired': 0, 'out': 0}
+        self.stats = {"signals": 0, "active": 0, "blocked": 0, "expired": 0, "out": 0}
         self.last_log_time = 0
 
     def pip_value(self, symbol: str) -> float:
@@ -120,16 +129,14 @@ class MissionStateWorker:
         try:
             data = json.loads(message)
 
-            if data.get('type') == 'TICK' and 'symbol' in data:
-                symbol = data['symbol']
-                bid = data.get('bid', 0)
-                ask = data.get('ask', 0)
-                mid = data.get('mid', (bid + ask) / 2)
-                ts = data.get('ts_epoch_ms', int(time.time() * 1000))
+            if data.get("type") == "TICK" and "symbol" in data:
+                symbol = data["symbol"]
+                bid = data.get("bid", 0)
+                ask = data.get("ask", 0)
+                mid = data.get("mid", (bid + ask) / 2)
+                ts = data.get("ts_epoch_ms", int(time.time() * 1000))
 
-                self.price_cache[symbol] = {
-                    'mid': mid, 'bid': bid, 'ask': ask, 'ts': ts
-                }
+                self.price_cache[symbol] = {"mid": mid, "bid": bid, "ask": ask, "ts": ts}
 
         except (json.JSONDecodeError, KeyError):
             pass  # Ignore malformed messages
@@ -140,16 +147,18 @@ class MissionStateWorker:
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
 
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT signal_id, symbol, direction, entry, sl, tp, created_at, expires_at
                 FROM signals
                 WHERE outcome IS NULL AND expires_at IS NOT NULL
-            """)
+            """
+            )
 
             signals = cursor.fetchall()
             conn.close()
 
-            self.stats = {'signals': len(signals), 'active': 0, 'blocked': 0, 'expired': 0, 'out': 0}
+            self.stats = {"signals": len(signals), "active": 0, "blocked": 0, "expired": 0, "out": 0}
 
             for signal in signals:
                 mission_state = self._compute_mission_state(signal)
@@ -157,7 +166,7 @@ class MissionStateWorker:
                     self._publish_mission_state(mission_state, first_emit)
 
                     # Update stats
-                    status = mission_state.get('status', 'unknown')
+                    status = mission_state.get("status", "unknown")
                     if status in self.stats:
                         self.stats[status] += 1
 
@@ -174,9 +183,9 @@ class MissionStateWorker:
             return None
 
         now_ms = int(time.time() * 1000)
-        price_mid = price_data['mid']
-        bid = price_data['bid']
-        ask = price_data['ask']
+        price_mid = price_data["mid"]
+        bid = price_data["bid"]
+        ask = price_data["ask"]
 
         # Time to expiry
         time_to_expiry_ms = max(0, (expires_at * 1000) - now_ms + self.EXPIRY_GRACE_MS)
@@ -222,7 +231,7 @@ class MissionStateWorker:
             "zone_status": zone_status,
             "rr_current": round(rr_current, 3),
             "spread_pips": round(spread_pips, 2),
-            "status": status
+            "status": status,
         }
 
     def _publish_mission_state(self, mission_state: Dict, first_emit: bool):
@@ -244,11 +253,14 @@ class MissionStateWorker:
     def _log_stats(self):
         """Log periodic statistics"""
         s = self.stats
-        print(f"[mission] signals={s['signals']} active={s['active']} blocked={s['blocked']} expired={s['expired']} out={s['out']}")
+        print(
+            f"[mission] signals={s['signals']} active={s['active']} blocked={s['blocked']} expired={s['expired']} out={s['out']}"
+        )
 
 
 # Global worker instance
 _worker = None
+
 
 def start(callback: Optional[Callable] = None):
     """Start the mission state worker"""
@@ -256,6 +268,7 @@ def start(callback: Optional[Callable] = None):
     if _worker is None:
         _worker = MissionStateWorker()
     _worker.start(callback)
+
 
 def stop():
     """Stop the mission state worker"""

@@ -19,51 +19,47 @@ Components:
 
 Usage:
     from order_flow import MicrostructureScorer
-    
+
     scorer = MicrostructureScorer('EURUSD', 0.0001)
     score = scorer.update_market_data(timestamp, bid_book, ask_book, trades, quotes)
-    
+
     if score.manipulation_risk > 60:
         print("High manipulation risk detected!")
 """
 
-from .iceberg_detector import IcebergDetector, IcebergSignal
-from .spoofing_detector import SpoofingDetector, SpoofingEvent, OrderBookSnapshot
 from .hft_activity_detector import HFTActivityDetector, HFTSignature, MicrostructureEvent
-from .quote_stuffing_identifier import QuoteStuffingIdentifier, QuoteStuffingEvent, QuoteMessage
-from .hidden_liquidity_scanner import HiddenLiquidityScanner, HiddenLiquiditySignal, ExecutionAnomaly
-from .market_maker_analyzer import MarketMakerAnalyzer, MarketMakerProfile, MarketMakerAction
-from .microstructure_scorer import (
-    MicrostructureScorer, 
-    MicrostructureScore, 
-    MarketMicrostructureState
-)
+from .hidden_liquidity_scanner import ExecutionAnomaly, HiddenLiquidityScanner, HiddenLiquiditySignal
+from .iceberg_detector import IcebergDetector, IcebergSignal
+from .market_maker_analyzer import MarketMakerAction, MarketMakerAnalyzer, MarketMakerProfile
+from .microstructure_scorer import MarketMicrostructureState, MicrostructureScore, MicrostructureScorer
+from .quote_stuffing_identifier import QuoteMessage, QuoteStuffingEvent, QuoteStuffingIdentifier
+from .spoofing_detector import OrderBookSnapshot, SpoofingDetector, SpoofingEvent
 
 __all__ = [
     # Main scorer
-    'MicrostructureScorer',
-    'MicrostructureScore',
-    'MarketMicrostructureState',
-    
+    "MicrostructureScorer",
+    "MicrostructureScore",
+    "MarketMicrostructureState",
     # Individual detectors
-    'IcebergDetector',
-    'IcebergSignal',
-    'SpoofingDetector',
-    'SpoofingEvent',
-    'OrderBookSnapshot',
-    'HFTActivityDetector',
-    'HFTSignature',
-    'MicrostructureEvent',
-    'QuoteStuffingIdentifier',
-    'QuoteStuffingEvent',
-    'QuoteMessage',
-    'HiddenLiquidityScanner',
-    'HiddenLiquiditySignal',
-    'ExecutionAnomaly',
-    'MarketMakerAnalyzer',
-    'MarketMakerProfile',
-    'MarketMakerAction']
+    "IcebergDetector",
+    "IcebergSignal",
+    "SpoofingDetector",
+    "SpoofingEvent",
+    "OrderBookSnapshot",
+    "HFTActivityDetector",
+    "HFTSignature",
+    "MicrostructureEvent",
+    "QuoteStuffingIdentifier",
+    "QuoteStuffingEvent",
+    "QuoteMessage",
+    "HiddenLiquidityScanner",
+    "HiddenLiquiditySignal",
+    "ExecutionAnomaly",
+    "MarketMakerAnalyzer",
+    "MarketMakerProfile",
+    "MarketMakerAction",
+]
 
 # Version info
-__version__ = '1.0.0'
-__author__ = 'HydraX Trading Systems'
+__version__ = "1.0.0"
+__author__ = "HydraX Trading Systems"

@@ -6,7 +6,7 @@
 
 1. **Created ZMQ Market Data Pipeline Components**:
    - ✅ `zmq_market_streamer.py` - High-performance ZMQ bridge
-   - ✅ `venom_zmq_adapter.py` - VENOM integration adapter  
+   - ✅ `venom_zmq_adapter.py` - VENOM integration adapter
    - ✅ `test_zmq_market_flow.py` - Pipeline testing tool
    - ✅ `zmq_market_streamer.service` - Systemd service
    - ✅ `deploy_zmq_pipeline.sh` - Deployment script
@@ -25,6 +25,7 @@
    ```
    MT5 EA v5.3 → HTTP POST → market_data_receiver_streaming.py → VENOM
    ```
+
    - EA sends truncated JSON (1922 byte limit)
    - Receiver uses smart buffering to handle truncation
    - VENOM currently shows "no real market data"
@@ -63,7 +64,7 @@ void StreamMarketDataZMQ()
     {
         string symbol = g_pairs[i];
         MqlTick tick;
-        
+
         if(SymbolInfoTick(symbol, tick))
         {
             // Format: "SYMBOL {json_data}"
@@ -76,7 +77,7 @@ void StreamMarketDataZMQ()
                 "\"timestamp\":" + IntegerToString(tick.time) + "," +
                 "\"source\":\"MT5_LIVE\"" +
             "}";
-            
+
             // Send via ZMQ
             uchar data[];
             StringToCharArray(message, data);
@@ -116,18 +117,19 @@ adapter, venom_engine = integrate_with_venom()
 
 ### 📊 Benefits of ZMQ Over HTTP
 
-| Feature | HTTP (Current) | ZMQ (New) |
-|---------|---------------|-----------|
-| Data Size | 1922 byte limit | Unlimited |
-| Performance | ~100 msg/sec | 10,000+ msg/sec |
-| Latency | 10-50ms | <1ms |
+| Feature     | HTTP (Current)    | ZMQ (New)       |
+| ----------- | ----------------- | --------------- |
+| Data Size   | 1922 byte limit   | Unlimited       |
+| Performance | ~100 msg/sec      | 10,000+ msg/sec |
+| Latency     | 10-50ms           | <1ms            |
 | Reliability | Truncation issues | Binary protocol |
-| Scalability | Threading issues | Event-driven |
-| Real-time | Polling delay | Push instantly |
+| Scalability | Threading issues  | Event-driven    |
+| Real-time   | Polling delay     | Push instantly  |
 
 ### 🎯 Summary
 
 **What's Ready**:
+
 - Complete ZMQ pipeline implementation
 - High-performance streaming components
 - VENOM integration adapter
@@ -135,6 +137,7 @@ adapter, venom_engine = integrate_with_venom()
 - Full documentation
 
 **What's Needed**:
+
 1. EA modification to publish via ZMQ (code provided above)
 2. Deploy ZMQ pipeline on server
 3. Connect VENOM to ZMQ adapter

@@ -20,7 +20,7 @@ fi
 # Options for different start methods
 echo "Select signal system to start:"
 echo "1) Simple Live Signals (Recommended)"
-echo "2) Advanced Signal Integration" 
+echo "2) Advanced Signal Integration"
 echo "3) Complete Signal Flow V3"
 echo "4) Test WebApp Buttons"
 echo ""

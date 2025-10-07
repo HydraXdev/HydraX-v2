@@ -297,7 +297,15 @@
     "min_length": 3,
     "max_length": 20,
     "allowed_pattern": "^[a-zA-Z0-9_]+$",
-    "reserved_words": ["admin", "bitten", "system", "nexus", "drill", "doc", "bit"],
+    "reserved_words": [
+      "admin",
+      "bitten",
+      "system",
+      "nexus",
+      "drill",
+      "doc",
+      "bit"
+    ],
     "error_messages": {
       "too_short": "Callsign must be at least 3 characters, recruit.",
       "too_long": "Keep it under 20 characters. Brevity is tactical.",

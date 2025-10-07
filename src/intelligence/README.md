@@ -106,15 +106,15 @@ class CustomIngester(BaseDataIngester):
     async def _initialize(self):
         # Custom initialization
         pass
-        
+
     async def _ingestion_loop(self):
         while self._running:
             # Fetch data from your source
             data = await self.fetch_data()
-            
+
             # Ingest data
             await self.ingest_data(data)
-            
+
             # Wait before next fetch
             await asyncio.sleep(60)
 ```
@@ -131,7 +131,7 @@ class CustomNormalizer(DataNormalizer):
             'timestamp': 'time',
             'value': 'price'
         }
-        
+
     async def _enrich_single(self, data):
         # Add custom enrichment
         data.metadata['custom_field'] = 'custom_value'
@@ -146,7 +146,7 @@ from src.intelligence.core.base import SignalGenerator, Signal, SignalType
 class CustomSignalGenerator(SignalGenerator):
     async def analyze(self, data):
         signals = []
-        
+
         # Your signal generation logic
         if self.should_generate_signal(data):
             signal = Signal(
@@ -156,7 +156,7 @@ class CustomSignalGenerator(SignalGenerator):
                 confidence=0.85
             )
             signals.append(signal)
-            
+
         return signals
 ```
 
@@ -173,6 +173,7 @@ class CustomSignalGenerator(SignalGenerator):
 ### API Configuration (`apis.yaml`)
 
 Define external API configurations with:
+
 - API keys and secrets
 - Base URLs
 - Rate limits
@@ -181,6 +182,7 @@ Define external API configurations with:
 ### Data Sources (`data_sources.yaml`)
 
 Configure data sources with:
+
 - Source type (http, websocket, etc.)
 - Connection parameters
 - Update intervals
@@ -209,6 +211,7 @@ if orchestrator.metrics_monitor:
 ### Logging
 
 Logs are structured in JSON format and saved to `logs/intelligence/`:
+
 - `intelligence.log`: All logs
 - `intelligence_errors.log`: Error logs only
 

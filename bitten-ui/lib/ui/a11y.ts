@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
 /**
  * Accessibility helpers for BITTEN UI
@@ -21,15 +21,15 @@ export function useReducedMotion(): boolean {
   const [prefersReduced, setPrefersReduced] = useState(false);
 
   useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
     setPrefersReduced(mediaQuery.matches);
 
     const handler = (event: MediaQueryListEvent) => {
       setPrefersReduced(event.matches);
     };
 
-    mediaQuery.addEventListener('change', handler);
-    return () => mediaQuery.removeEventListener('change', handler);
+    mediaQuery.addEventListener("change", handler);
+    return () => mediaQuery.removeEventListener("change", handler);
   }, []);
 
   return prefersReduced;
@@ -46,14 +46,17 @@ export function useReducedMotion(): boolean {
  * announce('Trade executed successfully');
  * announce('Critical error occurred', 'assertive');
  */
-export function announce(message: string, priority: 'polite' | 'assertive' = 'polite') {
-  if (typeof document === 'undefined') return;
+export function announce(
+  message: string,
+  priority: "polite" | "assertive" = "polite",
+) {
+  if (typeof document === "undefined") return;
 
-  const liveRegion = document.createElement('div');
-  liveRegion.setAttribute('role', 'status');
-  liveRegion.setAttribute('aria-live', priority);
-  liveRegion.setAttribute('aria-atomic', 'true');
-  liveRegion.className = 'sr-only'; // Visually hidden but readable by screen readers
+  const liveRegion = document.createElement("div");
+  liveRegion.setAttribute("role", "status");
+  liveRegion.setAttribute("aria-live", priority);
+  liveRegion.setAttribute("aria-atomic", "true");
+  liveRegion.className = "sr-only"; // Visually hidden but readable by screen readers
   liveRegion.textContent = message;
 
   document.body.appendChild(liveRegion);
@@ -74,7 +77,9 @@ export function announce(message: string, priority: 'polite' | 'assertive' = 'po
  * <section aria-labelledby={id}>...</section>
  */
 export function useAriaId(prefix: string): string {
-  const [id] = useState(() => `${prefix}-${Math.random().toString(36).substr(2, 9)}`);
+  const [id] = useState(
+    () => `${prefix}-${Math.random().toString(36).substr(2, 9)}`,
+  );
   return id;
 }
 
@@ -87,23 +92,25 @@ export function useAriaId(prefix: string): string {
  */
 export function useFocusTrap(
   containerRef: React.RefObject<HTMLElement>,
-  active: boolean = true
+  active: boolean = true,
 ) {
   useEffect(() => {
     if (!active || !containerRef.current) return;
 
     const container = containerRef.current;
     const focusableElements = container.querySelectorAll(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
     );
 
     if (focusableElements.length === 0) return;
 
     const firstElement = focusableElements[0] as HTMLElement;
-    const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+    const lastElement = focusableElements[
+      focusableElements.length - 1
+    ] as HTMLElement;
 
     const handleTab = (e: KeyboardEvent) => {
-      if (e.key !== 'Tab') return;
+      if (e.key !== "Tab") return;
 
       if (e.shiftKey) {
         // Shift+Tab
@@ -120,11 +127,11 @@ export function useFocusTrap(
       }
     };
 
-    container.addEventListener('keydown', handleTab);
+    container.addEventListener("keydown", handleTab);
     firstElement.focus();
 
     return () => {
-      container.removeEventListener('keydown', handleTab);
+      container.removeEventListener("keydown", handleTab);
     };
   }, [containerRef, active]);
 }
@@ -133,4 +140,5 @@ export function useFocusTrap(
  * Visually hidden class for screen-reader-only content
  * Use in global CSS or Tailwind config
  */
-export const SR_ONLY_CLASS = 'absolute w-px h-px p-0 -m-px overflow-hidden whitespace-nowrap border-0';
+export const SR_ONLY_CLASS =
+  "absolute w-px h-px p-0 -m-px overflow-hidden whitespace-nowrap border-0";

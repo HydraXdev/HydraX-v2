@@ -18,7 +18,9 @@
 ## 📝 FILES UPDATED
 
 ### 1. **CLAUDE.md** ✅ COMPLETE
+
 **Updated Sections**:
+
 - ✅ HydraSocket v1.0.0 ROUTER⇄DEALER implementation details
 - ✅ Current system state (September 28, 2025)
 - ✅ Process PIDs and port bindings verification
@@ -28,7 +30,9 @@
 - ✅ Outdated information clearly marked with ❌ warnings
 
 ### 2. **ARCHITECTURE.md** ✅ COMPLETE
+
 **Updated Sections**:
+
 - ✅ Complete HydraSocket v1.0.0 ROUTER⇄DEALER architecture
 - ✅ ZMQ message flow and frame format specifications
 - ✅ Schema validation with 16 comprehensive error codes
@@ -47,6 +51,7 @@
 ## 🎯 TECHNICAL SPECIFICATIONS INTEGRATED
 
 ### **ROUTER⇄DEALER Pattern**
+
 - Frame format: `[identity][empty][jsonl_bytes]`
 - Identity routing with account mapping
 - Pending command tracking with correlation
@@ -54,6 +59,7 @@
 - Legacy BITTEN fire command compatibility
 
 ### **Schema Validation & Error Handling**
+
 - 16 comprehensive error codes documented
 - Business logic validation rules
 - Spread guard and hedge protection
@@ -61,18 +67,21 @@
 - Timestamp tolerance specifications
 
 ### **Idempotency System**
+
 - 24-hour TTL with restart persistence
 - Duplicate prevention with byte-equal responses
 - Database schema with automatic cleanup
 - Per-command correlation tracking
 
 ### **RBAC & Security**
+
 - API key format: `hsk_<32-char-token>`
 - Three roles: viewer, closer, admin
 - Tenant isolation enforcement
 - Permission matrix documentation
 
 ### **Performance & Monitoring**
+
 - WebSocket streaming with MessagePack + gzip
 - Backpressure handling with coalescing
 - Prometheus metrics collection
@@ -80,6 +89,7 @@
 - Performance targets: P95 < 250ms, drops < 0.1%
 
 ### **Current System State**
+
 - Process PIDs verified September 28, 2025
 - Port bindings confirmed operational
 - Database schema (35 tables) documented
@@ -91,6 +101,7 @@
 ## 🚀 DEPLOYMENT READINESS
 
 ### **Go-Live Validation Results**
+
 - ✅ **Schema Validation**: 100% pass rate
 - ✅ **Load Testing**: P95 127.8ms (< 250ms target)
 - ✅ **Security Testing**: RBAC enforcement verified
@@ -98,6 +109,7 @@
 - ✅ **End-to-End**: Complete fire path validated
 
 ### **Production Cutover Procedures**
+
 - Parallel deployment capability
 - Gradual migration with FEED_PRIORITY flag
 - 15-minute canary testing window
@@ -109,6 +121,7 @@
 ## 📊 DOCUMENTATION ACCURACY VERIFICATION
 
 ### **Current State Verification**
+
 - ✅ **Process PIDs**: All verified September 28, 2025 04:52 UTC
 - ✅ **Port Bindings**: 5555, 5556, 5557, 5558, 5560, 8888, 8899 confirmed
 - ✅ **Database Schema**: 35 tables with HydraSocket extensions
@@ -116,6 +129,7 @@
 - ✅ **Performance Metrics**: Actual benchmarks from validation testing
 
 ### **Obsolete Information Handling**
+
 - ❌ **Outdated PIDs**: Clearly marked in CLAUDE.md with warnings
 - ❌ **Pre-HydraSocket References**: Deprecated sections identified
 - ❌ **Legacy Tracking Files**: truth_log.jsonl marked as stopped

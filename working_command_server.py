@@ -3,23 +3,24 @@
 WORKING TCP Command Server on port 7777
 Since port 5555 has mysterious issues, using 7777 which we KNOW works
 """
-import socket
 import json
+import socket
 import sys
 import threading
 
 # Force unbuffered
-sys.stdout = open(1, 'w', 1)
+sys.stdout = open(1, "w", 1)
 
 print("Starting TCP Command Server on port 7777", flush=True)
 
 server = socket.socket()
 server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-server.bind(('0.0.0.0', 7777))
+server.bind(("0.0.0.0", 7777))
 server.listen(10)
 
 print("✅ Server listening on 0.0.0.0:7777", flush=True)
 print("Waiting for EA connections...", flush=True)
+
 
 def handle_ea(conn, addr):
     print(f"✅ EA CONNECTED from {addr}", flush=True)
@@ -32,7 +33,7 @@ def handle_ea(conn, addr):
         "tfs": "M1,M5,H1",
         "lookback": 200,
         "midbar": 0,
-        "midbar_sec": 15
+        "midbar_sec": 15,
     }
 
     msg = json.dumps(feed_cmd) + "\n"
@@ -47,9 +48,9 @@ def handle_ea(conn, addr):
             if not data:
                 break
 
-            buffer += data.decode('utf-8')
-            while '\n' in buffer:
-                line, buffer = buffer.split('\n', 1)
+            buffer += data.decode("utf-8")
+            while "\n" in buffer:
+                line, buffer = buffer.split("\n", 1)
                 if line:
                     try:
                         cmd = json.loads(line)
@@ -61,6 +62,7 @@ def handle_ea(conn, addr):
 
     print(f"🔌 EA disconnected from {addr}", flush=True)
     conn.close()
+
 
 # Main accept loop
 while True:

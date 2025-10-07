@@ -25,7 +25,7 @@ cat << 'EOF'
 server {
     listen 80;
     server_name joinbitten.com www.joinbitten.com;
-    
+
     location / {
         proxy_pass http://localhost:5000;
         proxy_set_header Host $host;
@@ -33,7 +33,7 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
     }
-    
+
     location /stripe/webhook {
         proxy_pass http://localhost:5000/stripe/webhook;
         proxy_set_header Host $host;

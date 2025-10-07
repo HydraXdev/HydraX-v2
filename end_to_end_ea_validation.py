@@ -5,17 +5,18 @@ Complete validation pipeline from signal generation to EA execution
 Can be run when markets are closed to verify full system integrity
 """
 
-import time
 import json
+import os
 import sqlite3
 import subprocess
 import sys
-import os
+import time
 from datetime import datetime
 from typing import Dict, Optional
 
 # Add HydraX-v2 to path
-sys.path.append('/root/HydraX-v2')
+sys.path.append("/root/HydraX-v2")
+
 
 class EndToEndEAValidator:
     """Complete EA connectivity validation pipeline"""
@@ -36,7 +37,7 @@ class EndToEndEAValidator:
             "status": status,
             "details": details,
             "duration_ms": round(duration * 1000, 1),
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
         self.results.append(result)
 
@@ -56,22 +57,28 @@ class EndToEndEAValidator:
             result = subprocess.run(["pm2", "jlist"], capture_output=True, text=True)
             if result.returncode == 0:
                 pm2_data = json.loads(result.stdout)
-                critical_processes = ['command_router', 'elite_guard', 'confirm_listener', 'webapp']
+                critical_processes = ["command_router", "elite_guard", "confirm_listener", "webapp"]
 
                 running_processes = []
                 for process in pm2_data:
-                    if process['name'] in critical_processes and process['pm2_env']['status'] == 'online':
-                        running_processes.append(process['name'])
+                    if process["name"] in critical_processes and process["pm2_env"]["status"] == "online":
+                        running_processes.append(process["name"])
 
                 if len(running_processes) >= 3:  # At least 3 critical processes
-                    self.log_step("PM2 Processes", "PASS",
-                                f"{len(running_processes)}/4 critical processes running",
-                                time.time() - step_start)
+                    self.log_step(
+                        "PM2 Processes",
+                        "PASS",
+                        f"{len(running_processes)}/4 critical processes running",
+                        time.time() - step_start,
+                    )
                     return True
                 else:
-                    self.log_step("PM2 Processes", "FAIL",
-                                f"Only {len(running_processes)}/4 critical processes running",
-                                time.time() - step_start)
+                    self.log_step(
+                        "PM2 Processes",
+                        "FAIL",
+                        f"Only {len(running_processes)}/4 critical processes running",
+                        time.time() - step_start,
+                    )
                     return False
             else:
                 self.log_step("PM2 Processes", "FAIL", "PM2 not responding", time.time() - step_start)
@@ -94,21 +101,17 @@ class EndToEndEAValidator:
             bound_ports = []
 
             for port in required_ports:
-                for line in result.stdout.split('\n'):
+                for line in result.stdout.split("\n"):
                     if f":{port}" in line and "LISTEN" in line:
                         bound_ports.append(port)
                         break
 
             if len(bound_ports) == len(required_ports):
-                self.log_step("ZMQ Ports", "PASS",
-                            f"All {len(bound_ports)} ports listening",
-                            time.time() - step_start)
+                self.log_step("ZMQ Ports", "PASS", f"All {len(bound_ports)} ports listening", time.time() - step_start)
                 return True
             else:
                 missing = set(required_ports) - set(bound_ports)
-                self.log_step("ZMQ Ports", "FAIL",
-                            f"Missing ports: {missing}",
-                            time.time() - step_start)
+                self.log_step("ZMQ Ports", "FAIL", f"Missing ports: {missing}", time.time() - step_start)
                 return False
 
         except Exception as e:
@@ -123,14 +126,14 @@ class EndToEndEAValidator:
         step_start = time.time()
 
         try:
-            conn = sqlite3.connect('/root/HydraX-v2/bitten.db')
+            conn = sqlite3.connect("/root/HydraX-v2/bitten.db")
             cursor = conn.cursor()
 
             # Test database query
             cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
             tables = cursor.fetchall()
 
-            required_tables = ['ea_instances', 'signals', 'fires', 'missions']
+            required_tables = ["ea_instances", "signals", "fires", "missions"]
             existing_tables = [table[0] for table in tables]
 
             missing_tables = set(required_tables) - set(existing_tables)
@@ -140,16 +143,14 @@ class EndToEndEAValidator:
                 cursor.execute("SELECT COUNT(*) FROM ea_instances")
                 ea_count = cursor.fetchone()[0]
 
-                self.log_step("Database", "PASS",
-                            f"All tables present, {ea_count} EA instances",
-                            time.time() - step_start)
+                self.log_step(
+                    "Database", "PASS", f"All tables present, {ea_count} EA instances", time.time() - step_start
+                )
 
                 conn.close()
                 return True
             else:
-                self.log_step("Database", "FAIL",
-                            f"Missing tables: {missing_tables}",
-                            time.time() - step_start)
+                self.log_step("Database", "FAIL", f"Missing tables: {missing_tables}", time.time() - step_start)
                 conn.close()
                 return False
 
@@ -168,17 +169,19 @@ class EndToEndEAValidator:
             from collections import OrderedDict
 
             # Generate test fire packet
-            test_packet = OrderedDict([
-                ("type", "fire"),
-                ("target_uuid", "COMMANDER_DEV_001"),
-                ("fire_id", self.validation_id),
-                ("symbol", "EURUSD"),
-                ("direction", "BUY"),
-                ("entry", 0),
-                ("sl", 1.09800),
-                ("tp", 1.10300),
-                ("lot", 0.01)
-            ])
+            test_packet = OrderedDict(
+                [
+                    ("type", "fire"),
+                    ("target_uuid", "COMMANDER_DEV_001"),
+                    ("fire_id", self.validation_id),
+                    ("symbol", "EURUSD"),
+                    ("direction", "BUY"),
+                    ("entry", 0),
+                    ("sl", 1.09800),
+                    ("tp", 1.10300),
+                    ("lot", 0.01),
+                ]
+            )
 
             # Validate packet format
             format_checks = [
@@ -187,18 +190,14 @@ class EndToEndEAValidator:
                 isinstance(test_packet.get("entry"), (int, float)),
                 isinstance(test_packet.get("sl"), (int, float)),
                 isinstance(test_packet.get("tp"), (int, float)),
-                isinstance(test_packet.get("lot"), (int, float))
+                isinstance(test_packet.get("lot"), (int, float)),
             ]
 
             if all(format_checks):
-                self.log_step("Fire Packet", "PASS",
-                            "Valid packet generated",
-                            time.time() - step_start)
+                self.log_step("Fire Packet", "PASS", "Valid packet generated", time.time() - step_start)
                 return test_packet
             else:
-                self.log_step("Fire Packet", "FAIL",
-                            "Invalid packet format",
-                            time.time() - step_start)
+                self.log_step("Fire Packet", "FAIL", "Invalid packet format", time.time() - step_start)
                 return None
 
         except Exception as e:
@@ -219,14 +218,10 @@ class EndToEndEAValidator:
             success = enqueue_fire(test_packet)
 
             if success:
-                self.log_step("IPC Transmission", "PASS",
-                            "Fire packet sent via IPC queue",
-                            time.time() - step_start)
+                self.log_step("IPC Transmission", "PASS", "Fire packet sent via IPC queue", time.time() - step_start)
                 return True
             else:
-                self.log_step("IPC Transmission", "FAIL",
-                            "enqueue_fire returned False",
-                            time.time() - step_start)
+                self.log_step("IPC Transmission", "FAIL", "enqueue_fire returned False", time.time() - step_start)
                 return False
 
         except Exception as e:
@@ -241,42 +236,38 @@ class EndToEndEAValidator:
         step_start = time.time()
 
         try:
-            conn = sqlite3.connect('/root/HydraX-v2/bitten.db')
+            conn = sqlite3.connect("/root/HydraX-v2/bitten.db")
             cursor = conn.cursor()
 
             # Check COMMANDER_DEV_001 specifically
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT target_uuid, user_id, last_seen,
                        (strftime('%s','now') - last_seen) as age_seconds
                 FROM ea_instances
                 WHERE target_uuid = 'COMMANDER_DEV_001'
-            """)
+            """
+            )
 
             row = cursor.fetchone()
             if row:
                 target_uuid, user_id, last_seen, age_seconds = row
 
                 if age_seconds < 300:  # 5 minutes
-                    self.log_step("EA Heartbeat", "PASS",
-                                f"Fresh heartbeat ({age_seconds}s ago)",
-                                time.time() - step_start)
+                    self.log_step(
+                        "EA Heartbeat", "PASS", f"Fresh heartbeat ({age_seconds}s ago)", time.time() - step_start
+                    )
                     status = "FRESH"
                 else:
-                    self.log_step("EA Heartbeat", "WARN",
-                                f"Stale heartbeat ({age_seconds}s ago)",
-                                time.time() - step_start)
+                    self.log_step(
+                        "EA Heartbeat", "WARN", f"Stale heartbeat ({age_seconds}s ago)", time.time() - step_start
+                    )
                     status = "STALE"
 
                 conn.close()
-                return {
-                    "status": status,
-                    "age_seconds": age_seconds,
-                    "user_id": user_id
-                }
+                return {"status": status, "age_seconds": age_seconds, "user_id": user_id}
             else:
-                self.log_step("EA Heartbeat", "FAIL",
-                            "COMMANDER_DEV_001 not found",
-                            time.time() - step_start)
+                self.log_step("EA Heartbeat", "FAIL", "COMMANDER_DEV_001 not found", time.time() - step_start)
                 conn.close()
                 return {"status": "MISSING"}
 
@@ -294,19 +285,16 @@ class EndToEndEAValidator:
         try:
             # Check command router logs
             result = subprocess.run(
-                ["pm2", "logs", "command_router", "--lines", "5", "--nostream"],
-                capture_output=True, text=True
+                ["pm2", "logs", "command_router", "--lines", "5", "--nostream"], capture_output=True, text=True
             )
 
             if result.returncode == 0 and result.stdout:
-                self.log_step("Command Router", "PASS",
-                            "Command router responsive",
-                            time.time() - step_start)
+                self.log_step("Command Router", "PASS", "Command router responsive", time.time() - step_start)
                 return True
             else:
-                self.log_step("Command Router", "WARN",
-                            "Command router not responding to logs",
-                            time.time() - step_start)
+                self.log_step(
+                    "Command Router", "WARN", "Command router not responding to logs", time.time() - step_start
+                )
                 return False
 
         except Exception as e:
@@ -358,11 +346,11 @@ class EndToEndEAValidator:
         print(f"💓 EA Status: {ea_status.get('status', 'UNKNOWN')}")
 
         # Overall assessment
-        if passed_critical >= 4 and ea_status.get('status') in ['FRESH', 'STALE']:
+        if passed_critical >= 4 and ea_status.get("status") in ["FRESH", "STALE"]:
             overall_status = "READY"
             print("🎯 OVERALL STATUS: ✅ SYSTEM READY FOR EA CONNECTION")
 
-            if ea_status.get('status') == 'STALE':
+            if ea_status.get("status") == "STALE":
                 print("💡 NOTE: EA heartbeat is stale - restart EA on Windows VPS")
 
         elif passed_critical >= 3:
@@ -375,10 +363,10 @@ class EndToEndEAValidator:
 
         # Next steps
         print("\n📋 NEXT STEPS:")
-        if ea_status.get('status') == 'FRESH':
+        if ea_status.get("status") == "FRESH":
             print("1. ✅ EA is connected - test live fire packet")
             print("2. ✅ Monitor confirmation system")
-        elif ea_status.get('status') == 'STALE':
+        elif ea_status.get("status") == "STALE":
             print("1. 🔄 Restart EA on Windows VPS")
             print("2. 🔍 Check EA logs for connection errors")
             print("3. 🛡️ Verify Windows firewall rules")
@@ -394,20 +382,21 @@ class EndToEndEAValidator:
             "critical_checks_passed": passed_critical,
             "ea_status": ea_status,
             "detailed_results": self.results,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
     def save_results(self, results: Dict):
         """Save validation results to file"""
         try:
             results_file = f"/root/HydraX-v2/ea_validation_{self.validation_id}.json"
-            with open(results_file, 'w') as f:
+            with open(results_file, "w") as f:
                 json.dump(results, f, indent=2)
 
             print(f"\n💾 Results saved to: {results_file}")
 
         except Exception as e:
             print(f"\n❌ Failed to save results: {e}")
+
 
 def main():
     """Run end-to-end EA validation"""
@@ -435,6 +424,7 @@ def main():
     except Exception as e:
         print(f"\n\n❌ Validation failed with error: {e}")
         exit(1)
+
 
 if __name__ == "__main__":
     main()

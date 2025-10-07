@@ -32,13 +32,13 @@ InpSnapshotTF="M1"
 
 ## 3) Command → Event Contracts
 
-| Inbound (5555) | What EA does | Outbound events |
-|----------------|--------------|-----------------|
+| Inbound (5555)                    | What EA does                                                                                    | Outbound events                                                             |
+| --------------------------------- | ----------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
 | fire (market BUY/SELL with SL/TP) | Validates: DLL/trading allowed, symbol quotes, direction, spread, hedge, SL/TP geometry, volume | Pre-emit: signal_snapshot (5558) → Then: confirmation (success/fail) (5558) |
-| close_ticket | Closes specific BITTEN position | close_confirmation (5558) |
-| close_all | Closes all BITTEN positions | close_confirmation (summary) (5558) |
-| ping | Liveness | pong (5558) |
-| wake | Route warmup | AWAKE (to 5555) + pong (5558) |
+| close_ticket                      | Closes specific BITTEN position                                                                 | close_confirmation (5558)                                                   |
+| close_all                         | Closes all BITTEN positions                                                                     | close_confirmation (summary) (5558)                                         |
+| ping                              | Liveness                                                                                        | pong (5558)                                                                 |
+| wake                              | Route warmup                                                                                    | AWAKE (to 5555) + pong (5558)                                               |
 
 ### Background streams
 
@@ -62,6 +62,7 @@ InpSnapshotTF="M1"
 ## 6) What it does vs doesn't
 
 ### Does
+
 - ✅ Market BUY/SELL with SL/TP
 - ✅ Live mirror via 1s metrics + per-symbol tick stream
 - ✅ Snapshot pre-fire for web rendering
@@ -70,6 +71,7 @@ InpSnapshotTF="M1"
 - ✅ Enforce hedge/spread/SLTP/volume safety
 
 ### Doesn't
+
 - ❌ Pending orders
 - ❌ Modify SL/TP of existing positions (zero-modify)
 - ❌ Manage non-BITTEN positions (filters by magic)
@@ -78,19 +80,23 @@ InpSnapshotTF="M1"
 ## 7) UI / Webapp Integration (minimal but complete)
 
 ### Subscribe:
+
 - **5560 HEARTBEAT_METRICS** → account KPIs + open positions table (the mirror)
 - **5558 confirmation, position_closed, signal_snapshot** → toasts/rows
 
 ### Render:
+
 - **Positions** keyed by ticket (or fire_id fallback) with live PnL from metrics
 - **Charts** from signal_snapshot.bars + overlays (entry/sl/tp)
 
 ### Actions:
+
 - **Button: Close Ticket** → emits close_ticket
 - **Button: Close All** → emits close_all
 - **No edit controls** (SL/TP/partial/etc.)
 
 ### Liveness:
+
 - **ping/pong** round-trip for UI heartbeat when idle
 - Treat a missed **HEARTBEAT_METRICS > 3× cadence** as "stale"
 

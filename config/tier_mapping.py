@@ -9,11 +9,11 @@ class TierNames:
     NIBBLER = "NIBBLER"        # $39/month
     FANG = "FANG"              # $89/month
     COMMANDER = "COMMANDER"    # $189/month (premium tier with all features)
-    
+
     # List for validation
     ALL_TIERS = [PRESS_PASS, NIBBLER, FANG, COMMANDER]
     PAID_TIERS = [NIBBLER, FANG, COMMANDER]
-    
+
     # Tier hierarchy (for access control)
     TIER_HIERARCHY = {
         PRESS_PASS: 0,
@@ -39,7 +39,7 @@ def get_tier_name(legacy_name: str) -> str:
     """Convert legacy tier name to new standard name"""
     if legacy_name in TierNames.ALL_TIERS:
         return legacy_name  # Already using new name
-    
+
     return LEGACY_TO_NEW.get(legacy_name, legacy_name)
 
 def get_tier_level(tier_name: str) -> int:
@@ -51,5 +51,5 @@ def has_tier_access(user_tier: str, required_tier: str) -> bool:
     """Check if user tier has access to required tier features"""
     user_level = get_tier_level(user_tier)
     required_level = get_tier_level(required_tier)
-    
+
     return user_level >= required_level

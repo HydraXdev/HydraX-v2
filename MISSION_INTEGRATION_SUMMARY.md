@@ -1,11 +1,13 @@
 # Mission Briefing Generator Integration Summary
 
 ## Overview
+
 Successfully integrated the simple mission file creation system with the comprehensive v5MissionBriefing class to create a unified solution that generates rich mission briefing objects AND saves them to files for WebApp retrieval.
 
 ## Key Components Integrated
 
 ### 1. Source Files
+
 - **Deployment Version**: `/root/mission_briefing_generator_v5.py` - Simple file creation system
 - **Complex Version**: `/root/HydraX-v2/src/bitten_core/mission_briefing_generator_active.py` - v5MissionBriefing class
 - **Target File**: `/root/HydraX-v2/src/bitten_core/mission_briefing_generator_v5.py` - Integrated system
@@ -13,12 +15,14 @@ Successfully integrated the simple mission file creation system with the compreh
 ### 2. Integration Features
 
 #### ✅ Simple File Persistence
+
 - Maintains backward compatibility with the original `generate_mission(signal, user_id)` function
 - Files saved to `./missions/` directory with proper JSON formatting
 - Automatic expiry timestamp management
 - Cleanup of expired mission files
 
 #### ✅ Rich Mission Briefing Data
+
 - Integrates v5MissionBriefing class for comprehensive mission data
 - Enhanced signal classification and mission typing
 - User tier-based expiry calculations
@@ -26,6 +30,7 @@ Successfully integrated the simple mission file creation system with the compreh
 - Session-based timing adjustments
 
 #### ✅ Comprehensive Data Structure
+
 ```json
 {
   "mission_id": "user_123_1752507290",
@@ -58,7 +63,9 @@ Successfully integrated the simple mission file creation system with the compreh
   "execution_window": 300,
   "file_path": "./missions/user_123_1752507290.json",
   "created_timestamp": 1752507290,
-  "apex_briefing": { /* Rich briefing data */ },
+  "apex_briefing": {
+    /* Rich briefing data */
+  },
   "has_apex_briefing": true,
   "generator_version": "v5.0_integrated",
   "format_version": "1.0"
@@ -66,6 +73,7 @@ Successfully integrated the simple mission file creation system with the compreh
 ```
 
 #### ✅ WebApp Integration Ready
+
 - Mission files automatically saved to `./missions/` directory
 - Expiry timestamps for automatic cleanup
 - WebApp API functions for mission retrieval
@@ -75,7 +83,9 @@ Successfully integrated the simple mission file creation system with the compreh
 ## Key Classes and Functions
 
 ### `IntegratedMissionBriefingGenerator`
+
 Main class that combines both systems:
+
 - `generate_mission()` - Creates and saves comprehensive missions
 - `get_mission_by_id()` - Retrieves specific missions
 - `get_active_missions()` - Gets all active missions
@@ -83,6 +93,7 @@ Main class that combines both systems:
 - `_calculate_expiry_minutes()` - Smart expiry calculation
 
 ### Convenience Functions
+
 - `generate_mission()` - Backward compatible function
 - `get_mission_generator()` - Global generator instance
 - `get_mission_by_id()` - Quick mission retrieval
@@ -94,29 +105,33 @@ Main class that combines both systems:
 The system calculates expiry times based on:
 
 ### Signal Type
+
 - **Arcade**: 5 minutes (fast execution)
 - **Sniper**: 15 minutes (precision required)
 - **Midnight Hammer**: 10 minutes (coordinated timing)
 
 ### Timeframe
+
 - **M1**: -2 minutes (faster execution needed)
 - **M5**: Base time
 - **M15**: +5 minutes (more analysis time)
 - **H1**: +10 minutes (longer-term signal)
 
 ### User Tier Multipliers
+
 - **PRESS_PASS**: 0.8x (less time)
 - **NIBBLER**: 0.9x
 - **FANG**: 1.0x (baseline)
 - **AUTHORIZED**: 1.0x
 - **COMMANDER**: 1.2x
 - **ELITE**: 1.3x
-- ****: 1.5x (more time)
+- \*\*\*\*: 1.5x (more time)
 - **ADMIN**: 2.0x (maximum time)
 
 ## WebApp Integration
 
 ### Mission Retrieval API
+
 ```python
 # Get specific mission
 mission = get_mission_by_id("user_123_1752507290")
@@ -129,6 +144,7 @@ all_missions = get_active_missions()
 ```
 
 ### Dashboard Features
+
 - Real-time countdown calculations
 - Mission type breakdown
 - TCS score averaging
@@ -138,6 +154,7 @@ all_missions = get_active_missions()
 ## File Management
 
 ### Automatic Features
+
 - ✅ Directory creation (`./missions/`)
 - ✅ JSON file persistence
 - ✅ Expiry timestamp tracking
@@ -146,6 +163,7 @@ all_missions = get_active_missions()
 - ✅ UTF-8 encoding support
 
 ### File Structure
+
 ```
 ./missions/
 ├── user_123_1752507290.json
@@ -157,6 +175,7 @@ all_missions = get_active_missions()
 ## Testing Results
 
 ### ✅ All Tests Passed
+
 1. **Mission Generation**: Successfully creates comprehensive missions
 2. **File Persistence**: Files saved correctly with proper JSON formatting
 3. **Expiry Calculation**: Smart timing based on signal type and user tier
@@ -166,6 +185,7 @@ all_missions = get_active_missions()
 7. **Dashboard**: User dashboard data generated successfully
 
 ### Example Test Results
+
 ```
 === TESTING DIFFERENT SIGNAL TYPES ===
 - Arcade (AUTHORIZED): 5 minutes expiry
@@ -176,11 +196,13 @@ all_missions = get_active_missions()
 ## Benefits Achieved
 
 ### 1. Backward Compatibility
+
 - ✅ Existing code using `generate_mission(signal, user_id)` continues to work
 - ✅ Simple mission format preserved
 - ✅ No breaking changes to existing integrations
 
 ### 2. Enhanced Functionality
+
 - ✅ Rich mission briefing data from v5 system
 - ✅ Smart expiry calculations
 - ✅ User tier-based timing
@@ -188,6 +210,7 @@ all_missions = get_active_missions()
 - ✅ Session-aware timing adjustments
 
 ### 3. WebApp Ready
+
 - ✅ File-based persistence for WebApp retrieval
 - ✅ Real-time countdown calculations
 - ✅ User dashboard data
@@ -195,6 +218,7 @@ all_missions = get_active_missions()
 - ✅ Automatic cleanup
 
 ### 4. Production Ready
+
 - ✅ Error handling and logging
 - ✅ Backup and restore mechanisms
 - ✅ UTF-8 encoding support
@@ -204,6 +228,7 @@ all_missions = get_active_missions()
 ## Usage Examples
 
 ### Basic Usage (Backward Compatible)
+
 ```python
 from src.bitten_core.mission_briefing_generator_v5 import generate_mission
 
@@ -221,6 +246,7 @@ mission = generate_mission(signal, "user_123")
 ```
 
 ### Advanced Usage
+
 ```python
 from src.bitten_core.mission_briefing_generator_v5 import IntegratedMissionBriefingGenerator
 
@@ -247,6 +273,7 @@ mission = generator.generate_mission(signal, "user_456", user_data, account_data
 ```
 
 ### WebApp Integration
+
 ```python
 from src.bitten_core.mission_briefing_generator_v5 import get_active_missions, get_mission_by_id
 

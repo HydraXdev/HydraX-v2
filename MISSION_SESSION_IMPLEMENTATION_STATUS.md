@@ -8,25 +8,30 @@
 ## ✅ Completed Components
 
 ### 1. Database Schema (✅ Applied)
+
 **File**: `/root/HydraX-v2/migrations/002_mission_sessions.sql`
 **Status**: ✅ Applied to production database
 
 **Tables Created**:
+
 - `mission_sessions` - Core session management
 - `idempotency_cache` - Duplicate request prevention
 - `api_tokens` - JWT key management
 
 **Indexes Created**:
+
 - User lookups
 - Status filtering
 - Expiration queries
 - Nonce validation
 
 ### 2. JWT Token System (✅ Complete)
+
 **File**: `/root/HydraX-v2/src/security/jwt_manager.py`
 **Keys**: `/root/HydraX-v2/keys/jwt_private.pem` & `jwt_public.pem`
 
 **Features**:
+
 - RS256 signing with key rotation support
 - Token generation with mission session claims
 - Validation with expiry and signature checks
@@ -34,6 +39,7 @@
 - Nonce extraction
 
 **Usage**:
+
 ```python
 from src.security.jwt_manager import get_jwt_manager
 
@@ -51,15 +57,18 @@ claims = jwt_mgr.validate_token(token)
 ```
 
 ### 3. Mission Session Manager (✅ Complete)
+
 **File**: `/root/HydraX-v2/src/mission_session/session_manager.py`
 
 **Features**:
+
 - Session creation with ULID IDs
 - Status lifecycle (PENDING → EXECUTED/EXPIRED)
 - Nonce validation
 - Expiration management
 
 **Usage**:
+
 ```python
 from src.mission_session.session_manager import get_session_manager
 
@@ -86,14 +95,17 @@ if validation['valid']:
 ```
 
 ### 4. Idempotency Manager (✅ Complete)
+
 **File**: `/root/HydraX-v2/src/idempotency/idempotency_manager.py`
 
 **Features**:
+
 - Duplicate request detection
 - Response caching (10 min TTL)
 - Automatic cleanup of expired entries
 
 **Usage**:
+
 ```python
 from src.idempotency.idempotency_manager import get_idempotency_manager
 
@@ -120,9 +132,11 @@ idem_mgr.cache_response(
 ```
 
 ### 5. WebSocket Authentication (✅ Complete)
+
 **File**: `/root/HydraX-v2/src/websocket/auth_middleware.py`
 
 **Features**:
+
 - JWT-based connection authentication
 - Session management
 - Topic authorization
@@ -130,6 +144,7 @@ idem_mgr.cache_response(
 - Decorators for protected handlers
 
 **Usage**:
+
 ```python
 from src.websocket.auth_middleware import get_ws_auth, require_ws_auth
 
@@ -152,15 +167,18 @@ def handle_execute(data):
 ```
 
 ### 6. Deep Link Generator (✅ Complete)
+
 **File**: `/root/HydraX-v2/src/telegram/deep_link_generator.py`
 
 **Features**:
+
 - Mission session creation
 - JWT token generation
 - Deep link formatting
 - Short link support (legacy)
 
 **Usage**:
+
 ```python
 from src.telegram.deep_link_generator import get_link_generator
 
@@ -182,15 +200,18 @@ link_data = link_gen.generate_mission_link(
 ```
 
 ### 7. Trade Event Emitter (✅ Complete)
+
 **File**: `/root/HydraX-v2/src/events/trade_event_emitter.py`
 
 **Features**:
+
 - User-scoped event emission
 - Trade lifecycle events (arming, filled, closed)
 - Operation confirmations
 - Position updates
 
 **Usage**:
+
 ```python
 from src.events.trade_event_emitter import get_event_emitter
 
@@ -230,6 +251,7 @@ emitter.emit_operation_confirmation(
 **Changes Needed**:
 
 #### A. Add Imports (top of file)
+
 ```python
 # Mission Session Architecture
 from src.security.jwt_manager import get_jwt_manager
@@ -249,12 +271,14 @@ event_emitter = get_event_emitter()
 ```
 
 #### B. Configure Event Emitter (after socketio initialization)
+
 ```python
 # After: socketio = SocketIO(app, ...)
 event_emitter.set_socketio(socketio)
 ```
 
 #### C. Update WebSocket Connection Handler
+
 ```python
 @socketio.on('connect')
 def handle_connect():
@@ -309,6 +333,7 @@ def handle_subscribe(data):
 ```
 
 #### D. Update /api/signals Endpoint (Signal Generation)
+
 ```python
 @app.route('/api/signals', methods=['POST'])
 def api_signals_post():
@@ -348,6 +373,7 @@ def api_signals_post():
 ```
 
 #### E. Update /api/fire Endpoint (Execute with Validation)
+
 ```python
 @app.route('/api/fire', methods=['POST'])
 def fire_mission():
@@ -460,6 +486,7 @@ def fire_mission():
 **File to Modify**: `/root/HydraX-v2/confirm_listener_v207.py`
 
 **Add after confirmation received**:
+
 ```python
 # After processing confirmation from EA
 event_emitter.emit_operation_confirmation(
@@ -496,6 +523,7 @@ if success:
 **Changes Needed**:
 
 #### A. Add Deep Link Import
+
 ```python
 from src.telegram.deep_link_generator import get_link_generator
 
@@ -503,6 +531,7 @@ link_generator = get_link_generator()
 ```
 
 #### B. Modify Alert Posting Function
+
 ```python
 def post_signal_alert(signal_data):
     """Post signal alert with deep link"""
@@ -562,8 +591,8 @@ Session expires in 10 minutes
 ```typescript
 // Extract token and mission session from URL
 const searchParams = useSearchParams();
-const token = searchParams.get('token');
-const msId = searchParams.get('ms');
+const token = searchParams.get("token");
+const msId = searchParams.get("ms");
 
 // WebSocket connection with auth
 useEffect(() => {
@@ -575,33 +604,33 @@ useEffect(() => {
   // Connect to WebSocket with token
   const socket = io(`wss://www.joinbitten.com/socket.io?t=${token}`);
 
-  socket.on('authenticated', (data) => {
-    console.log('✅ Authenticated', data);
+  socket.on("authenticated", (data) => {
+    console.log("✅ Authenticated", data);
 
     // Subscribe to topics
-    socket.emit('subscribe', {
+    socket.emit("subscribe", {
       topics: [
-        'user.profile',
+        "user.profile",
         `mission.alert/${alertId}`,
-        'trades.open',
-        'trades.delta',
-        'system.status'
-      ]
+        "trades.open",
+        "trades.delta",
+        "system.status",
+      ],
     });
   });
 
-  socket.on('mission.alert', (data) => {
+  socket.on("mission.alert", (data) => {
     // Update mission dossier with alert data
     setMissionData(data);
   });
 
-  socket.on('trades.delta', (data) => {
-    if (data.status === 'FILLED') {
+  socket.on("trades.delta", (data) => {
+    if (data.status === "FILLED") {
       // Redirect to status page
-      router.push('/status');
-    } else if (data.status === 'ARMING') {
+      router.push("/status");
+    } else if (data.status === "ARMING") {
       // Show arming status
-      setOrderStatus('arming');
+      setOrderStatus("arming");
     }
   });
 
@@ -613,11 +642,11 @@ async function executeOrder() {
   const clientRequestId = crypto.randomUUID();
 
   try {
-    const response = await fetch('/api/fire', {
-      method: 'POST',
+    const response = await fetch("/api/fire", {
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         clientRequestId,
@@ -626,23 +655,23 @@ async function executeOrder() {
         entry: missionData.entry,
         stopLoss: missionData.sl,
         takeProfit: missionData.tp,
-        riskUsd: calculatedRisk
-      })
+        riskUsd: calculatedRisk,
+      }),
     });
 
     if (response.status === 202) {
       // Wait for WebSocket events
-      setOrderStatus('pending');
+      setOrderStatus("pending");
     } else if (response.status === 409) {
-      alert('Order already executed');
+      alert("Order already executed");
     } else if (response.status === 410) {
-      alert('Session expired');
+      alert("Session expired");
     } else {
       const error = await response.json();
       alert(`Error: ${error.error}`);
     }
   } catch (error) {
-    console.error('Execute error:', error);
+    console.error("Execute error:", error);
   }
 }
 ```
@@ -652,66 +681,75 @@ async function executeOrder() {
 ## 🧪 Testing Checklist
 
 ### Unit Tests
-- [  ] JWT token generation/validation
-- [  ] Mission session lifecycle
-- [  ] Idempotency cache
-- [  ] WebSocket authentication
-- [  ] Topic authorization
+
+- [ ] JWT token generation/validation
+- [ ] Mission session lifecycle
+- [ ] Idempotency cache
+- [ ] WebSocket authentication
+- [ ] Topic authorization
 
 ### Integration Tests
-- [  ] End-to-end flow (signal → deep link → execute → confirm)
-- [  ] WebSocket event delivery
-- [  ] Duplicate request prevention
-- [  ] Session expiration handling
+
+- [ ] End-to-end flow (signal → deep link → execute → confirm)
+- [ ] WebSocket event delivery
+- [ ] Duplicate request prevention
+- [ ] Session expiration handling
 
 ### Security Tests
-- [  ] Token expiry enforcement
-- [  ] Replay attack prevention (nonce)
-- [  ] Risk guardrail validation
-- [  ] Cross-user isolation
+
+- [ ] Token expiry enforcement
+- [ ] Replay attack prevention (nonce)
+- [ ] Risk guardrail validation
+- [ ] Cross-user isolation
 
 ---
 
 ## 📊 Deployment Checklist
 
 ### Pre-Deployment
+
 - [✅] Database migration applied
 - [✅] JWT keys generated
-- [  ] Environment variables configured
-- [  ] Code integrated into webapp
-- [  ] Telegram bot updated
-- [  ] UI updated
+- [ ] Environment variables configured
+- [ ] Code integrated into webapp
+- [ ] Telegram bot updated
+- [ ] UI updated
 
 ### Deployment
-- [  ] Restart webapp with new code
-- [  ] Restart Telegram bot
-- [  ] Deploy UI changes
-- [  ] Monitor logs for errors
+
+- [ ] Restart webapp with new code
+- [ ] Restart Telegram bot
+- [ ] Deploy UI changes
+- [ ] Monitor logs for errors
 
 ### Post-Deployment
-- [  ] Test with single user
-- [  ] Verify deep links working
-- [  ] Check WebSocket connections
-- [  ] Monitor idempotency cache
-- [  ] Verify event emissions
+
+- [ ] Test with single user
+- [ ] Verify deep links working
+- [ ] Check WebSocket connections
+- [ ] Monitor idempotency cache
+- [ ] Verify event emissions
 
 ---
 
 ## 🎯 Next Steps
 
 **Immediate** (Required for operation):
+
 1. Integrate WebSocket handlers into webapp_server_optimized.py
 2. Update /api/fire endpoint with session validation
 3. Modify Telegram bot alert posting
 4. Update Mission Brief UI component
 
 **Secondary** (Enhancements):
+
 1. Add session expiration cleanup daemon
 2. Add idempotency cache cleanup daemon
 3. Add monitoring dashboards for session stats
 4. Add admin endpoints for session management
 
 **Documentation**:
+
 1. Update API documentation with new endpoints
 2. Document WebSocket event schema
 3. Create developer guide for deep link generation

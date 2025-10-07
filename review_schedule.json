@@ -14,12 +14,8 @@
         "pattern_type": "ORDER_BLOCK_BOUNCE",
         "base_review_hours": 72,
         "risk_adjusted_hours": 64.8,
-        "adjustment_factors": [
-          0.9
-        ],
-        "adjustment_reasons": [
-          "Insufficient sample size"
-        ],
+        "adjustment_factors": [0.9],
+        "adjustment_reasons": ["Insufficient sample size"],
         "review_priority": "MEDIUM",
         "performance_context": {
           "sample_size": 2,
@@ -49,12 +45,8 @@
         "pattern_type": "LIQUIDITY_SWEEP_REVERSAL",
         "base_review_hours": 72,
         "risk_adjusted_hours": 64.8,
-        "adjustment_factors": [
-          0.9
-        ],
-        "adjustment_reasons": [
-          "Insufficient sample size"
-        ],
+        "adjustment_factors": [0.9],
+        "adjustment_reasons": ["Insufficient sample size"],
         "review_priority": "MEDIUM",
         "performance_context": {
           "sample_size": 2,
@@ -84,12 +76,8 @@
         "pattern_type": "VCB_BREAKOUT",
         "base_review_hours": 72,
         "risk_adjusted_hours": 64.8,
-        "adjustment_factors": [
-          0.9
-        ],
-        "adjustment_reasons": [
-          "Insufficient sample size"
-        ],
+        "adjustment_factors": [0.9],
+        "adjustment_reasons": ["Insufficient sample size"],
         "review_priority": "MEDIUM",
         "performance_context": {
           "sample_size": 1,
@@ -119,11 +107,7 @@
         "pattern_type": "FAIR_VALUE_GAP_FILL",
         "base_review_hours": 72,
         "risk_adjusted_hours": 36.3,
-        "adjustment_factors": [
-          0.7,
-          0.8,
-          0.9
-        ],
+        "adjustment_factors": [0.7, 0.8, 0.9],
         "adjustment_reasons": [
           "Poor expectancy performance",
           "Low win rate",
@@ -158,12 +142,8 @@
         "pattern_type": "",
         "base_review_hours": 24,
         "risk_adjusted_hours": 21.6,
-        "adjustment_factors": [
-          0.9
-        ],
-        "adjustment_reasons": [
-          "Insufficient sample size"
-        ],
+        "adjustment_factors": [0.9],
+        "adjustment_reasons": ["Insufficient sample size"],
         "review_priority": "HIGH",
         "performance_context": {
           "sample_size": 0

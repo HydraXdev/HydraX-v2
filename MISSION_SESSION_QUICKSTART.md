@@ -297,6 +297,7 @@ Once Step 5 tests pass, you can proceed with:
 ### Issue: "Module not found" errors
 
 **Solution**: Check Python path
+
 ```bash
 export PYTHONPATH=/root/HydraX-v2:$PYTHONPATH
 python3 src/security/jwt_manager.py
@@ -305,6 +306,7 @@ python3 src/security/jwt_manager.py
 ### Issue: "Key file not found"
 
 **Solution**: Verify keys exist
+
 ```bash
 ls -la /root/HydraX-v2/keys/
 # Should show jwt_private.pem and jwt_public.pem
@@ -313,14 +315,16 @@ ls -la /root/HydraX-v2/keys/
 ### Issue: WebSocket authentication fails
 
 **Solution**: Check token in browser console
+
 ```javascript
 const urlParams = new URLSearchParams(window.location.search);
-console.log('Token:', urlParams.get('token'));
+console.log("Token:", urlParams.get("token"));
 ```
 
 ### Issue: Database errors
 
 **Solution**: Verify migration applied
+
 ```bash
 sqlite3 /root/HydraX-v2/bitten.db \
   "SELECT * FROM schema_versions WHERE version = '002_mission_sessions';"
@@ -332,12 +336,12 @@ sqlite3 /root/HydraX-v2/bitten.db \
 
 After completing steps 1-6:
 
-- [  ] Webapp starts without errors
-- [  ] Logs show "Mission Session Architecture loaded"
-- [  ] `/api/signals` returns deep_link field
-- [  ] WebSocket connects with ?t=token parameter
-- [  ] Test session created in database
-- [  ] Test token validates successfully
+- [ ] Webapp starts without errors
+- [ ] Logs show "Mission Session Architecture loaded"
+- [ ] `/api/signals` returns deep_link field
+- [ ] WebSocket connects with ?t=token parameter
+- [ ] Test session created in database
+- [ ] Test token validates successfully
 
 ---
 

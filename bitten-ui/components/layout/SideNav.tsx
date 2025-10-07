@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import React, { useState } from 'react'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { motion } from 'framer-motion'
+import React, { useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { motion } from "framer-motion";
 import {
   Target,
   FileText,
@@ -13,40 +13,40 @@ import {
   X,
   TrendingUp,
   Shield,
-  Zap
-} from 'lucide-react'
+  Zap,
+} from "lucide-react";
 
 const navItems = [
   {
-    path: '/war-room',
-    label: 'War Room',
+    path: "/war-room",
+    label: "War Room",
     icon: Target,
-    accent: 'mint'
+    accent: "mint",
   },
   {
-    path: '/mission-brief',
-    label: 'Mission Brief',
+    path: "/mission-brief",
+    label: "Mission Brief",
     icon: FileText,
-    accent: 'cyan'
+    accent: "cyan",
   },
   {
-    path: '/xp',
-    label: 'XP Dashboard',
+    path: "/xp",
+    label: "XP Dashboard",
     icon: Trophy,
-    accent: 'warning'
+    accent: "warning",
   },
   {
-    path: '/settings',
-    label: 'Settings',
+    path: "/settings",
+    label: "Settings",
     icon: Settings,
-    accent: 'secondary'
-  }
-]
+    accent: "secondary",
+  },
+];
 
 export function SideNav() {
-  const [isCollapsed, setIsCollapsed] = useState(false)
-  const [isMobileOpen, setIsMobileOpen] = useState(false)
-  const pathname = usePathname()
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const pathname = usePathname();
 
   return (
     <>
@@ -70,20 +70,20 @@ export function SideNav() {
       <motion.nav
         initial={false}
         animate={{
-          width: isCollapsed ? '80px' : '240px',
-          x: isMobileOpen ? 0 : -240
+          width: isCollapsed ? "80px" : "240px",
+          x: isMobileOpen ? 0 : -240,
         }}
         className={`
           fixed lg:relative h-screen bg-secondary border-r border-default
           flex flex-col z-40 transition-all duration-300
-          ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+          ${isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
         `}
       >
         {/* Logo/Brand */}
         <div className="p-4 border-b border-default">
           <motion.div
             className="flex items-center gap-3"
-            animate={{ justifyContent: isCollapsed ? 'center' : 'flex-start' }}
+            animate={{ justifyContent: isCollapsed ? "center" : "flex-start" }}
           >
             <div className="w-10 h-10 bg-mint rounded-lg flex items-center justify-center">
               <Shield className="w-6 h-6 text-black" />
@@ -95,7 +95,9 @@ export function SideNav() {
                 exit={{ opacity: 0 }}
                 className="flex flex-col"
               >
-                <span className="text-sm font-semibold text-primary">BITTEN</span>
+                <span className="text-sm font-semibold text-primary">
+                  BITTEN
+                </span>
                 <span className="text-xs text-secondary">Tactical Trading</span>
               </motion.div>
             )}
@@ -105,9 +107,9 @@ export function SideNav() {
         {/* Navigation Items */}
         <div className="flex-1 py-4">
           {navItems.map((item) => {
-            const Icon = item.icon
-            const isActive = pathname === item.path
-            const accentClass = `text-${item.accent}`
+            const Icon = item.icon;
+            const isActive = pathname === item.path;
+            const accentClass = `text-${item.accent}`;
 
             return (
               <Link
@@ -116,14 +118,14 @@ export function SideNav() {
                 className={`
                   flex items-center gap-3 px-4 py-3 mx-2 rounded-lg
                   transition-all duration-200 group
-                  ${isActive ? 'bg-overlay border border-active' : 'hover:bg-overlay/50'}
+                  ${isActive ? "bg-overlay border border-active" : "hover:bg-overlay/50"}
                 `}
               >
                 <Icon
                   size={20}
                   className={`
                     transition-colors
-                    ${isActive ? accentClass : 'text-tertiary group-hover:text-primary'}
+                    ${isActive ? accentClass : "text-tertiary group-hover:text-primary"}
                   `}
                 />
                 {!isCollapsed && (
@@ -133,14 +135,14 @@ export function SideNav() {
                     exit={{ opacity: 0 }}
                     className={`
                       text-sm font-medium
-                      ${isActive ? 'text-primary' : 'text-secondary group-hover:text-primary'}
+                      ${isActive ? "text-primary" : "text-secondary group-hover:text-primary"}
                     `}
                   >
                     {item.label}
                   </motion.span>
                 )}
               </Link>
-            )
+            );
           })}
         </div>
 
@@ -179,5 +181,5 @@ export function SideNav() {
         </button>
       </motion.nav>
     </>
-  )
+  );
 }

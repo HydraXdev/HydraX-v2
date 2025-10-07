@@ -3,16 +3,19 @@
 ## Alert Severity Levels
 
 ### 🔴 CRITICAL (P0)
+
 - **Response Time**: Immediate (< 5 minutes)
 - **Impact**: Service down, trading halted
 - **Escalation**: Automatic PagerDuty
 
 ### 🟡 WARNING (P1)
+
 - **Response Time**: 15 minutes
 - **Impact**: Performance degraded
 - **Escalation**: Slack notification
 
 ### 🔵 INFO (P2)
+
 - **Response Time**: 1 hour
 - **Impact**: Monitoring/trending
 - **Escalation**: Log aggregation
@@ -20,10 +23,12 @@
 ## Alert Response Procedures
 
 ### 🚨 HydraSocketDown
+
 **Severity**: CRITICAL
 **Description**: HydraSocket service not responding to health checks
 
 #### Immediate Actions
+
 ```bash
 # 1. Check service status
 systemctl status hydrasocket
@@ -43,6 +48,7 @@ curl http://localhost:8888/healthz
 ```
 
 #### If restart fails
+
 ```bash
 # Check port conflicts
 sudo netstat -tulpn | grep :8888
@@ -58,10 +64,12 @@ python3 /root/HydraX-v2/EMERGENCY_WEBAPP_NUCLEAR.py &
 ```
 
 ### ⚠️ HighOrderLatencyP95
+
 **Severity**: WARNING
 **Description**: Order processing latency p95 > 250ms
 
 #### Investigation Steps
+
 ```bash
 # 1. Check current latency
 curl -s http://localhost:8888/metrics | grep order_to_open_ms_p95
@@ -77,6 +85,7 @@ curl -s http://localhost:8888/api/health | jq .ws_clients
 ```
 
 #### Mitigation Actions
+
 ```bash
 # Reduce WebSocket backpressure
 curl -X POST http://localhost:8888/admin/reduce-backpressure
@@ -86,10 +95,12 @@ pm2 reload hydrasocket-router
 ```
 
 ### 📉 BackpressureDrops
+
 **Severity**: CRITICAL
 **Description**: Messages being dropped due to backpressure
 
 #### Immediate Actions
+
 ```bash
 # 1. Check drop rate
 curl -s http://localhost:8888/metrics | grep backpressure_drops_total
@@ -105,6 +116,7 @@ watch -n 5 'curl -s http://localhost:8888/metrics | grep backpressure_drops_tota
 ```
 
 #### Recovery Actions
+
 ```bash
 # If drops continue, restart with higher limits
 export WS_ACK_WINDOW=512
@@ -115,10 +127,12 @@ curl -X DELETE http://localhost:8888/admin/drain
 ```
 
 ### 🔌 RouterClientsDrop
+
 **Severity**: CRITICAL
 **Description**: No active WebSocket connections
 
 #### Investigation Steps
+
 ```bash
 # 1. Check WebSocket endpoint
 curl -I http://localhost:8888/socket.io/
@@ -146,6 +160,7 @@ netstat -an | grep :8888
 ```
 
 #### Recovery Actions
+
 ```bash
 # Restart WebSocket handler
 pm2 restart hydrasocket-router
@@ -158,10 +173,12 @@ sudo netstat -tulpn | grep :8888
 ```
 
 ### 📊 EventLagHigh
+
 **Severity**: WARNING
 **Description**: Event processing lag p95 > 500ms
 
 #### Investigation Steps
+
 ```bash
 # 1. Check EA connectivity
 curl -s http://localhost:8888/metrics | grep ea_events_received_total
@@ -174,6 +191,7 @@ time sqlite3 /root/HydraX-v2/event_bus/bitten_events.db "INSERT INTO events (eve
 ```
 
 #### Mitigation Actions
+
 ```bash
 # Optimize database
 sqlite3 /root/HydraX-v2/event_bus/bitten_events.db "VACUUM; ANALYZE;"
@@ -186,10 +204,12 @@ iostat -x 1 5
 ```
 
 ### 🔑 AuthenticationFailures
+
 **Severity**: WARNING
 **Description**: High rate of authentication failures
 
 #### Investigation Steps
+
 ```bash
 # 1. Check failed auth patterns
 grep "auth.*failed" /var/log/hydrasocket/*.log | tail -20
@@ -202,6 +222,7 @@ grep -E "401|403" /var/log/hydrasocket/*.log | cut -d' ' -f1 | sort | uniq -c | 
 ```
 
 #### Mitigation Actions
+
 ```bash
 # Rate limit suspicious IPs
 sudo iptables -A INPUT -s SUSPICIOUS_IP -j DROP
@@ -214,10 +235,12 @@ python3 tools/rotate_api_keys.py
 ```
 
 ### 💾 DatabaseErrors
+
 **Severity**: WARNING
 **Description**: Database operation failures
 
 #### Investigation Steps
+
 ```bash
 # 1. Check database integrity
 sqlite3 /root/HydraX-v2/event_bus/bitten_events.db "PRAGMA integrity_check;"
@@ -230,6 +253,7 @@ lsof /root/HydraX-v2/event_bus/bitten_events.db
 ```
 
 #### Recovery Actions
+
 ```bash
 # If corruption detected
 systemctl stop hydrasocket
@@ -241,10 +265,12 @@ systemctl start hydrasocket
 ```
 
 ### 🧠 MemoryUsageHigh
+
 **Severity**: WARNING
 **Description**: Process memory usage > 2GB
 
 #### Investigation Steps
+
 ```bash
 # 1. Check memory usage breakdown
 ps aux | grep hydrasocket
@@ -255,6 +281,7 @@ valgrind --tool=memcheck --leak-check=full python3 webapp_server_optimized.py &
 ```
 
 #### Mitigation Actions
+
 ```bash
 # Restart service to free memory
 pm2 restart hydrasocket-router
@@ -270,21 +297,25 @@ pm2 restart hydrasocket-router
 ## Alert Escalation Matrix
 
 ### Level 1: Automated Response (0-5 minutes)
+
 - Automatic restart attempts
 - Health check validation
 - Basic remediation scripts
 
 ### Level 2: On-Call Engineer (5-15 minutes)
+
 - Manual diagnostics
 - Service restarts
 - Configuration adjustments
 
 ### Level 3: Senior Engineer (15-30 minutes)
+
 - Code-level debugging
 - Database recovery
 - Architecture changes
 
 ### Level 4: Incident Commander (30+ minutes)
+
 - Multi-service coordination
 - Business impact assessment
 - External communication
@@ -292,6 +323,7 @@ pm2 restart hydrasocket-router
 ## Runbook Templates
 
 ### Investigation Checklist
+
 ```
 □ Check service status
 □ Review recent logs
@@ -305,6 +337,7 @@ pm2 restart hydrasocket-router
 ```
 
 ### Communication Template
+
 ```
 🚨 INCIDENT: [ALERT_NAME]
 Status: [INVESTIGATING/MITIGATING/RESOLVED]
@@ -318,16 +351,19 @@ Updates: #hydrasocket-incidents
 ## Prevention Strategies
 
 ### Monitoring Improvements
+
 - Add predictive alerting for resource trends
 - Implement anomaly detection for unusual patterns
 - Set up dependency health monitoring
 
 ### Automation Enhancements
+
 - Auto-scaling based on load
 - Automated log analysis and root cause detection
 - Self-healing restart policies
 
 ### Testing
+
 - Regular chaos engineering exercises
 - Load testing in production-like environments
 - Disaster recovery drills
@@ -335,13 +371,16 @@ Updates: #hydrasocket-incidents
 ## Alert Tuning
 
 ### Threshold Adjustment
+
 Review and adjust alert thresholds quarterly based on:
+
 - Historical performance data
 - Seasonal traffic patterns
 - System capacity changes
 - Business requirements
 
 ### False Positive Reduction
+
 - Implement alert suppression during maintenance
 - Add context-aware alerting logic
 - Use composite alerts for complex conditions

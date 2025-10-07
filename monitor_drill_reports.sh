@@ -33,7 +33,7 @@ import sys
 try:
     with open('$SUMMARY_FILE', 'r') as f:
         data = json.load(f)
-    
+
     # Show last 5 executions
     for record in data[-5:]:
         status = '✅' if record.get('success', False) else '❌'

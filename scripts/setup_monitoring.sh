@@ -108,7 +108,7 @@ server {
 
     location / {
         try_files \$uri \$uri/ =404;
-        
+
         # Enable CORS for dashboard access
         add_header Access-Control-Allow-Origin *;
         add_header Access-Control-Allow-Methods "GET, OPTIONS";

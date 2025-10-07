@@ -49,15 +49,15 @@ gunicorn -w 4 -b 0.0.0.0:5000 shepherd_webhook:app
 
 ### API Endpoints
 
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| POST | `/api/v1/validate` | Validate logic configuration | Yes |
-| GET | `/api/v1/trace/:module` | Get module connections | Yes |
-| POST | `/api/v1/simulate` | Test proposed changes | Yes |
-| GET | `/api/v1/status` | System health check | No |
-| POST | `/api/v1/webhook` | Receive external webhooks | No* |
+| Method | Endpoint                | Description                  | Auth Required |
+| ------ | ----------------------- | ---------------------------- | ------------- |
+| POST   | `/api/v1/validate`      | Validate logic configuration | Yes           |
+| GET    | `/api/v1/trace/:module` | Get module connections       | Yes           |
+| POST   | `/api/v1/simulate`      | Test proposed changes        | Yes           |
+| GET    | `/api/v1/status`        | System health check          | No            |
+| POST   | `/api/v1/webhook`       | Receive external webhooks    | No\*          |
 
-*Webhook endpoint uses signature verification instead of bearer token
+\*Webhook endpoint uses signature verification instead of bearer token
 
 ### Authentication
 

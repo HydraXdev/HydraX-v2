@@ -9,17 +9,20 @@ import time
 
 DB_PATH = "/root/HydraX-v2/bitten.db"
 
+
 def show_status():
     """Show current database status"""
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
-    cursor.execute("""
+    cursor.execute(
+        """
         SELECT status, COUNT(*) as count
         FROM fires
         GROUP BY status
         ORDER BY count DESC
-    """)
+    """
+    )
 
     print("\n📊 Current fires table status:")
     print("-" * 40)
@@ -32,6 +35,7 @@ def show_status():
 
     conn.close()
     return filled_count
+
 
 print("=" * 60)
 print("🚨 EMERGENCY DATABASE CLEANUP")
@@ -49,13 +53,16 @@ else:
     cursor = conn.cursor()
 
     current_time = int(time.time())
-    cursor.execute("""
+    cursor.execute(
+        """
         UPDATE fires
         SET status = 'CLOSED_SYNC',
             updated_at = ?,
             close_reason = 'CLOSED_IN_MT5_MANUAL_SYNC'
         WHERE status = 'FILLED'
-    """, (current_time,))
+    """,
+        (current_time,),
+    )
 
     updated = cursor.rowcount
     conn.commit()

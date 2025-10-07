@@ -3,10 +3,12 @@
 Monitor for EA v3.003 handshake and heartbeat messages
 """
 
-import zmq
 import json
 import time
 from datetime import datetime
+
+import zmq
+
 
 def main():
     context = zmq.Context()
@@ -34,13 +36,13 @@ def main():
                 # Try to parse as JSON
                 try:
                     data = json.loads(message)
-                    msg_type = data.get('type', 'unknown')
+                    msg_type = data.get("type", "unknown")
 
                     # Count message types
                     message_types[msg_type] = message_types.get(msg_type, 0) + 1
 
                     # Handle special message types
-                    if msg_type == 'handshake':
+                    if msg_type == "handshake":
                         print(f"\n🤝 HANDSHAKE RECEIVED at {datetime.now().strftime('%H:%M:%S')}!")
                         print(f"   UUID: {data.get('uuid')}")
                         print(f"   Account: {data.get('account')}")
@@ -51,7 +53,7 @@ def main():
                         print(f"   Version: {data.get('version')}")
                         last_handshake = data
 
-                    elif msg_type == 'heartbeat':
+                    elif msg_type == "heartbeat":
                         if not last_heartbeat:  # Only print first heartbeat
                             print(f"\n💓 HEARTBEAT RECEIVED at {datetime.now().strftime('%H:%M:%S')}!")
                             print(f"   Balance: {data.get('balance')}")
@@ -61,9 +63,9 @@ def main():
                             print(f"   Open Positions: {data.get('open_positions')}")
                         last_heartbeat = data
 
-                    elif msg_type == 'tick' and len(message_types) == 1:
+                    elif msg_type == "tick" and len(message_types) == 1:
                         # Only show tick info if it's the only type we're seeing
-                        if message_types['tick'] == 1:
+                        if message_types["tick"] == 1:
                             print(f"\n📊 TICKS FLOWING (first tick at {datetime.now().strftime('%H:%M:%S')})")
                             print(f"   Symbol: {data.get('symbol')}")
                             print(f"   Bid: {data.get('bid')}")
@@ -114,6 +116,7 @@ def main():
 
         receiver.close()
         context.term()
+
 
 if __name__ == "__main__":
     main()

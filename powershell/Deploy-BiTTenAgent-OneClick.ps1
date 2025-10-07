@@ -27,7 +27,7 @@ Write-Host @"
 if (-not $UserUUID) {
     Write-Host "Please enter your User UUID (from Telegram):" -ForegroundColor Yellow
     $UserUUID = Read-Host "User UUID"
-    
+
     if (-not $UserUUID) {
         Write-Error "User UUID is required!"
         exit 1
@@ -52,7 +52,7 @@ function Download-FileWithRetry {
         [string]$OutFile,
         [int]$MaxRetries = 3
     )
-    
+
     for ($i = 1; $i -le $MaxRetries; $i++) {
         try {
             Invoke-WebRequest -Uri $Url -OutFile $OutFile -UseBasicParsing
@@ -89,7 +89,7 @@ foreach ($file in $filesToDownload) {
     Write-Host "   Downloading $($file.Name)..." -ForegroundColor Gray
     $url = "$GitHubRepo/$($file.Path)"
     $outPath = Join-Path $TempPath $file.Name
-    
+
     if (-not (Download-FileWithRetry -Url $url -OutFile $outPath)) {
         $downloadSuccess = $false
         break
@@ -99,11 +99,11 @@ foreach ($file in $filesToDownload) {
 # If download failed, use embedded files
 if (-not $downloadSuccess) {
     Write-Warning "Failed to download from GitHub. Using embedded files..."
-    
+
     # Create all files locally (embedded in this script)
     # This is a fallback - in production, files would be included
     Write-Host "   Creating agent files from embedded sources..." -ForegroundColor Yellow
-    
+
     # For brevity, we'll assume files are downloaded successfully
     # In production, embed the actual file contents here
 }
@@ -138,10 +138,10 @@ $eaDeployed = $eaManager.DeployEA()
 
 if ($eaDeployed) {
     Write-Host "✅ EA deployed successfully" -ForegroundColor Green
-    
+
     # Setup BITTEN directory
     $eaManager.SetupBittenDirectory()
-    
+
     # Show currency pairs
     Write-Host "`n💱 Configured Currency Pairs (15 total, NO XAUUSD):" -ForegroundColor Cyan
     $pairs = $eaManager.GetCurrencyPairs()

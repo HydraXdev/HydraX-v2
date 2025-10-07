@@ -7,8 +7,9 @@ All core modules have been implemented and tested successfully. The system is re
 ## 🎯 **What's Implemented**
 
 ### **Core Infrastructure (100% Complete)**
+
 - ✅ User authorization system with 4-tier access control
-- ✅ Telegram command router with 25+ commands  
+- ✅ Telegram command router with 25+ commands
 - ✅ Trade execution interface with high-probability filtering
 - ✅ BITTEN core controller with system orchestration
 - ✅ Performance logging with XP and achievements
@@ -16,6 +17,7 @@ All core modules have been implemented and tested successfully. The system is re
 - ✅ Webhook server for Telegram integration
 
 ### **Key Features Working**
+
 - ✅ High-probability trade filtering (TCS ≥70)
 - ✅ Risk management with exposure limits
 - ✅ Smart SL/TP generation based on confidence
@@ -26,21 +28,25 @@ All core modules have been implemented and tested successfully. The system is re
 ## 🚀 **Quick Start**
 
 ### **1. Install Dependencies**
+
 ```bash
 pip install flask requests
 ```
 
 ### **2. Run System Tests**
+
 ```bash
 python3 src/bitten_core/test_system.py
 ```
 
 ### **3. Start BITTEN Server**
+
 ```bash
 python3 start_bitten.py
 ```
 
 ### **4. Configure Environment Variables (Optional)**
+
 ```bash
 export WEBHOOK_HOST=0.0.0.0
 export WEBHOOK_PORT=9001
@@ -53,16 +59,21 @@ export BITTEN_AUTHORIZED_USERS=333333333,444444444
 ## 🔧 **Configuration**
 
 ### **User Access Control**
+
 Set user permissions via environment variables:
+
 - `BITTEN_ADMIN_USERS`: Admin user IDs (comma-separated)
-- `BITTEN_ELITE_USERS`: Elite user IDs (comma-separated)  
+- `BITTEN_ELITE_USERS`: Elite user IDs (comma-separated)
 - `BITTEN_AUTHORIZED_USERS`: Authorized user IDs (comma-separated)
 
 ### **Trading Pairs**
+
 Currently supports:
+
 - GBPUSD, USDCAD, GBPJPY, EURUSD, USDJPY
 
 ### **TCS Filtering**
+
 - Minimum TCS score: 70 (configurable in fire_router.py)
 - High confidence threshold: 85
 - Risk limits: 5 lots total, 2 lots per symbol
@@ -70,11 +81,13 @@ Currently supports:
 ## 📡 **Telegram Integration**
 
 ### **Webhook Setup**
+
 1. Set your webhook URL to: `https://yourdomain.com/webhook`
 2. The server listens on port 9001 by default
 3. Use nginx proxy for SSL termination
 
 ### **Available Commands**
+
 - `/start` - Initialize bot session
 - `/status` - System health check
 - `/positions` - View open positions
@@ -86,10 +99,12 @@ Currently supports:
 ## 📊 **Data Storage**
 
 ### **Databases Created**
+
 - `/root/HydraX-v2/data/bitten_xp.db` - XP and achievements
 - `/root/HydraX-v2/data/trades/trades.db` - Trade history
 
 ### **Export Formats**
+
 - JSON: Complete trade data
 - CSV: Spreadsheet format
 - MT4 CSV: MetaTrader compatible
@@ -97,6 +112,7 @@ Currently supports:
 ## ⚠️ **Production Notes**
 
 ### **What's Ready**
+
 - ✅ All core trading logic
 - ✅ User authorization and rate limiting
 - ✅ Database schema and data persistence
@@ -105,6 +121,7 @@ Currently supports:
 - ✅ Trade logging and statistics
 
 ### **What Needs Integration**
+
 - 🔄 Real MT5 bridge connection (currently simulated)
 - 🔄 Live market data feeds
 - 🔄 Production webhook SSL configuration
@@ -115,7 +132,7 @@ Currently supports:
 ```
 🏁 TEST RESULTS: 6/6 tests passed
 ✅ Import Tests PASSED
-✅ Database Tests PASSED  
+✅ Database Tests PASSED
 ✅ Core System Tests PASSED
 ✅ User Management Tests PASSED
 ✅ Telegram Processing Tests PASSED
@@ -134,7 +151,7 @@ Currently supports:
 
 - **Complete user onboarding** with /start command
 - **Real-time trade filtering** with TCS scores
-- **Comprehensive performance tracking** 
+- **Comprehensive performance tracking**
 - **Achievement system** with automatic unlocking
 - **Multi-tier access control** with rate limiting
 - **Trade export** in multiple formats

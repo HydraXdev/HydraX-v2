@@ -6,13 +6,15 @@ Creates comprehensive market snapshots on demand or fire confirmation
 
 import asyncio
 import json
-import time
 import logging
-from typing import Dict, Optional, Callable, List
+import time
 from datetime import datetime
+from typing import Callable, Dict, List, Optional
+
 import numpy as np
 
 logger = logging.getLogger(__name__)
+
 
 class SignalSnapshotProducer:
     """Produces signal snapshots with OHLC, price, and overlays"""
@@ -33,14 +35,29 @@ class SignalSnapshotProducer:
         # Active symbols (same as other components)
         self.active_symbols = [
             # Major Forex Pairs (6)
-            "EURUSD", "GBPUSD", "USDCHF", "USDJPY", "AUDUSD", "NZDUSD",
+            "EURUSD",
+            "GBPUSD",
+            "USDCHF",
+            "USDJPY",
+            "AUDUSD",
+            "NZDUSD",
             # Cross Pairs (10)
-            "EURJPY", "GBPJPY", "EURGBP", "EURAUD", "GBPCAD", "AUDJPY", "NZDJPY",
-            "CHFJPY", "CADJPY", "AUDCAD",
+            "EURJPY",
+            "GBPJPY",
+            "EURGBP",
+            "EURAUD",
+            "GBPCAD",
+            "AUDJPY",
+            "NZDJPY",
+            "CHFJPY",
+            "CADJPY",
+            "AUDCAD",
             # Additional Pairs (2)
-            "USDCNH", "AUDNZD",
+            "USDCNH",
+            "AUDNZD",
             # Precious Metals (2)
-            "XAUUSD", "XAGUSD"
+            "XAUUSD",
+            "XAGUSD",
         ]
 
     def set_snapshot_callback(self, callback: Callable):
@@ -69,14 +86,10 @@ class SignalSnapshotProducer:
             for i in range(1, min(15, len(ohlc_data))):
                 high = ohlc_data[-i]["high"]
                 low = ohlc_data[-i]["low"]
-                prev_close = ohlc_data[-i-1]["close"]
+                prev_close = ohlc_data[-i - 1]["close"]
 
                 if high is not None and low is not None and prev_close is not None:
-                    true_range = max(
-                        high - low,
-                        abs(high - prev_close),
-                        abs(low - prev_close)
-                    )
+                    true_range = max(high - low, abs(high - prev_close), abs(low - prev_close))
                     atr_periods.append(true_range)
 
             atr = np.mean(atr_periods) if atr_periods else None
@@ -96,7 +109,7 @@ class SignalSnapshotProducer:
             rr_hint = {
                 "suggested_tp": round(atr * 1.5, 5),
                 "suggested_sl": round(atr * 0.5, 5),
-                "ratio": 3.0  # 1.5 / 0.5 = 3:1 ratio
+                "ratio": 3.0,  # 1.5 / 0.5 = 3:1 ratio
             }
         else:
             rr_hint = None
@@ -120,7 +133,7 @@ class SignalSnapshotProducer:
             "volatility": round(volatility, 6) if volatility else None,
             "support_levels": support_levels[:3],  # Top 3
             "resistance_levels": resistance_levels[:3],  # Top 3
-            "data_quality": len(closes)  # Number of bars used
+            "data_quality": len(closes),  # Number of bars used
         }
 
     async def create_snapshot(self, symbol: str, trigger: str = "on_demand") -> Optional[dict]:
@@ -158,26 +171,22 @@ class SignalSnapshotProducer:
                 "symbol": symbol,
                 "timeframe": "M1",
                 "ohlc": ohlc_data,  # Last 100 bars
-                "price": {
-                    "bid": current_price["bid"],
-                    "ask": current_price["ask"],
-                    "mid": current_price["mid"]
-                },
+                "price": {"bid": current_price["bid"], "ask": current_price["ask"], "mid": current_price["mid"]},
                 "overlays": overlays,
                 "account_context": {
                     "balance": account_data.get("balance") if account_data else None,
                     "equity": account_data.get("equity") if account_data else None,
                     "free_margin": account_data.get("free_margin") if account_data else None,
-                    "currency": account_data.get("currency") if account_data else None
+                    "currency": account_data.get("currency") if account_data else None,
                 },
                 "metadata": {
                     "trigger": trigger,
                     "bars_count": len(ohlc_data),
                     "backfill_completed": self.backfill.backfill_completed.get(symbol, False),
-                    "data_age_ms": int((time.time() - (ohlc_data[-1]["timestamp"] if ohlc_data else 0)) * 1000)
+                    "data_age_ms": int((time.time() - (ohlc_data[-1]["timestamp"] if ohlc_data else 0)) * 1000),
                 },
                 "ts_epoch_ms": int(time.time() * 1000),
-                "src": "metasocket"
+                "src": "metasocket",
             }
 
             # Cache the snapshot
@@ -191,8 +200,10 @@ class SignalSnapshotProducer:
             if self.snapshot_callback:
                 await self.snapshot_callback(snapshot)
 
-            logger.debug(f"📸 Snapshot created for {symbol}: {len(ohlc_data)} bars, "
-                        f"price={current_price['mid']:.5f}, ATR={overlays.get('atr', 'N/A')}")
+            logger.debug(
+                f"📸 Snapshot created for {symbol}: {len(ohlc_data)} bars, "
+                f"price={current_price['mid']:.5f}, ATR={overlays.get('atr', 'N/A')}"
+            )
 
             return snapshot
 
@@ -236,7 +247,7 @@ class SignalSnapshotProducer:
                 "entry_price": fire_data.get("price"),
                 "volume": fire_data.get("volume"),
                 "sl": fire_data.get("sl"),
-                "tp": fire_data.get("tp")
+                "tp": fire_data.get("tp"),
             }
 
             return snapshot
@@ -277,15 +288,17 @@ class SignalSnapshotProducer:
             "cache_entries": len(self.snapshot_cache),
             "cache_hit_ratio": "N/A",  # Could implement hit/miss tracking
             "symbols_supported": len(self.active_symbols),
-            "backfill_ready_symbols": sum(1 for symbol in self.active_symbols
-                                        if self.backfill.backfill_completed.get(symbol, False)),
-            "cache_ttl_seconds": self.cache_ttl
+            "backfill_ready_symbols": sum(
+                1 for symbol in self.active_symbols if self.backfill.backfill_completed.get(symbol, False)
+            ),
+            "cache_ttl_seconds": self.cache_ttl,
         }
 
     async def start(self):
         """Start the snapshot producer service"""
         logger.info("🚀 Starting signal snapshot producer")
         await self.snapshot_service_loop()
+
 
 # Example usage
 if __name__ == "__main__":
@@ -294,9 +307,17 @@ if __name__ == "__main__":
     class MockBackfill:
         def get_ohlc_data(self, symbol, count):
             # Mock OHLC data
-            return [{"timestamp": int(time.time()) - i*60, "open": 1.1000 + i*0.0001,
-                    "high": 1.1010 + i*0.0001, "low": 1.0990 + i*0.0001,
-                    "close": 1.1005 + i*0.0001, "volume": 100} for i in range(count)]
+            return [
+                {
+                    "timestamp": int(time.time()) - i * 60,
+                    "open": 1.1000 + i * 0.0001,
+                    "high": 1.1010 + i * 0.0001,
+                    "low": 1.0990 + i * 0.0001,
+                    "close": 1.1005 + i * 0.0001,
+                    "volume": 100,
+                }
+                for i in range(count)
+            ]
 
         def get_latest_price(self, symbol):
             return {"symbol": symbol, "bid": 1.1000, "ask": 1.1002, "mid": 1.1001}
@@ -308,8 +329,10 @@ if __name__ == "__main__":
             return {"balance": 1000.0, "equity": 1050.0, "free_margin": 800.0, "currency": "USD"}
 
     async def snapshot_handler(snapshot):
-        print(f"SNAPSHOT: {snapshot['symbol']} - {len(snapshot['ohlc'])} bars, "
-              f"ATR={snapshot['overlays'].get('atr', 'N/A')}")
+        print(
+            f"SNAPSHOT: {snapshot['symbol']} - {len(snapshot['ohlc'])} bars, "
+            f"ATR={snapshot['overlays'].get('atr', 'N/A')}"
+        )
 
     producer = SignalSnapshotProducer(MockBackfill(), None, MockAccount())
     producer.set_snapshot_callback(snapshot_handler)
@@ -321,4 +344,5 @@ if __name__ == "__main__":
             print(f"Created snapshot with {len(snapshot['ohlc'])} bars")
 
     import asyncio
+
     asyncio.run(test_snapshot())

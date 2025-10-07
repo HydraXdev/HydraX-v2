@@ -2,10 +2,10 @@
 
 ## **IMMEDIATE ARCHITECTURE CHANGE - FOREXVPS MIGRATION**
 
-**Date**: July 27, 2025  
-**Authority**: Project Owner  
-**Priority**: CRITICAL - Affects all MT5 operations  
-**Agent**: Claude  
+**Date**: July 27, 2025
+**Authority**: Project Owner
+**Priority**: CRITICAL - Affects all MT5 operations
+**Agent**: Claude
 
 ---
 
@@ -14,6 +14,7 @@
 ### **1. MT5 INFRASTRUCTURE MIGRATION**
 
 **OLD ARCHITECTURE (DEPRECATED)**:
+
 - ❌ Docker containers with Wine
 - ❌ Local MT5 instances on Linux server
 - ❌ Container cloning system
@@ -21,6 +22,7 @@
 - ❌ Local file-based communication (fire.txt/trade_result.txt)
 
 **NEW ARCHITECTURE (PRODUCTION)**:
+
 - ✅ ForexVPS hosted MT5 terminals
 - ✅ Pre-configured EA on VPS instances
 - ✅ External VPS management
@@ -40,6 +42,7 @@
    - Bypass local MT5 terminal management
 
 2. **NEW SIGNAL FLOW**
+
    ```
    VENOM Signal Generation (Local)
            ↓
@@ -69,6 +72,7 @@
 ## 🔒 **SECURITY MEASURES**
 
 ### **Firewall Rules**
+
 ```bash
 # Block all container-related ports
 iptables -A INPUT -p tcp --dport 5900:5999 -j DROP  # VNC ports
@@ -77,6 +81,7 @@ iptables -A INPUT -p tcp --dport 10090:10099 -j DROP # Test ports
 ```
 
 ### **Code Isolation**
+
 - All Docker/Wine code moved to: `/archive/docker_wine_deprecated/`
 - Production code must NOT reference:
   - `/root/.wine*`
@@ -127,6 +132,7 @@ iptables -A INPUT -p tcp --dport 10090:10099 -j DROP # Test ports
 ## 📝 **DEVELOPER INSTRUCTIONS**
 
 ### **When You See Docker/Wine Code**:
+
 ```python
 # OLD - DO NOT USE
 docker_exec = f"docker exec mt5_user_{user_id} ..."
@@ -141,6 +147,7 @@ vps_response = requests.post(
 ```
 
 ### **Environment Variables to Add**:
+
 ```bash
 FOREXVPS_API_URL=https://api.forexvps.com/v1
 VPS_API_KEY=your_api_key_here
@@ -152,6 +159,7 @@ VPS_WEBHOOK_URL=https://yourserver.com/vps/callback
 ## 🚫 **DEPRECATED COMPONENTS**
 
 The following are NO LONGER IN USE:
+
 - `hydrax-user-template:latest` Docker image
 - `bitten-golden-master:v1` Docker image
 - All MT5 Wine containers
@@ -189,6 +197,7 @@ The following are NO LONGER IN USE:
 This change is **PERMANENT** for the current production phase. The Docker/Wine infrastructure is being preserved for potential future use but must be completely isolated from production code.
 
 All new development must assume:
+
 - MT5 terminals are hosted on ForexVPS
 - EA is pre-configured on VPS instances
 - Communication is via network API, not local files
@@ -198,6 +207,6 @@ All new development must assume:
 
 ---
 
-**Document Authority**: Project Owner via Claude  
-**Effective Date**: July 27, 2025  
+**Document Authority**: Project Owner via Claude
+**Effective Date**: July 27, 2025
 **Status**: MANDATORY - IMMEDIATE IMPLEMENTATION

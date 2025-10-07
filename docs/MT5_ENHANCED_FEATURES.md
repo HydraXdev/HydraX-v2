@@ -12,24 +12,25 @@ The enhanced EA (v3) now provides comprehensive account data:
 
 ```json
 {
-  "balance": 10000.00,
-  "equity": 10150.00,
-  "margin": 200.00,
-  "free_margin": 9950.00,
-  "margin_level": 5075.00,
-  "daily_pl": -50.00,
-  "daily_pl_percent": -0.50,
+  "balance": 10000.0,
+  "equity": 10150.0,
+  "margin": 200.0,
+  "free_margin": 9950.0,
+  "margin_level": 5075.0,
+  "daily_pl": -50.0,
+  "daily_pl_percent": -0.5,
   "positions": {
     "total": 2,
     "buy": 1,
     "sell": 1,
-    "buy_volume": 0.10,
+    "buy_volume": 0.1,
     "sell_volume": 0.05
   }
 }
 ```
 
 This data is updated every 2 seconds and used for:
+
 - Risk management decisions
 - Daily loss limit enforcement (-7%)
 - Position limit checking
@@ -51,6 +52,7 @@ result = adapter.execute_trade_with_risk(
 ```
 
 The EA calculates the exact lot size based on:
+
 - Account balance
 - Stop loss distance
 - Symbol's tick value
@@ -59,21 +61,25 @@ The EA calculates the exact lot size based on:
 ### 3. **Advanced Trade Management**
 
 #### Break-Even Management
+
 - Automatically moves SL to break-even + buffer when trade is profitable
 - Configurable trigger points (default: 20 points profit)
 - Protects profits while allowing upside
 
 #### Partial Close
+
 - Take profits on portions of the position
 - Default: Close 50% at first target
 - Keep the rest running with trailing stop
 
 #### Multi-Step Take Profit
+
 - Set up to 3 take profit levels
 - Customizable volume percentages at each level
 - Example: 30% at TP1, 30% at TP2, 40% at TP3
 
 #### Trailing Stop
+
 - Dynamic stop loss that follows price
 - Configurable distance and step
 - Only trails when position is profitable
@@ -86,9 +92,9 @@ The EA provides real-time market data for major pairs:
 {
   "timestamp": "2025-01-07 14:30:00",
   "pairs": {
-    "EURUSD": {"bid": 1.09500, "ask": 1.09510, "spread": 1.0},
-    "GBPUSD": {"bid": 1.26500, "ask": 1.26515, "spread": 1.5},
-    "XAUUSD": {"bid": 1950.00, "ask": 1950.50, "spread": 5.0}
+    "EURUSD": { "bid": 1.095, "ask": 1.0951, "spread": 1.0 },
+    "GBPUSD": { "bid": 1.265, "ask": 1.26515, "spread": 1.5 },
+    "XAUUSD": { "bid": 1950.0, "ask": 1950.5, "spread": 5.0 }
   }
 }
 ```
@@ -102,12 +108,12 @@ Positions now include additional data:
   "ticket": 12345678,
   "symbol": "EURUSD",
   "type": "BUY",
-  "volume": 0.10,
-  "initial_volume": 0.20,
-  "open_price": 1.09500,
-  "sl": 1.09450,
-  "tp": 1.09700,
-  "profit": 25.50,
+  "volume": 0.1,
+  "initial_volume": 0.2,
+  "open_price": 1.095,
+  "sl": 1.0945,
+  "tp": 1.097,
+  "profit": 25.5,
   "pnl_percent": 0.23,
   "break_even_set": true,
   "partial_closed": true,
@@ -241,19 +247,20 @@ All communication happens through secure files:
 
 ## Tier-Based Features
 
-| Feature | Nibbler | Fang | Commander | |
-|---------|---------|------|-----------|------|
-| Basic Trading | ✅ | ✅ | ✅ | ✅ |
-| Risk-Based Sizing | ✅ | ✅ | ✅ | ✅ |
-| Break-Even | ❌ | ✅ | ✅ | ✅ |
-| Partial Close | ❌ | ✅ | ✅ | ✅ |
-| Trailing Stop | ❌ | ❌ | ✅ | ✅ |
-| Multi-TP | ❌ | ❌ | ✅ | ✅ |
-| Advanced Management | ❌ | ❌ | ❌ | ✅ |
+| Feature             | Nibbler | Fang | Commander |     |
+| ------------------- | ------- | ---- | --------- | --- |
+| Basic Trading       | ✅      | ✅   | ✅        | ✅  |
+| Risk-Based Sizing   | ✅      | ✅   | ✅        | ✅  |
+| Break-Even          | ❌      | ✅   | ✅        | ✅  |
+| Partial Close       | ❌      | ✅   | ✅        | ✅  |
+| Trailing Stop       | ❌      | ❌   | ✅        | ✅  |
+| Multi-TP            | ❌      | ❌   | ✅        | ✅  |
+| Advanced Management | ❌      | ❌   | ❌        | ✅  |
 
 ## Conclusion
 
 These enhancements eliminate the need for a separate hybrid bridge by providing:
+
 - Full account visibility
 - Advanced trade management
 - Real-time decision making

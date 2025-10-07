@@ -6,7 +6,7 @@ The BITTEN trading system uses a 3-way ZeroMQ socket architecture to ensure real
 
 ## 🔁 1. Command Stream (Core ➜ EA)
 
-**Socket Type:** ZMQ_PUSH or ZMQ_PUB → ZMQ_PULL or ZMQ_SUB  
+**Socket Type:** ZMQ_PUSH or ZMQ_PUB → ZMQ_PULL or ZMQ_SUB
 **Purpose:** Sends trade signals to the EA for execution.
 
 ```json
@@ -27,7 +27,7 @@ The BITTEN trading system uses a 3-way ZeroMQ socket architecture to ensure real
 
 ## 📊 2. Telemetry Stream (EA ➜ Core)
 
-**Socket Type:** ZMQ_PUSH → ZMQ_PULL  
+**Socket Type:** ZMQ_PUSH → ZMQ_PULL
 **Purpose:** Sends real-time account info back to the core (balance, equity, margin).
 
 ```json
@@ -35,7 +35,7 @@ The BITTEN trading system uses a 3-way ZeroMQ socket architecture to ensure real
   "type": "telemetry",
   "uuid": "user-001",
   "balance": 834.22,
-  "equity": 818.90,
+  "equity": 818.9,
   "margin": 112.12
 }
 ```
@@ -46,10 +46,11 @@ The BITTEN trading system uses a 3-way ZeroMQ socket architecture to ensure real
 
 ## 🎯 3. Execution Feedback (EA ➜ Core)
 
-**Socket Type:** ZMQ_PUSH or ZMQ_REQ → ZMQ_PULL or ZMQ_REP  
+**Socket Type:** ZMQ_PUSH or ZMQ_REQ → ZMQ_PULL or ZMQ_REP
 **Purpose:** Confirms whether trades were accepted or failed.
 
 **On success:**
+
 ```json
 {
   "type": "trade_result",
@@ -61,6 +62,7 @@ The BITTEN trading system uses a 3-way ZeroMQ socket architecture to ensure real
 ```
 
 **On failure:**
+
 ```json
 {
   "type": "error",
@@ -75,11 +77,11 @@ The BITTEN trading system uses a 3-way ZeroMQ socket architecture to ensure real
 
 ## 🔐 Why All 3 Are Required
 
-| Channel | Purpose | Without it |
-|---------|---------|------------|
-| Core ➜ EA | Trade command | No trades fire |
-| EA ➜ Core (telemetry) | Risk logic, XP sync | Core is blind |
-| EA ➜ Core (feedback) | Confirm execution | No accountability or post-mortem |
+| Channel               | Purpose             | Without it                       |
+| --------------------- | ------------------- | -------------------------------- |
+| Core ➜ EA             | Trade command       | No trades fire                   |
+| EA ➜ Core (telemetry) | Risk logic, XP sync | Core is blind                    |
+| EA ➜ Core (feedback)  | Confirm execution   | No accountability or post-mortem |
 
 ---
 
@@ -98,18 +100,21 @@ BITTEN's ZMQ communication system uses three dedicated sockets per bridge:
 ## 🚀 Implementation Status
 
 ### EA Side (MT5)
+
 - **BITTENBridge_TradeExecutor_ZMQ_v7.mq5** - Complete implementation
   - PULL commands from port 5555
   - PUSH telemetry/feedback to port 5556
   - Handles all message types with robust error handling
 
 ### Linux Side (Core)
+
 - **zmq_trade_controller.py** - Basic controller implementation
   - PUSH commands on port 5555
   - PULL telemetry/feedback on port 5556
   - Ready for VENOM/CITADEL integration
 
 ### Integration Points
+
 - Fire Router can use `execute_zmq_fire()` to send commands
 - Telemetry data feeds into risk calculations
 - Trade results update user statistics and XP

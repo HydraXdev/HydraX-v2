@@ -95,11 +95,11 @@ email_from = alerts@bitten.local
 email_to = admin@bitten.local
 
 slack_enabled = false
-slack_webhook_url = 
+slack_webhook_url =
 
 telegram_enabled = false
-telegram_bot_token = 
-telegram_chat_id = 
+telegram_bot_token =
+telegram_chat_id =
 
 [mt5_farm]
 url = http://129.212.185.102:8001
@@ -190,55 +190,55 @@ from src.monitoring.logging_config import setup_service_logging
 
 class MonitoringServer:
     """Main monitoring server"""
-    
+
     def __init__(self):
         self.logger = setup_service_logging("bitten-monitoring")
         self.running = False
-        
+
         # Initialize components
         self.performance_monitor = get_performance_monitor()
         self.health_manager, _ = create_health_check_system(get_default_config())
         self.alert_manager = get_alert_manager()
         self.win_rate_monitor = get_win_rate_monitor(self.alert_manager)
         self.log_manager = get_log_manager()
-        
+
         # Setup signal handlers
         signal.signal(signal.SIGINT, self._signal_handler)
         signal.signal(signal.SIGTERM, self._signal_handler)
-    
+
     def _signal_handler(self, signum, frame):
         """Handle shutdown signals"""
         self.logger.info(f"Received signal {signum}, shutting down...")
         self.running = False
-    
+
     def start(self):
         """Start monitoring server"""
         self.logger.info("Starting BITTEN Monitoring System...")
         self.running = True
-        
+
         try:
             # Start all components
             self.performance_monitor.start()
             self.health_manager.start_monitoring()
             self.win_rate_monitor.start()
             self.log_manager.start()
-            
+
             self.logger.info("All monitoring components started successfully")
-            
+
             # Keep running until shutdown
             while self.running:
                 import time
                 time.sleep(1)
-                
+
         except Exception as e:
             self.logger.error(f"Error in monitoring server: {e}")
             self.stop()
             raise
-    
+
     def stop(self):
         """Stop monitoring server"""
         self.logger.info("Stopping BITTEN Monitoring System...")
-        
+
         # Stop all components
         if hasattr(self, 'performance_monitor'):
             self.performance_monitor.stop()
@@ -248,12 +248,12 @@ class MonitoringServer:
             self.win_rate_monitor.stop()
         if hasattr(self, 'log_manager'):
             self.log_manager.stop()
-        
+
         self.logger.info("Monitoring system stopped")
 
 if __name__ == "__main__":
     server = MonitoringServer()
-    
+
     try:
         server.start()
     except KeyboardInterrupt:
@@ -282,36 +282,36 @@ from src.monitoring.logging_config import setup_service_logging
 
 class DashboardServer:
     """Dashboard server wrapper"""
-    
+
     def __init__(self):
         self.logger = setup_service_logging("bitten-dashboard")
         self.dashboard = None
-        
+
         # Setup signal handlers
         signal.signal(signal.SIGINT, self._signal_handler)
         signal.signal(signal.SIGTERM, self._signal_handler)
-    
+
     def _signal_handler(self, signum, frame):
         """Handle shutdown signals"""
         self.logger.info(f"Received signal {signum}, shutting down...")
         sys.exit(0)
-    
+
     def start(self):
         """Start dashboard server"""
         self.logger.info("Starting BITTEN Dashboard Server...")
-        
+
         try:
             # Create dashboard app
             config = get_default_dashboard_config()
             self.dashboard = create_dashboard_app(config)
-            
+
             # Run dashboard
             self.dashboard.run(
                 host=config.get('host', '0.0.0.0'),
                 port=config.get('port', 8080),
                 debug=config.get('debug', False)
             )
-            
+
         except Exception as e:
             self.logger.error(f"Error starting dashboard: {e}")
             raise
@@ -341,40 +341,40 @@ from src.monitoring.logging_config import setup_service_logging
 
 class HealthCheckServer:
     """Health check server wrapper"""
-    
+
     def __init__(self):
         self.logger = setup_service_logging("bitten-health-check")
         self.health_manager = None
         self.health_api = None
-        
+
         # Setup signal handlers
         signal.signal(signal.SIGINT, self._signal_handler)
         signal.signal(signal.SIGTERM, self._signal_handler)
-    
+
     def _signal_handler(self, signum, frame):
         """Handle shutdown signals"""
         self.logger.info(f"Received signal {signum}, shutting down...")
         if self.health_manager:
             self.health_manager.stop_monitoring()
         sys.exit(0)
-    
+
     def start(self):
         """Start health check server"""
         self.logger.info("Starting BITTEN Health Check Server...")
-        
+
         try:
             # Create health check system
             config = get_default_config()
             config['api_port'] = 8888
-            
+
             self.health_manager, self.health_api = create_health_check_system(config)
-            
+
             # Start monitoring
             self.health_manager.start_monitoring()
-            
+
             # Run API server
             self.health_api.run()
-            
+
         except Exception as e:
             self.logger.error(f"Error starting health check server: {e}")
             raise

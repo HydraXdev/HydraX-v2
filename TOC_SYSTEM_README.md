@@ -22,6 +22,7 @@ The TOC (Terminus Operational Core) system is now fully wired and ready for depl
 ## 📁 Key Files Created
 
 ### 1. **Core TOC Server**
+
 - `src/toc/unified_toc_server.py` - Main Flask server that orchestrates everything
 - Routes:
   - `/assign-terminal` - Assign MT5 terminal to user
@@ -32,6 +33,7 @@ The TOC (Terminus Operational Core) system is now fully wired and ready for depl
   - `/metrics` - System performance metrics
 
 ### 2. **Terminal Assignment System**
+
 - `src/toc/terminal_assignment.py` - Manages user-to-terminal mappings
 - Features:
   - SQLite database for assignments
@@ -40,6 +42,7 @@ The TOC (Terminus Operational Core) system is now fully wired and ready for depl
   - Usage statistics
 
 ### 3. **Fire Router**
+
 - `src/toc/fire_router_toc.py` - Routes signals to correct terminals
 - Features:
   - HTTP and file-based delivery
@@ -48,6 +51,7 @@ The TOC (Terminus Operational Core) system is now fully wired and ready for depl
   - Signal history
 
 ### 4. **Telegram Integration**
+
 - `src/toc/telegram_toc_connector.py` - Connects bot to TOC
 - Features:
   - Terminal management commands
@@ -56,6 +60,7 @@ The TOC (Terminus Operational Core) system is now fully wired and ready for depl
   - Trade result notifications
 
 ### 5. **Bridge Terminal Server**
+
 - `src/toc/bridge_terminal_server.py` - Runs on Windows VPS
 - Features:
   - MT5 terminal launching
@@ -64,6 +69,7 @@ The TOC (Terminus Operational Core) system is now fully wired and ready for depl
   - Process management
 
 ### 6. **Configuration & Startup**
+
 - `config/toc_config.yaml` - System configuration
 - `start_toc_system.py` - Main startup script
 - `tests/test_toc_integration.py` - Complete integration test
@@ -71,6 +77,7 @@ The TOC (Terminus Operational Core) system is now fully wired and ready for depl
 ## 🚀 Quick Start
 
 ### 1. Environment Setup
+
 ```bash
 # Add to .env file
 TOC_PORT=5000
@@ -90,18 +97,21 @@ TELEGRAM_CHAT_ID=-1002581996861
 ```
 
 ### 2. Start TOC System
+
 ```bash
 # On Linux server (DigitalOcean)
 python start_toc_system.py
 ```
 
 ### 3. Start Bridge Servers
+
 ```bash
 # On Windows VPS (AWS) - for each terminal type
 python src/toc/bridge_terminal_server.py
 ```
 
 ### 4. Test Integration
+
 ```bash
 python tests/test_toc_integration.py
 ```
@@ -109,11 +119,13 @@ python tests/test_toc_integration.py
 ## 📋 Complete Signal Flow
 
 ### 1. **User Initiates Trade**
+
 ```
 User → Telegram Bot → /fire EURUSD BUY 0.01
 ```
 
 ### 2. **Terminal Assignment**
+
 ```python
 # TOC automatically assigns terminal if needed
 POST /assign-terminal
@@ -125,6 +137,7 @@ POST /assign-terminal
 ```
 
 ### 3. **Signal Routing**
+
 ```python
 # Signal sent to assigned terminal
 POST /fire
@@ -141,11 +154,13 @@ POST /fire
 ```
 
 ### 4. **MT5 Execution**
+
 ```
 TOC → Bridge → fire.json → MT5 EA → Trade Execution
 ```
 
 ### 5. **Result Callback**
+
 ```python
 # Bridge monitors results and sends back
 POST /trade-result
@@ -160,6 +175,7 @@ POST /trade-result
 ```
 
 ### 6. **User Notification**
+
 ```
 TOC → Telegram Bot → User
 "Trade closed: EURUSD - P/L: $20.00"
@@ -168,24 +184,28 @@ TOC → Telegram Bot → User
 ## 🔧 Key Features Implemented
 
 ### ✅ Terminal Management
+
 - Automatic terminal assignment based on user tier
 - Terminal pooling for scalability
 - Session persistence
 - Resource tracking
 
 ### ✅ Trade Execution
+
 - Fire mode validation
 - Risk management checks
 - Cooldown enforcement
 - XP rewards
 
 ### ✅ Monitoring
+
 - Real-time health checks
 - Performance metrics
 - Error tracking
 - Session cleanup
 
 ### ✅ Security
+
 - User authentication
 - Tier-based access control
 - Rate limiting
@@ -205,6 +225,7 @@ The system integrates with these bot commands:
 ## 📊 API Endpoints
 
 ### Terminal Assignment
+
 ```bash
 curl -X POST http://localhost:5000/assign-terminal \
   -H "Content-Type: application/json" \
@@ -215,6 +236,7 @@ curl -X POST http://localhost:5000/assign-terminal \
 ```
 
 ### Fire Signal
+
 ```bash
 curl -X POST http://localhost:5000/fire \
   -H "Content-Type: application/json" \
@@ -229,6 +251,7 @@ curl -X POST http://localhost:5000/fire \
 ```
 
 ### Check Status
+
 ```bash
 curl http://localhost:5000/status/123
 ```
@@ -236,6 +259,7 @@ curl http://localhost:5000/status/123
 ## 🚨 Production Deployment
 
 ### 1. **Systemd Service (Linux)**
+
 ```bash
 # Create service file
 sudo nano /etc/systemd/system/bitten-toc.service
@@ -246,9 +270,11 @@ sudo systemctl start bitten-toc
 ```
 
 ### 2. **Windows Service (VPS)**
+
 Use NSSM or Windows Service Wrapper to run bridge_terminal_server.py as a service.
 
 ### 3. **Monitoring**
+
 - Set up alerts for failed signals
 - Monitor terminal availability
 - Track performance metrics
@@ -274,6 +300,7 @@ Use NSSM or Windows Service Wrapper to run bridge_terminal_server.py as a servic
    - Check network between bridges
 
 ### Debug Mode
+
 ```bash
 # Enable debug logging
 export TOC_DEBUG=true

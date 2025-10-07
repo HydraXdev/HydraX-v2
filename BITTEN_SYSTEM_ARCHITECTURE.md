@@ -1,6 +1,7 @@
 # BITTEN System Architecture
 
 ## Table of Contents
+
 1. [High-Level System Overview](#high-level-system-overview)
 2. [Component Architecture](#component-architecture)
 3. [Technology Stack](#technology-stack)
@@ -80,6 +81,7 @@
 ```
 
 ### System Flow Overview
+
 1. **User Interface**: Telegram bot serves as primary interface
 2. **Core Processing**: BITTEN core processes commands and manages state
 3. **Trading Logic**: Self-optimizing TCS engine filters and executes signals
@@ -93,6 +95,7 @@
 ### 2.1 Core Components
 
 #### BITTEN Core (`bitten_core.py`)
+
 - **Purpose**: Central system orchestrator and state manager
 - **Responsibilities**:
   - System mode management (BIT, COMMANDER, TACTICAL, STEALTH)
@@ -104,7 +107,7 @@
 ```python
 class BittenCore:
     - system_health: SystemHealth
-    - rank_access: RankAccess 
+    - rank_access: RankAccess
     - telegram_router: TelegramRouter
     - fire_router: FireRouter
     - user_sessions: Dict[UserSession]
@@ -112,6 +115,7 @@ class BittenCore:
 ```
 
 #### Self-Optimizing TCS Engine (`self_optimizing_tcs.py`)
+
 - **Purpose**: Dynamic threshold adjustment for optimal signal volume
 - **Key Features**:
   - Target: 65 signals/day across 10 pairs
@@ -128,6 +132,7 @@ class SelfOptimizingTCS:
 ```
 
 #### MT5 Farm Adapter (`mt5_farm_adapter.py`)
+
 - **Purpose**: Multi-broker trade execution
 - **Features**:
   - Remote MT5 server communication
@@ -138,6 +143,7 @@ class SelfOptimizingTCS:
 ### 2.2 Trading Components
 
 #### Fire Router (`fire_router.py`)
+
 - **Purpose**: Trade execution and routing
 - **Functions**:
   - Signal validation and filtering
@@ -146,6 +152,7 @@ class SelfOptimizingTCS:
   - Position management
 
 #### Strategy Engine (`strategies/`)
+
 - **Components**:
   - `london_breakout.py`: London session breakout strategy
   - `mean_reversion.py`: Mean reversion signals
@@ -153,6 +160,7 @@ class SelfOptimizingTCS:
   - `cross_asset_correlation.py`: Multi-asset analysis
 
 #### Risk Management (`risk_management.py`)
+
 - **Features**:
   - Real-time exposure monitoring
   - Daily loss limits
@@ -162,6 +170,7 @@ class SelfOptimizingTCS:
 ### 2.3 User Interface Components
 
 #### Telegram Router (`telegram_router.py`)
+
 - **Purpose**: Command processing and response handling
 - **Commands**: 25+ specialized trading commands
 - **Features**:
@@ -170,6 +179,7 @@ class SelfOptimizingTCS:
   - User context management
 
 #### Web Applications (`ui/`)
+
 - **Sniper HUD**: Real-time trading interface
 - **Mission HUD**: Gamified trading dashboard
 - **Commander HUD**: Advanced trading controls
@@ -178,6 +188,7 @@ class SelfOptimizingTCS:
 ### 2.4 Data Processing
 
 #### XP System (`xp_*.py`)
+
 - **Purpose**: Gamification and achievement tracking
 - **Features**:
   - XP calculation and tracking
@@ -186,6 +197,7 @@ class SelfOptimizingTCS:
   - Reward distribution
 
 #### Analytics Engine (`analytics/`)
+
 - **Components**:
   - Real-time performance monitoring
   - Funnel analysis
@@ -199,12 +211,14 @@ class SelfOptimizingTCS:
 ### 3.1 Backend Technologies
 
 #### Core Framework
+
 - **Python 3.8+**: Primary programming language
 - **Flask**: Web framework for API endpoints
 - **AsyncIO**: Asynchronous processing
 - **SQLAlchemy**: ORM for database operations
 
 #### Libraries & Dependencies
+
 ```yaml
 Core:
   - flask: Web framework
@@ -229,12 +243,14 @@ Security:
 ### 3.2 Frontend Technologies
 
 #### Web UI Stack
+
 - **HTML5**: Markup structure
 - **CSS3**: Styling and animations
 - **JavaScript (ES6+)**: Interactive functionality
 - **WebSockets**: Real-time communication
 
 #### Styling Framework
+
 ```css
 Fonts:
   - Rajdhani: Primary UI font
@@ -251,12 +267,14 @@ Effects:
 ### 3.3 Integration Technologies
 
 #### APIs & Protocols
+
 - **Telegram Bot API**: Primary user interface
 - **WebHooks**: Real-time event handling
 - **REST API**: Internal service communication
 - **HTTP/HTTPS**: Web protocols
 
 #### Data Formats
+
 - **JSON**: API responses and configuration
 - **YAML**: Configuration files
 - **CSV**: Data export format
@@ -269,6 +287,7 @@ Effects:
 ### 4.1 Production Database (PostgreSQL)
 
 #### Schema Overview
+
 ```sql
 -- Core Tables
 users                  -- User accounts and subscription data
@@ -295,6 +314,7 @@ audit_log            -- System audit trail
 ```
 
 #### Key Relationships
+
 ```sql
 users (1) ←→ (1) user_profiles
 users (1) ←→ (n) trades
@@ -306,6 +326,7 @@ users (1) ←→ (n) user_subscriptions
 ### 4.2 Local Storage (SQLite)
 
 #### Purpose-Specific Databases
+
 ```
 /data/bitten_xp.db          -- XP and achievement tracking
 /data/trades/trades.db      -- Trade history storage
@@ -314,6 +335,7 @@ users (1) ←→ (n) user_subscriptions
 ```
 
 #### File-Based Storage
+
 ```
 /data/onboarding/           -- User onboarding sessions
 /data/trades/exports/       -- Trade export files
@@ -324,6 +346,7 @@ users (1) ←→ (n) user_subscriptions
 ### 4.3 Data Flow & Synchronization
 
 #### Real-Time Data Pipeline
+
 ```
 Market Data → TCS Engine → Signal Generation → Trade Execution → Database Storage
      ↓              ↓            ↓               ↓                    ↓
@@ -331,6 +354,7 @@ Analytics ←  Optimization ← Filtering ← Position Mgmt ← Performance Trac
 ```
 
 #### Backup Strategy
+
 - **Automated Backups**: Daily full backups
 - **Version Control**: Configuration file versioning
 - **Disaster Recovery**: Multi-tier backup system
@@ -342,6 +366,7 @@ Analytics ←  Optimization ← Filtering ← Position Mgmt ← Performance Trac
 ### 5.1 Core API Endpoints
 
 #### System Management
+
 ```http
 GET  /                    # System overview
 GET  /status              # System health status
@@ -351,6 +376,7 @@ GET  /stats               # System statistics
 ```
 
 #### Trading Operations
+
 ```http
 POST /fire                # Execute trade
 POST /close               # Close position
@@ -359,6 +385,7 @@ GET  /performance         # Performance metrics
 ```
 
 #### Development & Admin
+
 ```http
 GET  /dev                 # Development commands
 GET  /logs                # System logs
@@ -369,6 +396,7 @@ GET  /news                # News events
 ### 5.2 Internal Service APIs
 
 #### BITTEN Core Interface
+
 ```python
 class BittenCoreAPI:
     def process_telegram_update(update_data: Dict) -> Dict
@@ -378,6 +406,7 @@ class BittenCoreAPI:
 ```
 
 #### MT5 Farm Interface
+
 ```python
 class MT5FarmAPI:
     def execute_trade(trade_params: Dict) -> Dict
@@ -389,6 +418,7 @@ class MT5FarmAPI:
 ### 5.3 Telegram Bot Interface
 
 #### Command Structure
+
 ```python
 # Core Commands
 /start                    # Initialize bot
@@ -407,6 +437,7 @@ class MT5FarmAPI:
 ```
 
 #### Response Format
+
 ```json
 {
   "success": true,
@@ -416,7 +447,7 @@ class MT5FarmAPI:
     "symbol": "GBPUSD",
     "direction": "BUY",
     "lot_size": 0.1,
-    "entry_price": 1.2650,
+    "entry_price": 1.265,
     "timestamp": "2025-07-09T10:30:00Z"
   }
 }
@@ -429,6 +460,7 @@ class MT5FarmAPI:
 ### 6.1 Authentication & Authorization
 
 #### Multi-Tier Access Control
+
 ```python
 class UserRank(Enum):
     RECRUIT = "recruit"           # Basic access
@@ -438,6 +470,7 @@ class UserRank(Enum):
 ```
 
 #### Press Pass System
+
 ```python
 class PressPassManager:
     - daily_limit: 10 passes/day
@@ -448,6 +481,7 @@ class PressPassManager:
 ### 6.2 Security Measures
 
 #### Input Validation
+
 ```python
 class SecurityValidator:
     - String sanitization
@@ -458,6 +492,7 @@ class SecurityValidator:
 ```
 
 #### Webhook Security
+
 ```python
 class WebhookSecurity:
     - Telegram signature verification
@@ -470,12 +505,14 @@ class WebhookSecurity:
 ### 6.3 Data Protection
 
 #### Encryption & Hashing
+
 - **API Keys**: Secure generation and storage
 - **User Data**: Encrypted sensitive information
 - **Database**: Connection encryption
 - **Backups**: Encrypted storage
 
 #### Privacy Controls
+
 ```python
 class PrivacyManager:
     - Data minimization
@@ -492,6 +529,7 @@ class PrivacyManager:
 ### 7.1 Production Environment
 
 #### Server Architecture
+
 ```
 Load Balancer (nginx)
     ├── Web Application Server (Flask + Gunicorn)
@@ -501,6 +539,7 @@ Load Balancer (nginx)
 ```
 
 #### Process Management
+
 ```bash
 # System Services
 bitten-web.service          # Main web application
@@ -512,6 +551,7 @@ press_pass_reset.service       # Daily reset tasks
 ### 7.2 Deployment Components
 
 #### Docker Configuration (Optional)
+
 ```dockerfile
 FROM python:3.8-slim
 WORKDIR /app
@@ -522,6 +562,7 @@ CMD ["python", "start_bitten.py"]
 ```
 
 #### Environment Configuration
+
 ```env
 # Application
 FLASK_ENV=production
@@ -545,6 +586,7 @@ TCS_THRESHOLD=70.0
 ### 7.3 Monitoring & Maintenance
 
 #### Health Monitoring
+
 ```python
 class HealthMonitor:
     - System uptime tracking
@@ -555,6 +597,7 @@ class HealthMonitor:
 ```
 
 #### Backup Strategy
+
 ```bash
 # Automated Backups
 */30 * * * * /backup/backup_script.sh  # Every 30 minutes
@@ -563,6 +606,7 @@ class HealthMonitor:
 ```
 
 #### Scaling Considerations
+
 - **Horizontal**: Multiple application instances
 - **Vertical**: Resource allocation scaling
 - **Database**: Read replicas for high load
@@ -573,18 +617,21 @@ class HealthMonitor:
 ## System Specifications Summary
 
 ### Performance Targets
+
 - **Signal Generation**: 65 signals/day across 10 pairs
 - **Response Time**: < 200ms for API calls
 - **Uptime**: 99.9% availability target
 - **Concurrent Users**: 1000+ simultaneous users
 
 ### Resource Requirements
+
 - **CPU**: 2+ cores for production
 - **Memory**: 4GB+ RAM recommended
 - **Storage**: 100GB+ for data and logs
 - **Network**: Stable internet for MT5 farm
 
 ### Scalability Features
+
 - **Microservice Architecture**: Component separation
 - **Database Sharding**: User-based partitioning
 - **Caching Layer**: Redis for performance

@@ -9,6 +9,7 @@ Users clicking Telegram links to view mission briefs get **301 Moved Permanently
 ## 🔍 **ROOT CAUSE ANALYSIS**
 
 ### **✅ WEBAPP STATUS: WORKING CORRECTLY**
+
 - ✅ **Webapp server**: Running on port 8888
 - ✅ **HUD route**: `/hud` endpoint functional
 - ✅ **Signal ID support**: Added `?signal=<id>` parameter handling
@@ -16,6 +17,7 @@ Users clicking Telegram links to view mission briefs get **301 Moved Permanently
 - ✅ **Database integration**: Signal lookup working from live_signals table
 
 ### **❌ EXTERNAL ACCESS ISSUE: CLOUDFLARE CONFIGURATION**
+
 - ❌ **External testing**: `https://joinbitten.com/hud?signal=3500` returns 301 redirect
 - ❌ **Redirect loop**: Location header points to same URL (redirect loop)
 - ❌ **Source**: Cloudflare level, not nginx or webapp
@@ -23,12 +25,13 @@ Users clicking Telegram links to view mission briefs get **301 Moved Permanently
 ### **🔧 TECHNICAL IMPLEMENTATION COMPLETED**
 
 #### **1. Added Signal ID Parameter Support**
+
 ```python
 # webapp_server.py - HUD route now handles:
 @app.route('/hud')
 def hud():
     signal_id = request.args.get('signal', '')  # NEW: Signal ID parameter
-    
+
     if signal_id and not encoded_data:
         signal_data = get_signal_by_id(signal_id)  # NEW: Database lookup
         if signal_data:
@@ -38,6 +41,7 @@ def hud():
 ```
 
 #### **2. Added Database Signal Lookup**
+
 ```python
 # signal_storage.py - NEW function:
 def get_signal_by_id(signal_id):
@@ -48,9 +52,10 @@ def get_signal_by_id(signal_id):
 ```
 
 #### **3. URL Format Support**
-✅ **Now supports**: `joinbitten.com/hud?signal=<id>`  
-✅ **Backward compatible**: `joinbitten.com/hud?data=<encoded_json>`  
-✅ **Fallback handling**: User signal selection if no parameters  
+
+✅ **Now supports**: `joinbitten.com/hud?signal=<id>`
+✅ **Backward compatible**: `joinbitten.com/hud?data=<encoded_json>`
+✅ **Fallback handling**: User signal selection if no parameters
 
 ---
 
@@ -59,6 +64,7 @@ def get_signal_by_id(signal_id):
 ### **Option 1: Fix Cloudflare Configuration (Recommended)**
 
 **Access Cloudflare Dashboard:**
+
 1. Log into Cloudflare dashboard for `joinbitten.com`
 2. Check **Page Rules** for any redirects affecting `/hud` URLs
 3. Check **Redirect Rules** in Rules section
@@ -66,6 +72,7 @@ def get_signal_by_id(signal_id):
 5. Check **Always Use HTTPS** settings
 
 **Common Issues:**
+
 - Page rule redirecting `/hud*` to something else
 - SSL enforcement causing redirect loops
 - Cache settings interfering with dynamic URLs
@@ -74,6 +81,7 @@ def get_signal_by_id(signal_id):
 ### **Option 2: Direct Server Access (Temporary)**
 
 **Bypass Cloudflare for testing:**
+
 ```bash
 # Test direct server access (for validation)
 curl -H "Host: joinbitten.com" "http://3.145.84.187/hud?signal=3500"
@@ -82,6 +90,7 @@ curl -H "Host: joinbitten.com" "http://3.145.84.187/hud?signal=3500"
 ### **Option 3: Alternative URL Pattern**
 
 **If Cloudflare `/hud` path is permanently redirected:**
+
 - Change Telegram URLs to use `/mission?signal=<id>`
 - Add new route in webapp: `@app.route('/mission')`
 - Update hybrid engine URL generation
@@ -91,6 +100,7 @@ curl -H "Host: joinbitten.com" "http://3.145.84.187/hud?signal=3500"
 ## ✅ **CURRENT STATUS**
 
 ### **✅ WORKING COMPONENTS**
+
 1. **Webapp HUD Route**: Fully functional with signal ID support
 2. **Database Integration**: Signal lookup from live_signals table working
 3. **Signal Parameter Handling**: `?signal=<id>` format implemented
@@ -99,6 +109,7 @@ curl -H "Host: joinbitten.com" "http://3.145.84.187/hud?signal=3500"
 6. **Nginx Configuration**: Correctly proxying to port 8888
 
 ### **❌ BLOCKED BY**
+
 1. **Cloudflare Configuration**: 301 redirect issue at CDN level
 2. **External DNS/Routing**: `joinbitten.com` requests not reaching webapp
 
@@ -107,20 +118,23 @@ curl -H "Host: joinbitten.com" "http://3.145.84.187/hud?signal=3500"
 ## 🧪 **VALIDATION TESTS**
 
 ### **✅ Local Testing (Working)**
+
 ```bash
 curl "http://127.0.0.1:8888/hud?signal=3500"
 # Returns: 200 OK with full mission brief HTML
 ```
 
 ### **❌ External Testing (Blocked)**
+
 ```bash
 curl "https://joinbitten.com/hud?signal=3500"
 # Returns: 301 Moved Permanently (redirect loop)
 ```
 
 ### **📊 Recent Signal IDs Available for Testing**
+
 - Signal ID: 3500 (EURJPY BUY, TCS: 82%)
-- Signal ID: 3499 (USDCHF BUY, TCS: 82%) 
+- Signal ID: 3499 (USDCHF BUY, TCS: 82%)
 - Signal ID: 3498 (EURGBP SELL, TCS: 83%)
 - Signal ID: 3497 (NZDUSD SELL, TCS: 79%)
 
@@ -150,6 +164,7 @@ If Cloudflare issues persist, update the hybrid engine URLs:
 ```
 
 Then add a new route in webapp_server.py:
+
 ```python
 @app.route('/mission')
 def mission():
@@ -166,7 +181,7 @@ def mission():
 
 ---
 
-*Issue diagnosed: July 10, 2025*  
-*Technical implementation: ✅ COMPLETE*  
-*Webapp functionality: ✅ WORKING*  
-*Blocking issue: Cloudflare configuration*
+_Issue diagnosed: July 10, 2025_
+_Technical implementation: ✅ COMPLETE_
+_Webapp functionality: ✅ WORKING_
+_Blocking issue: Cloudflare configuration_

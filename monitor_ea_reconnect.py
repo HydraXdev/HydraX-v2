@@ -4,9 +4,9 @@ Monitor EA reconnection when market opens
 Watches for fresh heartbeats and tick flow
 """
 
-import time
 import sqlite3
 import subprocess
+import time
 from datetime import datetime
 
 print("🔄 Monitoring EA reconnection (Ctrl+C to stop)")
@@ -20,25 +20,26 @@ while True:
     try:
         # Check telemetry stats
         result = subprocess.run(
-            ["tail", "-1", "/root/.pm2/logs/telemetry-bridge-v207-error.log"],
-            capture_output=True, text=True
+            ["tail", "-1", "/root/.pm2/logs/telemetry-bridge-v207-error.log"], capture_output=True, text=True
         )
 
-        if 'STATS:' in result.stdout:
-            stats_line = result.stdout.split('STATS:')[1].strip()
+        if "STATS:" in result.stdout:
+            stats_line = result.stdout.split("STATS:")[1].strip()
             # Parse: Ticks: X, Heartbeats: Y, Metrics: Z, Positions: W
-            parts = stats_line.split(',')
-            ticks = int(parts[0].split(':')[1].strip())
-            heartbeats = int(parts[1].split(':')[1].strip())
+            parts = stats_line.split(",")
+            ticks = int(parts[0].split(":")[1].strip())
+            heartbeats = int(parts[1].split(":")[1].strip())
 
             # Check database for EA freshness
-            conn = sqlite3.connect('/root/HydraX-v2/bitten.db')
+            conn = sqlite3.connect("/root/HydraX-v2/bitten.db")
             cursor = conn.cursor()
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT (strftime('%s','now') - last_seen) AS age_seconds
                 FROM ea_instances
                 WHERE target_uuid = 'COMMANDER_DEV_001'
-            """)
+            """
+            )
             result = cursor.fetchone()
             db_age = result[0] if result else 99999
             conn.close()
@@ -69,7 +70,7 @@ while True:
                     print("Run: python3 /root/HydraX-v2/test_fire_v207.py")
                     break
             else:
-                print(f"[{timestamp}] Waiting... (Ticks: {ticks}, HB: {heartbeats}, Age: {db_age}s)", end='\r')
+                print(f"[{timestamp}] Waiting... (Ticks: {ticks}, HB: {heartbeats}, Age: {db_age}s)", end="\r")
 
             # Update last values
             last_tick_count = ticks

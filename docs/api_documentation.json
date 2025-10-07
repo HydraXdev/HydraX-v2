@@ -2751,10 +2751,7 @@
           },
           "direction": {
             "type": "string",
-            "enum": [
-              "BUY",
-              "SELL"
-            ]
+            "enum": ["BUY", "SELL"]
           },
           "entry": {
             "type": "number",
@@ -2778,13 +2775,7 @@
             "format": "date-time"
           }
         },
-        "required": [
-          "symbol",
-          "direction",
-          "entry",
-          "stop_loss",
-          "take_profit"
-        ]
+        "required": ["symbol", "direction", "entry", "stop_loss", "take_profit"]
       },
       "UserProfile": {
         "type": "object",
@@ -2794,12 +2785,7 @@
           },
           "tier": {
             "type": "string",
-            "enum": [
-              "PRESS_PASS",
-              "NIBBLER",
-              "FANG",
-              "COMMANDER"
-            ]
+            "enum": ["PRESS_PASS", "NIBBLER", "FANG", "COMMANDER"]
           },
           "balance": {
             "type": "number",

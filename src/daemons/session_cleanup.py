@@ -4,22 +4,20 @@ Mission Session Cleanup Daemon
 Removes expired mission sessions and idempotency cache entries
 """
 
-import sqlite3
-import time
 import logging
-import sys
 import signal
+import sqlite3
+import sys
+import time
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
+
 
 class SessionCleanupDaemon:
     """Daemon to clean up expired mission sessions and idempotency cache"""
 
-    def __init__(self, db_path: str = '/root/HydraX-v2/bitten.db'):
+    def __init__(self, db_path: str = "/root/HydraX-v2/bitten.db"):
         self.db_path = db_path
         self.running = True
 
@@ -32,10 +30,13 @@ class SessionCleanupDaemon:
             now = int(time.time())
 
             # Delete expired sessions
-            cursor.execute("""
+            cursor.execute(
+                """
                 DELETE FROM mission_sessions
                 WHERE expires_at < ? AND status = 'PENDING'
-            """, (now,))
+            """,
+                (now,),
+            )
 
             deleted_count = cursor.rowcount
             conn.commit()
@@ -59,10 +60,13 @@ class SessionCleanupDaemon:
             now = int(time.time())
 
             # Delete expired cache entries
-            cursor.execute("""
+            cursor.execute(
+                """
                 DELETE FROM idempotency_cache
                 WHERE expires_at < ?
-            """, (now,))
+            """,
+                (now,),
+            )
 
             deleted_count = cursor.rowcount
             conn.commit()
@@ -93,10 +97,7 @@ class SessionCleanupDaemon:
 
             conn.close()
 
-            return {
-                'sessions': session_stats,
-                'active_cache_entries': active_cache
-            }
+            return {"sessions": session_stats, "active_cache_entries": active_cache}
 
         except Exception as e:
             logger.error(f"❌ Error getting stats: {e}")
@@ -147,5 +148,5 @@ def main():
     daemon.run(interval_seconds=300)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

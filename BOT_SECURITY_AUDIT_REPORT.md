@@ -9,6 +9,7 @@
 ## 📊 SECURITY OVERVIEW
 
 ### Bot Security Status
+
 - **bitten_production_bot.py**: ⚠️ PARTIALLY SECURED (2/3)
 - **bitten_voice_personality_bot.py**: 🚨 VULNERABLE (1/3)
 - **athena_mission_bot.py**: ✅ FULLY SECURED (3/3)
@@ -110,15 +111,15 @@
   **Token**: "7854827710:AAE9kCpt...
   **Context**: `BOT_TOKEN = "7854827710:AAE9kCptkoSl8lmQwmX940UMqFWOb3TmTI0"`
 
-- **File**: /root/HydraX-v2/DEPLOY_INTEL_CENTER_COMPLETE.py
+- **File**: /root/HydraX-v2/DEPLOY*INTEL_CENTER_COMPLETE.py
   **Line**: 12
   **Token**: 7854827710:AAGsO-vgM...
-  **Context**: `BOT_TOKEN = "7854827710:AAGsO-vgMpsTOVNu6zoo_-GGJkYQd97Mc5w"`
+  **Context**: `BOT_TOKEN = "7854827710:AAGsO-vgMpsTOVNu6zoo*-GGJkYQd97Mc5w"`
 
-- **File**: /root/HydraX-v2/DEPLOY_INTEL_CENTER_COMPLETE.py
+- **File**: /root/HydraX-v2/DEPLOY*INTEL_CENTER_COMPLETE.py
   **Line**: 12
   **Token**: "7854827710:AAGsO-vg...
-  **Context**: `BOT_TOKEN = "7854827710:AAGsO-vgMpsTOVNu6zoo_-GGJkYQd97Mc5w"`
+  **Context**: `BOT_TOKEN = "7854827710:AAGsO-vgMpsTOVNu6zoo*-GGJkYQd97Mc5w"`
 
 - **File**: /root/HydraX-v2/bitten_voice_personality_bot.py
   **Line**: 8
@@ -195,7 +196,6 @@
   **Token**: "8103700393:AAEK3RjT...
   **Context**: `self.bot_token = "8103700393:AAEK3RjTGHHYyy_X1Uc9FUuUoRcLuzYZe4k"  # Production bot`
 
-
 ## 🚨 VULNERABLE CATCH-ALL HANDLERS (6)
 
 - **File**: /root/HydraX-v2/athena_mission_bot.py
@@ -222,22 +222,24 @@
   **Line**: 286
   **Handler**: `@self.bot.message_handler(func=lambda message: True)`
 
-
 ---
 
 ## 🛡️ RECOMMENDED ACTIONS
 
 ### Priority 1 (CRITICAL):
+
 1. **Replace hardcoded tokens** with environment variable loading
 2. **Secure catch-all handlers** with authorization checks
 3. **Add user authorization** to all production bots
 
 ### Priority 2 (HIGH):
+
 1. **Implement command whitelists** for all bots
 2. **Add security logging** for unauthorized access attempts
 3. **Create unified security audit** for all bots
 
 ### Priority 3 (MEDIUM):
+
 1. **Rotate all bot tokens** as a precautionary measure
 2. **Implement rate limiting** for bot interactions
 3. **Add webhook security** for production deployments
@@ -247,6 +249,7 @@
 ## 🔧 AUTOMATED FIXES AVAILABLE
 
 Run the following to auto-fix security issues:
+
 ```bash
 python3 secure_all_bots.py --fix-all
 python3 security_audit_all_bots.py

@@ -47,39 +47,39 @@ audit.log_ws_connected(
 
 ### Mission Session Events
 
-| Event | Method | Log Level | Description |
-|-------|--------|-----------|-------------|
-| `session.created` | `log_session_created()` | INFO | Mission session created from alert |
-| `session.validated` | `log_session_validated()` | INFO/WARNING | Session validation attempt |
-| `session.executed` | `log_session_executed()` | INFO | Session executed (fire command) |
-| `session.expired` | `log_session_expired()` | WARNING | Session expired before execution |
+| Event               | Method                    | Log Level    | Description                        |
+| ------------------- | ------------------------- | ------------ | ---------------------------------- |
+| `session.created`   | `log_session_created()`   | INFO         | Mission session created from alert |
+| `session.validated` | `log_session_validated()` | INFO/WARNING | Session validation attempt         |
+| `session.executed`  | `log_session_executed()`  | INFO         | Session executed (fire command)    |
+| `session.expired`   | `log_session_expired()`   | WARNING      | Session expired before execution   |
 
 ### Fire Events
 
-| Event | Method | Log Level | Description |
-|-------|--------|-----------|-------------|
-| `fire.requested` | `log_fire_requested()` | INFO | Fire execution requested |
-| `fire.idempotent_hit` | `log_fire_idempotent_hit()` | INFO | Duplicate request (idempotency cache hit) |
-| `fire.risk_violation` | `log_fire_risk_violation()` | WARNING | Risk guardrail exceeded |
-| `fire.scope_violation` | `log_fire_scope_violation()` | WARNING | Missing required permission/scope |
+| Event                  | Method                       | Log Level | Description                               |
+| ---------------------- | ---------------------------- | --------- | ----------------------------------------- |
+| `fire.requested`       | `log_fire_requested()`       | INFO      | Fire execution requested                  |
+| `fire.idempotent_hit`  | `log_fire_idempotent_hit()`  | INFO      | Duplicate request (idempotency cache hit) |
+| `fire.risk_violation`  | `log_fire_risk_violation()`  | WARNING   | Risk guardrail exceeded                   |
+| `fire.scope_violation` | `log_fire_scope_violation()` | WARNING   | Missing required permission/scope         |
 
 ### WebSocket Events
 
-| Event | Method | Log Level | Description |
-|-------|--------|-----------|-------------|
-| `ws.connected` | `log_ws_connected()` | INFO | WebSocket connection established |
-| `ws.auth_failed` | `log_ws_auth_failed()` | WARNING | WebSocket authentication failed |
-| `ws.subscribed` | `log_ws_subscribed()` | INFO/WARNING | Topic subscription attempt |
-| `ws.disconnected` | `log_ws_disconnected()` | INFO | WebSocket disconnected |
+| Event             | Method                  | Log Level    | Description                      |
+| ----------------- | ----------------------- | ------------ | -------------------------------- |
+| `ws.connected`    | `log_ws_connected()`    | INFO         | WebSocket connection established |
+| `ws.auth_failed`  | `log_ws_auth_failed()`  | WARNING      | WebSocket authentication failed  |
+| `ws.subscribed`   | `log_ws_subscribed()`   | INFO/WARNING | Topic subscription attempt       |
+| `ws.disconnected` | `log_ws_disconnected()` | INFO         | WebSocket disconnected           |
 
 ### General Security Events
 
-| Event | Method | Log Level | Description |
-|-------|--------|-----------|-------------|
-| `auth.success` | `log_auth_success()` | INFO | Successful authentication |
-| `auth.failed` | `log_auth_failed()` | WARNING | Failed authentication attempt |
-| `authz.denied` | `log_authorization_denied()` | WARNING | Authorization denied |
-| `rate_limit.exceeded` | `log_rate_limit_exceeded()` | WARNING | Rate limit violation |
+| Event                 | Method                       | Log Level | Description                   |
+| --------------------- | ---------------------------- | --------- | ----------------------------- |
+| `auth.success`        | `log_auth_success()`         | INFO      | Successful authentication     |
+| `auth.failed`         | `log_auth_failed()`          | WARNING   | Failed authentication attempt |
+| `authz.denied`        | `log_authorization_denied()` | WARNING   | Authorization denied          |
+| `rate_limit.exceeded` | `log_rate_limit_exceeded()`  | WARNING   | Rate limit violation          |
 
 ## Log Format
 
@@ -100,17 +100,17 @@ All logs are written as JSON with the following structure:
 
 ### Field Definitions
 
-| Field | Description | Always Present |
-|-------|-------------|----------------|
-| `timestamp` | ISO 8601 UTC timestamp | ✅ |
-| `level` | Log level (INFO, WARNING, ERROR, CRITICAL) | ✅ |
-| `event_type` | Event type enum value | ✅ |
-| `message` | Human-readable message | ✅ |
-| `sub` | User ID (subject) | Event-specific |
-| `ms` | Mission session ID | Event-specific |
-| `aid` | Alert ID | Event-specific |
-| `op_id` | Operation ID (fire ID) | Event-specific |
-| `sid` | Socket ID (WebSocket events) | Event-specific |
+| Field        | Description                                | Always Present |
+| ------------ | ------------------------------------------ | -------------- |
+| `timestamp`  | ISO 8601 UTC timestamp                     | ✅             |
+| `level`      | Log level (INFO, WARNING, ERROR, CRITICAL) | ✅             |
+| `event_type` | Event type enum value                      | ✅             |
+| `message`    | Human-readable message                     | ✅             |
+| `sub`        | User ID (subject)                          | Event-specific |
+| `ms`         | Mission session ID                         | Event-specific |
+| `aid`        | Alert ID                                   | Event-specific |
+| `op_id`      | Operation ID (fire ID)                     | Event-specific |
+| `sid`        | Socket ID (WebSocket events)               | Event-specific |
 
 ## PII Protection
 
@@ -455,12 +455,14 @@ python3 -m pytest tests/test_audit_logger.py --cov=src.security.audit_logger
 ### Logs Not Created
 
 Check directory permissions:
+
 ```bash
 ls -la /var/log/bitten/
 # Should be: drwx------ (700)
 ```
 
 Create directory manually if needed:
+
 ```bash
 sudo mkdir -p /var/log/bitten
 sudo chmod 700 /var/log/bitten
@@ -470,6 +472,7 @@ sudo chown $USER:$USER /var/log/bitten
 ### Permission Denied Error
 
 Ensure user has write access:
+
 ```bash
 sudo chown -R $USER:$USER /var/log/bitten
 sudo chmod 700 /var/log/bitten
@@ -479,12 +482,14 @@ sudo chmod 600 /var/log/bitten/*.log
 ### Log Rotation Not Working
 
 Check if daily rotation is occurring:
+
 ```bash
 ls -la /var/log/bitten/
 # Should see: audit.log, audit.log.2025-10-04.gz, etc.
 ```
 
 Manually trigger rotation (for testing):
+
 ```python
 from src.security.audit_logger import get_audit_logger
 
@@ -497,6 +502,7 @@ for handler in audit.logger.handlers:
 ### Finding Sensitive Data in Logs
 
 Run verification script:
+
 ```python
 import json
 import re

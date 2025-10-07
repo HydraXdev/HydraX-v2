@@ -187,7 +187,7 @@ with db.session_scope() as session:
     )
     session.add(user)
     session.flush()  # Get user_id
-    
+
     # Create profile
     profile = UserProfile(
         user_id=user.user_id,
@@ -311,4 +311,4 @@ crontab -e
 
 ---
 
-*Remember: The database is the heart of BITTEN. Treat it with respect, back it up regularly, and monitor its health constantly.*
+_Remember: The database is the heart of BITTEN. Treat it with respect, back it up regularly, and monitor its health constantly._

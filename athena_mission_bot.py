@@ -7,21 +7,22 @@ Strategic Commander AI for BITTEN trading signals
 🔒 SECURITY: Token loaded from environment variable only
 """
 
+import asyncio
+import json
+import logging
 import os
 import sys
-import json
 import time
-import logging
-import requests
-import asyncio
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any
+from typing import Any, Dict, List, Optional
+
+import requests
 import telebot
 from telebot import types
 
 # Add paths for imports
-sys.path.append('/root/HydraX-v2/src')
-sys.path.append('/root/HydraX-v2')
+sys.path.append("/root/HydraX-v2/src")
+sys.path.append("/root/HydraX-v2")
 
 # 🚨 SECURITY HARDENING IMPORT
 from bot_security_hardening import validate_request
@@ -29,13 +30,10 @@ from bot_security_hardening import validate_request
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler('/root/HydraX-v2/athena_mission_bot.log'),
-        logging.StreamHandler()
-    ]
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[logging.FileHandler("/root/HydraX-v2/athena_mission_bot.log"), logging.StreamHandler()],
 )
-logger = logging.getLogger('AthenaMissionBot')
+logger = logging.getLogger("AthenaMissionBot")
 
 # 🔒 SECURITY: Load token from environment variable ONLY
 ATHENA_BOT_TOKEN = os.getenv("ATHENA_BOT_TOKEN")
@@ -43,6 +41,7 @@ if not ATHENA_BOT_TOKEN:
     print("❌ ATHENA_BOT_TOKEN environment variable not set")
     print("Please set the token in .secrets/athena.env")
     sys.exit(1)
+
 
 class AthenaMissionBot:
     """
@@ -58,30 +57,31 @@ class AthenaMissionBot:
 
         # 🔒 SECURITY: Authorized users (Commander only)
         self.AUTHORIZED_USERS = {"7176191872"}
-        
+
         # Import ATHENA personality system
         try:
             from src.bitten_core.personality.athena_personality import AthenaPersonality
+
             self.athena = AthenaPersonality()
             self.athena_available = True
             logger.info("✅ ATHENA personality system loaded")
         except ImportError as e:
             logger.error(f"❌ Failed to load ATHENA personality: {e}")
             self.athena_available = False
-        
+
         # Mission dispatch settings
         self.authorized_dispatchers = ["7176191872"]  # Commander user
         self.authorized_users = ["7176191872"]  # For backward compatibility
         self.mission_counter = 0
         self.active_missions = {}
-        
+
         # Setup command handlers
         self.setup_handlers()
-        
+
         logger.info("🏛️ ATHENA Mission Bot initialized")
         logger.info(f"⚔️ Strategic Command Authority: ACTIVE")
         logger.info(f"📡 Ready for mission dispatch operations")
-    
+
     def is_authorized_user(self, user_id: str) -> bool:
         """🔒 SECURITY: Check if user is authorized"""
         return user_id in self.AUTHORIZED_USERS
@@ -93,7 +93,7 @@ class AthenaMissionBot:
     def setup_handlers(self):
         """Setup ATHENA mission bot command handlers with security guards"""
 
-        @self.bot.message_handler(commands=['start'])
+        @self.bot.message_handler(commands=["start"])
         def handle_start(message):
             """ATHENA introduction and status"""
             user_id = str(message.from_user.id)
@@ -103,7 +103,7 @@ class AthenaMissionBot:
                 self.log_security_event("UNAUTHORIZED_START", user_id, message.text)
                 self.bot.send_message(message.chat.id, "🔒 Access denied. Unauthorized user.")
                 return
-            
+
             welcome_msg = """🏛️ **ATHENA COMMAND ACTIVATED**
 
 *Advanced Tactical Handler for Embedded Neural Analysis*
@@ -123,13 +123,9 @@ I am ATHENA, your strategic mission commander. I coordinate all tactical operati
 
 *Strategic intelligence online. Ready for operations.*"""
 
-            self.bot.send_message(
-                message.chat.id, 
-                welcome_msg, 
-                parse_mode="Markdown"
-            )
-        
-        @self.bot.message_handler(commands=['status'])
+            self.bot.send_message(message.chat.id, welcome_msg, parse_mode="Markdown")
+
+        @self.bot.message_handler(commands=["status"])
         def handle_status(message):
             """ATHENA tactical system status"""
             user_id = str(message.from_user.id)
@@ -139,7 +135,7 @@ I am ATHENA, your strategic mission commander. I coordinate all tactical operati
                 self.log_security_event("UNAUTHORIZED_STATUS", user_id, message.text)
                 self.bot.send_message(message.chat.id, "🔒 Access denied. Unauthorized user.")
                 return
-            
+
             status_msg = f"""🏛️ **ATHENA TACTICAL STATUS**
 
 **System State**: OPERATIONAL ✅
@@ -155,13 +151,9 @@ I am ATHENA, your strategic mission commander. I coordinate all tactical operati
 
 *All tactical systems nominal. Standing by for mission parameters.*"""
 
-            self.bot.send_message(
-                message.chat.id,
-                status_msg,
-                parse_mode="Markdown"
-            )
-        
-        @self.bot.message_handler(commands=['brief'])
+            self.bot.send_message(message.chat.id, status_msg, parse_mode="Markdown")
+
+        @self.bot.message_handler(commands=["brief"])
         def handle_brief(message):
             """Generate sample mission briefing"""
             user_id = str(message.from_user.id)
@@ -171,46 +163,41 @@ I am ATHENA, your strategic mission commander. I coordinate all tactical operati
                 self.log_security_event("UNAUTHORIZED_BRIEF", user_id, message.text)
                 self.bot.send_message(message.chat.id, "🔒 Access denied. Unauthorized user.")
                 return
-            
+
             if not self.athena_available:
                 self.bot.send_message(
-                    message.chat.id,
-                    "❌ ATHENA personality system offline. Cannot generate briefings."
+                    message.chat.id, "❌ ATHENA personality system offline. Cannot generate briefings."
                 )
                 return
-            
+
             # Generate sample mission data
             sample_signal = {
-                'symbol': 'EURUSD',
-                'direction': 'BUY',
-                'entry_price': 1.0875,
-                'take_profit': 1.0925,
-                'stop_loss': 1.0825,
-                'tcs_score': 89.5,
-                'pattern': 'Institutional Breakout',
-                'timeframe': 'M15',
-                'signal_id': f'ATHENA_DEMO_{int(time.time())}'
+                "symbol": "EURUSD",
+                "direction": "BUY",
+                "entry_price": 1.0875,
+                "take_profit": 1.0925,
+                "stop_loss": 1.0825,
+                "tcs_score": 89.5,
+                "pattern": "Institutional Breakout",
+                "timeframe": "M15",
+                "signal_id": f"ATHENA_DEMO_{int(time.time())}",
             }
-            
+
             # Get user tier (default to COMMANDER for demo)
             user_tier = "COMMANDER"
             mission_id = f"DEMO_{int(time.time())}"
-            
+
             # Generate ATHENA mission briefing
             briefing = self.athena.get_mission_briefing(sample_signal, user_tier, mission_id)
-            
+
             # Add tactical enhancements for high TCS
-            if sample_signal['tcs_score'] > 85:
+            if sample_signal["tcs_score"] > 85:
                 tactical_confidence = f"\n\n🎯 **TACTICAL ASSESSMENT**\nIntel confirms {sample_signal['tcs_score']:.1f}% likelihood of mission success.\nStrategic conditions: OPTIMAL"
                 briefing += tactical_confidence
-            
-            self.bot.send_message(
-                message.chat.id,
-                briefing,
-                parse_mode="Markdown"
-            )
-        
-        @self.bot.message_handler(commands=['help'])
+
+            self.bot.send_message(message.chat.id, briefing, parse_mode="Markdown")
+
+        @self.bot.message_handler(commands=["help"])
         def handle_help(message):
             """ATHENA command reference"""
             user_id = str(message.from_user.id)
@@ -243,12 +230,8 @@ I am ATHENA, your strategic mission commander. I coordinate all tactical operati
 
 *ATHENA Command - Strategic Operations Division*"""
 
-            self.bot.send_message(
-                message.chat.id,
-                help_msg,
-                parse_mode="Markdown"
-            )
-        
+            self.bot.send_message(message.chat.id, help_msg, parse_mode="Markdown")
+
         # 🔒 SECURITY: Secure message blocking system
         @self.bot.message_handler(func=lambda message: True)
         def block_unauthorized_messages(message):
@@ -262,17 +245,19 @@ I am ATHENA, your strategic mission commander. I coordinate all tactical operati
                 return
 
             # Check if it's a command
-            if message.text and message.text.startswith('/'):
+            if message.text and message.text.startswith("/"):
                 command = message.text.split()[0][1:]  # Remove '/' prefix
                 if command not in self.ALLOWED_COMMANDS:
                     self.log_security_event("UNAUTHORIZED_COMMAND", user_id, f"/{command}")
-                    self.bot.send_message(message.chat.id, "🔒 Command not recognized. Use `/help` for available commands.")
+                    self.bot.send_message(
+                        message.chat.id, "🔒 Command not recognized. Use `/help` for available commands."
+                    )
                     return
 
             # For non-command messages from authorized users, provide minimal response
-            if message.text and not message.text.startswith('/'):
+            if message.text and not message.text.startswith("/"):
                 self.bot.send_message(message.chat.id, "🏛️ ATHENA operational. Use `/help` for command reference.")
-    
+
     def dispatch_mission_signal(self, signal_data: Dict, user_data: Dict) -> bool:
         """
         Primary method for dispatching mission signals via ATHENA
@@ -281,112 +266,96 @@ I am ATHENA, your strategic mission commander. I coordinate all tactical operati
         if not self.athena_available:
             logger.error("❌ Cannot dispatch mission: ATHENA personality offline")
             return False
-        
+
         try:
             # Extract signal information
-            symbol = signal_data.get('symbol', 'UNKNOWN')
-            direction = signal_data.get('direction', 'UNKNOWN')
-            tcs_score = signal_data.get('tcs_score', 0)
-            signal_id = signal_data.get('signal_id', f'ATHENA_{int(time.time())}')
-            
+            symbol = signal_data.get("symbol", "UNKNOWN")
+            direction = signal_data.get("direction", "UNKNOWN")
+            tcs_score = signal_data.get("tcs_score", 0)
+            signal_id = signal_data.get("signal_id", f"ATHENA_{int(time.time())}")
+
             # Extract user information
-            user_id = user_data.get('user_id', 'UNKNOWN')
-            user_tier = user_data.get('tier', 'NIBBLER')
-            chat_id = user_data.get('chat_id', user_id)
-            
+            user_id = user_data.get("user_id", "UNKNOWN")
+            user_tier = user_data.get("tier", "NIBBLER")
+            chat_id = user_data.get("chat_id", user_id)
+
             # Generate mission ID
             self.mission_counter += 1
             mission_id = f"ATHENA_{symbol}_{self.mission_counter:04d}"
-            
+
             # Generate ATHENA mission briefing
             briefing = self.athena.get_mission_briefing(signal_data, user_tier, mission_id)
-            
+
             # Add tactical confidence for high TCS signals
             if tcs_score > 85:
                 tactical_line = f"\n\n🎯 **INTEL CONFIRMATION**\nTactical analysis confirms {tcs_score:.1f}% mission success probability.\nStrategic advantage: CONFIRMED"
                 briefing += tactical_line
-            
+
             # Add signal ID for tracking
             briefing += f"\n\n📋 **MISSION CODE**: `{signal_id}`"
-            
+
             # Create fire button for authorized users
             keyboard = types.InlineKeyboardMarkup()
             if user_tier in ["COMMANDER", "FANG"]:
-                fire_button = types.InlineKeyboardButton(
-                    "🔥 EXECUTE MISSION", 
-                    callback_data=f"fire_{signal_id}"
-                )
+                fire_button = types.InlineKeyboardButton("🔥 EXECUTE MISSION", callback_data=f"fire_{signal_id}")
                 keyboard.add(fire_button)
-            
+
             # Dispatch mission via ATHENA bot
             if keyboard.keyboard:  # Has buttons
-                self.bot.send_message(
-                    chat_id=chat_id,
-                    text=briefing,
-                    parse_mode="Markdown",
-                    reply_markup=keyboard
-                )
+                self.bot.send_message(chat_id=chat_id, text=briefing, parse_mode="Markdown", reply_markup=keyboard)
             else:
-                self.bot.send_message(
-                    chat_id=chat_id,
-                    text=briefing,
-                    parse_mode="Markdown"
-                )
-            
+                self.bot.send_message(chat_id=chat_id, text=briefing, parse_mode="Markdown")
+
             # Track active mission
             self.active_missions[signal_id] = {
-                'mission_id': mission_id,
-                'user_id': user_id,
-                'symbol': symbol,
-                'direction': direction,
-                'tcs_score': tcs_score,
-                'dispatched_at': datetime.now(),
-                'status': 'DISPATCHED'
+                "mission_id": mission_id,
+                "user_id": user_id,
+                "symbol": symbol,
+                "direction": direction,
+                "tcs_score": tcs_score,
+                "dispatched_at": datetime.now(),
+                "status": "DISPATCHED",
             }
-            
+
             logger.info(f"🏛️ Mission dispatched: {mission_id} for {user_id} ({symbol} {direction})")
             return True
-            
+
         except Exception as e:
             logger.error(f"❌ Mission dispatch failed: {e}")
             return False
-    
+
     def send_execution_result(self, signal_id: str, execution_result: Dict, user_data: Dict) -> bool:
         """Send execution results via ATHENA tactical voice"""
         if not self.athena_available:
             return False
-        
+
         try:
-            chat_id = user_data.get('chat_id')
+            chat_id = user_data.get("chat_id")
             signal_data = self.active_missions.get(signal_id, {})
-            
-            if execution_result.get('success'):
+
+            if execution_result.get("success"):
                 response = self.athena.get_execution_success(signal_data, execution_result)
             else:
                 response = self.athena.get_execution_failure(signal_data, execution_result)
-            
-            self.bot.send_message(
-                chat_id=chat_id,
-                text=f"🏛️ **MISSION UPDATE**\n\n{response}",
-                parse_mode="Markdown"
-            )
-            
+
+            self.bot.send_message(chat_id=chat_id, text=f"🏛️ **MISSION UPDATE**\n\n{response}", parse_mode="Markdown")
+
             # Update mission status
             if signal_id in self.active_missions:
-                self.active_missions[signal_id]['status'] = 'EXECUTED' if execution_result.get('success') else 'FAILED'
-            
+                self.active_missions[signal_id]["status"] = "EXECUTED" if execution_result.get("success") else "FAILED"
+
             return True
-            
+
         except Exception as e:
             logger.error(f"❌ Execution result dispatch failed: {e}")
             return False
-    
+
     def run(self):
         """Start ATHENA mission bot"""
         logger.info("🏛️ ATHENA Mission Bot starting...")
         logger.info("⚔️ Strategic Command Authority: ACTIVE")
         logger.info("📡 Awaiting mission parameters...")
-        
+
         try:
             self.bot.infinity_polling(timeout=10, long_polling_timeout=5)
         except Exception as e:
@@ -394,10 +363,12 @@ I am ATHENA, your strategic mission commander. I coordinate all tactical operati
             time.sleep(5)
             self.run()  # Auto-restart
 
+
 def main():
     """Launch ATHENA Mission Bot"""
     athena_bot = AthenaMissionBot()
     athena_bot.run()
+
 
 if __name__ == "__main__":
     main()

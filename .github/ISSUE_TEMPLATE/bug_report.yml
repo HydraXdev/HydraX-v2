@@ -8,7 +8,7 @@ body:
     attributes:
       value: |
         Thanks for taking the time to fill out this bug report!
-        
+
   - type: textarea
     id: what-happened
     attributes:
@@ -17,7 +17,7 @@ body:
       placeholder: Tell us what you see!
     validations:
       required: true
-      
+
   - type: textarea
     id: expected-behavior
     attributes:
@@ -26,7 +26,7 @@ body:
       placeholder: What did you expect?
     validations:
       required: true
-      
+
   - type: textarea
     id: reproduction-steps
     attributes:
@@ -39,7 +39,7 @@ body:
         4. See error
     validations:
       required: true
-      
+
   - type: dropdown
     id: component
     attributes:
@@ -55,7 +55,7 @@ body:
         - Other
     validations:
       required: true
-      
+
   - type: textarea
     id: environment
     attributes:
@@ -68,14 +68,14 @@ body:
         - Browser (if applicable): [e.g. Chrome 91.0.4472.124]
     validations:
       required: true
-      
+
   - type: textarea
     id: logs
     attributes:
       label: Logs
       description: Please copy and paste any relevant log output.
       render: shell
-      
+
   - type: checkboxes
     id: terms
     attributes:

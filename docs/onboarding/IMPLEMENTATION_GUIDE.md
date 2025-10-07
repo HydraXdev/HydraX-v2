@@ -1,11 +1,13 @@
 # BITTEN Onboarding Implementation Guide
 
 ## Overview
+
 This guide outlines how to implement the "Ground Zero" onboarding flow for new BITTEN users.
 
 ## Architecture
 
 ### 1. State Machine Pattern
+
 ```python
 class OnboardingState(Enum):
     FIRST_CONTACT = "first_contact"
@@ -28,17 +30,20 @@ class OnboardingState(Enum):
 ### 2. Core Components
 
 #### OnboardingOrchestrator
+
 - Manages state transitions
 - Tracks user progress
 - Handles resumable sessions
 - Integrates with persona system
 
 #### OnboardingDialogue
+
 - Stores all Sergeant Nexus dialogue
 - Maintains character voice consistency
 - Supports dynamic user name insertion
 
 #### OnboardingHandlers
+
 - Processes user responses
 - Validates inputs
 - Manages account creation flow
@@ -47,6 +52,7 @@ class OnboardingState(Enum):
 ### 3. Integration Points
 
 #### With Telegram Bot
+
 ```python
 @bot.message_handler(commands=['start'])
 async def start_onboarding(message):
@@ -56,6 +62,7 @@ async def start_onboarding(message):
 ```
 
 #### With Persona System
+
 ```python
 # Use existing personas for voice overlays
 nexus = persona_orchestrator.nexus
@@ -66,26 +73,31 @@ doc = persona_orchestrator.doc
 ## Implementation Steps
 
 ### Phase 1: Core Structure
+
 1. Create onboarding module structure
 2. Define state machine and transitions
 3. Implement base orchestrator class
 
 ### Phase 2: Dialogue System
+
 1. Extract all dialogue into configuration
 2. Create dialogue renderer with variable substitution
 3. Add character voice markers
 
 ### Phase 3: User Interaction
+
 1. Build response handlers for each state
 2. Add input validation
 3. Implement progress persistence
 
 ### Phase 4: Account Integration
+
 1. Create secure broker connection flow
 2. Implement credential encryption
 3. Add verification steps
 
 ### Phase 5: Personalization
+
 1. Callsign generation and validation
 2. User profile creation
 3. Stats tracking initialization
@@ -93,12 +105,14 @@ doc = persona_orchestrator.doc
 ## Security Considerations
 
 ### Credential Handling
+
 - Never store primary broker credentials
 - Encrypt trading passwords at rest
 - Use secure communication channels
 - Implement session timeouts
 
 ### Input Validation
+
 - Sanitize all user inputs
 - Validate email formats
 - Check callsign uniqueness
@@ -107,7 +121,8 @@ doc = persona_orchestrator.doc
 ## UI/UX Guidelines
 
 ### Telegram Formatting
-```python
+
+````python
 # Bold for emphasis
 "*Sergeant Nexus:* Listen close, recruit..."
 
@@ -119,9 +134,10 @@ keyboard = InlineKeyboardMarkup([
     [InlineKeyboardButton("YES", callback_data="experience_yes")],
     [InlineKeyboardButton("NO", callback_data="experience_no")]
 ])
-```
+````
 
 ### Progress Indicators
+
 - Show current phase number
 - Estimate time remaining
 - Allow skip/back navigation
@@ -130,18 +146,21 @@ keyboard = InlineKeyboardMarkup([
 ## Testing Strategy
 
 ### Unit Tests
+
 - Test each state transition
 - Validate dialogue rendering
 - Check error handling
 - Verify data persistence
 
 ### Integration Tests
+
 - Full flow walkthrough
 - Resume from each state
 - Error recovery scenarios
 - Performance under load
 
 ### User Testing
+
 - A/B test dialogue variations
 - Measure completion rates
 - Gather feedback on clarity
@@ -150,12 +169,14 @@ keyboard = InlineKeyboardMarkup([
 ## Metrics to Track
 
 ### Engagement Metrics
+
 - Start-to-completion rate
 - Drop-off points by phase
 - Time spent per phase
 - Return user percentage
 
 ### Conversion Metrics
+
 - Demo account creation rate
 - Live account upgrade rate
 - First trade execution rate
@@ -175,18 +196,21 @@ keyboard = InlineKeyboardMarkup([
 ## Future Enhancements
 
 ### Adaptive Onboarding
+
 - Adjust pace based on user responses
 - Skip sections for experienced users
 - Add tooltips for complex concepts
 - Personalize examples to user region
 
 ### Gamification Elements
+
 - Achievement badges for completion
 - Progress bar visualization
 - Bonus XP for fast completion
 - Leaderboard for top recruits
 
 ### Multi-Channel Support
+
 - Web interface version
 - Mobile app adaptation
 - Email drip campaign
@@ -194,5 +218,5 @@ keyboard = InlineKeyboardMarkup([
 
 ---
 
-*"Every operative's journey begins with a single step. Make it count."*
+_"Every operative's journey begins with a single step. Make it count."_
 — Sergeant Nexus

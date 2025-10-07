@@ -14,11 +14,11 @@ $mt5Processes = Get-Process -Name "terminal64" -ErrorAction SilentlyContinue
 if ($mt5Processes) {
     Write-Host "⚠️ ACTIVE MT5 PROCESSES DETECTED:" -ForegroundColor Red
     $mt5Processes | Format-Table Id, ProcessName, StartTime
-    
+
     Write-Host "🛑 TERMINATING MT5 PROCESSES..." -ForegroundColor Red
     $mt5Processes | Stop-Process -Force
     Start-Sleep -Seconds 3
-    
+
     # Verify termination
     $remainingProcesses = Get-Process -Name "terminal64" -ErrorAction SilentlyContinue
     if ($remainingProcesses) {
@@ -74,25 +74,25 @@ $logsPath = Join-Path $masterTerminalPath "Logs"
 # Clean MQL5\Files directory
 if (Test-Path $mql5FilesPath) {
     Write-Host "🧹 CLEANING MQL5\Files DIRECTORY..." -ForegroundColor Yellow
-    
+
     # Count contaminated files before cleanup
     $jsonFiles = Get-ChildItem $mql5FilesPath -Filter "*.json" -File
     $txtFiles = Get-ChildItem $mql5FilesPath -Filter "*.txt" -File
     $logFiles = Get-ChildItem $mql5FilesPath -Filter "*.log" -File
-    
+
     $totalContaminated = $jsonFiles.Count + $txtFiles.Count + $logFiles.Count
     Write-Host "📊 CONTAMINATED FILES DETECTED: $totalContaminated" -ForegroundColor Red
-    
+
     if ($totalContaminated -gt 0) {
         # Backup contaminated files before deletion
         $backupPath = Join-Path $masterTerminalPath "CONTAMINATION_BACKUP_$(Get-Date -Format 'yyyyMMdd_HHmmss')"
         New-Item -ItemType Directory -Path $backupPath -Force | Out-Null
-        
+
         # Move contaminated files to backup
         $jsonFiles | Move-Item -Destination $backupPath -Force
         $txtFiles | Move-Item -Destination $backupPath -Force
         $logFiles | Move-Item -Destination $backupPath -Force
-        
+
         Write-Host "✅ CONTAMINATED FILES QUARANTINED TO: $backupPath" -ForegroundColor Green
     } else {
         Write-Host "✅ MQL5\Files DIRECTORY ALREADY CLEAN" -ForegroundColor Green
@@ -104,14 +104,14 @@ if (Test-Path $mql5FilesPath) {
 # Clean Logs directory
 if (Test-Path $logsPath) {
     Write-Host "🧹 CLEANING LOGS DIRECTORY..." -ForegroundColor Yellow
-    
+
     # Remove EA-generated log files (keep MT5 system logs)
     $eaLogPattern = "*EA*", "*Expert*", "*Bridge*", "*BITTEN*"
-    $eaLogs = Get-ChildItem $logsPath -File | Where-Object { 
+    $eaLogs = Get-ChildItem $logsPath -File | Where-Object {
         $name = $_.Name
         $eaLogPattern | ForEach-Object { if ($name -like $_) { return $true } }
     }
-    
+
     if ($eaLogs) {
         $eaLogs | Remove-Item -Force
         Write-Host "✅ EA LOG FILES REMOVED: $($eaLogs.Count)" -ForegroundColor Green
@@ -150,11 +150,11 @@ try {
     # Create archive of cleaned master terminal
     Compress-Archive -Path $masterTerminalPath -DestinationPath $archivePath -Force
     Write-Host "✅ ARCHIVE CREATED: $archivePath" -ForegroundColor Green
-    
+
     # Verify archive
     $archiveInfo = Get-Item $archivePath
     Write-Host "📊 ARCHIVE SIZE: $([math]::Round($archiveInfo.Length / 1MB, 2)) MB" -ForegroundColor Green
-    
+
 } catch {
     Write-Host "❌ ARCHIVE CREATION FAILED: $($_.Exception.Message)" -ForegroundColor Red
 }

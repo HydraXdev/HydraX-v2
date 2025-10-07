@@ -7,14 +7,14 @@ class SystemMonitor {
     [object]$AlertSystem
     [string]$MT5ProcessName = "terminal64"
     [string]$EALogPath = "C:\Program Files\MetaTrader 5\MQL5\Logs"
-    
+
     SystemMonitor([string]$uuid) {
         $this.UserUUID = $uuid
         $this.Metrics = @{}
         $this.LastReport = Get-Date
         $this.InitializeMonitor()
     }
-    
+
     [void] InitializeMonitor() {
         # Initialize baseline metrics
         $this.Metrics = @{
@@ -38,7 +38,7 @@ class SystemMonitor {
             }
         }
     }
-    
+
     # Monitor EA and MT5 performance
     [hashtable] MonitorEAPerformance() {
         return @{
@@ -50,7 +50,7 @@ class SystemMonitor {
             System_Resources = $this.CheckSystemResources()
         }
     }
-    
+
     # Check EA health status
     [string] CheckEAHealth() {
         try {
@@ -59,16 +59,16 @@ class SystemMonitor {
             if (-not $mt5Process) {
                 return "MT5_NOT_RUNNING"
             }
-            
+
             # Check EA log for recent activity
-            $latestLog = Get-ChildItem -Path $this.EALogPath -Filter "*.log" | 
-                         Sort-Object LastWriteTime -Descending | 
+            $latestLog = Get-ChildItem -Path $this.EALogPath -Filter "*.log" |
+                         Sort-Object LastWriteTime -Descending |
                          Select-Object -First 1
-            
+
             if ($latestLog -and (Get-Date) - $latestLog.LastWriteTime -lt [TimeSpan]::FromMinutes(5)) {
                 # Check for EA-specific log entries
                 $content = Get-Content $latestLog.FullName -Tail 50
-                
+
                 if ($content -match "BITTENBridge.*initialized") {
                     return "HEALTHY"
                 }
@@ -87,7 +87,7 @@ class SystemMonitor {
             return "CHECK_FAILED"
         }
     }
-    
+
     # Check MT5 connectivity
     [string] CheckMT5Connectivity() {
         try {
@@ -99,7 +99,7 @@ class SystemMonitor {
                     return "CONNECTED"
                 }
             }
-            
+
             # Check network connectivity
             $testConnection = Test-NetConnection -ComputerName "api.metaquotes.net" -Port 443 -WarningAction SilentlyContinue
             if ($testConnection.TcpTestSucceeded) {
@@ -113,39 +113,39 @@ class SystemMonitor {
             return "CHECK_FAILED"
         }
     }
-    
+
     # Check signal file processing
     [hashtable] CheckSignalFlow() {
         try {
             $signalPath = "C:\Program Files\MetaTrader 5\MQL5\Files\BITTEN"
             $processedPath = Join-Path $signalPath "processed"
             $failedPath = Join-Path $signalPath "failed"
-            
+
             # Count processed signals
             $processedCount = 0
             if (Test-Path $processedPath) {
                 $processedCount = (Get-ChildItem -Path $processedPath -Filter "*.json" | Measure-Object).Count
             }
-            
+
             # Count failed signals
             $failedCount = 0
             if (Test-Path $failedPath) {
                 $failedCount = (Get-ChildItem -Path $failedPath -Filter "*.json" | Measure-Object).Count
             }
-            
+
             # Get last signal time
             $lastSignal = $null
             $fireFile = Join-Path $signalPath "fire.txt"
             if (Test-Path $fireFile) {
                 $lastSignal = (Get-Item $fireFile).LastWriteTime
             }
-            
+
             # Calculate success rate
             $totalSignals = $processedCount + $failedCount
-            $successRate = if ($totalSignals -gt 0) { 
-                [math]::Round(($processedCount / $totalSignals) * 100, 2) 
+            $successRate = if ($totalSignals -gt 0) {
+                [math]::Round(($processedCount / $totalSignals) * 100, 2)
             } else { 100 }
-            
+
             return @{
                 Processed = $processedCount
                 Failed = $failedCount
@@ -164,22 +164,22 @@ class SystemMonitor {
             }
         }
     }
-    
+
     # Check HTTP market data streaming
     [hashtable] CheckMarketDataFlow() {
         try {
             # Check for tick data files
             $tickDataPath = "C:\Program Files\MetaTrader 5\MQL5\Files"
             $tickFiles = Get-ChildItem -Path $tickDataPath -Filter "tick_data_*.json" -ErrorAction SilentlyContinue
-            
+
             if ($tickFiles) {
                 # Get most recent tick file
                 $latestTick = $tickFiles | Sort-Object LastWriteTime -Descending | Select-Object -First 1
                 $lastStreamTime = $latestTick.LastWriteTime
-                
+
                 # Check if streaming is current (within last 10 seconds)
                 $isStreaming = (Get-Date) - $lastStreamTime -lt [TimeSpan]::FromSeconds(10)
-                
+
                 # Check data quality by parsing a tick file
                 try {
                     $tickContent = Get-Content $latestTick.FullName -Raw | ConvertFrom-Json
@@ -192,7 +192,7 @@ class SystemMonitor {
                 catch {
                     $dataQuality = "PARSE_ERROR"
                 }
-                
+
                 return @{
                     StreamingStatus = if ($isStreaming) {"ACTIVE"} else {"INACTIVE"}
                     LastStreamTime = $lastStreamTime
@@ -218,12 +218,12 @@ class SystemMonitor {
             }
         }
     }
-    
+
     # Check file operations
     [hashtable] CheckFileOperations() {
         try {
             $bittenPath = "C:\Program Files\MetaTrader 5\MQL5\Files\BITTEN"
-            
+
             # Test write permissions
             $testFile = Join-Path $bittenPath "test_write_$(Get-Random).tmp"
             try {
@@ -234,15 +234,15 @@ class SystemMonitor {
             catch {
                 $writePermission = $false
             }
-            
+
             # Check fire.txt accessibility
             $fireFile = Join-Path $bittenPath "fire.txt"
             $fireAccessible = Test-Path $fireFile
-            
+
             # Check result file
             $resultFile = Join-Path $bittenPath "trade_result.txt"
             $resultAccessible = Test-Path $resultFile
-            
+
             return @{
                 WritePermission = $writePermission
                 FireFileAccessible = $fireAccessible
@@ -259,23 +259,23 @@ class SystemMonitor {
             }
         }
     }
-    
+
     # Check system resources
     [hashtable] CheckSystemResources() {
         try {
             # CPU usage
             $cpu = (Get-Counter '\Processor(_Total)\% Processor Time' -SampleInterval 1 -MaxSamples 1).CounterSamples.CookedValue
-            
+
             # Memory usage
             $totalMemory = (Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory
             $freeMemory = (Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory * 1KB
             $memoryUsage = [math]::Round((($totalMemory - $freeMemory) / $totalMemory) * 100, 2)
-            
+
             # Disk space
             $drive = Get-PSDrive -Name C
             $diskFreeGB = [math]::Round($drive.Free / 1GB, 2)
             $diskUsagePercent = [math]::Round((($drive.Used) / ($drive.Used + $drive.Free)) * 100, 2)
-            
+
             return @{
                 CPU = [math]::Round($cpu, 2)
                 Memory = $memoryUsage
@@ -294,15 +294,15 @@ class SystemMonitor {
             }
         }
     }
-    
+
     # Get overall system status
     [string] GetOverallStatus() {
         $metrics = $this.MonitorEAPerformance()
-        
+
         # Determine overall status based on individual components
         $criticalCount = 0
         $warningCount = 0
-        
+
         foreach ($component in $metrics.Values) {
             if ($component -is [hashtable] -and $component.Status) {
                 switch ($component.Status) {
@@ -321,7 +321,7 @@ class SystemMonitor {
                 }
             }
         }
-        
+
         if ($criticalCount -gt 0) {
             return "CRITICAL"
         }
@@ -332,12 +332,12 @@ class SystemMonitor {
             return "HEALTHY"
         }
     }
-    
+
     # Get current metrics snapshot
     [hashtable] GetCurrentMetrics() {
         return $this.MonitorEAPerformance()
     }
-    
+
     # Detect system anomalies
     [hashtable] DetectSystemAnomalies() {
         $anomalies = @{
@@ -345,35 +345,35 @@ class SystemMonitor {
             Warning = @()
             Info = @()
         }
-        
+
         $metrics = $this.MonitorEAPerformance()
-        
+
         # Check for critical issues
         if ($metrics.EA_Status -eq "MT5_NOT_RUNNING") {
             $anomalies.Critical += "MT5 terminal is not running"
         }
-        
+
         if ($metrics.Signal_Processing.SuccessRate -lt 50) {
             $anomalies.Critical += "Signal processing success rate below 50%"
         }
-        
+
         if ($metrics.System_Resources.DiskFreeGB -lt 5) {
             $anomalies.Critical += "Disk space critically low"
         }
-        
+
         # Check for warnings
         if ($metrics.Signal_Processing.SuccessRate -lt 80) {
             $anomalies.Warning += "Signal processing success rate below 80%"
         }
-        
+
         if ($metrics.HTTP_Streaming.StreamingStatus -ne "ACTIVE") {
             $anomalies.Warning += "Market data streaming is not active"
         }
-        
+
         if ($metrics.System_Resources.CPU -gt 80) {
             $anomalies.Warning += "High CPU usage detected"
         }
-        
+
         return $anomalies
     }
 }

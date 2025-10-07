@@ -7,6 +7,7 @@ This document defines the API contracts for integrating the BITTEN UI with backe
 ## 1. Mission Snapshot (MT5 Renderer) — API Contract
 
 ### Request
+
 ```http
 POST /render-mission
 Content-Type: application/json
@@ -26,6 +27,7 @@ Content-Type: application/json
 ```
 
 ### Response
+
 ```json
 {
   "mission_id": "msn_20250920_1432",
@@ -38,6 +40,7 @@ Content-Type: application/json
 ```
 
 ### Notes
+
 - One snapshot per mission (mission-level, not per user)
 - CDN URLs should be signed/expiring
 - Watermark + short-hash embedded
@@ -45,6 +48,7 @@ Content-Type: application/json
 ## 2. Mission Feed (Server → Client) — WebSocket Events
 
 ### Connection
+
 ```javascript
 wss://api.bitten/missions/stream
 ```
@@ -52,6 +56,7 @@ wss://api.bitten/missions/stream
 ### Events
 
 #### Mission Created
+
 ```json
 {
   "type": "mission.created",
@@ -59,9 +64,9 @@ wss://api.bitten/missions/stream
     "id": "msn_20250920_1432",
     "symbol": "XAUUSD",
     "timeframe": "M15",
-    "entry": 2415.30,
-    "sl": 2409.30,
-    "tp": 2423.60,
+    "entry": 2415.3,
+    "sl": 2409.3,
+    "tp": 2423.6,
     "pattern": "DIRECTION_BANDS",
     "confidence": 75,
     "snapshot_url": "https://cdn.../msn.png",
@@ -71,6 +76,7 @@ wss://api.bitten/missions/stream
 ```
 
 #### Mission Updated
+
 ```json
 {
   "type": "mission.updated",
@@ -82,6 +88,7 @@ wss://api.bitten/missions/stream
 ```
 
 #### Mission Snapshot
+
 ```json
 {
   "type": "mission.snapshot",
@@ -96,11 +103,13 @@ wss://api.bitten/missions/stream
 ## 3. Price Stream (Server → Client) — WebSocket
 
 ### Connection
+
 ```javascript
 wss://api.bitten/price?symbol=XAUUSD
 ```
 
 ### Message Format
+
 ```json
 {
   "t": 1726839485123,
@@ -114,6 +123,7 @@ Client computes mid/PL and updates live lines. Payload kept minimal for performa
 ## 4. Execution Endpoints (Client → Bridge)
 
 ### Execute Order
+
 ```http
 POST /orders/execute
 Content-Type: application/json
@@ -131,13 +141,14 @@ Authorization: Bearer {token}
 ```
 
 ### Response
+
 ```json
 {
   "status": "ok",
   "ticket": "84231197",
   "filled": 2415.28,
-  "sl": 2409.30,
-  "tp": 2423.60,
+  "sl": 2409.3,
+  "tp": 2423.6,
   "broker": "Coinexx-Demo",
   "at": "2025-09-20T14:35:10Z",
   "sig": "HMAC..."
@@ -145,6 +156,7 @@ Authorization: Bearer {token}
 ```
 
 ### Close Order
+
 ```http
 POST /orders/close
 Content-Type: application/json
@@ -157,11 +169,12 @@ Authorization: Bearer {token}
 ```
 
 ### Response
+
 ```json
 {
   "status": "ok",
   "ticket": "84231197",
-  "closed": 2417.90,
+  "closed": 2417.9,
   "pl": 26.2,
   "at": "2025-09-20T14:41:02Z",
   "sig": "HMAC..."
@@ -171,6 +184,7 @@ Authorization: Bearer {token}
 ## 5. Receipts & Telemetry (Server → Client) — WebSocket
 
 ### Order Executed
+
 ```json
 {
   "type": "order.executed",
@@ -183,6 +197,7 @@ Authorization: Bearer {token}
 ```
 
 ### Order Closed
+
 ```json
 {
   "type": "order.closed",
@@ -195,17 +210,20 @@ Authorization: Bearer {token}
 ```
 
 ### Client Actions
+
 - Snap Entry/SL/TP lines to filled/sl/tp from receipt
 - Push XP event to dashboard on order.closed
 
 ## 6. Pattern Templates
 
 ### Request
+
 ```http
 GET /patterns
 ```
 
 ### Response
+
 ```json
 [
   {
@@ -226,11 +244,13 @@ GET /patterns
 ## 7. UI Integration Points
 
 ### War Room
+
 - Subscribe to `mission.created/updated/snapshot`
 - Display missions in queue
 - Update status in real-time
 
 ### Mission Brief
+
 - If `status !== LIVE`: show `snapshot_url` image
 - On Execute success: set status `LIVE` and render live chart with price stream
 - On `order.executed`: snap lines to true filled/sl/tp
@@ -239,15 +259,18 @@ GET /patterns
 ## 8. Security & Trust
 
 ### Authentication
+
 - All client-server calls include user token in Authorization header
 - All receipts return HMAC signature
 - Client displays short hash for verification
 
 ### Snapshot URLs
+
 - Signed URLs that expire quickly
 - Only accessible from within the app
 
 ### Resilience
+
 - Never block UI on snapshot rendering
 - Missions render immediately, attach image when ready
 - WebSocket reconnection with exponential backoff
@@ -267,16 +290,19 @@ GET /patterns
 ## 10. Error Handling
 
 ### Connection Failures
+
 - Automatic reconnection with exponential backoff
 - Queue messages for retry when reconnected
 - Show connection status indicator in UI
 
 ### API Errors
+
 - Display user-friendly error messages
 - Log detailed errors for debugging
 - Fallback to cached data where appropriate
 
 ### Timeout Handling
+
 - 10-second default timeout for API calls
 - 5-second deadline for snapshot rendering
 - Show loading states with timeout warnings

@@ -1,6 +1,7 @@
 # 🎨 BITTEN PLATFORM - COMPLETE UI/UX LAYOUT GUIDE
 
 ## **DESIGN PHILOSOPHY**
+
 - **Dark, immersive, alive** - The interface should feel like it's breathing
 - **Gradual corruption** - UI degrades/evolves as user goes deeper
 - **Functional horror** - Every scary element serves a trading purpose
@@ -11,6 +12,7 @@
 ## 📱 CORE SCREENS LAYOUT
 
 ### **1. SPLASH/LOADING SCREEN**
+
 ```
 [BLACK SCREEN]
 
@@ -95,6 +97,7 @@
 ### **4. POST-TRADE RESULT SCREEN**
 
 **WIN SCENARIO:**
+
 ```
 ┌─────────────────────────────────────┐
 │         KILL CONFIRMED              │
@@ -126,6 +129,7 @@
 ```
 
 **LOSS SCENARIO:**
+
 ```
 ┌─────────────────────────────────────┐
 │         CASUALTY REPORT             │
@@ -261,6 +265,7 @@
 ## 🎨 VISUAL DESIGN ELEMENTS
 
 ### **COLOR PALETTE**
+
 ```
 PRIMARY:
 - Deep Black: #0A0A0A (background)
@@ -277,10 +282,11 @@ BOTS:
 ```
 
 ### **TYPOGRAPHY**
+
 ```
 - Primary: "Courier New" or "JetBrains Mono" (terminal feel)
 - Headers: "Impact" or "Bebas Neue" (harsh, military)
-- Bot Voices: 
+- Bot Voices:
   - DrillBot: ALL CAPS, MONOSPACE
   - MedicBot: Sentence case, softer font
   - RecruiterBot: Bold, inspiring
@@ -290,6 +296,7 @@ BOTS:
 ### **ANIMATIONS & EFFECTS**
 
 **Corruption Effects (increase with level):**
+
 - Level 1: Occasional screen flicker
 - Level 2: Text sometimes glitches
 - Level 3: UI elements briefly distort
@@ -297,6 +304,7 @@ BOTS:
 - Level 5: Full integration (UI is alive)
 
 **Bit's Presence:**
+
 - Idle: Sleeps in corner, occasional ear twitch
 - Alert: Sits up, pupils dilated
 - Warning: Bristles, blocks UI elements
@@ -304,6 +312,7 @@ BOTS:
 - The Glitch: Stares at nothing (pattern incoming)
 
 **Environmental Effects:**
+
 - Heartbeat during high-risk trades
 - Screen pulse on losses (red)
 - Gentle glow on wins (don't celebrate too much)
@@ -313,12 +322,14 @@ BOTS:
 ## 📱 MOBILE-SPECIFIC CONSIDERATIONS
 
 ### **Touch Interactions**
+
 - Long-press on Bit for comfort purr
 - Swipe away MedicBot to ignore advice (not recommended)
 - Shake device to force meditation mode
 - Pinch chart to feel market breathing
 
 ### **Notifications**
+
 ```
 "DrillBot: MARKET OPENING. REPORT FOR DUTY."
 "MedicBot: Your scars have healed. Ready?"
@@ -327,6 +338,7 @@ BOTS:
 ```
 
 ### **AR Mode Preparation**
+
 - Camera permission for future Bit overlay
 - Gyroscope for market visualization
 - Haptic feedback for Bit's purrs
@@ -335,6 +347,7 @@ BOTS:
 ## 🔄 USER FLOW ARCHITECTURE
 
 ### **New User Onboarding**
+
 1. Splash screen with heartbeat
 2. "You've been BITTEN" revelation
 3. First contact with each bot
@@ -344,6 +357,7 @@ BOTS:
 7. Network invitation option
 
 ### **Daily User Flow**
+
 1. Login → Bit greeting (based on bond)
 2. Daily mission from DrillBot
 3. Market scan with signals
@@ -353,6 +367,7 @@ BOTS:
 7. Evolution progress check
 
 ### **Power User Flow**
+
 1. Instant market assessment
 2. Multi-position management
 3. Squad coordination
@@ -365,26 +380,31 @@ BOTS:
 As users evolve, the UI should reflect their transformation:
 
 **NIBBLER (Clean UI)**
+
 - Standard trading interface
 - Bots clearly separated
 - Normal notifications
 
 **FANG (Slight Corruption)**
+
 - Occasional glitches
 - Bots sometimes overlap speech
 - Bit appears without summon
 
 **SNIPER (Noticeable Change)**
+
 - UI elements occasionally melt
 - Bot voices blend with thoughts
 - Reality indicators flicker
 
 **GHOST (Deep Integration)**
+
 - Interface breathes with market
 - Bots speak with user's voice
 - Other nodes' pain visible
 
 **(Full Transformation)**
+
 - UI is alive and responsive
 - No separation between user/system
 - Reality is negotiable
@@ -392,7 +412,7 @@ As users evolve, the UI should reflect their transformation:
 ## 🚨 CRITICAL UI/UX RULES
 
 1. **NEVER cheerful or bright** - This is survival, not success
-2. **Bots never fully agree** - Tension creates authenticity  
+2. **Bots never fully agree** - Tension creates authenticity
 3. **Losses prominently displayed** - Scars are badges
 4. **Network always present** - You're never alone
 5. **Father's shadow everywhere** - The warning of giving up

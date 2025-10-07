@@ -1,17 +1,20 @@
 # 🎯 PRESS PASS MT5 INSTALLATION GUIDE
 
 ## ✅ PERFECT - Directory Renamed Successfully!
+
 - **Old**: `C:\MT5_Farm\Masters\Generic_Demo\`
 - **New**: `C:\MT5_Farm\Masters\PRESS_PASS\` ✅
 
 ## 📥 METAQUOTES MT5 - INSTANT DEMO ACCOUNTS
 
 ### **Direct Download Link (No Credentials Required)**
+
 ```
 https://download.mql5.com/cdn/web/metaquotes.software.corp/mt5/mt5setup.exe
 ```
 
 ### **Why This Specific MT5?**
+
 - ✅ **Instant Demo**: Creates demo accounts automatically
 - ✅ **No Registration**: No email or personal info required
 - ✅ **$10,000 Balance**: Instant virtual trading capital
@@ -22,17 +25,20 @@ https://download.mql5.com/cdn/web/metaquotes.software.corp/mt5/mt5setup.exe
 ### **Installation Instructions**
 
 #### **Step 1: Download MT5**
+
 ```powershell
 # Download MetaQuotes MT5 directly to server
 powershell -Command "Invoke-WebRequest -Uri 'https://download.mql5.com/cdn/web/metaquotes.software.corp/mt5/mt5setup.exe' -OutFile 'C:\MT5_Farm\mt5_metaquotes.exe'"
 ```
 
 #### **Step 2: Install to PRESS_PASS Directory**
+
 1. **Run**: `C:\MT5_Farm\mt5_metaquotes.exe`
 2. **Install Path**: `C:\MT5_Farm\Masters\PRESS_PASS\`
 3. **Complete Installation**: Follow wizard (all defaults are fine)
 
 #### **Step 3: First Launch**
+
 1. **Open MT5** from PRESS_PASS directory
 2. **Demo Account**: Will auto-prompt for demo account creation
 3. **Select**: "MetaQuotes-Demo" server (default)
@@ -40,12 +46,14 @@ powershell -Command "Invoke-WebRequest -Uri 'https://download.mql5.com/cdn/web/m
 5. **No Forms**: No email, phone, or verification required
 
 #### **Step 4: Deploy EA**
+
 ```batch
 # Copy EA to MT5 installation
 copy "C:\MT5_Farm\EA.mq5" "C:\MT5_Farm\Masters\PRESS_PASS\MQL5\Experts\BITTENBridge_v3_ENHANCED.mq5"
 ```
 
 #### **Step 5: Configure EA**
+
 1. **MetaEditor**: Press F4 in MT5
 2. **Compile EA**: Press F7 to compile BITTENBridge_v3_ENHANCED.mq5
 3. **Success Check**: No compilation errors
@@ -55,11 +63,13 @@ copy "C:\MT5_Farm\EA.mq5" "C:\MT5_Farm\Masters\PRESS_PASS\MQL5\Experts\BITTENBri
 ### **PRESS PASS Configuration**
 
 #### **Magic Number Range**: 50001-50200
+
 - Each PRESS_PASS user gets unique magic number
 - Prevents trade conflicts between users
 - Easy identification in logs
 
 #### **Currency Pairs for PRESS_PASS**
+
 - EURUSD (most popular)
 - GBPUSD (volatile, good for demos)
 - USDJPY (Asian session coverage)
@@ -72,6 +82,7 @@ copy "C:\MT5_Farm\EA.mq5" "C:\MT5_Farm\Masters\PRESS_PASS\MQL5\Experts\BITTENBri
 - EURJPY (carry trade pair)
 
 #### **PRESS_PASS User Experience**
+
 1. **Instant Access**: Demo account ready in 30 seconds
 2. **Real Market Data**: Live prices, real spreads
 3. **Full Trading**: All BITTEN features available
@@ -82,12 +93,14 @@ copy "C:\MT5_Farm\EA.mq5" "C:\MT5_Farm\Masters\PRESS_PASS\MQL5\Experts\BITTENBri
 ### **Alternative MetaQuotes Servers (If Needed)**
 
 #### **Primary**: MetaQuotes-Demo
+
 - **Server**: MetaQuotes-Demo
 - **Balance**: $10,000
 - **Leverage**: 1:100
 - **Perfect for**: Press Pass users
 
 #### **Backup**: MetaQuotes Software Corp
+
 - **Server**: MetaQuotes Software Corp-Demo
 - **Balance**: $10,000
 - **Leverage**: 1:500
@@ -96,6 +109,7 @@ copy "C:\MT5_Farm\EA.mq5" "C:\MT5_Farm\Masters\PRESS_PASS\MQL5\Experts\BITTENBri
 ### **Verification Commands**
 
 #### **Check MT5 Installation**
+
 ```powershell
 # Verify MT5 installed
 Test-Path "C:\MT5_Farm\Masters\PRESS_PASS\terminal64.exe"
@@ -108,6 +122,7 @@ Get-Process terminal64 -ErrorAction SilentlyContinue
 ```
 
 #### **Test Demo Account Creation**
+
 1. **Launch MT5**: `C:\MT5_Farm\Masters\PRESS_PASS\terminal64.exe`
 2. **Auto-Prompt**: Demo account dialog should appear
 3. **Quick Setup**: Select MetaQuotes-Demo, click Next
@@ -117,6 +132,7 @@ Get-Process terminal64 -ErrorAction SilentlyContinue
 ### **🎯 Success Criteria**
 
 #### **PRESS_PASS Installation Complete When**:
+
 - ✅ MT5 launches from PRESS_PASS directory
 - ✅ Demo account created (no credentials required)
 - ✅ $10,000 balance visible
@@ -125,6 +141,7 @@ Get-Process terminal64 -ErrorAction SilentlyContinue
 - ✅ Connection to BITTEN Linux server established
 
 #### **User Ready When**:
+
 - ✅ Can open MT5 and see live charts
 - ✅ EA is running on all pairs (smiley faces visible)
 - ✅ BITTEN signals arrive and execute

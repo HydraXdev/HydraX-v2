@@ -4,25 +4,24 @@
 Runs the automatic cleanup system for Telegram messages and mission files
 """
 
-import sys
 import logging
+import sys
 import time
-sys.path.append('/root/HydraX-v2')
-sys.path.append('/root/HydraX-v2/src')
+
+sys.path.append("/root/HydraX-v2")
+sys.path.append("/root/HydraX-v2/src")
 
 from src.bitten_core.auto_cleanup_system import cleanup_system
 
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler('/root/HydraX-v2/logs/cleanup_system.log'),
-        logging.StreamHandler()
-    ]
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[logging.FileHandler("/root/HydraX-v2/logs/cleanup_system.log"), logging.StreamHandler()],
 )
 
 logger = logging.getLogger(__name__)
+
 
 def main():
     """
@@ -39,13 +38,13 @@ def main():
     logger.info("  • Check interval: Every 5 minutes")
     logger.info("")
     logger.info("Starting cleanup system...")
-    
+
     # Start the cleanup system
     cleanup_system.start()
-    
+
     logger.info("✅ Auto-cleanup system is running")
     logger.info("Press Ctrl+C to stop")
-    
+
     try:
         # Keep running
         while True:
@@ -53,11 +52,12 @@ def main():
             # Log stats every hour
             if int(time.time()) % 3600 < 60:
                 cleanup_system.log_cleanup_stats()
-                
+
     except KeyboardInterrupt:
         logger.info("\n🛑 Stopping cleanup system...")
         cleanup_system.stop()
         logger.info("Cleanup system stopped")
+
 
 if __name__ == "__main__":
     main()

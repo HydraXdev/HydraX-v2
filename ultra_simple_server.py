@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
+import json
 import socket
 import sys
-import json
 
 # FORCE UNBUFFERED OUTPUT
-sys.stdout = open(1, 'w', buffering=1)
-sys.stderr = open(2, 'w', buffering=1)
+sys.stdout = open(1, "w", buffering=1)
+sys.stderr = open(2, "w", buffering=1)
 
 print("Starting ultra simple server...", flush=True)
 
@@ -14,7 +14,7 @@ s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
 print(f"Binding to 0.0.0.0:5555...", flush=True)
-s.bind(('0.0.0.0', 5555))
+s.bind(("0.0.0.0", 5555))
 
 print(f"Listening...", flush=True)
 s.listen(5)
@@ -30,12 +30,7 @@ while True:
         print(f"✅✅✅ GOT CONNECTION from {addr}", flush=True)
 
         # Send feed_set immediately
-        feed = {
-            "type": "feed_set",
-            "symbols": "XAUUSD,EURUSD,GBPJPY,USDJPY,GBPUSD",
-            "tfs": "M1,M5,H1",
-            "lookback": 200
-        }
+        feed = {"type": "feed_set", "symbols": "XAUUSD,EURUSD,GBPJPY,USDJPY,GBPUSD", "tfs": "M1,M5,H1", "lookback": 200}
 
         msg = json.dumps(feed) + "\n"
         conn.send(msg.encode())

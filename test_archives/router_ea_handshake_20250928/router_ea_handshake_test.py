@@ -7,16 +7,18 @@ No live market required - works with demo/sandbox mode
 
 import asyncio
 import json
+import signal
 import socket
+import sqlite3
+import sys
+import threading
 import time
 import uuid
-import zmq
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple
-import sqlite3
-import threading
-import signal
-import sys
+
+import zmq
+
 
 class RouterEAHandshakeTester:
     """Comprehensive test suite for Router⇄EA communication flows"""
@@ -30,7 +32,7 @@ class RouterEAHandshakeTester:
 
         # Test ports (using existing infrastructure)
         self.command_port = 5555  # Router command port
-        self.event_port = 5558    # Event ingestion port
+        self.event_port = 5558  # Event ingestion port
         self.metrics_port = 5560  # Metrics ingestion port
 
         print(f"🧪 Router⇄EA Handshake Test Suite")
@@ -45,7 +47,7 @@ class RouterEAHandshakeTester:
             "message": message,
             "details": details or {},
             "timestamp": datetime.utcnow().isoformat() + "Z",
-            "session_id": self.test_session_id
+            "session_id": self.test_session_id,
         }
         self.test_results.append(result)
 
@@ -118,7 +120,7 @@ class RouterEAHandshakeTester:
                 "account_number": "12345678",
                 "leverage": 100,
                 "base_currency": "USD",
-                "server_time": datetime.utcnow().isoformat() + "Z"
+                "server_time": datetime.utcnow().isoformat() + "Z",
             }
 
             if self.send_jsonl_event(event_socket, config_event):
@@ -140,7 +142,7 @@ class RouterEAHandshakeTester:
                 "startup_time_ms": 1247,
                 "symbols_loaded": ["EURUSD", "GBPUSD", "USDJPY"],
                 "timeframes": ["M1", "M5", "H1"],
-                "ready": True
+                "ready": True,
             }
 
             if self.send_jsonl_event(event_socket, started_event):
@@ -159,10 +161,7 @@ class RouterEAHandshakeTester:
                 "node_id": self.test_node_id,
                 "source": "ea",
                 "session_id": self.test_session_id,
-                "known_refs": [
-                    f"R-TEST-{int(time.time())}-001",
-                    f"R-TEST-{int(time.time())}-002"
-                ]
+                "known_refs": [f"R-TEST-{int(time.time())}-001", f"R-TEST-{int(time.time())}-002"],
             }
 
             if self.send_jsonl_event(event_socket, idemp_event):
@@ -191,7 +190,7 @@ class RouterEAHandshakeTester:
                         "sl": 1.0950,
                         "tp": 1.1050,
                         "profit": 5.00,
-                        "swap": 0.15
+                        "swap": 0.15,
                     }
                 ],
                 "pending": [],
@@ -200,15 +199,20 @@ class RouterEAHandshakeTester:
                 "margin": 110.00,
                 "free_margin": 9895.15,
                 "currency": "USD",
-                "open_positions_count": 1
+                "open_positions_count": 1,
             }
 
             if self.send_jsonl_event(event_socket, portfolio_event):
-                self.log_result("Boot Order - Portfolio Snapshot", True, "Portfolio snapshot sent", {
-                    "positions": len(portfolio_event["positions"]),
-                    "balance": portfolio_event["balance"],
-                    "equity": portfolio_event["equity"]
-                })
+                self.log_result(
+                    "Boot Order - Portfolio Snapshot",
+                    True,
+                    "Portfolio snapshot sent",
+                    {
+                        "positions": len(portfolio_event["positions"]),
+                        "balance": portfolio_event["balance"],
+                        "equity": portfolio_event["equity"],
+                    },
+                )
             else:
                 self.log_result("Boot Order - Portfolio Snapshot", False, "Failed to send portfolio")
 
@@ -239,7 +243,7 @@ class RouterEAHandshakeTester:
                 "volume": 0.01,
                 "sl": 1.0900,
                 "tp": 1.1100,
-                "idempotency_key": idemp_key
+                "idempotency_key": idemp_key,
             }
 
             # First request
@@ -247,10 +251,12 @@ class RouterEAHandshakeTester:
             command_socket.close()
 
             if response1:
-                self.log_result("Idempotency - First Request", True, f"Response: {response1.get('status', 'unknown')}", {
-                    "request_ref": response1.get("request_ref"),
-                    "code": response1.get("code", "none")
-                })
+                self.log_result(
+                    "Idempotency - First Request",
+                    True,
+                    f"Response: {response1.get('status', 'unknown')}",
+                    {"request_ref": response1.get("request_ref"), "code": response1.get("code", "none")},
+                )
 
                 time.sleep(1)  # Brief pause
 
@@ -262,13 +268,20 @@ class RouterEAHandshakeTester:
                 if response2:
                     # Check if responses are identical (idempotency working)
                     if response1.get("request_ref") == response2.get("request_ref"):
-                        self.log_result("Idempotency - Duplicate Handling", True, "Identical responses received", {
-                            "first_status": response1.get("status"),
-                            "second_status": response2.get("status"),
-                            "idempotency_key": idemp_key
-                        })
+                        self.log_result(
+                            "Idempotency - Duplicate Handling",
+                            True,
+                            "Identical responses received",
+                            {
+                                "first_status": response1.get("status"),
+                                "second_status": response2.get("status"),
+                                "idempotency_key": idemp_key,
+                            },
+                        )
                     else:
-                        self.log_result("Idempotency - Duplicate Handling", False, "Responses differ - idempotency failed")
+                        self.log_result(
+                            "Idempotency - Duplicate Handling", False, "Responses differ - idempotency failed"
+                        )
                 else:
                     self.log_result("Idempotency - Second Request", False, "No response to duplicate request")
             else:
@@ -299,15 +312,16 @@ class RouterEAHandshakeTester:
                 "margin_level": 4556.81,
                 "currency": "USD",
                 "open_positions_count": 2,
-                "hz1": 1  # Summary mode enabled
+                "hz1": 1,  # Summary mode enabled
             }
 
             if self.send_jsonl_event(event_socket, summary_hz1):
-                self.log_result("Summary Mode - Hz1 Enabled", True, "Summary with hz1=1 sent", {
-                    "balance": summary_hz1["balance"],
-                    "equity": summary_hz1["equity"],
-                    "mode": "hz1=1 (enabled)"
-                })
+                self.log_result(
+                    "Summary Mode - Hz1 Enabled",
+                    True,
+                    "Summary with hz1=1 sent",
+                    {"balance": summary_hz1["balance"], "equity": summary_hz1["equity"], "mode": "hz1=1 (enabled)"},
+                )
 
             time.sleep(0.5)
 
@@ -326,15 +340,16 @@ class RouterEAHandshakeTester:
                 "margin_level": 4558.52,
                 "currency": "USD",
                 "open_positions_count": 2,
-                "hz1": 0  # Summary mode disabled
+                "hz1": 0,  # Summary mode disabled
             }
 
             if self.send_jsonl_event(event_socket, summary_hz0):
-                self.log_result("Summary Mode - Hz1 Disabled", True, "Summary with hz1=0 sent", {
-                    "balance": summary_hz0["balance"],
-                    "equity": summary_hz0["equity"],
-                    "mode": "hz1=0 (disabled)"
-                })
+                self.log_result(
+                    "Summary Mode - Hz1 Disabled",
+                    True,
+                    "Summary with hz1=0 sent",
+                    {"balance": summary_hz0["balance"], "equity": summary_hz0["equity"], "mode": "hz1=0 (disabled)"},
+                )
 
             event_socket.close()
 
@@ -354,7 +369,7 @@ class RouterEAHandshakeTester:
 
             # Send multiple M1 candles to bootstrap feed
             for i in range(5):
-                candle_time = current_time - timedelta(minutes=4-i)
+                candle_time = current_time - timedelta(minutes=4 - i)
 
                 # Simulate realistic price movement
                 open_price = base_price + (i * 0.0001)
@@ -376,16 +391,21 @@ class RouterEAHandshakeTester:
                     "low": round(low_price, 5),
                     "close": round(close_price, 5),
                     "volume": 1000 + (i * 100),
-                    "candle_time": candle_time.isoformat() + "Z"
+                    "candle_time": candle_time.isoformat() + "Z",
                 }
 
                 if self.send_jsonl_event(event_socket, feed_event):
-                    self.log_result(f"Feed Bootstrap - M1 Candle {i+1}", True, f"EURUSD M1 candle sent", {
-                        "open": feed_event["open"],
-                        "close": feed_event["close"],
-                        "volume": feed_event["volume"],
-                        "time": candle_time.strftime("%H:%M:%S")
-                    })
+                    self.log_result(
+                        f"Feed Bootstrap - M1 Candle {i+1}",
+                        True,
+                        f"EURUSD M1 candle sent",
+                        {
+                            "open": feed_event["open"],
+                            "close": feed_event["close"],
+                            "volume": feed_event["volume"],
+                            "time": candle_time.strftime("%H:%M:%S"),
+                        },
+                    )
                 else:
                     self.log_result(f"Feed Bootstrap - M1 Candle {i+1}", False, "Failed to send candle")
 
@@ -403,15 +423,16 @@ class RouterEAHandshakeTester:
                 "bid": 1.10025,
                 "ask": 1.10028,
                 "spread": 0.3,
-                "volume": 50
+                "volume": 50,
             }
 
             if self.send_jsonl_event(event_socket, tick_event):
-                self.log_result("Feed Bootstrap - Current Tick", True, "Live tick data sent", {
-                    "bid": tick_event["bid"],
-                    "ask": tick_event["ask"],
-                    "spread": tick_event["spread"]
-                })
+                self.log_result(
+                    "Feed Bootstrap - Current Tick",
+                    True,
+                    "Live tick data sent",
+                    {"bid": tick_event["bid"], "ask": tick_event["ask"], "spread": tick_event["spread"]},
+                )
 
             event_socket.close()
 
@@ -430,10 +451,15 @@ class RouterEAHandshakeTester:
             try:
                 response = requests.get("http://localhost:8888/healthz", timeout=5)
                 if response.status_code == 200:
-                    self.log_result("WebSocket - Health Check", True, "WebApp health endpoint responsive", {
-                        "status_code": response.status_code,
-                        "response_time_ms": int(response.elapsed.total_seconds() * 1000)
-                    })
+                    self.log_result(
+                        "WebSocket - Health Check",
+                        True,
+                        "WebApp health endpoint responsive",
+                        {
+                            "status_code": response.status_code,
+                            "response_time_ms": int(response.elapsed.total_seconds() * 1000),
+                        },
+                    )
 
                     # Send position heartbeat event for WebSocket broadcast
                     event_socket = self.connect_socket(self.event_port, zmq.PUSH)
@@ -448,19 +474,26 @@ class RouterEAHandshakeTester:
                         "ticket": 12345001,
                         "mark_price": 1.10050,
                         "floating_pnl_ccy": 5.25,
-                        "margin_used": 110.00
+                        "margin_used": 110.00,
                     }
 
                     if self.send_jsonl_event(event_socket, heartbeat_event):
-                        self.log_result("WebSocket - Position Heartbeat", True, "Heartbeat event for WS broadcast sent", {
-                            "ticket": heartbeat_event["ticket"],
-                            "mark_price": heartbeat_event["mark_price"],
-                            "pnl": heartbeat_event["floating_pnl_ccy"]
-                        })
+                        self.log_result(
+                            "WebSocket - Position Heartbeat",
+                            True,
+                            "Heartbeat event for WS broadcast sent",
+                            {
+                                "ticket": heartbeat_event["ticket"],
+                                "mark_price": heartbeat_event["mark_price"],
+                                "pnl": heartbeat_event["floating_pnl_ccy"],
+                            },
+                        )
 
                     event_socket.close()
                 else:
-                    self.log_result("WebSocket - Health Check", False, f"Health endpoint returned {response.status_code}")
+                    self.log_result(
+                        "WebSocket - Health Check", False, f"Health endpoint returned {response.status_code}"
+                    )
 
             except requests.exceptions.RequestException as e:
                 self.log_result("WebSocket - Health Check", False, f"WebApp not responding: {str(e)}")
@@ -482,7 +515,7 @@ class RouterEAHandshakeTester:
                 "position_heartbeats=50",
                 "trades_executed=3",
                 "avg_latency_ms=45",
-                f"test_session_active=1,session_id={self.test_session_id}"
+                f"test_session_active=1,session_id={self.test_session_id}",
             ]
 
             for metric in line_metrics:
@@ -492,10 +525,12 @@ class RouterEAHandshakeTester:
                 except Exception as e:
                     print(f"Failed to send metric: {metric} - {e}")
 
-            self.log_result("Metrics - Line Protocol", True, f"Sent {len(line_metrics)} line protocol metrics", {
-                "metrics_count": len(line_metrics),
-                "sample": line_metrics[0]
-            })
+            self.log_result(
+                "Metrics - Line Protocol",
+                True,
+                f"Sent {len(line_metrics)} line protocol metrics",
+                {"metrics_count": len(line_metrics), "sample": line_metrics[0]},
+            )
 
             # Send JSON format metrics
             json_metrics = {
@@ -504,16 +539,21 @@ class RouterEAHandshakeTester:
                 "open_positions": 2,
                 "daily_trades": 3,
                 "session_duration_minutes": 15,
-                "test_session_id": self.test_session_id
+                "test_session_id": self.test_session_id,
             }
 
             try:
                 metrics_socket.send_string(json.dumps(json_metrics))
-                self.log_result("Metrics - JSON Format", True, "JSON metrics sent", {
-                    "balance": json_metrics["account_balance"],
-                    "equity": json_metrics["account_equity"],
-                    "positions": json_metrics["open_positions"]
-                })
+                self.log_result(
+                    "Metrics - JSON Format",
+                    True,
+                    "JSON metrics sent",
+                    {
+                        "balance": json_metrics["account_balance"],
+                        "equity": json_metrics["account_equity"],
+                        "positions": json_metrics["open_positions"],
+                    },
+                )
             except Exception as e:
                 self.log_result("Metrics - JSON Format", False, f"Failed to send JSON metrics: {e}")
 
@@ -540,27 +580,37 @@ class RouterEAHandshakeTester:
                 "node_id": self.test_node_id,
                 "start_time": self.test_results[0]["timestamp"] if self.test_results else None,
                 "end_time": datetime.utcnow().isoformat() + "Z",
-                "total_duration_seconds": int(time.time() - int(self.test_session_id.split('_')[-1]))
+                "total_duration_seconds": int(time.time() - int(self.test_session_id.split("_")[-1])),
             },
             "summary": {
                 "total_tests": total_tests,
                 "passed_tests": passed_tests,
                 "failed_tests": failed_tests,
-                "success_rate_percent": round(success_rate, 1)
+                "success_rate_percent": round(success_rate, 1),
             },
             "test_results": self.test_results,
             "conclusions": {
-                "router_communication": "TESTED" if any("Boot Order" in r["test"] for r in self.test_results) else "NOT TESTED",
-                "idempotency_system": "TESTED" if any("Idempotency" in r["test"] for r in self.test_results) else "NOT TESTED",
-                "event_ingestion": "TESTED" if any("Feed Bootstrap" in r["test"] for r in self.test_results) else "NOT TESTED",
-                "metrics_collection": "TESTED" if any("Metrics" in r["test"] for r in self.test_results) else "NOT TESTED",
-                "websocket_readiness": "TESTED" if any("WebSocket" in r["test"] for r in self.test_results) else "NOT TESTED"
-            }
+                "router_communication": (
+                    "TESTED" if any("Boot Order" in r["test"] for r in self.test_results) else "NOT TESTED"
+                ),
+                "idempotency_system": (
+                    "TESTED" if any("Idempotency" in r["test"] for r in self.test_results) else "NOT TESTED"
+                ),
+                "event_ingestion": (
+                    "TESTED" if any("Feed Bootstrap" in r["test"] for r in self.test_results) else "NOT TESTED"
+                ),
+                "metrics_collection": (
+                    "TESTED" if any("Metrics" in r["test"] for r in self.test_results) else "NOT TESTED"
+                ),
+                "websocket_readiness": (
+                    "TESTED" if any("WebSocket" in r["test"] for r in self.test_results) else "NOT TESTED"
+                ),
+            },
         }
 
         # Save report to file
         report_filename = f"/root/HydraX-v2/router_ea_handshake_test_report_{self.test_session_id}.json"
-        with open(report_filename, 'w') as f:
+        with open(report_filename, "w") as f:
             json.dump(report, f, indent=2)
 
         return report, report_filename
@@ -595,7 +645,7 @@ class RouterEAHandshakeTester:
         print(f"Success Rate: {report['summary']['success_rate_percent']}%")
         print(f"Duration: {report['test_session']['total_duration_seconds']} seconds")
 
-        if report['summary']['failed_tests'] > 0:
+        if report["summary"]["failed_tests"] > 0:
             print("\n❌ FAILED TESTS:")
             for result in self.test_results:
                 if not result["success"]:
@@ -606,12 +656,14 @@ class RouterEAHandshakeTester:
         # Clean up
         self.context.term()
 
-        return report['summary']['failed_tests'] == 0
+        return report["summary"]["failed_tests"] == 0
+
 
 def signal_handler(sig, frame):
     """Handle Ctrl+C gracefully"""
     print("\n🛑 Test interrupted by user")
     sys.exit(1)
+
 
 if __name__ == "__main__":
     # Handle Ctrl+C gracefully

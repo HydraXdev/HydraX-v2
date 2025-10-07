@@ -4,8 +4,15 @@ Enhanced Confirmation Listener for BITTEN v2.07H
 Handles all new message types: confirmation, position_closed, hybrid_event, pong, close_confirmation
 """
 
-import json, re, os, sqlite3, zmq, logging, time
+import json
+import logging
+import os
+import re
+import sqlite3
+import time
 from datetime import datetime
+
+import zmq
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 LOG = logging.getLogger("CONFIRM_v207")
@@ -15,8 +22,9 @@ CONFIRM_BIND = os.getenv("CONFIRM_BIND", "tcp://*:5558")
 
 # Hook A imports for FSM registration
 try:
-    from src.bitten_core.exit_profiles import exit_profile_manager
     from src.bitten_core.entitlement import EntitlementManager
+    from src.bitten_core.exit_profiles import exit_profile_manager
+
     FSM_AVAILABLE = True
 except ImportError as e:
     LOG.warning(f"FSM not available: {e}")
@@ -25,12 +33,14 @@ except ImportError as e:
 # Event Bus integration
 try:
     from event_bus.producer import EventProducer
+
     EVENT_BUS_AVAILABLE = True
     event_producer = EventProducer()
 except ImportError as e:
     LOG.warning(f"Event Bus not available: {e}")
     EVENT_BUS_AVAILABLE = False
     event_producer = None
+
 
 def parse_json_loose(b):
     """Parse JSON with tolerance for encoding issues"""
@@ -45,13 +55,15 @@ def parse_json_loose(b):
             LOG.error("JSON parse failed: %s | payload=%r", e, s[:500])
             return None
 
+
 def ensure_tables():
     """Create necessary tables for v2.07H tracking"""
     con = sqlite3.connect(DB)
     cur = con.cursor()
 
     # Enhanced fires table with hybrid tracking
-    cur.execute("""
+    cur.execute(
+        """
     CREATE TABLE IF NOT EXISTS fires (
         fire_id TEXT PRIMARY KEY,
         mission_id TEXT,
@@ -77,10 +89,12 @@ def ensure_tables():
         equity_used REAL,
         risk_pct_used REAL
     )
-    """)
+    """
+    )
 
     # Hybrid events tracking table
-    cur.execute("""
+    cur.execute(
+        """
     CREATE TABLE IF NOT EXISTS hybrid_events (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         ticket INTEGER NOT NULL,
@@ -92,10 +106,12 @@ def ensure_tables():
         uuid TEXT NOT NULL,
         node_id TEXT
     )
-    """)
+    """
+    )
 
     # Position snapshots from HEARTBEAT_METRICS
-    cur.execute("""
+    cur.execute(
+        """
     CREATE TABLE IF NOT EXISTS position_snapshots (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         uuid TEXT NOT NULL,
@@ -106,10 +122,12 @@ def ensure_tables():
         margin_level REAL,
         open_positions INTEGER
     )
-    """)
+    """
+    )
 
     # Position closures tracking
-    cur.execute("""
+    cur.execute(
+        """
     CREATE TABLE IF NOT EXISTS position_closures (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         ticket INTEGER NOT NULL,
@@ -122,10 +140,12 @@ def ensure_tables():
         uuid TEXT,
         timestamp INTEGER
     )
-    """)
+    """
+    )
 
     con.commit()
     con.close()
+
 
 def handle_confirmation(m):
     """Handle fire confirmation messages - ONLY REAL EA DATA"""
@@ -144,9 +164,11 @@ def handle_confirmation(m):
     user_uuid = m.get("user_uuid") or m.get("target_uuid") or m.get("uuid")
 
     # Block obvious test data (allow ticket=0 for legitimate failures)
-    if (fire_id.startswith(("TEST_", "DEBUG-", "PASS-QA")) or
-        ticket in [12345678, 99999] or
-        (user_uuid and user_uuid != "COMMANDER_DEV_001")):
+    if (
+        fire_id.startswith(("TEST_", "DEBUG-", "PASS-QA"))
+        or ticket in [12345678, 99999]
+        or (user_uuid and user_uuid != "COMMANDER_DEV_001")
+    ):
         LOG.warning(f"🚫 BLOCKED TEST/FAKE confirmation: {fire_id}, ticket={ticket}, uuid={user_uuid}")
         return
 
@@ -187,14 +209,19 @@ def handle_confirmation(m):
             # Don't downgrade FILLED with ticket to anything else (FAILED or UNKNOWN)
             if existing_status == "FILLED" and existing_ticket > 0 and db_status != "FILLED":
                 should_update = False
-                LOG.info(f"[CONFIRM] Ignoring {db_status} update for {fire_id} - already FILLED with ticket {existing_ticket}")
+                LOG.info(
+                    f"[CONFIRM] Ignoring {db_status} update for {fire_id} - already FILLED with ticket {existing_ticket}"
+                )
 
         if should_update:
-            cur.execute("""
+            cur.execute(
+                """
                 UPDATE fires
                 SET status=?, ticket=?, price=?, lot=?, target_uuid=?, updated_at=?
                 WHERE fire_id=?
-            """, (db_status, ticket, price, lot, target_uuid, current_time, fire_id))
+            """,
+                (db_status, ticket, price, lot, target_uuid, current_time, fire_id),
+            )
 
             LOG.info(f"[CONFIRM] Updated {fire_id}: {db_status}, ticket={ticket}, price={price}")
 
@@ -203,21 +230,26 @@ def handle_confirmation(m):
 
         # If filled, add to live_positions
         if db_status == "FILLED" and rows > 0:
-            cur.execute("""
+            cur.execute(
+                """
                 SELECT user_id, symbol, direction, sl, tp, lot
                 FROM fires WHERE fire_id = ?
-            """, (fire_id,))
+            """,
+                (fire_id,),
+            )
             fire_data = cur.fetchone()
 
             if fire_data:
                 user_id, symbol, direction, sl, tp, lot_size = fire_data
-                cur.execute("""
+                cur.execute(
+                    """
                     INSERT OR REPLACE INTO live_positions
                     (fire_id, user_id, symbol, direction, entry_price, sl, tp,
                      lot_size, last_update, status, ticket)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'OPEN', ?)
-                """, (fire_id, user_id, symbol, direction, price, sl, tp,
-                      lot_size, int(time.time()), ticket))
+                """,
+                    (fire_id, user_id, symbol, direction, price, sl, tp, lot_size, int(time.time()), ticket),
+                )
                 LOG.info(f"✅ FILLED: {fire_id} → ticket {ticket} @ {price}")
 
         con.close()
@@ -225,21 +257,20 @@ def handle_confirmation(m):
         # Enrich confirmation with slot and account information
         try:
             from fire_integration import ConfirmationEnricher
+
             enricher = ConfirmationEnricher()
-            enriched_confirmation = enricher.enrich_confirmation({
-                'type': 'confirmation',
-                'fire_id': fire_id,
-                'status': db_status.lower(),
-                'ticket': ticket,
-                'price': price,
-                'message': message,
-                'user_uuid': target_uuid,
-                'account': {
-                    'ticket': ticket,
-                    'price': price,
-                    'lot': lot
+            enriched_confirmation = enricher.enrich_confirmation(
+                {
+                    "type": "confirmation",
+                    "fire_id": fire_id,
+                    "status": db_status.lower(),
+                    "ticket": ticket,
+                    "price": price,
+                    "message": message,
+                    "user_uuid": target_uuid,
+                    "account": {"ticket": ticket, "price": price, "lot": lot},
                 }
-            })
+            )
             LOG.info(f"[ENRICH] Enriched confirmation: {json.dumps(enriched_confirmation.get('slots', {}))}")
         except Exception as e:
             LOG.warning(f"[ENRICH] Failed to enrich confirmation: {e}")
@@ -247,10 +278,11 @@ def handle_confirmation(m):
 
         # Publish enriched confirmation to event bus
         if EVENT_BUS_AVAILABLE and event_producer:
-            event_producer.publish('trade.confirmation', enriched_confirmation)
+            event_producer.publish("trade.confirmation", enriched_confirmation)
 
     except Exception as e:
         LOG.error(f"Failed to handle confirmation: {e}")
+
 
 def handle_position_closed(m):
     """Handle position closure events"""
@@ -273,31 +305,41 @@ def handle_position_closed(m):
         cur = con.cursor()
 
         # Record closure
-        cur.execute("""
+        cur.execute(
+            """
             INSERT INTO position_closures
             (ticket, fire_id, symbol, volume, close_price, profit, reason, uuid, timestamp)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (ticket, fire_id, symbol, volume, close_price, profit, reason, uuid, timestamp))
+        """,
+            (ticket, fire_id, symbol, volume, close_price, profit, reason, uuid, timestamp),
+        )
 
         # Update fires table if fire_id exists
         if fire_id:
-            cur.execute("""
+            cur.execute(
+                """
                 UPDATE fires
                 SET status='CLOSED', close_reason=?, close_price=?, profit=?, updated_at=?
                 WHERE fire_id=?
-            """, (reason, close_price, profit, int(time.time()), fire_id))
+            """,
+                (reason, close_price, profit, int(time.time()), fire_id),
+            )
 
             # Update live_positions
-            cur.execute("""
+            cur.execute(
+                """
                 UPDATE live_positions
                 SET status='CLOSED', last_update=?
                 WHERE fire_id=?
-            """, (int(time.time()), fire_id))
+            """,
+                (int(time.time()), fire_id),
+            )
 
             # Release slot if applicable
             if FSM_AVAILABLE:
                 try:
                     from src.bitten_core.fire_mode_database import FireModeDatabase
+
                     cur.execute("SELECT user_id FROM fires WHERE fire_id=?", (fire_id,))
                     result = cur.fetchone()
                     if result:
@@ -315,23 +357,21 @@ def handle_position_closed(m):
         # Enrich position close event with slot settlement
         try:
             from fire_integration import ConfirmationEnricher
+
             enricher = ConfirmationEnricher()
-            enriched_close = enricher.enrich_confirmation({
-                'type': 'position_closed',
-                'fire_id': fire_id,
-                'ticket': ticket,
-                'status': 'closed',
-                'close_reason': reason,
-                'close_price': close_price,
-                'profit': profit,
-                'user_uuid': uuid,
-                'account': {
-                    'ticket': ticket,
-                    'close_price': close_price,
-                    'profit': profit,
-                    'reason': reason
+            enriched_close = enricher.enrich_confirmation(
+                {
+                    "type": "position_closed",
+                    "fire_id": fire_id,
+                    "ticket": ticket,
+                    "status": "closed",
+                    "close_reason": reason,
+                    "close_price": close_price,
+                    "profit": profit,
+                    "user_uuid": uuid,
+                    "account": {"ticket": ticket, "close_price": close_price, "profit": profit, "reason": reason},
                 }
-            })
+            )
             LOG.info(f"[SETTLE] Position close enriched with slots: {json.dumps(enriched_close.get('slots', {}))}")
         except Exception as e:
             LOG.warning(f"[SETTLE] Failed to enrich position close: {e}")
@@ -339,10 +379,11 @@ def handle_position_closed(m):
 
         # Publish enriched close event to event bus
         if EVENT_BUS_AVAILABLE and event_producer:
-            event_producer.publish('trade.closed', enriched_close)
+            event_producer.publish("trade.closed", enriched_close)
 
     except Exception as e:
         LOG.error(f"Failed to handle position_closed: {e}")
+
 
 def handle_hybrid_event(m):
     """Handle hybrid position management events"""
@@ -370,11 +411,14 @@ def handle_hybrid_event(m):
         cur = con.cursor()
 
         # Record hybrid event
-        cur.execute("""
+        cur.execute(
+            """
             INSERT INTO hybrid_events
             (ticket, fire_id, event_type, volume, pips, timestamp, uuid, node_id)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        """, (ticket, fire_id, event_type, volume, pips, timestamp, uuid, node_id))
+        """,
+            (ticket, fire_id, event_type, volume, pips, timestamp, uuid, node_id),
+        )
 
         # Update fires table with hybrid activity
         if fire_id:
@@ -384,9 +428,12 @@ def handle_hybrid_event(m):
                 result = cur.fetchone()
                 partials = json.loads(result[0]) if result and result[0] else []
                 partials.append({"volume": volume, "pips": pips, "timestamp": timestamp})
-                cur.execute("""
+                cur.execute(
+                    """
                     UPDATE fires SET partial_closes=?, updated_at=? WHERE fire_id=?
-                """, (json.dumps(partials), int(time.time()), fire_id))
+                """,
+                    (json.dumps(partials), int(time.time()), fire_id),
+                )
 
             elif event_type == "TRAIL_UPDATE":
                 # Append to trail_updates JSON array
@@ -394,9 +441,12 @@ def handle_hybrid_event(m):
                 result = cur.fetchone()
                 trails = json.loads(result[0]) if result and result[0] else []
                 trails.append({"pips": pips, "timestamp": timestamp})
-                cur.execute("""
+                cur.execute(
+                    """
                     UPDATE fires SET trail_updates=?, updated_at=? WHERE fire_id=?
-                """, (json.dumps(trails), int(time.time()), fire_id))
+                """,
+                    (json.dumps(trails), int(time.time()), fire_id),
+                )
 
         con.commit()
         con.close()
@@ -405,10 +455,11 @@ def handle_hybrid_event(m):
 
         # Publish to event bus
         if EVENT_BUS_AVAILABLE and event_producer:
-            event_producer.publish(f'hybrid.{event_type.lower()}', m)
+            event_producer.publish(f"hybrid.{event_type.lower()}", m)
 
     except Exception as e:
         LOG.error(f"Failed to handle hybrid_event: {e}")
+
 
 def handle_close_confirmation(m):
     """Handle close_ticket and close_all confirmations"""
@@ -423,7 +474,8 @@ def handle_close_confirmation(m):
 
     # Publish to event bus if available
     if EVENT_BUS_AVAILABLE and event_producer:
-        event_producer.publish(f'close.{command_type}', m)
+        event_producer.publish(f"close.{command_type}", m)
+
 
 def handle_pong(m):
     """Handle ping response"""
@@ -439,13 +491,17 @@ def handle_pong(m):
         try:
             con = sqlite3.connect(DB)
             cur = con.cursor()
-            cur.execute("""
+            cur.execute(
+                """
                 UPDATE ea_instances SET last_seen=? WHERE target_uuid=?
-            """, (int(time.time()), uuid))
+            """,
+                (int(time.time()), uuid),
+            )
             con.commit()
             con.close()
         except Exception as e:
             LOG.warning(f"Failed to update EA last_seen: {e}")
+
 
 def main():
     """Main listener loop for port 5558"""
@@ -498,6 +554,7 @@ def main():
 
     sock.close()
     ctx.term()
+
 
 if __name__ == "__main__":
     main()

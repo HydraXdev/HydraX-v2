@@ -31,7 +31,7 @@ historical_market:
   enabled: true
   priority: 2
   batch_size: 500
-  update_interval: 300  # 5 minutes
+  update_interval: 300 # 5 minutes
   connection_params:
     endpoint: https://api.marketdata.com/v1/historical
     poll_interval: 300
@@ -77,7 +77,7 @@ economic_events:
   enabled: true
   priority: 3
   batch_size: 20
-  update_interval: 3600  # 1 hour
+  update_interval: 3600 # 1 hour
   connection_params:
     endpoint: https://api.economiccalendar.com/v1/events
     poll_interval: 3600

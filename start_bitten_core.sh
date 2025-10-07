@@ -25,7 +25,7 @@ start_if_needed() {
     local process_name=$1
     local start_command=$2
     local log_file=$3
-    
+
     if ! check_process "$process_name"; then
         echo "🔄 Starting $process_name..."
         eval "$start_command > $log_file 2>&1 &"

@@ -179,17 +179,21 @@ auto_cursor.execute("""
 **Check in order**:
 
 1. **Signal confidence outside range**:
+
    ```bash
    sqlite3 /root/HydraX-v2/bitten.db "SELECT signal_id, symbol, confidence FROM signals ORDER BY created_at DESC LIMIT 10;"
    ```
+
    If all signals show 70-79%, auto-fire WON'T trigger (below 80% min)
 
 2. **Mode not set to AUTO**:
+
    ```bash
    sqlite3 /root/HydraX-v2/data/fire_modes.db "SELECT current_mode FROM user_fire_modes WHERE user_id = '7176191872';"
    ```
 
 3. **Slots full** (10/10 used):
+
    ```bash
    sqlite3 /root/HydraX-v2/bitten.db "SELECT COUNT(*) FROM fires WHERE status IN ('FILLED', 'SENT', 'PENDING');"
    ```
@@ -304,8 +308,8 @@ push.send_json(dict(fire_cmd))
   "symbol": "EURJPY",
   "direction": "SELL",
   "entry": 0,
-  "sl": 162.450,
-  "tp": 162.100,
+  "sl": 162.45,
+  "tp": 162.1,
   "lot": 0.09
 }
 ```
@@ -345,6 +349,7 @@ if(is_buy && tp <= price){
 EA sends TWO types of confirmation messages:
 
 1. **type="confirmation"**: Initial trade execution
+
    ```json
    {
      "type": "confirmation",
@@ -388,6 +393,7 @@ elif msg_type == "position_opened":
 **Problem**: `position_opened` messages arrive AFTER confirmations and overwrite good data!
 
 **Example Timeline**:
+
 ```
 22:13:05 - confirmation arrives → UPDATE fires SET status='FILLED', ticket=22165337, price=162.425
 22:13:06 - position_opened arrives → Would UPDATE to status='UNKNOWN', price=0.0
@@ -425,14 +431,14 @@ FAILED  UNKNOWN (should not happen with protection)
 
 ### Status Definitions
 
-| Status | Meaning | Set By |
-|--------|---------|--------|
-| `SENT` | Fire command sent to EA, awaiting confirmation | execute_fire_proper.py:66 |
-| `FILLED` | Trade executed in MT5, has ticket number | confirm_listener.py:156 |
-| `FAILED` | EA rejected trade (validation failure) | confirm_listener.py:157 |
-| `UNKNOWN` | Confirmation without status field | confirm_listener.py:160 |
-| `CLOSED` | Position closed (TP/SL/manual) | position_closed handler |
-| `CLOSED_SYNC` | Manual cleanup (sync with MT5) | emergency_position_cleanup.py:54 |
+| Status        | Meaning                                        | Set By                           |
+| ------------- | ---------------------------------------------- | -------------------------------- |
+| `SENT`        | Fire command sent to EA, awaiting confirmation | execute_fire_proper.py:66        |
+| `FILLED`      | Trade executed in MT5, has ticket number       | confirm_listener.py:156          |
+| `FAILED`      | EA rejected trade (validation failure)         | confirm_listener.py:157          |
+| `UNKNOWN`     | Confirmation without status field              | confirm_listener.py:160          |
+| `CLOSED`      | Position closed (TP/SL/manual)                 | position_closed handler          |
+| `CLOSED_SYNC` | Manual cleanup (sync with MT5)                 | emergency_position_cleanup.py:54 |
 
 ### Database Sync Issues
 
@@ -466,21 +472,25 @@ cursor.execute("""
 **Debug Steps**:
 
 1. **Check signal confidence**:
+
    ```bash
    sqlite3 /root/HydraX-v2/bitten.db "SELECT signal_id, symbol, confidence FROM signals ORDER BY created_at DESC LIMIT 5;"
    ```
 
 2. **Verify auto-fire config**:
+
    ```bash
    sqlite3 /root/HydraX-v2/data/fire_modes.db "SELECT auto_fire_min_confidence, auto_fire_max_confidence, current_mode FROM user_fire_modes WHERE user_id = '7176191872';"
    ```
 
 3. **Check slot usage**:
+
    ```bash
    sqlite3 /root/HydraX-v2/bitten.db "SELECT COUNT(*) FROM fires WHERE status IN ('FILLED', 'SENT', 'PENDING');"
    ```
 
 4. **Verify EA freshness**:
+
    ```bash
    sqlite3 /root/HydraX-v2/bitten.db "SELECT target_uuid, (strftime('%s','now') - last_seen) AS age_seconds FROM ea_instances WHERE target_uuid = 'COMMANDER_DEV_001';"
    ```
@@ -491,6 +501,7 @@ cursor.execute("""
    ```
 
 **Common Causes**:
+
 - ❌ Signal confidence 70-79% (below 80% minimum)
 - ❌ Slots full (10/10 used)
 - ❌ EA heartbeat stale (> 120 seconds)
@@ -503,12 +514,14 @@ cursor.execute("""
 **Root Cause**: Both BittenCore AND webapp calling `dispatch_group_signal()`
 
 **Fix Verification**:
+
 ```bash
 grep "dispatch_group_signal" /root/HydraX-v2/webapp_server_optimized.py
 # Should show: "# BittenCore handles dispatch" (commented out)
 ```
 
 **Restart Webapp**:
+
 ```bash
 ps aux | grep webapp_server_optimized.py | grep -v grep | awk '{print $2}' | xargs kill
 nohup python3 webapp_server_optimized.py > /tmp/webapp.log 2>&1 &
@@ -521,12 +534,14 @@ nohup python3 webapp_server_optimized.py > /tmp/webapp.log 2>&1 &
 **Root Cause**: `position_opened` messages overwriting good confirmations
 
 **Fix Verification**:
+
 ```bash
 grep "Don't downgrade FILLED" /root/HydraX-v2/confirm_listener_v207.py
 # Should show: Line 183-186 protection logic
 ```
 
 **Restart Confirm Listener**:
+
 ```bash
 ps aux | grep confirm_listener_v207.py | grep -v grep | awk '{print $2}' | xargs kill
 nohup python3 /root/HydraX-v2/confirm_listener_v207.py > /tmp/confirm_listener.log 2>&1 &
@@ -539,6 +554,7 @@ nohup python3 /root/HydraX-v2/confirm_listener_v207.py > /tmp/confirm_listener.l
 **Root Cause**: `athena_group_dispatcher.py` reading wrong field
 
 **Fix Verification**:
+
 ```bash
 grep -A 2 "tcs_score.*confidence" /root/HydraX-v2/athena_group_dispatcher.py
 # Should show: "tcs_score = signal_data.get('tcs_score') or signal_data.get('confidence', 0)"
@@ -553,16 +569,19 @@ grep -A 2 "tcs_score.*confidence" /root/HydraX-v2/athena_group_dispatcher.py
 **Debug Steps**:
 
 1. **Check EA connection**:
+
    ```bash
    sqlite3 /root/HydraX-v2/bitten.db "SELECT target_uuid, last_seen, datetime(last_seen, 'unixepoch') FROM ea_instances WHERE target_uuid = 'COMMANDER_DEV_001';"
    ```
 
 2. **Check command_router logs**:
+
    ```bash
    pm2 logs command_router --lines 20
    ```
 
 3. **Verify IPC queue**:
+
    ```bash
    ps aux | grep "ipc:///tmp/bitten_cmdqueue"
    ```
@@ -574,6 +593,7 @@ grep -A 2 "tcs_score.*confidence" /root/HydraX-v2/athena_group_dispatcher.py
    ```
 
 **Common Causes**:
+
 - ❌ EA not connected (last_seen > 120s)
 - ❌ Test DEALER process intercepting commands
 - ❌ Invalid SL/TP positioning (EA pre-flight validation failure)
@@ -622,15 +642,15 @@ python3 /root/HydraX-v2/test_webapp_fire_path.py
 
 ## 📝 CRITICAL FILES REFERENCE
 
-| File | Purpose | Critical Lines |
-|------|---------|----------------|
-| `webapp_server_optimized.py` | Signal processing, auto-fire | 417 (POST /api/signals), 480-732 (auto-fire logic) |
-| `src/bitten_core/bitten_core.py` | Signal processing core | 738 (process_venom_signal), 938 (dispatch_group_signal) |
-| `athena_group_dispatcher.py` | Telegram alerts | 59 (dispatch_group_signal), 70 (confidence fix), 104 (message format) |
-| `confirm_listener_v207.py` | EA confirmations | 474-476 (position_opened handler), 183-186 (downgrade protection) |
-| `execute_fire_proper.py` | Fire execution | 52-88 (database-first), 90-146 (IPC queue) |
-| `enqueue_fire.py` | Fire command creation | 40 (lot rounding), 464-500 (OrderedDict) |
-| `emergency_position_cleanup.py` | Database sync | 52-62 (FILLED cleanup) |
+| File                             | Purpose                      | Critical Lines                                                        |
+| -------------------------------- | ---------------------------- | --------------------------------------------------------------------- |
+| `webapp_server_optimized.py`     | Signal processing, auto-fire | 417 (POST /api/signals), 480-732 (auto-fire logic)                    |
+| `src/bitten_core/bitten_core.py` | Signal processing core       | 738 (process_venom_signal), 938 (dispatch_group_signal)               |
+| `athena_group_dispatcher.py`     | Telegram alerts              | 59 (dispatch_group_signal), 70 (confidence fix), 104 (message format) |
+| `confirm_listener_v207.py`       | EA confirmations             | 474-476 (position_opened handler), 183-186 (downgrade protection)     |
+| `execute_fire_proper.py`         | Fire execution               | 52-88 (database-first), 90-146 (IPC queue)                            |
+| `enqueue_fire.py`                | Fire command creation        | 40 (lot rounding), 464-500 (OrderedDict)                              |
+| `emergency_position_cleanup.py`  | Database sync                | 52-62 (FILLED cleanup)                                                |
 
 ---
 

@@ -1,5 +1,6 @@
 // Secret key for URL signing - in production, this should be from environment
-const SIGNING_SECRET = process.env.URL_SIGNING_SECRET || 'bitten-secure-url-signing-key-2025';
+const SIGNING_SECRET =
+  process.env.URL_SIGNING_SECRET || "bitten-secure-url-signing-key-2025";
 
 // Web Crypto API compatible HMAC function for Edge Runtime
 async function createHMAC(secret: string, message: string): Promise<string> {
@@ -8,16 +9,16 @@ async function createHMAC(secret: string, message: string): Promise<string> {
   const messageData = encoder.encode(message);
 
   const key = await crypto.subtle.importKey(
-    'raw',
+    "raw",
     keyData,
-    { name: 'HMAC', hash: 'SHA-256' },
+    { name: "HMAC", hash: "SHA-256" },
     false,
-    ['sign']
+    ["sign"],
   );
 
-  const signature = await crypto.subtle.sign('HMAC', key, messageData);
+  const signature = await crypto.subtle.sign("HMAC", key, messageData);
   const hashArray = Array.from(new Uint8Array(signature));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
 export interface SignedURLParams {
@@ -31,7 +32,11 @@ export interface SignedURLParams {
 /**
  * Sign a URL with HMAC_SHA256 for secure access
  */
-export async function signURL(uid: string, path: string, additionalParams: Record<string, any> = {}): Promise<string> {
+export async function signURL(
+  uid: string,
+  path: string,
+  additionalParams: Record<string, any> = {},
+): Promise<string> {
   const timestamp = Math.floor(Date.now() / 1000);
 
   // Create signature payload: uid|path|timestamp
@@ -43,7 +48,7 @@ export async function signURL(uid: string, path: string, additionalParams: Recor
     uid,
     t: timestamp.toString(),
     sig: signature,
-    ...additionalParams
+    ...additionalParams,
   });
 
   return `${path}?${params.toString()}`;
@@ -52,10 +57,13 @@ export async function signURL(uid: string, path: string, additionalParams: Recor
 /**
  * Verify a signed URL
  */
-export async function verifySignedURL(searchParams: URLSearchParams, requestPath: string): Promise<{ valid: boolean; uid?: string; expired?: boolean }> {
-  const uid = searchParams.get('uid');
-  const timestamp = searchParams.get('t');
-  const signature = searchParams.get('sig');
+export async function verifySignedURL(
+  searchParams: URLSearchParams,
+  requestPath: string,
+): Promise<{ valid: boolean; uid?: string; expired?: boolean }> {
+  const uid = searchParams.get("uid");
+  const timestamp = searchParams.get("t");
+  const signature = searchParams.get("sig");
 
   if (!uid || !timestamp || !signature) {
     return { valid: false };
@@ -64,7 +72,7 @@ export async function verifySignedURL(searchParams: URLSearchParams, requestPath
   // Check if expired (5 minutes = 300 seconds)
   const now = Math.floor(Date.now() / 1000);
   const urlTime = parseInt(timestamp);
-  const expired = (now - urlTime) > 300;
+  const expired = now - urlTime > 300;
 
   if (expired) {
     return { valid: false, expired: true };
@@ -81,8 +89,13 @@ export async function verifySignedURL(searchParams: URLSearchParams, requestPath
 /**
  * Create a Telegram deep link with signed parameters
  */
-export function createTelegramDeepLink(uid: string, page: string, params: Record<string, any> = {}): string {
-  const baseURL = process.env.NEXT_PUBLIC_BASE_URL || 'http://134.199.204.67:3000';
+export function createTelegramDeepLink(
+  uid: string,
+  page: string,
+  params: Record<string, any> = {},
+): string {
+  const baseURL =
+    process.env.NEXT_PUBLIC_BASE_URL || "http://134.199.204.67:3000";
   const signedURL = signURL(uid, page, params);
   return `${baseURL}${signedURL}`;
 }
@@ -90,7 +103,10 @@ export function createTelegramDeepLink(uid: string, page: string, params: Record
 /**
  * Validate mission access for user
  */
-export async function validateMissionAccess(uid: string, missionId: string): Promise<boolean> {
+export async function validateMissionAccess(
+  uid: string,
+  missionId: string,
+): Promise<boolean> {
   // TODO: Implement actual mission validation against database
   // For now, return true for development
   return true;
@@ -99,7 +115,10 @@ export async function validateMissionAccess(uid: string, missionId: string): Pro
 /**
  * Validate ticket access for user
  */
-export async function validateTicketAccess(uid: string, ticketId: string): Promise<boolean> {
+export async function validateTicketAccess(
+  uid: string,
+  ticketId: string,
+): Promise<boolean> {
   // TODO: Implement actual ticket validation against database
   // For now, return true for development
   return true;
@@ -108,7 +127,9 @@ export async function validateTicketAccess(uid: string, ticketId: string): Promi
 /**
  * Get latest active mission for user
  */
-export async function getLatestMissionForUser(uid: string): Promise<string | null> {
+export async function getLatestMissionForUser(
+  uid: string,
+): Promise<string | null> {
   // TODO: Implement actual mission lookup from database
   // For now, return a sample mission ID
   return `msn-${uid}-${Date.now()}`;

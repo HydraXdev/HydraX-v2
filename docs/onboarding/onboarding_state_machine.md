@@ -1,6 +1,7 @@
 # BITTEN Onboarding State Machine Specification
 
 ## Overview
+
 This document defines the state machine architecture for the BITTEN "Ground Zero" onboarding flow.
 
 ## State Definitions
@@ -16,7 +17,7 @@ class OnboardingSession:
     last_activity: datetime
     completed_states: List[str]
     user_responses: Dict[str, Any]
-    
+
     # User data collected during onboarding
     has_experience: Optional[bool] = None
     first_name: Optional[str] = None
@@ -31,7 +32,7 @@ class OnboardingSession:
 ## State Flow Diagram
 
 ```
-[START] 
+[START]
     |
     v
 [FIRST_CONTACT] -- Has experience? --> [YES/NO Response]
@@ -82,97 +83,112 @@ class OnboardingSession:
 ## State Transition Rules
 
 ### FIRST_CONTACT
+
 **Entry Actions:**
+
 - Send Sergeant Nexus opening message
 - Display YES/NO buttons
 
 **Valid Transitions:**
+
 - On YES/NO response → MARKET_WARFARE_INTRO
 - On timeout (5 min) → Save state and pause
 - On /skip → MARKET_WARFARE_INTRO (mark as skipped)
 
 **Exit Actions:**
+
 - Store has_experience flag
 - Log response time
 
 ### MARKET_WARFARE_INTRO
+
 **Entry Actions:**
+
 - Display market explanation
 - Show live chart animation
 - Present "ENGAGE NOW" button
 
 **Valid Transitions:**
+
 - On ENGAGE click → Show success animation → KNOWLEDGE_SOURCE
 - On timeout → Send reminder
 - On /back → FIRST_CONTACT
 
 **Exit Actions:**
+
 - Log engagement success
 - Store demo completion flag
 
 ### TRAINING_SETUP
+
 **Entry Actions:**
+
 - Display step indicator (1/4, 2/4, etc.)
 - Show appropriate input fields
 
 **Sub-states:**
+
 1. BASIC_INFO
    - Collect: first_name, email, phone
    - Validate: email format, phone format
-   
 2. ACCOUNT_VERIFICATION
    - Display collected info for confirmation
    - Allow editing
-   
 3. CAPITAL_ALLOCATION
    - Show $50,000 allocation message
    - Display Doc's protective message
-   
 4. SETUP_COMPLETE
    - Show success confirmation
    - Display next steps
 
 **Valid Transitions:**
+
 - On valid input → Next sub-state
 - On invalid input → Show error, retry
 - On /back → Previous sub-state
 
 ### THEATER_SELECTION
+
 **Entry Actions:**
+
 - Display three account options
 - Show detailed comparison
 
 **Options:**
+
 1. US_REGULATED_DEMO
    - $50,000 practice funds
    - No risk messaging
-   
 2. US_REGULATED_LIVE
    - Real money warnings
    - Security emphasis
-   
 3. OFFSHORE_UNREGULATED
    - Bitcoin only notice
    - Risk warnings
 
 **Valid Transitions:**
+
 - On selection → OATH_OF_ENLISTMENT
 - On /info [option] → Show detailed info
 - On /back → PATH_FORWARD
 
 ### CALLSIGN_CREATION
+
 **Entry Actions:**
+
 - Display callsign explanation
 - Show example suggestions
 - Present input field
 
 **Validation Rules:**
+
 - Length: 3-20 characters
 - Pattern: Alphanumeric + underscore
 - Uniqueness check
 - No reserved words
 
 **Valid Transitions:**
+
 - On valid callsign → OPERATIONAL_INTERFACE
 - On invalid → Show specific error
 - On /suggest → Generate suggestions
@@ -180,18 +196,19 @@ class OnboardingSession:
 ## Session Management
 
 ### Persistence Strategy
+
 ```python
 class OnboardingSessionManager:
     def save_session(self, session: OnboardingSession):
         # Save to database/cache
         # Key: f"onboarding:{session.user_id}"
         # TTL: 7 days
-        
+
     def load_session(self, user_id: str) -> Optional[OnboardingSession]:
         # Load from database/cache
         # Check if expired
         # Return None if not found
-        
+
     def resume_session(self, session: OnboardingSession):
         # Send appropriate message for current state
         # Include "Welcome back" messaging
@@ -199,6 +216,7 @@ class OnboardingSessionManager:
 ```
 
 ### Timeout Handling
+
 - Inactive for 5 minutes → Save state, send reminder
 - Inactive for 1 hour → Send follow-up with resume link
 - Inactive for 24 hours → Send final reminder
@@ -207,6 +225,7 @@ class OnboardingSessionManager:
 ## Integration Points
 
 ### Telegram Bot Commands
+
 ```python
 # During onboarding
 /start - Begin or resume onboarding
@@ -224,6 +243,7 @@ class OnboardingSessionManager:
 ```
 
 ### Persona Integration
+
 ```python
 # Use existing persona system
 responses = persona_orchestrator.get_response(
@@ -237,6 +257,7 @@ responses = persona_orchestrator.get_response(
 ```
 
 ### Analytics Events
+
 ```python
 # Track key metrics
 track_event("onboarding_started", {
@@ -263,12 +284,14 @@ track_event("onboarding_completed", {
 ## Error Handling
 
 ### Graceful Degradation
+
 - Network errors → Save state, retry with exponential backoff
 - Invalid input → Show specific error with examples
 - System errors → Apologize, save state, notify support
 - Rate limits → Show cooldown message
 
 ### Recovery Flows
+
 ```python
 def handle_error(session: OnboardingSession, error: Exception):
     if isinstance(error, NetworkError):
@@ -284,18 +307,20 @@ def handle_error(session: OnboardingSession, error: Exception):
 ## Success Metrics
 
 ### Completion Rate Tracking
+
 - Overall completion rate
 - Drop-off by state
 - Time per state
 - Error frequency by state
 
 ### A/B Testing Framework
+
 ```python
 class OnboardingVariant:
     STANDARD = "standard"
     SHORTENED = "shortened"  # Fewer states
     GAMIFIED = "gamified"   # More game elements
-    
+
 def get_variant(user_id: str) -> OnboardingVariant:
     # Deterministic assignment based on user_id
     # Track performance by variant
@@ -303,5 +328,5 @@ def get_variant(user_id: str) -> OnboardingVariant:
 
 ---
 
-*"Every mission begins with a plan. Execute with precision."*
+_"Every mission begins with a plan. Execute with precision."_
 — BITTEN Operations Manual

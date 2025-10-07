@@ -24,17 +24,21 @@
 ## 🔧 Next Steps to Complete Stripe
 
 ### 1. Get Your Stripe Details
+
 You need:
+
 - [ ] Secret API Key (starts with `sk_live_`)
 - [ ] Webhook Signing Secret (starts with `whsec_`)
 - [ ] Price IDs for each tier
 
 ### 2. Update .env File
+
 ```bash
 nano /root/HydraX-v2/.env
 ```
 
 Add your real values:
+
 ```
 STRIPE_SECRET_KEY=sk_live_YOUR_KEY
 STRIPE_WEBHOOK_SECRET=whsec_YOUR_SECRET
@@ -45,6 +49,7 @@ STRIPE_PRICE_=price_xxxxx
 ```
 
 ### 3. Set Up Stripe Webhook
+
 1. Go to https://dashboard.stripe.com/webhooks
 2. Click "Add endpoint"
 3. Enter: `http://134.199.204.67/stripe/webhook`
@@ -58,14 +63,18 @@ STRIPE_PRICE_=price_xxxxx
 5. Copy the signing secret to .env
 
 ### 4. Get Price IDs
+
 In Stripe Dashboard:
+
 1. Go to Products
 2. Find your 4 tiers
 3. Click each product
 4. Copy the price ID (starts with `price_`)
 
 ### 5. Domain Setup (Optional)
+
 If you want joinbitten.com to work:
+
 1. Point joinbitten.com DNS to 134.199.204.67
 2. Install SSL certificate:
    ```bash
@@ -76,16 +85,19 @@ If you want joinbitten.com to work:
 ## 📊 Monitoring
 
 Check service status:
+
 ```bash
 systemctl status bitten-web
 ```
 
 View logs:
+
 ```bash
 journalctl -u bitten-web -f
 ```
 
 Restart service:
+
 ```bash
 systemctl restart bitten-web
 ```

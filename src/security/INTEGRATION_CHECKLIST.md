@@ -18,6 +18,7 @@ Quick checklist for integrating the security audit logger into BITTEN components
 ### 1. Mission Session Manager (`/root/HydraX-v2/src/mission_session/`)
 
 **Files to modify:**
+
 - `manager.py` - Session lifecycle management
 
 **Events to log:**
@@ -57,6 +58,7 @@ audit.log_session_expired(
 ```
 
 **Integration steps:**
+
 - [ ] Add import at top of `manager.py`
 - [ ] Add `log_session_created()` after session creation
 - [ ] Add `log_session_validated()` in validation method
@@ -114,6 +116,7 @@ if required_scope not in user_scopes:
 ```
 
 **Integration steps:**
+
 - [ ] Add import at top of file
 - [ ] Add logging in `/api/fire` endpoint
 - [ ] Add logging in risk validation code
@@ -144,6 +147,7 @@ def check_idempotency(client_request_id: str):
 ```
 
 **Integration steps:**
+
 - [ ] Add import to idempotency manager
 - [ ] Add logging when cache hit occurs
 - [ ] Include user_id and session_id in cache metadata
@@ -199,6 +203,7 @@ def on_disconnect():
 ```
 
 **Integration steps:**
+
 - [ ] Add import to WebSocket server file
 - [ ] Add logging in `connect` handler
 - [ ] Add logging in `authenticate` handler
@@ -239,6 +244,7 @@ def check_authorization(user_id: str, resource: str, action: str):
 ```
 
 **Integration steps:**
+
 - [ ] Add import to jwt_manager.py
 - [ ] Add logging in token validation
 - [ ] Add logging in authorization checks
@@ -266,6 +272,7 @@ def check_rate_limit(user_id: str, endpoint: str):
 ```
 
 **Integration steps:**
+
 - [ ] Add import to rate_limiter.py
 - [ ] Add logging when rate limit exceeded
 - [ ] Test with rapid requests
@@ -332,6 +339,7 @@ cat /var/log/bitten/audit.log* | \
 ### Issue: Logs not created
 
 **Solution:**
+
 ```bash
 sudo mkdir -p /var/log/bitten
 sudo chmod 700 /var/log/bitten
@@ -341,6 +349,7 @@ sudo chown $USER:$USER /var/log/bitten
 ### Issue: Permission denied
 
 **Solution:**
+
 ```bash
 sudo chown -R $USER:$USER /var/log/bitten
 ```
@@ -348,6 +357,7 @@ sudo chown -R $USER:$USER /var/log/bitten
 ### Issue: PII appearing in logs
 
 **Solution:**
+
 1. Review code - ensure using audit logger methods, not raw logging
 2. Add field to `SENSITIVE_KEYS` in `SanitizedJSONFormatter`
 3. Use `sanitize_data()` before logging arbitrary data
@@ -355,6 +365,7 @@ sudo chown -R $USER:$USER /var/log/bitten
 ### Issue: Events not appearing
 
 **Check:**
+
 ```python
 # Verify logger is working
 from src.security.audit_logger import get_audit_logger

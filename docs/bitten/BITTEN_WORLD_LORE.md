@@ -3,9 +3,11 @@
 ## The Genesis Story: "BITTEN: Bit by Bit"
 
 ### Core Narrative
+
 The complete origin story of Norman, a 17-year-old homeschooled gamer from Poplarville, Mississippi, who discovers the forex market and builds a revolutionary trading system inspired by his all-black cat, Bit (Born In Truck).
 
 ### Key Themes
+
 1. **The Market Bites** - But we learn to bite back
 2. **From Gaming to Trading** - Pattern recognition transcends platforms
 3. **Resilience Through Connection** - Bit's unwavering presence
@@ -19,33 +21,38 @@ The complete origin story of Norman, a 17-year-old homeschooled gamer from Popla
 ### Human Characters
 
 #### **Norman** (Protagonist/Founder)
+
 - **Age**: 17
 - **Core Traits**: Quiet, observant, logical, systematic thinker
 - **Environment**: Red Kaiser gaming chair, organized desk with USA map, shared room with sister
 - **Journey Arc**: Gamer → Trader → System Architect → Revolutionary
-- **Motivation Evolution**: 
+- **Motivation Evolution**:
   - Initial: Understand the "adult war game"
   - Mid: Master the market's patterns
   - Final: Build tools to help others bite back
 
 #### **Norman's Father**
+
 - **Role**: Cautionary Tale
 - **Key Quote**: "The market doesn't give, son. It takes. It's a zero-sum game. A battlefield. A war game for grownups, only they don't tell you the rules are rigged."
 - **Impact**: His emotional trading failures inspire Norman's disciplined approach
 - **System Manifestation**: Becomes the "Drill" persona
 
 #### **Norman's Mother**
+
 - **Role**: Emotional Anchor
 - **Key Quote**: "Some kids are born with lightning inside. You're just learning where to point it."
 - **Impact**: Teaches resilience and self-protection
 - **System Manifestation**: Becomes "Captain Aegis/Doc"
 
 #### **Norman's Sister**
+
 - **Role**: Contrast/Normalcy
 - **Traits**: Vibrant, artistic, dancer, chaotic energy
 - **Purpose**: Represents the physical world Norman observes but doesn't fully inhabit
 
 #### **Jason** (Cousin)
+
 - **Role**: Gaming Partner/Past Life
 - **Location**: Nashville
 - **Impact**: Represents shared strategy and network power
@@ -54,11 +61,12 @@ The complete origin story of Norman, a 17-year-old homeschooled gamer from Popla
 ### Non-Human Character
 
 #### **Bit** (The Cat)
+
 - **Full Name Origin**: Born In Truck
 - **Appearance**: All-black fur
 - **Unique Trait**: Makes "glitchy chirps" instead of normal meows
 - **Birth Story**: Born in dad's work truck in Mississippi
-- **Symbolic Role**: 
+- **Symbolic Role**:
   - Anchor during emotional storms
   - Inspiration for system name (Bit + Kitten = BITTEN)
   - Represents intuition and resilience
@@ -69,39 +77,49 @@ The complete origin story of Norman, a 17-year-old homeschooled gamer from Popla
 ## System Personas (The Voices of BITTEN)
 
 ### 1. **Drill** (Discipline & Execution)
+
 **Origin**: Norman's father's failures + Norman's need for emotional control
 **Personality**: Military drill sergeant, uncompromising, logical
 **Voice Examples**:
+
 - "ERROR. EMOTIONAL IMPULSE DETECTED. RECALIBRATE."
 - "THE MARKET DOES NOT CARE ABOUT YOUR FEELINGS."
 - "DISCIPLINE FAILED. ANALYZE. RE-ENGAGE."
 
 ### 2. **Captain Aegis/Doc** (Protection & Recovery)
+
 **Origin**: Norman's mother's nurturing wisdom
 **Personality**: Combat medic, protective but tough
 **Voice Examples**:
+
 - "SCAR TISSUE FORMING. NOT FAILURE, BUT DATA."
 - "HIGH STRESS DETECTED. STEP AWAY. BREATHE."
 - "THE MIND IS THE FIRST WEAPON. PROTECT IT."
 
 ### 3. **Sergeant Nexus** (Network & Community)
+
 **Origin**: Jason and multiplayer gaming experiences
 **Personality**: Squad leader, connector, strategist
 **Voice Examples**:
+
 - "YOUR SIGNAL IS STRONG. THE NETWORK AWAITS."
 - "KNOWLEDGE IS AMMUNITION. SHARE YOUR INTEL."
 - "SOLITARY WARRIORS FALL. THE NETWORK ENDURES."
 
 ### 4. **Overwatch** (Market Reality Check)
+
 **Origin**: Norman's realization that sentiment drives markets
 **Personality**: Sniper's spotter, brutally honest, cynical realist
 **Voice Examples**:
+
 - "Sentiment: Overly optimistic. Expect sobering correction."
 - "The herd is stampeding. Probability of success: low."
 - "Consensus is a trap. The crowd is predictably wrong."
 
 ### 5. **Bit** (Intuitive Companion)
+
 **Not a voice but a presence**:
+
 - Soft chirps when user is calm
 - Agitated chirps during impulsive moves
 - Purring after good decisions
@@ -113,6 +131,7 @@ The complete origin story of Norman, a 17-year-old homeschooled gamer from Popla
 ## World Building Rules
 
 ### Visual Design Language
+
 1. **Color Palette**:
    - Primary: Black (like Bit)
    - Accent: Red/Green (market candles)
@@ -127,6 +146,7 @@ The complete origin story of Norman, a 17-year-old homeschooled gamer from Popla
    - Gaming HUD influences
 
 ### Audio Design
+
 1. **System Sounds**:
    - Bit's chirps for notifications
    - Military radio static for transitions
@@ -140,6 +160,7 @@ The complete origin story of Norman, a 17-year-old homeschooled gamer from Popla
    - Overwatch: Detached, analytical, sardonic
 
 ### Narrative Principles
+
 1. **Show Growth Through Struggle**: Every feature unlocked represents overcoming failure
 2. **The Market is Alive**: Treat it as an entity, not just numbers
 3. **Community Over Competition**: We rise together or fall alone
@@ -151,21 +172,25 @@ The complete origin story of Norman, a 17-year-old homeschooled gamer from Popla
 ## Key Story Moments (For Reference)
 
 ### The Discovery
+
 - Bit's paw accidentally reveals trading chart
 - Norman sees patterns like game mechanics
 - Father's warning plants the seed of challenge
 
 ### The First Loss
+
 - Overconfidence leads to account blowup
 - Bit comforts Norman in his rage
 - Realization: Market "bit" him, but Bit helps him bite back
 
 ### The Breakthrough
+
 - Stripping away complexity
 - Focus on one pair (XAU/USD)
 - Building rules that actually matter
 
 ### The System Birth
+
 - Each persona emerges from life experiences
 - BITTEN becomes more than personal tool
 - Vision expands to help all underdogs
@@ -175,6 +200,7 @@ The complete origin story of Norman, a 17-year-old homeschooled gamer from Popla
 ## Language & Terminology
 
 ### BITTEN-Specific Terms
+
 - **NODE**: Individual trader in the network
 - **FIRE MODES**: Trading strategies (SINGLE-SHOT, BURST, etc.)
 - **THE BITE**: When market takes your money
@@ -185,6 +211,7 @@ The complete origin story of Norman, a 17-year-old homeschooled gamer from Popla
 - **THE NETWORK**: BITTEN community
 
 ### Key Phrases
+
 - "The market bites. We bite back."
 - "Bit by bit, byte by byte."
 - "You've been BITTEN."
@@ -197,6 +224,7 @@ The complete origin story of Norman, a 17-year-old homeschooled gamer from Popla
 ## Integration Notes
 
 ### For Developers
+
 - Every error message should feel like Drill
 - Risk warnings channel Doc's protective nature
 - Community features emphasize Nexus's connection theme
@@ -204,12 +232,14 @@ The complete origin story of Norman, a 17-year-old homeschooled gamer from Popla
 - Bit appears in subtle ways throughout UI
 
 ### For Writers
+
 - Maintain military/gaming hybrid language
 - Keep technical explanations in Norman's systematic style
 - Use sensory details (Bit's purr, chair leather, keyboard clicks)
 - Remember: This is a hero's journey in the digital age
 
 ### For Designers
+
 - Norman's room is the aesthetic baseline
 - Gaming setup meets trading terminal
 - Bit's presence should be felt, not forced
@@ -253,4 +283,4 @@ Remember: At its heart, this is a story about a boy, his cat, and their fight ag
 
 ---
 
-*"You've got timing, cat. Always."* - Norman
+_"You've got timing, cat. Always."_ - Norman

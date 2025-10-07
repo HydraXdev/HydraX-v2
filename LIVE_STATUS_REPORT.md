@@ -3,6 +3,7 @@
 ## Current System Status (23:57 UTC)
 
 ### ✅ What's Working:
+
 1. **v5.0 Engine** - Generating signals successfully
    - 98 signals generated so far (exceeding 40+/day target)
    - TCS Range: 35-95% (Ultra-Aggressive Mode)
@@ -19,6 +20,7 @@
    - Connected to Telegram bot
 
 ### ❓ Potential Issues:
+
 1. **Telegram Alerts** - Not showing signal sends in logs
    - Possible reasons:
      - 60-second cooldown between identical signals
@@ -30,22 +32,26 @@
    - Format: timestamp, signal number, pair, direction, TCS%
 
 ### 📊 Signal Statistics:
+
 - Total Signals: 98 (in ~5 minutes)
 - Rate: ~20 signals/minute
 - TCS Distribution: 35-95% as configured
 
 ### 🔧 Troubleshooting Steps:
+
 1. Check if Telegram bot has proper permissions
 2. Verify admin user ID is correct (7176191872)
 3. Test manual signal send to confirm bot connectivity
 4. Check for rate limiting from Telegram
 
 ### 📝 Files Running:
+
 - Engine: `start_apex_live.py` (PID: 354333)
 - Connector: `apex_telegram_live.py` (PID: 354644)
 - Logs: `apex_v5_live_20250713_235231.log`
 
 ### 🚀 Next Steps:
+
 1. Monitor `telegram_live.out` for error messages
 2. Test direct Telegram message send
 3. Check WebApp integration

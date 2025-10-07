@@ -125,17 +125,17 @@ Before tests can pass, implement these components:
 
 ## 🎯 What Each Test Validates
 
-| Test | What It Checks | Required Components |
-|------|----------------|---------------------|
-| 1. Generate Mission Session | Session creation, JWT generation, deep link format | session_manager module |
-| 2. Simulate Telegram Alert | Alert message format, deep link inclusion | session_manager module |
-| 3. Mission Page Load | Token validation, mission data fetch, beacons | session_manager + webapp endpoint |
-| 4. Execute Action | Fire command creation, API response, redirect | webapp /api/fire endpoint |
-| 5. Event Delivery | SSE event streaming, latency < 250ms | Event bus + WebSocket handler |
-| 6. Idempotency | Duplicate prevention, same opId returned | Idempotency cache system |
-| 7. Session Expiry | Expired token rejection, 410 response | session_manager validation |
-| 8. Risk Fuse | Risk limit enforcement, 422 response | Risk validation in /api/fire |
-| 9. Stats Page | Equity updates, trade history display | Stats endpoint + database |
+| Test                        | What It Checks                                     | Required Components               |
+| --------------------------- | -------------------------------------------------- | --------------------------------- |
+| 1. Generate Mission Session | Session creation, JWT generation, deep link format | session_manager module            |
+| 2. Simulate Telegram Alert  | Alert message format, deep link inclusion          | session_manager module            |
+| 3. Mission Page Load        | Token validation, mission data fetch, beacons      | session_manager + webapp endpoint |
+| 4. Execute Action           | Fire command creation, API response, redirect      | webapp /api/fire endpoint         |
+| 5. Event Delivery           | SSE event streaming, latency < 250ms               | Event bus + WebSocket handler     |
+| 6. Idempotency              | Duplicate prevention, same opId returned           | Idempotency cache system          |
+| 7. Session Expiry           | Expired token rejection, 410 response              | session_manager validation        |
+| 8. Risk Fuse                | Risk limit enforcement, 422 response               | Risk validation in /api/fire      |
+| 9. Stats Page               | Equity updates, trade history display              | Stats endpoint + database         |
 
 ## 📁 Related Files
 
@@ -163,24 +163,30 @@ python3 /root/HydraX-v2/tests/dry_run_mission_flow.py
 ## 🎓 Understanding Test Output
 
 ### ✅ Green = PASS
+
 ```
   ✓ PASS (45ms)
     ms: MS_1728123456_ABC123
 ```
+
 Component working correctly, data looks valid
 
 ### ❌ Red = FAIL
+
 ```
   ✗ FAIL (7ms)
   Error: session_manager not found
 ```
+
 Component missing or broken, implement/fix required
 
 ### ⚠️ Yellow Details
+
 ```
     ms: MS_1728123456_ABC123
     deep_link: http://localhost:8888/mission?ms=...
 ```
+
 Additional verification data from test
 
 ## 💡 Pro Tips
@@ -208,6 +214,7 @@ Additional verification data from test
 ## 📞 Support
 
 For test suite issues:
+
 1. Check `/root/HydraX-v2/tests/dry_run_results.json` for detailed error info
 2. Review console output for stack traces
 3. Verify all prerequisite directories exist

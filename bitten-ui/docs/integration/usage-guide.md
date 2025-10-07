@@ -8,24 +8,24 @@ Add to your root layout or app component:
 
 ```tsx
 // app/layout.tsx
-"use client"
+"use client";
 
-import { useEventIntegration } from '@/lib/useEventIntegration'
+import { useEventIntegration } from "@/lib/useEventIntegration";
 
 export default function RootLayout({ children }) {
   // Initialize event bus and WebSocket connections
   useEventIntegration({
     enableMissionStream: true,
     enablePriceStream: true,
-    symbols: ['EURUSD', 'GBPJPY', 'XAUUSD'],
-    userId: '7176191872'
-  })
+    symbols: ["EURUSD", "GBPJPY", "XAUUSD"],
+    userId: "7176191872",
+  });
 
   return (
     <html>
       <body>{children}</body>
     </html>
-  )
+  );
 }
 ```
 
@@ -34,30 +34,30 @@ export default function RootLayout({ children }) {
 In your War Room or any component:
 
 ```tsx
-import { useEffect } from 'react'
-import { eventBus, EVENTS } from '@/lib/eventBus'
-import { useUI } from '@/lib/store'
+import { useEffect } from "react";
+import { eventBus, EVENTS } from "@/lib/eventBus";
+import { useUI } from "@/lib/store";
 
 export default function WarRoom() {
-  const { missions } = useUI()
+  const { missions } = useUI();
 
   useEffect(() => {
     // Listen for new missions
     const unsubscribe = eventBus.on(EVENTS.MISSION_CREATED, (mission) => {
-      console.log('New mission:', mission)
+      console.log("New mission:", mission);
       // Store will be updated automatically by integration hook
-    })
+    });
 
-    return () => unsubscribe()
-  }, [])
+    return () => unsubscribe();
+  }, []);
 
   return (
     <div>
-      {missions.map(mission => (
+      {missions.map((mission) => (
         <MissionCard key={mission.id} mission={mission} />
       ))}
     </div>
-  )
+  );
 }
 ```
 
@@ -66,16 +66,16 @@ export default function WarRoom() {
 For live price display in Mission Brief:
 
 ```tsx
-import { usePriceSubscription } from '@/lib/useEventIntegration'
-import { useState } from 'react'
+import { usePriceSubscription } from "@/lib/useEventIntegration";
+import { useState } from "react";
 
 export default function LivePriceDisplay({ symbol }) {
-  const [price, setPrice] = useState({ bid: 0, ask: 0 })
+  const [price, setPrice] = useState({ bid: 0, ask: 0 });
 
   usePriceSubscription(symbol, (priceData) => {
-    setPrice(priceData)
+    setPrice(priceData);
     // Calculate P&L based on entry price
-  })
+  });
 
   return (
     <div>
@@ -83,7 +83,7 @@ export default function LivePriceDisplay({ symbol }) {
       <div>Ask: {price.ask}</div>
       <div>Mid: {(price.bid + price.ask) / 2}</div>
     </div>
-  )
+  );
 }
 ```
 
@@ -92,20 +92,22 @@ export default function LivePriceDisplay({ symbol }) {
 Using the mission lifecycle hook:
 
 ```tsx
-import { useMissionLifecycle } from '@/lib/useEventIntegration'
-import { executeMission } from '@/lib/api'
+import { useMissionLifecycle } from "@/lib/useEventIntegration";
+import { executeMission } from "@/lib/api";
 
 export default function MissionActions({ mission }) {
-  const { acceptMission, executeMission, closeMission } = useMissionLifecycle(mission.id)
+  const { acceptMission, executeMission, closeMission } = useMissionLifecycle(
+    mission.id,
+  );
 
   const handleExecute = async () => {
     // For production with real API:
-    const response = await executeMission(mission, userId)
-    if (response.status === 'ok') {
+    const response = await executeMission(mission, userId);
+    if (response.status === "ok") {
       // Store updated automatically via event
-      toast.success('Trade executed!')
+      toast.success("Trade executed!");
     }
-  }
+  };
 
   return (
     <div>
@@ -113,7 +115,7 @@ export default function MissionActions({ mission }) {
       <button onClick={handleExecute}>Execute</button>
       <button onClick={() => closeMission()}>Close</button>
     </div>
-  )
+  );
 }
 ```
 
@@ -123,60 +125,60 @@ export default function MissionActions({ mission }) {
 
 ```typescript
 // Mission events
-EVENTS.MISSION_CREATED    // New mission available
-EVENTS.MISSION_UPDATED    // Status change
-EVENTS.MISSION_SNAPSHOT   // Snapshot ready
-EVENTS.MISSION_ACCEPTED   // User accepted
-EVENTS.MISSION_EXECUTED   // Trade opened
-EVENTS.MISSION_CLOSED     // Trade closed
+EVENTS.MISSION_CREATED; // New mission available
+EVENTS.MISSION_UPDATED; // Status change
+EVENTS.MISSION_SNAPSHOT; // Snapshot ready
+EVENTS.MISSION_ACCEPTED; // User accepted
+EVENTS.MISSION_EXECUTED; // Trade opened
+EVENTS.MISSION_CLOSED; // Trade closed
 
 // Order events
-EVENTS.ORDER_EXECUTED     // Fill confirmation
-EVENTS.ORDER_CLOSED       // Close confirmation
-EVENTS.ORDER_FAILED       // Execution failed
+EVENTS.ORDER_EXECUTED; // Fill confirmation
+EVENTS.ORDER_CLOSED; // Close confirmation
+EVENTS.ORDER_FAILED; // Execution failed
 
 // Price events
-EVENTS.PRICE_UPDATE       // New price tick
-EVENTS.PRICE_CONNECTED    // Stream connected
-EVENTS.PRICE_DISCONNECTED // Stream disconnected
+EVENTS.PRICE_UPDATE; // New price tick
+EVENTS.PRICE_CONNECTED; // Stream connected
+EVENTS.PRICE_DISCONNECTED; // Stream disconnected
 
 // XP events
-EVENTS.XP_EARNED          // XP awarded
-EVENTS.LEVEL_UP           // Level increased
+EVENTS.XP_EARNED; // XP awarded
+EVENTS.LEVEL_UP; // Level increased
 ```
 
 ### Subscribing to Events
 
 ```typescript
-import { eventBus, EVENTS } from '@/lib/eventBus'
+import { eventBus, EVENTS } from "@/lib/eventBus";
 
 // Subscribe
 const unsubscribe = eventBus.on(EVENTS.MISSION_CREATED, (data) => {
-  console.log('New mission:', data)
-})
+  console.log("New mission:", data);
+});
 
 // One-time listener
 eventBus.once(EVENTS.ORDER_EXECUTED, (data) => {
-  console.log('Order executed once:', data)
-})
+  console.log("Order executed once:", data);
+});
 
 // Unsubscribe
-unsubscribe()
+unsubscribe();
 // or
-eventBus.off(EVENTS.MISSION_CREATED, handler)
+eventBus.off(EVENTS.MISSION_CREATED, handler);
 ```
 
 ### Emitting Events
 
 ```typescript
 // Emit custom events
-eventBus.emit('custom.event', { data: 'value' })
+eventBus.emit("custom.event", { data: "value" });
 
 // Emit standard events
 eventBus.emit(EVENTS.XP_EARNED, {
   amount: 100,
-  reason: 'Trade Win'
-})
+  reason: "Trade Win",
+});
 ```
 
 ## WebSocket Integration
@@ -188,12 +190,12 @@ Automatically connects when `useEventIntegration` is initialized with `enableMis
 Manual control:
 
 ```typescript
-import { getMissionStream } from '@/lib/websocket'
+import { getMissionStream } from "@/lib/websocket";
 
-const stream = getMissionStream()
-stream.connect()
+const stream = getMissionStream();
+stream.connect();
 // ... later
-stream.disconnect()
+stream.disconnect();
 ```
 
 ### Price Stream
@@ -201,15 +203,15 @@ stream.disconnect()
 Per-symbol streams, auto-managed:
 
 ```typescript
-import { getPriceStream } from '@/lib/websocket'
+import { getPriceStream } from "@/lib/websocket";
 
-const stream = getPriceStream('EURUSD')
-stream.connect()
+const stream = getPriceStream("EURUSD");
+stream.connect();
 
 // Listen for updates via event bus
-eventBus.on('price.EURUSD', (price) => {
-  console.log('EURUSD:', price)
-})
+eventBus.on("price.EURUSD", (price) => {
+  console.log("EURUSD:", price);
+});
 ```
 
 ## API Integration
@@ -217,34 +219,34 @@ eventBus.on('price.EURUSD', (price) => {
 ### Execute Trade
 
 ```typescript
-import { executeMission } from '@/lib/api'
+import { executeMission } from "@/lib/api";
 
-const response = await executeMission(mission, userId)
-if (response.status === 'ok') {
-  console.log('Ticket:', response.ticket)
-  console.log('Filled at:', response.filled)
+const response = await executeMission(mission, userId);
+if (response.status === "ok") {
+  console.log("Ticket:", response.ticket);
+  console.log("Filled at:", response.filled);
 }
 ```
 
 ### Close Position
 
 ```typescript
-import { closePosition } from '@/lib/api'
+import { closePosition } from "@/lib/api";
 
-const response = await closePosition(ticket, userId)
-if (response.status === 'ok') {
-  console.log('P/L:', response.pl)
+const response = await closePosition(ticket, userId);
+if (response.status === "ok") {
+  console.log("P/L:", response.pl);
 }
 ```
 
 ### Request Snapshot
 
 ```typescript
-import { requestSnapshot } from '@/lib/api'
+import { requestSnapshot } from "@/lib/api";
 
-const response = await requestSnapshot(mission)
-if (response.status === 'ok') {
-  console.log('Snapshot URL:', response.image_url)
+const response = await requestSnapshot(mission);
+if (response.status === "ok") {
+  console.log("Snapshot URL:", response.image_url);
 }
 ```
 
@@ -270,23 +272,23 @@ NEXT_PUBLIC_CDN_URL=https://cdn.bitten
 ### Authentication
 
 ```typescript
-import { bittenAPI } from '@/lib/api'
+import { bittenAPI } from "@/lib/api";
 
 // Set auth token after login
-bittenAPI.setAuthToken(userToken)
+bittenAPI.setAuthToken(userToken);
 ```
 
 ### Error Handling
 
 ```typescript
 try {
-  const response = await executeMission(mission, userId)
-  if (response.status === 'error') {
-    toast.error(response.error || 'Execution failed')
+  const response = await executeMission(mission, userId);
+  if (response.status === "error") {
+    toast.error(response.error || "Execution failed");
   }
 } catch (error) {
-  console.error('Network error:', error)
-  toast.error('Connection failed')
+  console.error("Network error:", error);
+  toast.error("Connection failed");
 }
 ```
 
@@ -294,26 +296,26 @@ try {
 
 ```tsx
 export function ConnectionIndicator() {
-  const [connected, setConnected] = useState(false)
+  const [connected, setConnected] = useState(false);
 
   useEffect(() => {
-    const handleConnect = () => setConnected(true)
-    const handleDisconnect = () => setConnected(false)
+    const handleConnect = () => setConnected(true);
+    const handleDisconnect = () => setConnected(false);
 
-    eventBus.on(EVENTS.WS_CONNECTED, handleConnect)
-    eventBus.on(EVENTS.WS_DISCONNECTED, handleDisconnect)
+    eventBus.on(EVENTS.WS_CONNECTED, handleConnect);
+    eventBus.on(EVENTS.WS_DISCONNECTED, handleDisconnect);
 
     return () => {
-      eventBus.off(EVENTS.WS_CONNECTED, handleConnect)
-      eventBus.off(EVENTS.WS_DISCONNECTED, handleDisconnect)
-    }
-  }, [])
+      eventBus.off(EVENTS.WS_CONNECTED, handleConnect);
+      eventBus.off(EVENTS.WS_DISCONNECTED, handleDisconnect);
+    };
+  }, []);
 
   return (
-    <div className={connected ? 'bg-green-500' : 'bg-red-500'}>
-      {connected ? 'Connected' : 'Disconnected'}
+    <div className={connected ? "bg-green-500" : "bg-red-500"}>
+      {connected ? "Connected" : "Disconnected"}
     </div>
-  )
+  );
 }
 ```
 
@@ -329,15 +331,15 @@ export function mockMissionStream() {
   setInterval(() => {
     eventBus.emit(EVENTS.MISSION_CREATED, {
       id: `mock_${Date.now()}`,
-      symbol: 'EURUSD',
+      symbol: "EURUSD",
       // ... mock data
-    })
-  }, 10000)
+    });
+  }, 10000);
 }
 
 // In development
-if (process.env.NODE_ENV === 'development') {
-  mockMissionStream()
+if (process.env.NODE_ENV === "development") {
+  mockMissionStream();
 }
 ```
 
@@ -348,41 +350,44 @@ if (process.env.NODE_ENV === 'development') {
 
 ```javascript
 // In browser console
-window.eventBus = eventBus // Expose for testing
+window.eventBus = eventBus; // Expose for testing
 
 // Emit test event
-eventBus.emit('mission.created', {
-  id: 'test_123',
-  symbol: 'EURUSD',
+eventBus.emit("mission.created", {
+  id: "test_123",
+  symbol: "EURUSD",
   // ...
-})
+});
 ```
 
 ## Performance Considerations
 
 1. **Debounce price updates** for UI rendering:
+
 ```typescript
-import { debounce } from 'lodash'
+import { debounce } from "lodash";
 
 const updatePrice = debounce((price) => {
-  setPrice(price)
-}, 100)
+  setPrice(price);
+}, 100);
 
-usePriceSubscription(symbol, updatePrice)
+usePriceSubscription(symbol, updatePrice);
 ```
 
 2. **Limit mission queue** size:
+
 ```typescript
 // In store
 if (missions.length > 50) {
-  missions = missions.slice(-50) // Keep last 50
+  missions = missions.slice(-50); // Keep last 50
 }
 ```
 
 3. **Clean up old events**:
+
 ```typescript
 // Periodically clean XP events
 if (xpEvents.length > 100) {
-  xpEvents = xpEvents.slice(0, 100)
+  xpEvents = xpEvents.slice(0, 100);
 }
 ```

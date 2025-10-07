@@ -7,6 +7,7 @@ The TCS++ (Trade Confidence Score Plus Plus) engine is a comprehensive multi-fac
 ## Scoring Components
 
 ### 1. Market Structure Analysis (20 points max)
+
 - **Trend Clarity** (0-8 points)
   - > 0.7: 8 points (strong trend)
   - > 0.5: 6 points (moderate trend)
@@ -22,6 +23,7 @@ The TCS++ (Trade Confidence Score Plus Plus) engine is a comprehensive multi-fac
   - Forming pattern: 3 points
 
 ### 2. Timeframe Alignment (15 points max)
+
 - M15 aligned: 2 points
 - H1 aligned: 4 points
 - H4 aligned: 5 points
@@ -29,6 +31,7 @@ The TCS++ (Trade Confidence Score Plus Plus) engine is a comprehensive multi-fac
 - Perfect alignment bonus: 15 points total
 
 ### 3. Momentum Assessment (15 points max)
+
 - **RSI Momentum** (0-5 points)
   - 25-35 or 65-75: 5 points (strong momentum)
   - 35-45 or 55-65: 3 points (good momentum)
@@ -44,6 +47,7 @@ The TCS++ (Trade Confidence Score Plus Plus) engine is a comprehensive multi-fac
   - > 1.0x average: 1 point
 
 ### 4. Volatility Analysis (10 points max)
+
 - **ATR Range** (0-5 points)
   - 15-50 pips: 5 points (optimal)
   - 10-15 or 50-80 pips: 3 points
@@ -56,6 +60,7 @@ The TCS++ (Trade Confidence Score Plus Plus) engine is a comprehensive multi-fac
   - Stable conditions: 2 points
 
 ### 5. Session Weighting (10 points max)
+
 - London: 10 points
 - New York: 9 points
 - Overlap: 8 points
@@ -64,11 +69,13 @@ The TCS++ (Trade Confidence Score Plus Plus) engine is a comprehensive multi-fac
 - Dead Zone: 2 points
 
 ### 6. Liquidity Patterns (10 points max)
+
 - Liquidity grab detected: 5 points
 - Stop hunt detected: 3 points
 - Near institutional level: 2 points
 
 ### 7. Risk/Reward Quality (10 points max)
+
 - RR >= 4.0: 10 points
 - RR >= 3.5: 9 points
 - RR >= 3.0: 8 points
@@ -77,6 +84,7 @@ The TCS++ (Trade Confidence Score Plus Plus) engine is a comprehensive multi-fac
 - RR >= 1.5: 2 points
 
 ### 8. AI Sentiment Bonus (10 points max)
+
 - Additional points based on AI analysis
 - Capped at 10 points maximum
 
@@ -85,22 +93,27 @@ The TCS++ (Trade Confidence Score Plus Plus) engine is a comprehensive multi-fac
 Based on TCS score and risk/reward ratio:
 
 ### Hammer Trades (94+ TCS, 3.5+ RR)
+
 - **hammer_elite**: Top 1% setups with momentum > 0.8 and structure > 0.9
 - **hammer**: Standard elite setups
 
 ### Shadow Strike Trades (84-93 TCS)
+
 - **shadow_strike_premium**: RR >= 3.0
 - **shadow_strike**: Standard high probability trades
 
 ### Scalp Trades (75-83 TCS)
+
 - **scalp_session**: Optimized for London/NY sessions
 - **scalp**: Quick opportunity trades
 
 ### Watchlist Trades (65-74 TCS)
+
 - Monitor but don't execute
 - Wait for better conditions
 
 ### No Trade (< 65 TCS)
+
 - Below minimum threshold
 - Conditions not favorable
 

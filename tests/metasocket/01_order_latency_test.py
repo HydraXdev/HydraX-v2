@@ -4,14 +4,15 @@ CUTOVER TEST 01: Order Latency Test
 Tests that MetaSocket fire commands execute within acceptable latency bounds
 """
 
+import asyncio
+import json
 import os
 import sys
 import time
-import json
-import asyncio
 from datetime import datetime
 
-sys.path.append('/root/HydraX-v2')
+sys.path.append("/root/HydraX-v2")
+
 
 def test_order_latency():
     """Test that MetaSocket orders execute within <500ms p95"""
@@ -19,8 +20,8 @@ def test_order_latency():
     print("=" * 50)
 
     # Verify SOURCE setting
-    source = os.getenv('SOURCE', 'ea')
-    if source not in ['metasocket', 'both']:
+    source = os.getenv("SOURCE", "ea")
+    if source not in ["metasocket", "both"]:
         print(f"❌ SKIP: SOURCE={source}, need 'metasocket' or 'both'")
         return False
 
@@ -28,13 +29,14 @@ def test_order_latency():
 
     try:
         from adapters.metasocket.adapter import MetaSocketAdapter
+
         adapter = MetaSocketAdapter()
 
         # Health check first
         health = adapter.get_health_status()
         print(f"📊 MetaSocket Health: {health['status']}")
 
-        if health['status'] != 'OK':
+        if health["status"] != "OK":
             print(f"❌ FAIL: MetaSocket not healthy - {health}")
             return False
 
@@ -52,7 +54,7 @@ def test_order_latency():
                 volume=0.01,
                 sl_pips=20,
                 tp_pips=20,
-                idempotency_key=f"test_latency_{i}_{int(start_time)}"
+                idempotency_key=f"test_latency_{i}_{int(start_time)}",
             )
 
             end_time = time.time() * 1000  # ms
@@ -85,10 +87,12 @@ def test_order_latency():
     except Exception as e:
         print(f"❌ FAIL: Exception during test - {e}")
         import traceback
+
         traceback.print_exc()
         return False
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     success = test_order_latency()
     print(f"\n🎯 TEST 01 RESULT: {'✅ PASS' if success else '❌ FAIL'}")
     sys.exit(0 if success else 1)

@@ -19,6 +19,7 @@ This document provides comprehensive documentation of all metrics, KPIs, and ana
 ## Core Metrics
 
 ### 1. Press Pass Conversion Rate
+
 - **Definition**: Percentage of landing page visitors who claim a Press Pass
 - **Formula**: `(Press Pass Claims / Landing Page Views) × 100`
 - **Target**: 2.5-3.5%
@@ -26,6 +27,7 @@ This document provides comprehensive documentation of all metrics, KPIs, and ana
 - **Alert Threshold**: < 0.5% (Critical), < 1.5% (Warning)
 
 ### 2. Daily Active Users (DAU)
+
 - **Definition**: Unique Press Pass users who logged in within 24 hours
 - **Formula**: `COUNT(DISTINCT user_id) WHERE last_login >= NOW() - 24h`
 - **Target**: > 70% of active Press Pass holders
@@ -33,6 +35,7 @@ This document provides comprehensive documentation of all metrics, KPIs, and ana
 - **Alert Threshold**: < 50% (Warning), < 30% (Critical)
 
 ### 3. XP Reset Metrics
+
 - **Definition**: Daily XP reset statistics at midnight GMT
 - **Tracked Values**:
   - Total users affected
@@ -69,11 +72,11 @@ This document provides comprehensive documentation of all metrics, KPIs, and ana
 ### Funnel Conversion Rates
 
 | Stage Transition | Target Rate | Alert Threshold |
-|-----------------|-------------|-----------------|
-| Landing → Claim | 2.5-3.5% | < 1.5% |
-| Claim → Demo | > 80% | < 60% |
-| Demo → Trade | > 50% | < 30% |
-| Trade → Upgrade | > 10% | < 5% |
+| ---------------- | ----------- | --------------- |
+| Landing → Claim  | 2.5-3.5%    | < 1.5%          |
+| Claim → Demo     | > 80%       | < 60%           |
+| Demo → Trade     | > 50%       | < 30%           |
+| Trade → Upgrade  | > 10%       | < 5%            |
 
 ## Activation Metrics
 
@@ -105,6 +108,7 @@ This document provides comprehensive documentation of all metrics, KPIs, and ana
 ### Cohort Retention Analysis
 
 Retention measured at key intervals:
+
 - **D1**: 24 hours after registration
 - **D3**: 3 days after registration
 - **D7**: 7 days after registration (key metric)
@@ -113,12 +117,12 @@ Retention measured at key intervals:
 
 ### Retention Targets
 
-| Metric | Target | Alert Threshold |
-|--------|--------|-----------------|
-| D1 Login | > 80% | < 60% |
-| D7 Login | > 50% | < 35% |
-| D30 Login | > 30% | < 20% |
-| D7 Trade Activity | > 40% | < 25% |
+| Metric            | Target | Alert Threshold |
+| ----------------- | ------ | --------------- |
+| D1 Login          | > 80%  | < 60%           |
+| D7 Login          | > 50%  | < 35%           |
+| D30 Login         | > 30%  | < 20%           |
+| D7 Trade Activity | > 40%  | < 25%           |
 
 ### Churn Indicators
 
@@ -156,12 +160,12 @@ Retention measured at key intervals:
 
 ### Revenue by Tier
 
-| Tier | Monthly Price | Avg. Upgrade Time | Conversion Rate |
-|------|--------------|-------------------|-----------------|
-| Nibbler | $39 | 7 days | 5% |
-| Fang | $79 | 10 days | 3% |
-| Commander | $159 | 14 days | 1.5% |
-| Apex | $349 | 21 days | 0.5% |
+| Tier      | Monthly Price | Avg. Upgrade Time | Conversion Rate |
+| --------- | ------------- | ----------------- | --------------- |
+| Nibbler   | $39           | 7 days            | 5%              |
+| Fang      | $79           | 10 days           | 3%              |
+| Commander | $159          | 14 days           | 1.5%            |
+| Apex      | $349          | 21 days           | 0.5%            |
 
 ## System Health Metrics
 
@@ -223,21 +227,21 @@ Retention measured at key intervals:
 
 ### Critical Alerts (Immediate Action Required)
 
-| Metric | Condition | Action |
-|--------|-----------|---------|
-| Conversion Rate | < 0.5% | Check tracking, landing page |
-| XP Reset Failure | > 5 failures | Manual intervention required |
-| System Error Rate | > 10% | Check system health, rollback |
-| Database Connection | > 90% utilized | Scale database resources |
+| Metric              | Condition      | Action                        |
+| ------------------- | -------------- | ----------------------------- |
+| Conversion Rate     | < 0.5%         | Check tracking, landing page  |
+| XP Reset Failure    | > 5 failures   | Manual intervention required  |
+| System Error Rate   | > 10%          | Check system health, rollback |
+| Database Connection | > 90% utilized | Scale database resources      |
 
 ### Warning Alerts (Investigation Needed)
 
-| Metric | Condition | Action |
-|--------|-----------|---------|
-| Activation Rate | < 30% | Review onboarding flow |
-| D7 Retention | < 35% | Enhance engagement tactics |
-| Churn Spike | > 50% increase | Analyze user feedback |
-| Response Time | > 500ms | Optimize slow queries |
+| Metric          | Condition      | Action                     |
+| --------------- | -------------- | -------------------------- |
+| Activation Rate | < 30%          | Review onboarding flow     |
+| D7 Retention    | < 35%          | Enhance engagement tactics |
+| Churn Spike     | > 50% increase | Analyze user feedback      |
+| Response Time   | > 500ms        | Optimize slow queries      |
 
 ### Info Alerts (Monitoring Only)
 
@@ -250,6 +254,7 @@ Retention measured at key intervals:
 ### Daily Reports (1 AM GMT)
 
 **Contents:**
+
 - Previous day's funnel performance
 - Conversion rate trends
 - Activation metrics
@@ -258,6 +263,7 @@ Retention measured at key intervals:
 - Anomaly summary
 
 **Distribution:**
+
 - Email to stakeholders
 - Slack summary to #analytics channel
 - Dashboard update
@@ -265,6 +271,7 @@ Retention measured at key intervals:
 ### Weekly Reports (Monday 2 AM GMT)
 
 **Contents:**
+
 - Week-over-week comparisons
 - Cohort retention analysis
 - Revenue performance
@@ -273,6 +280,7 @@ Retention measured at key intervals:
 - Strategic recommendations
 
 **Distribution:**
+
 - Comprehensive email report
 - Executive summary presentation
 - Team meeting agenda items
@@ -280,6 +288,7 @@ Retention measured at key intervals:
 ### Monthly Reports (1st of month)
 
 **Contents:**
+
 - Monthly KPI review
 - Cohort LTV analysis
 - Seasonal trend analysis
@@ -316,12 +325,12 @@ Retention measured at key intervals:
 
 ### Data Retention Policy
 
-| Data Type | Retention Period | Aggregation |
-|-----------|-----------------|-------------|
-| Raw Events | 90 days | None |
-| Hourly Metrics | 1 year | By hour |
-| Daily Summaries | 2 years | By day |
-| Monthly Reports | Indefinite | By month |
+| Data Type       | Retention Period | Aggregation |
+| --------------- | ---------------- | ----------- |
+| Raw Events      | 90 days          | None        |
+| Hourly Metrics  | 1 year           | By hour     |
+| Daily Summaries | 2 years          | By day      |
+| Monthly Reports | Indefinite       | By month    |
 
 ## Best Practices
 
@@ -349,9 +358,10 @@ Retention measured at key intervals:
 ## Appendix: SQL Query Examples
 
 ### Daily Conversion Funnel
+
 ```sql
 WITH funnel AS (
-    SELECT 
+    SELECT
         COUNT(DISTINCT CASE WHEN event = 'page_view' THEN session_id END) as views,
         COUNT(DISTINCT CASE WHEN event = 'press_pass_claim' THEN user_id END) as claims,
         COUNT(DISTINCT CASE WHEN event = 'demo_activated' THEN user_id END) as activated,
@@ -360,7 +370,7 @@ WITH funnel AS (
     FROM analytics_events
     WHERE date = CURRENT_DATE
 )
-SELECT 
+SELECT
     *,
     ROUND(claims::numeric / NULLIF(views, 0) * 100, 2) as view_to_claim_rate,
     ROUND(activated::numeric / NULLIF(claims, 0) * 100, 2) as claim_to_active_rate,
@@ -370,16 +380,17 @@ FROM funnel;
 ```
 
 ### Cohort Retention Analysis
+
 ```sql
 WITH cohorts AS (
-    SELECT 
+    SELECT
         DATE_TRUNC('day', created_at) as cohort_date,
         user_id,
         created_at
     FROM users
     WHERE tier = 'PRESS_PASS'
 )
-SELECT 
+SELECT
     cohort_date,
     COUNT(DISTINCT c.user_id) as cohort_size,
     COUNT(DISTINCT CASE WHEN l.login_date = c.cohort_date + 1 THEN c.user_id END) as d1_retained,
@@ -393,6 +404,6 @@ ORDER BY cohort_date DESC;
 
 ---
 
-*Last Updated: [Current Date]*
-*Version: 1.0*
-*Maintained by: Analytics Team*
+_Last Updated: [Current Date]_
+_Version: 1.0_
+_Maintained by: Analytics Team_

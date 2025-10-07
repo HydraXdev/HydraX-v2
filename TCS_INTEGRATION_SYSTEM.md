@@ -7,6 +7,7 @@ The TCS (Tactical Confidence Score) Integration System connects the self-optimiz
 ## Architecture Components
 
 ### 1. Self-Optimizing TCS Engine (`self_optimizing_tcs.py`)
+
 - **Purpose**: Dynamically adjusts TCS thresholds to maintain optimal signal volume and win rates
 - **Key Features**:
   - Target signal volume: 65 signals/day
@@ -16,6 +17,7 @@ The TCS (Tactical Confidence Score) Integration System connects the self-optimiz
   - Adjustments every 4 hours based on 24-hour lookbacks
 
 ### 2. TCS Integration Layer (`tcs_integration.py`)
+
 - **Purpose**: Main integration component that connects TCS optimizer to signal flow
 - **Key Classes**:
   - `TCSIntegrationLayer`: Main coordinator
@@ -23,6 +25,7 @@ The TCS (Tactical Confidence Score) Integration System connects the self-optimiz
   - `MarketConditionAnalyzer`: Market condition assessment
 
 ### 3. Advanced Performance Tracker (`tcs_performance_tracker.py`)
+
 - **Purpose**: Comprehensive performance tracking with database storage
 - **Key Features**:
   - Real-time position monitoring
@@ -31,6 +34,7 @@ The TCS (Tactical Confidence Score) Integration System connects the self-optimiz
   - SQLite database for persistence
 
 ### 4. Signal Fusion Integration (`signal_fusion.py`)
+
 - **Purpose**: Enhanced signal fusion engine with TCS filtering
 - **Key Features**:
   - Dynamic TCS thresholds per pair
@@ -38,6 +42,7 @@ The TCS (Tactical Confidence Score) Integration System connects the self-optimiz
   - Enhanced statistics with TCS data
 
 ### 5. Complete Signal Flow Integration (`complete_signal_flow_v3.py`)
+
 - **Purpose**: Main signal flow updated to use TCS optimization
 - **Key Features**:
   - TCS integration initialization
@@ -57,21 +62,25 @@ The TCS (Tactical Confidence Score) Integration System connects the self-optimiz
 ## Key Integration Points
 
 ### 1. Signal Generation
+
 - Market intelligence is collected and fused
 - TCS thresholds are applied during signal fusion
 - Only signals above dynamic threshold proceed to tier assignment
 
 ### 2. Trade Execution
+
 - TCS threshold and market conditions are recorded
 - Performance tracking begins immediately
 - Trade metadata includes TCS information
 
 ### 3. Performance Feedback
+
 - Closed positions are analyzed for TCS performance
 - Results feed back to TCS optimizer for threshold adjustment
 - Real-time monitoring provides immediate feedback
 
 ### 4. Threshold Optimization
+
 - TCS optimizer runs every 4 hours
 - Considers signal volume, win rate, and market conditions
 - Updates thresholds across all monitored pairs
@@ -79,6 +88,7 @@ The TCS (Tactical Confidence Score) Integration System connects the self-optimiz
 ## Configuration
 
 ### Default TCS Thresholds
+
 - EURUSD: 75.0%
 - GBPUSD: 75.0%
 - USDJPY: 75.0%
@@ -86,6 +96,7 @@ The TCS (Tactical Confidence Score) Integration System connects the self-optimiz
 - AUDUSD: 75.0%
 
 ### Optimization Parameters
+
 - Target signals per day: 65
 - Signal volume tolerance: ±15%
 - Adjustment interval: 4 hours
@@ -94,16 +105,19 @@ The TCS (Tactical Confidence Score) Integration System connects the self-optimiz
 ## Database Schema
 
 ### TCS Adjustments
+
 - Timestamp, pair, old/new thresholds
 - Reason for adjustment
 - Performance metrics at time of adjustment
 
 ### Trade Performance
+
 - Complete trade lifecycle tracking
 - TCS threshold used, market conditions
 - Performance metrics (pips, profit, hold time)
 
 ### Signal Volume Tracking
+
 - Hourly signal generation statistics
 - Execution rates by pair and hour
 - Confidence and threshold tracking
@@ -111,6 +125,7 @@ The TCS (Tactical Confidence Score) Integration System connects the self-optimiz
 ## Usage Examples
 
 ### Initialize TCS Integration
+
 ```python
 from src.bitten_core.tcs_integration import initialize_tcs_integration
 from src.bitten_core.signal_fusion import signal_fusion_engine
@@ -121,6 +136,7 @@ await integration.start_monitoring()
 ```
 
 ### Get TCS Statistics
+
 ```python
 # Get comprehensive stats
 stats = integration.get_integration_stats()
@@ -130,6 +146,7 @@ fusion_stats = signal_fusion_engine.get_tcs_enhanced_stats()
 ```
 
 ### Update TCS Thresholds
+
 ```python
 # Update threshold for specific pair
 new_threshold = await integration.update_tcs_thresholds("EURUSD")
@@ -141,12 +158,15 @@ signal_fusion_engine.update_tcs_threshold("EURUSD", 77.5)
 ## Testing
 
 ### Test Suite
+
 Run the complete integration test suite:
+
 ```bash
 python test_tcs_integration.py
 ```
 
 ### Test Components
+
 1. **TCS Optimizer**: Basic functionality and threshold calculation
 2. **Performance Tracking**: Database operations and real-time monitoring
 3. **Signal Fusion**: TCS filtering and threshold updates
@@ -156,6 +176,7 @@ python test_tcs_integration.py
 ## Performance Metrics
 
 ### Key Metrics Tracked
+
 - **Signal Volume**: Signals generated per day/hour
 - **Win Rate**: Percentage of profitable trades
 - **Execution Rate**: Percentage of signals executed
@@ -163,6 +184,7 @@ python test_tcs_integration.py
 - **Market Condition Performance**: Results by volatility/session
 
 ### Optimization Targets
+
 - Maintain 65 signals/day (±15% tolerance)
 - Achieve 85% win rate target
 - Minimize threshold adjustments while maintaining performance
@@ -170,17 +192,20 @@ python test_tcs_integration.py
 ## Market Condition Assessment
 
 ### Volatility Levels
+
 - **LOW**: ATR < 20, Spread < 2
 - **MEDIUM**: ATR 20-35, Spread 2-3
 - **HIGH**: ATR > 35, Spread > 3
 
 ### Session Analysis
+
 - **TOKYO**: 2-5 AM EST
 - **LONDON**: 3-8 AM EST
 - **OVERLAP**: 8-1 PM EST
 - **NY**: 1-5 PM EST
 
 ### News Impact
+
 - **LOW**: 0.2 (off-hours)
 - **MEDIUM**: 0.6 (news hours)
 - **HIGH**: 0.8+ (major announcements)
@@ -206,21 +231,25 @@ python test_tcs_integration.py
 ## Benefits
 
 ### 1. Dynamic Optimization
+
 - TCS thresholds adapt to market conditions
 - Maintains optimal signal volume and quality
 - Reduces manual threshold management
 
 ### 2. Performance Feedback
+
 - Real-time performance tracking
 - Historical analysis for optimization
 - Detailed trade-level metrics
 
 ### 3. Market Awareness
+
 - Considers volatility and session activity
 - Adjusts thresholds based on market conditions
 - Integrates news impact assessment
 
 ### 4. Comprehensive Integration
+
 - Seamless integration with existing signal flow
 - Enhanced statistics and monitoring
 - Minimal disruption to existing functionality
@@ -228,21 +257,25 @@ python test_tcs_integration.py
 ## Future Enhancements
 
 ### 1. Machine Learning Integration
+
 - Predictive threshold optimization
 - Pattern recognition for market conditions
 - Automated parameter tuning
 
 ### 2. Multi-Asset Support
+
 - Cryptocurrency integration
 - Commodity pairs
 - Index trading support
 
 ### 3. Enhanced Analytics
+
 - Advanced performance visualization
 - Correlation analysis
 - Risk-adjusted performance metrics
 
 ### 4. API Integration
+
 - External data source integration
 - Real-time news sentiment analysis
 - Economic calendar integration
@@ -267,6 +300,7 @@ python test_tcs_integration.py
    - Verify database write permissions
 
 ### Debug Commands
+
 ```python
 # Check TCS integration status
 print(integration.get_integration_stats())
@@ -281,6 +315,7 @@ print(signal_fusion_engine.get_tcs_threshold("EURUSD"))
 ## Support
 
 For issues or questions regarding the TCS Integration System:
+
 1. Check the test suite results for system health
 2. Review log files for detailed error information
 3. Verify database connectivity and permissions

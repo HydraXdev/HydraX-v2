@@ -26,4 +26,3 @@
 
 > report everything we did in claude.md  and record to handover.md
   ⎿  API Error: 500 {"type":"error","error":{"type":"api_error","message":"Internal server error"}}
-

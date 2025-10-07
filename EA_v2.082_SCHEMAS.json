@@ -35,7 +35,7 @@
         "time": 1695420000,
         "open": 1.0678,
         "high": 1.0689,
-        "low": 1.0670,
+        "low": 1.067,
         "close": 1.0682,
         "timestamp": "2025-09-24 01:24:00"
       }
@@ -64,13 +64,13 @@
             "t": 1695420000,
             "o": 1.0678,
             "h": 1.0689,
-            "l": 1.0670,
+            "l": 1.067,
             "c": 1.0682
           }
         ],
         "metrics": {
           "dir": "BUY",
-          "lot": 0.10,
+          "lot": 0.1,
           "sl": 1.0668,
           "tp": 1.0715
         }
@@ -90,13 +90,13 @@
         "status": "success",
         "ticket": 123456,
         "price": 1.0682,
-        "lot": 0.10,
+        "lot": 0.1,
         "message": "OK BUY",
         "account": 843859,
         "currency": "USD",
-        "balance": 1000.00,
-        "equity": 1002.50,
-        "floating_pnl": 2.50,
+        "balance": 1000.0,
+        "equity": 1002.5,
+        "floating_pnl": 2.5,
         "timestamp": "2025-09-24 01:23:46"
       },
       "status_values": [
@@ -120,13 +120,13 @@
         "status": "success",
         "ticket": 123456,
         "close_price": 2346.12,
-        "lot": 0.10,
+        "lot": 0.1,
         "message": "Closed",
         "account": 843859,
         "currency": "USD",
-        "balance": 1005.00,
-        "equity": 1005.00,
-        "floating_pnl": 0.00
+        "balance": 1005.0,
+        "equity": 1005.0,
+        "floating_pnl": 0.0
       }
     },
 
@@ -138,22 +138,17 @@
         "ticket": 123456,
         "fire_id": "",
         "symbol": "XAUUSD",
-        "volume": 0.10,
+        "volume": 0.1,
         "close_price": 2346.12,
-        "profit": 12.50,
+        "profit": 12.5,
         "reason": "TP_HIT",
         "uuid": "...",
-        "balance": 1005.00,
-        "equity": 1005.00,
-        "floating_pnl": 0.00,
+        "balance": 1005.0,
+        "equity": 1005.0,
+        "floating_pnl": 0.0,
         "timestamp": 1695420220
       },
-      "reason_values": [
-        "MANUAL",
-        "TP_HIT",
-        "SL_HIT",
-        "STOP_OUT"
-      ]
+      "reason_values": ["MANUAL", "TP_HIT", "SL_HIT", "STOP_OUT"]
     },
 
     "HEARTBEAT_METRICS": {
@@ -164,9 +159,9 @@
         "target_uuid": "...",
         "node_id": "NODE_...",
         "currency": "USD",
-        "balance": 1000.00,
-        "equity": 1002.50,
-        "floating_pnl": 2.50,
+        "balance": 1000.0,
+        "equity": 1002.5,
+        "floating_pnl": 2.5,
         "leverage": "500",
         "margin": "120.50",
         "free_margin": "881.99",
@@ -182,8 +177,8 @@
             "direction": "BUY",
             "open_price": 1.0675,
             "current_price": 1.0682,
-            "volume": 0.10,
-            "pnl": 2.50
+            "volume": 0.1,
+            "pnl": 2.5
           }
         ],
         "timestamp": "2025-09-24 01:23:46"
@@ -199,9 +194,9 @@
         "node_id": "NODE_...",
         "user_uuid": "...",
         "hybrid_enabled": false,
-        "balance": 1000.00,
-        "equity": 1002.50,
-        "floating_pnl": 2.50,
+        "balance": 1000.0,
+        "equity": 1002.5,
+        "floating_pnl": 2.5,
         "timestamp": "2025-09-24 01:23:46"
       }
     }

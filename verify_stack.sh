@@ -14,7 +14,7 @@ echo ""
 # 1) Required PM2 processes
 echo -n "Checking PM2 processes... "
 req_procs=(command_router relay_to_telegram webapp confirm_listener elite_guard outcome_daemon)
-for p in "${req_procs[@]}"; do 
+for p in "${req_procs[@]}"; do
   pm2 jlist 2>/dev/null | grep -q "\"name\":\"$p\"" || die "PM2 process missing: $p"
 done
 ok "all 6 required PM2 processes present"
@@ -38,12 +38,12 @@ fi
 
 # 4) Ports: exactly one binder each
 echo -n "Checking port bindings... "
-check_port(){ 
+check_port(){
   want=$1
   c=$(ss -tulpen 2>/dev/null | awk '{print $5}' | grep -E ":$want\$" | wc -l)
   [ "$c" -eq 1 ] || die "port $want binder count=$c (expected 1)"
 }
-for port in 5555 5556 5557 5558 5560 8888; do 
+for port in 5555 5556 5557 5558 5560 8888; do
   check_port $port
 done
 ok "all ports bound exactly once"
@@ -68,14 +68,14 @@ echo -n "Checking database schema... "
 DB="$ROOT/bitten.db"
 [ -f "$DB" ] || die "Database file missing: $DB"
 
-have_table(){ 
+have_table(){
   sqlite3 "$DB" ".tables" 2>/dev/null | grep -qw "$1" || die "table missing: $1"
 }
-have_col(){ 
+have_col(){
   sqlite3 "$DB" "PRAGMA table_info($1);" 2>/dev/null | awk -F'|' '{print $2}' | grep -qx "$2" || die "table $1 missing column $2"
 }
 
-for t in missions fires ea_instances signals users; do 
+for t in missions fires ea_instances signals users; do
   have_table $t
 done
 

@@ -1,12 +1,14 @@
 # Fire Mode Naming Update - July 15, 2025
 
 ## Summary
+
 Successfully updated all fire mode references across the BITTEN project from MANUAL/SEMI-AUTO to SELECT FIRE/AUTO.
 
 ## Changes Made
 
 ### 1. Core Fire Mode Files
-- **fire_mode_handlers.py**: 
+
+- **fire_mode_handlers.py**:
   - Button labels updated to "SELECT FIRE" and "AUTO"
   - Mode mapping handles legacy names (MANUAL, SEMI, SEMI-AUTO) → SELECT
   - Help text shows correct mode names
@@ -21,17 +23,20 @@ Successfully updated all fire mode references across the BITTEN project from MAN
   - Database initialization uses 'SELECT' as default
 
 ### 2. Bot Integration
+
 - **bitten_production_bot.py**:
   - Fire command checks for 'SELECT' mode
   - Comments updated to reflect new naming
 
 ### 3. Configuration Files
+
 - **config/fire_mode_config.py**:
   - All tier configurations updated to use 'SELECT' and 'AUTO'
   - Fire mode descriptions updated
   - Execution rules reference SELECT instead of SEMI
 
 ### 4. Documentation
+
 - **CLAUDE.md**:
   - Fire modes section updated to show implementation status
   - References to MANUAL mode changed to SELECT FIRE
@@ -42,7 +47,9 @@ Successfully updated all fire mode references across the BITTEN project from MAN
   - Removed fire modes from "Actually Missing" section
 
 ### 5. Files NOT Updated (Different Context)
+
 These files contain references to manual/semi-auto in different contexts and were not changed:
+
 - Old fire_modes.py (uses different enum system - SINGLE_SHOT, CHAINGUN, etc.)
 - HTML templates (references to "manual" actions unrelated to fire modes)
 - Documentation about manual processes/steps
@@ -51,23 +58,28 @@ These files contain references to manual/semi-auto in different contexts and wer
 ## New Fire Mode System
 
 ### Mode Names
+
 - **SELECT FIRE** - One-click confirmation for each trade (default for all users)
 - **AUTO** - Fully autonomous execution for 90%+ TCS signals (COMMANDER+ only)
 
 ### Access by Tier
+
 - **PRESS PASS**: SELECT FIRE only
-- **NIBBLER**: SELECT FIRE only  
+- **NIBBLER**: SELECT FIRE only
 - **FANG**: SELECT FIRE only
 - **COMMANDER**: SELECT FIRE + AUTO
-- ****: SELECT FIRE + AUTO
+- \*\*\*\*: SELECT FIRE + AUTO
 
 ### Database Schema
+
 - Default mode: SELECT
 - Tracks mode changes with history
 - Slot management for AUTO mode (1-3 concurrent positions)
 
 ## Legacy Name Handling
+
 The system automatically maps old names to new ones:
+
 - MANUAL → SELECT
 - SEMI → SELECT
 - SEMI-AUTO → SELECT

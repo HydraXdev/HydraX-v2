@@ -8,7 +8,7 @@ FILES DISABLED:
 - working_signal_generator.py.FAKE_DISABLED (was using fake VENOM engine)
 
 ISSUES WITH FAKE ENGINES:
-- Random number generators for market regime detection  
+- Random number generators for market regime detection
 - Hardcoded fake spread/volume data
 - Artificial 99% confidence inflation
 - Fixed BUY direction with no real analysis

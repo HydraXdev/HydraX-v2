@@ -4,24 +4,27 @@ HydraSocket v1 Dual-Feed Parity Harness
 Compares HydraSocket events with MetaSocket (legacy) for ≥99% end-state parity
 """
 
-import json
-import time
 import asyncio
-import sqlite3
-import websockets
-import requests
-from typing import Dict, List, Any, Optional
-from dataclasses import dataclass, asdict
-from datetime import datetime
-import uuid
+import json
 import logging
+import sqlite3
+import time
+import uuid
+from dataclasses import asdict, dataclass
+from datetime import datetime
+from typing import Any, Dict, List, Optional
+
+import requests
+import websockets
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class TradeOutcome:
     """Trade outcome for parity comparison"""
+
     ticket: str
     symbol: str
     side: str
@@ -32,14 +35,17 @@ class TradeOutcome:
     pnl: Optional[float]
     timestamp: float
 
+
 @dataclass
 class PortfolioState:
     """Portfolio end-state for comparison"""
+
     open_positions: Dict[str, TradeOutcome]
     closed_positions: List[TradeOutcome]
     total_pnl: float
     balance: float
     equity: float
+
 
 class HydraSocketCollector:
     """Collects events from HydraSocket"""
@@ -60,11 +66,7 @@ class HydraSocketCollector:
                 logger.info(f"Connected to HydraSocket WebSocket")
 
                 # Subscribe to events
-                subscribe_msg = {
-                    "type": "subscribe",
-                    "topic": "events",
-                    "account_id": self.account_id
-                }
+                subscribe_msg = {"type": "subscribe", "topic": "events", "account_id": self.account_id}
                 await websocket.send(json.dumps(subscribe_msg))
 
                 end_time = time.time() + duration_seconds
@@ -98,7 +100,7 @@ class HydraSocketCollector:
                 close_price=None,
                 status="open",
                 pnl=None,
-                timestamp=event.get("timestamp", time.time())
+                timestamp=event.get("timestamp", time.time()),
             )
             self.portfolio.open_positions[ticket] = trade
 
@@ -115,6 +117,7 @@ class HydraSocketCollector:
         elif event_type == "account_summary":
             self.portfolio.balance = event.get("balance", 0.0)
             self.portfolio.equity = event.get("equity", 0.0)
+
 
 class MetaSocketCollector:
     """Collects events from MetaSocket (legacy) - simulated for now"""
@@ -150,7 +153,7 @@ class MetaSocketCollector:
                     "side": "buy",
                     "volume": 0.01,
                     "price": 1.1000 + (trade_counter * 0.0001),
-                    "timestamp": time.time()
+                    "timestamp": time.time(),
                 }
                 self.events.append(open_event)
                 self._process_event(open_event)
@@ -162,7 +165,7 @@ class MetaSocketCollector:
                     "ticket": ticket,
                     "price": 1.1000 + (trade_counter * 0.0001) + 0.0010,  # +10 pips
                     "pnl": 10.0,
-                    "timestamp": time.time()
+                    "timestamp": time.time(),
                 }
                 self.events.append(close_event)
                 self._process_event(close_event)
@@ -184,7 +187,7 @@ class MetaSocketCollector:
                 close_price=None,
                 status="open",
                 pnl=None,
-                timestamp=event.get("timestamp", time.time())
+                timestamp=event.get("timestamp", time.time()),
             )
             self.portfolio.open_positions[ticket] = trade
 
@@ -197,6 +200,7 @@ class MetaSocketCollector:
                 trade.pnl = event.get("pnl", 0.0)
                 self.portfolio.closed_positions.append(trade)
                 self.portfolio.total_pnl += trade.pnl
+
 
 class ParityAnalyzer:
     """Analyzes parity between HydraSocket and MetaSocket"""
@@ -221,8 +225,7 @@ class ParityAnalyzer:
                 meta_trade = meta_closed[ticket]
 
                 # Check if outcomes match (allowing small tolerance)
-                if (abs(hydra_trade.pnl - meta_trade.pnl) < 0.01 and
-                    hydra_trade.status == meta_trade.status):
+                if abs(hydra_trade.pnl - meta_trade.pnl) < 0.01 and hydra_trade.status == meta_trade.status:
                     matching_trades += 1
 
         # Calculate parity percentage
@@ -242,15 +245,15 @@ class ParityAnalyzer:
                 "total_pnl": self.hydra.total_pnl,
                 "balance": self.hydra.balance,
                 "open_positions": len(self.hydra.open_positions),
-                "closed_positions": len(self.hydra.closed_positions)
+                "closed_positions": len(self.hydra.closed_positions),
             },
             "meta_summary": {
                 "total_pnl": self.meta.total_pnl,
                 "balance": self.meta.balance,
                 "open_positions": len(self.meta.open_positions),
-                "closed_positions": len(self.meta.closed_positions)
+                "closed_positions": len(self.meta.closed_positions),
             },
-            "discrepancies": self._find_discrepancies(hydra_closed, meta_closed)
+            "discrepancies": self._find_discrepancies(hydra_closed, meta_closed),
         }
 
     def _find_discrepancies(self, hydra_trades: Dict, meta_trades: Dict) -> List[Dict]:
@@ -260,20 +263,16 @@ class ParityAnalyzer:
         # Trades in HydraSocket but not MetaSocket
         for ticket in hydra_trades:
             if ticket not in meta_trades:
-                discrepancies.append({
-                    "type": "missing_in_meta",
-                    "ticket": ticket,
-                    "trade": asdict(hydra_trades[ticket])
-                })
+                discrepancies.append(
+                    {"type": "missing_in_meta", "ticket": ticket, "trade": asdict(hydra_trades[ticket])}
+                )
 
         # Trades in MetaSocket but not HydraSocket
         for ticket in meta_trades:
             if ticket not in hydra_trades:
-                discrepancies.append({
-                    "type": "missing_in_hydra",
-                    "ticket": ticket,
-                    "trade": asdict(meta_trades[ticket])
-                })
+                discrepancies.append(
+                    {"type": "missing_in_hydra", "ticket": ticket, "trade": asdict(meta_trades[ticket])}
+                )
 
         # Trades with different outcomes
         for ticket in hydra_trades:
@@ -281,16 +280,18 @@ class ParityAnalyzer:
                 hydra_trade = hydra_trades[ticket]
                 meta_trade = meta_trades[ticket]
 
-                if (abs(hydra_trade.pnl - meta_trade.pnl) >= 0.01 or
-                    hydra_trade.status != meta_trade.status):
-                    discrepancies.append({
-                        "type": "outcome_mismatch",
-                        "ticket": ticket,
-                        "hydra_trade": asdict(hydra_trade),
-                        "meta_trade": asdict(meta_trade)
-                    })
+                if abs(hydra_trade.pnl - meta_trade.pnl) >= 0.01 or hydra_trade.status != meta_trade.status:
+                    discrepancies.append(
+                        {
+                            "type": "outcome_mismatch",
+                            "ticket": ticket,
+                            "hydra_trade": asdict(hydra_trade),
+                            "meta_trade": asdict(meta_trade),
+                        }
+                    )
 
         return discrepancies
+
 
 async def run_parity_test(duration_minutes: int = 5) -> Dict[str, Any]:
     """Run the dual-feed parity test"""
@@ -302,21 +303,16 @@ async def run_parity_test(duration_minutes: int = 5) -> Dict[str, Any]:
 
     # Initialize collectors
     hydra_collector = HydraSocketCollector(
-        ws_url="ws://localhost:8888/socket.io/",
-        api_key="test-api-key",
-        account_id="TEST"
+        ws_url="ws://localhost:8888/socket.io/", api_key="test-api-key", account_id="TEST"
     )
 
     meta_collector = MetaSocketCollector(
-        api_url="http://localhost:9999",  # Placeholder
-        api_key="test-api-key",
-        account_id="TEST"
+        api_url="http://localhost:9999", api_key="test-api-key", account_id="TEST"  # Placeholder
     )
 
     # Run collection in parallel
     await asyncio.gather(
-        hydra_collector.collect_events(duration_seconds),
-        meta_collector.collect_events(duration_seconds)
+        hydra_collector.collect_events(duration_seconds), meta_collector.collect_events(duration_seconds)
     )
 
     # Analyze parity
@@ -332,10 +328,11 @@ async def run_parity_test(duration_minutes: int = 5) -> Dict[str, Any]:
         "hydra_events_count": len(hydra_collector.events),
         "meta_events_count": len(meta_collector.events),
         "pass_threshold": 99.0,
-        "test_passed": parity_results["parity_percentage"] >= 99.0
+        "test_passed": parity_results["parity_percentage"] >= 99.0,
     }
 
     return report
+
 
 def save_parity_report(report: Dict[str, Any]):
     """Save parity report to artifacts directory"""
@@ -346,13 +343,15 @@ def save_parity_report(report: Dict[str, Any]):
 
     # Ensure directory exists
     import os
+
     os.makedirs(os.path.dirname(report_path), exist_ok=True)
 
-    with open(report_path, 'w') as f:
+    with open(report_path, "w") as f:
         json.dump(report, f, indent=2)
 
     logger.info(f"Parity report saved to: {report_path}")
     return report_path
+
 
 if __name__ == "__main__":
     import sys

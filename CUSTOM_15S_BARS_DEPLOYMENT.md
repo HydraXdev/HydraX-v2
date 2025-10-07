@@ -9,6 +9,7 @@
 ## 🎯 IMPLEMENTATION SUMMARY
 
 Complete Brain-side infrastructure for custom 15-second bars from 200 EAs, including:
+
 - ✅ 4x faster pattern detection than M1 bars
 - ✅ Provider management (10 data providers, 190 execution-only)
 - ✅ Runtime feed control via `feed_control` commands
@@ -20,11 +21,13 @@ Complete Brain-side infrastructure for custom 15-second bars from 200 EAs, inclu
 ## 📁 FILES MODIFIED/CREATED
 
 ### **EA Side (Already Provided)**
+
 - `HydraSocket_v1.0_NativeSockets_Fixed.mq5` - Complete EA with custom 15s bars
 
 ### **Brain Side (NEW)**
 
 **Elite Guard Integration:**
+
 - `/root/HydraX-v2/elite_guard_with_citadel.py` - Modified to receive custom bars
   - Added `s15_data` buffer (400 bars = 100 minutes)
   - Added `s15_timestamps` for deduplication
@@ -32,6 +35,7 @@ Complete Brain-side infrastructure for custom 15-second bars from 200 EAs, inclu
   - Added custom bar statistics to `show_stats()`
 
 **Provider Management Tools:**
+
 - `/root/HydraX-v2/send_feed_control.py` - Command-line tool for feed control
 
 ---
@@ -60,15 +64,16 @@ The EA sends custom 15-second bars in this format:
   "tf_seconds": 15,
   "feed_ver": 2,
   "t": 1727702580,
-  "o": 1.08500,
-  "h": 1.08550,
-  "l": 1.08490,
-  "c": 1.08520,
+  "o": 1.085,
+  "h": 1.0855,
+  "l": 1.0849,
+  "c": 1.0852,
   "v": 1234
 }
 ```
 
 **Key Fields:**
+
 - `feed_ver=2` - Identifies custom bar format
 - `tf_seconds=15` - 15-second timeframe (4x faster than M1)
 - `t` - Unix timestamp for deduplication
@@ -113,6 +118,7 @@ Elite Guard now shows custom bar stats:
 ### **Concept: 10 Providers, 190 Execution-Only**
 
 **Scale Characteristics:**
+
 - 10 provider EAs × 16 pairs × 4 bars/min = **640 bars/min** = **10.7/sec**
 - 200 user heartbeats = **~200/sec** during trading
 - **Total**: ~210 events/sec baseline (well within 400/sec limit)
@@ -120,16 +126,19 @@ Elite Guard now shows custom bar stats:
 ### **Runtime Feed Control**
 
 #### **Enable Data Feed for Provider:**
+
 ```bash
 python3 /root/HydraX-v2/send_feed_control.py --account 843859 --enable
 ```
 
 #### **Disable Data Feed (Consumer Mode):**
+
 ```bash
 python3 /root/HydraX-v2/send_feed_control.py --account 843859 --disable
 ```
 
 #### **Configure Multiple Providers:**
+
 ```bash
 python3 /root/HydraX-v2/send_feed_control.py --providers "843859,843860,843861"
 ```
@@ -140,11 +149,12 @@ python3 /root/HydraX-v2/send_feed_control.py --providers "843859,843860,843861"
 {
   "type": "feed_control",
   "request_ref": "enable-843859-1727702580",
-  "enabled": 1  // 1 = enable, 0 = disable
+  "enabled": 1 // 1 = enable, 0 = disable
 }
 ```
 
 **EA Response:**
+
 ```json
 {
   "type": "command_result",
@@ -207,6 +217,7 @@ pm2 logs elite_guard --lines 50 | grep "CUSTOM 15s"
 ```
 
 **Expected Output:**
+
 ```
 ⚡ CUSTOM 15s BARS (4x faster than M1):
   Received: 1234
@@ -222,6 +233,7 @@ pm2 logs elite_guard --lines 100 | grep "EURUSD"
 ```
 
 **Expected Output:**
+
 ```
 EURUSD: 234 ticks, 156 15s bars | Last: 2s ago ✅
 ⚡ CUSTOM 15s BAR: EURUSD O=1.08500 H=1.08550 L=1.08490 C=1.08520 (bars=20)
@@ -230,6 +242,7 @@ EURUSD: 234 ticks, 156 15s bars | Last: 2s ago ✅
 ### **Verify Pattern Detection:**
 
 Once 20+ bars accumulated:
+
 ```bash
 pm2 logs elite_guard | grep "PATTERN SCAN"
 ```
@@ -251,6 +264,7 @@ Should show pattern scans running every 15 seconds.
 ### **Existing Patterns Ready for 15s Bars:**
 
 All 10 Elite Guard patterns work with custom bars:
+
 - ✅ LIQUIDITY_SWEEP_REVERSAL
 - ✅ ORDER_BLOCK_BOUNCE
 - ✅ FAIR_VALUE_GAP_FILL
@@ -283,6 +297,7 @@ providers, consumers, commands = manager.optimize_providers(all_accounts)
 ```
 
 **Connection Quality Metrics:**
+
 - Uptime (seconds connected)
 - Data quality (bars received / expected)
 - Connection failures (reconnect count)
@@ -294,18 +309,21 @@ providers, consumers, commands = manager.optimize_providers(all_accounts)
 ### **No Custom Bars Received**
 
 **Check 1: EA Configuration**
+
 ```bash
 # Verify EA has InpEnableMarketFeed = true
 # Verify InpEnableDataFeed = true (or sent feed_control command)
 ```
 
 **Check 2: HydraSocket Router**
+
 ```bash
 ps aux | grep hydrasocket_router
 # Should show: python3 /root/HydraX-v2/hydrasocket_router.py --event-port 5559
 ```
 
 **Check 3: Elite Guard Connection**
+
 ```bash
 pm2 logs elite_guard | grep "📡 Data listener"
 # Should show: "📡 Data listener started, connecting to EA tick stream (port 5556)..."
@@ -314,23 +332,27 @@ pm2 logs elite_guard | grep "📡 Data listener"
 ### **High Duplicate Rate**
 
 **Normal behavior:**
+
 - Multiple EAs send same bars (same symbol, same timestamp)
 - Deduplication prevents duplicates
 - Expected: 5-10% duplicate rate
 
 **Excessive duplicates (>50%):**
+
 - Too many providers for symbol coverage
 - Reduce provider count or increase symbol diversity
 
 ### **Pattern Detection Not Triggering**
 
 **Check bar accumulation:**
+
 ```bash
 pm2 logs elite_guard | grep "15s bars"
 # Need 20+ bars per symbol for pattern detection
 ```
 
 **Typical build time:**
+
 - 20 bars × 15 seconds = **5 minutes** to start detecting
 - Compare to M1: 20 bars × 60 seconds = **20 minutes** ⚡ 4x faster!
 
@@ -341,11 +363,13 @@ pm2 logs elite_guard | grep "15s bars"
 ### **Signal Generation Speed**
 
 **Before (M1 bars):**
+
 - 20 bars needed = 20 minutes of data
 - Pattern detection starts after 20 minutes
 - Signal latency: 20-30 minutes
 
 **After (15s bars):**
+
 - 20 bars needed = 5 minutes of data ⚡
 - Pattern detection starts after 5 minutes
 - Signal latency: 5-10 minutes
@@ -397,12 +421,18 @@ Create `/root/HydraX-v2/provider_config.json`:
 {
   "target_providers": 10,
   "current_providers": [
-    "843859", "843860", "843861", "843862", "843863",
-    "843864", "843865", "843866", "843867", "843868"
+    "843859",
+    "843860",
+    "843861",
+    "843862",
+    "843863",
+    "843864",
+    "843865",
+    "843866",
+    "843867",
+    "843868"
   ],
-  "backup_providers": [
-    "843869", "843870", "843871"
-  ],
+  "backup_providers": ["843869", "843870", "843871"],
   "rotation_interval_hours": 24,
   "connection_quality_threshold": 0.85
 }

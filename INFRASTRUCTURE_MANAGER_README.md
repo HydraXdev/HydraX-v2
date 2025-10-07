@@ -85,6 +85,7 @@ print(status)
 ## Circuit Breaker Protection
 
 The infrastructure includes circuit breaker logic that:
+
 - Opens after 3 consecutive failures
 - Blocks attempts for 5 minutes when open
 - Prevents infinite recursion with depth tracking
@@ -99,6 +100,7 @@ python3 test_infrastructure_manager.py
 ```
 
 This will test:
+
 - Singleton pattern correctness
 - Thread-safe concurrent access
 - Infrastructure status reporting

@@ -25,13 +25,15 @@ The Strategy Validator is the **final safety check** before any trade is execute
    - Monitors correlation between signals
 
 ### Example Validation Flow:
+
 ```
-Signal comes in → Check news calendar → Check spread → 
+Signal comes in → Check news calendar → Check spread →
 Check volatility → Check liquidity → Check correlations →
 Adjust confidence → Final decision
 ```
 
 ### Why This Matters:
+
 - Prevents account-destroying trades during news
 - Avoids trading in terrible conditions
 - Boosts confidence for perfect setups

@@ -7,6 +7,7 @@ This guide covers deploying HydraX v2 from development to production environment
 ## 🏗️ **Deployment Architecture**
 
 ### **Production Stack**
+
 ```
 Internet → Nginx (HTTPS/SSL) → Flask App (Port 5000) → MT5 Bridge → MetaTrader 5
                 ↓
@@ -14,6 +15,7 @@ Internet → Nginx (HTTPS/SSL) → Flask App (Port 5000) → MT5 Bridge → Meta
 ```
 
 ### **Components**
+
 - **Nginx**: Reverse proxy with SSL termination
 - **Flask Application**: Core trading API and bot handler
 - **MT5 Bridge**: MetaTrader 5 integration
@@ -23,6 +25,7 @@ Internet → Nginx (HTTPS/SSL) → Flask App (Port 5000) → MT5 Bridge → Meta
 ## 📋 **Prerequisites**
 
 ### **System Requirements**
+
 - **OS**: Ubuntu 20.04+ or CentOS 8+
 - **Python**: 3.8 or higher
 - **RAM**: Minimum 2GB, recommended 4GB+
@@ -30,6 +33,7 @@ Internet → Nginx (HTTPS/SSL) → Flask App (Port 5000) → MT5 Bridge → Meta
 - **Network**: Stable internet connection with public IP
 
 ### **Required Software**
+
 ```bash
 # Update system
 sudo apt update && sudo apt upgrade -y
@@ -50,6 +54,7 @@ sudo apt install certbot python3-certbot-nginx -y
 ## 🔧 **Server Setup**
 
 ### **1. Clone Repository**
+
 ```bash
 # Clone the repository
 git clone https://github.com/HydraXdev/HydraX-v2.git
@@ -60,6 +65,7 @@ git checkout production || git checkout main
 ```
 
 ### **2. Create Virtual Environment**
+
 ```bash
 # Create Python virtual environment
 python3 -m venv venv
@@ -72,6 +78,7 @@ pip install -r requirements.txt
 ```
 
 ### **3. Environment Configuration**
+
 ```bash
 # Copy environment template
 cp .env.example .env
@@ -81,6 +88,7 @@ nano .env
 ```
 
 **Production .env Configuration**:
+
 ```env
 # Flask Configuration
 FLASK_ENV=production
@@ -91,7 +99,7 @@ SECRET_KEY=your_super_secure_secret_key_here
 TELEGRAM_BOT_TOKEN=your_production_bot_token
 TELEGRAM_CHAT_ID=your_production_chat_id
 
-# API Security  
+# API Security
 DEV_API_KEY=your_production_api_key_here
 
 # Trading Configuration
@@ -108,6 +116,7 @@ LOG_FILE=/var/log/hydrax/app.log
 ```
 
 ### **4. SSL Certificate Setup**
+
 ```bash
 # Request SSL certificate from Let's Encrypt
 sudo certbot --nginx -d your-domain.com
@@ -117,11 +126,13 @@ sudo certbot renew --dry-run
 ```
 
 ### **5. Nginx Configuration**
+
 Create `/etc/nginx/sites-available/hydrax`:
+
 ```nginx
 server {
     server_name your-domain.com;
-    
+
     location / {
         proxy_pass http://127.0.0.1:5000;
         proxy_http_version 1.1;
@@ -166,6 +177,7 @@ server {
 ```
 
 Enable the site:
+
 ```bash
 sudo ln -s /etc/nginx/sites-available/hydrax /etc/nginx/sites-enabled/
 sudo nginx -t
@@ -175,7 +187,9 @@ sudo systemctl reload nginx
 ## 🔄 **Process Management**
 
 ### **Systemd Service Setup**
+
 Create `/etc/systemd/system/hydrax.service`:
+
 ```ini
 [Unit]
 Description=HydraX v2 Trading Bot
@@ -195,6 +209,7 @@ WantedBy=multi-user.target
 ```
 
 Enable and start the service:
+
 ```bash
 sudo systemctl daemon-reload
 sudo systemctl enable hydrax
@@ -203,7 +218,9 @@ sudo systemctl status hydrax
 ```
 
 ### **Alternative: Screen/Tmux Deployment**
+
 For simpler deployments:
+
 ```bash
 # Using screen
 screen -S hydrax
@@ -220,6 +237,7 @@ tmux send-keys -t hydrax "python src/core/TEN_elite_commands_FULL.py" Enter
 ## 🔐 **Security Hardening**
 
 ### **Firewall Configuration**
+
 ```bash
 # Enable UFW firewall
 sudo ufw enable
@@ -240,7 +258,9 @@ sudo ufw status
 ```
 
 ### **SSH Hardening**
+
 Edit `/etc/ssh/sshd_config`:
+
 ```bash
 # Disable password authentication (use keys only)
 PasswordAuthentication no
@@ -257,6 +277,7 @@ sudo systemctl restart ssh
 ```
 
 ### **Application Security**
+
 ```bash
 # Create dedicated user
 sudo useradd -m -s /bin/bash hydrax
@@ -275,6 +296,7 @@ sudo chmod 755 /var/log/hydrax
 ## 📊 **Monitoring & Logging**
 
 ### **Application Logs**
+
 ```bash
 # View live logs
 sudo journalctl -u hydrax -f
@@ -287,6 +309,7 @@ tail -f /var/log/hydrax/app.log
 ```
 
 ### **Nginx Logs**
+
 ```bash
 # Access logs
 sudo tail -f /var/log/nginx/access.log
@@ -299,6 +322,7 @@ sudo tail -f /var/log/nginx/hydrax.access.log
 ```
 
 ### **System Monitoring**
+
 ```bash
 # System resource usage
 htop
@@ -316,6 +340,7 @@ netstat -tulpn | grep :5000
 ## 🚀 **Deployment Script**
 
 Create `scripts/deploy.sh`:
+
 ```bash
 #!/bin/bash
 
@@ -374,6 +399,7 @@ echo "🎉 HydraX v2 deployment complete!"
 ```
 
 Make it executable:
+
 ```bash
 chmod +x scripts/deploy.sh
 ```
@@ -381,6 +407,7 @@ chmod +x scripts/deploy.sh
 ## 🔧 **Telegram Webhook Setup**
 
 ### **Set Webhook URL**
+
 ```bash
 # Set production webhook
 curl -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/setWebhook" \
@@ -392,6 +419,7 @@ curl "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getWebhookInfo"
 ```
 
 ### **Test Webhook**
+
 ```bash
 # Test from command line
 curl -X POST https://your-domain.com/status \
@@ -410,7 +438,9 @@ curl -X POST https://your-domain.com/status \
 ## 🔍 **Health Checks**
 
 ### **Automated Health Monitoring**
+
 Create `scripts/health_check.sh`:
+
 ```bash
 #!/bin/bash
 
@@ -439,6 +469,7 @@ echo "✅ All systems operational"
 ```
 
 ### **Cron Job for Health Checks**
+
 ```bash
 # Add to crontab
 crontab -e
@@ -450,6 +481,7 @@ crontab -e
 ## 🔄 **Updates & Maintenance**
 
 ### **Zero-Downtime Updates**
+
 ```bash
 # Create update script
 #!/bin/bash
@@ -473,12 +505,14 @@ echo "✅ Update complete!"
 ```
 
 ### **Database Migrations** (Future)
+
 ```bash
 # When database is implemented
 flask db upgrade
 ```
 
 ### **Backup Strategy**
+
 ```bash
 # Create backup script
 #!/bin/bash
@@ -505,6 +539,7 @@ echo "✅ Backup created: $BACKUP_DIR"
 ### **Common Issues**
 
 **Application won't start**:
+
 ```bash
 # Check service status
 sudo systemctl status hydrax
@@ -518,6 +553,7 @@ python -c "import flask; print('Flask OK')"
 ```
 
 **Nginx connection errors**:
+
 ```bash
 # Test Nginx configuration
 sudo nginx -t
@@ -530,6 +566,7 @@ sudo tail -f /var/log/nginx/error.log
 ```
 
 **SSL certificate issues**:
+
 ```bash
 # Check certificate status
 sudo certbot certificates
@@ -542,6 +579,7 @@ curl -I https://your-domain.com
 ```
 
 **Telegram webhook issues**:
+
 ```bash
 # Check webhook status
 curl "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getWebhookInfo"
@@ -555,12 +593,14 @@ curl -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/setWebhook" \
 ## 📊 **Performance Optimization**
 
 ### **Application Performance**
+
 - Use Gunicorn for production WSGI server
 - Implement Redis for caching
 - Optimize database queries
 - Enable gzip compression in Nginx
 
 ### **Server Performance**
+
 - Tune Nginx worker processes
 - Optimize system kernel parameters
 - Monitor resource usage

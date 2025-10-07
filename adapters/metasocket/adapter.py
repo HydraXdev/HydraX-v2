@@ -3,22 +3,23 @@
 MetaSocket Adapter for BITTEN Trading System
 CUTOVER MODE: Minimal surgical changes only
 """
-import os
 import json
-import time
+import logging
+import os
+import random
 import socket
 import threading
-import logging
-import random
+import time
 from collections import defaultdict, deque
 from datetime import datetime, timedelta
-from typing import Dict, Set, Optional, Deque
+from typing import Deque, Dict, Optional, Set
 
 # Event publishing
 import redis
 import zmq
 
 logger = logging.getLogger(__name__)
+
 
 class MetaSocketAdapter:
     """
@@ -28,9 +29,9 @@ class MetaSocketAdapter:
 
     def __init__(self):
         # Config from env
-        self.host = os.getenv('MSKT_HOST', '185.244.67.11')
-        self.cmd_port = int(os.getenv('MSKT_CMD_PORT', '8777'))
-        self.stream_port = int(os.getenv('MSKT_STREAM_PORT', '8778'))
+        self.host = os.getenv("MSKT_HOST", "185.244.67.11")
+        self.cmd_port = int(os.getenv("MSKT_CMD_PORT", "8777"))
+        self.stream_port = int(os.getenv("MSKT_STREAM_PORT", "8778"))
 
         # Event bus connections
         self.redis_client = redis.Redis(decode_responses=True)
@@ -48,9 +49,28 @@ class MetaSocketAdapter:
         self.backoff_index = 0
 
         # 22 active symbols
-        self.symbols = ["EURUSD","GBPUSD","USDCHF","USDJPY","AUDUSD","NZDUSD",
-                       "EURJPY","GBPJPY","EURGBP","EURAUD","GBPCAD","AUDJPY","NZDJPY","CHFJPY","CADJPY","AUDCAD",
-                       "USDCNH","AUDNZD","XAUUSD","XAGUSD"]
+        self.symbols = [
+            "EURUSD",
+            "GBPUSD",
+            "USDCHF",
+            "USDJPY",
+            "AUDUSD",
+            "NZDUSD",
+            "EURJPY",
+            "GBPJPY",
+            "EURGBP",
+            "EURAUD",
+            "GBPCAD",
+            "AUDJPY",
+            "NZDJPY",
+            "CHFJPY",
+            "CADJPY",
+            "AUDCAD",
+            "USDCNH",
+            "AUDNZD",
+            "XAUUSD",
+            "XAGUSD",
+        ]
 
         # Metrics for health logging
         self.tick_counts = defaultdict(int)
@@ -99,13 +119,13 @@ class MetaSocketAdapter:
 
     def jsend(self, sock: socket.socket, obj: dict):
         """Send JSON + newline"""
-        line = json.dumps(obj, separators=(',',':')) + "\n"
-        sock.sendall(line.encode('utf-8'))
+        line = json.dumps(obj, separators=(",", ":")) + "\n"
+        sock.sendall(line.encode("utf-8"))
 
     def publish(self, json_obj: dict):
         """Publish JSON object to ZMQ (no topic frame)"""
         try:
-            msg = json.dumps(json_obj, separators=(',',':'))
+            msg = json.dumps(json_obj, separators=(",", ":"))
             self.zmq_publisher.send_string(msg)
         except Exception as e:
             print(f"💥 ZMQ publish failed: {e}", flush=True)
@@ -124,20 +144,22 @@ class MetaSocketAdapter:
                     print("COMMAND: connected 8777 (spec-compliant)", flush=True)
 
                     # Send initial commands
-                    self.jsend(s, {"MSG":"HELP"})
-                    self.jsend(s, {"MSG":"CONNECTION_STATUS"})
-                    self.jsend(s, {"MSG":"ACCOUNT_STATUS"})
+                    self.jsend(s, {"MSG": "HELP"})
+                    self.jsend(s, {"MSG": "CONNECTION_STATUS"})
+                    self.jsend(s, {"MSG": "ACCOUNT_STATUS"})
 
                     # Request price history backfill for each symbol
                     for sym in self.symbols:
                         if sym not in self.backfill_completed:
-                            self.jsend(s, {"MSG":"PRICE_HISTORY","SYMBOL":sym,"TIMEFRAME":"PERIOD_M1","COUNT":300})
+                            self.jsend(
+                                s, {"MSG": "PRICE_HISTORY", "SYMBOL": sym, "TIMEFRAME": "PERIOD_M1", "COUNT": 300}
+                            )
 
                     # Attempt push mode
-                    self.jsend(s, {"MSG":"TRACK_TRADE_EVENTS","enabled":True})
+                    self.jsend(s, {"MSG": "TRACK_TRADE_EVENTS", "enabled": True})
                     for sym in self.symbols:
-                        self.jsend(s, {"MSG":"TRACK_PRICES","SYMBOL":sym})
-                        self.jsend(s, {"MSG":"TRACK_OHLC","SYMBOL":sym,"TIMEFRAME":"M1"})
+                        self.jsend(s, {"MSG": "TRACK_PRICES", "SYMBOL": sym})
+                        self.jsend(s, {"MSG": "TRACK_OHLC", "SYMBOL": sym, "TIMEFRAME": "M1"})
 
                     # Reset state
                     self.push_active = False
@@ -162,12 +184,12 @@ class MetaSocketAdapter:
                                     line = line.strip(b"\r\n ")
                                     if line:
                                         try:
-                                            response = json.loads(line.decode('utf-8'))
+                                            response = json.loads(line.decode("utf-8"))
                                             self._process_command_response(response)
 
                                             # Detect push mode
-                                            msg_type = response.get('MSG', '')
-                                            if msg_type in ['TICK_DATA', 'QUOTE'] and not self.push_active:
+                                            msg_type = response.get("MSG", "")
+                                            if msg_type in ["TICK_DATA", "QUOTE"] and not self.push_active:
                                                 # Check if this is unsolicited (not from our immediate request)
                                                 req_key = f"{msg_type}_{response.get('SYMBOL', '')}"
                                                 if req_key not in self.pending_requests:
@@ -187,7 +209,7 @@ class MetaSocketAdapter:
                         # Check if we should enable polling (no push detected within 10s)
                         if not self.push_active and (now - push_detection_start) > 10:
                             self.push_active = False  # Explicitly disable push expectation
-                            if not hasattr(self, '_poll_enabled'):
+                            if not hasattr(self, "_poll_enabled"):
                                 print("COMMAND: TICK_DATA polling active (≈ 5Hz)", flush=True)
                                 self._poll_enabled = True
 
@@ -199,28 +221,28 @@ class MetaSocketAdapter:
                                 sym = self.symbols[self.symbol_index]
                                 req_key = f"TICK_DATA_{sym}"
                                 self.pending_requests.add(req_key)
-                                self.jsend(s, {"MSG":"TICK_DATA","SYMBOL":sym})
+                                self.jsend(s, {"MSG": "TICK_DATA", "SYMBOL": sym})
                                 self.symbol_index = (self.symbol_index + 1) % len(self.symbols)
                             self.last_poll_time = now
 
                         # Account status polling
                         if (now - self.last_account_poll) > 3:
-                            self.jsend(s, {"MSG":"ACCOUNT_STATUS"})
+                            self.jsend(s, {"MSG": "ACCOUNT_STATUS"})
                             self.last_account_poll = now
 
                         # Keepalive
                         if (now - self.last_keepalive) > 15:
-                            self.jsend(s, {"MSG":"CONNECTION_STATUS"})
+                            self.jsend(s, {"MSG": "CONNECTION_STATUS"})
                             self.last_keepalive = now
 
                         time.sleep(0.05)  # Small sleep to prevent busy loop
 
             except Exception as e:
-                delay = self.backoff_delays[min(self.backoff_index, len(self.backoff_delays)-1)]
+                delay = self.backoff_delays[min(self.backoff_index, len(self.backoff_delays) - 1)]
                 jitter = delay * 0.1 * random.random()
                 total_delay = delay + jitter
                 print(f"[command] reconnect in {total_delay:.1f}s due to: {e}", flush=True)
-                self.backoff_index = min(self.backoff_index + 1, len(self.backoff_delays)-1)
+                self.backoff_index = min(self.backoff_index + 1, len(self.backoff_delays) - 1)
                 time.sleep(total_delay)
             else:
                 self.backoff_index = 0  # Reset on success
@@ -228,17 +250,17 @@ class MetaSocketAdapter:
     def _process_command_response(self, response: dict):
         """Process MetaSocket command response and normalize to v1"""
         try:
-            msg_type = response.get('MSG', '')
+            msg_type = response.get("MSG", "")
 
-            if msg_type in ['TICK_DATA', 'QUOTE']:
+            if msg_type in ["TICK_DATA", "QUOTE"]:
                 # Normalize price response to v1 tick
-                symbol = response.get('SYMBOL', '')
+                symbol = response.get("SYMBOL", "")
                 if not symbol:
                     return
 
                 # Get price data defensively
-                bid = response.get('BID', response.get('LAST', 0))
-                ask = response.get('ASK', response.get('LAST', 0))
+                bid = response.get("BID", response.get("LAST", 0))
+                ask = response.get("ASK", response.get("LAST", 0))
 
                 # If only one price available, use it for both
                 if not bid and ask:
@@ -254,9 +276,11 @@ class MetaSocketAdapter:
                     return
 
                 # Get timestamp
-                ts_raw = response.get('TIME', time.time())
+                ts_raw = response.get("TIME", time.time())
                 try:
-                    ts_epoch_ms = int(float(ts_raw) * 1000) if isinstance(ts_raw, (int, float)) else int(time.time() * 1000)
+                    ts_epoch_ms = (
+                        int(float(ts_raw) * 1000) if isinstance(ts_raw, (int, float)) else int(time.time() * 1000)
+                    )
                 except:
                     ts_epoch_ms = int(time.time() * 1000)
 
@@ -266,7 +290,7 @@ class MetaSocketAdapter:
                     "ask": ask,
                     "mid": mid,
                     "ts_epoch_ms": ts_epoch_ms,
-                    "src": "metasocket"
+                    "src": "metasocket",
                 }
 
                 self.publish(tick_event)
@@ -275,46 +299,47 @@ class MetaSocketAdapter:
                 self.tick_counts[symbol] += 1
                 self.last_tick_times[symbol] = time.time()
 
-            elif msg_type == 'ACCOUNT_STATUS':
+            elif msg_type == "ACCOUNT_STATUS":
                 # Normalize account status to v1
                 account_event = {
-                    "balance": float(response.get('BALANCE', response.get('Balance', 0.0))),
-                    "equity": float(response.get('EQUITY', response.get('Equity', 0.0))),
-                    "margin": float(response.get('MARGIN', response.get('Margin', 0.0))),
-                    "free_margin": float(response.get('FREE_MARGIN', response.get('FreeMargin', 0.0))),
-                    "leverage": int(response.get('LEVERAGE', response.get('Leverage', 500))),
-                    "currency": str(response.get('CURRENCY', response.get('Currency', ''))),
+                    "balance": float(response.get("BALANCE", response.get("Balance", 0.0))),
+                    "equity": float(response.get("EQUITY", response.get("Equity", 0.0))),
+                    "margin": float(response.get("MARGIN", response.get("Margin", 0.0))),
+                    "free_margin": float(response.get("FREE_MARGIN", response.get("FreeMargin", 0.0))),
+                    "leverage": int(response.get("LEVERAGE", response.get("Leverage", 500))),
+                    "currency": str(response.get("CURRENCY", response.get("Currency", ""))),
                     "ts_epoch_ms": int(time.time() * 1000),
-                    "src": "metasocket"
+                    "src": "metasocket",
                 }
 
                 self.publish(account_event)
 
-            elif msg_type == 'PRICE_HISTORY':
+            elif msg_type == "PRICE_HISTORY":
                 # Process price history backfill
-                symbol = response.get('SYMBOL', '')
-                rates = response.get('RATES', [])
+                symbol = response.get("SYMBOL", "")
+                rates = response.get("RATES", [])
 
                 if symbol and rates:
                     bars_loaded = 0
                     for rate in rates:
                         try:
                             # Parse timestamp: "YYYY.MM.DD HH:MM:SS" -> epoch ms
-                            time_str = rate.get('TIME', '')
+                            time_str = rate.get("TIME", "")
                             if time_str:
                                 import datetime
-                                dt = datetime.datetime.strptime(time_str, '%Y.%m.%d %H:%M:%S')
+
+                                dt = datetime.datetime.strptime(time_str, "%Y.%m.%d %H:%M:%S")
                                 ts_open_ms = int(dt.timestamp() * 1000)
                             else:
                                 continue
 
                             ohlc_bar = {
-                                'ts_open_ms': ts_open_ms,
-                                'open': float(rate.get('OPEN', 0)),
-                                'high': float(rate.get('HIGH', 0)),
-                                'low': float(rate.get('LOW', 0)),
-                                'close': float(rate.get('CLOSE', 0)),
-                                'volume': float(rate.get('TICK_VOLUME', rate.get('REAL_VOLUME', 0)))
+                                "ts_open_ms": ts_open_ms,
+                                "open": float(rate.get("OPEN", 0)),
+                                "high": float(rate.get("HIGH", 0)),
+                                "low": float(rate.get("LOW", 0)),
+                                "close": float(rate.get("CLOSE", 0)),
+                                "volume": float(rate.get("TICK_VOLUME", rate.get("REAL_VOLUME", 0))),
                             }
 
                             self.ohlc_store[symbol].append(ohlc_bar)
@@ -330,38 +355,42 @@ class MetaSocketAdapter:
                     self.backfill_completed.add(symbol)
                     print(f"BACKFILL: {symbol} M1 bars loaded={bars_loaded}", flush=True)
 
-            elif msg_type.startswith('ORDER_') or 'TRADE' in msg_type:
+            elif msg_type.startswith("ORDER_") or "TRADE" in msg_type:
                 # Normalize trade/position events to v1
-                ticket = response.get('TICKET', response.get('ORDER', ''))
+                ticket = response.get("TICKET", response.get("ORDER", ""))
                 if ticket:
                     # Determine side
-                    type_str = str(response.get('TYPE', '')).upper()
+                    type_str = str(response.get("TYPE", "")).upper()
                     side = "BUY" if "BUY" in type_str else "SELL" if "SELL" in type_str else None
 
                     # Determine state and reason
                     state = "OPEN"
                     reason = "other"
-                    if response.get('CLOSE_TIME') or response.get('STATE') == 'CLOSED':
+                    if response.get("CLOSE_TIME") or response.get("STATE") == "CLOSED":
                         state = "CLOSE"
-                        if 'SL' in str(response.get('REASON', '')):
+                        if "SL" in str(response.get("REASON", "")):
                             reason = "sl"
-                        elif 'TP' in str(response.get('REASON', '')):
+                        elif "TP" in str(response.get("REASON", "")):
                             reason = "tp"
                         else:
                             reason = "manual"
 
                     position_event = {
                         "ticket": str(ticket),
-                        "symbol": response.get('SYMBOL', ''),
+                        "symbol": response.get("SYMBOL", ""),
                         "side": side,
                         "state": state,
                         "reason": reason,
-                        "price": float(response.get('PRICE', response.get('OPEN_PRICE', response.get('CLOSE_PRICE', 0)))),
-                        "volume": float(response.get('VOLUME', 0)),
-                        "sl": float(response.get('SL')) if 'SL' in response else None,
-                        "tp": float(response.get('TP')) if 'TP' in response else None,
-                        "ts_epoch_ms": int((response.get('TIME', response.get('CLOSE_TIME', time.time())) or time.time()) * 1000),
-                        "src": "metasocket"
+                        "price": float(
+                            response.get("PRICE", response.get("OPEN_PRICE", response.get("CLOSE_PRICE", 0)))
+                        ),
+                        "volume": float(response.get("VOLUME", 0)),
+                        "sl": float(response.get("SL")) if "SL" in response else None,
+                        "tp": float(response.get("TP")) if "TP" in response else None,
+                        "ts_epoch_ms": int(
+                            (response.get("TIME", response.get("CLOSE_TIME", time.time())) or time.time()) * 1000
+                        ),
+                        "src": "metasocket",
                     }
 
                     self.publish(position_event)
@@ -375,7 +404,6 @@ class MetaSocketAdapter:
         bars = self.ohlc_store.get(symbol, [])
         return bars[-n:] if bars else []
 
-
     def _metrics_logger(self):
         """Log tick rates and event age every 5s"""
         while self.running:
@@ -385,10 +413,13 @@ class MetaSocketAdapter:
 
                 if now - self.last_metrics_log > 5:
                     # Log command client activity
-                    if hasattr(self, 'tick_counts') and self.tick_counts:
+                    if hasattr(self, "tick_counts") and self.tick_counts:
                         total_ticks = sum(self.tick_counts.values())
                         if total_ticks > 0:
-                            print(f"[command] total_ticks={total_ticks} symbols_active={len(self.tick_counts)}", flush=True)
+                            print(
+                                f"[command] total_ticks={total_ticks} symbols_active={len(self.tick_counts)}",
+                                flush=True,
+                            )
 
                     # Calculate tick rates (EWMA 60s approximation)
                     rates = []
@@ -419,9 +450,16 @@ class MetaSocketAdapter:
             except Exception as e:
                 pass
 
-
-    def fire_order(self, signal_id: str, symbol: str, direction: str, volume: float,
-                  sl_pips: float = 0, tp_pips: float = 0, idempotency_key: str = None) -> dict:
+    def fire_order(
+        self,
+        signal_id: str,
+        symbol: str,
+        direction: str,
+        volume: float,
+        sl_pips: float = 0,
+        tp_pips: float = 0,
+        idempotency_key: str = None,
+    ) -> dict:
         """WRITER: fire → ORDER_SEND with idempotency"""
 
         # Idempotency check
@@ -453,10 +491,10 @@ class MetaSocketAdapter:
                 "tp": tp_pips,
                 "comment": "MSKT",
                 "magic": 900001,
-                "idempotency_key": idempotency_key or signal_id
+                "idempotency_key": idempotency_key or signal_id,
             }
 
-            cmd_json = json.dumps(order_cmd) + '\n'
+            cmd_json = json.dumps(order_cmd) + "\n"
             sock.send(cmd_json.encode())
 
             # Get response
@@ -470,10 +508,10 @@ class MetaSocketAdapter:
             logger.info(f"🔫 ORDER_SEND: {symbol} {direction} {volume} → {result.get('ticket', 'FAILED')}")
 
             return {
-                "success": result.get('retcode', -1) == 0,
-                "ticket": result.get('ticket'),
+                "success": result.get("retcode", -1) == 0,
+                "ticket": result.get("ticket"),
                 "latency_ms": latency_ms,
-                "idempotency_key": idempotency_key
+                "idempotency_key": idempotency_key,
             }
 
         except Exception as e:
@@ -490,23 +528,15 @@ class MetaSocketAdapter:
             if not sock:
                 return {"success": False, "error": "Connection failed"}
 
-            close_cmd = {
-                "action": "ORDER_CLOSE",
-                "ticket": ticket,
-                "comment": "MSKT",
-                "magic": 900001
-            }
+            close_cmd = {"action": "ORDER_CLOSE", "ticket": ticket, "comment": "MSKT", "magic": 900001}
 
-            cmd_json = json.dumps(close_cmd) + '\n'
+            cmd_json = json.dumps(close_cmd) + "\n"
             sock.send(cmd_json.encode())
 
             response = sock.recv(4096).decode().strip()
             result = json.loads(response) if response else {}
 
-            return {
-                "success": result.get('retcode', -1) == 0,
-                "ticket": ticket
-            }
+            return {"success": result.get("retcode", -1) == 0, "ticket": ticket}
 
         except Exception as e:
             self._handle_error(f"Close ticket failed: {e}")
@@ -543,12 +573,13 @@ class MetaSocketAdapter:
             "event_lag_ms_p95": event_lag_p95,
             "order_latency_ms_p95": order_latency_p95,
             "circuit_open": self.circuit_open,
-            "error_count": self.error_count
+            "error_count": self.error_count,
         }
 
 
 # Global instance
 adapter_instance = None
+
 
 def get_adapter() -> MetaSocketAdapter:
     """Get singleton adapter instance"""
@@ -556,6 +587,7 @@ def get_adapter() -> MetaSocketAdapter:
     if not adapter_instance:
         adapter_instance = MetaSocketAdapter()
     return adapter_instance
+
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)

@@ -1,5 +1,6 @@
 # BITTEN ARCHITECTURE OVERVIEW
-**Generated**: August 12, 2025 03:55 UTC  
+
+**Generated**: August 12, 2025 03:55 UTC
 **State**: Live System Documentation (No Additions)
 
 ## Runtime Data Flow
@@ -45,10 +46,11 @@
 ## Component Cards
 
 ### 1. zmq_telemetry_bridge_debug.py
+
 - **Path**: /root/HydraX-v2/zmq_telemetry_bridge_debug.py
 - **PID**: 2411770 (background)
 - **Purpose**: Receives market data from EAs, republishes for consumption
-- **Binds**: tcp://*:5556 (PULL), tcp://*:5560 (PUB)
+- **Binds**: tcp://_:5556 (PULL), tcp://_:5560 (PUB)
 - **Connects**: None
 - **Inputs**: Market tick data from EAs
 - **Outputs**: Republished tick data
@@ -56,11 +58,12 @@
 - **Env Vars**: None required
 
 ### 2. elite_guard_with_citadel.py
+
 - **Path**: /root/HydraX-v2/elite_guard_with_citadel.py
 - **PM2 Name**: elite_guard
 - **PID**: 3102500
 - **Purpose**: Generates trading signals from SMC patterns
-- **Binds**: tcp://*:5557 (PUB)
+- **Binds**: tcp://\*:5557 (PUB)
 - **Connects**: tcp://localhost:5560 (SUB)
 - **Inputs**: Market tick data from :5560
 - **Outputs**: ELITE_GUARD_SIGNAL messages
@@ -68,6 +71,7 @@
 - **Env Vars**: None required
 
 ### 3. elite_guard_zmq_relay.py
+
 - **Path**: /root/HydraX-v2/elite_guard_zmq_relay.py
 - **PM2 Name**: relay_to_telegram
 - **PID**: 3100355
@@ -80,6 +84,7 @@
 - **Env Vars**: None required
 
 ### 4. webapp_server_optimized.py (via start_webapp_gunicorn.sh)
+
 - **Path**: /root/HydraX-v2/webapp_server_optimized.py
 - **PM2 Name**: webapp
 - **PID**: 3125334
@@ -92,11 +97,12 @@
 - **Env Vars**: BITTEN_DB=/root/HydraX-v2/bitten.db
 
 ### 5. command_router.py
+
 - **Path**: /root/HydraX-v2/command_router.py
 - **PM2 Name**: command_router
 - **PID**: 3125079
 - **Purpose**: Routes fire commands from queue to specific EAs
-- **Binds**: tcp://*:5555 (ROUTER), ipc:///tmp/bitten_cmdqueue (PULL)
+- **Binds**: tcp://\*:5555 (ROUTER), ipc:///tmp/bitten_cmdqueue (PULL)
 - **Connects**: None
 - **Inputs**: Fire commands from IPC queue, EA heartbeats
 - **Outputs**: Fire commands to EA DEALERs
@@ -104,11 +110,12 @@
 - **Env Vars**: BITTEN_ROUTER_ADDR, BITTEN_QUEUE_ADDR, BITTEN_EA_TTL_SEC
 
 ### 6. confirm_listener.py
+
 - **Path**: /root/HydraX-v2/confirm_listener.py
 - **PM2 Name**: confirm_listener
 - **PID**: 3126882
 - **Purpose**: Receives trade confirmations from EAs
-- **Binds**: tcp://*:5558 (PULL)
+- **Binds**: tcp://\*:5558 (PULL)
 - **Connects**: None
 - **Inputs**: Confirmation messages from EAs
 - **Outputs**: Updates to fires table
@@ -116,6 +123,7 @@
 - **Env Vars**: BITTEN_DB, CONFIRM_BIND
 
 ### 7. signal_outcome_monitor.py
+
 - **Path**: /root/HydraX-v2/signal_outcome_monitor.py
 - **PM2 Name**: outcome_daemon
 - **PID**: 3120143
@@ -128,6 +136,7 @@
 - **Env Vars**: None required
 
 ### 8. commander_throne.py
+
 - **Path**: /root/HydraX-v2/commander_throne.py
 - **PID**: 2454259 (background)
 - **Purpose**: Analytics dashboard on port 8899
@@ -141,6 +150,7 @@
 ## Message Contracts
 
 ### ELITE_GUARD_SIGNAL (ZMQ :5557)
+
 ```json
 {
   "signal_id": "ELITE_GUARD_EURUSD_1754828514",
@@ -158,6 +168,7 @@
 ```
 
 ### Mission Create Payload (POST /api/signals)
+
 ```json
 {
   "signal_id": "ELITE_GUARD_EURUSD_1754828514",
@@ -172,6 +183,7 @@
 ```
 
 ### Fire Command (IPC Queue → Router → EA)
+
 ```json
 {
   "type": "fire",
@@ -187,6 +199,7 @@
 ```
 
 ### EA Confirmation (EA PUSH → :5558)
+
 ```json
 {
   "type": "confirmation",
@@ -202,6 +215,7 @@
 ## Allowed Components
 
 ### Allowed Processes (PM2)
+
 - command_router
 - confirm_listener
 - elite_guard
@@ -210,10 +224,12 @@
 - webapp
 
 ### Allowed Background Processes
+
 - zmq_telemetry_bridge_debug.py (PID 2411770)
 - commander_throne.py (PID 2454259)
 
 ### Allowed Ports
+
 - 5555: ROUTER (command_router binds)
 - 5556: PULL (telemetry bridge binds)
 - 5557: PUB (elite_guard binds)
@@ -223,11 +239,13 @@
 - 8899: HTTP (commander_throne binds)
 
 ### Allowed IPC Sockets
+
 - ipc:///tmp/bitten_cmdqueue (command_router binds PULL, webapp connects PUSH)
 
 ## Disallowed Components
 
 ### Disallowed Processes
+
 - fire_router_service.py
 - zmq_bitten_controller.py
 - clone_farm (any variant)
@@ -237,12 +255,14 @@
 - bitten_production_bot.py (deprecated)
 
 ### Disallowed Paths
+
 - /root/HydraX-v2/fire_router_service.py
 - /root/HydraX-v2/zmq_bitten_controller.py
-- /root/HydraX-v2/venom_*.py
+- /root/HydraX-v2/venom\_\*.py
 - Any Docker/Wine related processes
 
 ## Immutable Files
+
 - /root/HydraX-v2/bitten.db (schema only, data mutable)
 - /root/HydraX-v2/command_router.py (critical SSOT)
 - /root/HydraX-v2/confirm_listener.py (critical path)
@@ -250,15 +270,17 @@
 ## Runbook
 
 ### Start Order
+
 1. zmq_telemetry_bridge_debug.py (if not running)
 2. pm2 start elite_guard
-3. pm2 start relay_to_telegram  
+3. pm2 start relay_to_telegram
 4. pm2 start webapp
 5. pm2 start command_router
 6. pm2 start confirm_listener
 7. pm2 start outcome_daemon
 
 ### Stop Order (reverse)
+
 1. pm2 stop outcome_daemon
 2. pm2 stop confirm_listener
 3. pm2 stop command_router
@@ -267,6 +289,7 @@
 6. pm2 stop elite_guard
 
 ### Quick Health Checks
+
 ```bash
 # Check all PM2 processes
 pm2 list
@@ -285,6 +308,7 @@ pm2 logs relay_to_telegram --lines 5 --nostream
 ```
 
 ### End-to-End Smoke Test
+
 ```bash
 # 1. Verify telemetry bridge
 ps aux | grep zmq_telemetry_bridge | grep -v grep
@@ -309,6 +333,7 @@ pm2 logs confirm_listener --lines 3 --nostream
 ```
 
 ## Unknown/Needs Decision
+
 - bitten_production_bot.py: Shows in CLAUDE.md as PID 2588730 but not in current PM2 list
 - Multiple zmq_relay processes (3099061, 3100355): Determine which is canonical
 - Position tracker (PID 2409025 in CLAUDE.md): Not found in current processes

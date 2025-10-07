@@ -8,16 +8,16 @@ code_to_add = """
         \"\"\"Check if we're in an active trading session\"\"\"
         from datetime import datetime
         import pytz
-        
+
         # Get current UTC time
         utc_now = datetime.now(pytz.UTC)
         hour = utc_now.hour
-        
+
         # Define sessions (UTC times)
         # London: 07:00 - 16:00 UTC
         # New York: 12:00 - 21:00 UTC
         # Overlap: 12:00 - 16:00 UTC (BEST TIME)
-        
+
         if 12 <= hour < 16:  # London/NY overlap - BEST
             return True, "OVERLAP", 1.1  # 10% confidence boost
         elif 7 <= hour < 12:  # London only
@@ -29,7 +29,7 @@ code_to_add = """
 """
 
 # Read the file
-with open('/root/HydraX-v2/elite_guard_with_citadel.py', 'r') as f:
+with open("/root/HydraX-v2/elite_guard_with_citadel.py", "r") as f:
     content = f.read()
 
 # Add session check function after class definition
@@ -58,13 +58,13 @@ new_check = """# Check if we're in active trading session
                     # Boost confidence for good sessions
                     signal.confidence = int(signal.confidence * conf_multiplier)
                     logger.info(f"📍 {symbol} Session: {session_name} (confidence x{conf_multiplier})")
-                
+
                 if signal and signal.confidence >= 60:"""
 
 content = content.replace(old_check, new_check)
 
 # Write back
-with open('/root/HydraX-v2/elite_guard_with_citadel.py', 'w') as f:
+with open("/root/HydraX-v2/elite_guard_with_citadel.py", "w") as f:
     f.write(content)
 
 print("✅ Added session filter:")

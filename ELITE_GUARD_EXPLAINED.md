@@ -1,14 +1,17 @@
 # 🎯 Elite Guard v6.0: The Institutional Pattern Hunter
 
-*"Like having an institutional trader watching the markets 24/7, looking for the exact moments when smart money makes their moves."*
+_"Like having an institutional trader watching the markets 24/7, looking for the exact moments when smart money makes their moves."_
 
 ## 🧠 Core Philosophy: Smart Money Concepts (SMC)
+
 Elite Guard hunts for the footprints of institutional traders - banks, hedge funds, and market makers. It's built on the premise that retail traders get trapped while institutions profit from predictable patterns.
 
 ## 📊 Three Master Patterns It Hunts
 
 ### 1. 🌊 Liquidity Sweep Reversal (Base Score: 75)
+
 **What it's looking for:**
+
 - Price spikes beyond recent highs/lows (3+ pips minimum)
 - Volume surge of 1.3x or higher (institutions loading up)
 - Quick reversal within 1-2 candles
@@ -17,7 +20,9 @@ Elite Guard hunts for the footprints of institutional traders - banks, hedge fun
 **The Logic:** When price suddenly spikes to take out stop losses then reverses, it's institutions collecting liquidity before the real move.
 
 ### 2. 🏢 Order Block Bounce (Base Score: 70)
+
 **What it's looking for:**
+
 - Previous consolidation zones (institutional accumulation)
 - Price returning to these zones
 - Structure support (higher lows/lower highs)
@@ -26,7 +31,9 @@ Elite Guard hunts for the footprints of institutional traders - banks, hedge fun
 **The Logic:** Institutions leave "footprints" where they accumulated positions. Price often returns to these zones for more orders.
 
 ### 3. ⚡ Fair Value Gap Fill (Base Score: 65)
+
 **What it's looking for:**
+
 - Gaps of 4+ pips between candles
 - Price approaching the gap midpoint
 - Momentum shift as gap fills
@@ -37,6 +44,7 @@ Elite Guard hunts for the footprints of institutional traders - banks, hedge fun
 ## 🎯 Two Signal Types Generated
 
 ### 1. ⚡ RAPID_ASSAULT (Quick Strike)
+
 - **R:R Ratio:** 1:1.5
 - **Style:** Get in, get out, secure profit
 - **Typical Duration:** 25 minutes
@@ -44,9 +52,10 @@ Elite Guard hunts for the footprints of institutional traders - banks, hedge fun
 - **Purpose:** Higher probability, lower reward
 
 ### 2. 🎯 PRECISION_STRIKE (Sniper Shot)
+
 - **R:R Ratio:** 1:2.0
 - **Style:** Patient, larger targets
-- **Typical Duration:** 65 minutes  
+- **Typical Duration:** 65 minutes
 - **Stop Loss:** Wider (25-35 pips)
 - **Purpose:** Lower probability, higher reward
 
@@ -55,17 +64,20 @@ Elite Guard hunts for the footprints of institutional traders - banks, hedge fun
 Each pattern gets enhanced by multiple factors:
 
 ### Session Intelligence Bonuses:
+
 - **London Session:** +18 points (high volatility)
 - **NY Session:** +15 points (directional moves)
 - **Overlap:** +25 points (maximum opportunity)
 - **Asian:** +8 points (range setups)
 
 ### Multi-Timeframe Alignment:
+
 - **Strong (M1+M5+M15 agree):** +15 points
 - **Partial (2 timeframes agree):** +8 points
 - **Checks:** Trend alignment, momentum sync
 
 ### Market Conditions:
+
 - **Volume Confirmation:** +5 for above-average
 - **Spread Quality:** +3 for tight spreads (<2.5 pips)
 - **ATR Volatility:** +5 for optimal range (0.0003-0.0008)
@@ -126,6 +138,7 @@ Every 60 seconds:
 ## 🎰 Why It's So Selective
 
 The current market might show:
+
 - 4.4 pip movement ✅ (enough)
 - 1.24x volume ❌ (needs 1.3x)
 - No clear reversal ❌
@@ -133,6 +146,7 @@ The current market might show:
 So it waits. Like a sniper in the grass. Because one perfect shot beats ten wild sprays.
 
 ## 🏆 The Magic Numbers
+
 - **Base Pattern Scores:** 65-75
 - **Session Bonuses:** +8 to +25
 - **Quality Boosts:** +3 to +15
@@ -142,18 +156,20 @@ So it waits. Like a sniper in the grass. Because one perfect shot beats ten wild
 ## 💎 The Secret Sauce
 
 The beauty is that Elite Guard combines:
+
 - **Institutional thinking** (SMC patterns)
 - **Machine learning** (confluence scoring)
 - **Risk management** (CITADEL Shield)
 - **Dual personality** (RAPID vs PRECISION)
 
-It's not just looking for patterns - it's looking for *institutional-grade patterns with multiple confirmations during optimal market conditions*. That's why it can target 60-70% win rates while most retail strategies struggle at 50%.
+It's not just looking for patterns - it's looking for _institutional-grade patterns with multiple confirmations during optimal market conditions_. That's why it can target 60-70% win rates while most retail strategies struggle at 50%.
 
 ---
 
-*"This is GOLD and should be stored somewhere to remind everyone! If this works it will be just what we need."* - System Architect, August 2025
+_"This is GOLD and should be stored somewhere to remind everyone! If this works it will be just what we need."_ - System Architect, August 2025
 
 ## 🚀 Implementation Status
+
 - **Deployed:** August 1, 2025
 - **Enhanced:** Candle batch processing added for better SMC detection
 - **Production Ready:** Quality threshold at 65, all systems operational

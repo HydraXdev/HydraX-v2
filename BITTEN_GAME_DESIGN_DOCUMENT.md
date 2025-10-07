@@ -25,14 +25,22 @@
       "entry_conditions": ["xp >= 500", "win_rate >= 40%"],
       "exit_conditions": ["xp >= 2000 AND consistency_score >= 70"],
       "xp_range": [500, 2000],
-      "available_features": ["advanced_tactics", "mentorship", "custom_strategies"],
+      "available_features": [
+        "advanced_tactics",
+        "mentorship",
+        "custom_strategies"
+      ],
       "psychological_profile": "disciplined_growing"
     },
     "ELITE": {
       "entry_conditions": ["xp >= 2000", "consistency_score >= 70"],
       "exit_conditions": ["legendary_status_achieved"],
       "xp_range": [2000, 10000],
-      "available_features": ["all_features", "squad_leadership", "strategy_creation"],
+      "available_features": [
+        "all_features",
+        "squad_leadership",
+        "strategy_creation"
+      ],
       "psychological_profile": "dangerous_confident"
     }
   }
@@ -44,24 +52,25 @@
 ```markdown
 ## XP FORMULAS
 
-Base XP = (Win: 10 | Loss: 2) * tier_multiplier * streak_bonus * signal_quality
+Base XP = (Win: 10 | Loss: 2) _ tier_multiplier _ streak_bonus \* signal_quality
 
 tier_multiplier = {
-  NIBBLER: 1.0,
-  FANG: 1.2,
-  COMMANDER: 1.5,
-  APEX: 2.0
+NIBBLER: 1.0,
+FANG: 1.2,
+COMMANDER: 1.5,
+APEX: 2.0
 }
 
-streak_bonus = MIN(2.0, 1.0 + (current_streak * 0.1))
+streak_bonus = MIN(2.0, 1.0 + (current_streak \* 0.1))
 
 signal_quality = {
-  CITADEL_APPROVED: 1.5,
-  STANDARD: 1.0,
-  RISKY: 0.5
+CITADEL_APPROVED: 1.5,
+STANDARD: 1.0,
+RISKY: 0.5
 }
 
 PENALTIES:
+
 - Revenge trade: -20 XP
 - Overleveraging: -15 XP
 - Signal ignored: -5 XP
@@ -102,7 +111,12 @@ PENALTIES:
         "signal_access": "enhanced",
         "risk_per_trade": "1.5%",
         "daily_trade_limit": 5,
-        "features": ["enhanced_signals", "tactics_library", "community_write", "performance_analytics"]
+        "features": [
+          "enhanced_signals",
+          "tactics_library",
+          "community_write",
+          "performance_analytics"
+        ]
       },
       "monthly_cost": 79
     },
@@ -119,7 +133,13 @@ PENALTIES:
         "signal_access": "premium",
         "risk_per_trade": "2%",
         "daily_trade_limit": "unlimited",
-        "features": ["all_signals", "custom_strategies", "squad_leadership", "api_access", "priority_support"]
+        "features": [
+          "all_signals",
+          "custom_strategies",
+          "squad_leadership",
+          "api_access",
+          "priority_support"
+        ]
       },
       "monthly_cost": 149
     },
@@ -137,7 +157,13 @@ PENALTIES:
         "signal_access": "institutional",
         "risk_per_trade": "custom",
         "daily_trade_limit": "unlimited",
-        "features": ["everything", "strategy_marketplace", "revenue_sharing", "white_label", "direct_mentorship"]
+        "features": [
+          "everything",
+          "strategy_marketplace",
+          "revenue_sharing",
+          "white_label",
+          "direct_mentorship"
+        ]
       },
       "monthly_cost": 299
     }
@@ -151,34 +177,34 @@ PENALTIES:
 
 ```markdown
 IF signal_generated THEN
-  IF user.tier >= signal.required_tier THEN
-    IF user.available_slots > 0 THEN
-      display_signal_with_timer(signal)
-      IF user.fire_mode == "AUTO" THEN
-        execute_trade_automatically()
-        deduct_slot()
-        award_xp(5, "auto_discipline")
-      ELSE IF user.fire_mode == "MANUAL" THEN
-        wait_for_user_action()
-        IF action == "FIRE" THEN
-          execute_trade()
-          deduct_slot()
-          award_xp(10, "manual_decision")
-        ELSE IF timer_expired THEN
-          record_missed_opportunity()
-          IF missed_count > 3 TODAY THEN
-            send_motivation_message()
-          END
-        END
-      END
-    ELSE
-      show_slots_full_message()
-      suggest_upgrade_tier()
-    END
-  ELSE
-    show_locked_signal_teaser()
-    show_upgrade_prompt()
-  END
+IF user.tier >= signal.required_tier THEN
+IF user.available_slots > 0 THEN
+display_signal_with_timer(signal)
+IF user.fire_mode == "AUTO" THEN
+execute_trade_automatically()
+deduct_slot()
+award_xp(5, "auto_discipline")
+ELSE IF user.fire_mode == "MANUAL" THEN
+wait_for_user_action()
+IF action == "FIRE" THEN
+execute_trade()
+deduct_slot()
+award_xp(10, "manual_decision")
+ELSE IF timer_expired THEN
+record_missed_opportunity()
+IF missed_count > 3 TODAY THEN
+send_motivation_message()
+END
+END
+END
+ELSE
+show_slots_full_message()
+suggest_upgrade_tier()
+END
+ELSE
+show_locked_signal_teaser()
+show_upgrade_prompt()
+END
 END
 ```
 
@@ -223,28 +249,28 @@ END
 ## EMOTION DETECTION RULES
 
 IF losses_today >= 3 THEN
-  emotional_state = "frustrated"
-  activate_cooldown_period(2_hours)
-  send_message(DRILL_SERGEANT, "motivational_break")
+emotional_state = "frustrated"
+activate_cooldown_period(2_hours)
+send_message(DRILL_SERGEANT, "motivational_break")
 END
 
 IF wins_today >= 3 THEN
-  emotional_state = "euphoric"
-  send_message(DOC, "greed_warning")
-  suggest_profit_taking()
+emotional_state = "euphoric"
+send_message(DOC, "greed_warning")
+suggest_profit_taking()
 END
 
 IF no_trades_3_days THEN
-  emotional_state = "fearful"
-  send_message(ATHENA, "gentle_encouragement")
-  offer_smaller_position_size()
+emotional_state = "fearful"
+send_message(ATHENA, "gentle_encouragement")
+offer_smaller_position_size()
 END
 
 IF revenge_trade_detected THEN
-  emotional_state = "tilted"
-  lock_trading(1_hour)
-  send_message(DRILL_SERGEANT, "discipline_reminder")
-  deduct_xp(20)
+emotional_state = "tilted"
+lock_trading(1_hour)
+send_message(DRILL_SERGEANT, "discipline_reminder")
+deduct_xp(20)
 END
 ```
 
@@ -292,26 +318,26 @@ END
 ## DRILL SERGEANT BEHAVIOR
 
 IF user.state == "losing_streak" THEN
-  IF losses < 5 THEN
-    message = tough_love_messages[random]
-    tone = "firm_supportive"
-  ELSE
-    message = intervention_messages[random]
-    tone = "protective_commanding"
-    suggest_break()
-  END
+IF losses < 5 THEN
+message = tough_love_messages[random]
+tone = "firm_supportive"
+ELSE
+message = intervention_messages[random]
+tone = "protective_commanding"
+suggest_break()
+END
 END
 
 IF user.state == "winning_streak" THEN
-  message = praise_with_caution[random]
-  tone = "proud_watchful"
-  remind_discipline()
+message = praise_with_caution[random]
+tone = "proud_watchful"
+remind_discipline()
 END
 
 IF user.last_login > 3_days THEN
-  message = "WHERE THE HELL HAVE YOU BEEN, SOLDIER?"
-  tone = "demanding_concerned"
-  show_missed_opportunities()
+message = "WHERE THE HELL HAVE YOU BEEN, SOLDIER?"
+tone = "demanding_concerned"
+show_missed_opportunities()
 END
 ```
 
@@ -383,22 +409,22 @@ END
 ## SQUAD MECHANICS
 
 IF user.referrals >= 3 THEN
-  create_squad(user.id)
-  user.role = "SQUAD_LEADER"
-  unlock_feature("squad_chat")
-  unlock_feature("squad_competitions")
+create_squad(user.id)
+user.role = "SQUAD_LEADER"
+unlock_feature("squad_chat")
+unlock_feature("squad_competitions")
 END
 
 IF squad.total_weekly_profit > 0 THEN
-  FOREACH member IN squad DO
-    award_xp(squad.profit * 0.01, "squad_success")
-  END
+FOREACH member IN squad DO
+award_xp(squad.profit \* 0.01, "squad_success")
+END
 END
 
 IF squad_member.losing_streak >= 5 THEN
-  notify_squad_leader()
-  enable_intervention_protocol()
-  assign_battle_buddy()
+notify_squad_leader()
+enable_intervention_protocol()
+assign_battle_buddy()
 END
 ```
 
@@ -446,9 +472,9 @@ END
 ## DAILY MISSIONS
 
 EVERY day AT 00:00 UTC DO
-  FOREACH user IN active_users DO
-    generate_daily_missions(user.tier, user.psychology)
-    
+FOREACH user IN active_users DO
+generate_daily_missions(user.tier, user.psychology)
+
     missions = [
       {
         type: "discipline",
@@ -469,16 +495,17 @@ EVERY day AT 00:00 UTC DO
         penalty: 0
       }
     ]
-    
+
     send_notification(user, missions)
-  END
+
+END
 END
 
 AT 18:00 UTC DO
-  calculate_daily_performance()
-  send_drill_report()
-  update_streaks()
-  check_tier_progression()
+calculate_daily_performance()
+send_drill_report()
+update_streaks()
+check_tier_progression()
 END
 ```
 
@@ -519,29 +546,29 @@ END
 ```markdown
 ## PROTECTION RULES
 
-IF daily_loss >= account_balance * 0.05 THEN
-  lock_trading_today()
-  send_message(DOC, "daily_limit_reached")
-  offer_education_content()
+IF daily_loss >= account_balance \* 0.05 THEN
+lock_trading_today()
+send_message(DOC, "daily_limit_reached")
+offer_education_content()
 END
 
-IF weekly_loss >= account_balance * 0.15 THEN
-  require_cooldown_period(48_hours)
-  mandatory_risk_review()
-  reduce_position_sizes(50%)
+IF weekly_loss >= account_balance \* 0.15 THEN
+require_cooldown_period(48_hours)
+mandatory_risk_review()
+reduce_position_sizes(50%)
 END
 
 IF emotional_state IN ["tilted", "desperate", "vengeful"] THEN
-  hide_fire_button()
-  show_breathing_exercise()
-  activate_support_protocol()
+hide_fire_button()
+show_breathing_exercise()
+activate_support_protocol()
 END
 
 IF consecutive_losses >= 7 THEN
-  activate_emergency_protocol()
-  assign_mentor_immediately()
-  lock_account_changes()
-  schedule_intervention_call()
+activate_emergency_protocol()
+assign_mentor_immediately()
+lock_account_changes()
+schedule_intervention_call()
 END
 ```
 
@@ -582,19 +609,19 @@ END
 ## SIGNAL FLOW
 
 Elite_Guard_Signal →
-  CITADEL_Analysis →
-    User_Tier_Filter →
-      Risk_Calculator →
-        Position_Sizer →
-          Mission_Briefing_Generator →
-            Telegram_Notification →
-              WebApp_Display →
-                User_Action →
-                  MT5_Execution →
-                    Result_Tracking →
-                      XP_Calculation →
-                        Achievement_Check →
-                          Squad_Update
+CITADEL_Analysis →
+User_Tier_Filter →
+Risk_Calculator →
+Position_Sizer →
+Mission_Briefing_Generator →
+Telegram_Notification →
+WebApp_Display →
+User_Action →
+MT5_Execution →
+Result_Tracking →
+XP_Calculation →
+Achievement_Check →
+Squad_Update
 ```
 
 ### 10.2 Database Schema
@@ -631,30 +658,30 @@ Elite_Guard_Signal →
 
 ROOT
 ├── WAR_ROOM (/me)
-│   ├── Stats_Dashboard
-│   ├── Achievement_Gallery
-│   ├── Squad_Status
-│   └── Rank_Progress
+│ ├── Stats_Dashboard
+│ ├── Achievement_Gallery
+│ ├── Squad_Status
+│ └── Rank_Progress
 ├── MISSION_HUD (/hud)
-│   ├── Active_Signals
-│   ├── Fire_Controls
-│   ├── Timer_Display
-│   └── Risk_Calculator
+│ ├── Active_Signals
+│ ├── Fire_Controls
+│ ├── Timer_Display
+│ └── Risk_Calculator
 ├── TACTICAL_COMMAND (/tactical)
-│   ├── Strategy_Selection
-│   ├── Risk_Settings
-│   ├── Auto_Fire_Config
-│   └── Session_Rules
+│ ├── Strategy_Selection
+│ ├── Risk_Settings
+│ ├── Auto_Fire_Config
+│ └── Session_Rules
 ├── TRAINING_GROUNDS (/education)
-│   ├── Bootcamp_Basics
-│   ├── Strategy_Library
-│   ├── Psychology_Training
-│   └── Squad_Tactics
+│ ├── Bootcamp_Basics
+│ ├── Strategy_Library
+│ ├── Psychology_Training
+│ └── Squad_Tactics
 └── COMMAND_CENTER (/admin)
-    ├── Squad_Management
-    ├── Performance_Analytics
-    ├── System_Settings
-    └── Support_Channel
+├── Squad_Management
+├── Performance_Analytics
+├── System_Settings
+└── Support_Channel
 ```
 
 ### 11.2 Onboarding Flow
@@ -690,16 +717,16 @@ ROOT
 ```markdown
 ## ADAPTIVE DIFFICULTY
 
-signal_frequency = base_frequency * (1 - (user.win_rate - 0.5))
+signal_frequency = base_frequency \* (1 - (user.win_rate - 0.5))
 // Fewer signals if doing well, more if struggling
 
-signal_quality = base_quality * (user.tier_multiplier * user.experience_factor)
+signal*quality = base_quality * (user.tier*multiplier * user.experience_factor)
 // Better signals for experienced users
 
-risk_suggestion = account_balance * (0.01 * (1 + (consistency_score / 100)))
+risk*suggestion = account_balance * (0.01 \_ (1 + (consistency_score / 100)))
 // Slightly higher risk for consistent traders
 
-cooldown_period = base_cooldown * (1 + (emotional_volatility / 10))
+cooldown_period = base_cooldown \* (1 + (emotional_volatility / 10))
 // Longer cooldowns for emotional traders
 ```
 
@@ -735,20 +762,20 @@ cooldown_period = base_cooldown * (1 + (emotional_volatility / 10))
 ## LEGENDARY STATUS
 
 IF user.tier == APEX AND profitable_months >= 6 THEN
-  unlock_legendary_features([
-    "strategy_marketplace",  // Sell your strategies
-    "mentorship_program",    // Paid mentoring
-    "revenue_share",         // % of referred user fees
-    "custom_bot",           // Personalized AI assistant
-    "api_access",           // Build your own tools
-    "white_label"           // Run your own squad brand
-  ])
+unlock_legendary_features([
+"strategy_marketplace", // Sell your strategies
+"mentorship_program", // Paid mentoring
+"revenue_share", // % of referred user fees
+"custom_bot", // Personalized AI assistant
+"api_access", // Build your own tools
+"white_label" // Run your own squad brand
+])
 END
 
 IF user.students >= 10 AND student_success_rate > 60% THEN
-  award_title("MASTER_SERGEANT")
-  unlock_feature("academy_instructor")
-  monthly_bonus = student_fees * 0.1
+award_title("MASTER_SERGEANT")
+unlock_feature("academy_instructor")
+monthly_bonus = student_fees \* 0.1
 END
 ```
 
@@ -825,26 +852,26 @@ END
 ## BEHAVIOR LOGGING
 
 EVERY user_action DO
-  log({
-    timestamp: now(),
-    user_id: user.id,
-    action_type: action.type,
-    action_context: {
-      emotional_state: user.emotional_state,
-      recent_performance: last_5_trades,
-      time_since_last_action: delta,
-      interface_location: ui_context
-    },
-    result: action.result,
-    xp_change: calculated_xp
-  })
+log({
+timestamp: now(),
+user_id: user.id,
+action_type: action.type,
+action_context: {
+emotional_state: user.emotional_state,
+recent_performance: last_5_trades,
+time_since_last_action: delta,
+interface_location: ui_context
+},
+result: action.result,
+xp_change: calculated_xp
+})
 END
 
 EVERY hour DO
-  calculate_behavioral_patterns()
-  update_user_psychology_profile()
-  adjust_adaptive_difficulty()
-  check_intervention_triggers()
+calculate_behavioral_patterns()
+update_user_psychology_profile()
+adjust_adaptive_difficulty()
+check_intervention_triggers()
 END
 ```
 
@@ -889,22 +916,22 @@ END
 ## MENTORSHIP MATCHING
 
 IF user.requests_mentor == true THEN
-  eligible_mentors = SELECT users WHERE 
-    tier >= COMMANDER AND
-    win_rate >= 60 AND
-    mentorship_rating >= 4.0 AND
-    available_slots > 0
-  
-  best_match = MATCH ON [
-    timezone_compatibility,
-    trading_style_similarity,
-    personality_compatibility,
-    language_match
-  ]
-  
-  create_mentorship_bond(user, best_match)
-  award_xp(best_match, 50, "new_student")
-  schedule_first_session()
+eligible_mentors = SELECT users WHERE
+tier >= COMMANDER AND
+win_rate >= 60 AND
+mentorship_rating >= 4.0 AND
+available_slots > 0
+
+best_match = MATCH ON [
+timezone_compatibility,
+trading_style_similarity,
+personality_compatibility,
+language_match
+]
+
+create_mentorship_bond(user, best_match)
+award_xp(best_match, 50, "new_student")
+schedule_first_session()
 END
 ```
 
@@ -960,29 +987,29 @@ END
 ## ERROR PROTOCOLS
 
 IF trade_execution_fails THEN
-  log_error(detailed_context)
-  notify_user("Technical issue - trade not executed")
-  refund_slot()
-  award_compensation_xp(5)
-  IF failure_count > 3 in 1_hour THEN
-    escalate_to_support()
-    activate_manual_trading_mode()
-  END
+log_error(detailed_context)
+notify_user("Technical issue - trade not executed")
+refund_slot()
+award_compensation_xp(5)
+IF failure_count > 3 in 1_hour THEN
+escalate_to_support()
+activate_manual_trading_mode()
+END
 END
 
 IF user_data_corrupted THEN
-  restore_from_backup()
-  calculate_missing_xp()
-  send_apology_message()
-  award_compensation_xp(50)
-  free_days(3)
+restore_from_backup()
+calculate_missing_xp()
+send_apology_message()
+award_compensation_xp(50)
+free_days(3)
 END
 
 IF signal_system_down THEN
-  notify_all_users()
-  freeze_all_timers()
-  prevent_penalty_accumulation()
-  extend_active_signals(downtime_duration)
+notify_all_users()
+freeze_all_timers()
+prevent_penalty_accumulation()
+extend_active_signals(downtime_duration)
 END
 ```
 
@@ -1029,30 +1056,30 @@ END
 ## ANTI-CHEAT RULES
 
 IF trades_per_second > 1 THEN
-  flag_account("suspicious_automation")
-  require_captcha()
-  log_for_review()
+flag_account("suspicious_automation")
+require_captcha()
+log_for_review()
 END
 
 IF win_rate > 95 AND trades > 20 THEN
-  flag_account("impossible_performance")
-  manual_review_required()
-  freeze_withdrawals()
+flag_account("impossible_performance")
+manual_review_required()
+freeze_withdrawals()
 END
 
 IF multiple_accounts_same_ip THEN
-  IF NOT family_plan THEN
-    flag_accounts("multi_accounting")
-    merge_or_ban_decision()
-  END
+IF NOT family_plan THEN
+flag_accounts("multi_accounting")
+merge_or_ban_decision()
+END
 END
 
 IF api_calls > rate_limit THEN
-  temporary_ban(1_hour)
-  warning_message()
-  IF repeated THEN
-    permanent_api_ban()
-  END
+temporary_ban(1_hour)
+warning_message()
+IF repeated THEN
+permanent_api_ban()
+END
 END
 ```
 
@@ -1112,46 +1139,51 @@ END
 
 ### System Completeness Verification
 
-✅ **Core Loop**: Signal → Decision → Execution → Result → XP → Progress  
-✅ **Psychological Safety**: Emotional detection, intervention, support  
-✅ **Progression Path**: Clear advancement from desperate to dangerous  
-✅ **Social Dynamics**: Squad formation, mentorship, competition  
-✅ **Monetization**: Natural upgrade points without exploitation  
-✅ **Military Theme**: Consistent terminology and metaphors  
-✅ **Safety Rails**: Account protection, addiction prevention  
-✅ **Endgame Content**: Prestige, legendary status, revenue sharing  
-✅ **Technical Integration**: All systems interconnected  
-✅ **Edge Cases**: Error handling and recovery protocols  
+✅ **Core Loop**: Signal → Decision → Execution → Result → XP → Progress
+✅ **Psychological Safety**: Emotional detection, intervention, support
+✅ **Progression Path**: Clear advancement from desperate to dangerous
+✅ **Social Dynamics**: Squad formation, mentorship, competition
+✅ **Monetization**: Natural upgrade points without exploitation
+✅ **Military Theme**: Consistent terminology and metaphors
+✅ **Safety Rails**: Account protection, addiction prevention
+✅ **Endgame Content**: Prestige, legendary status, revenue sharing
+✅ **Technical Integration**: All systems interconnected
+✅ **Edge Cases**: Error handling and recovery protocols
 
 ---
 
 ## IMPLEMENTATION PRIORITY MATRIX
 
 ### Phase 1: Core Trading Loop (Weeks 1-2)
+
 - Signal delivery system
 - Basic XP calculation
 - Tier progression
 - Fire execution
 
 ### Phase 2: Gamification Layer (Weeks 3-4)
+
 - Achievement system
 - Daily missions
 - Streak tracking
 - Basic bot personalities
 
 ### Phase 3: Social Features (Weeks 5-6)
+
 - Squad formation
 - Chat channels
 - Leaderboards
 - Referral system
 
 ### Phase 4: Advanced Psychology (Weeks 7-8)
+
 - Emotional detection
 - Intervention protocols
 - Adaptive difficulty
 - Mentorship matching
 
 ### Phase 5: Polish & Scale (Weeks 9-10)
+
 - Special events
 - Prestige system
 - Advanced analytics
@@ -1161,4 +1193,4 @@ END
 
 **END OF BITTEN REVOLUTION GAME DESIGN DOCUMENT v1.0**
 
-*"From desperate kitten to dangerous warrior - one trade at a time."*
+_"From desperate kitten to dangerous warrior - one trade at a time."_

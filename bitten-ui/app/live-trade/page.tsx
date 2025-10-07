@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import React, { useState, useEffect, Suspense } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
-import { motion } from 'framer-motion'
-import { useUI } from '@/lib/store'
-import { usePriceSubscription } from '@/lib/useEventIntegration'
+import React, { useState, useEffect, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import { useUI } from "@/lib/store";
+import { usePriceSubscription } from "@/lib/useEventIntegration";
 import {
   Activity,
   TrendingUp,
@@ -20,49 +20,51 @@ import {
   AlertTriangle,
   Zap,
   Eye,
-  MonitorSpeaker
-} from 'lucide-react'
+  MonitorSpeaker,
+} from "lucide-react";
 
 interface PriceData {
-  symbol: string
-  bid: number
-  ask: number
-  change: number
-  changePercent: number
-  timestamp: number
+  symbol: string;
+  bid: number;
+  ask: number;
+  change: number;
+  changePercent: number;
+  timestamp: number;
 }
 
 function LiveTradeContent() {
-  const searchParams = useSearchParams()
-  const router = useRouter()
-  const ticket = searchParams.get('ticket')
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const ticket = searchParams.get("ticket");
 
-  const { missions, closeMission } = useUI()
-  const trade = missions.find(m => m.id === ticket && m.status === 'LIVE')
+  const { missions, closeMission } = useUI();
+  const trade = missions.find((m) => m.id === ticket && m.status === "LIVE");
 
   // State management
-  const [currentPrice, setCurrentPrice] = useState<PriceData | null>(null)
-  const [pnl, setPnl] = useState(0)
-  const [runningPnl, setRunningPnl] = useState(0)
-  const [maxFavorable, setMaxFavorable] = useState(0)
-  const [maxAdverse, setMaxAdverse] = useState(0)
-  const [tickData, setTickData] = useState<Array<{ price: number, time: number }>>([])
-  const [soundEnabled, setSoundEnabled] = useState(true)
-  const [balance] = useState(10000) // Mock balance
-  const [equity, setEquity] = useState(10000)
+  const [currentPrice, setCurrentPrice] = useState<PriceData | null>(null);
+  const [pnl, setPnl] = useState(0);
+  const [runningPnl, setRunningPnl] = useState(0);
+  const [maxFavorable, setMaxFavorable] = useState(0);
+  const [maxAdverse, setMaxAdverse] = useState(0);
+  const [tickData, setTickData] = useState<
+    Array<{ price: number; time: number }>
+  >([]);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [balance] = useState(10000); // Mock balance
+  const [equity, setEquity] = useState(10000);
 
   // Live price simulation
   useEffect(() => {
-    if (!trade) return
+    if (!trade) return;
 
-    let price = trade.entry
+    let price = trade.entry;
     const interval = setInterval(() => {
-      const volatility = 0.0002 // 2 pips
-      const drift = trade.direction === 'BUY' ? 0.00001 : -0.00001
-      price = price + (Math.random() - 0.5) * volatility + drift
+      const volatility = 0.0002; // 2 pips
+      const drift = trade.direction === "BUY" ? 0.00001 : -0.00001;
+      price = price + (Math.random() - 0.5) * volatility + drift;
 
-      const change = price - trade.entry
-      const changePercent = (change / trade.entry) * 100
+      const change = price - trade.entry;
+      const changePercent = (change / trade.entry) * 100;
 
       setCurrentPrice({
         symbol: trade.symbol,
@@ -70,41 +72,41 @@ function LiveTradeContent() {
         ask: price + 0.00001,
         change,
         changePercent,
-        timestamp: Date.now()
-      })
+        timestamp: Date.now(),
+      });
 
       // Calculate P&L
-      const pips = trade.direction === 'BUY'
-        ? (price - trade.entry) * 10000
-        : (trade.entry - price) * 10000
+      const pips =
+        trade.direction === "BUY"
+          ? (price - trade.entry) * 10000
+          : (trade.entry - price) * 10000;
 
-      const currentPnl = pips * 10 // $10 per pip
-      setPnl(currentPnl)
-      setRunningPnl(currentPnl)
-      setEquity(balance + currentPnl)
+      const currentPnl = pips * 10; // $10 per pip
+      setPnl(currentPnl);
+      setRunningPnl(currentPnl);
+      setEquity(balance + currentPnl);
 
       // Track max favorable/adverse
-      setMaxFavorable(prev => Math.max(prev, currentPnl))
-      setMaxAdverse(prev => Math.min(prev, currentPnl))
+      setMaxFavorable((prev) => Math.max(prev, currentPnl));
+      setMaxAdverse((prev) => Math.min(prev, currentPnl));
 
       // Add to tick data for chart
-      setTickData(prev => [
+      setTickData((prev) => [
         ...prev.slice(-50), // Keep last 50 ticks
-        { price, time: Date.now() }
-      ])
+        { price, time: Date.now() },
+      ]);
+    }, 1000);
 
-    }, 1000)
-
-    return () => clearInterval(interval)
-  }, [trade, balance])
+    return () => clearInterval(interval);
+  }, [trade, balance]);
 
   const handleClose = () => {
     if (trade) {
-      const outcome = pnl > 0 ? 'WIN' : 'LOSS'
-      closeMission(trade.id, outcome)
-      router.push('/war-room')
+      const outcome = pnl > 0 ? "WIN" : "LOSS";
+      closeMission(trade.id, outcome);
+      router.push("/war-room");
     }
-  }
+  };
 
   // Error state
   if (!trade) {
@@ -116,27 +118,36 @@ function LiveTradeContent() {
           className="text-center"
         >
           <AlertTriangle className="w-16 h-16 mx-auto text-danger mb-4" />
-          <h1 className="text-2xl font-tactical text-danger mb-2">Trade Not Found</h1>
-          <p className="text-secondary mb-6">No active trade found with this ticket ID.</p>
-          <button onClick={() => router.push('/war-room')} className="btn-primary">
+          <h1 className="text-2xl font-tactical text-danger mb-2">
+            Trade Not Found
+          </h1>
+          <p className="text-secondary mb-6">
+            No active trade found with this ticket ID.
+          </p>
+          <button
+            onClick={() => router.push("/war-room")}
+            className="btn-primary"
+          >
             Return to War Room
           </button>
         </motion.div>
       </div>
-    )
+    );
   }
 
   const getDistanceToSL = () => {
-    if (!currentPrice) return 0
-    const price = trade.direction === 'BUY' ? currentPrice.bid : currentPrice.ask
-    return Math.abs(price - trade.sl) * 10000 // in pips
-  }
+    if (!currentPrice) return 0;
+    const price =
+      trade.direction === "BUY" ? currentPrice.bid : currentPrice.ask;
+    return Math.abs(price - trade.sl) * 10000; // in pips
+  };
 
   const getDistanceToTP = () => {
-    if (!currentPrice) return 0
-    const price = trade.direction === 'BUY' ? currentPrice.bid : currentPrice.ask
-    return Math.abs(price - trade.tp) * 10000 // in pips
-  }
+    if (!currentPrice) return 0;
+    const price =
+      trade.direction === "BUY" ? currentPrice.bid : currentPrice.ask;
+    return Math.abs(price - trade.tp) * 10000; // in pips
+  };
 
   return (
     <div className="min-h-screen bg-primary text-primary">
@@ -150,15 +161,19 @@ function LiveTradeContent() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <button
-                onClick={() => router.push('/war-room')}
+                onClick={() => router.push("/war-room")}
                 className="p-2 hover:bg-overlay/50 rounded-lg transition-colors"
               >
                 <ArrowLeft className="w-6 h-6 text-secondary" />
               </button>
               <MonitorSpeaker className="w-8 h-8 text-mint pulse-glow" />
               <div>
-                <h1 className="text-2xl font-tactical text-mint neon-glow">Live Monitor</h1>
-                <p className="text-sm text-secondary font-code">Ticket: {trade.id}</p>
+                <h1 className="text-2xl font-tactical text-mint neon-glow">
+                  Live Monitor
+                </h1>
+                <p className="text-sm text-secondary font-code">
+                  Ticket: {trade.id}
+                </p>
               </div>
             </div>
 
@@ -166,10 +181,16 @@ function LiveTradeContent() {
               <button
                 onClick={() => setSoundEnabled(!soundEnabled)}
                 className={`p-2 rounded-lg transition-colors ${
-                  soundEnabled ? 'text-mint bg-mint/10' : 'text-secondary bg-secondary/10'
+                  soundEnabled
+                    ? "text-mint bg-mint/10"
+                    : "text-secondary bg-secondary/10"
                 }`}
               >
-                {soundEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
+                {soundEnabled ? (
+                  <Volume2 className="w-5 h-5" />
+                ) : (
+                  <VolumeX className="w-5 h-5" />
+                )}
               </button>
 
               <div className="text-right">
@@ -195,13 +216,17 @@ function LiveTradeContent() {
             >
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center space-x-4">
-                  <div className="text-3xl font-tactical text-mint neon-glow">{trade.symbol}</div>
-                  <div className={`px-3 py-1 rounded font-tactical text-lg ${
-                    trade.direction === 'BUY'
-                      ? 'bg-mint/20 text-mint border border-mint/30'
-                      : 'bg-danger/20 text-danger border border-danger/30'
-                  }`}>
-                    {trade.direction === 'BUY' ? (
+                  <div className="text-3xl font-tactical text-mint neon-glow">
+                    {trade.symbol}
+                  </div>
+                  <div
+                    className={`px-3 py-1 rounded font-tactical text-lg ${
+                      trade.direction === "BUY"
+                        ? "bg-mint/20 text-mint border border-mint/30"
+                        : "bg-danger/20 text-danger border border-danger/30"
+                    }`}
+                  >
+                    {trade.direction === "BUY" ? (
                       <TrendingUp className="w-5 h-5 inline mr-2" />
                     ) : (
                       <TrendingDown className="w-5 h-5 inline mr-2" />
@@ -211,7 +236,9 @@ function LiveTradeContent() {
                 </div>
                 <div className="text-right">
                   <div className="text-sm text-secondary">PATTERN</div>
-                  <div className="text-lg font-tactical text-cyan">{trade.pattern.replace(/_/g, ' ')}</div>
+                  <div className="text-lg font-tactical text-cyan">
+                    {trade.pattern.replace(/_/g, " ")}
+                  </div>
                 </div>
               </div>
 
@@ -220,10 +247,15 @@ function LiveTradeContent() {
                 <div className="text-6xl font-code text-mint mb-2 neon-glow">
                   {currentPrice?.ask.toFixed(5) || trade.entry.toFixed(5)}
                 </div>
-                <div className={`text-2xl font-code ${
-                  (currentPrice?.change || 0) >= 0 ? 'text-mint' : 'text-danger'
-                }`}>
-                  {(currentPrice?.change || 0) >= 0 ? '+' : ''}{((currentPrice?.change || 0) * 10000).toFixed(1)} pips
+                <div
+                  className={`text-2xl font-code ${
+                    (currentPrice?.change || 0) >= 0
+                      ? "text-mint"
+                      : "text-danger"
+                  }`}
+                >
+                  {(currentPrice?.change || 0) >= 0 ? "+" : ""}
+                  {((currentPrice?.change || 0) * 10000).toFixed(1)} pips
                 </div>
               </div>
 
@@ -231,15 +263,20 @@ function LiveTradeContent() {
               <div className="grid grid-cols-3 gap-6 mb-6">
                 <div className="text-center">
                   <div className="text-sm text-secondary mb-1">CURRENT P&L</div>
-                  <div className={`text-3xl font-code neon-glow ${pnl >= 0 ? 'text-mint' : 'text-danger'}`}>
-                    {pnl >= 0 ? '+' : ''}${pnl.toFixed(2)}
+                  <div
+                    className={`text-3xl font-code neon-glow ${pnl >= 0 ? "text-mint" : "text-danger"}`}
+                  >
+                    {pnl >= 0 ? "+" : ""}${pnl.toFixed(2)}
                   </div>
                   <div className="text-sm text-secondary">
-                    {pnl >= 0 ? '+' : ''}{(pnl / 10).toFixed(1)} pips
+                    {pnl >= 0 ? "+" : ""}
+                    {(pnl / 10).toFixed(1)} pips
                   </div>
                 </div>
                 <div className="text-center">
-                  <div className="text-sm text-secondary mb-1">MAX FAVORABLE</div>
+                  <div className="text-sm text-secondary mb-1">
+                    MAX FAVORABLE
+                  </div>
                   <div className="text-2xl font-code text-mint neon-glow">
                     +${maxFavorable.toFixed(2)}
                   </div>
@@ -287,19 +324,23 @@ function LiveTradeContent() {
               transition={{ delay: 0.1 }}
               className="chart-container p-6"
             >
-              <h3 className="text-lg font-tactical text-mint mb-4">Price Levels</h3>
+              <h3 className="text-lg font-tactical text-mint mb-4">
+                Price Levels
+              </h3>
               <div className="relative h-32 bg-secondary/30 rounded-lg p-4">
                 {/* TP Line */}
                 <div className="absolute top-2 left-4 right-4 border-t-2 border-mint border-dashed">
                   <div className="absolute -top-6 left-0 text-xs text-mint font-code">
-                    TP: {trade.tp.toFixed(5)} ({getDistanceToTP().toFixed(1)} pips away)
+                    TP: {trade.tp.toFixed(5)} ({getDistanceToTP().toFixed(1)}{" "}
+                    pips away)
                   </div>
                 </div>
 
                 {/* Current Price Line */}
                 <div className="absolute top-1/2 left-4 right-4 border-t-2 border-cyan">
                   <div className="absolute -top-6 left-0 text-xs text-cyan font-code">
-                    Current: {currentPrice?.ask.toFixed(5) || trade.entry.toFixed(5)}
+                    Current:{" "}
+                    {currentPrice?.ask.toFixed(5) || trade.entry.toFixed(5)}
                   </div>
                   <div className="w-2 h-2 bg-cyan rounded-full absolute -top-1 left-1/2 -translate-x-1/2 animate-pulse" />
                 </div>
@@ -314,7 +355,8 @@ function LiveTradeContent() {
                 {/* SL Line */}
                 <div className="absolute bottom-2 left-4 right-4 border-t-2 border-danger border-dashed">
                   <div className="absolute -bottom-6 left-0 text-xs text-danger font-code">
-                    SL: {trade.sl.toFixed(5)} ({getDistanceToSL().toFixed(1)} pips away)
+                    SL: {trade.sl.toFixed(5)} ({getDistanceToSL().toFixed(1)}{" "}
+                    pips away)
                   </div>
                 </div>
               </div>
@@ -338,11 +380,15 @@ function LiveTradeContent() {
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-secondary">Balance:</span>
-                  <span className="font-code text-primary">${balance.toLocaleString()}</span>
+                  <span className="font-code text-primary">
+                    ${balance.toLocaleString()}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-secondary">Equity:</span>
-                  <span className={`font-code ${equity >= balance ? 'text-mint' : 'text-danger'}`}>
+                  <span
+                    className={`font-code ${equity >= balance ? "text-mint" : "text-danger"}`}
+                  >
                     ${equity.toLocaleString()}
                   </span>
                 </div>
@@ -352,7 +398,9 @@ function LiveTradeContent() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-secondary">Free Margin:</span>
-                  <span className="font-code text-mint">${(equity - 85.50).toLocaleString()}</span>
+                  <span className="font-code text-mint">
+                    ${(equity - 85.5).toLocaleString()}
+                  </span>
                 </div>
               </div>
             </motion.div>
@@ -376,7 +424,9 @@ function LiveTradeContent() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-secondary">Direction:</span>
-                  <span className={`font-code ${trade.direction === 'BUY' ? 'text-mint' : 'text-danger'}`}>
+                  <span
+                    className={`font-code ${trade.direction === "BUY" ? "text-mint" : "text-danger"}`}
+                  >
                     {trade.direction}
                   </span>
                 </div>
@@ -386,19 +436,27 @@ function LiveTradeContent() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-secondary">Entry:</span>
-                  <span className="font-code text-warning">{trade.entry.toFixed(5)}</span>
+                  <span className="font-code text-warning">
+                    {trade.entry.toFixed(5)}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-secondary">Stop Loss:</span>
-                  <span className="font-code text-danger">{trade.sl.toFixed(5)}</span>
+                  <span className="font-code text-danger">
+                    {trade.sl.toFixed(5)}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-secondary">Take Profit:</span>
-                  <span className="font-code text-mint">{trade.tp.toFixed(5)}</span>
+                  <span className="font-code text-mint">
+                    {trade.tp.toFixed(5)}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-secondary">Confidence:</span>
-                  <span className="font-code text-mint">{trade.confidence}%</span>
+                  <span className="font-code text-mint">
+                    {trade.confidence}%
+                  </span>
                 </div>
               </div>
             </motion.div>
@@ -412,7 +470,9 @@ function LiveTradeContent() {
             >
               <div className="flex items-center space-x-2 mb-4">
                 <Clock className="w-5 h-5 text-warning" />
-                <span className="font-tactical text-warning">Trade Duration</span>
+                <span className="font-tactical text-warning">
+                  Trade Duration
+                </span>
               </div>
 
               <div className="text-center">
@@ -434,7 +494,9 @@ function LiveTradeContent() {
             >
               <div className="flex items-center space-x-2 mb-4">
                 <Zap className="w-5 h-5 text-warning" />
-                <span className="font-tactical text-warning">Quick Actions</span>
+                <span className="font-tactical text-warning">
+                  Quick Actions
+                </span>
               </div>
 
               <div className="space-y-3">
@@ -481,7 +543,7 @@ function LiveTradeContent() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export default function LiveTradePage() {
@@ -489,5 +551,5 @@ export default function LiveTradePage() {
     <Suspense fallback={<div className="min-h-screen bg-primary" />}>
       <LiveTradeContent />
     </Suspense>
-  )
+  );
 }

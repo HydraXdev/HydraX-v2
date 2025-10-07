@@ -10,7 +10,8 @@ automatic execution.
 """
 
 from datetime import datetime
-from typing import Dict, Tuple, Optional
+from typing import Dict, Optional, Tuple
+
 
 class CustomAutoFireProfile:
     """
@@ -25,51 +26,51 @@ class CustomAutoFireProfile:
         # Based on 12-hour analysis (September 16, 2025)
         # These showed 70%+ win rate in 80-89% confidence range
         self.allowed_pairs = {
-            'USDCNH',    # 100% win rate (11W/0L) in auto range
-            'XAUUSD',    # 100% win rate (6W/0L) in auto range
-            'USDJPY',    # 100% win rate (5W/0L) in auto range
-            'EURJPY',    # 100% win rate (2W/0L) in auto range
-            'GBPCAD',    # 100% win rate (3W/0L) in auto range
-            'NZDUSD',    # 100% win rate (2W/0L) in auto range
-            'EURAUD',    # 100% win rate (2W/0L) in auto range
+            "USDCNH",  # 100% win rate (11W/0L) in auto range
+            "XAUUSD",  # 100% win rate (6W/0L) in auto range
+            "USDJPY",  # 100% win rate (5W/0L) in auto range
+            "EURJPY",  # 100% win rate (2W/0L) in auto range
+            "GBPCAD",  # 100% win rate (3W/0L) in auto range
+            "NZDUSD",  # 100% win rate (2W/0L) in auto range
+            "EURAUD",  # 100% win rate (2W/0L) in auto range
             # 'GBPUSD',  # 75% win rate (3W/1L) - borderline, monitoring
         }
 
         # Pairs to block from auto-fire (but still signal)
         self.blocked_pairs = {
-            'GBPJPY',    # 50% in 12h, 40% in 24h - needs optimization
-            'GBPUSD',    # 55.6% in 12h, 50% in 24h - inconsistent
-            'EURUSD',    # 42.9% in 24h - poor performance
-            'EURAUD',    # Conflicting data, needs review
+            "GBPJPY",  # 50% in 12h, 40% in 24h - needs optimization
+            "GBPUSD",  # 55.6% in 12h, 50% in 24h - inconsistent
+            "EURUSD",  # 42.9% in 24h - poor performance
+            "EURAUD",  # Conflicting data, needs review
         }
 
         # Patterns with proven performance
         self.allowed_patterns = {
-            'KALMAN_QUICKFIRE',  # 76.7% win rate in 12h
-            'BB_SCALP',          # 66.7% win rate in 12h
+            "KALMAN_QUICKFIRE",  # 76.7% win rate in 12h
+            "BB_SCALP",  # 66.7% win rate in 12h
         }
 
         # Patterns to block from auto-fire
         self.blocked_patterns = {
-            'FAIR_VALUE_GAP_FILL',    # 25% win rate - major issue
-            'ORDER_BLOCK_BOUNCE',     # 53.8% win rate - needs tuning
-            'LIQUIDITY_SWEEP_REVERSAL',  # Limited data, poor performance
+            "FAIR_VALUE_GAP_FILL",  # 25% win rate - major issue
+            "ORDER_BLOCK_BOUNCE",  # 53.8% win rate - needs tuning
+            "LIQUIDITY_SWEEP_REVERSAL",  # Limited data, poor performance
         }
 
         # Optimal confidence ranges based on analysis
         self.confidence_ranges = {
-            'primary': (80, 84),     # Best performance zone
-            'secondary': (75, 79),   # Good performance, can enable if needed
-            'avoid': (85, 89),       # Currently underperforming (51.1% WR)
+            "primary": (80, 84),  # Best performance zone
+            "secondary": (75, 79),  # Good performance, can enable if needed
+            "avoid": (85, 89),  # Currently underperforming (51.1% WR)
         }
 
         # Track performance for continuous optimization
         self.performance_stats = {
-            'total_signals': 0,
-            'auto_fired': 0,
-            'wins': 0,
-            'losses': 0,
-            'last_reset': datetime.now()
+            "total_signals": 0,
+            "auto_fired": 0,
+            "wins": 0,
+            "losses": 0,
+            "last_reset": datetime.now(),
         }
 
     def should_auto_fire(self, signal_data: Dict) -> Tuple[bool, str]:
@@ -86,9 +87,9 @@ class CustomAutoFireProfile:
         Returns:
             Tuple of (should_fire: bool, reason: str)
         """
-        symbol = signal_data.get('symbol', '')
-        pattern = signal_data.get('pattern_type', '')
-        confidence = float(signal_data.get('confidence', 0))
+        symbol = signal_data.get("symbol", "")
+        pattern = signal_data.get("pattern_type", "")
+        confidence = float(signal_data.get("confidence", 0))
 
         # Check if pair is blocked
         if symbol in self.blocked_pairs:
@@ -107,8 +108,8 @@ class CustomAutoFireProfile:
             return False, f"Pattern {pattern} not in allowed list"
 
         # Check confidence range
-        primary_min, primary_max = self.confidence_ranges['primary']
-        secondary_min, secondary_max = self.confidence_ranges['secondary']
+        primary_min, primary_max = self.confidence_ranges["primary"]
+        secondary_min, secondary_max = self.confidence_ranges["secondary"]
 
         if primary_min <= confidence <= primary_max:
             return True, f"Optimal range {primary_min}-{primary_max}%"
@@ -118,7 +119,7 @@ class CustomAutoFireProfile:
         #     return True, f"Secondary range {secondary_min}-{secondary_max}%"
 
         # Avoid the problematic 85-89% range
-        avoid_min, avoid_max = self.confidence_ranges['avoid']
+        avoid_min, avoid_max = self.confidence_ranges["avoid"]
         if avoid_min <= confidence <= avoid_max:
             return False, f"Avoiding {avoid_min}-{avoid_max}% range (underperforming)"
 
@@ -132,32 +133,32 @@ class CustomAutoFireProfile:
             signal_id: The signal that was auto-fired
             outcome: 'WIN' or 'LOSS'
         """
-        if outcome == 'WIN':
-            self.performance_stats['wins'] += 1
-        elif outcome == 'LOSS':
-            self.performance_stats['losses'] += 1
+        if outcome == "WIN":
+            self.performance_stats["wins"] += 1
+        elif outcome == "LOSS":
+            self.performance_stats["losses"] += 1
 
-        self.performance_stats['total_signals'] += 1
+        self.performance_stats["total_signals"] += 1
 
     def get_win_rate(self) -> Optional[float]:
         """Calculate current win rate for custom profile."""
-        total = self.performance_stats['wins'] + self.performance_stats['losses']
+        total = self.performance_stats["wins"] + self.performance_stats["losses"]
         if total == 0:
             return None
-        return (self.performance_stats['wins'] / total) * 100
+        return (self.performance_stats["wins"] / total) * 100
 
     def get_profile_summary(self) -> Dict:
         """Get a summary of the current profile settings."""
         return {
-            'user_id': self.user_id,
-            'allowed_pairs': list(self.allowed_pairs),
-            'blocked_pairs': list(self.blocked_pairs),
-            'allowed_patterns': list(self.allowed_patterns),
-            'blocked_patterns': list(self.blocked_patterns),
-            'confidence_ranges': self.confidence_ranges,
-            'current_win_rate': self.get_win_rate(),
-            'stats': self.performance_stats,
-            'last_update': self.last_update.isoformat()
+            "user_id": self.user_id,
+            "allowed_pairs": list(self.allowed_pairs),
+            "blocked_pairs": list(self.blocked_pairs),
+            "allowed_patterns": list(self.allowed_patterns),
+            "blocked_patterns": list(self.blocked_patterns),
+            "confidence_ranges": self.confidence_ranges,
+            "current_win_rate": self.get_win_rate(),
+            "stats": self.performance_stats,
+            "last_update": self.last_update.isoformat(),
         }
 
     def should_update_profile(self) -> bool:
@@ -166,7 +167,7 @@ class CustomAutoFireProfile:
         Typically every 12 hours or after 50+ signals.
         """
         hours_since_update = (datetime.now() - self.last_update).total_seconds() / 3600
-        signals_since_update = self.performance_stats['total_signals']
+        signals_since_update = self.performance_stats["total_signals"]
 
         return hours_since_update >= 12 or signals_since_update >= 50
 

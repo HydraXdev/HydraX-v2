@@ -1,7 +1,7 @@
 # 🎯 v5.0 ENGINE REBUILD BLUEPRINT
 
-**Created**: July 14, 2025  
-**Status**: PRODUCTION TESTED - Bridge Integration Complete  
+**Created**: July 14, 2025
+**Status**: PRODUCTION TESTED - Bridge Integration Complete
 **Purpose**: Complete rebuild guide for v5.0 signal engine
 
 ---
@@ -17,11 +17,13 @@ The engine must ONLY read market data from bridge files. Any attempt to connect 
 ## 🏗️ System Architecture
 
 ### Data Flow (MANDATORY):
+
 ```
 MT5 Terminals → Bridge Files → Engine → Telegram Connector → Users
 ```
 
 ### Bridge Integration:
+
 - **Input Source**: `C:\MT5_Farm\Bridge\Incoming\signal_SYMBOL_*.json`
 - **Output Format**: `🎯 SIGNAL #X: SYMBOL DIRECTION TCS:XX%`
 - **Communication**: HTTP via bulletproof agents (3.145.84.187:5555)
@@ -56,18 +58,18 @@ class v5LiveSystem:
     def __init__(self):
         self.is_running = False
         self.bridge_connected = False
-        
+
         # Bridge configuration
         self.bridge_agent_url = "http://3.145.84.187:5555"
         self.bridge_path = "C:\\\\MT5_Farm\\\\Bridge\\\\Incoming\\\\"
-        
+
         # v5.0 pairs (15 total)
         self.v5_pairs = [
             'EURUSD', 'GBPUSD', 'USDJPY', 'USDCAD', 'GBPJPY',
-            'EURJPY', 'AUDJPY', 'GBPCHF', 'AUDUSD', 'NZDUSD', 
+            'EURJPY', 'AUDJPY', 'GBPCHF', 'AUDUSD', 'NZDUSD',
             'USDCHF', 'EURGBP', 'GBPNZD', 'GBPAUD', 'EURAUD'
         ]
-        
+
         # Performance tracking
         self.session_stats = {
             'signals_generated': 0,
@@ -90,26 +92,26 @@ def get_market_data_from_bridge_files(self, symbol: str) -> Optional[Dict]:
             },
             timeout=10
         )
-        
+
         if response.status_code == 200:
             result = response.json()
             if result.get('success') and result.get('stdout'):
                 signal_lines = result['stdout'].strip().split('\\n')
                 if signal_lines:
                     signal_data = json.loads('\\n'.join(signal_lines))
-                    
+
                     # Extract market data from bridge signal
                     entry_price = signal_data.get('entry_price', 1.0000)
                     spread = signal_data.get('spread', 2)
-                    
+
                     # Calculate bid/ask from entry and spread
                     if signal_data.get('direction') == 'BUY':
                         ask = entry_price
                         bid = entry_price - (spread * 0.00001)
                     else:
-                        bid = entry_price  
+                        bid = entry_price
                         ask = entry_price + (spread * 0.00001)
-                    
+
                     return {
                         'symbol': symbol,
                         'bid': bid,
@@ -120,9 +122,9 @@ def get_market_data_from_bridge_files(self, symbol: str) -> Optional[Dict]:
                         'point': 0.00001,
                         'digits': 5
                     }
-        
+
         return None
-        
+
     except Exception as e:
         logging.error(f"Bridge file read error for {symbol}: {e}")
         return None
@@ -135,7 +137,7 @@ def calculate_live_tcs(self, symbol: str, market_data: Dict) -> float:
     """Calculate TCS score using bridge market data"""
     try:
         base_score = 45  # v5.0 base
-        
+
         # Session boost (CRITICAL for v5.0)
         session = self.get_current_session()
         session_boost = {
@@ -144,7 +146,7 @@ def calculate_live_tcs(self, symbol: str, market_data: Dict) -> float:
             'NY': 12,       # NY boost
             'ASIAN': 8      # Asian boost
         }.get(session, 5)
-        
+
         # Spread analysis
         spread = market_data.get('spread', 2)
         if spread <= 2:
@@ -155,24 +157,24 @@ def calculate_live_tcs(self, symbol: str, market_data: Dict) -> float:
             spread_bonus = 0
         else:
             spread_bonus = -5
-        
+
         # Pair classification (v5.0 monsters)
         monster_pairs = ['GBPNZD', 'GBPAUD', 'EURAUD']
         volatile_pairs = ['GBPJPY', 'EURJPY', 'AUDJPY', 'GBPCHF']
-        
+
         if symbol in monster_pairs:
             pair_boost = 15
         elif symbol in volatile_pairs:
             pair_boost = 10
         else:
             pair_boost = 5
-        
+
         # Calculate final TCS
         tcs_score = base_score + session_boost + spread_bonus + pair_boost
-        
+
         # v5.0 bounds (35-95)
         return max(35, min(95, tcs_score))
-        
+
     except Exception as e:
         logging.error(f"TCS calculation error for {symbol}: {e}")
         return 35
@@ -188,20 +190,20 @@ def generate_live_signal(self, symbol: str) -> Optional[Dict]:
         market_data = self.get_market_data_from_bridge_files(symbol)
         if not market_data:
             return None
-        
+
         # Calculate TCS
         tcs_score = self.calculate_live_tcs(symbol, market_data)
-        
+
         # v5.0 threshold check
         if tcs_score < 35:
             return None
-        
+
         # Generate signal
         signal = {
             'symbol': symbol,
             'direction': 'BUY',  # Simplified for bridge
             'entry_price': market_data['ask'],
-            'bid_price': market_data['bid'], 
+            'bid_price': market_data['bid'],
             'spread': market_data['spread'],
             'tcs': tcs_score,
             'pattern': f'_v5_LIVE_{self.get_current_session()}',
@@ -209,20 +211,20 @@ def generate_live_signal(self, symbol: str) -> Optional[Dict]:
             'session': self.get_current_session(),
             'timestamp': datetime.now()
         }
-        
+
         # CRITICAL: Log in exact Telegram format
         self.session_stats['signals_generated'] += 1
         signal_number = self.session_stats['signals_generated']
-        
+
         signal_log = f"🎯 SIGNAL #{signal_number}: {symbol} {signal['direction']} TCS:{tcs_score:.0f}%"
         logging.info(signal_log)
-        
+
         # Also write to execution log
         with open('/root/HydraX-v2/apex_v5_live_execution.log', 'a') as f:
             f.write(f"{datetime.now().isoformat()}: {signal_log}\\n")
-        
+
         return signal
-        
+
     except Exception as e:
         logging.error(f"Signal generation error for {symbol}: {e}")
         return None
@@ -236,31 +238,31 @@ def run_live_trading(self) -> None:
     logging.info("🎯 STARTING LIVE TRADING - v5.0")
     logging.info("📊 BRIDGE DATA SOURCE - NO DIRECT MT5")
     logging.info("=" * 50)
-    
+
     self.is_running = True
-    
+
     try:
         while self.is_running:
             current_session = self.get_current_session()
             signals_found = 0
-            
+
             # Scan all 15 pairs for bridge signals
             for symbol in self.v5_pairs:
                 signal = self.generate_live_signal(symbol)
-                
+
                 if signal:
                     signals_found += 1
                     logging.info(f"📊 Signal generated: {symbol} TCS {signal['tcs']:.1f} Spread:{signal['spread']:.1f} {current_session}")
-            
+
             # Session summary
             if signals_found > 0:
                 logging.info(f"📊 Session {current_session}: {signals_found} signals, "
                           f"Total: {self.session_stats['signals_generated']}/40 target")
-            
+
             # Adaptive sleep (faster during OVERLAP)
             sleep_time = 15 if current_session == 'OVERLAP' else 45
             time.sleep(sleep_time)
-            
+
     except KeyboardInterrupt:
         logging.info("🛑 Live trading stopped by user")
     except Exception as e:
@@ -271,11 +273,11 @@ def run_live_trading(self) -> None:
 def get_current_session(self) -> str:
     """Get current trading session"""
     hour = datetime.utcnow().hour
-    
+
     if 12 <= hour < 16:
         return 'OVERLAP'
     elif 7 <= hour < 16:
-        return 'LONDON' 
+        return 'LONDON'
     elif 13 <= hour < 22:
         return 'NY'
     elif 22 <= hour or hour < 7:
@@ -307,13 +309,13 @@ def monitor_apex_logs(log_file: str):
             f.seek(file_position)
             new_lines = f.readlines()
             file_position = f.tell()
-        
+
         for line in new_lines:
             if '🎯 SIGNAL #' in line and 'TCS:' in line:
                 signal = parse_signal_from_log(line)
                 if signal:
                     send_signal_alert(signal)
-        
+
         time.sleep(1)
 ```
 
@@ -322,6 +324,7 @@ def monitor_apex_logs(log_file: str):
 ## ⚠️ Critical Requirements
 
 ### 1. Environment Setup:
+
 ```bash
 # Required environment variables
 export MT5_LOGIN=12345  # Demo account
@@ -331,12 +334,14 @@ export CHAT_ID=-1002581996861
 ```
 
 ### 2. Bridge Dependencies:
+
 - **Windows Server**: 3.145.84.187 must be accessible
 - **Bulletproof Agents**: Port 5555 operational
 - **Bridge Files**: `C:\MT5_Farm\Bridge\Incoming\` populated with signals
 - **Network Access**: HTTP requests to bridge server
 
 ### 3. Output Format (EXACT):
+
 ```
 🎯 SIGNAL #1: EURUSD BUY TCS:62%
 🎯 SIGNAL #2: GBPJPY BUY TCS:71%
@@ -344,6 +349,7 @@ export CHAT_ID=-1002581996861
 ```
 
 ### 4. NO FALLBACK DATA:
+
 - **Never generate fake signals**
 - **Fail safely if no bridge data**
 - **No mock/synthetic data allowed**
@@ -353,23 +359,27 @@ export CHAT_ID=-1002581996861
 ## 🚀 Deployment Steps
 
 ### 1. Start Engine:
+
 ```bash
 cd /root/HydraX-v2
 python3 apex_v5_live_real.py > apex_v5_live_real.log 2>&1 &
 ```
 
 ### 2. Start Telegram Connector:
+
 ```bash
 python3 apex_telegram_connector.py > apex_telegram_connector.log 2>&1 &
 ```
 
 ### 3. Monitor Logs:
+
 ```bash
 tail -f apex_v5_live_real.log
 tail -f apex_telegram_connector.log
 ```
 
 ### 4. Verify Signal Flow:
+
 ```bash
 # Check bridge files exist
 curl -X POST http://3.145.84.187:5555/execute \\
@@ -405,6 +415,7 @@ grep "🎯 SIGNAL" apex_v5_live_real.log
    - Confirm signal format exact match
 
 ### Debug Commands:
+
 ```bash
 # Test bridge connection
 curl -X GET http://3.145.84.187:5555/health
@@ -429,6 +440,7 @@ print(json.dumps(data, indent=2, default=str))
 ## 📋 Testing Checklist
 
 ### Pre-Deployment:
+
 - [ ] Bridge files accessible via bulletproof agents
 - [ ] engine reads bridge data successfully
 - [ ] TCS calculation produces 35-95% range
@@ -437,6 +449,7 @@ print(json.dumps(data, indent=2, default=str))
 - [ ] BIT COMMANDER bot delivers messages
 
 ### Post-Deployment:
+
 - [ ] Signals generating every 15-45 seconds
 - [ ] Bridge data updating from MT5 terminals
 - [ ] Telegram messages arriving in group
@@ -449,18 +462,21 @@ print(json.dumps(data, indent=2, default=str))
 ## 🏆 Success Criteria
 
 ### Signal Generation:
+
 - **Volume**: 40+ signals per day
 - **Quality**: TCS range 35-95%
 - **Speed**: New signals every 15-45 seconds
 - **Accuracy**: Real bridge data only
 
 ### Integration:
+
 - **Telegram**: BIT COMMANDER bot delivery
 - **Mission Briefings**: Personalized user data
 - **WebApp**: Live signal display
 - **Bridge**: Two-way MT5 communication
 
 ### Reliability:
+
 - **Uptime**: 99%+ operational
 - **Data Integrity**: No fake/synthetic signals
 - **Error Recovery**: Graceful failure handling
@@ -468,5 +484,5 @@ print(json.dumps(data, indent=2, default=str))
 
 ---
 
-**v5.0 Bridge Integration - Complete Rebuild Blueprint**  
-*Production tested July 14, 2025*
+**v5.0 Bridge Integration - Complete Rebuild Blueprint**
+_Production tested July 14, 2025_

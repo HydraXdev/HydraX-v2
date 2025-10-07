@@ -5,42 +5,49 @@ A comprehensive order flow analysis system that connects to multiple exchanges a
 ## Features
 
 ### 1. **Order Book Reader**
+
 - Real-time order book maintenance with efficient updates
 - Multi-exchange aggregation
 - Historical snapshot storage
 - WebSocket and REST API support
 
 ### 2. **Imbalance Detector**
+
 - Detects bid/ask volume imbalances
 - Dynamic level adjustment
 - Strength classification (weak to extreme)
 - Trend analysis over time
 
 ### 3. **Absorption Pattern Detector**
+
 - Identifies accumulation and distribution patterns
 - Detects support/resistance absorption
 - Pattern confidence scoring
 - Time-based pattern formation
 
 ### 4. **Liquidity Void Detector**
+
 - Identifies gaps in order book liquidity
 - Severity classification
 - Slippage estimation
 - Liquidity scoring system
 
 ### 5. **Cumulative Delta Calculator**
+
 - Time and volume-based delta bars
 - Buy/sell volume classification
 - Price/delta divergence detection
 - Historical delta extremes tracking
 
 ### 6. **Dark Pool Activity Scanner**
+
 - Simulated dark pool detection (ready for real feeds)
 - Multiple detection patterns
 - Flow analysis and scoring
 - Large print identification
 
 ### 7. **Order Flow Scoring System**
+
 - Combines all indicators into actionable scores
 - Signal strength classification
 - Trading opportunity detection
@@ -62,13 +69,13 @@ from order_flow.example_usage import OrderFlowAnalysisSystem
 async def main():
     # Create system
     system = OrderFlowAnalysisSystem()
-    
+
     # Start analysis
     await system.start(['BTC/USDT', 'ETH/USDT'])
-    
+
     # Run for desired duration
     await asyncio.sleep(300)  # 5 minutes
-    
+
     # Stop system
     await system.stop()
 
@@ -99,6 +106,7 @@ await system.exchange_manager.add_exchange(config)
 ### Supported Exchanges
 
 All exchanges supported by CCXT library, including:
+
 - Binance
 - Coinbase
 - Kraken
@@ -160,24 +168,28 @@ print(f"Confidence: {score.confidence:.0%}")
 ## API Reference
 
 ### OrderBookSnapshot
+
 - `get_spread()`: Calculate bid-ask spread
 - `get_mid_price()`: Get mid price
 - `get_depth(levels)`: Get total depth at N levels
 - `get_weighted_mid_price(levels)`: Volume-weighted mid price
 
 ### ImbalanceSignal
+
 - `direction`: 'bullish' or 'bearish'
 - `strength`: 'weak', 'moderate', 'strong', 'extreme'
 - `imbalance_ratio`: Bid/ask volume ratio
 - `weighted_imbalance`: Price-weighted imbalance
 
 ### LiquidityProfile
+
 - `liquidity_score`: 0-100 score
 - `bid_void_count`: Number of bid-side voids
 - `ask_void_count`: Number of ask-side voids
 - `effective_spread`: Spread considering liquidity
 
 ### OrderFlowScore
+
 - `composite_score`: -100 to 100
 - `signal_strength`: Signal enum
 - `confidence`: 0-1 confidence level

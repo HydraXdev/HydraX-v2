@@ -1,6 +1,7 @@
 # 🎓 HydraX Education System - Complete User & Developer Guide
 
 ## Table of Contents
+
 1. [System Overview](#system-overview)
 2. [User Guide](#user-guide)
    - [Getting Started](#getting-started)
@@ -24,12 +25,14 @@
 The HydraX Education System transforms trading education from a boring classroom into an addictive gaming experience. Built with the psychology of Call of Duty, Apex Legends, and Netflix, it makes learning trading as engaging as playing your favorite game.
 
 ### Core Philosophy
+
 - **"Stealth Education"**: Users learn without realizing they're studying
 - **Military Theme**: Trading is warfare against markets and emotions
 - **Gaming Psychology**: Achievement hunting, progression systems, and social competition
 - **Personalized Journey**: Adaptive difficulty and emotional intelligence
 
 ### Key Components
+
 1. **Bot Personalities**: Military instructors with distinct teaching styles
 2. **Mission System**: Story-driven campaigns with real trading lessons
 3. **Achievement System**: Xbox/PlayStation-style unlockables
@@ -45,11 +48,11 @@ The HydraX Education System transforms trading education from a boring classroom
 ### Getting Started
 
 #### First Steps for New Traders
+
 1. **Complete Onboarding Mission**
    ```
    /start → Choose "Begin Training" → Complete "First Blood" mission
    ```
-   
 2. **Meet Your Instructors**
    - **Sergeant Nexus**: Strategic commander for pre-trade analysis
    - **Drill**: Tough love coach who keeps you disciplined
@@ -64,10 +67,13 @@ The HydraX Education System transforms trading education from a boring classroom
 ### Joining Squads
 
 #### What Are Squads?
+
 Squads are small groups (3-10 traders) who learn together, share experiences, and complete group missions. Think of it like your Call of Duty squad - you win together, you lose together.
 
 #### How to Join a Squad
+
 1. **Find Open Squads**
+
    ```
    /squad list → Browse available squads → Apply to join
    ```
@@ -85,12 +91,14 @@ Squads are small groups (3-10 traders) who learn together, share experiences, an
    ```
 
 #### Squad Features
+
 - **Squad Radar**: See what your squad is trading (with privacy controls)
 - **Group Missions**: Complete objectives together for bonus XP
 - **Squad Chat**: Private communication channel
 - **Shared Achievements**: Some achievements require squad coordination
 
 #### Privacy Settings
+
 ```
 /squad privacy → Choose visibility level:
 - Public: Full transparency
@@ -102,15 +110,19 @@ Squads are small groups (3-10 traders) who learn together, share experiences, an
 ### Finding Mentors
 
 #### Mentor System Overview
+
 Experienced traders (100+ successful trades) can become mentors. New traders get personalized guidance from someone who's been there.
 
 #### How to Find a Mentor
+
 1. **Auto-Matching**
+
    ```
    /mentor find → System analyzes your profile → Suggests 3 mentors → Choose one
    ```
 
 2. **Browse Mentors**
+
    ```
    /mentor list → Filter by:
    - Trading style
@@ -125,13 +137,16 @@ Experienced traders (100+ successful trades) can become mentors. New traders get
    - Commit to weekly check-ins
 
 #### What Mentors Provide
+
 - **Weekly Reviews**: Analyze your journal together
 - **Trade Analysis**: Review your setups before execution
 - **Emotional Support**: Help during losing streaks
 - **Custom Missions**: Personalized challenges based on weaknesses
 
 #### Becoming a Mentor
+
 Requirements:
+
 - 100+ completed trades
 - 60%+ win rate
 - Complete "Mentor Certification" mission series
@@ -170,27 +185,32 @@ Requirements:
 #### Mission Mechanics
 
 **Starting a Mission**
+
 ```
 /missions → Select mission → Read briefing → Click "Deploy"
 ```
 
 **Objective Tracking**
+
 - Real-time progress updates
 - Checkpoint saves
 - Bonus objectives for extra XP
 
 **Dynamic Difficulty**
+
 - Uses ELO rating system (1000-2500)
 - Adjusts based on your performance
 - Hidden from user to maintain immersion
 
 **Time Limits**
+
 - Story missions: No limit
 - Survival: 4-6 hours
 - Daily: 24 hours
 - Squad: 3-7 days
 
 #### Mission Rewards
+
 - **XP**: Base + objective bonuses
 - **Achievements**: Unlock related achievements
 - **Content**: Access to new video series
@@ -199,9 +219,11 @@ Requirements:
 ### Earning Achievements
 
 #### Achievement System Overview
+
 Inspired by Xbox Gamerscore and PlayStation Trophies, achievements provide long-term goals and bragging rights.
 
 #### Rarity Tiers
+
 1. **Common (Grey)** - 50%+ of players unlock
 2. **Uncommon (Green)** - 20-50% unlock rate
 3. **Rare (Blue)** - 5-20% unlock rate
@@ -212,42 +234,51 @@ Inspired by Xbox Gamerscore and PlayStation Trophies, achievements provide long-
 #### Achievement Categories
 
 **Knowledge Achievements**
+
 - Complete educational content
 - Pass quizzes with high scores
 - Watch full video series
 
 **Practice Achievements**
+
 - Paper trading milestones
 - Strategy testing goals
 - Risk management mastery
 
 **Performance Achievements**
+
 - Win streaks
 - Profit targets
 - Consistency rewards
 
 **Dedication Achievements**
+
 - Daily login streaks
 - Weekly mission completion
 - Long-term commitment
 
 **Social Achievements**
+
 - Squad participation
 - Mentoring others
 - Community contribution
 
 **Hidden Achievements**
+
 - Secret objectives
 - Discovered through gameplay
 - Often tied to specific behaviors
 
 #### Achievement Chains
+
 Some achievements unlock in sequence:
+
 ```
 First Steps (Common) → Knowledge Seeker (Uncommon) → Scholar (Rare) → Sage (Epic)
 ```
 
 #### Showcase System
+
 - Display your top 5 achievements on your profile
 - Rarer achievements have special visual effects
 - Leaderboards show total achievement points
@@ -255,12 +286,14 @@ First Steps (Common) → Knowledge Seeker (Uncommon) → Scholar (Rare) → Sage
 ### Using Norman's Journal
 
 #### What is Norman's Journal?
+
 A personal trade diary with AI-powered emotional intelligence. Named after the system's creator, it tracks your emotional journey and identifies patterns.
 
 #### Key Features
 
 **Mood Detection**
 The journal analyzes your entries for emotional keywords:
+
 - Excitement: "pumped", "moon", "lambo"
 - Fear: "scared", "worried", "anxious"
 - Greed: "double down", "all in", "yolo"
@@ -268,6 +301,7 @@ The journal analyzes your entries for emotional keywords:
 
 **Pattern Recognition**
 Identifies recurring behaviors:
+
 - Revenge trading after losses
 - FOMO entries
 - Overconfidence patterns
@@ -275,12 +309,14 @@ Identifies recurring behaviors:
 
 **Scar Tracking**
 Memorable losses become "scars" - lessons that shape your trading:
+
 ```
 Loss > $100 → Scar created → Add lesson learned → Track if lesson applied in future
 ```
 
 **Weekly Reviews**
 Every Sunday, receive a personalized review:
+
 - Emotional state analysis
 - Pattern identification
 - Personalized advice
@@ -289,6 +325,7 @@ Every Sunday, receive a personalized review:
 #### How to Use the Journal
 
 **Making Entries**
+
 ```
 /journal add → Choose phase:
 - Before Trade: Document your reasoning
@@ -298,6 +335,7 @@ Every Sunday, receive a personalized review:
 ```
 
 **Entry Prompts**
+
 - What's your confidence level?
 - Why this trade, why now?
 - How do you feel about the risk?
@@ -305,12 +343,14 @@ Every Sunday, receive a personalized review:
 
 **Automated Entries**
 System creates entries automatically for:
+
 - Trade opens/closes
 - Significant P&L events
 - Achievement unlocks
 - Mission completions
 
 **Review Your Journey**
+
 ```
 /journal review → Choose timeframe:
 - Daily reflection
@@ -321,6 +361,7 @@ System creates entries automatically for:
 
 **Growth Metrics**
 Track your emotional evolution:
+
 - Calm percentage increase
 - Fear/greed reduction
 - Pattern break success rate
@@ -364,7 +405,9 @@ Track your emotional evolution:
 ### Core Components
 
 #### 1. Education System (`education_system.py`)
+
 Main orchestrator for all educational features:
+
 ```python
 class EducationSystem:
     def __init__(self, database: Database, logger: Logger):
@@ -372,61 +415,69 @@ class EducationSystem:
         self.cooldown_tracker = {}
         self.paper_trades = {}
         self.content_library = {}
-        
+
     async def pre_trade_check(user_id, trade_params) -> Dict
     async def post_trade_education(user_id, trade_result)
     async def check_nibbler_cooldown(user_id) -> Tuple[bool, str]
 ```
 
 #### 2. Mission System (`education_missions.py`)
+
 Gaming-style mission framework:
+
 ```python
 class EducationMissions:
     def __init__(self, database, logger, xp_calculator, reward_system):
         self.missions = {}
         self.user_progress = {}
         self.active_squads = {}
-        
+
     async def get_available_missions(user_id) -> List[Mission]
     async def start_mission(user_id, mission_id, squad_members)
     async def update_mission_progress(user_id, mission_id, objective_id, value)
 ```
 
 #### 3. Achievement System (`education_achievements.py`)
+
 Xbox/PlayStation-style achievement tracking:
+
 ```python
 class EducationAchievementSystem:
     def __init__(self, database, logger):
         self.achievements = {}
         self.user_progress = {}
-        
+
     async def check_achievement_unlock(user_id, trigger_event)
     async def get_user_achievements(user_id) -> Dict
     async def get_leaderboard(type='global', limit=100)
 ```
 
 #### 4. Content Delivery (`education_content.py`)
+
 Netflix-style video content system:
+
 ```python
 class EducationContentDelivery:
     def __init__(self, database, logger, xp_economy, reward_system):
         self.series_library = {}
         self.viewing_progress = {}
-        
+
     async def get_recommended_content(user_id) -> List[Series]
     async def track_viewing_progress(user_id, content_id, timestamp)
     async def create_viewing_party(host_id, content_id, scheduled_time)
 ```
 
 #### 5. Norman's Journal (`normans_notebook.py`)
+
 Emotional intelligence system:
+
 ```python
 class NormansNotebook:
     def __init__(self, journal_path='data/normans_journal.json'):
         self.entries = []
         self.scars = []
         self.breakthroughs = []
-        
+
     def add_entry(trade_id, phase, note, symbol, pnl) -> Dict
     def detect_mood(text) -> Dict[str, float]
     def get_weekly_review() -> str
@@ -438,6 +489,7 @@ class NormansNotebook:
 #### Education Endpoints
 
 **Get Available Missions**
+
 ```http
 GET /api/education/missions
 Authorization: Bearer {telegram_auth}
@@ -459,6 +511,7 @@ Response:
 ```
 
 **Start Mission**
+
 ```http
 POST /api/education/missions/{mission_id}/start
 Authorization: Bearer {telegram_auth}
@@ -478,6 +531,7 @@ Response:
 ```
 
 **Update Mission Progress**
+
 ```http
 POST /api/education/missions/{mission_id}/progress
 Authorization: Bearer {telegram_auth}
@@ -502,6 +556,7 @@ Response:
 ```
 
 **Get Achievement Status**
+
 ```http
 GET /api/education/achievements
 Authorization: Bearer {telegram_auth}
@@ -521,6 +576,7 @@ Response:
 ```
 
 **Add Journal Entry**
+
 ```http
 POST /api/journal/entry
 Authorization: Bearer {telegram_auth}
@@ -547,6 +603,7 @@ Response:
 ```
 
 **Get Squad Radar**
+
 ```http
 GET /api/education/squad/radar
 Authorization: Bearer {telegram_auth}
@@ -577,6 +634,7 @@ Response:
 #### Core Tables
 
 **users**
+
 ```sql
 CREATE TABLE users (
     user_id TEXT PRIMARY KEY,
@@ -589,6 +647,7 @@ CREATE TABLE users (
 ```
 
 **mission_progress**
+
 ```sql
 CREATE TABLE mission_progress (
     user_id TEXT NOT NULL,
@@ -606,6 +665,7 @@ CREATE TABLE mission_progress (
 ```
 
 **achievement_unlocks**
+
 ```sql
 CREATE TABLE achievement_unlocks (
     unlock_id TEXT PRIMARY KEY,
@@ -621,6 +681,7 @@ CREATE TABLE achievement_unlocks (
 ```
 
 **viewing_progress**
+
 ```sql
 CREATE TABLE viewing_progress (
     progress_id TEXT PRIMARY KEY,
@@ -642,6 +703,7 @@ CREATE TABLE viewing_progress (
 ```
 
 **journal_entries**
+
 ```sql
 CREATE TABLE journal_entries (
     entry_id TEXT PRIMARY KEY,
@@ -659,6 +721,7 @@ CREATE TABLE journal_entries (
 ```
 
 **squad_members**
+
 ```sql
 CREATE TABLE squad_members (
     squad_id TEXT NOT NULL,
@@ -674,6 +737,7 @@ CREATE TABLE squad_members (
 ### Integration Points
 
 #### 1. Fire Router Integration
+
 ```python
 # In fire_router.py
 async def execute_fire_mode(self, user_id: str, fire_params: dict):
@@ -681,16 +745,16 @@ async def execute_fire_mode(self, user_id: str, fire_params: dict):
     education_check = await self.education_system.pre_trade_check(
         user_id, fire_params
     )
-    
+
     if not education_check['approved']:
         return {
             'success': False,
             'message': education_check['warnings'][0],
             'education': education_check
         }
-    
+
     # Execute trade...
-    
+
     # Post-trade education
     await self.education_system.post_trade_education(
         user_id, trade_result
@@ -698,6 +762,7 @@ async def execute_fire_mode(self, user_id: str, fire_params: dict):
 ```
 
 #### 2. XP System Integration
+
 ```python
 # In xp_calculator.py
 def calculate_education_xp(self, activity_type: str, params: dict) -> int:
@@ -709,25 +774,26 @@ def calculate_education_xp(self, activity_type: str, params: dict) -> int:
         'journal_entry': 10,
         'mentor_session': 75
     }
-    
+
     xp = base_xp.get(activity_type, 0)
-    
+
     # Apply multipliers
     if params.get('first_time', False):
         xp *= 2
     if params.get('squad_bonus', False):
         xp *= 1.5
-        
+
     return int(xp)
 ```
 
 #### 3. Telegram Bot Integration
+
 ```python
 # In telegram_router.py
 @bot.message_handler(commands=['learn'])
 async def handle_learn_command(message):
     user_id = str(message.from_user.id)
-    
+
     keyboard = InlineKeyboardMarkup()
     keyboard.row(
         InlineKeyboardButton("📚 Missions", callback_data="learn_missions"),
@@ -741,7 +807,7 @@ async def handle_learn_command(message):
         InlineKeyboardButton("👥 Squad", callback_data="learn_squad"),
         InlineKeyboardButton("🎯 Mentor", callback_data="learn_mentor")
     )
-    
+
     await bot.send_message(
         message.chat.id,
         "🎓 *HYDRA-X TACTICAL ACADEMY*\n\n"
@@ -752,53 +818,58 @@ async def handle_learn_command(message):
 ```
 
 #### 4. Web HUD Integration
+
 ```javascript
 // In hud_logic.js
 class EducationHUD {
-    constructor(telegramWebApp) {
-        this.tg = telegramWebApp;
-        this.missions = [];
-        this.achievements = [];
-        this.setupEventListeners();
-    }
-    
-    async loadEducationData() {
-        const response = await fetch('/api/education/dashboard', {
-            headers: {
-                'Authorization': `Bearer ${this.tg.initData}`,
-                'X-User-ID': this.tg.initDataUnsafe.user.id
-            }
-        });
-        
-        const data = await response.json();
-        this.updateMissionTracker(data.active_missions);
-        this.updateAchievementProgress(data.recent_achievements);
-        this.updateSquadRadar(data.squad_activity);
-    }
-    
-    showMissionBriefing(mission) {
-        const modal = document.createElement('div');
-        modal.className = 'mission-briefing-modal';
-        modal.innerHTML = `
+  constructor(telegramWebApp) {
+    this.tg = telegramWebApp;
+    this.missions = [];
+    this.achievements = [];
+    this.setupEventListeners();
+  }
+
+  async loadEducationData() {
+    const response = await fetch("/api/education/dashboard", {
+      headers: {
+        Authorization: `Bearer ${this.tg.initData}`,
+        "X-User-ID": this.tg.initDataUnsafe.user.id,
+      },
+    });
+
+    const data = await response.json();
+    this.updateMissionTracker(data.active_missions);
+    this.updateAchievementProgress(data.recent_achievements);
+    this.updateSquadRadar(data.squad_activity);
+  }
+
+  showMissionBriefing(mission) {
+    const modal = document.createElement("div");
+    modal.className = "mission-briefing-modal";
+    modal.innerHTML = `
             <div class="briefing-content">
                 <h2 class="glitch" data-text="${mission.title}">${mission.title}</h2>
                 <div class="briefing-text">${mission.briefing}</div>
                 <div class="objectives-list">
-                    ${mission.objectives.map(obj => `
+                    ${mission.objectives
+                      .map(
+                        (obj) => `
                         <div class="objective">
                             <span class="obj-icon">🎯</span>
                             <span class="obj-text">${obj.description}</span>
                             <span class="obj-xp">+${obj.xp_reward} XP</span>
                         </div>
-                    `).join('')}
+                    `,
+                      )
+                      .join("")}
                 </div>
                 <button class="deploy-button" onclick="deployMission('${mission.id}')">
                     DEPLOY
                 </button>
             </div>
         `;
-        document.body.appendChild(modal);
-    }
+    document.body.appendChild(modal);
+  }
 }
 ```
 
@@ -807,6 +878,7 @@ class EducationHUD {
 ## Configuration & Customization
 
 ### Environment Variables
+
 ```bash
 # .env file
 EDUCATION_ENABLED=true
@@ -820,6 +892,7 @@ MISSION_DIFFICULTY_ADAPTIVE=true
 ```
 
 ### Configuration File
+
 ```python
 # config/education.py
 EDUCATION_CONFIG = {
@@ -832,48 +905,48 @@ EDUCATION_CONFIG = {
         'strategy_review',
         'paper_trading'
     ],
-    
+
     # Mission Settings
     'daily_mission_count': 3,
     'mission_xp_multiplier': 1.5,
     'squad_mission_bonus': 2.0,
     'mission_difficulty_range': (0.8, 1.2),  # ±20% difficulty adjustment
-    
+
     # Achievement Settings
     'achievement_notification_duration': 7,
     'rare_achievement_fanfare': True,
     'achievement_showcase_slots': 5,
     'hidden_achievement_hints': False,
-    
+
     # Content Settings
     'video_quality_options': ['360p', '720p', '1080p'],
     'offline_download_days': 7,
     'binge_window_hours': 24,
     'interactive_checkpoint_xp': 10,
-    
+
     # Squad Settings
     'max_squad_size': 10,
     'squad_radar_range': 24,  # hours
     'squad_privacy_default': 'squad_only',
     'squad_mission_min_members': 3,
-    
+
     # Mentor Settings
     'mentor_min_trades': 100,
     'mentor_min_win_rate': 0.6,
     'mentor_max_mentees': 5,
     'mentor_review_frequency': 'weekly',
-    
+
     # Journal Settings
     'journal_reminder_enabled': True,
     'journal_reminder_time': '20:00',  # 8 PM
     'weekly_review_day': 'sunday',
     'scar_threshold_loss': 100,  # USD
     'breakthrough_threshold_gain': 500,  # USD
-    
+
     # Persona Settings
     'persona_selection_algorithm': 'contextual',  # 'random', 'contextual', 'fixed'
     'persona_voice_consistency': 0.8,  # How consistent personality should be
-    
+
     # UI/UX Settings
     'hud_theme': 'military_dark',
     'achievement_particles': True,
@@ -898,7 +971,7 @@ class CustomPersona(EducationPersona):
                 "tactical_genius"
             ]
         )
-    
+
     def get_response(self, context: Dict) -> str:
         if context['situation'] == 'pre_trade':
             if context['performance'] == 'risky':
@@ -950,25 +1023,25 @@ def create_custom_mission():
 ```css
 /* custom_theme.css */
 :root {
-    --hud-primary: #00ff41;      /* Matrix green */
-    --hud-secondary: #ff6b00;    /* Warning orange */
-    --hud-danger: #ff0040;       /* Alert red */
-    --hud-bg-primary: #0a0a0a;   /* Deep black */
-    --hud-bg-secondary: #1a1a1a; /* Dark grey */
-    --glitch-color-1: #00ffff;   /* Cyan */
-    --glitch-color-2: #ff00ff;   /* Magenta */
+  --hud-primary: #00ff41; /* Matrix green */
+  --hud-secondary: #ff6b00; /* Warning orange */
+  --hud-danger: #ff0040; /* Alert red */
+  --hud-bg-primary: #0a0a0a; /* Deep black */
+  --hud-bg-secondary: #1a1a1a; /* Dark grey */
+  --glitch-color-1: #00ffff; /* Cyan */
+  --glitch-color-2: #ff00ff; /* Magenta */
 }
 
 .mission-briefing {
-    background: linear-gradient(
-        135deg,
-        var(--hud-bg-primary) 0%,
-        var(--hud-bg-secondary) 100%
-    );
-    border: 2px solid var(--hud-primary);
-    box-shadow: 
-        0 0 20px var(--hud-primary),
-        inset 0 0 20px rgba(0, 255, 65, 0.1);
+  background: linear-gradient(
+    135deg,
+    var(--hud-bg-primary) 0%,
+    var(--hud-bg-secondary) 100%
+  );
+  border: 2px solid var(--hud-primary);
+  box-shadow:
+    0 0 20px var(--hud-primary),
+    inset 0 0 20px rgba(0, 255, 65, 0.1);
 }
 ```
 
@@ -979,8 +1052,9 @@ def create_custom_mission():
 ### Daily Maintenance Tasks
 
 1. **Monitor Mission Completion Rates**
+
    ```sql
-   SELECT 
+   SELECT
        mission_id,
        COUNT(*) as attempts,
        SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completions,
@@ -992,8 +1066,9 @@ def create_custom_mission():
    ```
 
 2. **Check Achievement Distribution**
+
    ```sql
-   SELECT 
+   SELECT
        achievement_id,
        COUNT(*) as unlock_count,
        COUNT(*) * 100.0 / (SELECT COUNT(DISTINCT user_id) FROM users) as unlock_percentage
@@ -1003,26 +1078,28 @@ def create_custom_mission():
    ```
 
 3. **Review Journal Sentiment**
+
    ```python
    async def analyze_community_sentiment():
        recent_entries = await db.fetch_all("""
-           SELECT mood_data 
-           FROM journal_entries 
+           SELECT mood_data
+           FROM journal_entries
            WHERE created_at > datetime('now', '-24 hours')
        """)
-       
+
        mood_totals = defaultdict(float)
        for entry in recent_entries:
            moods = json.loads(entry['mood_data'])
            for mood, score in moods.items():
                mood_totals[mood] += score
-       
+
        return mood_totals
    ```
 
 ### Adding New Features
 
 #### 1. New Achievement Category
+
 ```python
 def register_seasonal_achievements():
     """Add holiday-themed achievements"""
@@ -1046,12 +1123,13 @@ def register_seasonal_achievements():
             points=200
         )
     ]
-    
+
     for achievement in achievements:
         system.register_achievement(achievement)
 ```
 
 #### 2. New Content Series
+
 ```python
 async def add_options_trading_series():
     """Add new educational content series"""
@@ -1077,21 +1155,22 @@ async def add_options_trading_series():
             )
         ]
     )
-    
+
     await content_system.add_series(series)
 ```
 
 #### 3. New Squad Mission Type
+
 ```python
 class RaidMission(Mission):
     """Large-scale squad missions with multiple objectives"""
-    
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.raid_phases = []
         self.minimum_squad_size = 5
         self.maximum_squad_size = 10
-        
+
     def add_phase(self, phase_objectives: List[MissionObjective]):
         """Add a new phase to the raid"""
         self.raid_phases.append({
@@ -1104,25 +1183,27 @@ class RaidMission(Mission):
 ### Performance Optimization
 
 #### 1. Database Indexes
+
 ```sql
 -- Optimize mission queries
-CREATE INDEX idx_mission_progress_user_status 
+CREATE INDEX idx_mission_progress_user_status
 ON mission_progress(user_id, status);
 
 -- Optimize achievement lookups
-CREATE INDEX idx_achievement_unlocks_user 
+CREATE INDEX idx_achievement_unlocks_user
 ON achievement_unlocks(user_id, unlock_date DESC);
 
 -- Optimize journal queries
-CREATE INDEX idx_journal_entries_user_date 
+CREATE INDEX idx_journal_entries_user_date
 ON journal_entries(user_id, created_at DESC);
 
 -- Optimize viewing history
-CREATE INDEX idx_viewing_progress_user_content 
+CREATE INDEX idx_viewing_progress_user_content
 ON viewing_progress(user_id, content_id, last_watched DESC);
 ```
 
 #### 2. Caching Strategy
+
 ```python
 from functools import lru_cache
 from aiocache import cached
@@ -1135,35 +1216,36 @@ class EducationCache:
             "SELECT * FROM achievement_unlocks WHERE user_id = ?",
             (user_id,)
         )
-    
+
     @lru_cache(maxsize=1000)
     def calculate_achievement_rarity(self, achievement_id: str, total_users: int):
         """Cache rarity calculations"""
         unlock_count = self.get_unlock_count(achievement_id)
         percentage = unlock_count / total_users
-        
+
         for rarity in AchievementRarity:
             if percentage >= self.RARITY_THRESHOLDS[rarity]:
                 return rarity
-        
+
         return AchievementRarity.MYTHIC
 ```
 
 #### 3. Batch Processing
+
 ```python
 async def batch_process_achievements(events: List[Dict]):
     """Process multiple achievement checks in one pass"""
     user_achievements = defaultdict(list)
-    
+
     # Group events by user
     for event in events:
         user_achievements[event['user_id']].append(event)
-    
+
     # Process each user's events
     for user_id, user_events in user_achievements.items():
         # Load user's achievement progress once
         progress = await load_user_progress(user_id)
-        
+
         # Check all events against all achievements
         for achievement in ACTIVE_ACHIEVEMENTS:
             for event in user_events:
@@ -1174,10 +1256,11 @@ async def batch_process_achievements(events: List[Dict]):
 ### Monitoring & Analytics
 
 #### 1. Education Metrics Dashboard
+
 ```python
 async def generate_education_metrics():
     """Generate comprehensive education system metrics"""
-    
+
     metrics = {
         'engagement': {
             'daily_active_learners': await count_daily_active_learners(),
@@ -1201,40 +1284,41 @@ async def generate_education_metrics():
             'emotional_stability': await analyze_emotional_trends()
         }
     }
-    
+
     return metrics
 ```
 
 #### 2. A/B Testing Framework
+
 ```python
 class EducationABTest:
     """A/B testing for education features"""
-    
+
     def __init__(self, test_name: str, variants: List[str]):
         self.test_name = test_name
         self.variants = variants
         self.user_assignments = {}
-        
+
     def assign_user(self, user_id: str) -> str:
         """Assign user to test variant"""
         if user_id in self.user_assignments:
             return self.user_assignments[user_id]
-        
+
         # Random assignment with consistent hashing
         hash_value = int(hashlib.md5(
             f"{user_id}{self.test_name}".encode()
         ).hexdigest(), 16)
-        
+
         variant_index = hash_value % len(self.variants)
         variant = self.variants[variant_index]
-        
+
         self.user_assignments[user_id] = variant
         return variant
-    
+
     async def get_variant_config(self, user_id: str) -> Dict:
         """Get configuration for user's variant"""
         variant = self.assign_user(user_id)
-        
+
         configs = {
             'control': {
                 'cooldown_minutes': 30,
@@ -1249,7 +1333,7 @@ class EducationABTest:
                 'cooldown_activity': 'strategy_video'
             }
         }
-        
+
         return configs.get(variant, configs['control'])
 ```
 
@@ -1282,12 +1366,13 @@ class EducationABTest:
    - Review squad size limits
 
 #### Debug Commands
+
 ```python
 # Add to admin commands
 @admin_only
 async def debug_education(user_id: str):
     """Comprehensive education system debug for user"""
-    
+
     debug_info = {
         'user_tier': await get_user_tier(user_id),
         'active_missions': await get_active_missions(user_id),
@@ -1297,7 +1382,7 @@ async def debug_education(user_id: str):
         'squad_info': await get_squad_details(user_id),
         'cooldown_status': await check_all_cooldowns(user_id)
     }
-    
+
     return format_debug_output(debug_info)
 ```
 
@@ -1335,6 +1420,7 @@ async def debug_education(user_id: str):
 The HydraX Education System represents a paradigm shift in trading education. By leveraging gaming psychology, military theming, and cutting-edge technology, it transforms the traditionally boring process of learning to trade into an addictive, engaging experience.
 
 The system is designed to be:
+
 - **Scalable**: Handle thousands of concurrent users
 - **Extensible**: Easy to add new content and features
 - **Maintainable**: Clear architecture and documentation
@@ -1343,10 +1429,10 @@ The system is designed to be:
 
 Whether you're a developer looking to extend the system or a user trying to master trading, this guide provides everything you need to succeed in the HydraX Trading Academy.
 
-Remember: *"Every master was once a disaster. The difference is, masters never stopped learning."*
+Remember: _"Every master was once a disaster. The difference is, masters never stopped learning."_
 
 ---
 
-*Last Updated: January 2024*  
-*Version: 1.0.0*  
-*Maintained by: HydraX Development Team*
+_Last Updated: January 2024_
+_Version: 1.0.0_
+_Maintained by: HydraX Development Team_

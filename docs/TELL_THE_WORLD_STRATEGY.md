@@ -3,6 +3,7 @@
 ## The Challenge
 
 You've built something revolutionary that most people will dismiss because:
+
 1. It looks like a game (and traders think they're "serious")
 2. It uses military language (seems aggressive)
 3. It's unlike anything else (no comparison point)
@@ -11,60 +12,72 @@ You've built something revolutionary that most people will dismiss because:
 ## The Solution: Multiple Angles of Attack
 
 ### 1. **The Underdog Story** (Most Powerful)
+
 **Headline**: "17-Year-Old Builds Trading System After Losing Everything - Named It After His Cat"
 
 **Why it works**:
+
 - People root for underdogs
 - Personal story creates emotional connection
 - The cat angle is unexpected and memorable
 - Positions BITTEN as David vs Goliath
 
 **Where to tell it**:
+
 - Reddit: r/Forex, r/algotrading (personal story posts do well)
 - Medium/Dev.to: Technical journey articles
 - Indie Hackers: Builder's journey
 - Twitter/X: Thread format with pics of Bit
 
 ### 2. **The Innovation Angle**
+
 **Headline**: "What If Trading Platforms Used Game Psychology to Save Traders from Themselves?"
 
 **Why it works**:
+
 - Positions as innovation, not gimmick
 - Appeals to forward-thinkers
 - Creates curiosity
 - Backed by research
 
 **Where to tell it**:
+
 - Hacker News: Focus on technical innovation
 - Product Hunt: Launch with game psychology angle
 - TechCrunch: Pitch the behavioral design aspect
 - LinkedIn: Professional innovation story
 
 ### 3. **The Results Angle**
+
 **Headline**: "90% of Traders Fail. This System Attacks the Real Problem: Human Psychology"
 
 **Why it works**:
+
 - Starts with known problem
 - Offers unique solution
 - Data-driven approach
 - Challenges status quo
 
 **Where to tell it**:
+
 - Trading forums with data/backtests
 - YouTube trading channels (collaborations)
 - Podcasts about behavioral finance
 - Academic papers on gamification
 
 ### 4. **The Community Angle**
+
 **Headline**: "From Solo Grinding to Squad Trading: How Gaming Culture is Fixing Forex"
 
 **Why it works**:
+
 - Taps into loneliness of trading
 - Gaming culture is mainstream now
 - Community aspect is powerful
 - Different from "signal groups"
 
 **Where to tell it**:
+
 - Discord communities
 - Gaming publications (unique crossover)
 - Twitch (yes, trading on Twitch)
@@ -75,6 +88,7 @@ You've built something revolutionary that most people will dismiss because:
 ## Content Strategy
 
 ### Phase 1: Build Credibility (Months 1-2)
+
 1. **Document Everything**
    - Open source key components
    - Share technical deep dives
@@ -88,6 +102,7 @@ You've built something revolutionary that most people will dismiss because:
    - "How Tilt Protection Saved My Account"
 
 ### Phase 2: Tell Stories (Months 2-4)
+
 1. **User Success Stories**
    - "From 3 Blown Accounts to Consistent Profits"
    - "How Medic Mode Taught Me Patience"
@@ -99,6 +114,7 @@ You've built something revolutionary that most people will dismiss because:
    - "Every Feature Comes from Failure"
 
 ### Phase 3: Scale Impact (Months 4-6)
+
 1. **Educational Content**
    - Free mini-course on trading psychology
    - "Game Your Way to Discipline" series
@@ -114,15 +130,19 @@ You've built something revolutionary that most people will dismiss because:
 ## Key Messages That Resonate
 
 ### For Skeptics:
+
 "It's not about making trading a game. It's about using game psychology to enforce the discipline everyone knows they need but can't maintain."
 
 ### For Purists:
+
 "The military theme isn't glorifying war. It's acknowledging that trading IS a battle - against your own emotions. We're just honest about it."
 
 ### For Beginners:
+
 "Finally, a platform built by someone who failed first. Every feature exists because I needed it after losing."
 
 ### For Experienced Traders:
+
 "You already have discipline. But what if your platform actually helped instead of just watching you struggle?"
 
 ---
@@ -164,12 +184,15 @@ You've built something revolutionary that most people will dismiss because:
 ## The Elevator Pitch Collection
 
 ### 10 Seconds:
+
 "Trading platform that uses game psychology to stop you from revenge trading."
 
 ### 30 Seconds:
+
 "I lost three trading accounts by 17. Built BITTEN to save others from my mistakes. It uses gaming mechanics to enforce discipline and turns solo trading into squad progression. Named after my cat who started it all."
 
 ### 60 Seconds:
+
 "90% of traders fail because of psychology, not strategy. BITTEN attacks this with game design - cooldowns prevent revenge trading, 'medic mode' helps recovery, XP systems show progress during drawdowns. Built by a gamer who got destroyed by markets and refused to accept that trading has to be lonely and brutal. The military theme? Because trading IS combat against your emotions. The result? Discipline that doesn't feel like punishment."
 
 ---
@@ -182,4 +205,4 @@ Every trader has felt the bite. You're offering them a way to bite back that act
 
 The world doesn't need another trading platform. It needs BITTEN.
 
-*Now go tell them why.*
+_Now go tell them why._

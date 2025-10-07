@@ -4,39 +4,44 @@ Optimized Flask server with lazy loading and consolidated imports
 Reduced memory footprint and improved performance
 """
 
-import os
-import sys
 import json
 import logging
-import time
-from pathlib import Path
+import os
 import random
-from datetime import datetime
 import sqlite3
+import sys
+import time
 from contextlib import contextmanager
-
-# Core Flask imports (always needed)
-from flask import Flask, render_template, render_template_string, request, jsonify, redirect
-from flask_socketio import SocketIO
+from datetime import datetime
+from pathlib import Path
 
 # Load environment early
 from dotenv import load_dotenv
+
+# Core Flask imports (always needed)
+from flask import Flask, jsonify, redirect, render_template, render_template_string, request
+from flask_socketio import SocketIO
+
 load_dotenv()
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+import json
+import sys
+import time
+import traceback
+
 # Diagnostic imports
 from uuid import uuid4
-import traceback, json, time, sys
 
 # Import individualized risk functions
-sys.path.append('/root/HydraX-v2')
-from fix_individualized_risk import get_user_risk_profile, calculate_position_size
+sys.path.append("/root/HydraX-v2")
+from fix_individualized_risk import calculate_position_size, get_user_risk_profile
 
 # Import admin endpoints
-sys.path.append('/root/HydraX-v2/services')
+sys.path.append("/root/HydraX-v2/services")
 from admin_endpoints import register_admin_routes
 
 # Import ATHENA Telegram dispatcher
@@ -45,10 +50,11 @@ from athena_group_dispatcher import dispatch_group_signal
 # Import mission session components (INTEGRATION MODE - graceful fallback)
 MISSION_SESSION_ENABLED = False
 try:
-    from src.security.jwt_manager import get_jwt_manager
-    from src.mission_session.session_manager import get_session_manager
-    from src.websocket.auth_middleware import get_ws_auth
     from src.events.trade_event_emitter import TradeEventEmitter
+    from src.mission_session.session_manager import get_session_manager
+    from src.security.jwt_manager import get_jwt_manager
+    from src.websocket.auth_middleware import get_ws_auth
+
     MISSION_SESSION_ENABLED = True
     logger.info("✅ Mission session components imported successfully")
 except ImportError as e:
@@ -61,6 +67,7 @@ except ImportError as e:
 # Import v2.07H position tracking
 try:
     from webapp_v207_positions import register_v207_routes
+
     v207_available = True
     logger.info("✅ v2.07H position tracking imported")
 except ImportError as e:
@@ -80,10 +87,11 @@ register_onboarding_system = None
 #     logger.error(f"❌ Failed to import onboarding system: {e}")
 #     onboarding_system_available = False
 
+
 # Lazy import manager
 class LazyImports:
     """Manages lazy loading of heavy modules to reduce memory usage"""
-    
+
     def __init__(self):
         self._stripe = None
         self._signal_storage = None
@@ -94,64 +102,69 @@ class LazyImports:
         self._live_trade_api = None
         self._timer_integration = None
         self._venom_engine = None
-    
+
     @property
     def stripe(self):
         if self._stripe is None:
             import stripe
+
             self._stripe = stripe
             logger.info("Stripe module loaded")
         return self._stripe
-    
+
     @property
     def signal_storage(self):
         if self._signal_storage is None:
             try:
-                from signal_storage import get_latest_signal, get_active_signals, get_signal_by_id
+                from signal_storage import get_active_signals, get_latest_signal, get_signal_by_id
+
                 self._signal_storage = {
-                    'get_latest_signal': get_latest_signal,
-                    'get_active_signals': get_active_signals,
-                    'get_signal_by_id': get_signal_by_id
+                    "get_latest_signal": get_latest_signal,
+                    "get_active_signals": get_active_signals,
+                    "get_signal_by_id": get_signal_by_id,
                 }
                 logger.info("Signal storage loaded")
             except ImportError as e:
                 logger.warning(f"Signal storage not available: {e}")
                 self._signal_storage = {}
         return self._signal_storage
-    
+
     @property
     def engagement_db(self):
         if self._engagement_db is None:
             try:
-                from engagement_db import handle_fire_action, get_signal_stats, get_user_stats
+                from engagement_db import get_signal_stats, get_user_stats, handle_fire_action
+
                 self._engagement_db = {
-                    'handle_fire_action': handle_fire_action,
-                    'get_signal_stats': get_signal_stats,
-                    'get_user_stats': get_user_stats
+                    "handle_fire_action": handle_fire_action,
+                    "get_signal_stats": get_signal_stats,
+                    "get_user_stats": get_user_stats,
                 }
                 logger.info("Engagement DB loaded")
             except ImportError as e:
                 logger.warning(f"Engagement DB not available: {e}")
                 self._engagement_db = {}
         return self._engagement_db
-    
+
     @property
     def referral_system(self):
         if self._referral_system is None:
             try:
                 from standalone_referral_system import StandaloneReferralSystem
+
                 self._referral_system = StandaloneReferralSystem()
                 logger.info("Referral system loaded")
             except ImportError as e:
                 logger.warning(f"Referral system not available: {e}")
                 self._referral_system = None
         return self._referral_system
-    
+
     @property
     def venom_engine(self):
         if self._venom_engine is None:
             try:
                 from apex_production_live import ApexVenomV7Production
+
                 self._venom_engine = ApexVenomV7Production
                 logger.info("VENOM v7.0 Production engine loaded")
             except ImportError as e:
@@ -159,69 +172,75 @@ class LazyImports:
                 self._venom_engine = None
         return self._venom_engine
 
+
 # Global lazy imports instance
 lazy = LazyImports()
 
 # Create Flask app with optimized config
 app = Flask(__name__)
-app.config.update({
-    'SECRET_KEY': os.getenv('SECRET_KEY', 'bitten-tactical-2025'),
-    'MAX_CONTENT_LENGTH': 16 * 1024 * 1024,  # 16MB max upload
-    'SEND_FILE_MAX_AGE_DEFAULT': 31536000,   # 1 year cache for static files
-})
+app.config.update(
+    {
+        "SECRET_KEY": os.getenv("SECRET_KEY", "bitten-tactical-2025"),
+        "MAX_CONTENT_LENGTH": 16 * 1024 * 1024,  # 16MB max upload
+        "SEND_FILE_MAX_AGE_DEFAULT": 31536000,  # 1 year cache for static files
+    }
+)
+
 
 # Database helper
 @contextmanager
 def get_bitten_db():
     """Database connection context manager"""
-    conn = sqlite3.connect('/root/HydraX-v2/bitten.db')
+    conn = sqlite3.connect("/root/HydraX-v2/bitten.db")
     conn.row_factory = sqlite3.Row
     try:
         yield conn
     finally:
         conn.close()
 
+
 def get_user_tier(user_id):
     """Get user tier from EA instances or default to NIBBLER"""
     try:
         with get_bitten_db() as conn:
             result = conn.execute(
-                "SELECT target_uuid FROM ea_instances WHERE user_id = ? ORDER BY last_seen DESC LIMIT 1", 
-                (user_id,)
+                "SELECT target_uuid FROM ea_instances WHERE user_id = ? ORDER BY last_seen DESC LIMIT 1", (user_id,)
             ).fetchone()
-            
+
             if result and result[0]:
                 target_uuid = result[0]
                 # Determine tier based on target_uuid
-                if 'COMMANDER' in target_uuid.upper():
-                    return 'COMMANDER'
-                elif 'PREDATOR' in target_uuid.upper() or 'FANG' in target_uuid.upper():
-                    return 'PREDATOR'
+                if "COMMANDER" in target_uuid.upper():
+                    return "COMMANDER"
+                elif "PREDATOR" in target_uuid.upper() or "FANG" in target_uuid.upper():
+                    return "PREDATOR"
                 else:
-                    return 'NIBBLER'
+                    return "NIBBLER"
             else:
                 # Default to NIBBLER if no EA instance found
-                return 'NIBBLER'
+                return "NIBBLER"
     except Exception as e:
         logger.warning(f"Error getting user tier for {user_id}: {e}")
-        return 'NIBBLER'
+        return "NIBBLER"
+
 
 def can_fire_signal_mode(user_tier, signal_mode):
     """Check if user tier can fire specific signal mode"""
     tier_permissions = {
-        'NIBBLER': ['RAPID'],  # Only RAPID signals
-        'PREDATOR': ['RAPID', 'SNIPER'],  # Both types
-        'COMMANDER': ['RAPID', 'SNIPER']  # Both types
+        "NIBBLER": ["RAPID"],  # Only RAPID signals
+        "PREDATOR": ["RAPID", "SNIPER"],  # Both types
+        "COMMANDER": ["RAPID", "SNIPER"],  # Both types
     }
     return signal_mode in tier_permissions.get(user_tier, [])
+
 
 # Initialize SocketIO with optimized settings
 socketio = SocketIO(
     app,
     cors_allowed_origins="*",
-    async_mode='threading',
+    async_mode="threading",
     logger=False,  # Disable socketio logging to reduce overhead
-    engineio_logger=False
+    engineio_logger=False,
 )
 
 # Initialize mission session managers (INTEGRATION MODE - graceful fallback)
@@ -256,16 +275,18 @@ try:
 except Exception as e:
     logger.error(f"❌ Failed to register admin routes: {e}")
 
+
 # Basic routes with lazy loading
-@app.route('/')
+@app.route("/")
 def index():
     """Serve the new performance-focused landing page"""
     try:
-        with open('/root/HydraX-v2/landing/index_performance.html', 'r') as f:
+        with open("/root/HydraX-v2/landing/index_performance.html", "r") as f:
             return f.read()
     except FileNotFoundError:
         # Fallback to inline template
-        return render_template_string("""
+        return render_template_string(
+            """
         <!DOCTYPE html>
         <html>
         <head>
@@ -285,189 +306,207 @@ def index():
             </div>
         </body>
         </html>
-        """, signals=signals)
+        """,
+            signals=signals,
+        )
     except Exception as e:
         logger.error(f"Index route error: {e}")
         return "BITTEN HUD - Loading...", 200
 
-@app.route('/healthz')
+
+@app.route("/healthz")
 def healthz():
     """Health check endpoint for monitoring with MetaSocket support"""
-    health = {
-        'status': 'OK',
-        'service': 'webapp',
-        'timestamp': time.time(),
-        'code_version': 'fixed_v1'
-    }
+    health = {"status": "OK", "service": "webapp", "timestamp": time.time(), "code_version": "fixed_v1"}
 
     # CUTOVER: Add MetaSocket adapter health if source includes metasocket
-    source = os.getenv('SOURCE', 'ea')
-    if source in ['metasocket', 'both']:
+    source = os.getenv("SOURCE", "ea")
+    if source in ["metasocket", "both"]:
         try:
             from adapters.metasocket.adapter import MetaSocketAdapter
+
             adapter = MetaSocketAdapter()
             metasocket_health = adapter.get_health_status()
-            health['metasocket'] = metasocket_health
+            health["metasocket"] = metasocket_health
         except Exception as e:
-            health['metasocket'] = {
-                'status': 'ERROR',
-                'error': str(e),
-                'last_event_age_ms': None,
-                'event_lag_ms_p95': None,
-                'order_latency_ms_p95': None
+            health["metasocket"] = {
+                "status": "ERROR",
+                "error": str(e),
+                "last_event_age_ms": None,
+                "event_lag_ms_p95": None,
+                "order_latency_ms_p95": None,
             }
 
     return jsonify(health), 200
 
-@app.route('/test-fire-debug')
+
+@app.route("/test-fire-debug")
 def test_fire_debug():
     return jsonify({"debug": "webapp fire debug enabled", "changes": "slot checks fixed"})
 
-@app.route('/api/signals', methods=['GET', 'POST'])
+
+@app.route("/api/signals", methods=["GET", "POST"])
 def api_signals():
     """API endpoint for signals - GET retrieves, POST receives from VENOM+CITADEL"""
-    if request.method == 'GET':
+    if request.method == "GET":
         try:
             # Get query parameters for filtering
-            mode_filter = request.args.get('mode')  # 'RAPID', 'SNIPER', or None for all
-            user_id = request.args.get('user_id')
-            
+            mode_filter = request.args.get("mode")  # 'RAPID', 'SNIPER', or None for all
+            user_id = request.args.get("user_id")
+
             # Direct database read - fixed signal system
             import sqlite3
-            conn = sqlite3.connect('/root/HydraX-v2/bitten.db')
+
+            conn = sqlite3.connect("/root/HydraX-v2/bitten.db")
             cursor = conn.cursor()
-            
+
             # Get recent active signals
-            cursor.execute("""
-                SELECT signal_id, symbol, direction, confidence, entry, sl, tp, 
+            cursor.execute(
+                """
+                SELECT signal_id, symbol, direction, confidence, entry, sl, tp,
                        created_at, payload_json
-                FROM signals 
+                FROM signals
                 WHERE created_at > strftime('%s', 'now', '-6 hours')
-                ORDER BY created_at DESC 
+                ORDER BY created_at DESC
                 LIMIT 20
-            """)
-            
+            """
+            )
+
             results = cursor.fetchall()
             conn.close()
-            
+
             signals = []
             filtered_signals = []
-            
+
             # Get user tier for access control if user_id provided
-            user_tier = get_user_tier(user_id) if user_id else 'NIBBLER'
-            
+            user_tier = get_user_tier(user_id) if user_id else "NIBBLER"
+
             for row in results:
                 try:
                     payload_data = {}
                     if row[8]:  # payload_json (index 8 now)
                         payload_data = json.loads(row[8])
-                    
+
                     # Determine signal mode and time estimation
-                    signal_type = payload_data.get('signal_type', 'RAPID_ASSAULT')
-                    signal_mode = 'RAPID' if 'RAPID' in signal_type else 'SNIPER'
-                    
+                    signal_type = payload_data.get("signal_type", "RAPID_ASSAULT")
+                    signal_mode = "RAPID" if "RAPID" in signal_type else "SNIPER"
+
                     # Apply mode filter if specified
                     if mode_filter and signal_mode != mode_filter:
                         continue
-                    
+
                     # Estimate time to TP based on signal mode and target pips
-                    target_pips = payload_data.get('target_pips', 40 if signal_mode == 'SNIPER' else 20)
-                    estimated_time_hours = 0.5 + (target_pips * 0.1) if signal_mode == 'RAPID' else 2 + (target_pips * 0.15)
-                    
+                    target_pips = payload_data.get("target_pips", 40 if signal_mode == "SNIPER" else 20)
+                    estimated_time_hours = (
+                        0.5 + (target_pips * 0.1) if signal_mode == "RAPID" else 2 + (target_pips * 0.15)
+                    )
+
                     signal = {
-                        'signal_id': row[0],
-                        'symbol': row[1],
-                        'direction': row[2],
-                        'confidence': float(row[3]) if row[3] else 75.0,
-                        'entry_price': float(row[4]) if row[4] else 0.0,  # entry column
-                        'sl': float(row[5]) if row[5] else 0.0,
-                        'tp': float(row[6]) if row[6] else 0.0,
-                        'stop_loss': float(row[5]) if row[5] else 0.0,  # Duplicate for compatibility
-                        'take_profit': float(row[6]) if row[6] else 0.0,  # Duplicate for compatibility
-                        'pattern_type': payload_data.get('pattern_type', 'UNKNOWN'),
-                        'created_at': row[7],  # created_at is index 7
-                        'stop_pips': payload_data.get('stop_pips', 20),
-                        'target_pips': target_pips,
-                        'risk_reward': payload_data.get('risk_reward', 2.0),
-                        'signal_type': signal_type,
-                        'signal_mode': signal_mode,  # NEW: RAPID or SNIPER
-                        'estimated_time_to_tp': estimated_time_hours,  # NEW: Hours to TP
-                        'mode_icon': '⚡' if signal_mode == 'RAPID' else '🎯',  # NEW: Visual icon
-                        'mode_color': 'orange' if signal_mode == 'RAPID' else 'blue',  # NEW: Color theme
-                        'can_fire': can_fire_signal_mode(user_tier, signal_mode) if user_id else True,  # NEW: Access control
-                        'status': 'active'
+                        "signal_id": row[0],
+                        "symbol": row[1],
+                        "direction": row[2],
+                        "confidence": float(row[3]) if row[3] else 75.0,
+                        "entry_price": float(row[4]) if row[4] else 0.0,  # entry column
+                        "sl": float(row[5]) if row[5] else 0.0,
+                        "tp": float(row[6]) if row[6] else 0.0,
+                        "stop_loss": float(row[5]) if row[5] else 0.0,  # Duplicate for compatibility
+                        "take_profit": float(row[6]) if row[6] else 0.0,  # Duplicate for compatibility
+                        "pattern_type": payload_data.get("pattern_type", "UNKNOWN"),
+                        "created_at": row[7],  # created_at is index 7
+                        "stop_pips": payload_data.get("stop_pips", 20),
+                        "target_pips": target_pips,
+                        "risk_reward": payload_data.get("risk_reward", 2.0),
+                        "signal_type": signal_type,
+                        "signal_mode": signal_mode,  # NEW: RAPID or SNIPER
+                        "estimated_time_to_tp": estimated_time_hours,  # NEW: Hours to TP
+                        "mode_icon": "⚡" if signal_mode == "RAPID" else "🎯",  # NEW: Visual icon
+                        "mode_color": "orange" if signal_mode == "RAPID" else "blue",  # NEW: Color theme
+                        "can_fire": (
+                            can_fire_signal_mode(user_tier, signal_mode) if user_id else True
+                        ),  # NEW: Access control
+                        "status": "active",
                     }
                     signals.append(signal)
                 except Exception as e:
                     logger.warning(f"Error processing signal row: {e}")
-            
+
             response = {
-                'signals': signals, 
-                'count': len(signals),
-                'filtered_by_mode': mode_filter,
-                'user_tier': user_tier if user_id else None,
-                'available_modes': ['RAPID', 'SNIPER']
+                "signals": signals,
+                "count": len(signals),
+                "filtered_by_mode": mode_filter,
+                "user_tier": user_tier if user_id else None,
+                "available_modes": ["RAPID", "SNIPER"],
             }
-            
+
             return jsonify(response)
         except Exception as e:
             logger.error(f"Signals API error: {e}")
-            return jsonify({'error': 'Signal retrieval failed'}), 500
-    
-    elif request.method == 'POST':
+            return jsonify({"error": "Signal retrieval failed"}), 500
+
+    elif request.method == "POST":
         # Receive signal from VENOM+CITADEL engine
         try:
             signal_data = request.get_json()
-            
+
             if not signal_data:
-                return jsonify({'error': 'No signal data provided'}), 400
-            
+                return jsonify({"error": "No signal data provided"}), 400
+
             # BLACK BOX INTERCEPTION - Log EVERY signal at generation
             try:
                 from black_box_complete_truth_system import get_truth_system
+
                 truth_system = get_truth_system()
                 signal_data = truth_system.log_signal_generation(signal_data)
                 logger.info("🔒 Signal logged to Black Box Complete Truth System")
             except Exception as e:
                 logger.error(f"Black Box truth tracking error: {e}")
                 # Continue anyway - Black Box failure shouldn't stop signals
-            
+
             # Log the incoming signal
-            logger.info(f"📨 Received signal: {signal_data.get('signal_id')} "
-                       f"for {signal_data.get('symbol')} @ {signal_data.get('confidence', 0)}% "
-                       f"CITADEL: {signal_data.get('citadel_shield', {}).get('score', 0)}/10")
-            print(f"[DEBUG] POST /api/signals received: {signal_data.get('signal_id')} @ {signal_data.get('confidence')}%")
-            
+            logger.info(
+                f"📨 Received signal: {signal_data.get('signal_id')} "
+                f"for {signal_data.get('symbol')} @ {signal_data.get('confidence', 0)}% "
+                f"CITADEL: {signal_data.get('citadel_shield', {}).get('score', 0)}/10"
+            )
+            print(
+                f"[DEBUG] POST /api/signals received: {signal_data.get('signal_id')} @ {signal_data.get('confidence')}%"
+            )
+
             # Import BittenCore if available
             try:
                 from src.bitten_core.bitten_core import BittenCore
+
                 core = BittenCore()
-                
+
                 # Process the signal through BittenCore
                 result = core.process_venom_signal(signal_data)
-                
+
                 # INSERT SIGNAL TO DATABASE FOR OUTCOME TRACKING
                 try:
                     import sqlite3
                     import time
-                    with sqlite3.connect('/root/HydraX-v2/bitten.db') as conn:
+
+                    with sqlite3.connect("/root/HydraX-v2/bitten.db") as conn:
                         cursor = conn.cursor()
-                        cursor.execute("""
+                        cursor.execute(
+                            """
                             INSERT OR IGNORE INTO signals
                             (signal_id, symbol, direction, entry, sl, tp, confidence, pattern_type, created_at, payload_json)
                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                        """, (
-                            signal_data.get("signal_id", ""),
-                            signal_data.get("symbol", signal_data.get("pair", "")),
-                            signal_data.get("direction", ""),
-                            signal_data.get("entry_price", signal_data.get("entry", 0)),
-                            float(signal_data.get("stop_loss", 0)) or float(signal_data.get("sl", 0)),
-                            float(signal_data.get("take_profit", 0)) or float(signal_data.get("tp", 0)),
-                            signal_data.get("confidence", 0),
-                            signal_data.get("pattern_type", ""),  # Add pattern_type field
-                            int(time.time()),
-                            json.dumps(signal_data)
-                        ))
+                        """,
+                            (
+                                signal_data.get("signal_id", ""),
+                                signal_data.get("symbol", signal_data.get("pair", "")),
+                                signal_data.get("direction", ""),
+                                signal_data.get("entry_price", signal_data.get("entry", 0)),
+                                float(signal_data.get("stop_loss", 0)) or float(signal_data.get("sl", 0)),
+                                float(signal_data.get("take_profit", 0)) or float(signal_data.get("tp", 0)),
+                                signal_data.get("confidence", 0),
+                                signal_data.get("pattern_type", ""),  # Add pattern_type field
+                                int(time.time()),
+                                json.dumps(signal_data),
+                            ),
+                        )
                         conn.commit()
                         logger.info(f"📊 Signal {signal_data.get('signal_id')} logged to database for outcome tracking")
                 except Exception as e:
@@ -479,8 +518,8 @@ def api_signals():
 
                 # AUTO FIRE SYSTEM - Check for instant execution with ML filtering
                 try:
-                    signal_confidence = float(signal_data.get('confidence', 0))
-                    signal_id = signal_data.get('signal_id', '')
+                    signal_confidence = float(signal_data.get("confidence", 0))
+                    signal_id = signal_data.get("signal_id", "")
 
                     # ML filter disabled - all signals pass
                     should_display = True
@@ -496,13 +535,15 @@ def api_signals():
 
                     try:
                         import sqlite3
+
                         # TIER-BASED AUTO-FIRE: Check for COMMANDER users with AUTO mode enabled
                         from src.bitten_core.fire_mode_database import fire_mode_db
 
-                        with sqlite3.connect('/root/HydraX-v2/data/fire_modes.db') as fire_conn:
+                        with sqlite3.connect("/root/HydraX-v2/data/fire_modes.db") as fire_conn:
                             fire_cursor = fire_conn.cursor()
                             # Only COMMANDER tier can auto-fire
-                            fire_cursor.execute("""
+                            fire_cursor.execute(
+                                """
                                 SELECT user_id, max_auto_slots, subscription_tier,
                                        auto_fire_min_confidence, auto_fire_max_confidence, auto_fire_enabled
                                 FROM user_fire_modes
@@ -512,7 +553,9 @@ def api_signals():
                                 AND subscription_tier = 'COMMANDER'
                                 AND ? >= auto_fire_min_confidence
                                 AND ? <= auto_fire_max_confidence
-                            """, (signal_confidence, signal_confidence))
+                            """,
+                                (signal_confidence, signal_confidence),
+                            )
                             auto_candidates = fire_cursor.fetchall()
 
                         print(f"[DEBUG] Auto-fire candidates found: {len(auto_candidates)} COMMANDER users")
@@ -522,52 +565,85 @@ def api_signals():
                         if auto_candidates:
                             for user_id, max_slots, user_tier, min_conf, max_conf, enabled in auto_candidates:
                                 # Use comprehensive tier-based validation
-                                fire_check = fire_mode_db.can_user_fire_trade(str(user_id), 'AUTO')
+                                fire_check = fire_mode_db.can_user_fire_trade(str(user_id), "AUTO")
 
-                                if fire_check['can_fire']:
-                                    current_usage = fire_check['current_usage']
-                                    daily_stats = fire_check['daily_stats']
-                                    print(f"[DEBUG] User {user_id} ({user_tier}): {current_usage['total_slots_used']}/10 slots, {daily_stats['trades_used']}/{daily_stats['max_trades']} daily trades (AVAILABLE)")
-                                    auto_mode_users.append((user_id, max_slots, current_usage['total_slots_used'], min_conf, max_conf, enabled))
+                                if fire_check["can_fire"]:
+                                    current_usage = fire_check["current_usage"]
+                                    daily_stats = fire_check["daily_stats"]
+                                    print(
+                                        f"[DEBUG] User {user_id} ({user_tier}): {current_usage['total_slots_used']}/10 slots, {daily_stats['trades_used']}/{daily_stats['max_trades']} daily trades (AVAILABLE)"
+                                    )
+                                    auto_mode_users.append(
+                                        (
+                                            user_id,
+                                            max_slots,
+                                            current_usage["total_slots_used"],
+                                            min_conf,
+                                            max_conf,
+                                            enabled,
+                                        )
+                                    )
                                 else:
-                                    reasons = fire_check.get('reasons', {})
+                                    reasons = fire_check.get("reasons", {})
                                     reason_text = []
-                                    if reasons.get('slots_full'): reason_text.append("SLOTS FULL")
-                                    if reasons.get('daily_limit_exceeded'): reason_text.append("DAILY LIMIT")
-                                    if reasons.get('auto_fire_not_allowed'): reason_text.append("TIER NOT ALLOWED")
-                                    print(f"[DEBUG] User {user_id} ({user_tier}): {' + '.join(reason_text)} - AUTO BLOCKED")
+                                    if reasons.get("slots_full"):
+                                        reason_text.append("SLOTS FULL")
+                                    if reasons.get("daily_limit_exceeded"):
+                                        reason_text.append("DAILY LIMIT")
+                                    if reasons.get("auto_fire_not_allowed"):
+                                        reason_text.append("TIER NOT ALLOWED")
+                                    print(
+                                        f"[DEBUG] User {user_id} ({user_tier}): {' + '.join(reason_text)} - AUTO BLOCKED"
+                                    )
 
                         if auto_mode_users:
                             print(f"[DEBUG] Found {len(auto_mode_users)} users with matching auto-fire thresholds")
-                            logger.info(f"🎯 AUTO FIRE CANDIDATES: {len(auto_mode_users)} users for {signal_id} @ {signal_confidence}%")
-                                
+                            logger.info(
+                                f"🎯 AUTO FIRE CANDIDATES: {len(auto_mode_users)} users for {signal_id} @ {signal_confidence}%"
+                            )
+
                             # Cross-reference with fresh EA connections
-                            with sqlite3.connect('/root/HydraX-v2/bitten.db') as auto_conn:
+                            with sqlite3.connect("/root/HydraX-v2/bitten.db") as auto_conn:
                                 auto_cursor = auto_conn.cursor()
 
                                 auto_users = []
-                                for user_id, max_slots, current_positions, min_conf, max_conf, enabled in auto_mode_users:
-                                    auto_cursor.execute("""
+                                for (
+                                    user_id,
+                                    max_slots,
+                                    current_positions,
+                                    min_conf,
+                                    max_conf,
+                                    enabled,
+                                ) in auto_mode_users:
+                                    auto_cursor.execute(
+                                        """
                                         SELECT DISTINCT ea.user_id, ea.target_uuid, ea.last_balance
                                         FROM ea_instances ea
                                         WHERE ea.user_id = ?
                                         AND (strftime('%s','now') - ea.last_seen) <= 120
-                                    """, (user_id,))
+                                    """,
+                                        (user_id,),
+                                    )
                                     fresh_ea = auto_cursor.fetchall()
                                     auto_users.extend(fresh_ea)
-                                
+
                                 if auto_users:
-                                    logger.info(f"🔥 AUTO FIRE TRIGGERED: {len(auto_users)} users eligible for {signal_id}")
-                                    
+                                    logger.info(
+                                        f"🔥 AUTO FIRE TRIGGERED: {len(auto_users)} users eligible for {signal_id}"
+                                    )
+
                                     # Import fire execution system
-                                    from enqueue_fire import enqueue_fire, create_fire_command
-                                    
+                                    from enqueue_fire import create_fire_command, enqueue_fire
+
                                     for user_id, target_uuid, balance in auto_users:
                                         try:
                                             # Check user's custom auto-fire profile
                                             try:
                                                 from src.bitten_core.auto_fire_profile_manager import profile_manager
-                                                should_fire, reason = profile_manager.should_auto_fire(str(user_id), signal_data)
+
+                                                should_fire, reason = profile_manager.should_auto_fire(
+                                                    str(user_id), signal_data
+                                                )
 
                                                 if not should_fire:
                                                     logger.info(f"🚫 Profile blocked for {user_id}: {reason}")
@@ -580,31 +656,45 @@ def api_signals():
 
                                             # Calculate lot size DIRECTLY from user's balance and risk settings
                                             try:
-                                                symbol = signal_data.get('symbol', 'EURUSD')
-                                                entry_price = float(signal_data.get('entry_price', signal_data.get('entry', 0)))
-                                                stop_loss = float(signal_data.get('stop_loss', signal_data.get('sl', 0)))
-                                                take_profit = float(signal_data.get('take_profit', signal_data.get('tp', 0)))
-                                                direction = signal_data.get('direction', 'BUY').upper()
+                                                symbol = signal_data.get("symbol", "EURUSD")
+                                                entry_price = float(
+                                                    signal_data.get("entry_price", signal_data.get("entry", 0))
+                                                )
+                                                stop_loss = float(
+                                                    signal_data.get("stop_loss", signal_data.get("sl", 0))
+                                                )
+                                                take_profit = float(
+                                                    signal_data.get("take_profit", signal_data.get("tp", 0))
+                                                )
+                                                direction = signal_data.get("direction", "BUY").upper()
 
                                                 # Get user's risk percentage from fire_modes database
                                                 import sqlite3
-                                                risk_conn = sqlite3.connect('/root/HydraX-v2/data/fire_modes.db')
+
+                                                risk_conn = sqlite3.connect("/root/HydraX-v2/data/fire_modes.db")
                                                 risk_cursor = risk_conn.cursor()
-                                                risk_cursor.execute("SELECT risk_per_trade FROM user_fire_modes WHERE user_id = ?", (str(user_id),))
+                                                risk_cursor.execute(
+                                                    "SELECT risk_per_trade FROM user_fire_modes WHERE user_id = ?",
+                                                    (str(user_id),),
+                                                )
                                                 risk_row = risk_cursor.fetchone()
-                                                risk_percent = (risk_row[0] * 100) if risk_row and risk_row[0] else 2.0  # Default 2%
+                                                risk_percent = (
+                                                    (risk_row[0] * 100) if risk_row and risk_row[0] else 2.0
+                                                )  # Default 2%
                                                 risk_conn.close()
 
                                                 # Calculate lot size directly
                                                 user_balance = float(balance) if balance else 0
-                                                logger.info(f"💰 AUTO FIRE LOT CALC: Balance=${user_balance}, Risk={risk_percent}%")
+                                                logger.info(
+                                                    f"💰 AUTO FIRE LOT CALC: Balance=${user_balance}, Risk={risk_percent}%"
+                                                )
 
                                                 # Calculate SL distance in pips
-                                                if 'JPY' in symbol:
+                                                if "JPY" in symbol:
                                                     pip_multiplier = 100
-                                                elif symbol == 'XAUUSD':
+                                                elif symbol == "XAUUSD":
                                                     pip_multiplier = 10
-                                                elif symbol == 'XAGUSD':
+                                                elif symbol == "XAGUSD":
                                                     pip_multiplier = 1000
                                                 else:
                                                     pip_multiplier = 10000
@@ -614,9 +704,15 @@ def api_signals():
 
                                                 # Get pip value per lot
                                                 pip_values = {
-                                                    'EURUSD': 10.0, 'GBPUSD': 10.0, 'USDJPY': 10.0, 'USDCAD': 10.0,
-                                                    'AUDUSD': 10.0, 'EURJPY': 6.8, 'GBPJPY': 6.8,
-                                                    'XAUUSD': 10.0, 'XAGUSD': 5.0
+                                                    "EURUSD": 10.0,
+                                                    "GBPUSD": 10.0,
+                                                    "USDJPY": 10.0,
+                                                    "USDCAD": 10.0,
+                                                    "AUDUSD": 10.0,
+                                                    "EURJPY": 6.8,
+                                                    "GBPJPY": 6.8,
+                                                    "XAUUSD": 10.0,
+                                                    "XAGUSD": 5.0,
                                                 }
                                                 pip_value = pip_values.get(symbol, 10.0)
 
@@ -625,16 +721,21 @@ def api_signals():
                                                     risk_amount = user_balance * (risk_percent / 100)
                                                     calculated_lot = risk_amount / (sl_distance_pips * pip_value)
                                                     calculated_lot = max(0.01, round(calculated_lot, 2))  # Min 0.01
-                                                    logger.info(f"   ✅ Calculated lot: {calculated_lot} (risk ${risk_amount:.2f})")
+                                                    logger.info(
+                                                        f"   ✅ Calculated lot: {calculated_lot} (risk ${risk_amount:.2f})"
+                                                    )
                                                 else:
                                                     calculated_lot = 0.01
-                                                    logger.warning(f"   ⚠️ Invalid SL or balance, using minimum lot 0.01")
-                                                
-# [DISABLED BITMODE]                                                 # Check if user has BITMODE enabled
+                                                    logger.warning(
+                                                        f"   ⚠️ Invalid SL or balance, using minimum lot 0.01"
+                                                    )
+
+                                                # [DISABLED BITMODE]                                                 # Check if user has BITMODE enabled
                                                 from src.bitten_core.fire_mode_database import fire_mode_db
+
                                                 bitmode_enabled = fire_mode_db.is_bitmode_enabled(str(user_id))
-                                                
-# [DISABLED BITMODE]                                                 # Create and send AUTO fire command with BITMODE support
+
+                                                # [DISABLED BITMODE]                                                 # Create and send AUTO fire command with BITMODE support
                                                 # Pass complete signal data for proper SL/TP calculation
                                                 # If sl/tp are 0, enqueue_fire will calculate from stop_pips/target_pips
                                                 auto_fire_cmd = create_fire_command(
@@ -646,121 +747,175 @@ def api_signals():
                                                     sl=stop_loss if stop_loss else 0,
                                                     tp=take_profit if take_profit else 0,
                                                     lot=calculated_lot,
-                                                    enable_bitmode=bitmode_enabled
+                                                    enable_bitmode=bitmode_enabled,
                                                 )
-                                                
+
                                                 # If command creation failed (returned None), skip
                                                 if auto_fire_cmd is None:
                                                     logger.warning(f"Fire command creation failed for {signal_id}")
                                                     continue
-                                                
+
                                                 # Occupy slot before firing
                                                 from src.bitten_core.fire_mode_database import FireModeDatabase
+
                                                 fire_db = FireModeDatabase()
                                                 # AUTO slot for COMMANDER tier only - check for overflow first
                                                 import sqlite3
-                                                fire_conn = sqlite3.connect('/root/HydraX-v2/data/fire_modes.db')
+
+                                                fire_conn = sqlite3.connect("/root/HydraX-v2/data/fire_modes.db")
                                                 fire_cursor = fire_conn.cursor()
-                                                fire_cursor.execute("SELECT auto_slots_in_use, max_auto_slots FROM user_fire_modes WHERE user_id = ?", (str(user_id),))
+                                                fire_cursor.execute(
+                                                    "SELECT auto_slots_in_use, max_auto_slots FROM user_fire_modes WHERE user_id = ?",
+                                                    (str(user_id),),
+                                                )
                                                 current_used, max_allowed = fire_cursor.fetchone()
                                                 fire_conn.close()
 
                                                 if current_used >= max_allowed:
-                                                    logger.warning(f"⚠️ Slot overflow detected for {user_id}: {current_used}/{max_allowed} - skipping auto-fire")
+                                                    logger.warning(
+                                                        f"⚠️ Slot overflow detected for {user_id}: {current_used}/{max_allowed} - skipping auto-fire"
+                                                    )
                                                     continue
 
-                                                if fire_db.occupy_slot(str(user_id), signal_id, symbol, slot_type='AUTO', user_tier='COMMANDER'):
+                                                if fire_db.occupy_slot(
+                                                    str(user_id),
+                                                    signal_id,
+                                                    symbol,
+                                                    slot_type="AUTO",
+                                                    user_tier="COMMANDER",
+                                                ):
                                                     # Create fires database record BEFORE sending to queue
                                                     import sqlite3
-                                                    fire_conn = sqlite3.connect('/root/HydraX-v2/bitten.db')
+
+                                                    fire_conn = sqlite3.connect("/root/HydraX-v2/bitten.db")
                                                     fire_cursor = fire_conn.cursor()
-                                                    fire_cursor.execute("""
+                                                    fire_cursor.execute(
+                                                        """
                                                         INSERT INTO fires (
                                                             fire_id, mission_id, user_id, status,
                                                             symbol, direction, sl, tp, lot,
                                                             created_at, updated_at
                                                         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                                                    """, (
-                                                        signal_id, signal_id, str(user_id), 'PENDING',
-                                                        symbol, direction,
-                                                        stop_loss if stop_loss else 0,
-                                                        take_profit if take_profit else 0,
-                                                        calculated_lot,
-                                                        int(time.time()), int(time.time())
-                                                    ))
+                                                    """,
+                                                        (
+                                                            signal_id,
+                                                            signal_id,
+                                                            str(user_id),
+                                                            "PENDING",
+                                                            symbol,
+                                                            direction,
+                                                            stop_loss if stop_loss else 0,
+                                                            take_profit if take_profit else 0,
+                                                            calculated_lot,
+                                                            int(time.time()),
+                                                            int(time.time()),
+                                                        ),
+                                                    )
                                                     fire_conn.commit()
                                                     fire_conn.close()
 
                                                     # Send to IPC queue for INSTANT execution
                                                     enqueue_fire(auto_fire_cmd)
-                                                    logger.info(f"⚡ AUTO FIRE SENT: {signal_id} for user {user_id} - {calculated_lot} lots @ {signal_confidence}% (Auto slot occupied)")
+                                                    logger.info(
+                                                        f"⚡ AUTO FIRE SENT: {signal_id} for user {user_id} - {calculated_lot} lots @ {signal_confidence}% (Auto slot occupied)"
+                                                    )
                                                 else:
-                                                    logger.warning(f"⚠️ No auto slots available for user {user_id}, skipping auto-fire")
-                                                
+                                                    logger.warning(
+                                                        f"⚠️ No auto slots available for user {user_id}, skipping auto-fire"
+                                                    )
+
                                             except Exception as lot_error:
-                                                logger.error(f"AUTO fire lot calculation failed for {user_id}: {lot_error}")
-                                                logger.error(f"Signal data values: symbol={symbol}, entry={entry_price}, sl={stop_loss}, balance={balance}")
+                                                logger.error(
+                                                    f"AUTO fire lot calculation failed for {user_id}: {lot_error}"
+                                                )
+                                                logger.error(
+                                                    f"Signal data values: symbol={symbol}, entry={entry_price}, sl={stop_loss}, balance={balance}"
+                                                )
                                                 import traceback
+
                                                 logger.error(f"Full traceback: {traceback.format_exc()}")
                                                 # Use fallback lot size with proper 5% risk estimate
-                                                estimated_lot = (float(balance) * 0.05) / 80 if balance else 0.50  # Assume ~$80 risk per lot
-# [DISABLED BITMODE]                                                 # Check BITMODE for fallback command too
+                                                estimated_lot = (
+                                                    (float(balance) * 0.05) / 80 if balance else 0.50
+                                                )  # Assume ~$80 risk per lot
+                                                # [DISABLED BITMODE]                                                 # Check BITMODE for fallback command too
                                                 fallback_bitmode = fire_mode_db.is_bitmode_enabled(str(user_id))
-                                                
+
                                                 auto_fire_cmd = create_fire_command(
                                                     mission_id=signal_id,
                                                     user_id=str(user_id),
-                                                    symbol=signal_data.get('symbol', 'EURUSD'),
-                                                    direction=signal_data.get('direction', 'BUY').upper(),
-                                                    entry=float(signal_data.get('entry_price', signal_data.get('entry', 0))),
-                                                    sl=float(signal_data.get('stop_loss', signal_data.get('sl', 0))),
-                                                    tp=float(signal_data.get('take_profit', signal_data.get('tp', 0))),
+                                                    symbol=signal_data.get("symbol", "EURUSD"),
+                                                    direction=signal_data.get("direction", "BUY").upper(),
+                                                    entry=float(
+                                                        signal_data.get("entry_price", signal_data.get("entry", 0))
+                                                    ),
+                                                    sl=float(signal_data.get("stop_loss", signal_data.get("sl", 0))),
+                                                    tp=float(signal_data.get("take_profit", signal_data.get("tp", 0))),
                                                     lot=estimated_lot,
-                                                    enable_bitmode=fallback_bitmode
+                                                    enable_bitmode=fallback_bitmode,
                                                 )
                                                 # Check slot availability for fallback fire too
                                                 from src.bitten_core.fire_mode_database import FireModeDatabase
+
                                                 fire_db = FireModeDatabase()
-                                                if fire_db.occupy_slot(str(user_id), signal_id, signal_data.get('symbol', 'EURUSD')):
+                                                if fire_db.occupy_slot(
+                                                    str(user_id), signal_id, signal_data.get("symbol", "EURUSD")
+                                                ):
                                                     # Create fires database record BEFORE sending to queue (fallback path)
                                                     import sqlite3
-                                                    fallback_fire_conn = sqlite3.connect('/root/HydraX-v2/bitten.db')
+
+                                                    fallback_fire_conn = sqlite3.connect("/root/HydraX-v2/bitten.db")
                                                     fallback_fire_cursor = fallback_fire_conn.cursor()
-                                                    fallback_fire_cursor.execute("""
+                                                    fallback_fire_cursor.execute(
+                                                        """
                                                         INSERT INTO fires (
                                                             fire_id, mission_id, user_id, status,
                                                             symbol, direction, sl, tp, lot,
                                                             created_at, updated_at
                                                         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                                                    """, (
-                                                        signal_id, signal_id, str(user_id), 'PENDING',
-                                                        signal_data.get('symbol', 'EURUSD'),
-                                                        signal_data.get('direction', 'BUY').upper(),
-                                                        float(signal_data.get('stop_loss', signal_data.get('sl', 0))),
-                                                        float(signal_data.get('take_profit', signal_data.get('tp', 0))),
-                                                        estimated_lot,
-                                                        int(time.time()), int(time.time())
-                                                    ))
+                                                    """,
+                                                        (
+                                                            signal_id,
+                                                            signal_id,
+                                                            str(user_id),
+                                                            "PENDING",
+                                                            signal_data.get("symbol", "EURUSD"),
+                                                            signal_data.get("direction", "BUY").upper(),
+                                                            float(
+                                                                signal_data.get("stop_loss", signal_data.get("sl", 0))
+                                                            ),
+                                                            float(
+                                                                signal_data.get("take_profit", signal_data.get("tp", 0))
+                                                            ),
+                                                            estimated_lot,
+                                                            int(time.time()),
+                                                            int(time.time()),
+                                                        ),
+                                                    )
                                                     fallback_fire_conn.commit()
                                                     fallback_fire_conn.close()
 
                                                     enqueue_fire(auto_fire_cmd)
-                                                    logger.info(f"⚡ AUTO FIRE SENT (fallback): {signal_id} for user {user_id} - {estimated_lot:.2f} lots (Slot occupied)")
+                                                    logger.info(
+                                                        f"⚡ AUTO FIRE SENT (fallback): {signal_id} for user {user_id} - {estimated_lot:.2f} lots (Slot occupied)"
+                                                    )
                                                 else:
-                                                    logger.warning(f"⚠️ No slots available for user {user_id}, skipping fallback auto-fire")
-                                                
+                                                    logger.warning(
+                                                        f"⚠️ No slots available for user {user_id}, skipping fallback auto-fire"
+                                                    )
+
                                         except Exception as fire_error:
                                             logger.error(f"AUTO fire failed for user {user_id}: {fire_error}")
                                 else:
                                     logger.info(f"🚫 No AUTO users online for {signal_id} @ {signal_confidence}%")
-                                    
+
                         else:
                             print(f"[DEBUG] No users match auto-fire thresholds for {signal_confidence}%")
                             logger.debug(f"📊 Signal {signal_id} @ {signal_confidence}% - no matching auto-fire users")
 
                     except Exception as auto_error:
                         logger.error(f"AUTO fire system error: {auto_error}")
-                        
+
                 except Exception as confidence_error:
                     logger.warning(f"AUTO fire confidence check failed: {confidence_error}")
 
@@ -768,351 +923,372 @@ def api_signals():
                 deep_link = None
                 if MISSION_SESSION_ENABLED:
                     try:
-                        user_id = request.headers.get('X-User-ID', '7176191872')
+                        user_id = request.headers.get("X-User-ID", "7176191872")
 
                         link_data = link_generator.generate_mission_link(
-                            signal_id=signal_data.get('signal_id'),
+                            signal_id=signal_data.get("signal_id"),
                             user_id=user_id,
-                            alert_id=signal_data.get('id', 0),
-                            pair=signal_data.get('symbol'),
-                            timeframe=signal_data.get('timeframe'),
-                            risk_max_usd=150.0
+                            alert_id=signal_data.get("id", 0),
+                            pair=signal_data.get("symbol"),
+                            timeframe=signal_data.get("timeframe"),
+                            risk_max_usd=150.0,
                         )
 
-                        deep_link = link_data['deep_link']
+                        deep_link = link_data["deep_link"]
                         logger.info(f"✅ Generated deep link for signal {signal_data.get('signal_id')}")
 
                     except Exception as e:
                         logger.warning(f"⚠️ Could not generate deep link: {e}")
 
                 logger.info(f"✅ Signal processed: {result}")
-                return jsonify({
-                    'status': 'processed',
-                    'result': result,
-                    'deep_link': deep_link  # Will be None if feature disabled
-                }), 200
-                
+                return (
+                    jsonify(
+                        {
+                            "status": "processed",
+                            "result": result,
+                            "deep_link": deep_link,  # Will be None if feature disabled
+                        }
+                    ),
+                    200,
+                )
+
             except ImportError:
                 logger.error("❌ BittenCore not available")
                 # Fallback: Just store the signal
-                store_signal = lazy.signal_storage.get('store_signal')
+                store_signal = lazy.signal_storage.get("store_signal")
                 if store_signal:
                     store_signal(signal_data)
-                    return jsonify({'status': 'stored'}), 200
+                    return jsonify({"status": "stored"}), 200
                 else:
-                    return jsonify({'error': 'Cannot process signal'}), 503
-                    
+                    return jsonify({"error": "Cannot process signal"}), 503
+
         except Exception as e:
             logger.error(f"Signal processing error: {e}")
-            return jsonify({'error': str(e)}), 500
+            return jsonify({"error": str(e)}), 500
 
-@app.route('/api/missions', methods=['GET'])
+
+@app.route("/api/missions", methods=["GET"])
 def api_missions():
     """Get list of available missions/signals"""
     try:
-        import os
         import json
+        import os
         from pathlib import Path
-        
+
         missions_dir = Path("/root/HydraX-v2/missions")
         missions = []
-        
+
         if missions_dir.exists():
             # Get recent mission files (last 50)
-            mission_files = sorted(missions_dir.glob("ELITE_GUARD_*.json"), 
-                                 key=os.path.getmtime, reverse=True)[:50]
-            
+            mission_files = sorted(missions_dir.glob("ELITE_GUARD_*.json"), key=os.path.getmtime, reverse=True)[:50]
+
             for mission_file in mission_files:
                 try:
-                    with open(mission_file, 'r') as f:
+                    with open(mission_file, "r") as f:
                         mission_data = json.load(f)
-                        missions.append({
-                            'mission_id': mission_data.get('mission_id', mission_file.stem),
-                            'signal_id': mission_data.get('signal_id', mission_file.stem),
-                            'symbol': mission_data.get('symbol', 'UNKNOWN'),
-                            'direction': mission_data.get('direction', 'UNKNOWN'),
-                            'confidence': mission_data.get('confidence', 0),
-                            'pattern_type': mission_data.get('pattern_type', 'UNKNOWN'),
-                            'created_at': mission_data.get('created_at', 0),
-                            'status': mission_data.get('status', 'active')
-                        })
+                        missions.append(
+                            {
+                                "mission_id": mission_data.get("mission_id", mission_file.stem),
+                                "signal_id": mission_data.get("signal_id", mission_file.stem),
+                                "symbol": mission_data.get("symbol", "UNKNOWN"),
+                                "direction": mission_data.get("direction", "UNKNOWN"),
+                                "confidence": mission_data.get("confidence", 0),
+                                "pattern_type": mission_data.get("pattern_type", "UNKNOWN"),
+                                "created_at": mission_data.get("created_at", 0),
+                                "status": mission_data.get("status", "active"),
+                            }
+                        )
                 except Exception as e:
                     logger.warning(f"Failed to load mission {mission_file}: {e}")
                     continue
-        
-        return jsonify({
-            'missions': missions,
-            'total': len(missions),
-            'status': 'success'
-        }), 200
-        
+
+        return jsonify({"missions": missions, "total": len(missions), "status": "success"}), 200
+
     except Exception as e:
         logger.error(f"Failed to load missions: {e}")
-        return jsonify({'error': str(e)}), 500
+        return jsonify({"error": str(e)}), 500
 
-@app.route('/api/venom_signals')
+
+@app.route("/api/venom_signals")
 def api_venom_signals():
     """Generate live VENOM v7.0 signals"""
     try:
         if lazy.venom_engine is None:
-            return jsonify({'error': 'VENOM Engine not available'}), 503
-        
+            return jsonify({"error": "VENOM Engine not available"}), 503
+
         # Initialize VENOM engine
         venom = lazy.venom_engine()
-        
+
         # Connect to MT5
         if not venom.connect_to_mt5():
-            return jsonify({'error': 'Failed to connect to MT5'}), 503
-        
+            return jsonify({"error": "Failed to connect to MT5"}), 503
+
         try:
             # Scan for signals
             signals = venom.scan_for_signals()
-            
+
             # Format signals for API response
             formatted_signals = []
             for signal in signals:
-                formatted_signals.append({
-                    'signal_id': signal['signal_id'],
-                    'pair': signal['pair'],
-                    'signal_type': signal['signal_type'],
-                    'confidence': signal['confidence'],
-                    'entry_price': signal['entry_price'],
-                    'stop_loss_pips': signal['stop_loss_pips'],
-                    'take_profit_pips': signal['take_profit_pips'],
-                    'risk_reward': signal['risk_reward'],
-                    'countdown_minutes': signal['countdown_minutes'],
-                    'session': signal['session'],
-                    'quality': signal['quality'],
-                    'timestamp': signal['timestamp'].isoformat(),
-                    'data_source': 'VENOM_v7.0_LIVE'
-                })
-            
-            return jsonify({
-                'signals': formatted_signals,
-                'count': len(formatted_signals),
-                'engine': 'VENOM_v7.0',
-                'data_source': 'MT5_LIVE',
-                'scan_time': datetime.now().isoformat()
-            })
-            
+                formatted_signals.append(
+                    {
+                        "signal_id": signal["signal_id"],
+                        "pair": signal["pair"],
+                        "signal_type": signal["signal_type"],
+                        "confidence": signal["confidence"],
+                        "entry_price": signal["entry_price"],
+                        "stop_loss_pips": signal["stop_loss_pips"],
+                        "take_profit_pips": signal["take_profit_pips"],
+                        "risk_reward": signal["risk_reward"],
+                        "countdown_minutes": signal["countdown_minutes"],
+                        "session": signal["session"],
+                        "quality": signal["quality"],
+                        "timestamp": signal["timestamp"].isoformat(),
+                        "data_source": "VENOM_v7.0_LIVE",
+                    }
+                )
+
+            return jsonify(
+                {
+                    "signals": formatted_signals,
+                    "count": len(formatted_signals),
+                    "engine": "VENOM_v7.0",
+                    "data_source": "MT5_LIVE",
+                    "scan_time": datetime.now().isoformat(),
+                }
+            )
+
         finally:
             venom.disconnect_mt5()
-            
+
     except Exception as e:
         logger.error(f"VENOM signals API error: {e}")
-        return jsonify({'error': f'VENOM signal generation failed: {str(e)}'}), 500
+        return jsonify({"error": f"VENOM signal generation failed: {str(e)}"}), 500
+
 
 def log_hud_access(user_id, mission_id, username=None):
     """Log HUD access for Commander Throne monitoring"""
     try:
         import json
         from datetime import datetime
-        
+
         # Create logs directory if it doesn't exist
-        logs_dir = '/root/HydraX-v2/logs'
+        logs_dir = "/root/HydraX-v2/logs"
         os.makedirs(logs_dir, exist_ok=True)
-        
+
         log_entry = {
             "user_id": user_id,
             "username": username or f"User_{user_id}",
             "mission_id": mission_id,
             "timestamp": datetime.now().isoformat(),
-            "access_type": "hud_view"
+            "access_type": "hud_view",
         }
-        
+
         # Append to log file
-        with open('/root/HydraX-v2/logs/hud_access.jsonl', 'a') as f:
-            f.write(json.dumps(log_entry) + '\n')
-            
+        with open("/root/HydraX-v2/logs/hud_access.jsonl", "a") as f:
+            f.write(json.dumps(log_entry) + "\n")
+
     except Exception as e:
         print(f"Warning: Could not log HUD access: {e}")
 
-@app.route('/hud')
+
+@app.route("/hud")
 def mission_briefing():
     """Mission HUD interface for Telegram WebApp links"""
     try:
         # Accept both mission_id and signal (legacy) parameters
-        mission_id = request.args.get('mission_id') or request.args.get('signal')
-        user_id = request.args.get('user_id')  # Get from request, no hardcoded default
-        
+        mission_id = request.args.get("mission_id") or request.args.get("signal")
+        user_id = request.args.get("user_id")  # Get from request, no hardcoded default
+
         if not mission_id:
-            return render_template('error_hud.html', 
-                                 error="Missing mission_id or signal parameter", 
-                                 error_code=400), 400
-        
+            return (
+                render_template("error_hud.html", error="Missing mission_id or signal parameter", error_code=400),
+                400,
+            )
+
         # Log HUD access for Commander Throne monitoring
         if user_id and mission_id:
             log_hud_access(user_id, mission_id)
-        
+
         # Optional: Log HUD load attempts for debugging
-        client_ip = request.environ.get('HTTP_X_FORWARDED_FOR', request.remote_addr)
+        client_ip = request.environ.get("HTTP_X_FORWARDED_FOR", request.remote_addr)
         logger.info(f"HUD load attempt: mission_id={mission_id}, user_id={user_id}, ip={client_ip}")
-        
+
         # Load LIVE user data from EA instances database
         user_stats = {}
         user_training_data = {}
-        
+
         # Check user's training academy progress
         if user_id:
             try:
                 import json
-                with open('/root/HydraX-v2/user_registry.json', 'r') as f:
+
+                with open("/root/HydraX-v2/user_registry.json", "r") as f:
                     registry = json.load(f)
                     if user_id in registry:
-                        user_training_data = registry[user_id].get('training_academy', {})
-                        
+                        user_training_data = registry[user_id].get("training_academy", {})
+
                         # Initialize new users to Day 1
                         if not user_training_data:
                             user_training_data = {
-                                'lesson_day': 1,
-                                'missions_opened_today': 0,
-                                'last_lesson_access': None,
-                                'lesson_progress': 'active',
-                                'academy_start_date': None,
-                                'total_lesson_missions': 0,
-                                'academy_graduate': False
+                                "lesson_day": 1,
+                                "missions_opened_today": 0,
+                                "last_lesson_access": None,
+                                "lesson_progress": "active",
+                                "academy_start_date": None,
+                                "total_lesson_missions": 0,
+                                "academy_graduate": False,
                             }
-                            
+
                         # Increment mission count for the day
-                        user_training_data['missions_opened_today'] += 1
-                        user_training_data['total_lesson_missions'] += 1
-                        user_training_data['last_lesson_access'] = datetime.now().isoformat()
-                        
+                        user_training_data["missions_opened_today"] += 1
+                        user_training_data["total_lesson_missions"] += 1
+                        user_training_data["last_lesson_access"] = datetime.now().isoformat()
+
                         # Save updated progress
-                        registry[user_id]['training_academy'] = user_training_data
-                        with open('/root/HydraX-v2/user_registry.json', 'w') as f:
+                        registry[user_id]["training_academy"] = user_training_data
+                        with open("/root/HydraX-v2/user_registry.json", "w") as f:
                             json.dump(registry, f, indent=2)
             except Exception as e:
                 logger.error(f"Training academy data error: {e}")
-        
+
         if user_id:
             try:
                 import sqlite3
-                with sqlite3.connect('/root/HydraX-v2/bitten.db') as conn:
+
+                with sqlite3.connect("/root/HydraX-v2/bitten.db") as conn:
                     cursor = conn.cursor()
                     # Get live balance from EA instances
-                    cursor.execute("""
+                    cursor.execute(
+                        """
                         SELECT target_uuid, user_id, last_balance, last_equity, leverage, broker, currency
-                        FROM ea_instances 
-                        WHERE user_id = ? 
-                        ORDER BY last_seen DESC 
+                        FROM ea_instances
+                        WHERE user_id = ?
+                        ORDER BY last_seen DESC
                         LIMIT 1
-                    """, (user_id,))
+                    """,
+                        (user_id,),
+                    )
                     ea_data = cursor.fetchone()
-                    
+
                 if ea_data:
                     target_uuid, user_id_db, balance, equity, leverage, broker, currency = ea_data
-                    
+
                     # Calculate real win rate from trade history
-                    cursor.execute("""
+                    cursor.execute(
+                        """
                         SELECT COUNT(*) as total,
                                SUM(CASE WHEN status = 'WIN' OR (ticket > 0 AND price > 0) THEN 1 ELSE 0 END) as wins
-                        FROM fires 
+                        FROM fires
                         WHERE user_id = ? AND status IN ('FILLED', 'WIN', 'LOSS', 'CLOSED')
-                    """, (user_id,))
-                    
+                    """,
+                        (user_id,),
+                    )
+
                     trade_result = cursor.fetchone()
                     if trade_result and trade_result[0] > 0:
                         total_trades, wins = trade_result
                         real_win_rate = round((wins / total_trades) * 100, 1)
                     else:
                         real_win_rate = 0  # No trades yet
-                    
+
                     user_stats = {
-                        'tier': 'COMMANDER' if 'COMMANDER' in target_uuid else 'NIBBLER',
-                        'balance': float(balance) if balance else 0.0,
-                        'equity': float(equity) if equity else 0.0,
-                        'win_rate': real_win_rate,  # Use actual win rate
-                        'total_pnl': float(balance) - 500.0 if balance else 0.0,  # Current - starting
-                        'trades_remaining': 99 if 'COMMANDER' in target_uuid else 5,
-                        'broker': broker or 'Unknown',
-                        'currency': currency or 'USD',
-                        'leverage': leverage or 500
+                        "tier": "COMMANDER" if "COMMANDER" in target_uuid else "NIBBLER",
+                        "balance": float(balance) if balance else 0.0,
+                        "equity": float(equity) if equity else 0.0,
+                        "win_rate": real_win_rate,  # Use actual win rate
+                        "total_pnl": float(balance) - 500.0 if balance else 0.0,  # Current - starting
+                        "trades_remaining": 99 if "COMMANDER" in target_uuid else 5,
+                        "broker": broker or "Unknown",
+                        "currency": currency or "USD",
+                        "leverage": leverage or 500,
                     }
-                    logger.info(f"Loaded LIVE user data for {user_id}: tier={user_stats['tier']}, balance=${user_stats['balance']}")
+                    logger.info(
+                        f"Loaded LIVE user data for {user_id}: tier={user_stats['tier']}, balance=${user_stats['balance']}"
+                    )
                 else:
                     # Fallback if no EA data found
                     user_stats = {
-                        'tier': 'NIBBLER',
-                        'balance': 0.0,
-                        'equity': 0.0,
-                        'win_rate': 0,
-                        'total_pnl': 0,
-                        'trades_remaining': 5,
-                        'broker': 'Not Connected',
-                        'currency': 'USD',
-                        'leverage': 500
+                        "tier": "NIBBLER",
+                        "balance": 0.0,
+                        "equity": 0.0,
+                        "win_rate": 0,
+                        "total_pnl": 0,
+                        "trades_remaining": 5,
+                        "broker": "Not Connected",
+                        "currency": "USD",
+                        "leverage": 500,
                     }
                     logger.warning(f"No EA data found for user {user_id}")
-                    
+
             except Exception as e:
                 logger.warning(f"Could not load live user data for {user_id}: {e}")
                 user_stats = {
-                    'tier': 'NIBBLER',
-                    'balance': 0.0,
-                    'equity': 0.0,
-                    'win_rate': 0,
-                    'total_pnl': 0,
-                    'trades_remaining': 5,
-                    'broker': 'Error',
-                    'currency': 'USD',
-                    'leverage': 500
+                    "tier": "NIBBLER",
+                    "balance": 0.0,
+                    "equity": 0.0,
+                    "win_rate": 0,
+                    "total_pnl": 0,
+                    "trades_remaining": 5,
+                    "broker": "Error",
+                    "currency": "USD",
+                    "leverage": 500,
                 }
-        
+
         # Use static file loading for now - fix absolute paths
         mission_paths = [
             f"/root/HydraX-v2/missions/{mission_id}.json",  # Direct format (what actually exists)
-            f"/root/HydraX-v2/missions/mission_{mission_id}.json"  # Legacy format
+            f"/root/HydraX-v2/missions/mission_{mission_id}.json",  # Legacy format
         ]
-        
+
         mission_file = None
         mission_data = None
-        
+
         for path in mission_paths:
             if os.path.exists(path):
                 mission_file = path
                 break
-        
+
         if not mission_file:
             logger.warning(f"Mission file not found for mission_id: {mission_id}")
-            return render_template('error_hud.html', 
-                                 error=f"Mission {mission_id} not found", 
-                                 error_code=404), 404
-        
+            return render_template("error_hud.html", error=f"Mission {mission_id} not found", error_code=404), 404
+
         try:
-            with open(mission_file, 'r') as f:
+            with open(mission_file, "r") as f:
                 mission_data = json.load(f)
         except json.JSONDecodeError as e:
             logger.error(f"Invalid JSON in mission file {mission_file}: {e}")
-            return render_template('error_hud.html', 
-                                 error=f"Mission {mission_id} has invalid data format", 
-                                 error_code=500), 500
+            return (
+                render_template(
+                    "error_hud.html", error=f"Mission {mission_id} has invalid data format", error_code=500
+                ),
+                500,
+            )
         except IOError as e:
             logger.error(f"Cannot read mission file {mission_file}: {e}")
-            return render_template('error_hud.html', 
-                                 error=f"Cannot load mission {mission_id}", 
-                                 error_code=500), 500
-        
+            return render_template("error_hud.html", error=f"Cannot load mission {mission_id}", error_code=500), 500
+
         # Calculate time remaining (default to 1 hour if no timing data)
         from datetime import datetime
+
         try:
-            expires_at = datetime.fromisoformat(mission_data['timing']['expires_at'])
+            expires_at = datetime.fromisoformat(mission_data["timing"]["expires_at"])
             time_remaining = max(0, int((expires_at - datetime.now()).total_seconds()))
         except:
             # Default to 1 hour expiry for new missions
             time_remaining = 3600
-        
+
         logger.info(f"Mission {mission_id} loaded: {mission_data.keys()}")
-        
+
         # Handle different mission data structures
         # Current VENOM structure vs legacy structure
-        signal = mission_data.get('signal', {})
-        enhanced_signal = mission_data.get('enhanced_signal', {})
-        mission = mission_data.get('mission', {})
-        user_data = mission_data.get('user', {})
+        signal = mission_data.get("signal", {})
+        enhanced_signal = mission_data.get("enhanced_signal", {})
+        mission = mission_data.get("mission", {})
+        user_data = mission_data.get("user", {})
         # Keep the user_id from query parameter, don't override with mission data
         # user_id is already set from request.args.get('user_id') on line 343
-        
+
         # Use enhanced_signal data if available (current VENOM format)
         if enhanced_signal:
             signal_data = enhanced_signal
@@ -1120,64 +1296,66 @@ def mission_briefing():
         else:
             signal_data = signal
             logger.info(f"Using signal data for {mission_id}")
-        
+
         # Fallback to root level data
-        symbol = signal_data.get('symbol') or mission_data.get('pair', 'UNKNOWN')
-        direction = signal_data.get('direction') or mission_data.get('direction', 'BUY')
-        entry_price = signal_data.get('entry_price', 0)
-        stop_loss = signal_data.get('stop_loss', 0)
-        take_profit = signal_data.get('take_profit', 0)
-        
+        symbol = signal_data.get("symbol") or mission_data.get("pair", "UNKNOWN")
+        direction = signal_data.get("direction") or mission_data.get("direction", "BUY")
+        entry_price = signal_data.get("entry_price", 0)
+        stop_loss = signal_data.get("stop_loss", 0)
+        take_profit = signal_data.get("take_profit", 0)
+
         # Signal mode analysis for dual-mode system
-        signal_type = signal_data.get('signal_type', 'RAPID_ASSAULT')
-        signal_mode = 'RAPID' if 'RAPID' in signal_type else 'SNIPER'
-        signal_mode_icon = '⚡' if signal_mode == 'RAPID' else '🎯'
-        signal_mode_color = 'orange' if signal_mode == 'RAPID' else 'blue'
-        
+        signal_type = signal_data.get("signal_type", "RAPID_ASSAULT")
+        signal_mode = "RAPID" if "RAPID" in signal_type else "SNIPER"
+        signal_mode_icon = "⚡" if signal_mode == "RAPID" else "🎯"
+        signal_mode_color = "orange" if signal_mode == "RAPID" else "blue"
+
         # Estimate time to TP based on signal mode and target pips
-        target_pips = signal_data.get('target_pips', 40 if signal_mode == 'SNIPER' else 20)
-        estimated_time_to_tp = 0.5 + (target_pips * 0.1) if signal_mode == 'RAPID' else 2 + (target_pips * 0.15)
-        
+        target_pips = signal_data.get("target_pips", 40 if signal_mode == "SNIPER" else 20)
+        estimated_time_to_tp = 0.5 + (target_pips * 0.1) if signal_mode == "RAPID" else 2 + (target_pips * 0.15)
+
         # CITADEL shield data
-        citadel_shield = mission_data.get('citadel_shield', {})
-        citadel_score = citadel_shield.get('score', mission_data.get('confidence', 75))
-        
+        citadel_shield = mission_data.get("citadel_shield", {})
+        citadel_score = citadel_shield.get("score", mission_data.get("confidence", 75))
+
         # Validate required fields
         missing_fields = []
-        if not symbol or symbol == 'UNKNOWN':
-            missing_fields.append('symbol')
+        if not symbol or symbol == "UNKNOWN":
+            missing_fields.append("symbol")
         if not direction:
-            missing_fields.append('direction')
+            missing_fields.append("direction")
         if not entry_price:
-            missing_fields.append('entry_price')
-        
-        logger.info(f"Mission {mission_id} fields: symbol={symbol}, direction={direction}, entry={entry_price}, missing={missing_fields}")
-        
+            missing_fields.append("entry_price")
+
+        logger.info(
+            f"Mission {mission_id} fields: symbol={symbol}, direction={direction}, entry={entry_price}, missing={missing_fields}"
+        )
+
         # Prepare template variables for new_hud_template.html
         # Extract pattern type from mission data
-        pattern_type = mission_data.get('pattern_type', '')
-        if not pattern_type or pattern_type == 'Unknown':
+        pattern_type = mission_data.get("pattern_type", "")
+        if not pattern_type or pattern_type == "Unknown":
             # Try to get from database if not in mission file
             try:
-                with sqlite3.connect('/root/HydraX-v2/bitten.db') as conn:
+                with sqlite3.connect("/root/HydraX-v2/bitten.db") as conn:
                     cursor = conn.cursor()
                     cursor.execute("SELECT pattern_type FROM signals WHERE signal_id = ?", (mission_id,))
                     result = cursor.fetchone()
                     if result and result[0]:
                         pattern_type = result[0]
                     else:
-                        pattern_type = 'PATTERN_UNKNOWN'
+                        pattern_type = "PATTERN_UNKNOWN"
             except:
-                pattern_type = 'PATTERN_UNKNOWN'
-        
+                pattern_type = "PATTERN_UNKNOWN"
+
         # Risk calculation with INDIVIDUALIZED user risk
         # Get R:R from mission data first, then signal data
-        risk_reward_ratio = mission_data.get('risk_reward', signal_data.get('risk_reward', 1.5))
-        user_balance = user_stats.get('balance', user_data.get('balance', 10000.0))
-        user_risk_pct = get_user_risk_profile(user_id).get('risk_percentage', 1.0)
+        risk_reward_ratio = mission_data.get("risk_reward", signal_data.get("risk_reward", 1.5))
+        user_balance = user_stats.get("balance", user_data.get("balance", 10000.0))
+        user_risk_pct = get_user_risk_profile(user_id).get("risk_percentage", 1.0)
         risk_amount = user_balance * (user_risk_pct / 100)
         reward_amount = risk_amount * risk_reward_ratio
-        
+
         # Debug logging for R:R calculation
         print(f"🔍 R:R Debug for {mission_id}:")
         print(f"   Balance: ${user_balance:.2f}")
@@ -1188,126 +1366,111 @@ def mission_briefing():
 
         template_vars = {
             # Basic signal info
-            'symbol': symbol,
-            'direction': direction,
-            'entry_price': entry_price,
-            'stop_loss': stop_loss,
-            'take_profit': take_profit,
-            'entry_masked': f"{float(entry_price):.5f}" if entry_price else "Loading...",
-            'sl_masked': f"{float(stop_loss):.5f}" if stop_loss else "Loading...",
-            'tp_masked': f"{float(take_profit):.5f}" if take_profit else "Loading...",
-            
+            "symbol": symbol,
+            "direction": direction,
+            "entry_price": entry_price,
+            "stop_loss": stop_loss,
+            "take_profit": take_profit,
+            "entry_masked": f"{float(entry_price):.5f}" if entry_price else "Loading...",
+            "sl_masked": f"{float(stop_loss):.5f}" if stop_loss else "Loading...",
+            "tp_masked": f"{float(take_profit):.5f}" if take_profit else "Loading...",
             # Pattern information
-            'pattern_type': pattern_type,
-            'pattern_name': pattern_type.replace('_', ' ').title() if pattern_type else 'Pattern Unknown',
-            
+            "pattern_type": pattern_type,
+            "pattern_name": pattern_type.replace("_", " ").title() if pattern_type else "Pattern Unknown",
             # Session information
-            'session': mission_data.get('session', signal_data.get('session', 'UNKNOWN')),
-            'session_display': mission_data.get('session', signal_data.get('session', 'UNKNOWN')),
-            
+            "session": mission_data.get("session", signal_data.get("session", "UNKNOWN")),
+            "session_display": mission_data.get("session", signal_data.get("session", "UNKNOWN")),
             # Quality scores (CITADEL removed - broken)
-            'tcs_score': signal_data.get('confidence', mission_data.get('confidence', 75)),
-            'citadel_score': 0,  # REMOVED - system broken
-            'ml_filter_passed': mission_data.get('ml_filter', {}).get('filter_result') != 'prediction_failed',
-            
+            "tcs_score": signal_data.get("confidence", mission_data.get("confidence", 75)),
+            "citadel_score": 0,  # REMOVED - system broken
+            "ml_filter_passed": mission_data.get("ml_filter", {}).get("filter_result") != "prediction_failed",
             # Get user's individualized risk profile
-            'user_risk_profile': get_user_risk_profile(user_id),
-            
+            "user_risk_profile": get_user_risk_profile(user_id),
             # Risk calculation results
-            'rr_ratio': risk_reward_ratio,
-            'account_balance': user_balance,
-            'user_risk_percentage': user_risk_pct,
-            'sl_dollars': f"{risk_amount:.2f}",  # Individual risk
-            'tp_dollars': f"{reward_amount:.2f}",  # R:R with individual risk
-            
+            "rr_ratio": risk_reward_ratio,
+            "account_balance": user_balance,
+            "user_risk_percentage": user_risk_pct,
+            "sl_dollars": f"{risk_amount:.2f}",  # Individual risk
+            "tp_dollars": f"{reward_amount:.2f}",  # R:R with individual risk
             # Slot availability - with defaults to prevent errors
-            'manual_slots_available': 5,  # Default to 5 slots available
-            'manual_slots_total': 5,  # Default total
-            'auto_slots_available': 3,  # Default auto slots
-            'auto_slots_total': 3,
-            'can_fire': True,  # Allow firing by default
-            
+            "manual_slots_available": 5,  # Default to 5 slots available
+            "manual_slots_total": 5,  # Default total
+            "auto_slots_available": 3,  # Default auto slots
+            "auto_slots_total": 3,
+            "can_fire": True,  # Allow firing by default
             # Mission info
-            'mission_id': mission_id,
-            'signal_id': mission_data.get('signal_id', mission_id),
-            'user_id': user_id,
-            'expiry_seconds': time_remaining,
-            'time_remaining': time_remaining,  # Add for countdown timer
-            
+            "mission_id": mission_id,
+            "signal_id": mission_data.get("signal_id", mission_id),
+            "user_id": user_id,
+            "expiry_seconds": time_remaining,
+            "time_remaining": time_remaining,  # Add for countdown timer
             # Dual-mode signal system variables
-            'signal_mode': signal_mode,
-            'signal_mode_icon': signal_mode_icon,
-            'signal_mode_color': signal_mode_color,
-            'estimated_time_to_tp': estimated_time_to_tp,
-            'target_pips': target_pips,
-            
+            "signal_mode": signal_mode,
+            "signal_mode_icon": signal_mode_icon,
+            "signal_mode_color": signal_mode_color,
+            "estimated_time_to_tp": estimated_time_to_tp,
+            "target_pips": target_pips,
             # User stats with LIVE data (overrides any static mission data)
-            'user_stats': user_stats,  # Use the loaded live user stats from EA database
-            
+            "user_stats": user_stats,  # Use the loaded live user stats from EA database
             # Calculate position size based on individual risk profile
-            'position_size': calculate_position_size(
-                user_stats.get('balance', 10000.0),
-                get_user_risk_profile(user_id).get('risk_percentage', 1.0),
-                signal_data.get('stop_pips', 20),
-                symbol
-            )[0],  # Returns (position_size, risk_amount)
-            
+            "position_size": calculate_position_size(
+                user_stats.get("balance", 10000.0),
+                get_user_risk_profile(user_id).get("risk_percentage", 1.0),
+                signal_data.get("stop_pips", 20),
+                symbol,
+            )[
+                0
+            ],  # Returns (position_size, risk_amount)
             # Warning for missing fields
-            'missing_fields': missing_fields,
-            'has_warnings': len(missing_fields) > 0,
-            
+            "missing_fields": missing_fields,
+            "has_warnings": len(missing_fields) > 0,
             # CITADEL shield info (REMOVED - broken system)
-            'citadel_classification': 'N/A',
-            'citadel_explanation': 'System offline',
-            
+            "citadel_classification": "N/A",
+            "citadel_explanation": "System offline",
             # LIVE USER DATA
-            'user_stats': user_stats,
-            'user_id': user_id,
-            
+            "user_stats": user_stats,
+            "user_id": user_id,
             # TRAINING ACADEMY DATA
-            'training_academy': user_training_data,
-            'lesson_day': user_training_data.get('lesson_day', 11),
-            'is_academy_student': user_training_data.get('lesson_day', 11) <= 10,
-            'academy_graduate': user_training_data.get('academy_graduate', False),
-            
+            "training_academy": user_training_data,
+            "lesson_day": user_training_data.get("lesson_day", 11),
+            "is_academy_student": user_training_data.get("lesson_day", 11) <= 10,
+            "academy_graduate": user_training_data.get("academy_graduate", False),
             # Briefing object for template compatibility
-            'briefing': {
-                'tactical_intel': {
-                    'pattern_detected': pattern_type.replace('_', ' ').title() if pattern_type else 'Pattern Analysis',
-                    'reward_potential': f"1:{signal_data.get('risk_reward', 2.0):.1f}",
-                    'risk_assessment': f"{user_stats.get('balance', 10000.0) * (get_user_risk_profile(user_id).get('risk_percentage', 1.0) / 100):.2f}"
+            "briefing": {
+                "tactical_intel": {
+                    "pattern_detected": pattern_type.replace("_", " ").title() if pattern_type else "Pattern Analysis",
+                    "reward_potential": f"1:{signal_data.get('risk_reward', 2.0):.1f}",
+                    "risk_assessment": f"{user_stats.get('balance', 10000.0) * (get_user_risk_profile(user_id).get('risk_percentage', 1.0) / 100):.2f}",
                 },
-                'citadel_analysis': {
-                    'institutional_insights': f"Pattern {pattern_type.replace('_', ' ').lower()} detected with {mission_data.get('confidence', 75)}% confidence. Volume and structure confirmed.",
-                    'shield_status': 'SHIELD ACTIVE',
-                    'market_regime': 'OPTIMAL',
-                    'risk_multiplier': '1.0'
+                "citadel_analysis": {
+                    "institutional_insights": f"Pattern {pattern_type.replace('_', ' ').lower()} detected with {mission_data.get('confidence', 75)}% confidence. Volume and structure confirmed.",
+                    "shield_status": "SHIELD ACTIVE",
+                    "market_regime": "OPTIMAL",
+                    "risk_multiplier": "1.0",
                 },
-                'situation_assessment': {
-                    'target_zone': symbol
+                "situation_assessment": {"target_zone": symbol},
+                "mission_parameters": {
+                    "session_context": mission_data.get("session", signal_data.get("session", "UNKNOWN")),
+                    "position_size": f"{calculate_position_size(user_stats.get('balance', 10000.0), get_user_risk_profile(user_id).get('risk_percentage', 1.0), signal_data.get('stop_pips', 20), symbol)[0]:.2f}",
                 },
-                'mission_parameters': {
-                    'session_context': mission_data.get('session', signal_data.get('session', 'UNKNOWN')),
-                    'position_size': f"{calculate_position_size(user_stats.get('balance', 10000.0), get_user_risk_profile(user_id).get('risk_percentage', 1.0), signal_data.get('stop_pips', 20), symbol)[0]:.2f}"
-                }
-            }
+            },
         }
-        
+
         # TRAINING ACADEMY TEMPLATE SELECTION
-        lesson_day = user_training_data.get('lesson_day', 11)
-        
-        if lesson_day <= 10 and not user_training_data.get('academy_graduate', False):
+        lesson_day = user_training_data.get("lesson_day", 11)
+
+        if lesson_day <= 10 and not user_training_data.get("academy_graduate", False):
             # User is in training - use lesson-specific template
-            lesson_template = f'lesson_mission_day_{lesson_day}.html'
-            if os.path.exists(f'templates/{lesson_template}'):
+            lesson_template = f"lesson_mission_day_{lesson_day}.html"
+            if os.path.exists(f"templates/{lesson_template}"):
                 logger.info(f"Serving lesson template: {lesson_template} for user {user_id}")
                 return render_template(lesson_template, **template_vars)
             else:
                 # Fallback: lesson template doesn't exist yet, use placeholder
                 logger.warning(f"Lesson template {lesson_template} not found, using placeholder")
-                template_vars['lesson_placeholder'] = True
-                template_vars['lesson_title'] = f"Training Day {lesson_day}"
-                return render_template('lesson_placeholder.html', **template_vars)
+                template_vars["lesson_placeholder"] = True
+                template_vars["lesson_title"] = f"Training Day {lesson_day}"
+                return render_template("lesson_placeholder.html", **template_vars)
         else:
             # Graduate or veteran user - use normal mission template
             # Get slot availability - comment out broken code for now
@@ -1320,12 +1483,12 @@ def mission_briefing():
             #     auto_slots_available = mode_info.get('max_auto_slots', 75) - mode_info.get('auto_slots_in_use', 0)
             # except:
             #     pass
-            
+
             # Add slot status indicator to the response - use defaults for now
             manual_slots_available = 5  # Default
             slot_status_html = f"""
-            <div style="position: fixed; top: 10px; right: 10px; background: rgba(0,0,0,0.9); 
-                        border: 2px solid {'#00ff41' if manual_slots_available > 0 else '#ff4444'}; 
+            <div style="position: fixed; top: 10px; right: 10px; background: rgba(0,0,0,0.9);
+                        border: 2px solid {'#00ff41' if manual_slots_available > 0 else '#ff4444'};
                         padding: 10px; border-radius: 5px; z-index: 9999; color: white;">
                 <div style="font-size: 14px; margin-bottom: 5px;">🎯 SLOT STATUS</div>
                 <div style="font-size: 18px; font-weight: bold; color: {'#00ff41' if manual_slots_available > 0 else '#ff4444'};">
@@ -1334,31 +1497,35 @@ def mission_briefing():
                 {'<div style="font-size: 16px; color: #00ff41; margin-top: 5px;">✅ READY TO FIRE</div>' if manual_slots_available > 0 else '<div style="font-size: 16px; color: #ff4444; margin-top: 5px;">❌ NO SLOTS - CLOSE A POSITION</div>'}
             </div>
             """
-            
+
             # Use Flask's proper template rendering
-            if os.path.exists('templates/comprehensive_mission_briefing.html'):
+            if os.path.exists("templates/comprehensive_mission_briefing.html"):
                 # Add slot status HTML to template vars
-                template_vars['slot_status_html'] = slot_status_html
-                return render_template('comprehensive_mission_briefing.html', **template_vars)
+                template_vars["slot_status_html"] = slot_status_html
+                return render_template("comprehensive_mission_briefing.html", **template_vars)
             else:
-                template_vars['slot_status_html'] = slot_status_html
-                return render_template('new_hud_template.html', **template_vars)
-        
+                template_vars["slot_status_html"] = slot_status_html
+                return render_template("new_hud_template.html", **template_vars)
+
     except Exception as e:
         # Enhanced error logging with mission_id context
         logger.error(f"Mission HUD error for mission_id='{mission_id}': {e}", exc_info=True)
-        
-        # Enhanced error handling with fallback HUD  
+
+        # Enhanced error handling with fallback HUD
         try:
-            return render_template('error_hud.html', 
-                                 error=f"Error loading mission {mission_id}: {str(e)}", 
-                                 error_code=500), 500
+            return (
+                render_template(
+                    "error_hud.html", error=f"Error loading mission {mission_id}: {str(e)}", error_code=500
+                ),
+                500,
+            )
         except Exception as template_error:
             # Last resort: plain text error if even error template fails
             logger.error(f"Error template also failed: {template_error}")
             return f"Error loading mission {mission_id}: {str(e)}", 500
 
-@app.route('/notebook/<user_id>')
+
+@app.route("/notebook/<user_id>")
 def normans_notebook(user_id):
     """Norman's Notebook - Simple working version"""
     return f"""
@@ -1369,40 +1536,40 @@ def normans_notebook(user_id):
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Norman's Notebook - User {user_id}</title>
         <style>
-            body {{ 
-                background: #0f1419; 
-                color: #00ff41; 
-                font-family: 'Courier New', monospace; 
-                margin: 0; 
-                padding: 20px; 
+            body {{
+                background: #0f1419;
+                color: #00ff41;
+                font-family: 'Courier New', monospace;
+                margin: 0;
+                padding: 20px;
             }}
-            .container {{ 
-                max-width: 800px; 
-                margin: 0 auto; 
-                background: rgba(0,255,65,0.05); 
-                border: 1px solid #00ff41; 
-                border-radius: 8px; 
-                padding: 20px; 
+            .container {{
+                max-width: 800px;
+                margin: 0 auto;
+                background: rgba(0,255,65,0.05);
+                border: 1px solid #00ff41;
+                border-radius: 8px;
+                padding: 20px;
             }}
             h1 {{ text-align: center; color: #d4af37; }}
-            .stats {{ 
-                display: flex; 
-                justify-content: space-around; 
-                margin: 20px 0; 
-                padding: 15px; 
-                background: rgba(0,0,0,0.3); 
-                border-radius: 6px; 
+            .stats {{
+                display: flex;
+                justify-content: space-around;
+                margin: 20px 0;
+                padding: 15px;
+                background: rgba(0,0,0,0.3);
+                border-radius: 6px;
             }}
             .stat {{ text-align: center; }}
             .stat-value {{ font-size: 1.5em; font-weight: bold; color: #d4af37; }}
-            button {{ 
-                background: linear-gradient(135deg, #00ff41, #32cd32); 
-                color: #000; 
-                border: none; 
-                padding: 10px 20px; 
-                border-radius: 4px; 
-                cursor: pointer; 
-                font-weight: bold; 
+            button {{
+                background: linear-gradient(135deg, #00ff41, #32cd32);
+                color: #000;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 4px;
+                cursor: pointer;
+                font-weight: bold;
             }}
         </style>
     </head>
@@ -1410,7 +1577,7 @@ def normans_notebook(user_id):
         <div class="container">
             <h1>📓 Norman's Notebook</h1>
             <p style="text-align: center; color: #888;">Trading Journal for User {user_id}</p>
-            
+
             <div class="stats">
                 <div class="stat">
                     <div class="stat-value">0</div>
@@ -1429,7 +1596,7 @@ def normans_notebook(user_id):
                     <div>Day Streak</div>
                 </div>
             </div>
-            
+
             <div style="margin-top: 30px; text-align: center; color: #666;">
                 <p>📝 Trading journal coming soon!</p>
                 <p><em>"Every trade tells a story. Make yours count."</em> - Norman</p>
@@ -1441,30 +1608,30 @@ def normans_notebook(user_id):
     """
 
 
-@app.route('/notebook/<user_id>/add-entry', methods=['POST'])
+@app.route("/notebook/<user_id>/add-entry", methods=["POST"])
 def add_notebook_entry(user_id):
     """Add a new entry to Norman's Notebook with XP integration"""
     try:
         from src.bitten_core.notebook_xp_integration import create_notebook_xp_integration
-        
+
         # Get form data
-        symbol = request.form.get('symbol', '').strip()
-        content = request.form.get('content', '').strip()
-        mood = request.form.get('mood', 'neutral')
-        signal_id = request.args.get('signal_id', '').strip()
-        template = request.args.get('template', 'basic')
-        
+        symbol = request.form.get("symbol", "").strip()
+        content = request.form.get("content", "").strip()
+        mood = request.form.get("mood", "neutral")
+        signal_id = request.args.get("signal_id", "").strip()
+        template = request.args.get("template", "basic")
+
         if not content:
-            return redirect(f'/notebook/{user_id}?error=content_required')
-        
+            return redirect(f"/notebook/{user_id}?error=content_required")
+
         # Initialize notebook XP integration
         notebook_integration = create_notebook_xp_integration(user_id)
-        
+
         # Determine entry type and XP reward
         entry_type = "basic"
         linked_signal_id = None
         trade_result = None
-        
+
         if signal_id:
             entry_type = "signal_paired"
             linked_signal_id = signal_id
@@ -1474,11 +1641,11 @@ def add_notebook_entry(user_id):
                 if signal.signal_id == signal_id:
                     trade_result = signal.result
                     break
-        elif template in ['trade_plan', 'trade_review', 'success_review', 'lesson_learned']:
+        elif template in ["trade_plan", "trade_review", "success_review", "lesson_learned"]:
             entry_type = "structured_template"
-        elif 'weekly review' in content.lower() or 'week review' in content.lower():
+        elif "weekly review" in content.lower() or "week review" in content.lower():
             entry_type = "weekly_review"
-        
+
         # Generate appropriate title
         if symbol:
             if entry_type == "signal_paired":
@@ -1492,7 +1659,7 @@ def add_notebook_entry(user_id):
                 title = f"Weekly Review - {datetime.now().strftime('%Y-%m-%d')}"
             else:
                 title = f"Trading Journal - {datetime.now().strftime('%Y-%m-%d')}"
-        
+
         # Add entry with XP integration
         result = notebook_integration.add_journal_entry_with_xp(
             title=title,
@@ -1501,83 +1668,88 @@ def add_notebook_entry(user_id):
             entry_type=entry_type,
             linked_signal_id=linked_signal_id,
             trade_result=trade_result,
-            confidence=None
+            confidence=None,
         )
-        
+
         # Check for milestone achievement and prepare success message
-        success_params = [f'entry_added', f'xp_earned={result["xp_earned"]}']
-        if result.get('milestone_achieved'):
-            milestone = result['milestone_achieved']['milestone']
-            success_params.append(f'milestone={milestone.name}')
+        success_params = [f"entry_added", f'xp_earned={result["xp_earned"]}']
+        if result.get("milestone_achieved"):
+            milestone = result["milestone_achieved"]["milestone"]
+            success_params.append(f"milestone={milestone.name}")
             success_params.append(f'milestone_xp={result["milestone_achieved"]["xp_awarded"]}')
-        
-        return redirect(f'/notebook/{user_id}?success=' + '&'.join(success_params))
-        
+
+        return redirect(f"/notebook/{user_id}?success=" + "&".join(success_params))
+
     except Exception as e:
         logger.error(f"Add notebook entry error: {e}")
-        return redirect(f'/notebook/{user_id}?error=add_failed')
+        return redirect(f"/notebook/{user_id}?error=add_failed")
 
-@app.route('/brief')
+
+@app.route("/brief")
 def brief_mission():
     """Create per-user mission when clicking from Telegram"""
     try:
-        signal_id = request.args.get('signal_id')
+        signal_id = request.args.get("signal_id")
         # Get user_id from multiple sources
-        user_id = request.args.get('user_id')
-        
+        user_id = request.args.get("user_id")
+
         # If no user_id in URL, try to get from session/cookie
         if not user_id:
-            user_id = request.cookies.get('user_id')
-        
+            user_id = request.cookies.get("user_id")
+
         # If still no user_id, try Telegram WebApp data
         if not user_id:
-            tg_data = request.args.get('tgWebAppData')
+            tg_data = request.args.get("tgWebAppData")
             if tg_data:
                 try:
                     import base64
+
                     decoded = json.loads(base64.b64decode(tg_data))
-                    user_id = str(decoded.get('user', {}).get('id'))
+                    user_id = str(decoded.get("user", {}).get("id"))
                 except:
                     pass
-        
+
         # Default to a generic user if no ID found
         if not user_id:
-            user_id = '7176191872'  # Default commander user
-        
+            user_id = "7176191872"  # Default commander user
+
         if not signal_id:
-            return jsonify({'error': 'No signal_id provided'}), 400
-            
+            return jsonify({"error": "No signal_id provided"}), 400
+
         # Check if mission file exists
-        mission_file = f'/root/HydraX-v2/missions/{signal_id}.json'
+        mission_file = f"/root/HydraX-v2/missions/{signal_id}.json"
         if not os.path.exists(mission_file):
-            return jsonify({'error': f'Signal {signal_id} not found'}), 404
-            
+            return jsonify({"error": f"Signal {signal_id} not found"}), 404
+
         # Load signal data
         with open(mission_file) as f:
             signal_data = json.load(f)
-            
+
         # Helper function for pip size
         def pip_size(symbol):
             s = symbol.upper()
-            if s.endswith("JPY"): return 0.01
-            if s.startswith("XAU"): return 0.1
-            if s.startswith("XAG"): return 0.01
+            if s.endswith("JPY"):
+                return 0.01
+            if s.startswith("XAU"):
+                return 0.1
+            if s.startswith("XAG"):
+                return 0.01
             return 0.0001
-            
+
         # Use existing SL/TP if available, otherwise calculate from pips
-        signal = signal_data.get('signal', signal_data)
-        sym = signal.get('symbol', '').upper()
-        side = signal.get('direction', '').upper()
-        entry = float(signal.get('entry_price') or 0)
-        
+        signal = signal_data.get("signal", signal_data)
+        sym = signal.get("symbol", "").upper()
+        side = signal.get("direction", "").upper()
+        entry = float(signal.get("entry_price") or 0)
+
         # First check if we already have stop_loss and take_profit
-        sl = float(signal.get('stop_loss') or 0)
-        tp = float(signal.get('take_profit') or 0)
-        
+        sl = float(signal.get("stop_loss") or 0)
+        tp = float(signal.get("take_profit") or 0)
+
         # Only calculate from pips if we don't have absolute values
         if (sl == 0 or tp == 0) and entry > 0 and sym and side:
-            stop_pips = float(signal.get('stop_pips') or signal.get('sl_pips') or 10)
-            target_pips = float(signal.get('target_pips') or signal.get('tp_pips') or 15)
+            stop_pips = float(signal.get("stop_pips") or signal.get("sl_pips") or 10)
+            target_pips = float(signal.get("target_pips") or signal.get("tp_pips") or 15)
             pip = pip_size(sym)
             if side == "BUY":
                 sl = entry - (stop_pips * pip) if stop_pips > 0 and sl == 0 else sl
@@ -1585,193 +1757,233 @@ def brief_mission():
             elif side == "SELL":
                 sl = entry + (stop_pips * pip) if stop_pips > 0 and sl == 0 else sl
                 tp = entry - (target_pips * pip) if target_pips > 0 and tp == 0 else tp
-                
+
         # Add absolute levels to signal data
-        signal['sl'] = round(sl, 6) if sl > 0 else 0
-        signal['tp'] = round(tp, 6) if tp > 0 else 0
-        if 'signal' in signal_data:
-            signal_data['signal'] = signal
-            
+        signal["sl"] = round(sl, 6) if sl > 0 else 0
+        signal["tp"] = round(tp, 6) if tp > 0 else 0
+        if "signal" in signal_data:
+            signal_data["signal"] = signal
+
         # Create per-user mission in database
         mission_id = f"{signal_id}_USER_{user_id}"
-        
+
         with get_bitten_db() as conn:
             # Check if mission already exists
-            existing = conn.execute(
-                'SELECT mission_id FROM missions WHERE mission_id = ?',
-                (mission_id,)
-            ).fetchone()
-            
+            existing = conn.execute("SELECT mission_id FROM missions WHERE mission_id = ?", (mission_id,)).fetchone()
+
             if not existing:
                 # Create new mission
-                conn.execute('''
+                conn.execute(
+                    """
                     INSERT INTO missions (mission_id, signal_id, payload_json, status, expires_at, created_at, target_uuid)
                     VALUES (?, ?, ?, ?, ?, ?, ?)
-                ''', (
-                    mission_id,
-                    signal_id,
-                    json.dumps(signal_data),
-                    'PENDING',
-                    int(time.time()) + 7200,  # 2 hour expiry
-                    int(time.time()),
-                    user_id
-                ))
+                """,
+                    (
+                        mission_id,
+                        signal_id,
+                        json.dumps(signal_data),
+                        "PENDING",
+                        int(time.time()) + 7200,  # 2 hour expiry
+                        int(time.time()),
+                        user_id,
+                    ),
+                )
                 conn.commit()
                 logger.info(f"Created mission {mission_id} for user {user_id}")
-        
+
         # Redirect to HUD with the mission
-        return redirect(f'/hud?mission_id={signal_id}&user_id={user_id}')
-        
+        return redirect(f"/hud?mission_id={signal_id}&user_id={user_id}")
+
     except Exception as e:
         logger.error(f"Brief endpoint error: {e}")
-        return jsonify({'error': str(e)}), 500
+        return jsonify({"error": str(e)}), 500
 
-@app.route('/mission/authorize', methods=['POST'])
+
+@app.route("/mission/authorize", methods=["POST"])
 def authorize_mission_execution():
     """
     Generate short-lived execute token for mission execution
-    
+
     View vs Execute Split:
     - View: Users can access mission page multiple times (read-only)
     - Execute: Requires fresh authorization with short-lived token (5-10 min)
-    
+
     Input: { alertId?: number, viewCode?: string, missionSessionId?: string }
     Output: { missionSessionId, executeToken, exp }
     """
-    import time
     import secrets
+    import time
+
     from ulid import ULID
-    
+
     try:
         # 1. EXTRACT REQUEST DATA
         data = request.get_json()
-        alert_id = data.get('alertId')
-        view_code = data.get('viewCode')
-        mission_session_id = data.get('missionSessionId')
-        
+        alert_id = data.get("alertId")
+        view_code = data.get("viewCode")
+        mission_session_id = data.get("missionSessionId")
+
         # Require at least one identifier
         if not any([alert_id, view_code, mission_session_id]):
-            return jsonify({'error': 'Missing alertId, viewCode, or missionSessionId', 'success': False}), 400
-        
+            return jsonify({"error": "Missing alertId, viewCode, or missionSessionId", "success": False}), 400
+
         # 2. USER AUTHENTICATION (from session/cookie or existing auth header)
         # Default to commander user for now (TODO: extract from session)
-        user_id = '7176191872'
-        
+        user_id = "7176191872"
+
         # 3. RESOLVE MISSION SESSION ID
-        conn = sqlite3.connect('/root/HydraX-v2/bitten.db')
+        conn = sqlite3.connect("/root/HydraX-v2/bitten.db")
         cursor = conn.cursor()
-        
+
         if view_code:
             # Resolve from short code
-            cursor.execute("""
-                SELECT mission_session_id, user_id, expires_at 
-                FROM mission_short_codes 
+            cursor.execute(
+                """
+                SELECT mission_session_id, user_id, expires_at
+                FROM mission_short_codes
                 WHERE short_code = ?
-            """, (view_code,))
+            """,
+                (view_code,),
+            )
             row = cursor.fetchone()
             if not row:
                 conn.close()
-                return jsonify({'error': 'Invalid view code', 'success': False, 'error_code': 'INVALID_CODE'}), 404
+                return jsonify({"error": "Invalid view code", "success": False, "error_code": "INVALID_CODE"}), 404
             mission_session_id, code_user_id, code_expires_at = row
-            
+
             # Verify not expired
             if time.time() > code_expires_at:
                 conn.close()
-                return jsonify({'error': 'View code expired', 'success': False, 'error_code': 'CODE_EXPIRED'}), 410
-            
+                return jsonify({"error": "View code expired", "success": False, "error_code": "CODE_EXPIRED"}), 410
+
             # Use user from code if available
             if code_user_id:
                 user_id = code_user_id
-        
+
         # 4. VALIDATE MISSION SESSION EXISTS
         if mission_session_id:
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT mission_session_id, user_id, alert_id, signal_id, status, expires_at, risk_max_usd
                 FROM mission_sessions
                 WHERE mission_session_id = ?
-            """, (mission_session_id,))
+            """,
+                (mission_session_id,),
+            )
             session_row = cursor.fetchone()
-            
+
             if not session_row:
                 conn.close()
-                return jsonify({'error': 'Mission session not found', 'success': False, 'error_code': 'SESSION_NOT_FOUND'}), 404
-            
+                return (
+                    jsonify(
+                        {"error": "Mission session not found", "success": False, "error_code": "SESSION_NOT_FOUND"}
+                    ),
+                    404,
+                )
+
             ms_id, ms_user, ms_alert_id, ms_signal_id, ms_status, ms_expires, ms_risk = session_row
-            
+
             # Verify not expired (8h lifetime)
             if time.time() > ms_expires:
                 conn.close()
-                return jsonify({'error': 'Alert expired (8h lifetime exceeded)', 'success': False, 'error_code': 'ALERT_EXPIRED'}), 410
-            
+                return (
+                    jsonify(
+                        {
+                            "error": "Alert expired (8h lifetime exceeded)",
+                            "success": False,
+                            "error_code": "ALERT_EXPIRED",
+                        }
+                    ),
+                    410,
+                )
+
             # Use data from session
             alert_id = ms_alert_id
             user_id = ms_user
-            
+
         elif alert_id:
             # Create new mission session
             mission_session_id = f"ms_{str(ULID())}"
-            
+
             # Get signal data
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT signal_id, symbol, direction, entry_price, stop_pips, target_pips, confidence, pattern_type
                 FROM signals
                 WHERE id = ? OR signal_id = ?
-            """, (alert_id, alert_id))
+            """,
+                (alert_id, alert_id),
+            )
             signal_row = cursor.fetchone()
-            
+
             if not signal_row:
                 conn.close()
-                return jsonify({'error': 'Alert not found', 'success': False, 'error_code': 'ALERT_NOT_FOUND'}), 404
-            
+                return jsonify({"error": "Alert not found", "success": False, "error_code": "ALERT_NOT_FOUND"}), 404
+
             signal_id, symbol, direction, entry, sl_pips, tp_pips, confidence, pattern = signal_row
-            
+
             # Create mission session (PENDING state, 8h lifetime)
             expires_at = int(time.time()) + (8 * 3600)  # 8 hours
-            cursor.execute("""
-                INSERT INTO mission_sessions 
+            cursor.execute(
+                """
+                INSERT INTO mission_sessions
                 (mission_session_id, user_id, alert_id, signal_id, status, pair, risk_max_usd, created_at, expires_at)
                 VALUES (?, ?, ?, ?, 'PENDING', ?, 500.00, ?, ?)
-            """, (mission_session_id, user_id, alert_id, signal_id, symbol, int(time.time()), expires_at))
+            """,
+                (mission_session_id, user_id, alert_id, signal_id, symbol, int(time.time()), expires_at),
+            )
             conn.commit()
-        
+
         # 5. CHECK IF ALREADY EXECUTED
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT status, executed_at FROM mission_sessions WHERE mission_session_id = ?
-        """, (mission_session_id,))
+        """,
+            (mission_session_id,),
+        )
         status_row = cursor.fetchone()
-        
-        if status_row and status_row[0] == 'EXECUTED':
+
+        if status_row and status_row[0] == "EXECUTED":
             conn.close()
-            return jsonify({
-                'error': 'Mission already executed', 
-                'success': False, 
-                'error_code': 'ALREADY_EXECUTED',
-                'executed_at': status_row[1]
-            }), 409
-        
+            return (
+                jsonify(
+                    {
+                        "error": "Mission already executed",
+                        "success": False,
+                        "error_code": "ALREADY_EXECUTED",
+                        "executed_at": status_row[1],
+                    }
+                ),
+                409,
+            )
+
         # 6. RISK VALIDATION (check user eligibility)
         # TODO: Add risk policy checks here
-        
+
         # 7. GENERATE FRESH EXECUTE TOKEN
         from src.security.jwt_manager import get_jwt_manager
+
         jwt_manager = get_jwt_manager()
-        
+
         # Generate fresh nonce for this execute attempt
         nonce = secrets.token_urlsafe(16)
-        
+
         # Update mission session with new nonce
-        cursor.execute("""
-            UPDATE mission_sessions 
+        cursor.execute(
+            """
+            UPDATE mission_sessions
             SET token_nonce = ?
             WHERE mission_session_id = ?
-        """, (nonce, mission_session_id))
+        """,
+            (nonce, mission_session_id),
+        )
         conn.commit()
         conn.close()
-        
+
         # Create execute token (5-10 min TTL)
         token_ttl = 600  # 10 minutes
         token_exp = int(time.time()) + token_ttl
-        
+
         execute_token = jwt_manager.create_token(
             user_id=user_id,
             mission_session_id=mission_session_id,
@@ -1779,31 +1991,38 @@ def authorize_mission_execution():
             scopes=["mission:view", "order:execute"],
             nonce=nonce,
             risk_max_usd=500.00,  # TODO: Get from user profile
-            ttl=token_ttl
+            ttl=token_ttl,
         )
-        
-        logger.info(f"✅ Generated execute token for mission {mission_session_id}, user {user_id}, nonce={nonce[:8]}...")
-        
-        return jsonify({
-            'success': True,
-            'missionSessionId': mission_session_id,
-            'executeToken': execute_token,
-            'exp': token_exp,
-            'ttl': token_ttl
-        }), 200
-        
+
+        logger.info(
+            f"✅ Generated execute token for mission {mission_session_id}, user {user_id}, nonce={nonce[:8]}..."
+        )
+
+        return (
+            jsonify(
+                {
+                    "success": True,
+                    "missionSessionId": mission_session_id,
+                    "executeToken": execute_token,
+                    "exp": token_exp,
+                    "ttl": token_ttl,
+                }
+            ),
+            200,
+        )
+
     except Exception as e:
         logger.error(f"Mission authorize error: {e}")
         logger.error(traceback.format_exc())
-        return jsonify({'error': str(e), 'success': False}), 500
+        return jsonify({"error": str(e), "success": False}), 500
 
 
-
-@app.route('/api/fire', methods=['POST'])
+@app.route("/api/fire", methods=["POST"])
 def fire_mission():
     """Idempotent fire API with Rule/Slot engine integration + Mission Session Validation"""
-    import time
     import secrets
+    import time
+
     import jwt
 
     rid = request.headers.get("X-Request-ID") or str(uuid4())
@@ -1819,11 +2038,12 @@ def fire_mission():
         # ═════════════════════════════════════════════════════════════════
 
         # 1. TOKEN EXTRACTION & VALIDATION
-        auth_header = request.headers.get('Authorization')
+        auth_header = request.headers.get("Authorization")
         token_validated = False
 
         if auth_header:
             from src.security.jwt_manager import get_jwt_manager
+
             jwt_manager = get_jwt_manager()
 
             token = jwt_manager.extract_token_from_header(auth_header)
@@ -1836,44 +2056,74 @@ def fire_mission():
 
                     # 2. REQUEST DATA EXTRACTION
                     data = request.get_json()
-                    client_request_id = data.get('clientRequestId')
-                    mission_session_id = data.get('missionSessionId')
-                    alert_id = data.get('alertId')
-                    risk_usd = data.get('riskUsd')
+                    client_request_id = data.get("clientRequestId")
+                    mission_session_id = data.get("missionSessionId")
+                    alert_id = data.get("alertId")
+                    risk_usd = data.get("riskUsd")
 
                     # 3. VALIDATE REQUIRED FIELDS
                     if not client_request_id:
-                        return jsonify({'error': 'Missing clientRequestId', 'success': False}), 400
+                        return jsonify({"error": "Missing clientRequestId", "success": False}), 400
                     if not mission_session_id:
-                        return jsonify({'error': 'Missing missionSessionId', 'success': False}), 400
+                        return jsonify({"error": "Missing missionSessionId", "success": False}), 400
                     if not alert_id:
-                        return jsonify({'error': 'Missing alertId', 'success': False}), 400
+                        return jsonify({"error": "Missing alertId", "success": False}), 400
 
                     # 4. MISSION SESSION VALIDATION
                     from src.mission_session.session_manager import get_session_manager
+
                     session_manager = get_session_manager()
 
                     # Verify session matches token claim
-                    if claims.get('ms') != mission_session_id:
-                        return jsonify({'error': 'Token mission session mismatch', 'success': False}), 422
+                    if claims.get("ms") != mission_session_id:
+                        return jsonify({"error": "Token mission session mismatch", "success": False}), 422
 
                     # Validate session state
                     nonce = jwt_manager.get_nonce(claims)
                     validation_result = session_manager.validate_session(mission_session_id, nonce)
 
-                    if not validation_result.get('valid'):
-                        error_code = validation_result.get('error_code')
+                    if not validation_result.get("valid"):
+                        error_code = validation_result.get("error_code")
 
-                        if error_code == 'SESSION_EXPIRED':
-                            return jsonify({'error': validation_result.get('error'), 'success': False, 'error_code': error_code}), 410
-                        elif error_code == 'SESSION_ALREADY_PROCESSED':
-                            session_data = validation_result.get('session', {})
-                            return jsonify({'error': validation_result.get('error'), 'success': False, 'error_code': error_code, 'executed_at': session_data.get('executed_at')}), 409
+                        if error_code == "SESSION_EXPIRED":
+                            return (
+                                jsonify(
+                                    {
+                                        "error": validation_result.get("error"),
+                                        "success": False,
+                                        "error_code": error_code,
+                                    }
+                                ),
+                                410,
+                            )
+                        elif error_code == "SESSION_ALREADY_PROCESSED":
+                            session_data = validation_result.get("session", {})
+                            return (
+                                jsonify(
+                                    {
+                                        "error": validation_result.get("error"),
+                                        "success": False,
+                                        "error_code": error_code,
+                                        "executed_at": session_data.get("executed_at"),
+                                    }
+                                ),
+                                409,
+                            )
                         else:
-                            return jsonify({'error': validation_result.get('error'), 'success': False, 'error_code': error_code}), 422
+                            return (
+                                jsonify(
+                                    {
+                                        "error": validation_result.get("error"),
+                                        "success": False,
+                                        "error_code": error_code,
+                                    }
+                                ),
+                                422,
+                            )
 
                     # 5. IDEMPOTENCY CHECK
                     from src.hydrasocket.idempotency import get_idempotency_manager
+
                     idempotency_manager = get_idempotency_manager()
 
                     cached_response = idempotency_manager.get(client_request_id)
@@ -1882,22 +2132,59 @@ def fire_mission():
                         return jsonify(cached_response), 202
 
                     # 6. RISK GUARDRAILS
-                    risk_max_usd = claims.get('riskMaxUsd')
+                    risk_max_usd = claims.get("riskMaxUsd")
                     if risk_max_usd is not None and risk_usd is not None:
                         if risk_usd > risk_max_usd:
-                            return jsonify({'error': f'Risk amount {risk_usd} exceeds maximum {risk_max_usd}', 'success': False, 'error_code': 'RISK_EXCEEDED'}), 422
+                            return (
+                                jsonify(
+                                    {
+                                        "error": f"Risk amount {risk_usd} exceeds maximum {risk_max_usd}",
+                                        "success": False,
+                                        "error_code": "RISK_EXCEEDED",
+                                    }
+                                ),
+                                422,
+                            )
 
                     # 7. SCOPE VALIDATION
                     if not jwt_manager.has_scope(claims, "order:execute"):
-                        return jsonify({'error': 'Insufficient permissions - missing order:execute scope', 'success': False, 'error_code': 'FORBIDDEN'}), 403
+                        return (
+                            jsonify(
+                                {
+                                    "error": "Insufficient permissions - missing order:execute scope",
+                                    "success": False,
+                                    "error_code": "FORBIDDEN",
+                                }
+                            ),
+                            403,
+                        )
 
                     # 8. EVENT EMISSION - Trade Arming
                     try:
-                        conn = sqlite3.connect('/root/HydraX-v2/event_bus/bitten_events.db')
+                        conn = sqlite3.connect("/root/HydraX-v2/event_bus/bitten_events.db")
                         cursor = conn.cursor()
                         op_id = f"op_{int(time.time() * 1000)}_{secrets.token_hex(4)}"
-                        event_data = {'operation_id': op_id, 'user_id': claims.get('sub'), 'mission_session_id': mission_session_id, 'alert_id': alert_id, 'client_request_id': client_request_id, 'risk_usd': risk_usd, 'status': 'ARMING'}
-                        cursor.execute('INSERT INTO events (event_type, timestamp, source, correlation_id, user_id, data_json, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)', ('execution.arming.v1', time.time(), 'webapp_fire_api', op_id, claims.get('sub'), json.dumps(event_data), time.time()))
+                        event_data = {
+                            "operation_id": op_id,
+                            "user_id": claims.get("sub"),
+                            "mission_session_id": mission_session_id,
+                            "alert_id": alert_id,
+                            "client_request_id": client_request_id,
+                            "risk_usd": risk_usd,
+                            "status": "ARMING",
+                        }
+                        cursor.execute(
+                            "INSERT INTO events (event_type, timestamp, source, correlation_id, user_id, data_json, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                            (
+                                "execution.arming.v1",
+                                time.time(),
+                                "webapp_fire_api",
+                                op_id,
+                                claims.get("sub"),
+                                json.dumps(event_data),
+                                time.time(),
+                            ),
+                        )
                         conn.commit()
                         conn.close()
                         logger.info(f"✅ Emitted trade arming event: {op_id}")
@@ -1905,21 +2192,24 @@ def fire_mission():
                         logger.warning(f"⚠️ Failed to emit arming event: {e}")
 
                     # Extract user_id and signal_id from claims/data for existing logic
-                    user_id = claims.get('sub')
-                    signal_id = data.get('signal_id') or str(alert_id)
-                    fire_mode = data.get('mode', 'manual')
+                    user_id = claims.get("sub")
+                    signal_id = data.get("signal_id") or str(alert_id)
+                    fire_mode = data.get("mode", "manual")
 
                     # Store session and request info for post-execution update
                     _mission_session_id = mission_session_id
                     _client_request_id = client_request_id
 
                 except jwt.ExpiredSignatureError:
-                    return jsonify({'error': 'Token expired', 'success': False, 'error_code': 'TOKEN_EXPIRED'}), 401
+                    return jsonify({"error": "Token expired", "success": False, "error_code": "TOKEN_EXPIRED"}), 401
                 except jwt.InvalidTokenError as e:
-                    return jsonify({'error': f'Invalid token: {str(e)}', 'success': False, 'error_code': 'TOKEN_INVALID'}), 401
+                    return (
+                        jsonify({"error": f"Invalid token: {str(e)}", "success": False, "error_code": "TOKEN_INVALID"}),
+                        401,
+                    )
                 except Exception as e:
                     logger.error(f"Token validation error: {e}")
-                    return jsonify({'error': 'Token validation failed', 'success': False}), 401
+                    return jsonify({"error": "Token validation failed", "success": False}), 401
 
         # ═════════════════════════════════════════════════════════════════
         # EXISTING FIRE LOGIC (PRESERVED)
@@ -1928,71 +2218,91 @@ def fire_mission():
         # Get request data (for legacy flow without JWT)
         if not token_validated:
             data = request.get_json()
-            signal_id = data.get('signal_id') or data.get('mission_id')  # Support both
-            user_id = request.headers.get('X-User-ID') or data.get('user_id')
-            fire_mode = data.get('mode', 'manual')  # manual, semi_auto, auto
+            signal_id = data.get("signal_id") or data.get("mission_id")  # Support both
+            user_id = request.headers.get("X-User-ID") or data.get("user_id")
+            fire_mode = data.get("mode", "manual")  # manual, semi_auto, auto
 
         if not signal_id:
-            return jsonify({'error': 'Missing signal_id', 'success': False}), 400
+            return jsonify({"error": "Missing signal_id", "success": False}), 400
 
         if not user_id:
-            return jsonify({'error': 'Missing user_id', 'success': False}), 400
+            return jsonify({"error": "Missing user_id", "success": False}), 400
 
         # Idempotency check - prevent duplicate fires
         fire_id = f"FIRE_{signal_id}_{user_id}_{int(time.time())}"
 
         # Check if this signal has already been fired by this user
-        conn = sqlite3.connect('/root/HydraX-v2/bitten.db')
+        conn = sqlite3.connect("/root/HydraX-v2/bitten.db")
         cursor = conn.cursor()
 
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT fire_id, status FROM fires
             WHERE mission_id = ? AND user_id = ? AND status NOT IN ('FAILED', 'CANCELLED')
             ORDER BY created_at DESC LIMIT 1
-        """, (signal_id, user_id))
+        """,
+            (signal_id, user_id),
+        )
 
         existing_fire = cursor.fetchone()
         if existing_fire:
             conn.close()
-            return jsonify({
-                'success': False,
-                'error': 'Signal already fired by user',
-                'existing_fire_id': existing_fire[0],
-                'status': existing_fire[1]
-            }), 409  # Conflict
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "error": "Signal already fired by user",
+                        "existing_fire_id": existing_fire[0],
+                        "status": existing_fire[1],
+                    }
+                ),
+                409,
+            )  # Conflict
 
         # Get signal data
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT signal_id, symbol, direction, entry_price, stop_pips, target_pips,
                    confidence, pattern_type, created_at
             FROM signals
             WHERE signal_id = ?
-        """, (signal_id,))
+        """,
+            (signal_id,),
+        )
 
         signal_row = cursor.fetchone()
         if not signal_row:
             conn.close()
-            return jsonify({'error': 'Signal not found', 'success': False}), 404
+            return jsonify({"error": "Signal not found", "success": False}), 404
 
         signal_data = {
-            'signal_id': signal_row[0],
-            'symbol': signal_row[1],
-            'direction': signal_row[2],
-            'entry_price': signal_row[3],
-            'stop_pips': signal_row[4],
-            'target_pips': signal_row[5],
-            'confidence': signal_row[6],
-            'pattern_type': signal_row[7],
-            'created_at': signal_row[8]
+            "signal_id": signal_row[0],
+            "symbol": signal_row[1],
+            "direction": signal_row[2],
+            "entry_price": signal_row[3],
+            "stop_pips": signal_row[4],
+            "target_pips": signal_row[5],
+            "confidence": signal_row[6],
+            "pattern_type": signal_row[7],
+            "created_at": signal_row[8],
         }
 
         # Base symbol mapping for Rule/Slot engine
         base_symbol_map = {
-            'EURUSD': 'EUR', 'GBPUSD': 'GBP', 'USDJPY': 'USD', 'USDCHF': 'USD',
-            'AUDUSD': 'AUD', 'USDCAD': 'USD', 'NZDUSD': 'NZD', 'EURJPY': 'EUR',
-            'GBPJPY': 'GBP', 'EURGBP': 'EUR', 'XAUUSD': 'XAU', 'XAGUSD': 'XAG'
+            "EURUSD": "EUR",
+            "GBPUSD": "GBP",
+            "USDJPY": "USD",
+            "USDCHF": "USD",
+            "AUDUSD": "AUD",
+            "USDCAD": "USD",
+            "NZDUSD": "NZD",
+            "EURJPY": "EUR",
+            "GBPJPY": "GBP",
+            "EURGBP": "EUR",
+            "XAUUSD": "XAU",
+            "XAGUSD": "XAG",
         }
-        base_symbol = base_symbol_map.get(signal_data['symbol'], signal_data['symbol'][:3])
+        base_symbol = base_symbol_map.get(signal_data["symbol"], signal_data["symbol"][:3])
 
         # Use comprehensive Rule/Slot engine from fire_integration.py
         from fire_integration import RuleSlotEngine
@@ -2002,58 +2312,54 @@ def fire_mission():
 
         # Call comprehensive validation and slot allocation
         rule_output = rule_engine.validate_fire_request(
-            uid=user_id,
-            sid=signal_id,
-            mode=fire_mode,
-            base_symbol=base_symbol,
-            direction=signal_data['direction']
+            uid=user_id, sid=signal_id, mode=fire_mode, base_symbol=base_symbol, direction=signal_data["direction"]
         )
 
         # Check if fire request is allowed
-        if not rule_output['allow']:
-            return jsonify({
-                'success': False,
-                'error': rule_output['reason'],
-                'slots': rule_output['slots']
-            }), 409  # Conflict
+        if not rule_output["allow"]:
+            return (
+                jsonify({"success": False, "error": rule_output["reason"], "slots": rule_output["slots"]}),
+                409,
+            )  # Conflict
 
         # Create fire record in database with rule engine data
-        conn = sqlite3.connect('/root/HydraX-v2/bitten.db')
+        conn = sqlite3.connect("/root/HydraX-v2/bitten.db")
         cursor = conn.cursor()
 
         # Create idempotency key for this request
         import datetime
+
         idempotency_key = f"{user_id}_{signal_id}_{int(time.time())}"
 
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT INTO fires (fire_id, mission_id, user_id, status,
                              idem, created_at, updated_at)
             VALUES (?, ?, ?, 'QUEUED', ?, ?, ?)
-        """, (
-            fire_id, signal_id, user_id, idempotency_key,
-            int(time.time()),
-            int(time.time())
-        ))
+        """,
+            (fire_id, signal_id, user_id, idempotency_key, int(time.time()), int(time.time())),
+        )
 
         conn.commit()
         conn.close()
 
         # Create fire command using Rule/Slot engine output
         fire_command = {
-            'type': 'fire',
-            'fire_id': fire_id,
-            'target_uuid': 'COMMANDER_DEV_001',
-            'symbol': rule_output['symbol_exact'],
-            'direction': signal_data['direction'].upper(),
-            'entry': 0,  # Market order
-            'sl': rule_output['sl'],
-            'tp': rule_output['tp'],
-            'lot': rule_output['lot'],
-            'snapshot_tf': 'M1'
+            "type": "fire",
+            "fire_id": fire_id,
+            "target_uuid": "COMMANDER_DEV_001",
+            "symbol": rule_output["symbol_exact"],
+            "direction": signal_data["direction"].upper(),
+            "entry": 0,  # Market order
+            "sl": rule_output["sl"],
+            "tp": rule_output["tp"],
+            "lot": rule_output["lot"],
+            "snapshot_tf": "M1",
         }
 
         # Send to IPC queue via ZMQ
         import zmq
+
         context = zmq.Context()
         push_socket = context.socket(zmq.PUSH)
         push_socket.connect("ipc:///tmp/bitten_cmdqueue")
@@ -2065,16 +2371,16 @@ def fire_mission():
         op_id = fire_id  # Use fire_id as operation ID
 
         response_data = {
-            'opId': op_id,
-            'success': True,
-            'queued': True,
-            'slots': rule_output['slots'],
-            'policy_echo': rule_output['policy_echo'],
-            'symbol_exact': rule_output['symbol_exact'],
-            'lot': rule_output['lot'],
-            'sl': rule_output['sl'],
-            'tp': rule_output['tp'],
-            'digits': rule_output['digits']
+            "opId": op_id,
+            "success": True,
+            "queued": True,
+            "slots": rule_output["slots"],
+            "policy_echo": rule_output["policy_echo"],
+            "symbol_exact": rule_output["symbol_exact"],
+            "lot": rule_output["lot"],
+            "sl": rule_output["sl"],
+            "tp": rule_output["tp"],
+            "digits": rule_output["digits"],
         }
 
         # ═════════════════════════════════════════════════════════════════
@@ -2085,33 +2391,38 @@ def fire_mission():
             try:
                 # 9. MARK SESSION AS EXECUTED
                 from src.mission_session.session_manager import get_session_manager
+
                 session_manager = get_session_manager()
                 session_manager.mark_executed(_mission_session_id)
 
                 # 10. CACHE RESPONSE FOR IDEMPOTENCY
                 from src.idempotency.idempotency_manager import get_idempotency_manager
+
                 idempotency_manager = get_idempotency_manager()
                 idempotency_manager.cache_response(user_id, _mission_session_id, _client_request_id, response_data)
 
                 # 11. EMIT TRADES.DELTA EVENT (for WebSocket streaming)
                 try:
                     from src.events.trade_event_emitter import get_event_emitter
+
                     event_emitter = get_event_emitter()
                     event_emitter.emit_trade_arming(
                         user_id=user_id,
                         op_id=op_id,
-                        pair=signal_data['symbol'],
-                        direction=signal_data['direction'],
-                        entry=signal_data['entry_price'],
-                        sl=rule_output['sl'],
-                        tp=rule_output['tp'],
-                        lot=rule_output['lot']
+                        pair=signal_data["symbol"],
+                        direction=signal_data["direction"],
+                        entry=signal_data["entry_price"],
+                        sl=rule_output["sl"],
+                        tp=rule_output["tp"],
+                        lot=rule_output["lot"],
                     )
                     logger.info(f"✅ Emitted trades.delta event for opId {op_id}")
                 except Exception as emit_err:
                     logger.warning(f"⚠️ Failed to emit trades.delta: {emit_err}")
 
-                logger.info(f"✅ Marked session {_mission_session_id} as EXECUTED and cached response for {_client_request_id}")
+                logger.info(
+                    f"✅ Marked session {_mission_session_id} as EXECUTED and cached response for {_client_request_id}"
+                )
 
             except Exception as e:
                 logger.warning(f"⚠️ Failed to update session state: {e}")
@@ -2122,32 +2433,35 @@ def fire_mission():
     except Exception as e:
         tb = traceback.format_exc()
         # STRUCTURED log to STDERR for PM2/proc capture
-        sys.stderr.write(json.dumps({
-            "event":"FIRE_API_ERROR",
-            "rid": rid,
-            "elapsed_ms": int((time.time()-t0)*1000),
-            "error": str(e),
-            "traceback": tb
-        })+"\n"); sys.stderr.flush()
+        sys.stderr.write(
+            json.dumps(
+                {
+                    "event": "FIRE_API_ERROR",
+                    "rid": rid,
+                    "elapsed_ms": int((time.time() - t0) * 1000),
+                    "error": str(e),
+                    "traceback": tb,
+                }
+            )
+            + "\n"
+        )
+        sys.stderr.flush()
         # Return safe JSON with request-id
-        return jsonify({
-            "success": False,
-            "error": "Internal server error",
-            "request_id": rid
-        }), 500
+        return jsonify({"success": False, "error": "Internal server error", "request_id": rid}), 500
 
-@app.route('/api/signal/verify', methods=['GET'])
+
+@app.route("/api/signal/verify", methods=["GET"])
 def verify_signal_access():
     """Verify signal access with HMAC authentication for mission HUD"""
     try:
         # Get query parameters
-        sid = request.args.get('sid')
-        uid = request.args.get('uid')
-        t = request.args.get('t')
-        sig = request.args.get('sig')
+        sid = request.args.get("sid")
+        uid = request.args.get("uid")
+        t = request.args.get("t")
+        sig = request.args.get("sig")
 
         if not all([sid, uid, t, sig]):
-            return jsonify({'error': 'Missing required parameters'}), 400
+            return jsonify({"error": "Missing required parameters"}), 400
 
         # Use fire integration API for verification
         from fire_integration import fire_integration
@@ -2161,105 +2475,118 @@ def verify_signal_access():
 
     except Exception as e:
         logger.error(f"Signal verification error: {e}")
-        return jsonify({'error': 'Verification failed'}), 500
+        return jsonify({"error": "Verification failed"}), 500
+
 
 def get_pip_value(symbol):
     """Calculate pip value for position sizing"""
     pip_values = {
-        'EURUSD': 0.0001, 'GBPUSD': 0.0001, 'AUDUSD': 0.0001, 'NZDUSD': 0.0001,
-        'USDCHF': 0.0001, 'USDCAD': 0.0001, 'USDJPY': 0.01, 'EURJPY': 0.01,
-        'GBPJPY': 0.01, 'CHFJPY': 0.01, 'XAUUSD': 0.01, 'XAGUSD': 0.001
+        "EURUSD": 0.0001,
+        "GBPUSD": 0.0001,
+        "AUDUSD": 0.0001,
+        "NZDUSD": 0.0001,
+        "USDCHF": 0.0001,
+        "USDCAD": 0.0001,
+        "USDJPY": 0.01,
+        "EURJPY": 0.01,
+        "GBPJPY": 0.01,
+        "CHFJPY": 0.01,
+        "XAUUSD": 0.01,
+        "XAGUSD": 0.001,
     }
     return pip_values.get(symbol, 0.0001)
 
-@app.route('/api/fire_legacy', methods=['POST'])
+
+@app.route("/api/fire_legacy", methods=["POST"])
 def fire_mission_legacy():
     """Legacy fire mission endpoint - maintained for backward compatibility"""
     try:
         # Get request data
         data = request.get_json()
-        mission_id = data.get('mission_id')
-        user_id = request.headers.get('X-User-ID')
+        mission_id = data.get("mission_id")
+        user_id = request.headers.get("X-User-ID")
 
         if not mission_id:
-            return jsonify({'error': 'Missing mission_id', 'success': False}), 400
+            return jsonify({"error": "Missing mission_id", "success": False}), 400
 
         if not user_id:
-            return jsonify({'error': 'Missing user ID', 'success': False}), 400
+            return jsonify({"error": "Missing user ID", "success": False}), 400
 
         # Load mission file
         mission_file = f"/root/HydraX-v2/missions/{mission_id}.json"
         if not os.path.exists(mission_file):
-            return jsonify({'error': 'Mission not found', 'success': False}), 404
+            return jsonify({"error": "Mission not found", "success": False}), 404
 
-        with open(mission_file, 'r') as f:
+        with open(mission_file, "r") as f:
             mission_data = json.load(f)
 
         # Check if mission is expired
         try:
-            expires_at_str = mission_data.get('timing', {}).get('expires_at') or mission_data.get('expires_at')
+            expires_at_str = mission_data.get("timing", {}).get("expires_at") or mission_data.get("expires_at")
             if expires_at_str:
                 expires_at = datetime.fromisoformat(expires_at_str)
                 if datetime.now() > expires_at:
-                    return jsonify({'error': 'Mission expired', 'success': False}), 410
+                    return jsonify({"error": "Mission expired", "success": False}), 410
         except Exception as e:
             logger.warning(f"Expiry check failed: {e}")
 
         # Validate user permissions
-        signal_data = mission_data.get('signal', mission_data)
-        signal_type = signal_data.get('signal_type', 'RAPID_ASSAULT')
-        signal_mode = 'RAPID' if 'RAPID' in signal_type else 'SNIPER'
+        signal_data = mission_data.get("signal", mission_data)
+        signal_type = signal_data.get("signal_type", "RAPID_ASSAULT")
+        signal_mode = "RAPID" if "RAPID" in signal_type else "SNIPER"
         user_tier = get_user_tier(user_id)
 
         if not can_fire_signal_mode(user_tier, signal_mode):
-            return jsonify({
-                'error': f'Access restricted: {user_tier} tier can only fire RAPID signals',
-                'success': False,
-                'require_upgrade': True,
-                'signal_mode': signal_mode,
-                'user_tier': user_tier
-            }), 403
+            return (
+                jsonify(
+                    {
+                        "error": f"Access restricted: {user_tier} tier can only fire RAPID signals",
+                        "success": False,
+                        "require_upgrade": True,
+                        "signal_mode": signal_mode,
+                        "user_tier": user_tier,
+                    }
+                ),
+                403,
+            )
 
         # Check trading enabled and slots available
         from src.bitten_core.fire_mode_database import FireModeDatabase
+
         fire_db = FireModeDatabase()
 
         if not fire_db.is_trading_enabled(str(user_id)):
-            return jsonify({
-                'error': 'Trading disabled',
-                'success': False,
-                'trading_disabled': True
-            }), 403
+            return jsonify({"error": "Trading disabled", "success": False, "trading_disabled": True}), 403
 
-        fire_check = fire_db.can_user_fire_trade(str(user_id), 'MANUAL')
-        if not fire_check['can_fire']:
-            reasons = fire_check.get('reasons', {})
-            if reasons.get('slots_full'):
+        fire_check = fire_db.can_user_fire_trade(str(user_id), "MANUAL")
+        if not fire_check["can_fire"]:
+            reasons = fire_check.get("reasons", {})
+            if reasons.get("slots_full"):
                 error_msg = f"All manual slots in use for {fire_check['tier']} tier"
-            elif reasons.get('daily_limit_exceeded'):
+            elif reasons.get("daily_limit_exceeded"):
                 error_msg = f"Daily trade limit exceeded for {fire_check['tier']} tier"
             else:
                 error_msg = "Trading restrictions apply"
 
-            return jsonify({
-                'error': error_msg,
-                'success': False,
-                'tier_blocked': True
-            }), 403
+            return jsonify({"error": error_msg, "success": False, "tier_blocked": True}), 403
         # EXECUTE TRADE VIA IPC QUEUE
         try:
             # Import fire command system
             from enqueue_fire import create_fire_command
 
             # Extract signal data
-            signal_data = mission_data.get('signal', {})
-            direction = 'BUY' if signal_data.get('direction', '').upper() == 'BUY' else 'SELL'
+            signal_data = mission_data.get("signal", {})
+            direction = "BUY" if signal_data.get("direction", "").upper() == "BUY" else "SELL"
 
             # Get user balance for lot calculation
             import sqlite3
-            conn = sqlite3.connect('/root/HydraX-v2/bitten.db')
+
+            conn = sqlite3.connect("/root/HydraX-v2/bitten.db")
             cursor = conn.cursor()
-            cursor.execute("SELECT last_equity, last_balance FROM ea_instances WHERE user_id = ? ORDER BY last_seen DESC LIMIT 1", (user_id,))
+            cursor.execute(
+                "SELECT last_equity, last_balance FROM ea_instances WHERE user_id = ? ORDER BY last_seen DESC LIMIT 1",
+                (user_id,),
+            )
             result = cursor.fetchone()
             current_equity = result[0] if result and result[0] else 850.0
             current_balance = result[1] if result and result[1] else 850.0
@@ -2271,94 +2598,100 @@ def fire_mission_legacy():
                 risk_percentage = 5.0  # Default 5% risk for testing
 
                 # Extract symbol and generate realistic current market prices
-                symbol = signal_data.get('symbol', 'EURUSD')
-                direction = signal_data.get('direction', 'BUY')
+                symbol = signal_data.get("symbol", "EURUSD")
+                direction = signal_data.get("direction", "BUY")
 
                 # CRITICAL FIX: Use realistic current market prices instead of stale mission data
                 # The mission files contain outdated/test data that EA correctly rejects
                 realistic_prices = {
-                    'EURUSD': 1.17500,
-                    'GBPUSD': 1.35000,
-                    'USDJPY': 149.500,
-                    'EURJPY': 175.000,
-                    'GBPJPY': 199.500,
-                    'AUDUSD': 0.68000,
-                    'USDCAD': 1.35500,
-                    'NZDUSD': 0.62000,
-                    'EURGBP': 0.87000,
-                    'USDCHF': 0.88000,
-                    'AUDCAD': 0.92000,
-                    'AUDCHF': 0.60000,
-                    'AUDJPY': 101.500,
-                    'CADCHF': 0.65000,
-                    'CADJPY': 110.000,
-                    'CHFJPY': 125.000,
-                    'EURAUD': 1.72500,
-                    'EURCAD': 1.58500,
-                    'EURCHF': 0.94000,
-                    'EURNZD': 1.89000,
-                    'GBPAUD': 1.98500,
-                    'GBPCAD': 1.82000,
-                    'GBPCHF': 1.08500,
-                    'GBPNZD': 2.17000,
-                    'NZDCAD': 0.84000,
-                    'NZDCHF': 0.54500,
-                    'NZDJPY': 92.500
+                    "EURUSD": 1.17500,
+                    "GBPUSD": 1.35000,
+                    "USDJPY": 149.500,
+                    "EURJPY": 175.000,
+                    "GBPJPY": 199.500,
+                    "AUDUSD": 0.68000,
+                    "USDCAD": 1.35500,
+                    "NZDUSD": 0.62000,
+                    "EURGBP": 0.87000,
+                    "USDCHF": 0.88000,
+                    "AUDCAD": 0.92000,
+                    "AUDCHF": 0.60000,
+                    "AUDJPY": 101.500,
+                    "CADCHF": 0.65000,
+                    "CADJPY": 110.000,
+                    "CHFJPY": 125.000,
+                    "EURAUD": 1.72500,
+                    "EURCAD": 1.58500,
+                    "EURCHF": 0.94000,
+                    "EURNZD": 1.89000,
+                    "GBPAUD": 1.98500,
+                    "GBPCAD": 1.82000,
+                    "GBPCHF": 1.08500,
+                    "GBPNZD": 2.17000,
+                    "NZDCAD": 0.84000,
+                    "NZDCHF": 0.54500,
+                    "NZDJPY": 92.500,
                 }
 
                 entry_price = realistic_prices.get(symbol, 1.17500)  # Default to EURUSD price
 
                 # Calculate realistic SL/TP based on direction and current price
-                pip_size = 0.0001 if not symbol.endswith('JPY') else 0.01
+                pip_size = 0.0001 if not symbol.endswith("JPY") else 0.01
                 sl_distance_pips = 25  # 25 pip stop loss
                 tp_distance_pips = 35  # 35 pip take profit (1.4:1 RR)
 
-                if direction == 'BUY':
+                if direction == "BUY":
                     stop_loss = entry_price - (sl_distance_pips * pip_size)
                     take_profit = entry_price + (tp_distance_pips * pip_size)
                 else:  # SELL
                     stop_loss = entry_price + (sl_distance_pips * pip_size)
                     take_profit = entry_price - (tp_distance_pips * pip_size)
 
-                logger.info(f"🎯 Using realistic prices for {symbol}: Entry={entry_price}, SL={stop_loss}, TP={take_profit} ({direction})")
+                logger.info(
+                    f"🎯 Using realistic prices for {symbol}: Entry={entry_price}, SL={stop_loss}, TP={take_profit} ({direction})"
+                )
 
                 # Calculate lot size based on risk
                 sl_distance_pips = abs(entry_price - stop_loss)
-                if symbol.endswith('JPY'):
+                if symbol.endswith("JPY"):
                     sl_distance_pips *= 100  # JPY pairs
                 else:
                     sl_distance_pips *= 10000  # Standard pairs
 
                 risk_amount = current_equity * (risk_percentage / 100)
-                pip_value = 1.0 if symbol.endswith('JPY') else 0.1  # Simplified pip value
+                pip_value = 1.0 if symbol.endswith("JPY") else 0.1  # Simplified pip value
                 calculated_lot = round(risk_amount / (sl_distance_pips * pip_value), 2)
 
                 # Ensure minimum lot size
                 calculated_lot = max(calculated_lot, 0.01)
 
-                logger.info(f"💰 Calculated lot size: {calculated_lot} for equity ${current_equity} (balance: ${current_balance}) with {risk_percentage}% risk")
+                logger.info(
+                    f"💰 Calculated lot size: {calculated_lot} for equity ${current_equity} (balance: ${current_balance}) with {risk_percentage}% risk"
+                )
 
             except Exception as e:
                 logger.error(f"Lot calculation failed, using fallback: {e}")
                 calculated_lot = 0.50  # Higher fallback for testing
             # Check if user has BITMODE enabled for manual fire
             bitmode_enabled = fire_db.is_bitmode_enabled(str(user_id))
-            
+
             fire_cmd = create_fire_command(
                 mission_id=mission_id,
                 user_id=str(user_id),
                 symbol=symbol,
                 direction=direction,
                 entry=entry_price,  # Use realistic current price
-                sl=stop_loss,       # Use calculated realistic SL
-                tp=take_profit,     # Use calculated realistic TP
+                sl=stop_loss,  # Use calculated realistic SL
+                tp=take_profit,  # Use calculated realistic TP
                 lot=calculated_lot,
-                enable_bitmode=bitmode_enabled
+                enable_bitmode=bitmode_enabled,
             )
 
             # Occupy the manual slot before sending to queue
-            symbol = signal_data.get('symbol', 'EURUSD')
-            slot_occupied = fire_db.occupy_slot(str(user_id), mission_id, symbol, slot_type='MANUAL', user_tier=user_tier)
+            symbol = signal_data.get("symbol", "EURUSD")
+            slot_occupied = fire_db.occupy_slot(
+                str(user_id), mission_id, symbol, slot_type="MANUAL", user_tier=user_tier
+            )
             if not slot_occupied:
                 logger.warning(f"Slot occupation failed but continuing (slots validated above)")
 
@@ -2366,35 +2699,34 @@ def fire_mission_legacy():
             logger.info(f"🔥 Sending fire command to IPC: {fire_cmd.get('fire_id')} for {fire_cmd.get('symbol')}")
             try:
                 from enqueue_fire import enqueue_fire
+
                 enqueue_fire(fire_cmd)
                 logger.info(f"✅ Fire command queued successfully: {fire_cmd.get('fire_id')}")
             except Exception as e:
                 logger.error(f"❌ Failed to enqueue fire command: {e}")
                 # Release the slot since enqueue failed
                 fire_db.release_slot(str(user_id), mission_id)
-                return jsonify({
-                    'success': False,
-                    'error': 'enqueue_failed',
-                    'message': 'Failed to queue trade command'
-                }), 500
-            
+                return (
+                    jsonify({"success": False, "error": "enqueue_failed", "message": "Failed to queue trade command"}),
+                    500,
+                )
+
             # Return immediate success (actual execution happens async)
-            fire_result = type('obj', (object,), {
-                'success': True,
-                'message': 'Trade queued for execution',
-                'ticket': None,
-                'execution_price': None
-            })
-            
+            fire_result = type(
+                "obj",
+                (object,),
+                {"success": True, "message": "Trade queued for execution", "ticket": None, "execution_price": None},
+            )
+
             execution_result = {
-                'success': fire_result.success,
-                'message': fire_result.message,
-                'ticket': getattr(fire_result, 'ticket', None),
-                'execution_price': getattr(fire_result, 'execution_price', None)
+                "success": fire_result.success,
+                "message": fire_result.message,
+                "ticket": getattr(fire_result, "ticket", None),
+                "execution_price": getattr(fire_result, "execution_price", None),
             }
-            
+
             logger.info(f"Broker API execution result: {execution_result}")
-            
+
             # UUID TRACKING - Track trade execution (optional)
             try:
                 uuid_tracker = None  # Would be initialized elsewhere if needed
@@ -2407,17 +2739,19 @@ def fire_mission_legacy():
 
             # ENHANCED NOTIFICATIONS - Send execution success (optional)
             try:
-                from tools.enhanced_trade_notifications import notify_execution_result
                 import asyncio
+
+                from tools.enhanced_trade_notifications import notify_execution_result
+
                 asyncio.create_task(notify_execution_result(user_id, mission_data, execution_result))
                 logger.info(f"💥 Execution success notification sent for {mission_id}")
             except Exception as e:
                 logger.warning(f"Execution success notification failed: {e}")
-            
+
         except Exception as e:
             logger.error(f"Broker API execution failed: {e}")
-            execution_result = {'success': False, 'message': f'Broker API execution error: {str(e)}'}
-            
+            execution_result = {"success": False, "message": f"Broker API execution error: {str(e)}"}
+
             # UUID TRACKING - Track failed execution (optional)
             try:
                 uuid_tracker = None  # Would be initialized elsewhere if needed
@@ -2430,204 +2764,231 @@ def fire_mission_legacy():
 
             # ENHANCED NOTIFICATIONS - Send execution failure (optional)
             try:
-                from tools.enhanced_trade_notifications import notify_execution_result
                 import asyncio
+
+                from tools.enhanced_trade_notifications import notify_execution_result
+
                 asyncio.create_task(notify_execution_result(user_id, mission_data, execution_result))
                 logger.info(f"❌ Execution failure notification sent for {mission_id}")
             except Exception as e:
                 logger.warning(f"Execution failure notification failed: {e}")
-        
+
         # Mark mission as fired with execution result
-        mission_data['status'] = 'fired' if execution_result['success'] else 'failed'
-        mission_data['fired_at'] = datetime.now().isoformat()
-        mission_data['fired_by'] = user_id
-        mission_data['execution_result'] = execution_result
-        
+        mission_data["status"] = "fired" if execution_result["success"] else "failed"
+        mission_data["fired_at"] = datetime.now().isoformat()
+        mission_data["fired_by"] = user_id
+        mission_data["execution_result"] = execution_result
+
         # Save updated mission
-        with open(mission_file, 'w') as f:
+        with open(mission_file, "w") as f:
             json.dump(mission_data, f, indent=2)
-        
+
         # SIMPLIFIED TRADE LOGGING - Remove broken imports
         try:
             # Basic logging without complex dependencies
             logger.info(f"✅ Trade executed for mission: {mission_id}")
             logger.info(f"📊 Execution result: {execution_result.get('success', False)}")
-            
+
         except Exception as e:
             logger.warning(f"⚠️ Basic trade logging error: {e}")
             # Continue execution even if logging fails
-        
+
         # Response based on execution result
-        symbol = mission_data.get('signal', {}).get('symbol', 'TARGET')
-        direction = mission_data.get('signal', {}).get('direction', 'LONG')
-        
+        symbol = mission_data.get("signal", {}).get("symbol", "TARGET")
+        direction = mission_data.get("signal", {}).get("direction", "LONG")
+
         # SIMPLIFIED CHARACTER RESPONSE
         character_response = "🎯 MISSION FIRED"
         character_name = "ATHENA"
         # Simplified response without problematic imports
-        if execution_result.get('success'):
+        if execution_result.get("success"):
             character_response = f"🎯 {symbol} {direction} mission fired successfully!"
         else:
             character_response = f"⚠️ {symbol} {direction} mission failed - standby for retry"
         character_name = "ATHENA"
-        
-        if execution_result['success']:
-            ticket = execution_result.get('ticket', 'UNKNOWN')
-            exec_price = execution_result.get('execution_price', 'UNKNOWN')
-            
+
+        if execution_result["success"]:
+            ticket = execution_result.get("ticket", "UNKNOWN")
+            exec_price = execution_result.get("execution_price", "UNKNOWN")
+
             # Enhanced tactical message with character response
-            tactical_msg = f'✅ LIVE TRADE EXECUTED! Ticket: {ticket}'
+            tactical_msg = f"✅ LIVE TRADE EXECUTED! Ticket: {ticket}"
             if character_response:
                 character_emoji = {
-                    'ATHENA': '🏛️', 'NEXUS': '📣', 'DRILL': '🔧', 
-                    'DOC': '🩺', 'BIT': '🐱', 'OVERWATCH': '👁️', 'STEALTH': '🕶️'
-                }.get(character_name, '🎯')
-                tactical_msg += f'\n\n{character_emoji} **{character_name}**: {character_response}'
-            
-            return jsonify({
-                'success': True,
-                'message': f'🎯 MISSION FIRED! {symbol} {direction} bullet hit target at {exec_price}',
-                'mission_id': mission_id,
-                'fired_at': mission_data['fired_at'],
-                'tactical_msg': tactical_msg,
-                'character_response': character_response,
-                'character_name': character_name,
-                'execution_result': execution_result
-            })
+                    "ATHENA": "🏛️",
+                    "NEXUS": "📣",
+                    "DRILL": "🔧",
+                    "DOC": "🩺",
+                    "BIT": "🐱",
+                    "OVERWATCH": "👁️",
+                    "STEALTH": "🕶️",
+                }.get(character_name, "🎯")
+                tactical_msg += f"\n\n{character_emoji} **{character_name}**: {character_response}"
+
+            return jsonify(
+                {
+                    "success": True,
+                    "message": f"🎯 MISSION FIRED! {symbol} {direction} bullet hit target at {exec_price}",
+                    "mission_id": mission_id,
+                    "fired_at": mission_data["fired_at"],
+                    "tactical_msg": tactical_msg,
+                    "character_response": character_response,
+                    "character_name": character_name,
+                    "execution_result": execution_result,
+                }
+            )
         else:
             # Enhanced failure message with character response
-            tactical_msg = '⚠️ Trade execution failed. Check connection and retry.'
+            tactical_msg = "⚠️ Trade execution failed. Check connection and retry."
             if character_response:
                 character_emoji = {
-                    'ATHENA': '🏛️', 'NEXUS': '📣', 'DRILL': '🔧', 
-                    'DOC': '🩺', 'BIT': '🐱', 'OVERWATCH': '👁️', 'STEALTH': '🕶️'
-                }.get(character_name, '🎯')
-                tactical_msg += f'\n\n{character_emoji} **{character_name}**: {character_response}'
-            
-            return jsonify({
-                'success': False,
-                'message': f'❌ MISSION FAILED! {symbol} {direction} - {execution_result["message"]}',
-                'mission_id': mission_id,
-                'fired_at': mission_data['fired_at'],
-                'tactical_msg': tactical_msg,
-                'character_response': character_response,
-                'character_name': character_name,
-                'execution_result': execution_result
-            }), 500
-        
+                    "ATHENA": "🏛️",
+                    "NEXUS": "📣",
+                    "DRILL": "🔧",
+                    "DOC": "🩺",
+                    "BIT": "🐱",
+                    "OVERWATCH": "👁️",
+                    "STEALTH": "🕶️",
+                }.get(character_name, "🎯")
+                tactical_msg += f"\n\n{character_emoji} **{character_name}**: {character_response}"
+
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "message": f'❌ MISSION FAILED! {symbol} {direction} - {execution_result["message"]}',
+                        "mission_id": mission_id,
+                        "fired_at": mission_data["fired_at"],
+                        "tactical_msg": tactical_msg,
+                        "character_response": character_response,
+                        "character_name": character_name,
+                        "execution_result": execution_result,
+                    }
+                ),
+                500,
+            )
+
     except Exception as e:
         logger.error(f"Fire mission error: {e}")
-        return jsonify({
-            'error': f'Mission execution failed: {str(e)}',
-            'success': False
-        }), 500
+        return jsonify({"error": f"Mission execution failed: {str(e)}", "success": False}), 500
 
-@app.route('/api/ping', methods=['POST'])
+
+@app.route("/api/ping", methods=["POST"])
 def ping_bridge():
     """Ping MT5 bridge and capture account info"""
     try:
         # Get user ID from headers
-        user_id = request.headers.get('X-User-ID')
-        
+        user_id = request.headers.get("X-User-ID")
+
         if not user_id:
-            return jsonify({'error': 'Missing user ID', 'success': False}), 400
-        
+            return jsonify({"error": "Missing user ID", "success": False}), 400
+
         # Import fire router
         import sys
-        sys.path.append('/root/HydraX-v2/src/bitten_core')
+
+        sys.path.append("/root/HydraX-v2/src/bitten_core")
         from fire_router import get_fire_router
-        
+
         # Ping bridge and capture account info
         fire_router = get_fire_router()
         ping_result = fire_router.ping_bridge(user_id)
-        
-        if ping_result.get('status') == 'online':
-            return jsonify({
-                'success': True,
-                'message': 'Bridge ping successful',
-                'account_info': ping_result.get('account_info'),
-                'broker': ping_result.get('broker'),
-                'balance': ping_result.get('balance'),
-                'equity': ping_result.get('equity'),
-                'leverage': ping_result.get('leverage'),
-                'timestamp': datetime.now().isoformat()
-            })
+
+        if ping_result.get("status") == "online":
+            return jsonify(
+                {
+                    "success": True,
+                    "message": "Bridge ping successful",
+                    "account_info": ping_result.get("account_info"),
+                    "broker": ping_result.get("broker"),
+                    "balance": ping_result.get("balance"),
+                    "equity": ping_result.get("equity"),
+                    "leverage": ping_result.get("leverage"),
+                    "timestamp": datetime.now().isoformat(),
+                }
+            )
         else:
-            return jsonify({
-                'success': False,
-                'message': ping_result.get('message', 'Bridge ping failed'),
-                'status': ping_result.get('status'),
-                'timestamp': datetime.now().isoformat()
-            }), 503
-            
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "message": ping_result.get("message", "Bridge ping failed"),
+                        "status": ping_result.get("status"),
+                        "timestamp": datetime.now().isoformat(),
+                    }
+                ),
+                503,
+            )
+
     except Exception as e:
         logger.error(f"Bridge ping error: {e}")
-        return jsonify({
-            'error': f'Bridge ping failed: {str(e)}',
-            'success': False
-        }), 500
+        return jsonify({"error": f"Bridge ping failed: {str(e)}", "success": False}), 500
 
-@app.route('/api/account', methods=['GET'])
+
+@app.route("/api/account", methods=["GET"])
 def get_account_info():
     """Get user's account information"""
     try:
         # Get user ID from headers
-        user_id = request.headers.get('X-User-ID')
-        
+        user_id = request.headers.get("X-User-ID")
+
         if not user_id:
-            return jsonify({'error': 'Missing user ID', 'success': False}), 400
-        
+            return jsonify({"error": "Missing user ID", "success": False}), 400
+
         # Import account manager
         import sys
-        sys.path.append('/root/HydraX-v2/src/bitten_core')
+
+        sys.path.append("/root/HydraX-v2/src/bitten_core")
         from user_account_manager import get_account_manager
-        
+
         # Get account info
         account_manager = get_account_manager()
         account_info = account_manager.get_user_account_info(user_id)
-        
+
         if account_info:
-            return jsonify({
-                'success': True,
-                'account_info': account_info,
-                'timestamp': datetime.now().isoformat()
-            })
+            return jsonify({"success": True, "account_info": account_info, "timestamp": datetime.now().isoformat()})
         else:
-            return jsonify({
-                'success': False,
-                'message': 'No account information found',
-                'timestamp': datetime.now().isoformat()
-            }), 404
-            
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "message": "No account information found",
+                        "timestamp": datetime.now().isoformat(),
+                    }
+                ),
+                404,
+            )
+
     except Exception as e:
         logger.error(f"Get account info error: {e}")
-        return jsonify({
-            'error': f'Failed to get account info: {str(e)}',
-            'success': False
-        }), 500
+        return jsonify({"error": f"Failed to get account info: {str(e)}", "success": False}), 500
 
-@app.route('/api/status/<user_id>', methods=['GET'])
+
+@app.route("/api/status/<user_id>", methods=["GET"])
 def get_user_status(user_id):
     """Get real-time user account status with open trades"""
     try:
-        conn = sqlite3.connect('bitten.db')
+        conn = sqlite3.connect("bitten.db")
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
 
         # Get account balance from ea_instances or default
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT last_balance, last_equity
             FROM ea_instances
             WHERE user_id = ?
             ORDER BY last_seen DESC
             LIMIT 1
-        """, (user_id,))
+        """,
+            (user_id,),
+        )
 
         account_row = cursor.fetchone()
-        balance = float(account_row['last_balance']) if account_row and account_row['last_balance'] else 10000.0
+        balance = float(account_row["last_balance"]) if account_row and account_row["last_balance"] else 10000.0
 
         # Get open trades (status = 'FILLED' and not closed)
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT
                 ticket as id,
                 symbol as pair,
@@ -2643,7 +3004,9 @@ def get_user_status(user_id):
             AND status = 'FILLED'
             AND (closed_at IS NULL OR closed_at = 0)
             ORDER BY created_at DESC
-        """, (user_id,))
+        """,
+            (user_id,),
+        )
 
         trades = []
         total_pnl = 0.0
@@ -2652,18 +3015,18 @@ def get_user_status(user_id):
             trade_dict = dict(row)
 
             # Convert timestamp to ISO string for frontend
-            if trade_dict['startTime']:
-                trade_dict['startTime'] = datetime.fromtimestamp(trade_dict['startTime']).isoformat()
+            if trade_dict["startTime"]:
+                trade_dict["startTime"] = datetime.fromtimestamp(trade_dict["startTime"]).isoformat()
 
             # Ensure numeric values
-            trade_dict['entry'] = float(trade_dict['entry']) if trade_dict['entry'] else 0.0
-            trade_dict['current'] = float(trade_dict['current']) if trade_dict['current'] else trade_dict['entry']
-            trade_dict['stopLoss'] = float(trade_dict['stopLoss']) if trade_dict['stopLoss'] else 0.0
-            trade_dict['takeProfit'] = float(trade_dict['takeProfit']) if trade_dict['takeProfit'] else 0.0
-            trade_dict['equity'] = float(trade_dict['equity']) if trade_dict['equity'] else 0.0
-            trade_dict['lots'] = float(trade_dict['lots']) if trade_dict['lots'] else 0.0
+            trade_dict["entry"] = float(trade_dict["entry"]) if trade_dict["entry"] else 0.0
+            trade_dict["current"] = float(trade_dict["current"]) if trade_dict["current"] else trade_dict["entry"]
+            trade_dict["stopLoss"] = float(trade_dict["stopLoss"]) if trade_dict["stopLoss"] else 0.0
+            trade_dict["takeProfit"] = float(trade_dict["takeProfit"]) if trade_dict["takeProfit"] else 0.0
+            trade_dict["equity"] = float(trade_dict["equity"]) if trade_dict["equity"] else 0.0
+            trade_dict["lots"] = float(trade_dict["lots"]) if trade_dict["lots"] else 0.0
 
-            total_pnl += trade_dict['equity']
+            total_pnl += trade_dict["equity"]
             trades.append(trade_dict)
 
         conn.close()
@@ -2671,82 +3034,84 @@ def get_user_status(user_id):
         equity = balance + total_pnl
         max_slots = 3  # Default, can be pulled from user config
 
-        return jsonify({
-            'success': True,
-            'data': {
-                'balance': balance,
-                'equity': equity,
-                'openPositions': len(trades),
-                'maxSlots': max_slots,
-                'trades': trades
-            },
-            'timestamp': datetime.now().isoformat()
-        })
+        return jsonify(
+            {
+                "success": True,
+                "data": {
+                    "balance": balance,
+                    "equity": equity,
+                    "openPositions": len(trades),
+                    "maxSlots": max_slots,
+                    "trades": trades,
+                },
+                "timestamp": datetime.now().isoformat(),
+            }
+        )
 
     except Exception as e:
         logger.error(f"Get user status error: {e}")
-        return jsonify({
-            'success': False,
-            'error': f'Failed to get status: {str(e)}'
-        }), 500
+        return jsonify({"success": False, "error": f"Failed to get status: {str(e)}"}), 500
 
-@app.route('/src/ui/<path:filename>')
+
+@app.route("/src/ui/<path:filename>")
 def serve_ui_files(filename):
     """Serve UI JavaScript and CSS files"""
     try:
         from flask import send_from_directory
-        return send_from_directory('src/ui', filename)
+
+        return send_from_directory("src/ui", filename)
     except Exception as e:
         logger.error(f"Error serving UI file {filename}: {e}")
         return "File not found", 404
 
-@app.route('/api/health')
+
+@app.route("/api/health")
 def health_check():
     """Lightweight health check"""
-    return jsonify({
-        'status': 'operational',
-        'timestamp': datetime.now().isoformat(),
-        'version': '2.1',
-        'memory_optimized': True
-    })
+    return jsonify(
+        {"status": "operational", "timestamp": datetime.now().isoformat(), "version": "2.1", "memory_optimized": True}
+    )
 
-@app.route('/api/run_apex_backtest', methods=['POST'])
+
+@app.route("/api/run_apex_backtest", methods=["POST"])
 def run_apex_backtest():
     """Run 6.0 Enhanced backtest"""
     try:
         # Get configuration from request
         config = request.get_json()
-        
+
         if not config:
-            return jsonify({'error': 'No configuration provided'}), 400
-        
+            return jsonify({"error": "No configuration provided"}), 400
+
         # Import and run backtester
         try:
             from apex_backtester_api import run_apex_backtest as run_backtest
+
             result = run_backtest(config)
-            
-            if result.get('success'):
-                return jsonify({'success': True, 'results': result['results']})
+
+            if result.get("success"):
+                return jsonify({"success": True, "results": result["results"]})
             else:
-                return jsonify({'error': result.get('error', 'Unknown error')}), 500
-                
+                return jsonify({"error": result.get("error", "Unknown error")}), 500
+
         except ImportError as e:
             logger.error(f"Failed to import backtester: {e}")
-            return jsonify({'error': 'backtester not available'}), 500
-            
+            return jsonify({"error": "backtester not available"}), 500
+
         except Exception as e:
             logger.error(f"Backtest execution failed: {e}")
-            return jsonify({'error': f'Backtest failed: {str(e)}'}), 500
-    
+            return jsonify({"error": f"Backtest failed: {str(e)}"}), 500
+
     except Exception as e:
         logger.error(f"API error: {e}")
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({"error": "Internal server error"}), 500
 
-@app.route('/backtester')
+
+@app.route("/backtester")
 def backtester_page():
     """Serve the backtester page"""
     try:
-        with open('webapp/templates/apex_backtester.html', 'r') as f:
+        with open("webapp/templates/apex_backtester.html", "r") as f:
             return f.read()
     except FileNotFoundError:
         return "Backtester page not found", 404
@@ -2754,8 +3119,9 @@ def backtester_page():
         logger.error(f"Error serving backtester page: {e}")
         return "Error loading backtester", 500
 
+
 # SocketIO events with lazy loading
-@socketio.on('connect')
+@socketio.on("connect")
 def handle_connect():
     """Handle client connections with optional JWT authentication"""
     from flask_socketio import emit, join_room
@@ -2766,39 +3132,36 @@ def handle_connect():
     if MISSION_SESSION_ENABLED and ws_auth:
         try:
             # Extract token from query params (?t= or ?token=)
-            token = request.args.get('t') or request.args.get('token')
+            token = request.args.get("t") or request.args.get("token")
 
             if token:
                 # Authenticate connection
                 auth_result = ws_auth.authenticate_connection(request.sid, token)
 
-                if auth_result.get('authenticated'):
-                    user_id = auth_result['user_id']
-                    scopes = auth_result.get('scopes', [])
+                if auth_result.get("authenticated"):
+                    user_id = auth_result["user_id"]
+                    scopes = auth_result.get("scopes", [])
 
                     # Join user-scoped room
                     join_room(f"user_{user_id}")
 
                     # Emit authenticated event
-                    emit('authenticated', {
-                        'user_id': user_id,
-                        'scopes': scopes,
-                        'timestamp': int(time.time())
-                    })
+                    emit("authenticated", {"user_id": user_id, "scopes": scopes, "timestamp": int(time.time())})
 
                     logger.info(f"✅ Authenticated WebSocket for user {user_id}")
                 else:
                     # Authentication failed - emit error but allow connection
-                    emit('auth_error', {'error': auth_result.get('error', 'Authentication failed')})
+                    emit("auth_error", {"error": auth_result.get("error", "Authentication failed")})
                     logger.warning(f"⚠️ WebSocket auth failed: {auth_result.get('error')}")
         except Exception as e:
             logger.warning(f"⚠️ WebSocket authentication error: {e}")
-            emit('auth_error', {'error': 'Authentication error'})
+            emit("auth_error", {"error": "Authentication error"})
 
     # Always emit status for backward compatibility
-    socketio.emit('status', {'connected': True, 'server': 'BITTEN-OPTIMIZED'})
+    socketio.emit("status", {"connected": True, "server": "BITTEN-OPTIMIZED"})
 
-@socketio.on('disconnect')
+
+@socketio.on("disconnect")
 def handle_disconnect():
     """Handle client disconnections and cleanup sessions"""
     logger.info(f"Client disconnected: {request.sid}")
@@ -2810,28 +3173,31 @@ def handle_disconnect():
         except Exception as e:
             logger.warning(f"⚠️ Error cleaning up WebSocket session: {e}")
 
-@socketio.on('subscribe_freshness')
+
+@socketio.on("subscribe_freshness")
 def handle_freshness_subscription(data):
     """Subscribe to real-time freshness updates for a signal"""
-    from flask_socketio import join_room, emit
-    
-    signal_id = data.get('signal_id')
+    from flask_socketio import emit, join_room
+
+    signal_id = data.get("signal_id")
     if signal_id:
         join_room(f"freshness_{signal_id}")
-        emit('freshness_subscribed', {'signal_id': signal_id})
+        emit("freshness_subscribed", {"signal_id": signal_id})
         logger.info(f"Client {request.sid} subscribed to freshness updates for {signal_id}")
 
-@socketio.on('unsubscribe_freshness')
+
+@socketio.on("unsubscribe_freshness")
 def handle_freshness_unsubscription(data):
     """Unsubscribe from real-time freshness updates"""
-    from flask_socketio import leave_room, emit
-    
-    signal_id = data.get('signal_id')
+    from flask_socketio import emit, leave_room
+
+    signal_id = data.get("signal_id")
     if signal_id:
         leave_room(f"freshness_{signal_id}")
-        emit('freshness_unsubscribed', {'signal_id': signal_id})
+        emit("freshness_unsubscribed", {"signal_id": signal_id})
 
-@socketio.on('subscribe')
+
+@socketio.on("subscribe")
 def handle_topic_subscription(data):
     """
     Handle topic subscriptions with authorization
@@ -2841,15 +3207,15 @@ def handle_topic_subscription(data):
             'topics': ['user.profile', 'mission.alert/123', 'trades.delta']
         }
     """
-    from flask_socketio import join_room, emit
+    from flask_socketio import emit, join_room
 
     if not MISSION_SESSION_ENABLED or not ws_auth:
-        emit('subscribe_error', {'error': 'Mission session not enabled'})
+        emit("subscribe_error", {"error": "Mission session not enabled"})
         return
 
-    topics = data.get('topics', [])
+    topics = data.get("topics", [])
     if not topics:
-        emit('subscribe_error', {'error': 'No topics specified'})
+        emit("subscribe_error", {"error": "No topics specified"})
         return
 
     authorized_topics = []
@@ -2864,75 +3230,77 @@ def handle_topic_subscription(data):
             denied_topics.append(topic)
 
     # Emit subscription result
-    emit('subscribe_result', {
-        'authorized': authorized_topics,
-        'denied': denied_topics,
-        'timestamp': int(time.time())
-    })
+    emit("subscribe_result", {"authorized": authorized_topics, "denied": denied_topics, "timestamp": int(time.time())})
 
     if authorized_topics:
         logger.info(f"✅ Client {request.sid} subscribed to topics: {authorized_topics}")
     if denied_topics:
         logger.warning(f"⚠️ Client {request.sid} denied topics: {denied_topics}")
 
-@socketio.on('get_signals')
+
+@socketio.on("get_signals")
 def handle_get_signals():
     """Handle signal requests via WebSocket"""
     try:
         # Use same database approach as API endpoint
         import sqlite3
-        conn = sqlite3.connect('/root/HydraX-v2/bitten.db')
+
+        conn = sqlite3.connect("/root/HydraX-v2/bitten.db")
         cursor = conn.cursor()
-        
-        cursor.execute("""
-            SELECT signal_id, symbol, direction, confidence, entry, sl, tp, 
+
+        cursor.execute(
+            """
+            SELECT signal_id, symbol, direction, confidence, entry, sl, tp,
                    created_at, payload_json
-            FROM signals 
+            FROM signals
             WHERE created_at > datetime('now', '-2 hours')
-            ORDER BY created_at DESC 
+            ORDER BY created_at DESC
             LIMIT 20
-        """)
-        
+        """
+        )
+
         results = cursor.fetchall()
         conn.close()
-        
+
         signals = []
         for row in results:
             try:
                 payload_data = {}
                 if row[8]:  # payload_json (index 8 now)
                     payload_data = json.loads(row[8])
-                
+
                 signal = {
-                    'signal_id': row[0],
-                    'symbol': row[1],
-                    'direction': row[2],
-                    'confidence': float(row[3]) if row[3] else 75.0,
-                    'entry_price': float(row[4]) if row[4] else 0.0,  # entry column
-                    'sl': float(row[5]) if row[5] else 0.0,
-                    'tp': float(row[6]) if row[6] else 0.0,
-                    'pattern_type': payload_data.get('pattern_type', 'UNKNOWN'),
-                    'created_at': row[7],  # created_at is index 7
-                    'stop_pips': payload_data.get('stop_pips', 20),
-                    'target_pips': payload_data.get('target_pips', 40),
-                    'risk_reward': payload_data.get('risk_reward', 2.0),
-                    'signal_type': payload_data.get('signal_type', 'RAPID_ASSAULT'),
-                    'status': 'active'
+                    "signal_id": row[0],
+                    "symbol": row[1],
+                    "direction": row[2],
+                    "confidence": float(row[3]) if row[3] else 75.0,
+                    "entry_price": float(row[4]) if row[4] else 0.0,  # entry column
+                    "sl": float(row[5]) if row[5] else 0.0,
+                    "tp": float(row[6]) if row[6] else 0.0,
+                    "pattern_type": payload_data.get("pattern_type", "UNKNOWN"),
+                    "created_at": row[7],  # created_at is index 7
+                    "stop_pips": payload_data.get("stop_pips", 20),
+                    "target_pips": payload_data.get("target_pips", 40),
+                    "risk_reward": payload_data.get("risk_reward", 2.0),
+                    "signal_type": payload_data.get("signal_type", "RAPID_ASSAULT"),
+                    "status": "active",
                 }
                 signals.append(signal)
             except Exception as e:
                 logger.warning(f"Error processing signal row: {e}")
-        
-        socketio.emit('signals_update', {'signals': signals})
+
+        socketio.emit("signals_update", {"signals": signals})
     except Exception as e:
         logger.error(f"WebSocket signals error: {e}")
-        socketio.emit('error', {'message': 'Signal retrieval failed'})
+        socketio.emit("error", {"message": "Signal retrieval failed"})
+
 
 # Lazy load additional modules on demand
 def load_mission_api():
     """Load mission API only when needed"""
     try:
         from src.api.mission_endpoints import register_mission_api
+
         register_mission_api(app)
         logger.info("Mission API loaded and registered")
         return True
@@ -2940,10 +3308,12 @@ def load_mission_api():
         logger.warning(f"Mission API not available: {e}")
         return False
 
+
 def load_press_pass_api():
     """Load press pass API only when needed"""
     try:
         from src.api.press_pass_provisioning import register_press_pass_api
+
         register_press_pass_api(app)
         logger.info("Press Pass API loaded and registered")
         return True
@@ -2951,72 +3321,75 @@ def load_press_pass_api():
         logger.warning(f"Press Pass API not available: {e}")
         return False
 
+
 def load_payment_system():
     """Load Stripe payment system only when needed"""
     try:
         stripe = lazy.stripe
-        stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
+        stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
         logger.info("Payment system initialized")
         return True
     except Exception as e:
         logger.warning(f"Payment system not available: {e}")
         return False
 
+
 # Route to trigger module loading
-@app.route('/api/load/<module_name>')
+@app.route("/api/load/<module_name>")
 def load_module(module_name):
     """Dynamically load modules on demand"""
-    module_loaders = {
-        'mission': load_mission_api,
-        'press_pass': load_press_pass_api,
-        'payments': load_payment_system
-    }
-    
+    module_loaders = {"mission": load_mission_api, "press_pass": load_press_pass_api, "payments": load_payment_system}
+
     loader = module_loaders.get(module_name)
     if loader:
         success = loader()
-        return jsonify({
-            'module': module_name,
-            'loaded': success,
-            'timestamp': datetime.now().isoformat()
-        })
+        return jsonify({"module": module_name, "loaded": success, "timestamp": datetime.now().isoformat()})
     else:
-        return jsonify({'error': f'Unknown module: {module_name}'}), 400
+        return jsonify({"error": f"Unknown module: {module_name}"}), 400
+
 
 # Error handlers
 @app.errorhandler(404)
 def not_found(error):
-    return jsonify({'error': 'Endpoint not found'}), 404
+    return jsonify({"error": "Endpoint not found"}), 404
+
 
 @app.errorhandler(500)
 def internal_error(error):
     logger.error(f"Internal server error: {error}")
-    return jsonify({'error': 'Internal server error'}), 500
+    return jsonify({"error": "Internal server error"}), 500
+
 
 # Development/Debug routes
-if os.getenv('FLASK_ENV') == 'development':
-    @app.route('/debug/memory')
+if os.getenv("FLASK_ENV") == "development":
+
+    @app.route("/debug/memory")
     def debug_memory():
         """Debug endpoint to check memory usage"""
         import psutil
+
         process = psutil.Process()
         memory_info = process.memory_info()
-        
-        return jsonify({
-            'memory_rss': f"{memory_info.rss / 1024 / 1024:.1f} MB",
-            'memory_vms': f"{memory_info.vms / 1024 / 1024:.1f} MB",
-            'cpu_percent': process.cpu_percent(),
-            'loaded_modules': {
-                'stripe': lazy._stripe is not None,
-                'signal_storage': lazy._signal_storage is not None,
-                'engagement_db': lazy._engagement_db is not None,
-                'referral_system': lazy._referral_system is not None
+
+        return jsonify(
+            {
+                "memory_rss": f"{memory_info.rss / 1024 / 1024:.1f} MB",
+                "memory_vms": f"{memory_info.vms / 1024 / 1024:.1f} MB",
+                "cpu_percent": process.cpu_percent(),
+                "loaded_modules": {
+                    "stripe": lazy._stripe is not None,
+                    "signal_storage": lazy._signal_storage is not None,
+                    "engagement_db": lazy._engagement_db is not None,
+                    "referral_system": lazy._referral_system is not None,
+                },
             }
-        })
+        )
+
 
 # Credit Referral Admin API Integration
 try:
     from src.bitten_core.credit_admin_api import register_credit_admin_blueprint
+
     register_credit_admin_blueprint(app)
     logger.info("Credit referral admin API registered successfully")
 except ImportError as e:
@@ -3036,36 +3409,37 @@ except Exception as e:
 
 # ===== MISSING ROUTES FROM webapp_server.py =====
 
-@app.route('/track-trade')
+
+@app.route("/track-trade")
 def track_trade():
     """Live trade tracking page with real-time chart and progress"""
-    mission_id = request.args.get('mission_id', '')
-    symbol = request.args.get('symbol', 'EURUSD')
-    direction = request.args.get('direction', 'BUY')
-    user_id = request.args.get('user_id', '7176191872')
-    
+    mission_id = request.args.get("mission_id", "")
+    symbol = request.args.get("symbol", "EURUSD")
+    direction = request.args.get("direction", "BUY")
+    user_id = request.args.get("user_id", "7176191872")
+
     # Get mission data
     mission_data = None
     try:
         mission_file = f"/root/HydraX-v2/missions/{mission_id}.json"
         if os.path.exists(mission_file):
-            with open(mission_file, 'r') as f:
+            with open(mission_file, "r") as f:
                 mission_data = json.load(f)
     except:
         pass
-    
+
     if not mission_data:
         return "Mission not found", 404
-        
+
     # Extract trade details
-    signal_data = mission_data.get('signal', {})
-    enhanced_signal = mission_data.get('enhanced_signal', {})
-    
-    entry_price = signal_data.get('entry_price', enhanced_signal.get('entry_price', 0))
-    stop_loss = signal_data.get('stop_loss', enhanced_signal.get('stop_loss', 0))
-    take_profit = signal_data.get('take_profit', enhanced_signal.get('take_profit', 0))
-    rr_ratio = signal_data.get('risk_reward_ratio', enhanced_signal.get('risk_reward_ratio', 0))
-    
+    signal_data = mission_data.get("signal", {})
+    enhanced_signal = mission_data.get("enhanced_signal", {})
+
+    entry_price = signal_data.get("entry_price", enhanced_signal.get("entry_price", 0))
+    stop_loss = signal_data.get("stop_loss", enhanced_signal.get("stop_loss", 0))
+    take_profit = signal_data.get("take_profit", enhanced_signal.get("take_profit", 0))
+    rr_ratio = signal_data.get("risk_reward_ratio", enhanced_signal.get("risk_reward_ratio", 0))
+
     # Simple tracking template
     TRACK_TEMPLATE = f"""
     <!DOCTYPE html>
@@ -3102,50 +3476,55 @@ def track_trade():
     </body>
     </html>
     """
-    
+
     return TRACK_TEMPLATE
 
-@app.route('/history')
+
+@app.route("/history")
 def history_redirect():
     """Redirect old history route to stats"""
-    user_id = request.args.get('user', '7176191872')
-    return redirect(f'/stats/{user_id}', 301)
+    user_id = request.args.get("user", "7176191872")
+    return redirect(f"/stats/{user_id}", 301)
 
-@app.route('/stats/<user_id>')
+
+@app.route("/stats/<user_id>")
 def stats_and_history(user_id):
     """Combined stats and trade history page with REAL data"""
-    
+
     # Get real trade data from database
     import sqlite3
     import time
     from datetime import datetime
-    
+
     try:
-        conn = sqlite3.connect('/root/HydraX-v2/bitten.db')
+        conn = sqlite3.connect("/root/HydraX-v2/bitten.db")
         cursor = conn.cursor()
-        
+
         # Get fire history (actual trades)
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT fire_id, status, ticket, price, equity_used, risk_pct_used, created_at, updated_at
-            FROM fires 
-            WHERE user_id = ? 
-            ORDER BY created_at DESC 
+            FROM fires
+            WHERE user_id = ?
+            ORDER BY created_at DESC
             LIMIT 50
-        """, (user_id,))
-        
+        """,
+            (user_id,),
+        )
+
         trades = []
         total_trades = 0
         wins = 0
         total_pnl = 0.0
         best_trade = 0.0
         worst_trade = 0.0
-        
+
         for row in cursor.fetchall():
             fire_id, status, ticket, price, equity_used, risk_pct, created, updated = row
             total_trades += 1
-            
+
             # Estimate P&L (simplified)
-            if status == 'FILLED' and equity_used:
+            if status == "FILLED" and equity_used:
                 pnl = float(equity_used) * 0.02  # Rough estimate based on 2% risk
                 if ticket and int(ticket) > 0:  # Assume successful if has ticket
                     wins += 1
@@ -3154,39 +3533,46 @@ def stats_and_history(user_id):
                 else:
                     total_pnl -= pnl
                     worst_trade = min(worst_trade, -pnl)
-            
-            trades.append({
-                'fire_id': fire_id,
-                'status': status,
-                'ticket': ticket,
-                'price': price,
-                'equity_used': equity_used,
-                'created': datetime.fromtimestamp(created).strftime('%Y-%m-%d %H:%M') if created else 'Unknown'
-            })
-        
+
+            trades.append(
+                {
+                    "fire_id": fire_id,
+                    "status": status,
+                    "ticket": ticket,
+                    "price": price,
+                    "equity_used": equity_used,
+                    "created": datetime.fromtimestamp(created).strftime("%Y-%m-%d %H:%M") if created else "Unknown",
+                }
+            )
+
         # Calculate stats
         win_rate = (wins / total_trades * 100) if total_trades > 0 else 0
-        
+
         # Get account balance
-        cursor.execute("""
-            SELECT last_balance, last_equity, currency 
-            FROM ea_instances 
-            WHERE user_id = ? 
-            ORDER BY last_seen DESC 
+        cursor.execute(
+            """
+            SELECT last_balance, last_equity, currency
+            FROM ea_instances
+            WHERE user_id = ?
+            ORDER BY last_seen DESC
             LIMIT 1
-        """, (user_id,))
-        
+        """,
+            (user_id,),
+        )
+
         balance_data = cursor.fetchone()
         balance = float(balance_data[0]) if balance_data and balance_data[0] else 0.0
         equity = float(balance_data[1]) if balance_data and balance_data[1] else 0.0
-        currency = balance_data[2] if balance_data else 'USD'
-        
+        currency = balance_data[2] if balance_data else "USD"
+
         conn.close()
-        
+
         # Generate recent trades HTML
         trades_html = ""
         for trade in trades[:10]:  # Show last 10 trades
-            status_class = "positive" if trade['status'] == 'FILLED' else "negative" if trade['status'] == 'FAILED' else ""
+            status_class = (
+                "positive" if trade["status"] == "FILLED" else "negative" if trade["status"] == "FAILED" else ""
+            )
             trades_html += f"""
             <div class="trade-row">
                 <span>{trade['fire_id'][:20]}...</span>
@@ -3194,7 +3580,7 @@ def stats_and_history(user_id):
                 <span>{trade['created']}</span>
             </div>
             """
-        
+
     except Exception as e:
         logger.error(f"Error loading stats for {user_id}: {e}")
         # Fallback to basic data
@@ -3202,11 +3588,11 @@ def stats_and_history(user_id):
         win_rate = 0
         total_pnl = 0
         balance = 0
-        currency = 'USD'
+        currency = "USD"
         trades_html = "<p>No trade data available</p>"
         best_trade = 0
         worst_trade = 0
-    
+
     STATS_TEMPLATE = f"""
     <!DOCTYPE html>
     <html>
@@ -3230,7 +3616,7 @@ def stats_and_history(user_id):
             <h1>📊 REAL PERFORMANCE DASHBOARD</h1>
             <p>User ID: {user_id} | Balance: {currency} {balance:.2f}</p>
         </div>
-        
+
         <div class="stat-grid">
             <div class="stat-card">
                 <h3>🎯 Trading Stats (LIVE DATA)</h3>
@@ -3239,7 +3625,7 @@ def stats_and_history(user_id):
                 <div class="stat-item"><span>Live Balance:</span><span>{currency} {balance:.2f}</span></div>
                 <div class="stat-item"><span>Live Equity:</span><span>{currency} {equity:.2f}</span></div>
             </div>
-            
+
             <div class="stat-card">
                 <h3>💰 P&L Summary (ESTIMATED)</h3>
                 <div class="stat-item"><span>Est. Total P&L:</span><span class="{'positive' if total_pnl >= 0 else 'negative'}">{'+' if total_pnl >= 0 else ''}{currency} {total_pnl:.2f}</span></div>
@@ -3248,12 +3634,12 @@ def stats_and_history(user_id):
                 <div class="stat-item"><span>Data Source:</span><span>LIVE EA</span></div>
             </div>
         </div>
-        
+
         <div class="stat-card">
             <h3>📈 Recent Trade History</h3>
             {trades_html}
         </div>
-        
+
         <div style="text-align: center; padding: 20px;">
             <button onclick="window.location.reload()" style="background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-right: 10px;">Refresh Data</button>
             <button onclick="window.close()" style="background: #666; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">Close Stats</button>
@@ -3261,8 +3647,9 @@ def stats_and_history(user_id):
     </body>
     </html>
     """
-    
+
     return STATS_TEMPLATE
+
 
 # Enhanced War Room Template with live balance and real-time data
 ENHANCED_WAR_ROOM_TEMPLATE = """
@@ -3273,29 +3660,29 @@ ENHANCED_WAR_ROOM_TEMPLATE = """
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { 
+        body {
             background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
-            color: #00ff41; font-family: 'Courier New', monospace; 
+            color: #00ff41; font-family: 'Courier New', monospace;
             margin: 0; padding: 20px; min-height: 100vh;
         }
-        .war-header { 
+        .war-header {
             background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
             border: 2px solid #00ff41; padding: 20px; margin-bottom: 20px;
             border-radius: 10px; text-align: center;
         }
-        .stats-grid { 
+        .stats-grid {
             display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 15px; margin-bottom: 20px;
         }
-        .stat-card { 
+        .stat-card {
             background: rgba(0, 255, 65, 0.1); border: 1px solid #00ff41;
             padding: 15px; border-radius: 8px; text-align: center;
         }
         .stat-value { font-size: 1.8em; font-weight: bold; color: #00ff41; }
         .stat-label { color: #888; font-size: 0.9em; margin-top: 5px; }
-        .live-indicator { 
-            display: inline-block; width: 8px; height: 8px; 
-            background: #00ff41; border-radius: 50%; 
+        .live-indicator {
+            display: inline-block; width: 8px; height: 8px;
+            background: #00ff41; border-radius: 50%;
             animation: blink 1s infinite; margin-right: 8px;
         }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
@@ -3309,7 +3696,7 @@ ENHANCED_WAR_ROOM_TEMPLATE = """
             font-size: 1.1em; cursor: pointer; text-decoration: none;
             text-align: center; transition: all 0.3s;
         }
-        .action-btn:hover { 
+        .action-btn:hover {
             background: linear-gradient(135deg, #009900 0%, #00cc00 100%);
             transform: translateY(-2px);
         }
@@ -3377,77 +3764,85 @@ ENHANCED_WAR_ROOM_TEMPLATE = """
 </html>
 """
 
-@app.route('/war-room')
-@app.route('/me')
+
+@app.route("/war-room")
+@app.route("/me")
 def war_room():
     """War Room - Personal Command Center (Lightweight for performance)"""
-    user_id = request.args.get('user_id', 'anonymous')
-    
+    user_id = request.args.get("user_id", "anonymous")
+
     # LIGHTWEIGHT VERSION - Skip heavy module loading for performance
     try:
         # Get basic user balance from EA instances if available
         import sqlite3
+
         balance = 0.0
         try:
-            conn = sqlite3.connect('/root/HydraX-v2/bitten.db')
+            conn = sqlite3.connect("/root/HydraX-v2/bitten.db")
             cursor = conn.cursor()
-            cursor.execute("SELECT last_equity, last_balance FROM ea_instances WHERE user_id = ? ORDER BY last_seen DESC LIMIT 1", (user_id,))
+            cursor.execute(
+                "SELECT last_equity, last_balance FROM ea_instances WHERE user_id = ? ORDER BY last_seen DESC LIMIT 1",
+                (user_id,),
+            )
             result = cursor.fetchone()
             equity = result[0] if result and result[0] else 0.0
             balance = result[1] if result and result[1] else 0.0
             conn.close()
         except Exception:
             balance = 0.0
-            
+
         # Simple defaults without heavy module initialization
-        callsign = f"VIPER-{user_id[-4:]}" if user_id != 'anonymous' else "GHOST-0000"
+        callsign = f"VIPER-{user_id[-4:]}" if user_id != "anonymous" else "GHOST-0000"
         rank_name, rank_desc = "COMMANDER", "ELITE TRADER"
-        
+
         # Get slot availability from fire mode database
         from src.bitten_core.fire_mode_database import FireModeDatabase
+
         fire_db = FireModeDatabase()
         mode_info = fire_db.get_user_mode(str(user_id))
         tier_limits = fire_db.get_tier_slot_limits("COMMANDER")  # Assuming COMMANDER for now
-        
-        manual_slots_available = tier_limits['manual'] - mode_info.get('manual_slots_in_use', 0)
-        auto_slots_available = mode_info.get('max_auto_slots', 75) - mode_info.get('auto_slots_in_use', 0)
-        
-# [DISABLED BITMODE]         # Get BITMODE status
-        bitmode_enabled = mode_info.get('bitmode_enabled', False)
+
+        manual_slots_available = tier_limits["manual"] - mode_info.get("manual_slots_in_use", 0)
+        auto_slots_available = mode_info.get("max_auto_slots", 75) - mode_info.get("auto_slots_in_use", 0)
+
+        # [DISABLED BITMODE]         # Get BITMODE status
+        bitmode_enabled = mode_info.get("bitmode_enabled", False)
         bitmode_status = "✅ ACTIVE" if bitmode_enabled else "❌ DISABLED"
         bitmode_color = "#00ff41" if bitmode_enabled else "#ff4444"
-        
+
         # Get real recent signals from database instead of fake trades
         recent_signals = []
         try:
-            conn = sqlite3.connect('/root/HydraX-v2/bitten.db')
+            conn = sqlite3.connect("/root/HydraX-v2/bitten.db")
             cursor = conn.cursor()
-            cursor.execute("""
-                SELECT symbol, direction, entry_price, confidence, created_at 
-                FROM signals 
-                WHERE created_at > ? 
-                ORDER BY created_at DESC 
+            cursor.execute(
+                """
+                SELECT symbol, direction, entry_price, confidence, created_at
+                FROM signals
+                WHERE created_at > ?
+                ORDER BY created_at DESC
                 LIMIT 3
-            """, (int(time.time()) - 86400,))  # Last 24 hours
-            
+            """,
+                (int(time.time()) - 86400,),
+            )  # Last 24 hours
+
             for row in cursor.fetchall():
                 symbol, direction, entry, confidence, timestamp = row
-                
+
                 # Get signal mode from database (default to RAPID if not found)
                 try:
                     signal_row = conn.execute(
-                        "SELECT payload_json FROM signals WHERE symbol = ? AND created_at = ?",
-                        (symbol, timestamp)
+                        "SELECT payload_json FROM signals WHERE symbol = ? AND created_at = ?", (symbol, timestamp)
                     ).fetchone()
-                    
+
                     signal_mode = "RAPID"  # Default
                     mode_icon = "⚡"
                     mode_color = "orange"
-                    
+
                     if signal_row and signal_row[0]:
                         payload = json.loads(signal_row[0])
-                        signal_type = payload.get('signal_type', 'RAPID_ASSAULT')
-                        if 'SNIPER' in signal_type or 'PRECISION' in signal_type:
+                        signal_type = payload.get("signal_type", "RAPID_ASSAULT")
+                        if "SNIPER" in signal_type or "PRECISION" in signal_type:
                             signal_mode = "SNIPER"
                             mode_icon = "🎯"
                             mode_color = "blue"
@@ -3455,26 +3850,28 @@ def war_room():
                     signal_mode = "RAPID"
                     mode_icon = "⚡"
                     mode_color = "orange"
-                
-                recent_signals.append({
-                    "pair": symbol,
-                    "direction": direction,
-                    "entry": f"{entry:.5f}" if entry else "0.00000",
-                    "confidence": f"{confidence:.1f}%" if confidence else "0.0%",
-                    "time": "Recently",
-                    "mode": signal_mode,
-                    "mode_icon": mode_icon,
-                    "mode_color": mode_color
-                })
+
+                recent_signals.append(
+                    {
+                        "pair": symbol,
+                        "direction": direction,
+                        "entry": f"{entry:.5f}" if entry else "0.00000",
+                        "confidence": f"{confidence:.1f}%" if confidence else "0.0%",
+                        "time": "Recently",
+                        "mode": signal_mode,
+                        "mode_icon": mode_icon,
+                        "mode_color": mode_color,
+                    }
+                )
             conn.close()
         except Exception:
             # Fallback if database query fails
             recent_signals = [
                 {"pair": "GBPUSD", "direction": "BUY", "entry": "1.35367", "confidence": "95.6%", "time": "Recently"},
                 {"pair": "EURJPY", "direction": "BUY", "entry": "172.308", "confidence": "96.4%", "time": "Recently"},
-                {"pair": "USDCAD", "direction": "BUY", "entry": "1.3787", "confidence": "72.4%", "time": "Recently"}
+                {"pair": "USDCAD", "direction": "BUY", "entry": "1.3787", "confidence": "72.4%", "time": "Recently"},
             ]
-            
+
     except Exception as e:
         logger.warning(f"Error in lightweight war room: {e}")
         # Ultra-lightweight fallback
@@ -3482,7 +3879,7 @@ def war_room():
         rank_name, rank_desc = "COMMANDER", "ELITE TRADER"
         balance = 0.0
         recent_signals = []
-    
+
     # Use simple template without f-string formatting to avoid errors
     return f"""
     <!DOCTYPE html>
@@ -3492,29 +3889,29 @@ def war_room():
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
-            body {{ 
+            body {{
                 background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
-                color: #00ff41; font-family: 'Courier New', monospace; 
+                color: #00ff41; font-family: 'Courier New', monospace;
                 margin: 0; padding: 20px; min-height: 100vh;
             }}
-            .war-header {{ 
+            .war-header {{
                 background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
                 border: 2px solid #00ff41; padding: 20px; margin-bottom: 20px;
                 border-radius: 10px; text-align: center;
             }}
-            .stats-grid {{ 
+            .stats-grid {{
                 display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
                 gap: 15px; margin-bottom: 20px;
             }}
-            .stat-card {{ 
+            .stat-card {{
                 background: rgba(0, 255, 65, 0.1); border: 1px solid #00ff41;
                 padding: 15px; border-radius: 8px; text-align: center;
             }}
             .stat-value {{ font-size: 1.8em; font-weight: bold; color: #00ff41; }}
             .stat-label {{ color: #888; font-size: 0.9em; margin-top: 5px; }}
-            .live-indicator {{ 
-                display: inline-block; width: 8px; height: 8px; 
-                background: #00ff41; border-radius: 50%; 
+            .live-indicator {{
+                display: inline-block; width: 8px; height: 8px;
+                background: #00ff41; border-radius: 50%;
                 animation: blink 1s infinite; margin-right: 8px;
             }}
             @keyframes blink {{ 0%, 100% {{ opacity: 1; }} 50% {{ opacity: 0.3; }} }}
@@ -3528,7 +3925,7 @@ def war_room():
                 font-size: 1.1em; cursor: pointer; text-decoration: none;
                 text-align: center; transition: all 0.3s;
             }}
-            .action-btn:hover {{ 
+            .action-btn:hover {{
                 background: linear-gradient(135deg, #009900 0%, #00cc00 100%);
                 transform: translateY(-2px);
             }}
@@ -3593,7 +3990,7 @@ def war_room():
                 const btn = document.getElementById('bitmode-btn');
                 btn.disabled = true;
                 btn.textContent = '🎯 UPDATING...';
-                
+
                 fetch('/api/bitmode/toggle', {{
                     method: 'POST',
                     headers: {{
@@ -3627,93 +4024,85 @@ def war_room():
     """
 
 
-@app.route('/analysis')
+@app.route("/analysis")
 def analysis_page():
     """Analysis page - redirect to stats with user detection"""
-    user_id = request.args.get('user_id', '7176191872')  # Default to main user
-    return redirect(f'/stats/{user_id}', 302)
+    user_id = request.args.get("user_id", "7176191872")  # Default to main user
+    return redirect(f"/stats/{user_id}", 302)
 
-@app.route('/signal', methods=['GET'])
+
+@app.route("/signal", methods=["GET"])
 def get_signal():
     """GET /signal?sid&uid&t&sig endpoint with HMAC verification"""
     try:
         # Extract parameters
-        signal_id = request.args.get('sid')
-        user_id = request.args.get('uid')
-        timestamp = request.args.get('t')
-        signature = request.args.get('sig')
+        signal_id = request.args.get("sid")
+        user_id = request.args.get("uid")
+        timestamp = request.args.get("t")
+        signature = request.args.get("sig")
 
         if not all([signal_id, user_id, timestamp, signature]):
-            return jsonify({
-                'success': False,
-                'error': 'Missing required parameters: sid, uid, t, sig'
-            }), 400
+            return jsonify({"success": False, "error": "Missing required parameters: sid, uid, t, sig"}), 400
 
         # HMAC verification
-        import hmac
         import hashlib
+        import hmac
         import time
 
         # Get secret key from environment or use default for development
-        secret_key = os.getenv('BITTEN_HMAC_SECRET', 'bitten_dev_key_2025').encode('utf-8')
+        secret_key = os.getenv("BITTEN_HMAC_SECRET", "bitten_dev_key_2025").encode("utf-8")
 
         # Create message for verification: sid|uid|timestamp
         message = f"{signal_id}|{user_id}|{timestamp}"
-        expected_sig = hmac.new(secret_key, message.encode('utf-8'), hashlib.sha256).hexdigest()
+        expected_sig = hmac.new(secret_key, message.encode("utf-8"), hashlib.sha256).hexdigest()
 
         if not hmac.compare_digest(signature, expected_sig):
-            return jsonify({
-                'success': False,
-                'error': 'Invalid signature'
-            }), 401
+            return jsonify({"success": False, "error": "Invalid signature"}), 401
 
         # Check timestamp freshness (within 5 minutes)
         current_time = int(time.time())
         request_time = int(timestamp)
         if abs(current_time - request_time) > 300:  # 5 minutes
-            return jsonify({
-                'success': False,
-                'error': 'Request timestamp too old or invalid'
-            }), 401
+            return jsonify({"success": False, "error": "Request timestamp too old or invalid"}), 401
 
         # Get signal data from database
-        conn = sqlite3.connect('/root/HydraX-v2/bitten.db')
+        conn = sqlite3.connect("/root/HydraX-v2/bitten.db")
         cursor = conn.cursor()
 
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT signal_id, symbol, direction, entry_price, stop_pips, target_pips,
                    confidence, pattern_type, created_at
             FROM signals
             WHERE signal_id = ?
-        """, (signal_id,))
+        """,
+            (signal_id,),
+        )
 
         signal_row = cursor.fetchone()
         if not signal_row:
             conn.close()
-            return jsonify({
-                'success': False,
-                'error': 'Signal not found'
-            }), 404
+            return jsonify({"success": False, "error": "Signal not found"}), 404
 
         # Format signal data
         signal_data = {
-            'signal_id': signal_row[0],
-            'symbol': signal_row[1],
-            'direction': signal_row[2],
-            'entry_price': signal_row[3],
-            'stop_pips': signal_row[4],
-            'target_pips': signal_row[5],
-            'confidence': signal_row[6],
-            'pattern_type': signal_row[7],
-            'created_at': signal_row[8]
+            "signal_id": signal_row[0],
+            "symbol": signal_row[1],
+            "direction": signal_row[2],
+            "entry_price": signal_row[3],
+            "stop_pips": signal_row[4],
+            "target_pips": signal_row[5],
+            "confidence": signal_row[6],
+            "pattern_type": signal_row[7],
+            "created_at": signal_row[8],
         }
 
         # Health check - verify system components
         health_checks = {
-            'rule_engine': check_rule_engine_health(),
-            'slot_manager': check_slot_manager_health(),
-            'command_router': check_command_router_health(),
-            'confirm_listener': check_confirm_listener_health()
+            "rule_engine": check_rule_engine_health(),
+            "slot_manager": check_slot_manager_health(),
+            "command_router": check_command_router_health(),
+            "confirm_listener": check_confirm_listener_health(),
         }
 
         # Calculate signal age
@@ -3722,26 +4111,30 @@ def get_signal():
         conn.close()
 
         # Check if request wants JSON (API) or HTML (browser/HUD)
-        if request.headers.get('Accept', '').startswith('application/json') or request.args.get('format') == 'json':
-            return jsonify({
-                'success': True,
-                'signal': signal_data,
-                'signal_age_seconds': signal_age,
-                'health': health_checks,
-                'timestamp': current_time
-            })
+        if request.headers.get("Accept", "").startswith("application/json") or request.args.get("format") == "json":
+            return jsonify(
+                {
+                    "success": True,
+                    "signal": signal_data,
+                    "signal_age_seconds": signal_age,
+                    "health": health_checks,
+                    "timestamp": current_time,
+                }
+            )
         else:
             # Return HTML Mission Brief interface
             try:
-                return render_template('comprehensive_mission_briefing.html',
-                                     signal=signal_data,
-                                     signal_age_seconds=signal_age,
-                                     health=health_checks,
-                                     user_id=user_id,
-                                     success=True)
+                return render_template(
+                    "comprehensive_mission_briefing.html",
+                    signal=signal_data,
+                    signal_age_seconds=signal_age,
+                    health=health_checks,
+                    user_id=user_id,
+                    success=True,
+                )
             except:
                 # Fallback to simple HTML if template fails
-                return f'''
+                return f"""
                 <!DOCTYPE html>
                 <html><head><title>Mission Brief - {signal_data['symbol']} {signal_data['direction']}</title>
                 <style>body{{font-family:Arial;margin:40px;background:#0a0a0a;color:#00ff00;}}
@@ -3769,32 +4162,35 @@ def get_signal():
                     .then(data => alert(data.success ? 'Trade fired!' : 'Error: ' + data.error));
                 }}
                 </script></body></html>
-                '''
+                """
 
     except Exception as e:
         logger.error(f"Signal verification error: {e}")
-        return jsonify({
-            'success': False,
-            'error': 'Internal server error'
-        }), 500
+        return jsonify({"success": False, "error": "Internal server error"}), 500
 
-@app.route('/m/<path:signal_path>')
+
+@app.route("/m/<path:signal_path>")
 def mission_short_link(signal_path):
     """Short mission link that redirects to full /signal URL"""
     try:
-        import time, hmac, hashlib
+        import hashlib
+        import hmac
+        import time
 
         # NEW: Check if this is a short code (8-12 char base64url format)
-        if len(signal_path) >= 8 and len(signal_path) <= 12 and not signal_path.startswith('PS144'):
+        if len(signal_path) >= 8 and len(signal_path) <= 12 and not signal_path.startswith("PS144"):
             # This looks like a short code - check mission_short_codes table
-            conn = sqlite3.connect('/root/HydraX-v2/bitten.db')
+            conn = sqlite3.connect("/root/HydraX-v2/bitten.db")
             cursor = conn.cursor()
 
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT mission_session_id, jwt_token, expires_at, used_at
                 FROM mission_short_codes
                 WHERE short_code = ?
-            """, (signal_path,))
+            """,
+                (signal_path,),
+            )
 
             result = cursor.fetchone()
 
@@ -3812,28 +4208,34 @@ def mission_short_link(signal_path):
 
                 # Redirect to mission page (VIEW MODE - read-only)
                 from flask import redirect
-                return redirect(f'/mission?ms={mission_session_id}&token={jwt_token}', code=302)
+
+                return redirect(f"/mission?ms={mission_session_id}&token={jwt_token}", code=302)
 
             conn.close()
 
         # Extract actual signal_id from PS144-1-{suffix} format (OLD LOGIC)
-        if signal_path.startswith('PS144-1-'):
+        if signal_path.startswith("PS144-1-"):
             # Extract the suffix and try to find the full signal ID from database
             suffix = signal_path[8:]  # Remove 'PS144-1-' prefix
 
             # Query database to find signal with matching suffix
-            conn = sqlite3.connect('/root/HydraX-v2/bitten.db')
+            conn = sqlite3.connect("/root/HydraX-v2/bitten.db")
             cursor = conn.cursor()
 
             # First try: exact suffix match at end
-            cursor.execute("SELECT signal_id FROM signals WHERE signal_id LIKE ? ORDER BY created_at DESC LIMIT 1", (f'%{suffix}',))
+            cursor.execute(
+                "SELECT signal_id FROM signals WHERE signal_id LIKE ? ORDER BY created_at DESC LIMIT 1", (f"%{suffix}",)
+            )
             result = cursor.fetchone()
 
             if result:
                 actual_signal_id = result[0]
             else:
                 # Fallback: try to match any signal containing the suffix
-                cursor.execute("SELECT signal_id FROM signals WHERE signal_id LIKE ? ORDER BY created_at DESC LIMIT 1", (f'%{suffix}%',))
+                cursor.execute(
+                    "SELECT signal_id FROM signals WHERE signal_id LIKE ? ORDER BY created_at DESC LIMIT 1",
+                    (f"%{suffix}%",),
+                )
                 result2 = cursor.fetchone()
                 if result2:
                     actual_signal_id = result2[0]
@@ -3848,202 +4250,202 @@ def mission_short_link(signal_path):
 
         # Generate fresh HMAC signature
         current_time = int(time.time())
-        secret = os.getenv('BITTEN_HMAC_SECRET', 'bitten_dev_key_2025').encode('utf-8')
+        secret = os.getenv("BITTEN_HMAC_SECRET", "bitten_dev_key_2025").encode("utf-8")
         uid = "7176191872"  # Default commander user
         sig = hmac.new(secret, f"{actual_signal_id}|{uid}|{current_time}".encode(), hashlib.sha256).hexdigest()
 
         # Redirect to full signal URL with absolute URL (fixes /api/m/... proxy routing)
         from flask import redirect
+
         full_url = f"https://joinbitten.com/signal?sid={actual_signal_id}&uid={uid}&t={current_time}&sig={sig}"
         return redirect(full_url, code=302)
 
     except Exception as e:
-        return jsonify({
-            'success': False,
-            'error': 'Invalid signal ID'
-        }), 404
+        return jsonify({"success": False, "error": "Invalid signal ID"}), 404
+
 
 def check_rule_engine_health():
     """Check Rule/Slot engine health"""
     try:
         # Check if fire_mode_db is accessible
         from src.bitten_core.fire_mode_database import fire_mode_db
+
         # Simple test query
-        test_limits = fire_mode_db.get_tier_slot_limits('COMMANDER')
-        return {'status': 'healthy', 'message': 'Rule engine accessible'}
+        test_limits = fire_mode_db.get_tier_slot_limits("COMMANDER")
+        return {"status": "healthy", "message": "Rule engine accessible"}
     except Exception as e:
-        return {'status': 'unhealthy', 'message': str(e)}
+        return {"status": "unhealthy", "message": str(e)}
+
 
 def check_slot_manager_health():
     """Check slot manager health"""
     try:
         # Check database connection
-        conn = sqlite3.connect('/root/HydraX-v2/data/fire_modes.db')
+        conn = sqlite3.connect("/root/HydraX-v2/data/fire_modes.db")
         cursor = conn.cursor()
         cursor.execute("SELECT COUNT(*) FROM active_slots WHERE status = 'OPEN'")
         open_slots = cursor.fetchone()[0]
         conn.close()
-        return {'status': 'healthy', 'open_slots': open_slots}
+        return {"status": "healthy", "open_slots": open_slots}
     except Exception as e:
-        return {'status': 'unhealthy', 'message': str(e)}
+        return {"status": "unhealthy", "message": str(e)}
+
 
 def check_command_router_health():
     """Check command router process health"""
     try:
         import psutil
+
         # Find command_router process
-        for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
-            if any('command_router' in cmd for cmd in proc.info['cmdline'] or []):
-                return {'status': 'healthy', 'pid': proc.info['pid']}
-        return {'status': 'unhealthy', 'message': 'Command router process not found'}
+        for proc in psutil.process_iter(["pid", "name", "cmdline"]):
+            if any("command_router" in cmd for cmd in proc.info["cmdline"] or []):
+                return {"status": "healthy", "pid": proc.info["pid"]}
+        return {"status": "unhealthy", "message": "Command router process not found"}
     except Exception as e:
-        return {'status': 'unhealthy', 'message': str(e)}
+        return {"status": "unhealthy", "message": str(e)}
+
 
 def check_confirm_listener_health():
     """Check confirmation listener process health"""
     try:
         import psutil
-        # Find confirm_listener process
-        for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
-            if any('confirm_listener' in cmd for cmd in proc.info['cmdline'] or []):
-                return {'status': 'healthy', 'pid': proc.info['pid']}
-        return {'status': 'unhealthy', 'message': 'Confirmation listener process not found'}
-    except Exception as e:
-        return {'status': 'unhealthy', 'message': str(e)}
 
-@app.route('/api/signal-freshness/<signal_id>', methods=['GET'])
+        # Find confirm_listener process
+        for proc in psutil.process_iter(["pid", "name", "cmdline"]):
+            if any("confirm_listener" in cmd for cmd in proc.info["cmdline"] or []):
+                return {"status": "healthy", "pid": proc.info["pid"]}
+        return {"status": "unhealthy", "message": "Confirmation listener process not found"}
+    except Exception as e:
+        return {"status": "unhealthy", "message": str(e)}
+
+
+@app.route("/api/signal-freshness/<signal_id>", methods=["GET"])
 def signal_freshness_status(signal_id):
     """SCALPING FRESHNESS: Real-time signal staleness detection"""
     try:
-        from datetime import datetime
         import sqlite3
-        
+        from datetime import datetime
+
         # Get signal creation time from truth log
         signal_age_minutes = 0
         signal_confidence = 0
-        
-        with open('/root/HydraX-v2/truth_log.jsonl', 'r') as f:
+
+        with open("/root/HydraX-v2/truth_log.jsonl", "r") as f:
             for line in f:
                 try:
                     data = json.loads(line)
-                    if data.get('signal_id') == signal_id:
-                        created_at = datetime.fromisoformat(data['generated_at'].replace('Z', ''))
+                    if data.get("signal_id") == signal_id:
+                        created_at = datetime.fromisoformat(data["generated_at"].replace("Z", ""))
                         signal_age_minutes = (datetime.now() - created_at).total_seconds() / 60
-                        signal_confidence = data.get('confidence', 0)
+                        signal_confidence = data.get("confidence", 0)
                         break
                 except:
                     continue
-        
+
         # SCALPING FRESHNESS LOGIC
         if signal_age_minutes <= 5:
             freshness_score = 100
-            status = 'fresh'
-            warning_level = 'none'
+            status = "fresh"
+            warning_level = "none"
             fireable = True
         elif signal_age_minutes <= 10:
             freshness_score = max(60, 100 - (signal_age_minutes - 5) * 8)  # Degrade fast
-            status = 'aging'
-            warning_level = 'caution'
+            status = "aging"
+            warning_level = "caution"
             fireable = True
         elif signal_age_minutes <= 15:
             freshness_score = max(20, 60 - (signal_age_minutes - 10) * 8)
-            status = 'stale'
-            warning_level = 'warning'
+            status = "stale"
+            warning_level = "warning"
             fireable = signal_confidence >= 45  # Recalibrated: was 95%, now 45% (top of best performing range)
         else:
             freshness_score = 0
-            status = 'expired'
-            warning_level = 'danger'
+            status = "expired"
+            warning_level = "danger"
             fireable = False  # UNFIREABLE after 15 minutes
-        
-        return jsonify({
-            'signal_id': signal_id,
-            'freshness_score': int(freshness_score),
-            'status': status,
-            'pattern_valid': fireable,
-            'warning_level': warning_level,
-            'fireable': fireable,
-            'age_minutes': round(signal_age_minutes, 1),
-            'confidence': signal_confidence,
-            'message': f'Signal {status} - {int(freshness_score)}% fresh'
-        })
-        
+
+        return jsonify(
+            {
+                "signal_id": signal_id,
+                "freshness_score": int(freshness_score),
+                "status": status,
+                "pattern_valid": fireable,
+                "warning_level": warning_level,
+                "fireable": fireable,
+                "age_minutes": round(signal_age_minutes, 1),
+                "confidence": signal_confidence,
+                "message": f"Signal {status} - {int(freshness_score)}% fresh",
+            }
+        )
+
     except Exception as e:
         # Fallback for any errors
-        return jsonify({
-            'signal_id': signal_id,
-            'freshness_score': 50,
-            'status': 'unknown',
-            'pattern_valid': True,
-            'warning_level': 'caution',
-            'fireable': True,
-            'message': 'Freshness check unavailable'
-        })
+        return jsonify(
+            {
+                "signal_id": signal_id,
+                "freshness_score": 50,
+                "status": "unknown",
+                "pattern_valid": True,
+                "warning_level": "caution",
+                "fireable": True,
+                "message": "Freshness check unavailable",
+            }
+        )
 
-@app.route('/api/check-signal-access', methods=['POST'])
+
+@app.route("/api/check-signal-access", methods=["POST"])
 def check_signal_access():
     """Check if user can fire a specific signal mode"""
     try:
         data = request.get_json()
-        user_id = data.get('user_id') or request.headers.get('X-User-ID')
-        signal_id = data.get('signal_id')
-        
+        user_id = data.get("user_id") or request.headers.get("X-User-ID")
+        signal_id = data.get("signal_id")
+
         if not user_id or not signal_id:
-            return jsonify({
-                'error': 'Missing user_id or signal_id',
-                'can_fire': False
-            }), 400
-        
+            return jsonify({"error": "Missing user_id or signal_id", "can_fire": False}), 400
+
         # Get signal data to determine mode
         mission_file = f"/root/HydraX-v2/missions/{signal_id}.json"
         if not os.path.exists(mission_file):
-            return jsonify({
-                'error': 'Signal not found',
-                'can_fire': False
-            }), 404
-        
-        with open(mission_file, 'r') as f:
+            return jsonify({"error": "Signal not found", "can_fire": False}), 404
+
+        with open(mission_file, "r") as f:
             mission_data = json.load(f)
-        
-        signal_data = mission_data.get('signal', mission_data)
-        signal_type = signal_data.get('signal_type', 'RAPID_ASSAULT')
-        signal_mode = 'RAPID' if 'RAPID' in signal_type else 'SNIPER'
-        
+
+        signal_data = mission_data.get("signal", mission_data)
+        signal_type = signal_data.get("signal_type", "RAPID_ASSAULT")
+        signal_mode = "RAPID" if "RAPID" in signal_type else "SNIPER"
+
         # Check user tier and permissions
         user_tier = get_user_tier(user_id)
         can_fire = can_fire_signal_mode(user_tier, signal_mode)
-        
-        response = {
-            'can_fire': can_fire,
-            'user_tier': user_tier,
-            'signal_mode': signal_mode,
-            'signal_id': signal_id
-        }
-        
+
+        response = {"can_fire": can_fire, "user_tier": user_tier, "signal_mode": signal_mode, "signal_id": signal_id}
+
         if not can_fire:
-            response.update({
-                'upgrade_required': True,
-                'upgrade_title': f'Upgrade Required for {signal_mode} Signals',
-                'upgrade_message': f'Your {user_tier} tier can only fire RAPID signals. Upgrade to PREDATOR tier to access {signal_mode} signals.',
-                'upgrade_benefits': [
-                    'Access to both RAPID and SNIPER signals',
-                    'Higher precision trading opportunities', 
-                    'Extended target profit potential',
-                    'Advanced risk management tools'
-                ],
-                'upgrade_action': 'Contact support to upgrade your account'
-            })
-        
+            response.update(
+                {
+                    "upgrade_required": True,
+                    "upgrade_title": f"Upgrade Required for {signal_mode} Signals",
+                    "upgrade_message": f"Your {user_tier} tier can only fire RAPID signals. Upgrade to PREDATOR tier to access {signal_mode} signals.",
+                    "upgrade_benefits": [
+                        "Access to both RAPID and SNIPER signals",
+                        "Higher precision trading opportunities",
+                        "Extended target profit potential",
+                        "Advanced risk management tools",
+                    ],
+                    "upgrade_action": "Contact support to upgrade your account",
+                }
+            )
+
         return jsonify(response)
-        
+
     except Exception as e:
         logger.error(f"Check signal access error: {e}")
-        return jsonify({
-            'error': str(e),
-            'can_fire': False
-        }), 500
+        return jsonify({"error": str(e), "can_fire": False}), 500
 
-@app.route('/api/user-balance/<user_id>', methods=['GET'])
+
+@app.route("/api/user-balance/<user_id>", methods=["GET"])
 def get_live_user_balance(user_id):
     """Get real-time user balance from HEARTBEAT_METRICS"""
     try:
@@ -4057,106 +4459,123 @@ def get_live_user_balance(user_id):
         # Get live HEARTBEAT_METRICS data
         equity_data = get_live_equity_data(target_uuid)
 
-        if equity_data['success']:
-            return jsonify({
-                'success': True,
-                'balance': equity_data['balance'],
-                'equity': equity_data['equity'],
-                'floating_pnl': equity_data['floating_pnl'],
-                'margin': equity_data['margin'],
-                'free_margin': equity_data['free_margin'],
-                'open_positions': equity_data['open_positions'],
-                'currency': 'USD',
-                'leverage': 500,
-                'last_updated': f"{equity_data['age_seconds']}s ago",
-                'source': 'HEARTBEAT_METRICS',
-                'is_fresh': equity_data['is_fresh']
-            })
+        if equity_data["success"]:
+            return jsonify(
+                {
+                    "success": True,
+                    "balance": equity_data["balance"],
+                    "equity": equity_data["equity"],
+                    "floating_pnl": equity_data["floating_pnl"],
+                    "margin": equity_data["margin"],
+                    "free_margin": equity_data["free_margin"],
+                    "open_positions": equity_data["open_positions"],
+                    "currency": "USD",
+                    "leverage": 500,
+                    "last_updated": f"{equity_data['age_seconds']}s ago",
+                    "source": "HEARTBEAT_METRICS",
+                    "is_fresh": equity_data["is_fresh"],
+                }
+            )
         else:
             # Fallback to old method
             import sqlite3
-            conn = sqlite3.connect('/root/HydraX-v2/bitten.db')
+
+            conn = sqlite3.connect("/root/HydraX-v2/bitten.db")
             cursor = conn.cursor()
 
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT last_balance, last_equity, currency, leverage
                 FROM ea_instances
                 WHERE user_id = ?
                 ORDER BY last_seen DESC
                 LIMIT 1
-            """, (user_id,))
+            """,
+                (user_id,),
+            )
 
             result = cursor.fetchone()
             conn.close()
 
             if result:
                 balance, equity, currency, leverage = result
-                return jsonify({
-                    'success': True,
-                    'balance': float(balance or 0),
-                    'equity': float(equity or 0),
-                    'currency': currency or 'USD',
-                    'leverage': int(leverage or 500),
-                    'last_updated': 'Database fallback',
-                    'source': 'ea_instances'
-                })
+                return jsonify(
+                    {
+                        "success": True,
+                        "balance": float(balance or 0),
+                        "equity": float(equity or 0),
+                        "currency": currency or "USD",
+                        "leverage": int(leverage or 500),
+                        "last_updated": "Database fallback",
+                        "source": "ea_instances",
+                    }
+                )
             else:
-                return jsonify({
-                    'success': False,
-                    'error': 'No HEARTBEAT_METRICS or EA connection found'
-                })
+                return jsonify({"success": False, "error": "No HEARTBEAT_METRICS or EA connection found"})
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
+        return jsonify({"success": False, "error": str(e)})
 
-@app.route('/api/bitmode/toggle', methods=['POST'])
+
+@app.route("/api/bitmode/toggle", methods=["POST"])
 def api_bitmode_toggle():
-# [DISABLED BITMODE]     """API endpoint to toggle BITMODE for user"""
+    # [DISABLED BITMODE]     """API endpoint to toggle BITMODE for user"""
     try:
         data = request.get_json()
-        user_id = data.get('user_id')
-        enabled = data.get('enabled', False)
-        
+        user_id = data.get("user_id")
+        enabled = data.get("enabled", False)
+
         if not user_id:
-            return jsonify({'success': False, 'error': 'User ID required'}), 400
-        
+            return jsonify({"success": False, "error": "User ID required"}), 400
+
         # Get user tier from user registry or default to COMMANDER
         user_tier = get_user_tier(user_id)
-        
-        # Check tier eligibility
-        if user_tier not in ['FANG', 'COMMANDER']:
-            return jsonify({
-                'success': False, 
-# [DISABLED BITMODE]                 'error': f'BITMODE requires FANG+ tier. Current tier: {user_tier}'
-            }), 403
-        
-# [DISABLED BITMODE]         # Toggle BITMODE
-        from src.bitten_core.fire_mode_database import fire_mode_db
-        success = fire_mode_db.toggle_bitmode(user_id, enabled, user_tier)
-        
-        if success:
-            return jsonify({
-                'success': True,
-                'enabled': enabled,
-# [DISABLED BITMODE]                 'message': f'BITMODE {"enabled" if enabled else "disabled"} successfully'
-            })
-        else:
-            return jsonify({
-                'success': False,
-# [DISABLED BITMODE]                 'error': 'Failed to update BITMODE status'
-            }), 500
-            
-    except Exception as e:
-# [DISABLED BITMODE]         logger.error(f"BITMODE toggle error: {e}")
-        return jsonify({
-            'success': False,
-            'error': 'Internal server error'
-        }), 500
 
-@app.route('/live-trade')
+        # Check tier eligibility
+        if user_tier not in ["FANG", "COMMANDER"]:
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        # [DISABLED BITMODE]                 'error': f'BITMODE requires FANG+ tier. Current tier: {user_tier}'
+                    }
+                ),
+                403,
+            )
+
+        # [DISABLED BITMODE]         # Toggle BITMODE
+        from src.bitten_core.fire_mode_database import fire_mode_db
+
+        success = fire_mode_db.toggle_bitmode(user_id, enabled, user_tier)
+
+        if success:
+            return jsonify(
+                {
+                    "success": True,
+                    "enabled": enabled,
+                    # [DISABLED BITMODE]                 'message': f'BITMODE {"enabled" if enabled else "disabled"} successfully'
+                }
+            )
+        else:
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        # [DISABLED BITMODE]                 'error': 'Failed to update BITMODE status'
+                    }
+                ),
+                500,
+            )
+
+    except Exception as e:
+        # [DISABLED BITMODE]         logger.error(f"BITMODE toggle error: {e}")
+        return jsonify({"success": False, "error": "Internal server error"}), 500
+
+
+@app.route("/live-trade")
 def live_trade():
     """Live Trade Monitor - Simplified version for reliability"""
-    user_id = request.args.get('user_id', 'anonymous')
-    ticket_id = request.args.get('ticketId', 'unknown')
+    user_id = request.args.get("user_id", "anonymous")
+    ticket_id = request.args.get("ticketId", "unknown")
 
     # Simple HTML response for live trade monitoring
     return f"""
@@ -4230,14 +4649,15 @@ def live_trade():
 </html>
     """
 
+
 # HydraSocket v1 Integration
 try:
-    from src.hydrasocket.events_api import EventsAPI, register_events_routes
-    from src.hydrasocket.websocket_handler import HydraSocketHandler, register_websocket_handlers
-    from src.hydrasocket.ea_event_collector import get_ea_collector
-    from src.hydrasocket.metrics import get_metrics_collector, register_metrics_routes
-    from src.hydrasocket.idempotency import get_idempotency_manager
     from src.hydrasocket.auth import get_auth_manager, register_auth_routes
+    from src.hydrasocket.ea_event_collector import get_ea_collector
+    from src.hydrasocket.events_api import EventsAPI, register_events_routes
+    from src.hydrasocket.idempotency import get_idempotency_manager
+    from src.hydrasocket.metrics import get_metrics_collector, register_metrics_routes
+    from src.hydrasocket.websocket_handler import HydraSocketHandler, register_websocket_handlers
 
     events_api = EventsAPI()
     register_events_routes(app, events_api)
@@ -4270,75 +4690,80 @@ except ImportError as e:
     metrics_collector = None
     idempotency_manager = None
 
+
 # Register mission fire API endpoint
-@app.route('/api/mission/<signal_id>', methods=['GET'])
+@app.route("/api/mission/<signal_id>", methods=["GET"])
 def get_mission_brief(signal_id):
     """Get mission briefing with fire packet for signal"""
     try:
         from mission_fire_api import get_mission_api
+
         result = get_mission_api(signal_id)
         return jsonify(result)
     except Exception as e:
         logger.error(f"Mission API error: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
 
+
 # Mission session API endpoint for deep links
-@app.route('/api/mission_session/<mission_session_id>', methods=['GET'])
+@app.route("/api/mission_session/<mission_session_id>", methods=["GET"])
 def get_mission_session_data(mission_session_id):
     """
     Get mission session data for frontend deep link display
     Used by /mission?ms=<id>&token=<jwt> frontend route
     """
     try:
-        from src.mission_session.session_manager import get_session_manager
         from mission_fire_api import get_mission_api
+        from src.mission_session.session_manager import get_session_manager
 
         # Get mission session
         session_manager = get_session_manager()
         session = session_manager.get_session(mission_session_id)
 
         if not session:
-            return jsonify({
-                "success": False,
-                "error": "Mission session not found",
-                "error_code": "SESSION_NOT_FOUND"
-            }), 404
+            return (
+                jsonify({"success": False, "error": "Mission session not found", "error_code": "SESSION_NOT_FOUND"}),
+                404,
+            )
 
         # Get signal/mission data
-        signal_id = session['signal_id']
+        signal_id = session["signal_id"]
         mission_result = get_mission_api(signal_id)
 
-        if not mission_result.get('success'):
-            return jsonify({
-                "success": False,
-                "error": "Signal data not found",
-                "error_code": "SIGNAL_NOT_FOUND"
-            }), 404
+        if not mission_result.get("success"):
+            return jsonify({"success": False, "error": "Signal data not found", "error_code": "SIGNAL_NOT_FOUND"}), 404
 
         # Get real user account data from database
         import sqlite3
-        user_id = session['user_id']
-        conn = sqlite3.connect('/root/HydraX-v2/bitten.db')
+
+        user_id = session["user_id"]
+        conn = sqlite3.connect("/root/HydraX-v2/bitten.db")
         cursor = conn.cursor()
 
         # Get real MT5 balance
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT last_balance, last_equity, target_uuid
             FROM ea_instances
             WHERE user_id = ?
             ORDER BY last_seen DESC
             LIMIT 1
-        """, (user_id,))
+        """,
+            (user_id,),
+        )
 
         ea_row = cursor.fetchone()
         balance = float(ea_row[0]) if ea_row and ea_row[0] else 10000.0
         equity = float(ea_row[1]) if ea_row and ea_row[1] else balance
 
         # Get active positions count
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT COUNT(*) FROM live_positions
             WHERE user_id = ? AND status = 'OPEN'
-        """, (user_id,))
+        """,
+            (user_id,),
+        )
         active_trades = cursor.fetchone()[0] or 0
 
         conn.close()
@@ -4347,21 +4772,21 @@ def get_mission_session_data(mission_session_id):
         response = {
             "success": True,
             "mission_session": {
-                "session_id": session['mission_session_id'],
-                "status": session['status'],
-                "user_id": session['user_id'],
-                "expires_at": session['expires_at'],
-                "created_at": session['created_at']
+                "session_id": session["mission_session_id"],
+                "status": session["status"],
+                "user_id": session["user_id"],
+                "expires_at": session["expires_at"],
+                "created_at": session["created_at"],
             },
-            "mission": mission_result.get('mission', {}),
-            "signal_data": mission_result.get('mission', {}),
+            "mission": mission_result.get("mission", {}),
+            "signal_data": mission_result.get("mission", {}),
             "user_account": {
                 "balance": balance,
                 "equity": equity,
                 "active_trades": active_trades,
                 "max_trades": 3,  # COMMANDER tier default
-                "tier": "COMMANDER"
-            }
+                "tier": "COMMANDER",
+            },
         }
 
         return jsonify(response)
@@ -4369,16 +4794,15 @@ def get_mission_session_data(mission_session_id):
     except Exception as e:
         logger.error(f"❌ Mission session API error: {e}")
         import traceback
+
         traceback.print_exc()
-        return jsonify({
-            "success": False,
-            "error": str(e),
-            "error_code": "INTERNAL_ERROR"
-        }), 500
+        return jsonify({"success": False, "error": str(e), "error_code": "INTERNAL_ERROR"}), 500
+
 
 # Register API documentation endpoints
 try:
     from app_docs import bp_docs
+
     app.register_blueprint(bp_docs)
     logger.info("✅ API documentation endpoints registered at /docs and /api/health")
 except ImportError as e:
@@ -4391,80 +4815,90 @@ if __name__ == "__main__":
         logger.info("✅ v2.07H position tracking routes registered")
 
     socketio.run(app, host="0.0.0.0", port=8888, debug=False, allow_unsafe_werkzeug=True)
-@app.route('/m/<short_code>')
+
+
+@app.route("/m/<short_code>")
 def resolve_mission_short_code(short_code):
     """Resolve short code to mission session (one-time use)"""
     try:
         import sqlite3
         import time
-        
-        conn = sqlite3.connect('/root/HydraX-v2/bitten.db')
+
+        conn = sqlite3.connect("/root/HydraX-v2/bitten.db")
         cursor = conn.cursor()
-        
+
         # Get short code details
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT mission_session_id, jwt_token, expires_at, used_at, user_id
             FROM mission_short_codes
             WHERE short_code = ?
-        """, (short_code,))
-        
+        """,
+            (short_code,),
+        )
+
         result = cursor.fetchone()
-        
+
         if not result:
             return jsonify({"error": "Invalid code", "error_code": "INVALID_CODE"}), 404
-        
+
         mission_session_id, jwt_token, expires_at, used_at, user_id = result
-        
+
         # Check expiry
         if time.time() > expires_at:
             return jsonify({"error": "Code expired", "error_code": "EXPIRED"}), 410
-        
+
         # Check if already used
         if used_at is not None:
             return jsonify({"error": "Code already used", "error_code": "ALREADY_USED"}), 410
-        
+
         # Mark as used
-        cursor.execute("""
+        cursor.execute(
+            """
             UPDATE mission_short_codes
             SET used_at = ?
             WHERE short_code = ?
-        """, (int(time.time()), short_code))
+        """,
+            (int(time.time()), short_code),
+        )
         conn.commit()
         conn.close()
-        
+
         # Redirect to mission page with session and token
-        return redirect(f'/mission?ms={mission_session_id}&token={jwt_token}')
-        
+        return redirect(f"/mission?ms={mission_session_id}&token={jwt_token}")
+
     except Exception as e:
         logger.error(f"Short code resolution error: {e}")
         return jsonify({"error": "Server error"}), 500
 
 
-
-
-@app.route('/api/status/<user_id>', methods=['GET'])
+@app.route("/api/status/<user_id>", methods=["GET"])
 def get_user_status(user_id):
     """Get real-time user account status with open trades"""
     try:
-        conn = sqlite3.connect('bitten.db')
+        conn = sqlite3.connect("bitten.db")
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
-        
+
         # Get account balance from ea_instances or default
-        cursor.execute("""
-            SELECT last_balance, last_equity 
-            FROM ea_instances 
-            WHERE user_id = ? 
-            ORDER BY last_seen DESC 
+        cursor.execute(
+            """
+            SELECT last_balance, last_equity
+            FROM ea_instances
+            WHERE user_id = ?
+            ORDER BY last_seen DESC
             LIMIT 1
-        """, (user_id,))
-        
+        """,
+            (user_id,),
+        )
+
         account_row = cursor.fetchone()
-        balance = float(account_row['last_balance']) if account_row and account_row['last_balance'] else 10000.0
-        
+        balance = float(account_row["last_balance"]) if account_row and account_row["last_balance"] else 10000.0
+
         # Get open trades (status = 'FILLED' and not closed)
-        cursor.execute("""
-            SELECT 
+        cursor.execute(
+            """
+            SELECT
                 ticket as id,
                 symbol as pair,
                 price as entry,
@@ -4475,53 +4909,54 @@ def get_user_status(user_id):
                 lot as lots,
                 created_at as startTime
             FROM fires
-            WHERE user_id = ? 
+            WHERE user_id = ?
             AND status = 'FILLED'
             AND (closed_at IS NULL OR closed_at = 0)
             ORDER BY created_at DESC
-        """, (user_id,))
-        
+        """,
+            (user_id,),
+        )
+
         trades = []
         total_pnl = 0.0
-        
+
         for row in cursor.fetchall():
             trade_dict = dict(row)
-            
+
             # Convert timestamp to ISO string for frontend
-            if trade_dict['startTime']:
-                trade_dict['startTime'] = datetime.fromtimestamp(trade_dict['startTime']).isoformat()
-            
+            if trade_dict["startTime"]:
+                trade_dict["startTime"] = datetime.fromtimestamp(trade_dict["startTime"]).isoformat()
+
             # Ensure numeric values
-            trade_dict['entry'] = float(trade_dict['entry']) if trade_dict['entry'] else 0.0
-            trade_dict['current'] = float(trade_dict['current']) if trade_dict['current'] else trade_dict['entry']
-            trade_dict['stopLoss'] = float(trade_dict['stopLoss']) if trade_dict['stopLoss'] else 0.0
-            trade_dict['takeProfit'] = float(trade_dict['takeProfit']) if trade_dict['takeProfit'] else 0.0
-            trade_dict['equity'] = float(trade_dict['equity']) if trade_dict['equity'] else 0.0
-            trade_dict['lots'] = float(trade_dict['lots']) if trade_dict['lots'] else 0.0
-            
-            total_pnl += trade_dict['equity']
+            trade_dict["entry"] = float(trade_dict["entry"]) if trade_dict["entry"] else 0.0
+            trade_dict["current"] = float(trade_dict["current"]) if trade_dict["current"] else trade_dict["entry"]
+            trade_dict["stopLoss"] = float(trade_dict["stopLoss"]) if trade_dict["stopLoss"] else 0.0
+            trade_dict["takeProfit"] = float(trade_dict["takeProfit"]) if trade_dict["takeProfit"] else 0.0
+            trade_dict["equity"] = float(trade_dict["equity"]) if trade_dict["equity"] else 0.0
+            trade_dict["lots"] = float(trade_dict["lots"]) if trade_dict["lots"] else 0.0
+
+            total_pnl += trade_dict["equity"]
             trades.append(trade_dict)
-        
+
         conn.close()
-        
+
         equity = balance + total_pnl
         max_slots = 3  # Default, can be pulled from user config
-        
-        return jsonify({
-            'success': True,
-            'data': {
-                'balance': balance,
-                'equity': equity,
-                'openPositions': len(trades),
-                'maxSlots': max_slots,
-                'trades': trades
-            },
-            'timestamp': datetime.now().isoformat()
-        })
-        
+
+        return jsonify(
+            {
+                "success": True,
+                "data": {
+                    "balance": balance,
+                    "equity": equity,
+                    "openPositions": len(trades),
+                    "maxSlots": max_slots,
+                    "trades": trades,
+                },
+                "timestamp": datetime.now().isoformat(),
+            }
+        )
+
     except Exception as e:
         logger.error(f"Get user status error: {e}")
-        return jsonify({
-            'success': False,
-            'error': f'Failed to get status: {str(e)}'
-        }), 500
+        return jsonify({"success": False, "error": f"Failed to get status: {str(e)}"}), 500

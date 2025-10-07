@@ -10,23 +10,27 @@
 This version establishes the **canonical EA → Core architecture** that MUST NOT be modified without consulting the binding contracts.
 
 ### Architecture Locked:
+
 ```
 EA v7.01 (PUSH) → 134.199.204.67:5556 → Telemetry Bridge → 5560 → Elite Guard → WebApp → GROUP
 ```
 
 ### Key Components:
+
 1. **EA v7.01**: ZMQ client sending tick data (NEVER binds)
 2. **Telemetry Bridge**: MANDATORY for data flow (zmq_telemetry_bridge_debug.py)
 3. **Elite Guard v6.0**: Pattern detection with CITADEL Shield
 4. **Signal Delivery**: GROUP ONLY to @bitten_signals (no DMs)
 
 ### Documentation Suite:
+
 - `EA_DATA_FLOW_CONTRACT.md` - Binding agreement
 - `EA_QUICK_REFERENCE.md` - Troubleshooting commands
 - `EA_DATA_FLOW_DIAGRAM.txt` - Visual architecture
 - `start_elite_guard_system.sh` - Canonical startup script
 
 ### Current Configuration:
+
 - Elite Guard threshold: 50% (temporary for 5-hour benchmarking)
 - Truth system: Active and tracking all signals
 - All components: Tested and operational
@@ -40,6 +44,7 @@ EA v7.01 (PUSH) → 134.199.204.67:5556 → Telemetry Bridge → 5560 → Elite 
 ## Lock Declaration
 
 This architecture is now **CANONICAL**. Any future agent or module attempting to modify:
+
 - Port assignments (5556, 5560, 5557, 8888)
 - Data flow direction
 - Component dependencies

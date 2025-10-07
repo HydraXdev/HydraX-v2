@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import React from 'react';
-import { HelpCircle, Menu } from 'lucide-react';
-import { motion } from 'framer-motion';
+import React from "react";
+import { HelpCircle, Menu } from "lucide-react";
+import { motion } from "framer-motion";
 
 export interface HelpMenuButtonsProps {
   onHelp: () => void;
@@ -22,7 +22,7 @@ export interface HelpMenuButtonsProps {
 export function HelpMenuButtons({
   onHelp,
   onMenu,
-  className = '',
+  className = "",
 }: HelpMenuButtonsProps) {
   return (
     <div
@@ -32,8 +32,8 @@ export function HelpMenuButtons({
         ${className}
       `}
       style={{
-        paddingBottom: 'env(safe-area-inset-bottom)',
-        paddingRight: 'env(safe-area-inset-right)',
+        paddingBottom: "env(safe-area-inset-bottom)",
+        paddingRight: "env(safe-area-inset-right)",
       }}
     >
       {/* Help Button */}

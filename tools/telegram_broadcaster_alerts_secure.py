@@ -4,9 +4,21 @@
 BITTEN Telegram Alert Broadcaster - SECURE & ROBUST VERSION
 Permanent fix with comprehensive error handling and security hardening
 """
-import os, json, time, redis, requests, sys, signal, threading, queue
-import hmac, hashlib, base64
+import base64
+import hashlib
+import hmac
+import json
+import os
+import queue
+import signal
+import sys
+import threading
+import time
 from datetime import datetime
+
+import redis
+import requests
+
 
 # SECURITY: Load secrets securely with validation
 def load_secrets():
@@ -17,7 +29,7 @@ def load_secrets():
     secret_files = [
         "/root/HydraX-v2/.secrets/athena.env",
         "/root/HydraX-v2/.secrets/telegram.env",
-        "/root/HydraX-v2/.secrets/links.env"
+        "/root/HydraX-v2/.secrets/links.env",
     ]
 
     for secret_file in secret_files:
@@ -33,8 +45,10 @@ def load_secrets():
 
     return secrets_loaded
 
+
 # Load secrets
 load_secrets()
+
 
 # SECURITY: Secure token validation
 def validate_token(token):
@@ -42,7 +56,7 @@ def validate_token(token):
     if not token or len(token) < 45:
         return False
 
-    parts = token.split(':')
+    parts = token.split(":")
     if len(parts) != 2:
         return False
 
@@ -54,6 +68,7 @@ def validate_token(token):
         return False
 
     return True
+
 
 # CONFIGURATION with secure defaults
 SIGN_KEY = os.environ.get("MISSION_LINK_SIGNING_KEY", "").encode()
@@ -83,6 +98,7 @@ _redis_conn = None
 _last_auth_check = 0
 _auth_cache_duration = 300  # 5 minutes
 
+
 def get_redis():
     """Thread-safe Redis connection with retry logic"""
     global _redis_conn
@@ -96,7 +112,7 @@ def get_redis():
                 socket_connect_timeout=5,
                 socket_timeout=5,
                 retry_on_timeout=True,
-                health_check_interval=30
+                health_check_interval=30,
             )
             # Test connection
             _redis_conn.ping()
@@ -108,6 +124,7 @@ def get_redis():
 
     return _redis_conn
 
+
 def _mint_link_token(user_id, signal_id, ttl=TTL):
     """Secure token minting with validation"""
     if not SIGN_KEY:
@@ -116,7 +133,7 @@ def _mint_link_token(user_id, signal_id, ttl=TTL):
 
     try:
         payload = {"uid": str(user_id), "sid": str(signal_id), "exp": int(time.time()) + ttl}
-        msg = json.dumps(payload, separators=(",",":"), sort_keys=True).encode()
+        msg = json.dumps(payload, separators=(",", ":"), sort_keys=True).encode()
         sig = hmac.new(SIGN_KEY, msg, hashlib.sha256).digest()
         tok = base64.urlsafe_b64encode(msg + b"." + sig).decode().rstrip("=")
         return tok
@@ -124,13 +141,14 @@ def _mint_link_token(user_id, signal_id, ttl=TTL):
         print(f"[SECURITY] Token minting failed: {e}")
         return None
 
+
 def fmt(ev):
     """Format event into Telegram message - SPAM RESISTANT"""
     try:
         # Extract fields safely with validation
         sid = str(ev.get("signal_id", ""))[:50]  # Limit length
-        sym = str(ev.get("symbol", "?"))[:10]    # Limit length
-        dire = str(ev.get("direction", "?"))[:4] # BUY/SELL only
+        sym = str(ev.get("symbol", "?"))[:10]  # Limit length
+        dire = str(ev.get("direction", "?"))[:4]  # BUY/SELL only
 
         # Validate confidence
         try:
@@ -140,21 +158,21 @@ def fmt(ev):
 
         hold = ev.get("expected_hold_min") or ev.get("hold_min") or None
         pclass = str((ev.get("pattern_class", "RAPID") or "RAPID")).upper()[:10]
-        pattern = str(ev.get('pattern_type', ev.get('pattern', '')))[:30]
-        signal_mode = str(ev.get('signal_mode', ''))[:10]
+        pattern = str(ev.get("pattern_type", ev.get("pattern", "")))[:30]
+        signal_mode = str(ev.get("signal_mode", ""))[:10]
 
         # SECURITY: Validate direction
         if dire not in ["BUY", "SELL"]:
             dire = "?"
 
         # Format pattern name safely
-        pattern_display = pattern.replace('_', ' ').title() if pattern else ''
+        pattern_display = pattern.replace("_", " ").title() if pattern else ""
 
         # Determine signal type with spam protection
-        if signal_mode == "SNIPER" or ev.get('target_pips', 0) >= 30:
+        if signal_mode == "SNIPER" or ev.get("target_pips", 0) >= 30:
             emoji = "🎯"
             tag = "SNIPER"
-        elif signal_mode == "RAPID" or (0 < ev.get('target_pips', 0) < 30):
+        elif signal_mode == "RAPID" or (0 < ev.get("target_pips", 0) < 30):
             emoji = "⚡"
             tag = "RAPID"
         elif pclass == "SNIPER":
@@ -188,6 +206,7 @@ def fmt(ev):
         print(f"[FORMAT] Error formatting message: {e}")
         return f"⚡ SIGNAL ERROR • {ev.get('symbol', '?')} {ev.get('direction', '?')} • {int(ev.get('confidence', 0))}%\nmission ready"
 
+
 def verify_bot_auth():
     """Secure bot authentication with caching"""
     global _last_auth_check
@@ -203,16 +222,13 @@ def verify_bot_auth():
         return False
 
     try:
-        resp = requests.get(
-            f"https://api.telegram.org/bot{TG_TOKEN}/getMe",
-            timeout=10
-        )
+        resp = requests.get(f"https://api.telegram.org/bot{TG_TOKEN}/getMe", timeout=10)
 
         if resp.status_code == 200:
             bot_data = resp.json()
-            if bot_data.get('ok'):
-                username = bot_data.get('result', {}).get('username', '')
-                bot_id = bot_data.get('result', {}).get('id', '')
+            if bot_data.get("ok"):
+                username = bot_data.get("result", {}).get("username", "")
+                bot_id = bot_data.get("result", {}).get("id", "")
 
                 print(f"[AUTH] Bot verified: @{username} (ID: {bot_id})")
 
@@ -239,86 +255,90 @@ def verify_bot_auth():
         print(f"[AUTH] Verification error: {e}")
         return False
 
+
 def send_message_to_dlq(alert_id, stream_id, reason, payload_data=None):
     """Send failed alert to Dead Letter Queue"""
     try:
         R = get_redis()
         dlq_entry = {
-            'alert_id': alert_id,
-            'stream_id': stream_id,
-            'reason': reason,
-            'ts': str(int(time.time())),
-            'payload_json': json.dumps(payload_data)[:500] if payload_data else "{}"
+            "alert_id": alert_id,
+            "stream_id": stream_id,
+            "reason": reason,
+            "ts": str(int(time.time())),
+            "payload_json": json.dumps(payload_data)[:500] if payload_data else "{}",
         }
-        dlq_stream_id = R.xadd('alerts:v1:dead', dlq_entry)
+        dlq_stream_id = R.xadd("alerts:v1:dead", dlq_entry)
         print(f"[DLQ] alert_id={alert_id} reason='{reason}' dlq_id={dlq_stream_id}")
     except Exception as e:
         print(f"[DLQ] Failed to send to DLQ: {e}")
+
 
 def send_message(text, signal_id="", event_data=None, retry_count=4, stream_id=None):
     """Secure message sending with exponential backoff and DLQ"""
 
     if not TG_TOKEN or not TG_CHAT:
-        print(f"[SEND] Missing credentials. Token: {'SET' if TG_TOKEN else 'MISSING'}, Chat: {'SET' if TG_CHAT else 'MISSING'}")
+        print(
+            f"[SEND] Missing credentials. Token: {'SET' if TG_TOKEN else 'MISSING'}, Chat: {'SET' if TG_CHAT else 'MISSING'}"
+        )
         if stream_id and signal_id:
             send_message_to_dlq(signal_id, stream_id, "missing_credentials", event_data)
         return False
 
     # Prepare message data
-    message_data = {
-        "chat_id": TG_CHAT,
-        "text": text,
-        "parse_mode": "HTML",
-        "disable_web_page_preview": True
-    }
+    message_data = {"chat_id": TG_CHAT, "text": text, "parse_mode": "HTML", "disable_web_page_preview": True}
 
     # Add inline keyboard if signal data available - MISSION SESSION DEEP LINK
     if signal_id and event_data:
         try:
             import sys
-            sys.path.insert(0, '/root/HydraX-v2')
+
+            sys.path.insert(0, "/root/HydraX-v2")
 
             from src.telegram.deep_link_generator import get_link_generator
 
-            base_url = os.environ.get('BITTEN_UI_URL', 'https://www.joinbitten.com')
+            base_url = os.environ.get("BITTEN_UI_URL", "https://www.joinbitten.com")
             pclass = str((event_data.get("pattern_class", "RAPID") or "RAPID")).upper()
             btn_text = "🎯 Mission Brief" if pclass == "SNIPER" else "⚡ Mission Brief"
 
-            uid = event_data.get('user_id', '7176191872')  # Default to Commander
+            uid = event_data.get("user_id", "7176191872")  # Default to Commander
 
             # Generate SHORT CODE for one-tap access
             try:
-                import sqlite3
                 import secrets
+                import sqlite3
 
                 # Generate secure short code
-                short_code = secrets.token_urlsafe(8)[:11].replace('_', '-')
+                short_code = secrets.token_urlsafe(8)[:11].replace("_", "-")
 
                 # First generate the mission session link to get the token
                 link_generator = get_link_generator()
                 link_data = link_generator.generate_mission_link(
                     signal_id=signal_id,
                     user_id=uid,
-                    alert_id=event_data.get('id', hash(signal_id) % 1000000),
-                    pair=event_data.get('symbol'),
-                    timeframe=event_data.get('timeframe', 'M5'),
-                    risk_max_usd=150.0
+                    alert_id=event_data.get("id", hash(signal_id) % 1000000),
+                    pair=event_data.get("symbol"),
+                    timeframe=event_data.get("timeframe", "M5"),
+                    risk_max_usd=150.0,
                 )
 
                 # Extract mission session ID and token from the link
                 import urllib.parse
-                parsed = urllib.parse.urlparse(link_data['deep_link'])
+
+                parsed = urllib.parse.urlparse(link_data["deep_link"])
                 params = urllib.parse.parse_qs(parsed.query)
-                mission_session_id = params.get('ms', [''])[0]
-                jwt_token = params.get('token', [''])[0]
+                mission_session_id = params.get("ms", [""])[0]
+                jwt_token = params.get("token", [""])[0]
 
                 # Store short code in database (8-hour expiry for view access)
-                conn = sqlite3.connect('/root/HydraX-v2/bitten.db')
+                conn = sqlite3.connect("/root/HydraX-v2/bitten.db")
                 cursor = conn.cursor()
-                cursor.execute("""
+                cursor.execute(
+                    """
                     INSERT INTO mission_short_codes (short_code, mission_session_id, jwt_token, created_at, expires_at, user_id)
                     VALUES (?, ?, ?, ?, ?, ?)
-                """, (short_code, mission_session_id, jwt_token, int(time.time()), int(time.time()) + (8 * 3600), uid))
+                """,
+                    (short_code, mission_session_id, jwt_token, int(time.time()), int(time.time()) + (8 * 3600), uid),
+                )
                 conn.commit()
                 conn.close()
 
@@ -335,10 +355,7 @@ def send_message(text, signal_id="", event_data=None, retry_count=4, stream_id=N
             # SECURITY: Validate URL length
             if len(mission_url) < 2048:  # Telegram URL limit
                 inline_keyboard = {
-                    "inline_keyboard": [[{
-                        "text": btn_text[:64],  # Button text limit
-                        "url": mission_url
-                    }]]
+                    "inline_keyboard": [[{"text": btn_text[:64], "url": mission_url}]]  # Button text limit
                 }
                 message_data["reply_markup"] = json.dumps(inline_keyboard)
         except Exception as e:
@@ -346,6 +363,7 @@ def send_message(text, signal_id="", event_data=None, retry_count=4, stream_id=N
 
     # Attempt sending with exponential backoff and jitter
     import random
+
     for attempt in range(1, retry_count + 1):
         try:
             # Exponential backoff with jitter
@@ -359,17 +377,17 @@ def send_message(text, signal_id="", event_data=None, retry_count=4, stream_id=N
             resp = requests.post(
                 f"https://api.telegram.org/bot{TG_TOKEN}/sendMessage",
                 data=message_data,
-                timeout=(5, 10)  # 5s connect, 10s read
+                timeout=(5, 10),  # 5s connect, 10s read
             )
 
             if resp.status_code == 200:
                 resp_json = resp.json()
-                ok = resp_json.get('ok', False)
+                ok = resp_json.get("ok", False)
                 if ok:
-                    result = resp_json.get('result', {})
-                    message_id = result.get('message_id')
-                    chat = result.get('chat', {})
-                    chat_id = chat.get('id', TG_CHAT)
+                    result = resp_json.get("result", {})
+                    message_id = result.get("message_id")
+                    chat = result.get("chat", {})
+                    chat_id = chat.get("id", TG_CHAT)
 
                     print(f"[TG OK] chat={chat_id} alert_id={signal_id} attempt={attempt}")
 
@@ -379,8 +397,8 @@ def send_message(text, signal_id="", event_data=None, retry_count=4, stream_id=N
 
                     return True
                 else:
-                    error_code = resp_json.get('error_code', 0)
-                    description = resp_json.get('description', '')[:100]
+                    error_code = resp_json.get("error_code", 0)
+                    description = resp_json.get("description", "")[:100]
                     print(f"[TG FAIL] status=200 error={error_code} body={description}")
                     if stream_id and signal_id:
                         send_message_to_dlq(signal_id, stream_id, f"api_error_{error_code}", event_data)
@@ -389,7 +407,7 @@ def send_message(text, signal_id="", event_data=None, retry_count=4, stream_id=N
                 print(f"[TG RETRY_STATUS] status={resp.status_code} attempt={attempt}")
                 continue  # Retry on server errors
             else:
-                resp_text = resp.text[:100] if hasattr(resp, 'text') else str(resp.status_code)
+                resp_text = resp.text[:100] if hasattr(resp, "text") else str(resp.status_code)
                 print(f"[TG FAIL] status={resp.status_code} body={resp_text}")
                 if stream_id and signal_id:
                     send_message_to_dlq(signal_id, stream_id, f"http_{resp.status_code}", event_data)
@@ -413,6 +431,7 @@ def send_message(text, signal_id="", event_data=None, retry_count=4, stream_id=N
         send_message_to_dlq(signal_id, stream_id, f"max_retries_{retry_count}", event_data)
     return False
 
+
 def track_message_for_ttl(chat_id, message_id, signal_id):
     """Track message for TTL cleanup"""
     try:
@@ -420,17 +439,21 @@ def track_message_for_ttl(chat_id, message_id, signal_id):
         now_epoch = int(time.time())
         key = f"alerts:msg:{chat_id}:{message_id}"
 
-        R.hset(key, mapping={
-            "chat_id": str(chat_id),
-            "message_id": str(message_id),
-            "signal_id": str(signal_id)[:50],
-            "sent_at": str(now_epoch),
-            "is_dm": "0"
-        })
+        R.hset(
+            key,
+            mapping={
+                "chat_id": str(chat_id),
+                "message_id": str(message_id),
+                "signal_id": str(signal_id)[:50],
+                "sent_at": str(now_epoch),
+                "is_dm": "0",
+            },
+        )
         R.zadd("alerts:msgs", {f"{chat_id}:{message_id}": now_epoch})
         print(f"[TTL] Tracked message {message_id} for cleanup")
     except Exception as e:
         print(f"[TTL] Failed to track message: {e}")
+
 
 def ensure_redis_stream():
     """Ensure Redis stream and consumer group exist"""
@@ -447,6 +470,7 @@ def ensure_redis_stream():
         print(f"[REDIS] Stream setup failed: {e}")
         raise
 
+
 def drain_pending_messages():
     """Drain any pending messages from previous runs"""
     try:
@@ -460,7 +484,7 @@ def drain_pending_messages():
         errors = 0
 
         for item in pending:
-            msg_id = item['message_id']
+            msg_id = item["message_id"]
             try:
                 # Claim message
                 claimed_msgs = R.xclaim(STREAM, GROUP, CONS, 0, [msg_id])
@@ -468,7 +492,7 @@ def drain_pending_messages():
                 for mid, fields in claimed_msgs:
                     try:
                         ev = json.loads(fields.get("event", "{}"))
-                        signal_id = ev.get('signal_id', '')
+                        signal_id = ev.get("signal_id", "")
 
                         print(f"[DRAIN] Processing {mid}: {signal_id}")
 
@@ -494,14 +518,17 @@ def drain_pending_messages():
     except Exception as e:
         print(f"[DRAIN] Drain failed: {e}")
 
+
 # Global shutdown flag and decoupled queue system
 _shutdown_flag = threading.Event()
 Q = queue.Queue(maxsize=1000)  # in-process queue for pending sends
+
 
 def signal_handler(signum, frame):
     """Graceful shutdown handler"""
     print(f"\n[SHUTDOWN] Received signal {signum}")
     _shutdown_flag.set()
+
 
 def consumer_loop():
     """Redis consumer loop - ONLY moves messages to in-process queue"""
@@ -512,12 +539,7 @@ def consumer_loop():
             R = get_redis()
 
             # Short BLOCK to avoid CPU spin but not freeze
-            resp = R.xreadgroup(
-                GROUP, CONS,
-                {STREAM: ">"},
-                count=50,
-                block=5000  # 5 second timeout
-            )
+            resp = R.xreadgroup(GROUP, CONS, {STREAM: ">"}, count=50, block=5000)  # 5 second timeout
 
             if not resp:
                 continue
@@ -533,7 +555,7 @@ def consumer_loop():
                             continue
 
                         payload = json.loads(event_data)
-                        payload['_stream_id'] = sid  # Track for acking
+                        payload["_stream_id"] = sid  # Track for acking
 
                         # DO NOT send here - just queue it
                         Q.put((sid, payload), block=False)
@@ -555,6 +577,7 @@ def consumer_loop():
 
     print("[CONSUMER] Consumer loop ended")
 
+
 def sender_worker(worker_id=0):
     """Sender worker - handles Telegram with retries"""
     print(f"[WORKER-{worker_id}] Starting sender worker")
@@ -568,7 +591,7 @@ def sender_worker(worker_id=0):
             except queue.Empty:
                 continue
 
-            signal_id = payload.get('signal_id', '')
+            signal_id = payload.get("signal_id", "")
             print(f"[WORKER-{worker_id}] Processing sid={sid} alert_id={signal_id}")
 
             # Format message
@@ -583,7 +606,7 @@ def sender_worker(worker_id=0):
                 print(f"[TG OK] worker={worker_id} sid={sid} alert_id={signal_id}")
             else:
                 # Send to DLQ and ack to prevent reprocessing
-                send_message_to_dlq(signal_id, sid, 'send_fail', payload)
+                send_message_to_dlq(signal_id, sid, "send_fail", payload)
                 R.xack(STREAM, GROUP, sid)
                 print(f"[TG FINAL_FAIL] worker={worker_id} sid={sid} alert_id={signal_id}")
 
@@ -595,13 +618,15 @@ def sender_worker(worker_id=0):
 
     print(f"[WORKER-{worker_id}] Sender worker ended")
 
+
 def send_with_retries(session, payload, formatted_text, max_attempts=4):
     """Send message with retries using existing send_message logic"""
-    signal_id = payload.get('signal_id', '')
+    signal_id = payload.get("signal_id", "")
 
     # Use existing send_message function but with session
     # Temporarily monkey-patch the requests module to use our session
     import requests as orig_requests
+
     temp_post = orig_requests.post
     orig_requests.post = session.post
 
@@ -611,12 +636,13 @@ def send_with_retries(session, payload, formatted_text, max_attempts=4):
             signal_id=signal_id,
             event_data=payload,
             retry_count=max_attempts,
-            stream_id=payload.get('_stream_id')
+            stream_id=payload.get("_stream_id"),
         )
         return result
     finally:
         # Restore original
         orig_requests.post = temp_post
+
 
 def main_loop():
     """Main processing loop with decoupled consumer/sender architecture"""
@@ -697,14 +723,15 @@ def main_loop():
     print("[SHUTDOWN] Telegram broadcaster stopped")
     return True
 
+
 if __name__ == "__main__":
     # Setup signal handlers
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
 
-    print("="*60)
+    print("=" * 60)
     print("🚀 BITTEN TELEGRAM BROADCASTER - SECURE VERSION")
-    print("="*60)
+    print("=" * 60)
 
     try:
         success = main_loop()

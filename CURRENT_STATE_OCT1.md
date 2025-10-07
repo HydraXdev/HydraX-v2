@@ -1,10 +1,12 @@
 # HYDRASOCKET INTEGRATION - CURRENT STATE
+
 **Date**: October 1, 2025 03:45 UTC
 **Status**: 🟡 Waiting for EA Reconnection
 
 ## ✅ WHAT'S COMPLETED
 
 ### 1. Hybrid Command Server (Port 5555)
+
 - **File**: `/root/HydraX-v2/hybrid_command_server.py`
 - **Status**: ✅ RUNNING (PID 1164571)
 - **Purpose**: Accepts native TCP connections from HydraSocket EA
@@ -15,6 +17,7 @@
   - Automatic forwarding: IPC → TCP → EA
 
 ### 2. Command Flow Integration
+
 ```
 WebApp / Brain
     ↓ (ZMQ PUSH)
@@ -28,6 +31,7 @@ MT5 Terminal
 ```
 
 ### 3. Data Flow (Already Working)
+
 ```
 EA (185.244.67.11)
     ↓ Port 5559 (Events - TCP)
@@ -39,6 +43,7 @@ Elite Guard (Waiting for market data)
 ```
 
 ### 4. Test Command Sent
+
 - ✅ feed_set command sent via IPC queue
 - ✅ Hybrid server received the command
 - ⏳ Command queued, waiting for EA connection to send
@@ -46,18 +51,21 @@ Elite Guard (Waiting for market data)
 ## 🟡 WHAT'S PENDING
 
 ### EA Reconnection
+
 **Issue**: EA's command socket needs to reconnect to port 5555
 **Why**: Old command_router used incompatible ZMQ protocol
 **Now**: Proper TCP server ready on port 5555
 **Expected**: EA will connect on next retry attempt
 
 **EA Configuration** (from EA code):
+
 - `InpRouterHost = "134.199.204.67"` ✅ Matches current server
 - `InpCommandPort = 5555` ✅ Matches our TCP server
 - Connection method: Native TCP `SocketConnect()`
 - Retry behavior: Unknown interval (possibly 1-5 minutes)
 
 ### Current EA Status
+
 - ✅ Running and operational
 - ✅ Sending events to port 5559 (Universal Bridge)
 - ✅ Sending account_summary, position_heartbeat every ~1 second
@@ -68,6 +76,7 @@ Elite Guard (Waiting for market data)
 Once EA connects, we should see:
 
 1. **Hybrid Server Logs**:
+
    ```
    📡 EA connected from (185.244.67.11, XXXXX)
    📤 Sent to EA: feed_set
@@ -86,10 +95,12 @@ Once EA connects, we should see:
 ## 🔧 ARCHITECTURE CHANGES MADE
 
 ### Replaced Components
+
 - ❌ **OLD**: `command_router.py` (ZMQ ROUTER on port 5555)
 - ✅ **NEW**: `hybrid_command_server.py` (TCP server on port 5555)
 
 ### Why This Works
+
 - EA uses native TCP sockets (MQL5 `SocketConnect()`)
 - Cannot connect to ZMQ sockets (incompatible protocols)
 - New hybrid server speaks both:
@@ -97,6 +108,7 @@ Once EA connects, we should see:
   - ZMQ for Brain/IPC integration
 
 ### No EA Changes Required
+
 - EA still connects to 134.199.204.67:5555
 - EA still sends JSONL commands
 - EA configuration untouched

@@ -3,6 +3,7 @@
 ## Scenario 1: Press Pass User Journey
 
 ### 1. User Discovers BITTEN
+
 ```
 Landing Page → "Deploy Your $50k Training Account"
 ↓
@@ -16,16 +17,17 @@ Welcome Message: "Welcome to BITTEN, Recruit!"
 ```
 
 ### 2. Press Pass Experience
+
 ```
 Daily Flow:
 - 9:00 AM: Receives signal alert
   "🔫 RAPID ASSAULT [87%] - EUR/USD"
   [VIEW INTEL] button → Opens WebApp HUD
-  
+
 - Views signal details but sees:
   "🔒 PRESS PASS users can view only"
   "Upgrade to NIBBLER to execute trades"
-  
+
 - Earns 25 XP for viewing signals
 - 11:59 PM: Warning "XP resets in 1 minute!"
 - 12:00 AM: XP reset to 0
@@ -40,6 +42,7 @@ Daily Flow:
 ## Scenario 2: NIBBLER User - Basic Trading
 
 ### 1. Signal Reception
+
 ```
 Signal Generated → TCS: 87% RAPID ASSAULT
 ↓
@@ -55,6 +58,7 @@ Risk: $2.50 | Reward: $4.50"
 ```
 
 ### 2. Trade Execution
+
 ```
 WebApp HUD shows:
 - Full signal details ✅
@@ -73,6 +77,7 @@ Click Execute → MT5 Bridge receives command
 ## Scenario 3: FANG User - Premium Signals
 
 ### 1. SNIPER OPS Access
+
 ```
 Signal: ⚡ SNIPER OPS [87%] GBP/JPY
 ↓
@@ -82,6 +87,7 @@ Same manual process as NIBBLER ✅
 ```
 
 ### 2. Special Event Signal
+
 ```
 Future: 🔨 MIDNIGHT HAMMER alert
 ↓
@@ -95,6 +101,7 @@ FANG sees it, can execute ✅
 ## Scenario 4: COMMANDER - Auto Execution
 
 ### 1. Fire Mode Switch
+
 ```
 User sets:
 - Trading slots: 3
@@ -111,6 +118,7 @@ System checks:
 ```
 
 ### 2. Slot Management
+
 ```
 Scenario: 3 trades running, 1 closes
 ↓
@@ -126,6 +134,7 @@ User can switch to SEMI-AUTO anytime
 ## Scenario 5: Tier Upgrade Flow
 
 ### 1. Press Pass → NIBBLER
+
 ```
 Day 6 of trial, 150 XP earned today
 ↓
@@ -147,6 +156,7 @@ After payment:
 ## 🔍 System Flow Analysis
 
 ### ✅ Working Correctly:
+
 1. **Tier Access Control** - Proper signal viewing/execution limits
 2. **XP System** - Earning and reset logic functional
 3. **Signal Generation** - Creating signals at 87% threshold
@@ -155,12 +165,14 @@ After payment:
 6. **Signal Classification** - RAPID/SNIPER working as designed
 
 ### 🚧 Blocking Issues:
+
 1. **MT5 Connections** - No broker connections = no real trades
 2. **Stripe Webhook** - No payment confirmation = manual tier updates
 3. **Press Pass Limit** - 200/week not enforced
 4. **Cron Jobs** - XP reset needs scheduling
 
 ### 🟡 Minor Issues:
+
 1. **TCS Thresholds** - Hardcoded at 87%, needs admin panel
 2. **Signal Frequency** - May need tuning based on 87% threshold
 3. **Notification Timing** - All signals sent immediately (no batching)
@@ -170,6 +182,7 @@ After payment:
 ## 📊 Simulation Summary
 
 The core gameplay loop is **functional** but blocked by:
+
 1. MT5 broker connections (critical)
 2. Stripe payment webhook (important)
 3. Cron job scheduling (important)

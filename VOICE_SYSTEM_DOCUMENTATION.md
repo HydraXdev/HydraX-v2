@@ -1,7 +1,7 @@
 # 🎙️ BITTEN Voice System Documentation
 
-**Created**: July 15, 2025  
-**Status**: Implementation Complete - Awaiting API Key  
+**Created**: July 15, 2025
+**Status**: Implementation Complete - Awaiting API Key
 **Integration**: ElevenLabs Text-to-Speech API
 
 ---
@@ -85,11 +85,13 @@ Each BITTEN personality has a carefully selected voice:
 ### 2. Configure API Key
 
 Run the setup script:
+
 ```bash
 python3 /root/HydraX-v2/setup_voice_system.py
 ```
 
 Or manually add to `.env`:
+
 ```
 ELEVENLABS_API_KEY=your_api_key_here
 ```
@@ -97,6 +99,7 @@ ELEVENLABS_API_KEY=your_api_key_here
 ### 3. Test Voice System
 
 Run the demo to test all voices:
+
 ```bash
 python3 /root/HydraX-v2/voice_demo.py
 ```
@@ -108,6 +111,7 @@ python3 /root/HydraX-v2/voice_demo.py
 ### Method 1: Automatic Patch
 
 In your bot startup code:
+
 ```python
 from update_bot_with_voice import apply_voice_patch
 apply_voice_patch()
@@ -135,11 +139,13 @@ voice_bot.setup_voice_commands()
 ## 📊 Usage Limits
 
 **Free Tier**: 10,000 characters/month
+
 - ~50 average messages
 - Resets monthly
 - Cached messages don't count
 
 **Character Optimization**:
+
 - Messages truncated to 200 chars
 - Markdown removed before synthesis
 - Common phrases cached
@@ -149,17 +155,21 @@ voice_bot.setup_voice_commands()
 ## 🔍 Troubleshooting
 
 ### No Voice Output
+
 1. Check API key is configured
 2. Verify monthly character limit not exceeded
 3. Check user has voice enabled (`/voice`)
 
 ### API Errors
+
 - **401**: Invalid API key
 - **429**: Rate limit exceeded
 - **500**: ElevenLabs server issue
 
 ### Cache Issues
+
 Clean old cache files:
+
 ```python
 voice_synth.clean_old_cache(days=7)
 ```
@@ -210,4 +220,4 @@ voice_synth.clean_old_cache(days=7)
 
 ---
 
-*Voice synthesis ready for deployment. Just add API key!*
+_Voice synthesis ready for deployment. Just add API key!_

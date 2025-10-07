@@ -1,4 +1,3 @@
-
 # 🧠 BITTEN PSYCHOLOGICAL TRIGGER MASTER LIST
 
 This document contains every psychological trigger BITTEN is designed to activate across user onboarding, bot behavior, trade logic, tier access, and XP systems.
@@ -6,6 +5,7 @@ This document contains every psychological trigger BITTEN is designed to activat
 ---
 
 ## 🔄 1. Dopamine Cycle Engineering
+
 - Variable XP streaks (e.g. +10, +30, +0)
 - Randomized XP drops
 - Kill card unlocks
@@ -15,13 +15,15 @@ This document contains every psychological trigger BITTEN is designed to activat
 ---
 
 ## 🧩 2. Identity Reinforcement
+
 - Bots label behavior by tier: “That’s Apex behavior”
 - Tier language shapes identity
-- XP becomes a mirror of who the user *is*, not what they’ve done
+- XP becomes a mirror of who the user _is_, not what they’ve done
 
 ---
 
 ## 🧠 3. Loss Aversion Conditioning
+
 - Trade warning messages (“This will break your kill chain”)
 - XP resets or denied access from bots
 - ShadowMirror system shame triggers
@@ -30,6 +32,7 @@ This document contains every psychological trigger BITTEN is designed to activat
 ---
 
 ## 🔐 4. Mystery & FOMO Triggers
+
 - False narrative forks: “We’re hiding something…”
 - Secret bot unlocks based on behavior
 - RecruiterBot teases elite perks (blurred)
@@ -38,6 +41,7 @@ This document contains every psychological trigger BITTEN is designed to activat
 ---
 
 ## 🎭 5. Social Pressure Simulation
+
 - Bots disagree in real time
 - Bots go silent or disengage after poor trades
 - Public kill card streaks (future)
@@ -46,6 +50,7 @@ This document contains every psychological trigger BITTEN is designed to activat
 ---
 
 ## 🎮 6. Mission Control Loop
+
 - Bots assign challenges (e.g. sniper drills, rejection tests)
 - XP tied to completion
 - Failure has emotional consequence (“Mission expired”)
@@ -54,6 +59,7 @@ This document contains every psychological trigger BITTEN is designed to activat
 ---
 
 ## 🪞 7. Self-Confrontation Triggers
+
 - ShadowMirror reflection
 - Bots narrate behavioral drift
 - Gemini comparisons: “You hesitated. Gemini wouldn’t.”
@@ -61,6 +67,7 @@ This document contains every psychological trigger BITTEN is designed to activat
 ---
 
 ## 🔁 8. Ritual Formation
+
 - Daily commands: `/me`, `/status`, `/mission`
 - XP tied to streaks
 - Bots evolve with habit and time
@@ -69,6 +76,7 @@ This document contains every psychological trigger BITTEN is designed to activat
 ---
 
 ## 🧭 9. Uncertainty & Control Interplay
+
 - Bit Mode = YES/NO confirmation
 - Stealth Mode = altered logic
 - Gemini = loss of control tension
@@ -76,6 +84,7 @@ This document contains every psychological trigger BITTEN is designed to activat
 ---
 
 ## 🧨 10. Survivor’s Narrative
+
 - Norman’s backstory = emotional anchor
 - “You’ve been bitten before…” = user relatability
 - “This bot trains you” = transformation arc
@@ -84,16 +93,16 @@ This document contains every psychological trigger BITTEN is designed to activat
 
 # 🔗 CONNECTION STRATEGIES
 
-| Element        | What It Connects To              |
-|----------------|----------------------------------|
-| Bots           | Emotion (praise, shame, motivation, loyalty) |
-| XP             | Identity + progression           |
-| Lore           | Narrative immersion + belonging  |
-| Commands       | Control + habit formation        |
-| Trade results  | Feedback loop conditioning       |
-| Tier system    | Status + aspiration              |
-| Onboarding     | Transformation arc               |
-| Delays         | Intrigue + emotional investment  |
+| Element       | What It Connects To                          |
+| ------------- | -------------------------------------------- |
+| Bots          | Emotion (praise, shame, motivation, loyalty) |
+| XP            | Identity + progression                       |
+| Lore          | Narrative immersion + belonging              |
+| Commands      | Control + habit formation                    |
+| Trade results | Feedback loop conditioning                   |
+| Tier system   | Status + aspiration                          |
+| Onboarding    | Transformation arc                           |
+| Delays        | Intrigue + emotional investment              |
 
 ---
 

@@ -1,6 +1,7 @@
 # News Event Detection and Auto-Pause Feature Summary
 
 ## Overview
+
 The BITTEN trading system includes a fully functional news event detection and auto-pause feature that monitors economic calendars and automatically pauses trading during high-impact news events to protect against volatility.
 
 ## Current Status: ✅ FUNCTIONAL
@@ -52,6 +53,7 @@ The BITTEN trading system includes a fully functional news event detection and a
 ## How It Works
 
 ### Trading Auto-Pause Logic
+
 ```python
 # When checking trading restrictions:
 1. System checks if current time is within 30 minutes of a high-impact event
@@ -61,6 +63,7 @@ The BITTEN trading system includes a fully functional news event detection and a
 ```
 
 ### News Update Cycle
+
 ```
 1. NewsScheduler starts with webhook server
 2. Initial fetch of economic calendar
@@ -113,6 +116,7 @@ NEWS_API_KEY=your_key_here          # For providers requiring auth
 ## Conclusion
 
 The news event detection and auto-pause feature is **fully implemented and functional**. It successfully:
+
 - Fetches real-time economic calendar data
 - Identifies high-impact events
 - Automatically pauses trading during news events

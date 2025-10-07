@@ -12,10 +12,12 @@ This document contains **CRITICAL UPDATES** to the BITTEN system that must be un
 ## 🎯 BITTEN UI - FULL TACTICAL INTERFACE (NEW)
 
 ### **What Was Built**
+
 A complete Next.js trading interface connected to the live BITTEN backend.
 
 **Location**: `/root/HydraX-v2/bitten-ui/`
-**Tech Stack**: 
+**Tech Stack**:
+
 - Next.js 15.5.3 (Turbopack)
 - React 19
 - TypeScript
@@ -25,12 +27,14 @@ A complete Next.js trading interface connected to the live BITTEN backend.
 - Socket.IO Client (real-time updates)
 
 ### **Running Ports**
+
 - **3000**: BITTEN UI (Next.js)
 - **8888**: WebApp Backend (Python/Gunicorn)
 - **8899**: Commander Throne
 - **5555-5560**: ZMQ Architecture
 
 ### **UI Pages**
+
 ```
 http://localhost:3000/         # War Room - Mission queue
 http://localhost:3000/mission  # Mission Brief - Trade execution
@@ -41,6 +45,7 @@ http://localhost:3000/live     # Backend integration monitor
 ```
 
 ### **Core Architecture**
+
 ```javascript
 // Event-Driven System
 eventBus.emit(EVENTS.MISSION_CREATED, mission)
@@ -59,6 +64,7 @@ Real-time signal updates
 ```
 
 ### **Mission Lifecycle**
+
 ```
 NEW (signal arrives from Elite Guard)
   ↓
@@ -70,6 +76,7 @@ CLOSED (TP/SL hit, XP awarded)
 ```
 
 ### **Backend Integration**
+
 - **REST API**: `http://localhost:8888/api/*`
 - **WebSocket**: Socket.IO on port 8888
 - **Endpoints**:
@@ -79,6 +86,7 @@ CLOSED (TP/SL hit, XP awarded)
   - `/api/bitmode/toggle` - BITMODE control
 
 ### **Key Files**
+
 ```
 lib/eventBus.ts         # Singleton event emitter
 lib/store.ts            # Zustand state management
@@ -138,6 +146,7 @@ All 6 patterns run **INSIDE Elite Guard** (`elite_guard_with_citadel.py`)
 ### **Pattern Management Systems**
 
 **Expectancy-Based Elimination**
+
 ```python
 EV = (Win% × AvgWin) - (Loss% × AvgLoss)
 if EV < -0.05 after 50 signals: QUARANTINE
@@ -145,11 +154,13 @@ if EV < -0.10 after 100 signals: KILL
 ```
 
 **Convergence Tracking**
+
 - Multiple patterns on same pair = +10% confidence per pattern
 - Max boost: +30% for 3+ patterns
 - File: `convergence_signals.jsonl`
 
 **Confidence Calibration**
+
 - Buckets: 70-75%, 75-80%, 80-85%, 85-90%
 - Adjusts if actual != expected win rate
 - File: `confidence_calibration.json`
@@ -159,6 +170,7 @@ if EV < -0.10 after 100 signals: KILL
 ## 🔴 CURRENT SYSTEM STATE (September 21, 2025)
 
 ### **What's Running**
+
 ```bash
 # Core Processes (PM2)
 elite_guard          # Signal generation (6 patterns)
@@ -172,12 +184,14 @@ npm run dev         # Next.js UI (port 3000)
 ```
 
 ### **Signal Status**
+
 - Market: **CLOSED** (until Sunday night)
 - Signals: 12 cached demo signals available
 - Patterns: All 6 enhanced and operational
 - UI: Connected to backend, ready for market open
 
 ### **Quick Commands**
+
 ```bash
 # Check system health
 pm2 list
@@ -199,6 +213,7 @@ http://localhost:3000/live
 ## 🎯 FOR FUTURE AGENTS
 
 ### **DO's**
+
 - ✅ Use the existing UI at `/root/HydraX-v2/bitten-ui/`
 - ✅ Connect via Socket.IO to port 8888
 - ✅ Keep all patterns in Elite Guard
@@ -206,6 +221,7 @@ http://localhost:3000/live
 - ✅ Test at `/test` and `/live` pages
 
 ### **DON'Ts**
+
 - ❌ Start separate pattern processes
 - ❌ Create new UI frameworks
 - ❌ Modify ZMQ ports (5555-5560)
@@ -213,11 +229,13 @@ http://localhost:3000/live
 - ❌ Use file-based communication (use ZMQ)
 
 ### **Key Integration Points**
+
 1. **Signals**: Elite Guard → ZMQ 5557 → WebApp 8888 → Socket.IO → UI 3000
 2. **Fire**: UI → REST /api/fire → IPC queue → Router 5555 → EA → MT5
 3. **Confirmations**: EA → ZMQ 5558 → Database → WebApp → UI
 
 ### **Testing**
+
 - Event Bus Test: http://localhost:3000/test
 - Backend Monitor: http://localhost:3000/live
 - Console: `window.eventBus` available globally
@@ -237,6 +255,6 @@ http://localhost:3000/live
 
 ---
 
-*Document created: September 21, 2025 01:00 UTC*
-*Agent: Claude Code (Opus 4.1)*
-*Session: UI Integration + Pattern Documentation*
+_Document created: September 21, 2025 01:00 UTC_
+_Agent: Claude Code (Opus 4.1)_
+_Session: UI Integration + Pattern Documentation_

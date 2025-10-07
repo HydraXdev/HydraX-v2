@@ -10,6 +10,7 @@
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - MetaTrader 5 (x64)
 - Windows 10/11 or Windows Server
 - libzmq.dll (x64) - [Download](https://github.com/zeromq/libzmq/releases)
@@ -18,6 +19,7 @@
 ### Installation (5 minutes)
 
 1. **Install Dependencies**
+
    ```
    Copy to MQL5\Libraries\:
    - libzmq.dll (x64)
@@ -26,6 +28,7 @@
 
 2. **Configure UUID**
    Create `MQL5\Files\bitten_deployment.cfg`:
+
    ```
    UUID=COMMANDER_DEV_001
    ```
@@ -51,16 +54,17 @@
 
 ### Major Enhancements
 
-| Feature | Description | Impact |
-|---------|-------------|--------|
-| **Metrics Channel (5560)** | Dedicated position tracking stream | Complete visibility |
-| **Flat JSON Parser** | No external dependencies | Improved reliability |
-| **SL/TP Enforcement** | Broker stops level validation | Fewer rejections |
-| **Hedge Prevention** | Blocks opposite positions | Risk control |
+| Feature                    | Description                               | Impact                  |
+| -------------------------- | ----------------------------------------- | ----------------------- |
+| **Metrics Channel (5560)** | Dedicated position tracking stream        | Complete visibility     |
+| **Flat JSON Parser**       | No external dependencies                  | Improved reliability    |
+| **SL/TP Enforcement**      | Broker stops level validation             | Fewer rejections        |
+| **Hedge Prevention**       | Blocks opposite positions                 | Risk control            |
 | **Enhanced Hybrid Events** | PARTIAL_CLOSE, SL_BREAKEVEN, TRAIL_UPDATE | Full lifecycle tracking |
-| **UUID Identity** | DEALER socket identity routing | Secure multi-EA support |
+| **UUID Identity**          | DEALER socket identity routing            | Secure multi-EA support |
 
 ### Breaking Changes
+
 - Port 5560 now required for metrics
 - UUID configuration mandatory
 - SL/TP both required on all trades
@@ -96,6 +100,7 @@
 ### Commands (You Send → EA)
 
 #### Open Position (fire)
+
 ```json
 {
   "type": "fire",
@@ -103,9 +108,9 @@
   "fire_id": "ELITE_RAPID_XAUUSD_1758296000",
   "symbol": "XAUUSD",
   "direction": "BUY",
-  "sl": 2425.10,
-  "tp": 2437.60,
-  "lot": 0.10,
+  "sl": 2425.1,
+  "tp": 2437.6,
+  "lot": 0.1,
   "hybrid_enabled": true,
   "hybrid_p1_trigger": 8.0,
   "hybrid_p1_percent": 25.0,
@@ -116,6 +121,7 @@
 ```
 
 #### Close Position
+
 ```json
 {
   "type": "close_ticket",
@@ -125,6 +131,7 @@
 ```
 
 #### Health Check
+
 ```json
 {
   "type": "ping",
@@ -136,6 +143,7 @@
 ### Events (EA Sends → You)
 
 #### Trade Confirmation (Port 5558)
+
 ```json
 {
   "type": "confirmation",
@@ -143,20 +151,21 @@
   "fire_id": "ELITE_RAPID_XAUUSD_1758296000",
   "status": "success",
   "ticket": 12345678,
-  "price": 2429.50,
-  "lot": 0.10,
+  "price": 2429.5,
+  "lot": 0.1,
   "message": "Trade executed via DEALER"
 }
 ```
 
 #### Position Metrics (Port 5560) - Every 30s
+
 ```json
 {
   "type": "HEARTBEAT_METRICS",
   "target_uuid": "COMMANDER_DEV_001",
-  "balance": 10012.40,
-  "equity": 10018.10,
-  "margin_level": 498.00,
+  "balance": 10012.4,
+  "equity": 10018.1,
+  "margin_level": 498.0,
   "open_positions": 2,
   "positions": [
     {
@@ -164,16 +173,17 @@
       "fire_id": "ELITE_RAPID_XAUUSD_1758296000",
       "symbol": "XAUUSD",
       "direction": "BUY",
-      "open_price": 2429.50,
-      "current_price": 2430.20,
-      "volume": 0.10,
-      "pnl": 7.00
+      "open_price": 2429.5,
+      "current_price": 2430.2,
+      "volume": 0.1,
+      "pnl": 7.0
     }
   ]
 }
 ```
 
 #### Hybrid Position Events (Port 5558)
+
 ```json
 {
   "type": "hybrid_event",
@@ -204,12 +214,12 @@ The EA identifies itself via UUID for command routing:
 
 ### Network Requirements
 
-| Port | Direction | Protocol | Purpose |
-|------|-----------|----------|---------|
-| 5555 | Outbound | TCP | Command reception |
-| 5556 | Outbound | TCP | Market data stream |
-| 5558 | Outbound | TCP | Trade events |
-| 5560 | Outbound | TCP | Position metrics |
+| Port | Direction | Protocol | Purpose            |
+| ---- | --------- | -------- | ------------------ |
+| 5555 | Outbound  | TCP      | Command reception  |
+| 5556 | Outbound  | TCP      | Market data stream |
+| 5558 | Outbound  | TCP      | Trade events       |
+| 5560 | Outbound  | TCP      | Position metrics   |
 
 ### Firewall Configuration
 
@@ -238,14 +248,15 @@ The EA implements sophisticated position management:
 ### Configuration
 
 Enable in fire command:
+
 ```json
 {
   "hybrid_enabled": true,
-  "hybrid_p1_trigger": 8.0,     // First partial at +8 pips
-  "hybrid_p1_percent": 25.0,     // Close 25%
-  "hybrid_p2_trigger": 12.0,    // Second partial at +12 pips
-  "hybrid_p2_percent": 25.0,     // Close another 25%
-  "hybrid_trail_distance": 10.0  // Trail remaining by 10 pips
+  "hybrid_p1_trigger": 8.0, // First partial at +8 pips
+  "hybrid_p1_percent": 25.0, // Close 25%
+  "hybrid_p2_trigger": 12.0, // Second partial at +12 pips
+  "hybrid_p2_percent": 25.0, // Close another 25%
+  "hybrid_trail_distance": 10.0 // Trail remaining by 10 pips
 }
 ```
 
@@ -262,6 +273,7 @@ Enable in fire command:
 ### 1. SL/TP Validation
 
 All trades validated for:
+
 - Correct geometry (BUY: sl<price<tp, SELL: tp<price<sl)
 - Minimum distance from market (broker stops level)
 - Both SL and TP required
@@ -269,6 +281,7 @@ All trades validated for:
 ### 2. Hedge Prevention
 
 EA prevents opposite positions on same symbol:
+
 - If BUY open on XAUUSD, SELL blocked
 - Returns: `HEDGE_BLOCKED` error
 - Applies only to BITTEN positions (magic number)
@@ -276,6 +289,7 @@ EA prevents opposite positions on same symbol:
 ### 3. UUID Routing
 
 Commands only processed if:
+
 - `target_uuid` matches EA's configured UUID
 - Wrong UUID = silent drop (no confirmation)
 - Prevents cross-contamination in multi-EA setups
@@ -283,6 +297,7 @@ Commands only processed if:
 ### 4. Volume Normalization
 
 All volumes adjusted to broker requirements:
+
 - Aligned to SYMBOL_VOLUME_STEP
 - Respects SYMBOL_VOLUME_MIN
 - Partial closes safely calculated
@@ -316,12 +331,12 @@ while True:
 
 ### Health Indicators
 
-| Metric | Healthy | Warning | Critical |
-|--------|---------|---------|----------|
-| Heartbeat Age | <40s | 40-60s | >60s |
-| Ping Response | <250ms | 250-1000ms | >1000ms |
-| Confirmation Rate | >95% | 90-95% | <90% |
-| Margin Level | >200% | 150-200% | <150% |
+| Metric            | Healthy | Warning    | Critical |
+| ----------------- | ------- | ---------- | -------- |
+| Heartbeat Age     | <40s    | 40-60s     | >60s     |
+| Ping Response     | <250ms  | 250-1000ms | >1000ms  |
+| Confirmation Rate | >95%    | 90-95%     | <90%     |
+| Margin Level      | >200%   | 150-200%   | <150%    |
 
 ---
 
@@ -333,6 +348,7 @@ while True:
 
 **Symptom**: Error 193 or 126 on attach
 **Solution**:
+
 ```
 1. Verify libzmq.dll is x64 (not x32)
 2. Check dependencies: dumpbin /dependents libzmq.dll
@@ -344,6 +360,7 @@ while True:
 
 **Symptom**: No handshake in logs
 **Solution**:
+
 ```
 1. Test connectivity: telnet 134.199.204.67 5556
 2. Check Windows Firewall outbound rules
@@ -355,6 +372,7 @@ while True:
 
 **Symptom**: Send fire but no confirmation
 **Solution**:
+
 ```
 1. Verify target_uuid in command matches EA UUID
 2. Check EA comment shows correct UUID
@@ -366,6 +384,7 @@ while True:
 
 **Symptom**: confirmation with status:"failed"
 **Solution**:
+
 ```
 1. Check SL/TP geometry (BUY: sl<price<tp)
 2. Increase distance from market price
@@ -459,21 +478,21 @@ if poller.poll(2000):
 
 ### Latency Targets
 
-| Operation | Target | Maximum |
-|-----------|--------|---------|
-| Command → Confirmation | <100ms | 500ms |
-| Tick → Publication | <10ms | 50ms |
-| Heartbeat Interval | 30s | 40s |
-| Metrics Update | 30s | 40s |
+| Operation              | Target | Maximum |
+| ---------------------- | ------ | ------- |
+| Command → Confirmation | <100ms | 500ms   |
+| Tick → Publication     | <10ms  | 50ms    |
+| Heartbeat Interval     | 30s    | 40s     |
+| Metrics Update         | 30s    | 40s     |
 
 ### Throughput Capacity
 
-| Stream | Rate | Notes |
-|--------|------|-------|
-| Ticks | 100-500/min | Market dependent |
-| Commands | 10/sec | Rate limited |
-| Confirmations | 10/sec | Matches commands |
-| Metrics | 2/min | Fixed interval |
+| Stream        | Rate        | Notes            |
+| ------------- | ----------- | ---------------- |
+| Ticks         | 100-500/min | Market dependent |
+| Commands      | 10/sec      | Rate limited     |
+| Confirmations | 10/sec      | Matches commands |
+| Metrics       | 2/min       | Fixed interval   |
 
 ### Resource Usage
 
@@ -487,16 +506,19 @@ if poller.poll(2000):
 ## 🔐 Security Considerations
 
 ### Transport Security
+
 - ZMQ TCP within VPN recommended
 - No built-in encryption (use VPN/tunnel)
 - Identity-based routing via UUID
 
 ### Access Control
+
 - UUID must match for command processing
 - No commands accepted from wrong UUID
 - Each EA has unique UUID
 
 ### Risk Controls
+
 - Mandatory SL/TP on all positions
 - Hedge prevention logic
 - Position size validation
@@ -664,19 +686,20 @@ check_ea_health("COMMANDER_DEV_001")
 
 ### Common Error Codes
 
-| Code | Meaning | Solution |
-|------|---------|----------|
-| HEDGE_BLOCKED | Opposite position exists | Close existing first |
-| Symbol not available | Symbol not in Market Watch | Add to Market Watch |
-| REJECTED: SL/TP | Invalid price levels | Check geometry |
-| No quotes | Market closed | Wait for market open |
-| DLL disabled | DLL imports not allowed | Enable in MT5 settings |
+| Code                 | Meaning                    | Solution               |
+| -------------------- | -------------------------- | ---------------------- |
+| HEDGE_BLOCKED        | Opposite position exists   | Close existing first   |
+| Symbol not available | Symbol not in Market Watch | Add to Market Watch    |
+| REJECTED: SL/TP      | Invalid price levels       | Check geometry         |
+| No quotes            | Market closed              | Wait for market open   |
+| DLL disabled         | DLL imports not allowed    | Enable in MT5 settings |
 
 ---
 
 ## 📝 Version History
 
 ### v2.07H (September 19, 2025)
+
 - Added dedicated metrics channel (port 5560)
 - Implemented flat JSON parser
 - Added SL/TP enforcement
@@ -685,13 +708,15 @@ check_ea_health("COMMANDER_DEV_001")
 - UUID-based routing
 
 ### v2.06H (September 1, 2025)
+
 - Basic hybrid support
 - Initial DEALER implementation
 
 ### v2.05 (August 26, 2025)
+
 - ZMQ integration
 - Multi-symbol support
 
 ---
 
-*End of README - BITTEN Universal EA v2.07H*
+_End of README - BITTEN Universal EA v2.07H_

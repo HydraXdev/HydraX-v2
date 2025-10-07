@@ -7,6 +7,7 @@ Based on the running processes and code analysis, here's what's actually running
 ## Active Production Components
 
 ### 1. Signal Generation System
+
 - **ACTIVE**: `apex_v5_lean.py` (PID 427512)
 - **NOT RUNNING**: `apex_v5_live_real.py` (referenced in configs but not running)
 - **Purpose**: Generates trading signals from MT5 bridge data
@@ -14,31 +15,33 @@ Based on the running processes and code analysis, here's what's actually running
 - **Output**: Logs signals to `apex_v5_live_real.log` (monitored by telegram connector)
 
 ### 2. Telegram Integration
+
 - **PRIMARY BOT**: `bitten_production_bot.py` (PID 424394)
   - Token: `7854827710:AAGsO-vgMpsTOVNu6zoo_-GGJkYQd97Mc5w`
   - Commander ID: 7176191872
   - Handles actual trading commands and mission execution
-  
 - **SIGNAL RELAY**: `apex_telegram_connector.py` (PID 424397)
   - Monitors log file for signals
   - Generates mission files in `/root/HydraX-v2/missions/`
   - Sends alerts to Telegram with WebApp links
 
 ### 3. Web Application
+
 - **ACTIVE**: `webapp_server_optimized.py` (PID 424399)
   - Optimized Flask server with lazy loading
   - Serves the trading interface at `https://joinbitten.com/hud`
   - Integrates with signal storage and engagement database
-  
 - **NOT RUNNING**: Standard webapp servers (replaced by optimized version)
 
 ### 4. TOC (Tactical Operations Center)
+
 - **DEFINED**: `/root/HydraX-v2/src/toc/unified_toc_server.py`
 - **STATUS**: NOT RUNNING (not in process list)
 - **Purpose**: Central brain for terminal assignment and fire routing
 - **Note**: System is running WITHOUT the TOC, likely using direct bot integration
 
 ### 5. MT5 Bridge
+
 - **RUNNING**: SSH tunnel to `3.145.84.187` (AWS instance)
 - **Port**: 5555
 - **Purpose**: Retrieves real-time market data from MT5 terminals
@@ -62,20 +65,25 @@ Based on the running processes and code analysis, here's what's actually running
 ## Key Findings
 
 ### 1. TOC Not Running
+
 The Tactical Operations Center (unified_toc_server.py) is NOT running in production. The system appears to be using a simplified flow where the Telegram bot directly handles trade execution.
 
 ### 2. Signal Generation Mismatch
+
 - Config references `apex_v5_live_real.py` but actually runs `apex_v5_lean.py`
 - Both write to the same log file (`apex_v5_live_real.log`)
 - This suggests `apex_v5_lean.py` is the production-ready, optimized version
 
 ### 3. Dual Bot System
+
 - `bitten_production_bot.py`: Main trading bot
 - `apex_telegram_connector.py`: Signal notification bot
 - Both work together but serve different purposes
 
 ### 4. Simplified Architecture
+
 The actual production system is simpler than documented:
+
 - No TOC server running
 - No terminal assignment system active
 - Direct bot-to-MT5 execution path

@@ -2,7 +2,7 @@
   "README": "APEX ENGINE DEDICATED DATA FEED - NEW DEDICATED ACCOUNT",
   "WARNING": "This account is ONLY for APEX market data - NOT for user trading",
   "PURPOSE": "Provides live market data to APEX engine independently of user accounts",
-  
+
   "apex_data_feed": {
     "broker": "MetaQuotes",
     "server": "MetaQuotes-Demo",

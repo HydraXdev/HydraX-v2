@@ -1,4 +1,5 @@
 # BITTEN SYSTEM ARCHITECTURE v1.0
+
 **Production-Ready Trading Signal Pipeline**
 **Date**: July 29, 2025
 **Status**: DEPLOYMENT READY - GREEN ZONE OPERATIONAL
@@ -67,23 +68,24 @@
 
 ## 🛡️ CORE MODULES (PRODUCTION ACTIVE)
 
-| Function            | Module                                              | Status |
-| ------------------- | --------------------------------------------------- | ------ |
-| Signal generation   | `venom_scalp_master.py`                             | ✅ ACTIVE |
-| Mission builder     | `UserMissionSystem.create_user_missions()`          | ✅ ACTIVE |
-| UUID mapping        | `UUIDTradeTracker.track_signal_generation()`        | ✅ ACTIVE |
-| Telegram dispatch   | `telegram_signal_dispatcher.py`                     | ✅ ACTIVE |
-| Telegram bot        | `bitten_production_bot.py`                          | ✅ ACTIVE |
-| WebApp HUD          | `webapp_server_optimized.py`                        | ✅ ACTIVE |
-| Fire API endpoint   | `fire_router.py`                                    | ✅ ACTIVE |
-| VPS trade execution | `BITTENBridge_Direct_Complete.mq5`                  | ✅ ACTIVE |
-| Command center      | `commander_throne.py`                               | ✅ ACTIVE |
+| Function            | Module                                       | Status    |
+| ------------------- | -------------------------------------------- | --------- |
+| Signal generation   | `venom_scalp_master.py`                      | ✅ ACTIVE |
+| Mission builder     | `UserMissionSystem.create_user_missions()`   | ✅ ACTIVE |
+| UUID mapping        | `UUIDTradeTracker.track_signal_generation()` | ✅ ACTIVE |
+| Telegram dispatch   | `telegram_signal_dispatcher.py`              | ✅ ACTIVE |
+| Telegram bot        | `bitten_production_bot.py`                   | ✅ ACTIVE |
+| WebApp HUD          | `webapp_server_optimized.py`                 | ✅ ACTIVE |
+| Fire API endpoint   | `fire_router.py`                             | ✅ ACTIVE |
+| VPS trade execution | `BITTENBridge_Direct_Complete.mq5`           | ✅ ACTIVE |
+| Command center      | `commander_throne.py`                        | ✅ ACTIVE |
 
 ---
 
 ## 🚀 SYSTEM CAPABILITIES
 
 ### ✅ **CONFIRMED OPERATIONAL:**
+
 - **Live Signal Generation** via VENOM SCALP MASTER with CITADEL protection
 - **Personalized Mission Creation** per user with real account data
 - **Telegram Group Alerts** with inline mission access
@@ -93,6 +95,7 @@
 - **Complete Loop Tracking** from signal generation to trade execution
 
 ### 🎯 **KEY STRENGTHS:**
+
 - **Precision Signal Routing**: Each signal tied to correct user with UUID traceability
 - **Tiered Mission Control**: Missions adapt based on user tier, balance, and XP
 - **Dual UI Channels**: Telegram + WebApp HUD seamless integration
@@ -104,13 +107,13 @@
 
 ## 🔒 HARDENING PRIORITIES (v1.1 Roadmap)
 
-| Area                    | Upgrade                                                               | Priority |
-| ----------------------- | --------------------------------------------------------------------- | -------- |
-| **Mission Expiry**      | Add `expires_at` to each mission. Refuse to fire stale ones.          | HIGH     |
-| **One-Time Fire Lock**  | Prevent duplicate fires on same UUID/mission.                         | HIGH     |
+| Area                    | Upgrade                                                              | Priority |
+| ----------------------- | -------------------------------------------------------------------- | -------- |
+| **Mission Expiry**      | Add `expires_at` to each mission. Refuse to fire stale ones.         | HIGH     |
+| **One-Time Fire Lock**  | Prevent duplicate fires on same UUID/mission.                        | HIGH     |
 | **Fire Result Display** | Confirm fill in HUD or Telegram (from trade_result.txt or `/report`) | HIGH     |
-| **MT5 Heartbeat Check** | Validate EA is alive and ticking before accepting `/fire`             | MEDIUM   |
-| **XP/Performance Sync** | Feed trade outcome into OverwatchBot for leveling, stats, etc.        | MEDIUM   |
+| **MT5 Heartbeat Check** | Validate EA is alive and ticking before accepting `/fire`            | MEDIUM   |
+| **XP/Performance Sync** | Feed trade outcome into OverwatchBot for leveling, stats, etc.       | MEDIUM   |
 
 ---
 

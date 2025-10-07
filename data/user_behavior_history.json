@@ -5,10 +5,7 @@
       "i want to execute trades fast and aggressively!",
       "i want to execute trades fast and aggressively!"
     ],
-    "patterns": [
-      "fast_execution",
-      "risk_taking"
-    ],
+    "patterns": ["fast_execution", "risk_taking"],
     "traits": {
       "speed": 0.30000000000000004,
       "patience": -0.15000000000000002,

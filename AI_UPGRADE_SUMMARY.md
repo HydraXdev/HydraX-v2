@@ -1,6 +1,7 @@
 # 🎯 **AI ENGINE UPGRADE - QUICK FACTS**
 
 ## **WHAT WE HAD (v1.0):**
+
 - 6 basic AI models
 - 50 features
 - 20-30 signals/day
@@ -9,6 +10,7 @@
 - Random TCS
 
 ## **WHAT WE HAVE NOW (v3.0):**
+
 - **15+ AI models** (Transformers, CNNs, LSTMs, etc.)
 - **150+ features** (including Fourier, Hilbert, Statistical)
 - **60-120 signals/day** (3-4x increase)
@@ -18,6 +20,7 @@
 - **Accurate TCS** with ensemble validation
 
 ## **KEY IMPROVEMENTS:**
+
 1. **TRANSFORMERS** - Like ChatGPT for trading analysis
 2. **ANOMALY DETECTION** - Finds unusual opportunities
 3. **MARKET REGIME CLUSTERING** - Identifies market states
@@ -25,8 +28,9 @@
 5. **24/7 SESSION OPTIMIZATION** - Adapts to global markets
 
 ## **DETECTION MODES:**
+
 - `momentum_breakout` → CNN
-- `support_resistance` → Transformer  
+- `support_resistance` → Transformer
 - `pattern_completion` → LSTM
 - `trend_continuation` → Attention
 - `volatility_expansion` → Ensemble
@@ -37,6 +41,7 @@
 - `sentiment_divergence` → PCA
 
 ## **FOR TESTING:**
+
 ```python
 # The engine now generates 60-120 signals/day
 # Gaming system still filters by TCS threshold
@@ -45,6 +50,7 @@
 ```
 
 ## **MARKETING ANGLE:**
+
 "**Institutional-Grade AI** - 15+ models including Transformers (like ChatGPT), analyzing 150+ factors per trade, finding 3-4x more opportunities while maintaining quality."
 
 **READY FOR PRODUCTION TESTING!** 🚀

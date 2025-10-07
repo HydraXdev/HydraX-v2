@@ -1,16 +1,19 @@
 # 🎖️ WAR ROOM DOCUMENTATION
 
 ## Overview
+
 The War Room is BITTEN's personal command center - a military-themed dashboard where traders showcase achievements, track performance, manage their squad, and share success on social media.
 
 ## Access Points
 
 ### Primary Access
+
 - **WebApp URL**: `https://joinbitten.com/me?user_id={telegram_id}`
 - **Telegram Bot**: Click "🎖️ War Room" button in menu
 - **Direct Link**: Share your profile with `/me/{user_id}`
 
 ### Integration Points
+
 - **File**: `/root/HydraX-v2/webapp_server_optimized.py`
 - **Route**: `@app.route('/me')`
 - **API**: `/api/user/{user_id}/war_room_stats`
@@ -18,6 +21,7 @@ The War Room is BITTEN's personal command center - a military-themed dashboard w
 ## Features
 
 ### 1. Military Identity Display
+
 - **Callsigns**: Dynamic based on rank
   - NIBBLER → "ROOKIE"
   - FANG → "VIPER"
@@ -28,19 +32,23 @@ The War Room is BITTEN's personal command center - a military-themed dashboard w
 - **Global Rank**: Position among all traders
 
 ### 2. Performance Metrics
+
 - **Win Rate**: Percentage with visual indicator
 - **Total P&L**: Profit/Loss in USD
 - **Current Streak**: Consecutive winning trades
 - **Auto-Refresh**: Updates every 30 seconds
 
 ### 3. Kill Cards (Recent Trades)
+
 - **Display**: Last 5 successful trades
 - **Information**: Trade pair, profit, TCS score
 - **Animation**: Slide-in effect on load
 - **Visual**: Military-style confirmed kill cards
 
 ### 4. Achievement Badges
+
 Grid display of 12 achievements:
+
 - **First Blood**: First profitable trade
 - **Sharpshooter**: 10 winning trades
 - **Sniper Elite**: 50 winning trades
@@ -55,6 +63,7 @@ Grid display of 12 achievements:
 - **Legendary Trader**: All achievements
 
 ### 5. Squad Command (Referrals)
+
 - **Referral Code**: Personal code display
 - **Squad Size**: Total recruits count
 - **XP Earned**: Total from squad activity
@@ -62,17 +71,22 @@ Grid display of 12 achievements:
 - **Share Link**: One-click copy
 
 ### 6. Social Sharing
+
 Pre-formatted sharing for:
+
 - **Facebook**: Opens share dialog
 - **X/Twitter**: Pre-filled tweet
 - **Instagram**: Copies to clipboard
 
 Example messages:
+
 - "Just hit {RANK} rank on BITTEN! {WIN_RATE}% win rate 🎯"
 - "My trading squad of {COUNT} earned {XP} XP this month!"
 
 ### 7. Quick Navigation
+
 Direct links to:
+
 - **Norman's Notebook**: Trading journal
 - **Trade History**: All trades list
 - **Stats Dashboard**: Detailed analytics
@@ -81,6 +95,7 @@ Direct links to:
 ## Technical Implementation
 
 ### Database Connections
+
 ```python
 # User stats from EngagementDB
 user_stats = db.get_user_engagement_stats(user_id)
@@ -95,6 +110,7 @@ user_rank = rank_system.get_user_rank(user_id)
 ```
 
 ### API Response Format
+
 ```json
 {
   "user_id": "123456789",
@@ -117,12 +133,14 @@ user_rank = rank_system.get_user_rank(user_id)
 ```
 
 ### CSS Animations
+
 - **Entrance**: `fadeInUp` for sections
 - **Hover**: Scale and glow effects
 - **Background**: Pulsing gradient animation
 - **Header**: Scanning line effect
 
 ### Mobile Responsiveness
+
 - **Breakpoints**: 768px, 480px
 - **Grid Layout**: Adjusts from 4 to 2 to 1 column
 - **Touch Targets**: Minimum 44px
@@ -131,6 +149,7 @@ user_rank = rank_system.get_user_rank(user_id)
 ## Visual Design
 
 ### Color Palette
+
 - **Primary**: `#0a1f0a` (Dark Military Green)
 - **Accent**: `#d4af37` (Gold)
 - **Success**: `#00ff00` (Bright Green)
@@ -138,11 +157,13 @@ user_rank = rank_system.get_user_rank(user_id)
 - **Background**: `#000000` (Black)
 
 ### Typography
+
 - **Headers**: "Orbitron" (futuristic military)
 - **Body**: System fonts stack
 - **Monospace**: For numbers/stats
 
 ### Sound System (Future)
+
 - Toggle saved in localStorage
 - Ready for sound effect integration:
   - Achievement unlock

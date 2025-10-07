@@ -2,10 +2,12 @@
 """
 Quick monitor to see what tick data looks like from the ZMQ stream
 """
-import zmq
 import json
-import time
 import sys
+import time
+
+import zmq
+
 
 def monitor_ticks():
     ctx = zmq.Context()
@@ -45,14 +47,16 @@ def monitor_ticks():
                 # Try to parse as JSON and look for tick-like data
                 try:
                     data = json.loads(msg)
-                    msg_type = data.get('type', 'unknown')
+                    msg_type = data.get("type", "unknown")
 
-                    if 'tick' in msg_type.lower() or 'bid' in data or 'ask' in data:
+                    if "tick" in msg_type.lower() or "bid" in data or "ask" in data:
                         tick_count += 1
                         print(f"🎯 TICK #{tick_count}: {json.dumps(data, indent=2)}")
                         print("-" * 40)
                     elif msg_type == "HEARTBEAT_METRICS":
-                        print(f"💰 METRICS: Account={data.get('account')}, Equity=${data.get('equity', 0):.2f}, Positions={data.get('open_positions', 0)}")
+                        print(
+                            f"💰 METRICS: Account={data.get('account')}, Equity=${data.get('equity', 0):.2f}, Positions={data.get('open_positions', 0)}"
+                        )
                     else:
                         print(f"📋 OTHER: {msg_type}")
 
@@ -69,6 +73,7 @@ def monitor_ticks():
     sock1.close()
     sock2.close()
     ctx.term()
+
 
 if __name__ == "__main__":
     monitor_ticks()

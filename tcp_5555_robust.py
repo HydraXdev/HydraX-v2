@@ -3,17 +3,18 @@
 Robust TCP Server on port 5555 for HydraSocket EA Commands
 Handles telnet IAC sequences and keeps connection alive
 """
-import socket
 import json
+import socket
 import sys
 import threading
 import time
 
 # Force unbuffered output
-sys.stdout = open(1, 'w', 1)
-sys.stderr = open(2, 'w', 1)
+sys.stdout = open(1, "w", 1)
+sys.stderr = open(2, "w", 1)
 
 print(f"Starting robust TCP server on port 5555 at {time.strftime('%Y-%m-%d %H:%M:%S')}", flush=True)
+
 
 def handle_client(conn, addr):
     print(f"✅ EA CONNECTED from {addr}", flush=True)
@@ -25,7 +26,7 @@ def handle_client(conn, addr):
             "request_ref": "server-init",
             "symbols": "XAUUSD,EURUSD,GBPJPY,USDJPY,GBPUSD,USDCAD,USDCHF,AUDUSD,NZDUSD,EURJPY,EURGBP,EURCAD,EURAUD,AUDJPY,NZDJPY,GBPCAD,CHFJPY,GBPCHF,EURCHF",
             "tfs": "M1,M5,H1",
-            "lookback": 200
+            "lookback": 200,
         }
 
         msg = json.dumps(feed_cmd) + "\n"
@@ -47,40 +48,40 @@ def handle_client(conn, addr):
                     break
 
                 # Skip telnet IAC sequences (0xFF commands)
-                if data[0:1] == b'\xff':
+                if data[0:1] == b"\xff":
                     print(f"Skipping telnet IAC sequence from {addr}")
                     continue
 
                 # Try to decode, ignoring errors
                 try:
-                    text = data.decode('utf-8', errors='ignore')
+                    text = data.decode("utf-8", errors="ignore")
                     buffer += text
                 except:
                     print(f"Skipping non-UTF8 data from {addr}: {data.hex()}")
                     continue
 
                 # Process complete lines
-                while '\n' in buffer:
-                    line, buffer = buffer.split('\n', 1)
+                while "\n" in buffer:
+                    line, buffer = buffer.split("\n", 1)
                     if line.strip():
                         try:
                             response = json.loads(line)
                             print(f"📥 EA response: {response}", flush=True)
 
                             # Handle different message types
-                            msg_type = response.get('type', '')
+                            msg_type = response.get("type", "")
 
-                            if msg_type == 'command_result':
+                            if msg_type == "command_result":
                                 # EA acknowledging our command
                                 print(f"  ✅ EA acknowledged: {response.get('request_ref', '')}")
 
-                            elif msg_type == 'ping':
+                            elif msg_type == "ping":
                                 # Respond to ping with pong
                                 pong = {"type": "pong", "timestamp": time.time()}
                                 conn.send((json.dumps(pong) + "\n").encode())
                                 print(f"  🏓 Sent pong to {addr}")
 
-                            elif msg_type == 'heartbeat':
+                            elif msg_type == "heartbeat":
                                 # EA is alive
                                 last_heartbeat = time.time()
                                 print(f"  💗 Heartbeat from {addr}")
@@ -114,12 +115,13 @@ def handle_client(conn, addr):
         print(f"🔌 EA disconnected from {addr}", flush=True)
         conn.close()
 
+
 # Create server socket
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
 # Bind to 0.0.0.0:5555 (accept from anywhere)
-server.bind(('0.0.0.0', 5555))
+server.bind(("0.0.0.0", 5555))
 server.listen(10)
 
 print("✅ TCP Server listening on 0.0.0.0:5555", flush=True)

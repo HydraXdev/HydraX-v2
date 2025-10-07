@@ -3,12 +3,13 @@
 Fixed Redis to Webapp bridge for auto-fire functionality
 Reads signals from Redis stream and POSTs to webapp API
 """
+import json
 import os
 import time
-import json
-import requests
-import redis
 import traceback
+
+import redis
+import requests
 
 REDIS_HOST = os.environ.get("REDIS_HOST", "127.0.0.1")
 REDIS_PORT = int(os.environ.get("REDIS_PORT", "6379"))
@@ -34,6 +35,7 @@ except Exception as e:
     else:
         print(f"Consumer group {GROUP} already exists")
 
+
 def post_signal(payload):
     """POST signal to webapp for auto-fire processing"""
     try:
@@ -45,17 +47,17 @@ def post_signal(payload):
                 signal_data = payload
         else:
             signal_data = payload
-        
+
         # Skip synthetic/diagnostic signals
-        if signal_data.get('signal_type') == 'DIAG_ONLY':
+        if signal_data.get("signal_type") == "DIAG_ONLY":
             return True
-        if signal_data.get('pattern_type', '').startswith('DIAG_'):
+        if signal_data.get("pattern_type", "").startswith("DIAG_"):
             return True
-            
+
         # Must have signal_id
         if not signal_data.get("signal_id"):
             return True
-            
+
         # POST to webapp
         try:
             print(f"POSTing signal {signal_data.get('signal_id')} to webapp...")
@@ -74,6 +76,7 @@ def post_signal(payload):
         traceback.print_exc()
         return False
 
+
 print("Starting main loop...")
 consecutive_errors = 0
 
@@ -81,7 +84,7 @@ while True:
     try:
         # Read from Redis stream
         msgs = r.xreadgroup(GROUP, CONSUMER, streams={STREAM: ">"}, count=10, block=1000)
-        
+
         if msgs:
             consecutive_errors = 0  # Reset error counter on success
             for stream_name, entries in msgs:
@@ -96,21 +99,21 @@ while True:
         else:
             # No messages, just continue
             pass
-            
+
     except KeyboardInterrupt:
         print("\nShutting down gracefully...")
         break
     except Exception as e:
         consecutive_errors += 1
         print(f"Error in main loop (attempt {consecutive_errors}): {e}")
-        
+
         # Exponential backoff on errors
         if consecutive_errors > 5:
             print("Too many errors, sleeping 10 seconds...")
             time.sleep(10)
         else:
             time.sleep(1)
-        
+
         # Reconnect Redis if needed
         if consecutive_errors > 10:
             print("Reconnecting to Redis...")

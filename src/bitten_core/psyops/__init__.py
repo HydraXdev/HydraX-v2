@@ -13,12 +13,6 @@ This system provides:
 All features respect user choice and provide transparency.
 """
 
-from .disclaimer_manager import (
-    DisclaimerManager,
-    UserConsent
-)
+from .disclaimer_manager import DisclaimerManager, UserConsent
 
-__all__ = [
-    'DisclaimerManager',
-    'UserConsent'
-]
+__all__ = ["DisclaimerManager", "UserConsent"]

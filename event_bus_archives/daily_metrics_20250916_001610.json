@@ -2,22 +2,10 @@
   "maintenance_duration_seconds": 0.05595707893371582,
   "before_metrics": {
     "event_counts": [
-      [
-        "system_health",
-        1262
-      ],
-      [
-        "execution.outcome.v1",
-        239
-      ],
-      [
-        "signal_generated",
-        55
-      ],
-      [
-        "signal_outcome_recorded",
-        32
-      ]
+      ["system_health", 1262],
+      ["execution.outcome.v1", 239],
+      ["signal_generated", 55],
+      ["signal_outcome_recorded", 32]
     ],
     "database_size_mb": 0.75,
     "oldest_event": "2025-09-15 13:38:29.426070",
@@ -26,22 +14,10 @@
   },
   "after_metrics": {
     "event_counts": [
-      [
-        "system_health",
-        1262
-      ],
-      [
-        "execution.outcome.v1",
-        239
-      ],
-      [
-        "signal_generated",
-        55
-      ],
-      [
-        "signal_outcome_recorded",
-        32
-      ]
+      ["system_health", 1262],
+      ["execution.outcome.v1", 239],
+      ["signal_generated", 55],
+      ["signal_outcome_recorded", 32]
     ],
     "database_size_mb": 0.75,
     "oldest_event": "2025-09-15 13:38:29.426070",

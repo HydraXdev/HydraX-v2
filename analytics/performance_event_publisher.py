@@ -6,17 +6,18 @@ Publishes analytics events when outcomes are recorded
 
 import json
 import logging
-import time
-from datetime import datetime
-from collections import defaultdict
-from pathlib import Path
 import sys
+import time
+from collections import defaultdict
+from datetime import datetime
+from pathlib import Path
 
 # Add event_bus to path
-sys.path.insert(0, '/root/HydraX-v2')
+sys.path.insert(0, "/root/HydraX-v2")
 
 try:
     from event_bus.producer import EventProducer
+
     EVENT_BUS_AVAILABLE = True
 except ImportError:
     EVENT_BUS_AVAILABLE = False
@@ -26,6 +27,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(me
 LOG = logging.getLogger("ANALYTICS_EVENTS")
 
 TRACKING_FILE = Path("/root/HydraX-v2/comprehensive_tracking.jsonl")
+
 
 class PerformanceEventPublisher:
     def __init__(self):
@@ -37,7 +39,7 @@ class PerformanceEventPublisher:
             LOG.warning("⚠️ Event Bus not available")
 
         self.last_position = 0
-        self.hourly_stats = defaultdict(lambda: {'wins': 0, 'losses': 0, 'patterns': defaultdict(int)})
+        self.hourly_stats = defaultdict(lambda: {"wins": 0, "losses": 0, "patterns": defaultdict(int)})
         self.last_hourly_publish = datetime.now().replace(minute=0, second=0, microsecond=0)
 
     def publish_event(self, event_type, data):
@@ -56,40 +58,43 @@ class PerformanceEventPublisher:
             return
 
         try:
-            with open(TRACKING_FILE, 'r') as f:
+            with open(TRACKING_FILE, "r") as f:
                 # Skip to last position
                 f.seek(self.last_position)
 
                 for line in f:
                     try:
                         data = json.loads(line.strip())
-                        outcome = data.get('outcome', 'PENDING')
+                        outcome = data.get("outcome", "PENDING")
 
                         # Only process completed signals
-                        if outcome in ['WIN', 'LOSS']:
+                        if outcome in ["WIN", "LOSS"]:
                             # Publish individual outcome event
-                            self.publish_event('signal.outcome.recorded', {
-                                'signal_id': data.get('signal_id'),
-                                'pattern': data.get('pattern_type'),
-                                'confidence': data.get('confidence'),
-                                'outcome': outcome,
-                                'lifespan': data.get('lifespan', 0),
-                                'pips': data.get('pips_result', 0),
-                                'symbol': data.get('symbol'),
-                                'session': data.get('session'),
-                                'timestamp': int(time.time())
-                            })
+                            self.publish_event(
+                                "signal.outcome.recorded",
+                                {
+                                    "signal_id": data.get("signal_id"),
+                                    "pattern": data.get("pattern_type"),
+                                    "confidence": data.get("confidence"),
+                                    "outcome": outcome,
+                                    "lifespan": data.get("lifespan", 0),
+                                    "pips": data.get("pips_result", 0),
+                                    "symbol": data.get("symbol"),
+                                    "session": data.get("session"),
+                                    "timestamp": int(time.time()),
+                                },
+                            )
 
                             # Aggregate for hourly stats
                             current_hour = datetime.now().replace(minute=0, second=0, microsecond=0)
                             hour_key = current_hour.isoformat()
 
-                            if outcome == 'WIN':
-                                self.hourly_stats[hour_key]['wins'] += 1
+                            if outcome == "WIN":
+                                self.hourly_stats[hour_key]["wins"] += 1
                             else:
-                                self.hourly_stats[hour_key]['losses'] += 1
+                                self.hourly_stats[hour_key]["losses"] += 1
 
-                            self.hourly_stats[hour_key]['patterns'][data.get('pattern_type', 'UNKNOWN')] += 1
+                            self.hourly_stats[hour_key]["patterns"][data.get("pattern_type", "UNKNOWN")] += 1
 
                     except json.JSONDecodeError:
                         continue
@@ -111,26 +116,26 @@ class PerformanceEventPublisher:
 
             if last_hour_key in self.hourly_stats:
                 stats = self.hourly_stats[last_hour_key]
-                total = stats['wins'] + stats['losses']
-                win_rate = (stats['wins'] / total * 100) if total > 0 else 0
+                total = stats["wins"] + stats["losses"]
+                win_rate = (stats["wins"] / total * 100) if total > 0 else 0
 
                 # Build pattern breakdown
                 pattern_breakdown = []
-                for pattern, count in stats['patterns'].items():
-                    pattern_breakdown.append({
-                        'pattern': pattern,
-                        'count': count
-                    })
+                for pattern, count in stats["patterns"].items():
+                    pattern_breakdown.append({"pattern": pattern, "count": count})
 
-                self.publish_event('analytics.hourly.summary', {
-                    'hour': last_hour_key,
-                    'total_signals': total,
-                    'wins': stats['wins'],
-                    'losses': stats['losses'],
-                    'win_rate': round(win_rate, 1),
-                    'pattern_breakdown': pattern_breakdown,
-                    'timestamp': int(time.time())
-                })
+                self.publish_event(
+                    "analytics.hourly.summary",
+                    {
+                        "hour": last_hour_key,
+                        "total_signals": total,
+                        "wins": stats["wins"],
+                        "losses": stats["losses"],
+                        "win_rate": round(win_rate, 1),
+                        "pattern_breakdown": pattern_breakdown,
+                        "timestamp": int(time.time()),
+                    },
+                )
 
                 LOG.info(f"📊 Hourly summary: {total} signals, {win_rate:.1f}% win rate")
 
@@ -142,40 +147,43 @@ class PerformanceEventPublisher:
             return
 
         # Calculate pattern performance
-        pattern_stats = defaultdict(lambda: {'wins': 0, 'losses': 0})
+        pattern_stats = defaultdict(lambda: {"wins": 0, "losses": 0})
 
         try:
-            with open(TRACKING_FILE, 'r') as f:
+            with open(TRACKING_FILE, "r") as f:
                 for line in f:
                     try:
                         data = json.loads(line.strip())
-                        pattern = data.get('pattern_type', 'UNKNOWN')
-                        outcome = data.get('outcome', 'PENDING')
+                        pattern = data.get("pattern_type", "UNKNOWN")
+                        outcome = data.get("outcome", "PENDING")
 
-                        if outcome == 'WIN':
-                            pattern_stats[pattern]['wins'] += 1
-                        elif outcome == 'LOSS':
-                            pattern_stats[pattern]['losses'] += 1
+                        if outcome == "WIN":
+                            pattern_stats[pattern]["wins"] += 1
+                        elif outcome == "LOSS":
+                            pattern_stats[pattern]["losses"] += 1
                     except json.JSONDecodeError:
                         continue
 
             # Check thresholds
             for pattern, stats in pattern_stats.items():
-                total = stats['wins'] + stats['losses']
+                total = stats["wins"] + stats["losses"]
                 if total >= 20:  # Only check patterns with enough data
-                    win_rate = (stats['wins'] / total * 100)
+                    win_rate = stats["wins"] / total * 100
 
                     if win_rate < 40:
-                        self.publish_event('analytics.pattern.threshold', {
-                            'pattern': pattern,
-                            'win_rate': round(win_rate, 1),
-                            'total_signals': total,
-                            'wins': stats['wins'],
-                            'losses': stats['losses'],
-                            'alert_type': 'POOR_PERFORMANCE',
-                            'threshold': 40,
-                            'timestamp': int(time.time())
-                        })
+                        self.publish_event(
+                            "analytics.pattern.threshold",
+                            {
+                                "pattern": pattern,
+                                "win_rate": round(win_rate, 1),
+                                "total_signals": total,
+                                "wins": stats["wins"],
+                                "losses": stats["losses"],
+                                "alert_type": "POOR_PERFORMANCE",
+                                "threshold": 40,
+                                "timestamp": int(time.time()),
+                            },
+                        )
                         LOG.warning(f"⚠️ Pattern {pattern} below 40% threshold: {win_rate:.1f}%")
 
         except Exception as e:
@@ -211,6 +219,7 @@ class PerformanceEventPublisher:
                 LOG.error(f"Error in main loop: {e}")
                 time.sleep(60)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     publisher = PerformanceEventPublisher()
     publisher.run()

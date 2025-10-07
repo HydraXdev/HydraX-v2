@@ -1,12 +1,12 @@
-"use client"
+"use client";
 
-import React, { ReactNode } from 'react'
-import { SideNav } from './SideNav'
-import { HUDHeader } from './HUDHeader'
-import { motion, AnimatePresence } from 'framer-motion'
+import React, { ReactNode } from "react";
+import { SideNav } from "./SideNav";
+import { HUDHeader } from "./HUDHeader";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface AppShellProps {
-  children: ReactNode
+  children: ReactNode;
 }
 
 export function AppShell({ children }: AppShellProps) {
@@ -35,5 +35,5 @@ export function AppShell({ children }: AppShellProps) {
         </main>
       </div>
     </div>
-  )
+  );
 }

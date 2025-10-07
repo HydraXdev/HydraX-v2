@@ -9,6 +9,7 @@
 BITTEN is a sophisticated automated trading system that uses Smart Money Concepts (SMC) and machine learning to identify high-probability trading opportunities in the forex market. The system operates 24/7, analyzing multiple currency pairs and executing trades through MetaTrader 5.
 
 ### Key Features
+
 - **6 Advanced Pattern Recognition Algorithms** - Institutional-grade SMC patterns
 - **Real-time ML Optimization** - Continuous learning from trade outcomes
 - **Multi-tier Access System** - Different features for different user tiers
@@ -25,14 +26,14 @@ BITTEN is a sophisticated automated trading system that uses Smart Money Concept
 
 ### Core Components
 
-| Component | Purpose | Technology |
-|-----------|---------|------------|
-| **Elite Guard** | Pattern recognition & signal generation | Python, NumPy |
-| **Grokkeeper ML** | Machine learning optimization | XGBoost, Scikit-learn |
-| **Command Router** | Trade execution management | ZMQ, MT5 |
-| **Dynamic Tracker** | Real-time outcome monitoring | Python, SQLite |
-| **Telegram Bot** | User interface & alerts | python-telegram-bot |
-| **WebApp** | Dashboard & analytics | Flask, Gunicorn |
+| Component           | Purpose                                 | Technology            |
+| ------------------- | --------------------------------------- | --------------------- |
+| **Elite Guard**     | Pattern recognition & signal generation | Python, NumPy         |
+| **Grokkeeper ML**   | Machine learning optimization           | XGBoost, Scikit-learn |
+| **Command Router**  | Trade execution management              | ZMQ, MT5              |
+| **Dynamic Tracker** | Real-time outcome monitoring            | Python, SQLite        |
+| **Telegram Bot**    | User interface & alerts                 | python-telegram-bot   |
+| **WebApp**          | Dashboard & analytics                   | Flask, Gunicorn       |
 
 ## 📈 Trading Patterns
 
@@ -70,6 +71,7 @@ BITTEN is a sophisticated automated trading system that uses Smart Money Concept
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - Python 3.10+
 - MetaTrader 5
 - PostgreSQL or SQLite
@@ -117,12 +119,14 @@ pm2 start ecosystem.config.js
 ## 📊 Performance Metrics
 
 ### Current Performance (September 2025)
+
 - **Overall Win Rate**: 56.9% → 65%+ (after optimizations)
 - **Daily Performance**: -82 pips → +270 pips projected
 - **Best Pattern**: MOMENTUM_BURST (75% WR)
 - **Most Improved**: ORDER_BLOCK_BOUNCE (32% → 50%+ after restrictions)
 
 ### Risk Management
+
 - **Per Trade Risk**: 2% of account
 - **Position Sizing**: Dynamic based on stop loss distance
 - **Max Concurrent**: 3 positions (configurable)
@@ -131,6 +135,7 @@ pm2 start ecosystem.config.js
 ## 🔧 System Management
 
 ### Process Management
+
 ```bash
 # View all processes
 pm2 list
@@ -146,6 +151,7 @@ pm2 stop all
 ```
 
 ### Performance Monitoring
+
 ```bash
 # Run performance report
 python3 -c "$(cat bitten_report_standard.py)"
@@ -158,13 +164,14 @@ tail -f comprehensive_tracking.jsonl
 ```
 
 ### Database Management
+
 ```bash
 # Backup database
 cp bitten.db bitten.db.backup_$(date +%Y%m%d)
 
 # Query win rates
-sqlite3 bitten.db "SELECT pattern_type, COUNT(*) as total, 
-  SUM(CASE WHEN outcome='WIN' THEN 1 ELSE 0 END) as wins 
+sqlite3 bitten.db "SELECT pattern_type, COUNT(*) as total,
+  SUM(CASE WHEN outcome='WIN' THEN 1 ELSE 0 END) as wins
   FROM signals GROUP BY pattern_type;"
 ```
 
@@ -179,6 +186,7 @@ sqlite3 bitten.db "SELECT pattern_type, COUNT(*) as total,
 ## 📡 Communication Architecture
 
 ### ZMQ Ports
+
 - **5555**: Command router (fire commands)
 - **5556**: Market data ingestion
 - **5557**: Signal publishing
@@ -187,6 +195,7 @@ sqlite3 bitten.db "SELECT pattern_type, COUNT(*) as total,
 - **5565**: ML adjustments
 
 ### HTTP Endpoints
+
 - **8888**: Main webapp dashboard
 - **8899**: Commander throne interface
 - **8890**: Tracking dashboard
@@ -195,6 +204,7 @@ sqlite3 bitten.db "SELECT pattern_type, COUNT(*) as total,
 ## 🤖 Machine Learning Pipeline
 
 ### Data Flow
+
 1. **Signal Generation** → Track all signals above 70% confidence
 2. **Outcome Tracking** → Monitor to TP/SL completion (max 4 hours)
 3. **ML Training** → Retrain model every 24 hours with new data
@@ -202,6 +212,7 @@ sqlite3 bitten.db "SELECT pattern_type, COUNT(*) as total,
 5. **Performance Feedback** → Disable patterns below 40% win rate
 
 ### Current ML Status (September 2025)
+
 - **Training Samples**: 233
 - **Features**: 10+ (pattern, symbol, session, volatility, etc.)
 - **Model**: XGBoost with anti-overfitting measures
@@ -210,6 +221,7 @@ sqlite3 bitten.db "SELECT pattern_type, COUNT(*) as total,
 ## 📱 Telegram Bot Commands
 
 ### User Commands
+
 - `/start` - Initialize bot
 - `/brief` - View current signals
 - `/fire [signal_id]` - Execute a trade
@@ -218,6 +230,7 @@ sqlite3 bitten.db "SELECT pattern_type, COUNT(*) as total,
 - `/BITMODE [ON|OFF]` - Toggle hybrid position management (FANG+ only)
 
 ### Admin Commands
+
 - `/broadcast [message]` - Send to all users
 - `/stats` - System statistics
 - `/users` - User management
@@ -228,6 +241,7 @@ sqlite3 bitten.db "SELECT pattern_type, COUNT(*) as total,
 ### Common Issues
 
 **No Signals Generated**
+
 ```bash
 # Check Elite Guard is running
 pm2 status elite_guard
@@ -240,6 +254,7 @@ grep "SCAN TRIGGER" /root/.pm2/logs/elite-guard-out.log
 ```
 
 **Trades Not Executing**
+
 ```bash
 # Check EA connection
 sqlite3 bitten.db "SELECT * FROM ea_instances;"
@@ -252,6 +267,7 @@ python3 test_fire_queue.py
 ```
 
 **ML Not Learning**
+
 ```bash
 # Check training data
 wc -l ml_training_data.jsonl
@@ -266,12 +282,14 @@ pm2 logs grokkeeper_ml --lines 50
 ## 📈 Recent Optimizations (September 11, 2025)
 
 ### Pattern Restrictions
+
 - **ORDER_BLOCK_BOUNCE**: Limited to USDJPY/GBPCAD, 80%+ confidence
 - **BB_SCALP**: JPY pairs only, 15 pip TP/10 pip SL (1.5:1 R:R)
 - **KALMAN_QUICKFIRE**: USDJPY/EURUSD/GBPUSD only, 75-84% confidence
 - **FAIR_VALUE_GAP_FILL**: Threshold lowered to 85% (was 99%)
 
 ### Expected Impact
+
 - Previous 24h: -82 pips (56.9% win rate)
 - Projected 24h: +270 pips (65%+ win rate)
 - Net improvement: +352 pips/day
@@ -287,6 +305,7 @@ Proprietary - All Rights Reserved
 ## 🔧 Operations
 
 ### Mission-State Worker
+
 ```bash
 export MISSION_STATE=1 MIN_RR=1.6 MAX_SPREAD_TO_SL_RATIO=0.18 EXPIRY_GRACE_MS=45000
 nohup python3 run_metasocket_adapter_daemon.py &
@@ -295,6 +314,7 @@ nohup python3 run_metasocket_adapter_daemon.py &
 ## 🆘 Support
 
 For technical support or questions:
+
 - Telegram: @bitten_support
 - GitHub Issues: [Create an issue](https://github.com/HydraXdev/HydraX-v2/issues)
 

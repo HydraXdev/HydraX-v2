@@ -3,9 +3,11 @@
 ## Critical Changes from Previous Versions
 
 ### 1. Handshake Now Includes Position Reconciliation
+
 **Message Type:** `handshake` (sent once on EA startup to port 5556)
 
 **New Fields:**
+
 ```json
 {
   "type": "handshake",
@@ -26,6 +28,7 @@
 ```
 
 **Server Action Required:**
+
 - If `reconnect=false`: Reset daily trade counter for this UUID
 - If `reconnect=true`: Validate open_positions against server state, DON'T reset counter
 - Update user_positions[uuid] with the positions array (EA state is source of truth)
@@ -36,6 +39,7 @@ Prevents users from exceeding 6 trades/day limit after EA crash/restart.
 ---
 
 ### 2. DEALER Keepalive Messages
+
 **Message Type:** `dealer_heartbeat` (sent every 5 seconds to port 5555)
 
 ```json
@@ -48,6 +52,7 @@ Prevents users from exceeding 6 trades/day limit after EA crash/restart.
 ```
 
 **Server Action Required:**
+
 - Command router should ignore these (no response needed)
 - Use them to update "last seen" timestamp for connection monitoring
 
@@ -57,10 +62,12 @@ Prevents router from aging out EA connections during idle periods.
 ---
 
 ### 3. Direction Canonicalization
+
 **Change:** All outbound events now use standardized "BUY"/"SELL" (never "long", "sell", "b", etc)
 
 **Affected Messages:**
-- `position_opened` 
+
+- `position_opened`
 
 **Server Action:**
 Your hedge protection logic can now rely on `direction` field being exactly "BUY" or "SELL".
@@ -68,6 +75,7 @@ Your hedge protection logic can now rely on `direction` field being exactly "BUY
 ---
 
 ### 4. SafeNum Protection
+
 **Change:** Balance, equity, margin values are now sanitized to prevent NaN/Inf
 
 **Impact:**
@@ -76,14 +84,16 @@ You should never receive `NaN`, `Infinity`, or `-Infinity` in numeric fields. If
 ---
 
 ### 5. Heartbeats Now on Port 5556
+
 **Change:** Heartbeats moved from port 5560 to port 5556 (same as ticks/handshake)
 
 **Reason:** Port 5560 was configured as PUB socket, EA needs PULL socket for PUSH messages.
 
 **Server Action:**
 Your existing receiver on port 5556 now gets three message types:
+
 - `type: "handshake"`
-- `type: "tick"` 
+- `type: "tick"`
 - `type: "heartbeat"`
 
 ---
@@ -123,7 +133,7 @@ def on_handshake(msg):
     uuid = msg["uuid"]
     is_reconnect = msg.get("reconnect", False)
     ea_positions = msg.get("open_positions", [])
-    
+
     if not is_reconnect:
         # Fresh start - initialize user
         daily_trades[uuid] = 0
@@ -134,16 +144,16 @@ def on_handshake(msg):
         server_positions = user_positions.get(uuid, [])
         ea_tickets = {p["ticket"] for p in ea_positions}
         server_tickets = {p["ticket"] for p in server_positions}
-        
+
         # Log mismatches for monitoring
         if ea_tickets != server_tickets:
             missing_on_server = ea_tickets - server_tickets
             missing_on_ea = server_tickets - ea_tickets
             log.warning(f"Position mismatch {uuid}: EA={ea_tickets} Server={server_tickets}")
-        
+
         # EA is source of truth
         user_positions[uuid] = ea_positions
-        
+
         # DON'T reset daily_trades counter
 ```
 
@@ -152,6 +162,7 @@ def on_handshake(msg):
 ## Tunable Parameters (Exposed as EA Inputs)
 
 These can be changed without recompiling:
+
 - `InpRouterBeatSec`: DEALER keepalive interval (default 5s)
 - `InpSndHWM`: Send high water mark (default 10000)
 - `InpRcvHWM`: Receive high water mark (default 1000)

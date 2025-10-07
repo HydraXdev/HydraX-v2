@@ -14,20 +14,20 @@
   --color-warning: #ff9500;
   --color-danger: #ff3b30;
   --color-success: #00ff88;
-  
+
   /* Background colors */
   --bg-primary: #ffffff;
   --bg-secondary: #f8f9fa;
   --bg-tertiary: #e9ecef;
   --bg-overlay: rgba(0, 0, 0, 0.5);
   --bg-glass: rgba(255, 255, 255, 0.95);
-  
+
   /* Text colors */
   --text-primary: #000000;
   --text-secondary: #6c757d;
   --text-tertiary: #adb5bd;
   --text-inverse: #ffffff;
-  
+
   /* Border and shadow */
   --border-color: #dee2e6;
   --border-radius: 12px;
@@ -36,7 +36,7 @@
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
   --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
-  
+
   /* Spacing scale */
   --space-xs: 0.25rem;
   --space-sm: 0.5rem;
@@ -44,10 +44,14 @@
   --space-lg: 1.5rem;
   --space-xl: 2rem;
   --space-2xl: 3rem;
-  
+
   /* Typography */
-  --font-family-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --font-family-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  --font-family-base:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
+  --font-family-mono:
+    "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New",
+    monospace;
   --font-size-xs: 0.75rem;
   --font-size-sm: 0.875rem;
   --font-size-base: 1rem;
@@ -58,26 +62,26 @@
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
-  
+
   /* Animation and transitions */
   --transition-fast: 150ms ease;
   --transition-base: 200ms ease;
   --transition-slow: 300ms ease;
   --animation-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
-  
+
   /* Navigation dimensions */
   --nav-height: 60px;
   --nav-height-compact: 50px;
   --tab-height: 64px;
   --touch-target-size: 44px;
   --one-handed-max-height: 70vh;
-  
+
   /* Safe area handling for notched devices */
   --safe-area-inset-top: env(safe-area-inset-top, 0px);
   --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
   --safe-area-inset-left: env(safe-area-inset-left, 0px);
   --safe-area-inset-right: env(safe-area-inset-right, 0px);
-  
+
   /* Z-index scale */
   --z-dropdown: 1000;
   --z-sticky: 1020;
@@ -97,18 +101,18 @@ body.dark-mode {
   --color-primary-dark: #0056b3;
   --color-secondary: #30d158;
   --color-accent: #ff9f0a;
-  
+
   --bg-primary: #000000;
   --bg-secondary: #1c1c1e;
   --bg-tertiary: #2c2c2e;
   --bg-overlay: rgba(0, 0, 0, 0.8);
   --bg-glass: rgba(28, 28, 30, 0.95);
-  
+
   --text-primary: #ffffff;
   --text-secondary: #8e8e93;
   --text-tertiary: #636366;
   --text-inverse: #000000;
-  
+
   --border-color: #38383a;
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5);
   --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3);
@@ -145,7 +149,7 @@ html {
   html {
     scroll-behavior: auto;
   }
-  
+
   *,
   *::before,
   *::after {
@@ -166,7 +170,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
   overscroll-behavior: none;
   user-select: none;
-  
+
   /* Prevent zoom on iOS */
   touch-action: manipulation;
 }
@@ -219,7 +223,7 @@ body {
     --shadow-md: none;
     --shadow-lg: none;
   }
-  
+
   .tab-button,
   .btn,
   .card {
@@ -274,7 +278,7 @@ body {
   transition: all var(--transition-base);
   position: relative;
   overflow: hidden;
-  
+
   /* Improve touch responsiveness */
   -webkit-touch-callout: none;
   -webkit-user-select: none;
@@ -282,7 +286,7 @@ body {
 }
 
 .tab-button::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 50%;
   left: 50%;
@@ -333,7 +337,7 @@ body {
 }
 
 .priority-tab::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 2px;
   right: 2px;
@@ -345,7 +349,11 @@ body {
 }
 
 .vibrant-tab .tab-icon {
-  background: linear-gradient(45deg, var(--color-primary), var(--color-secondary));
+  background: linear-gradient(
+    45deg,
+    var(--color-primary),
+    var(--color-secondary)
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -433,21 +441,13 @@ body {
 }
 
 .gesture-overlay.active {
-  background: linear-gradient(
-    to right,
-    var(--color-primary),
-    transparent
-  );
+  background: linear-gradient(to right, var(--color-primary), transparent);
   opacity: 0.3;
   pointer-events: auto;
 }
 
 .gesture-overlay-right.active {
-  background: linear-gradient(
-    to left,
-    var(--color-primary),
-    transparent
-  );
+  background: linear-gradient(to left, var(--color-primary), transparent);
 }
 
 /* One-handed mode toggle */
@@ -468,7 +468,7 @@ body {
   box-shadow: var(--shadow-sm);
   z-index: var(--z-fixed);
   transition: all var(--transition-base);
-  
+
   display: flex;
   align-items: center;
   justify-content: center;
@@ -511,7 +511,9 @@ body {
   min-height: 100vh;
   position: relative;
   overflow-x: hidden;
-  padding-bottom: calc(var(--tab-height) + var(--safe-area-inset-bottom) + var(--space-md));
+  padding-bottom: calc(
+    var(--tab-height) + var(--safe-area-inset-bottom) + var(--space-md)
+  );
 }
 
 .page-content {
@@ -582,7 +584,8 @@ body {
 
 /* Utility animations */
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
     transform: scale(1);
   }
@@ -599,10 +602,15 @@ body {
 }
 
 @keyframes bounce {
-  0%, 20%, 53%, 80%, 100% {
+  0%,
+  20%,
+  53%,
+  80%,
+  100% {
     transform: translate3d(0, 0, 0);
   }
-  40%, 43% {
+  40%,
+  43% {
     transform: translate3d(0, -8px, 0);
   }
   70% {
@@ -632,7 +640,7 @@ body {
   transition: all var(--transition-base);
   position: relative;
   overflow: hidden;
-  
+
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
@@ -775,14 +783,18 @@ body {
 
 .progress-bar {
   height: 100%;
-  background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+  background: linear-gradient(
+    90deg,
+    var(--color-primary),
+    var(--color-secondary)
+  );
   border-radius: inherit;
   transition: width var(--transition-slow);
   position: relative;
 }
 
 .progress-bar::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -814,7 +826,7 @@ body {
 }
 
 .loading::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 50%;
   left: 50%;
@@ -833,11 +845,11 @@ body {
   .mobile-tab-nav {
     padding: var(--space-md) var(--space-lg);
   }
-  
+
   .tab-button {
     padding: var(--space-md);
   }
-  
+
   .page-content {
     padding: var(--space-lg);
   }
@@ -849,7 +861,7 @@ body {
     --nav-height: 70px;
     --tab-height: 70px;
   }
-  
+
   .mobile-nav-container {
     position: fixed;
     left: 0;
@@ -861,14 +873,14 @@ body {
     border-top: none;
     border-right: 1px solid var(--border-color);
   }
-  
+
   .mobile-tab-nav {
     flex-direction: column;
     height: auto;
     gap: var(--space-sm);
     padding: var(--space-lg);
   }
-  
+
   .tab-button {
     width: 100%;
     flex-direction: row;
@@ -877,21 +889,21 @@ body {
     padding: var(--space-md);
     border-radius: var(--border-radius);
   }
-  
+
   .tab-icon {
     margin-bottom: 0;
     font-size: var(--font-size-xl);
   }
-  
+
   .tab-label {
     font-size: var(--font-size-base);
   }
-  
+
   .page-container {
     margin-left: 250px;
     padding-bottom: var(--space-md);
   }
-  
+
   .one-handed-toggle {
     display: none;
   }
@@ -902,11 +914,11 @@ body {
   .mobile-nav-container {
     width: 280px;
   }
-  
+
   .page-container {
     margin-left: 280px;
   }
-  
+
   .tab-button {
     padding: var(--space-lg);
   }
@@ -918,21 +930,21 @@ body {
     --tab-height: 50px;
     --nav-height-compact: 45px;
   }
-  
+
   .tab-label {
     display: none;
   }
-  
+
   .mobile-tab-nav {
     height: var(--nav-height-compact);
     padding: var(--space-xs) var(--space-sm);
   }
-  
+
   .tab-button {
     padding: var(--space-xs);
     min-height: auto;
   }
-  
+
   .one-handed-toggle {
     top: var(--space-sm);
     right: var(--space-sm);
@@ -984,7 +996,7 @@ body {
   .progress-bar::after {
     animation: none;
   }
-  
+
   .tab-button,
   .btn,
   .card,
@@ -1001,7 +1013,7 @@ body {
   .gesture-overlay {
     display: none !important;
   }
-  
+
   .page-container {
     margin: 0 !important;
     padding: 0 !important;

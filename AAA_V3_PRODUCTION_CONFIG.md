@@ -5,7 +5,9 @@
 ### Immediate Production Deployment:
 
 #### 1. **JPY-Focused Strategy** (Phase 1)
+
 Deploy only the proven winners first:
+
 - **USDJPY**: 85.2% win rate ✅
 - **GBPJPY**: 74.1% win rate ✅
 - **EURJPY**: Expected 80%+ (same model as USDJPY)
@@ -14,7 +16,9 @@ Deploy only the proven winners first:
 **Expected**: 10-12 signals/day at 75-85% win rate
 
 #### 2. **Calibrated Major Pairs** (Phase 2)
+
 After more aggressive calibration:
+
 ```python
 EURUSD:
 - entry_zscore: 1.8 → 1.2
@@ -31,6 +35,7 @@ GBPUSD:
 ## 📊 Production Deployment Plan
 
 ### Phase 1: JPY Dominance (Week 1)
+
 ```
 Active Pairs: USDJPY, GBPJPY, EURJPY, AUDJPY
 Models: Trend Momentum, Volatility Breakout
@@ -38,12 +43,14 @@ Expected: 10-12 signals/day, 75-85% win rate
 ```
 
 ### Phase 2: Add Calibrated Majors (Week 2)
+
 ```
 Add: EURUSD, GBPUSD (with new z-scores)
 Expected: 15-18 signals/day, 70-75% win rate
 ```
 
 ### Phase 3: Full 10-Pair (Week 3)
+
 ```
 Add: USDCHF, NZDUSD, EURGBP, USDCAD
 Expected: 20-25 signals/day, 65-70% win rate
@@ -59,6 +66,7 @@ Expected: 20-25 signals/day, 65-70% win rate
 ## 🔧 Critical Settings for Production
 
 ### For JPY Pairs (Keep As-Is):
+
 ```python
 'USDJPY': {
     'entry_zscore': 1.5,  # Perfect
@@ -68,6 +76,7 @@ Expected: 20-25 signals/day, 65-70% win rate
 ```
 
 ### For Major Pairs (Aggressive Calibration):
+
 ```python
 'EURUSD': {
     'entry_zscore': 1.2,  # Much lower
@@ -80,16 +89,19 @@ Expected: 20-25 signals/day, 65-70% win rate
 ## 📈 Expected Production Results
 
 ### Week 1 (JPY Only):
+
 - Signals: 10-12/day
 - Win Rate: 80%+
 - Confidence: HIGH
 
 ### Week 2 (+ Majors):
+
 - Signals: 15-18/day
 - Win Rate: 75%+
 - Confidence: MEDIUM
 
 ### Week 3 (Full 10):
+
 - Signals: 20-25/day
 - Win Rate: 70%+
 - Confidence: MEDIUM

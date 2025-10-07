@@ -3,6 +3,7 @@
 ## 🚀 Overview
 
 This guide covers the deployment of the complete landing page and email capture system for Press Pass, including:
+
 - High-converting landing page with email capture
 - Press Pass claim and activation system
 - A/B testing framework
@@ -14,6 +15,7 @@ This guide covers the deployment of the complete landing page and email capture 
 ## 📁 System Components
 
 ### 1. **Landing Page** (`/landing/index_v2.html`)
+
 - Responsive design with urgency messaging
 - Real-time spot counter
 - Email capture form with validation
@@ -21,6 +23,7 @@ This guide covers the deployment of the complete landing page and email capture 
 - A/B testing integration
 
 ### 2. **Press Pass Manager** (`src/bitten_core/press_pass_manager.py`)
+
 - Handles Press Pass claims and limits
 - Email campaign management
 - Conversion tracking
@@ -28,24 +31,28 @@ This guide covers the deployment of the complete landing page and email capture 
 - Daily urgency counter
 
 ### 3. **Analytics Tracker** (`src/bitten_core/analytics_tracker.py`)
+
 - Real-time event tracking
 - Funnel analysis
 - Integration with GA4, Facebook Pixel
 - Custom metrics dashboard
 
 ### 4. **A/B Testing Framework** (`src/bitten_core/ab_testing_framework.py`)
+
 - Experiment management
 - Statistical significance testing
 - Variant assignment
 - Performance tracking
 
 ### 5. **Onboarding System** (`src/bitten_core/onboarding_system.py`)
+
 - Multi-stage onboarding flow
 - Progress tracking
 - Automated actions
 - Stuck user detection
 
 ### 6. **Conversion Dashboard** (`src/bitten_core/conversion_dashboard.py`)
+
 - Real-time metrics
 - Funnel visualization
 - A/B test results
@@ -76,6 +83,7 @@ psql -U bitten_app -d bitten_production < migrations/press_pass_tables.sql
 ### 3. Redis Setup
 
 Ensure Redis is running on ports:
+
 - 6379 (default) - General cache
 - 6379 db=1 - Press Pass manager
 - 6379 db=2 - Rate limiting
@@ -121,6 +129,7 @@ The web app has been updated to serve the new landing page and include all API e
 ### 3. Analytics Setup
 
 Replace placeholder IDs in `landing/index_v2.html`:
+
 - Line 23: Replace `GA_MEASUREMENT_ID` with your Google Analytics ID
 - Line 38: Replace `FB_PIXEL_ID` with your Facebook Pixel ID
 
@@ -161,21 +170,25 @@ python test_landing_email_system.py
 Current experiments:
 
 ### 1. **Press Pass CTA Button** (`press_pass_cta`)
+
 - Control: "ACTIVATE MY PRESS PASS NOW"
 - Variant 1: "CLAIM YOUR FREE ACCESS"
 
 ### 2. **Urgency Messaging** (`urgency_messaging`)
+
 - Control: "7 SPOTS LEFT"
 - Time-based: "5 SPOTS LEFT TODAY"
 - Countdown: "3 SPOTS REMAINING"
 
 ### 3. **Email Subject Lines** (`email_subject_lines`)
+
 - Control: "🎯 Your BITTEN Press Pass is Ready!"
 - Urgency: "⏰ Activate Your Press Pass Before It Expires"
 
 ## 📧 Email Campaign Setup
 
 ### Email Templates Location
+
 - `/templates/emails/press_pass_welcome.html`
 - `/templates/emails/press_pass_day1.html`
 - `/templates/emails/press_pass_day3.html`
@@ -183,6 +196,7 @@ Current experiments:
 - `/templates/emails/press_pass_day7.html`
 
 ### Email Schedule
+
 - **Day 0**: Welcome email (immediate)
 - **Day 1**: Quick start guide
 - **Day 3**: Performance showcase
@@ -194,11 +208,12 @@ Current experiments:
 ### 1. Telegram Bot Integration
 
 When user clicks activation link:
+
 ```python
 # In your Telegram bot handler
 if message.text.startswith('/start pp_'):
     claim_token = message.text.split('pp_')[1]
-    
+
     # Activate Press Pass
     response = requests.post(
         'http://localhost:5000/api/press-pass/activate',
@@ -239,10 +254,12 @@ track_event('tier_upgrade', {
 ## 📈 Monitoring
 
 ### 1. Access Dashboard
+
 - URL: `http://your-domain.com/conversion-dashboard`
 - Requires admin authentication
 
 ### 2. Key Metrics to Monitor
+
 - **Conversion Rate**: Email → Press Pass → Paid Tier
 - **Activation Rate**: Press Pass claimed → Activated
 - **Time to Convert**: Average hours from claim to payment
@@ -250,6 +267,7 @@ track_event('tier_upgrade', {
 - **Funnel Drop-off**: Where users abandon
 
 ### 3. Alerts to Set Up
+
 - Daily Press Pass limit approaching (< 5 remaining)
 - Weekly limit reached
 - Conversion rate drops below threshold
@@ -319,6 +337,7 @@ track_event('tier_upgrade', {
 ## 🎯 Success Metrics
 
 Target metrics for first 30 days:
+
 - **Email Capture Rate**: > 25%
 - **Press Pass Activation**: > 60%
 - **Conversion to Paid**: > 15%
@@ -329,6 +348,7 @@ Target metrics for first 30 days:
 ## 🆘 Support
 
 For issues or questions:
+
 1. Check logs: `/root/HydraX-v2/logs/`
 2. Run diagnostics: `python test_landing_email_system.py`
 3. Monitor dashboard: `/conversion-dashboard`

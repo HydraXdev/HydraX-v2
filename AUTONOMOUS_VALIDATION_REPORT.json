@@ -22,22 +22,11 @@
     },
     "tier_system": {
       "status": "CLEAN",
-      "tiers": [
-        "PRESS_PASS",
-        "NIBBLER",
-        "FANG",
-        "COMMANDER"
-      ],
+      "tiers": ["PRESS_PASS", "NIBBLER", "FANG", "COMMANDER"],
       "apex_removed": true
     }
   },
-  "warnings": [
-    "CLAUDE.md may have inconsistencies"
-  ],
-  "errors": [
-    "Webapp responded with status 404"
-  ],
-  "recommendations": [
-    "System mostly ready - minor issues need attention"
-  ]
+  "warnings": ["CLAUDE.md may have inconsistencies"],
+  "errors": ["Webapp responded with status 404"],
+  "recommendations": ["System mostly ready - minor issues need attention"]
 }

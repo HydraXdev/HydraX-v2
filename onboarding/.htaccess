@@ -2,10 +2,10 @@
 # BITTEN Onboarding Static Files
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    
+
     # Serve onboarding files
     RewriteRule ^onboarding/(.*)$ onboarding/$1 [L]
-    
+
     # Serve JS files
     RewriteRule ^src/ui/common/(.*)$ src/ui/common/$1 [L]
 </IfModule>

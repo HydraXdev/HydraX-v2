@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback } from "react";
 
 /**
  * Hotkey handler with cleanup
@@ -29,8 +29,8 @@ export function useHotkeys(keyMap: HotkeyMap, enabled: boolean = true) {
       // Skip if user is typing in an input/textarea
       const target = event.target as HTMLElement;
       if (
-        target.tagName === 'INPUT' ||
-        target.tagName === 'TEXTAREA' ||
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
         target.isContentEditable
       ) {
         return;
@@ -49,14 +49,14 @@ export function useHotkeys(keyMap: HotkeyMap, enabled: boolean = true) {
         handler();
       }
     },
-    [keyMap]
+    [keyMap],
   );
 
   useEffect(() => {
     if (!enabled) return;
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown, enabled]);
 }
 
@@ -76,13 +76,13 @@ export function hotkeyHint(key: string): string {
  * Common hotkey patterns for BITTEN app
  */
 export const COMMON_HOTKEYS = {
-  EXECUTE: 'e',
-  DECLINE: 'x',
-  HELP: '?',
-  NOTEBOOK: 'n',
-  STATUS: 'd',
-  WAR_ROOM: 'w',
-  ALERTS: 'a',
-  STATS: 's',
-  CLOSE: 'x',
+  EXECUTE: "e",
+  DECLINE: "x",
+  HELP: "?",
+  NOTEBOOK: "n",
+  STATUS: "d",
+  WAR_ROOM: "w",
+  ALERTS: "a",
+  STATS: "s",
+  CLOSE: "x",
 } as const;

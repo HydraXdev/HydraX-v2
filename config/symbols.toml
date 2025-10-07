@@ -8,7 +8,7 @@ trail_min_pips = 25              # Minimum trail distance
 atr_mult_default = 2.0           # ATR multiplier for trailing
 
 [XAGUSD]
-points_per_pip = 10              # 0.001 point → 0.01 "pip" 
+points_per_pip = 10              # 0.001 point → 0.01 "pip"
 min_stop_pips_default = 15       # Minimum stop distance in pips
 be_offset_min_pips = 10          # Minimum BE offset in pips
 trail_min_pips = 15              # Minimum trail distance

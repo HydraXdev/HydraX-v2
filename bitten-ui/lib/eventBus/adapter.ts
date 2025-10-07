@@ -1,10 +1,11 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from 'react';
-import type { BusTopics, TopicName } from './contracts';
+import { useEffect, useState } from "react";
+import type { BusTopics, TopicName } from "./contracts";
 
 // TODO: Wire to actual backend SSE/WebSocket endpoint
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8888';
+const BACKEND_URL =
+  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8888";
 
 type TopicHandler<T extends TopicName> = (data: BusTopics[T]) => void;
 type Unsubscribe = () => void;
@@ -27,7 +28,10 @@ class EventBusAdapter {
   private eventSource?: EventSource;
 
   constructor() {
-    if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_USE_MOCKS !== '1') {
+    if (
+      typeof window !== "undefined" &&
+      process.env.NEXT_PUBLIC_USE_MOCKS !== "1"
+    ) {
       this.connect();
     }
   }
@@ -40,13 +44,13 @@ class EventBusAdapter {
     //   const { topic, data } = JSON.parse(event.data);
     //   this.emit(topic, data);
     // };
-    console.log('[EventBus] Stub - would connect to', BACKEND_URL);
+    console.log("[EventBus] Stub - would connect to", BACKEND_URL);
     this.connected = true;
   }
 
   subscribe<T extends TopicName>(
     topic: T,
-    handler: TopicHandler<T>
+    handler: TopicHandler<T>,
   ): Unsubscribe {
     if (!this.handlers.has(topic)) {
       this.handlers.set(topic, new Set());
@@ -109,7 +113,7 @@ export const eventBus = {
  *   const { data: profile, loading } = useTopic('user.profile');
  */
 export function useTopic<T extends TopicName>(
-  topic: T
+  topic: T,
 ): { data: BusTopics[T] | null; loading: boolean; error: Error | null } {
   const [data, setData] = useState<BusTopics[T] | null>(null);
   const [loading, setLoading] = useState(true);
@@ -123,7 +127,7 @@ export function useTopic<T extends TopicName>(
     });
 
     // Simulate loading delay in dev mode
-    if (process.env.NEXT_PUBLIC_USE_MOCKS === '1') {
+    if (process.env.NEXT_PUBLIC_USE_MOCKS === "1") {
       setTimeout(() => setLoading(false), 100);
     }
 

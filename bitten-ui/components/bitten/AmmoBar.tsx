@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import React from 'react';
+import React from "react";
 
 export interface AmmoBarProps {
   maxTrades: number;
@@ -20,13 +20,17 @@ export interface AmmoBarProps {
 export function AmmoBar({
   maxTrades,
   activeTrades,
-  className = '',
+  className = "",
 }: AmmoBarProps) {
   const availableSlots = maxTrades - activeTrades;
   const bullets = Array.from({ length: maxTrades });
 
   return (
-    <div className={`flex items-center gap-1 ${className}`} role="status" aria-label={`${availableSlots} of ${maxTrades} trade slots available`}>
+    <div
+      className={`flex items-center gap-1 ${className}`}
+      role="status"
+      aria-label={`${availableSlots} of ${maxTrades} trade slots available`}
+    >
       {bullets.map((_, index) => {
         const isUsed = index < activeTrades;
         return (
@@ -34,8 +38,8 @@ export function AmmoBar({
             key={index}
             className={`
               w-2 h-5 rounded-sm
-              ${isUsed ? 'bg-[#fbbf24]' : 'bg-[#34d399]'}
-              ${activeTrades === maxTrades ? 'animate-pulse' : ''}
+              ${isUsed ? "bg-[#fbbf24]" : "bg-[#34d399]"}
+              ${activeTrades === maxTrades ? "animate-pulse" : ""}
             `}
             aria-hidden="true"
           />

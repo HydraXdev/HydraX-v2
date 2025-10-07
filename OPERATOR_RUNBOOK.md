@@ -10,6 +10,7 @@
 ## 🎯 Quick Reference
 
 ### Pre-Flight Checklist (5 min)
+
 ```bash
 # 1. Verify all services running
 pm2 list | grep -E "webapp|telegram|confirm"
@@ -28,6 +29,7 @@ python3 /root/HydraX-v2/tests/go_no_go_validation.py
 ```
 
 ### Critical Endpoints
+
 - **WebApp API**: http://localhost:8888 or https://www.joinbitten.com
 - **Mission Page**: https://www.joinbitten.com/mission?ms=...&token=...
 - **Status Page**: https://www.joinbitten.com/status
@@ -42,6 +44,7 @@ python3 /root/HydraX-v2/tests/go_no_go_validation.py
 **Objective**: Create a test mission session with JWT token and deep link
 
 **Steps**:
+
 ```bash
 # 1. Create test session
 python3 << 'EOF'
@@ -89,6 +92,7 @@ EOF
 ```
 
 **Expected Output**:
+
 ```
 ✅ Mission Session Created
 Session ID: ms_01JXXXXXXXXX
@@ -98,6 +102,7 @@ Expires At: 1728123456
 ```
 
 **Verification**:
+
 - [ ] Session ID starts with `ms_`
 - [ ] Token is a long JWT string
 - [ ] Deep link is properly formatted
@@ -112,11 +117,13 @@ Expires At: 1728123456
 **Objective**: Verify alert message format and button link
 
 **Steps**:
+
 1. Open Telegram group where BITTEN posts alerts
 2. **DO NOT POST REAL ALERT** - This is visual inspection only
 3. Review what alert WOULD look like:
 
 **Expected Alert Format**:
+
 ```
 🎯 LIQUIDITY_SWEEP_REVERSAL Signal
 
@@ -132,6 +139,7 @@ Session expires in 10 minutes
 **Button**: "📋 View Mission Brief" → `https://www.joinbitten.com/mission?ms=...&token=...`
 
 **Verification**:
+
 - [ ] Alert contains all required fields (pair, direction, confidence)
 - [ ] Button URL matches deep link format
 - [ ] Expiration warning visible
@@ -143,6 +151,7 @@ Session expires in 10 minutes
 **Objective**: Verify mission page loads with token authentication
 
 **Steps**:
+
 1. **Open deep link from Test 1** in browser (incognito mode recommended)
 2. **Observe page load sequence**:
    - Initial load (HTML/CSS/JS)
@@ -153,11 +162,13 @@ Session expires in 10 minutes
 **Expected Behavior**:
 
 **A. Page Structure Loads**:
+
 - [ ] Dark military theme (#0a0e1a background)
 - [ ] "MISSION BRIEF" header visible
 - [ ] Loading indicators show briefly
 
 **B. WebSocket Connection (Check Browser Console F12)**:
+
 ```javascript
 // Should see in console:
 WebSocket connecting to wss://www.joinbitten.com/socket.io?t=eyJ...
@@ -166,11 +177,13 @@ Subscribed to topics: ["user.profile", "mission.alert/999", ...]
 ```
 
 **C. Beacons Update**:
+
 - [ ] **🟢 OPERATIONAL** beacon (system status)
 - [ ] **🔒 SECURE** beacon (authenticated)
 - [ ] **⚡ XX ms** beacon (latency < 100ms is good)
 
 **D. Mission Dossier Populated**:
+
 - [ ] Pair: EURUSD
 - [ ] Direction: BUY arrow
 - [ ] Entry price displayed
@@ -180,6 +193,7 @@ Subscribed to topics: ["user.profile", "mission.alert/999", ...]
 - [ ] Position size calculated
 
 **Troubleshooting**:
+
 - **Stuck on "Loading"**: Check console for WebSocket errors
 - **"Session Expired"**: Token TTL passed, generate new link
 - **"Access Denied"**: Token validation failed, check JWT keys
@@ -194,12 +208,14 @@ Subscribed to topics: ["user.profile", "mission.alert/999", ...]
 **Steps**:
 
 **A. Review Pre-Execute State**:
+
 - [ ] Mission data fully loaded
 - [ ] Risk amount shown (should be ≤ $150 from riskMaxUsd)
 - [ ] "🔫 EXECUTE" button enabled
 - [ ] No error messages visible
 
 **B. Click EXECUTE Button**:
+
 1. Click the "🔫 EXECUTE" button
 2. **DO NOT** confirm system dialog yet
 3. Review calculated values:
@@ -210,6 +226,7 @@ Subscribed to topics: ["user.profile", "mission.alert/999", ...]
 4. **Confirm execution**
 
 **Expected HTTP Flow** (Check Network Tab F12):
+
 ```
 POST /api/fire
 Headers:
@@ -236,6 +253,7 @@ Response: 202 Accepted
 ```
 
 **Expected UI Behavior**:
+
 - [ ] **Immediate redirect** to `/status` page
 - [ ] **OR** Show "Arming..." indicator briefly
 - [ ] No error dialogs
@@ -243,36 +261,47 @@ Response: 202 Accepted
 **If Error Response**:
 
 **401 Unauthorized**:
+
 ```json
-{"error": "Token expired", "success": false}
+{ "error": "Token expired", "success": false }
 ```
+
 → Expected: "Session Expired" screen with "Request New Link" button
 
 **403 Forbidden**:
+
 ```json
-{"error": "Insufficient permissions", "success": false}
+{ "error": "Insufficient permissions", "success": false }
 ```
+
 → Expected: "Access Denied" screen
 
 **409 Conflict**:
+
 ```json
-{"error": "Session already executed", "success": false}
+{ "error": "Session already executed", "success": false }
 ```
+
 → Expected: "Order Already Executed" screen with "View Status" button
 
 **410 Gone**:
+
 ```json
-{"error": "Session expired", "success": false}
+{ "error": "Session expired", "success": false }
 ```
+
 → Expected: "Mission Session Expired" screen
 
 **422 Unprocessable**:
+
 ```json
-{"error": "Risk exceeds maximum (150 USD)", "success": false}
+{ "error": "Risk exceeds maximum (150 USD)", "success": false }
 ```
+
 → Expected: Error message with "Try Again" option
 
 **Database Verification**:
+
 ```bash
 # Check fire was created
 sqlite3 /root/HydraX-v2/bitten.db \
@@ -284,6 +313,7 @@ sqlite3 /root/HydraX-v2/bitten.db \
 ```
 
 **Expected**:
+
 ```
 fire_id              status    ticket    user_id
 -------------------  --------  --------  -----------
@@ -309,6 +339,7 @@ ms_01JXXXXXXXXX      EXECUTED   1728123456
 **C. Watch for Events**:
 
 **Event 1: trades.delta (ARMING)**:
+
 ```javascript
 {
   type: "trades.delta",
@@ -321,9 +352,11 @@ ms_01JXXXXXXXXX      EXECUTED   1728123456
   timestamp: 1728123456
 }
 ```
+
 **Timing**: Should arrive within **50-100ms** of execute
 
 **Event 2: ops.confirmation (FILLED)**:
+
 ```javascript
 {
   type: "ops.confirmation",
@@ -334,9 +367,11 @@ ms_01JXXXXXXXXX      EXECUTED   1728123456
   timestamp: 1728123457
 }
 ```
+
 **Timing**: Should arrive within **100-250ms** of ARMING
 
 **Event 3: trades.delta (FILLED)**:
+
 ```javascript
 {
   type: "trades.delta",
@@ -348,9 +383,11 @@ ms_01JXXXXXXXXX      EXECUTED   1728123456
   timestamp: 1728123457
 }
 ```
+
 **Timing**: Immediately after confirmation
 
 **D. Status Page UI Updates**:
+
 - [ ] **Position tile appears** with:
   - Pair: EURUSD
   - Direction: BUY (green)
@@ -362,14 +399,16 @@ ms_01JXXXXXXXXX      EXECUTED   1728123456
 - [ ] **Latency badge updates**: Should show ~50-80ms
 
 **E. Performance Check**:
+
 ```javascript
 // In browser console
-performance.getEntriesByType('navigation')[0].loadEventEnd -
-performance.getEntriesByType('navigation')[0].fetchStart
+performance.getEntriesByType("navigation")[0].loadEventEnd -
+  performance.getEntriesByType("navigation")[0].fetchStart;
 // Should be < 2000ms
 ```
 
 **Verification**:
+
 - [ ] ARMING event received < 100ms
 - [ ] FILLED event received < 250ms
 - [ ] UI updates smoothly
@@ -385,12 +424,14 @@ performance.getEntriesByType('navigation')[0].fetchStart
 **Steps**:
 
 **A. Go Back to Mission Page**:
+
 - Use browser back button
 - **OR** Open same deep link from Test 1 in new tab
 
 **B. Click EXECUTE Again**:
 
 **Expected Behavior - Option 1 (Session Already Executed)**:
+
 ```
 HTTP 409 Conflict
 {
@@ -398,9 +439,11 @@ HTTP 409 Conflict
   "success": false
 }
 ```
+
 → UI shows: "Order Already Executed" screen with "View Status" button
 
 **Expected Behavior - Option 2 (Cached Response)**:
+
 ```
 HTTP 202 Accepted
 {
@@ -409,9 +452,11 @@ HTTP 202 Accepted
   "status": "ACCEPTED"
 }
 ```
+
 → UI redirects to /status (no new trade created)
 
 **Database Verification**:
+
 ```bash
 # Count fires for this user
 sqlite3 /root/HydraX-v2/bitten.db \
@@ -421,6 +466,7 @@ sqlite3 /root/HydraX-v2/bitten.db \
 **Expected**: Count should be **1** (not 2)
 
 **Idempotency Cache Check**:
+
 ```bash
 sqlite3 /root/HydraX-v2/bitten.db \
   "SELECT cache_key, op_id, created_at FROM idempotency_cache ORDER BY created_at DESC LIMIT 1;"
@@ -429,6 +475,7 @@ sqlite3 /root/HydraX-v2/bitten.db \
 **Expected**: Entry exists with matching opId
 
 **Verification**:
+
 - [ ] Second execute does NOT create duplicate trade
 - [ ] Same opId returned
 - [ ] Idempotency cache has entry
@@ -443,6 +490,7 @@ sqlite3 /root/HydraX-v2/bitten.db \
 **Steps**:
 
 **A. Generate Expired Session**:
+
 ```bash
 # Create session with 10 second TTL
 python3 << 'EOF'
@@ -476,6 +524,7 @@ EOF
 ```
 
 **B. Wait for Expiry**:
+
 ```bash
 echo "Waiting 15 seconds for session to expire..."
 sleep 15
@@ -483,6 +532,7 @@ echo "✅ Session should now be expired"
 ```
 
 **C. Open Expired Link**:
+
 1. Open the deep link in browser
 2. Page should load normally
 3. Click EXECUTE button
@@ -490,6 +540,7 @@ echo "✅ Session should now be expired"
 **Expected Behavior**:
 
 **HTTP Response**:
+
 ```
 POST /api/fire
 Response: 410 Gone
@@ -500,12 +551,14 @@ Response: 410 Gone
 ```
 
 **UI Behavior**:
+
 - [ ] Shows "Mission Session Expired" screen
 - [ ] Message: "This mission session has expired. Please request a new link."
 - [ ] "Return to Dashboard" button visible
 - [ ] No execute button visible
 
 **Database Verification**:
+
 ```bash
 # Check session status
 sqlite3 /root/HydraX-v2/bitten.db \
@@ -513,6 +566,7 @@ sqlite3 /root/HydraX-v2/bitten.db \
 ```
 
 **Expected**:
+
 ```
 mission_session_id   status    expires_at  seconds_until_expiry
 -------------------  --------  ----------  --------------------
@@ -520,6 +574,7 @@ ms_01JXXXXXXXXX      PENDING   1728123456  -5 (negative = expired)
 ```
 
 **Verification**:
+
 - [ ] Expired session rejected with 410
 - [ ] UI shows expiry message
 - [ ] No trade created
@@ -534,6 +589,7 @@ ms_01JXXXXXXXXX      PENDING   1728123456  -5 (negative = expired)
 **Steps**:
 
 **A. Generate Session with Low Risk Limit**:
+
 ```bash
 python3 << 'EOF'
 import sys
@@ -566,6 +622,7 @@ EOF
 ```
 
 **B. Open Link and Attempt Execute**:
+
 1. Open deep link
 2. **Manually modify** request in browser dev tools:
    - Open Network tab
@@ -577,6 +634,7 @@ EOF
 **Expected Behavior**:
 
 **HTTP Response**:
+
 ```
 POST /api/fire
 Body: {"riskUsd": 100, ...}  // Exceeds limit of 50
@@ -589,12 +647,14 @@ Response: 422 Unprocessable Entity
 ```
 
 **UI Behavior**:
+
 - [ ] Shows validation error message
 - [ ] Error clearly states: "Risk exceeds maximum ($50)"
 - [ ] "Try Again" button allows retry
 - [ ] NO trade created
 
 **Database Verification**:
+
 ```bash
 # Should be NO fire record for this session
 sqlite3 /root/HydraX-v2/bitten.db \
@@ -604,11 +664,13 @@ sqlite3 /root/HydraX-v2/bitten.db \
 **Expected**: Count = **0** (no trade created)
 
 **Audit Log Check**:
+
 ```bash
 tail -5 /var/log/bitten/audit.log | jq 'select(.event_type == "fire.risk_violation")'
 ```
 
 **Expected**:
+
 ```json
 {
   "timestamp": "2025-10-05T...",
@@ -623,6 +685,7 @@ tail -5 /var/log/bitten/audit.log | jq 'select(.event_type == "fire.risk_violati
 ```
 
 **Verification**:
+
 - [ ] Request rejected with 422
 - [ ] Clear error message shown
 - [ ] No trade created
@@ -637,6 +700,7 @@ tail -5 /var/log/bitten/audit.log | jq 'select(.event_type == "fire.risk_violati
 **Steps**:
 
 **A. Navigate to Stats Page**:
+
 ```
 https://www.joinbitten.com/stats
 ```
@@ -644,11 +708,13 @@ https://www.joinbitten.com/stats
 **B. Check Components Updated**:
 
 **1. Equity Chart**:
+
 - [ ] New data point appears for trade execution
 - [ ] Chart updates in real-time
 - [ ] Smooth animation
 
 **2. Recent Events Feed**:
+
 - [ ] Trade execution event visible:
   ```
   🔫 FIRE - EURUSD BUY @ 1.05234
@@ -656,15 +722,18 @@ https://www.joinbitten.com/stats
 - [ ] Timestamp recent (< 1 minute ago)
 
 **3. KPIs Section**:
+
 - [ ] Total Trades count increased by 1
 - [ ] Win Rate updated (if trade closed)
 - [ ] Total P&L updated
 
 **4. Distribution Charts**:
+
 - [ ] Pair Distribution shows EURUSD
 - [ ] Session Distribution shows session (LONDON/NY/etc)
 
 **WebSocket Events** (Check Console):
+
 ```javascript
 {
   type: "stats.equity",
@@ -684,6 +753,7 @@ https://www.joinbitten.com/stats
 ```
 
 **Verification**:
+
 - [ ] Stats page reflects new trade
 - [ ] Real-time updates working
 - [ ] Charts render correctly
@@ -743,11 +813,13 @@ echo "Mission session rollback: $(date)" >> /var/log/bitten/incidents.log
 ## 📞 Support
 
 **Issue Reporting**:
+
 - Logs: `/var/log/bitten/audit.log`
 - Results: `/root/HydraX-v2/tests/dry_run_results.json`
 - Database: `/root/HydraX-v2/bitten.db`
 
 **Contact**: Escalate to development team with:
+
 - Test number that failed
 - Screenshots of UI state
 - Browser console logs

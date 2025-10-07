@@ -140,13 +140,13 @@ CREATE TABLE content_performance (
 ```python
 async def create_daily_challenges(user_id: str):
     engine = AIGamificationEngine()
-    
+
     # Generate 3 personalized daily challenges
     challenges = await engine.generate_daily_challenges(
         user_id=user_id,
         count=3
     )
-    
+
     for challenge in challenges:
         print(f"Challenge: {challenge.title}")
         print(f"Description: {challenge.description}")
@@ -159,14 +159,14 @@ async def create_daily_challenges(user_id: str):
 ```python
 async def create_achievement(user_id: str):
     engine = AIGamificationEngine()
-    
+
     # Generate a gold-tier combat achievement
     achievement = await engine.generate_achievement(
         user_id=user_id,
         category=AchievementCategory.COMBAT,
         tier=AchievementTier.GOLD
     )
-    
+
     print(f"Achievement Unlocked: {achievement.title}")
     print(f"Requirements: {achievement.requirements}")
 ```
@@ -176,13 +176,13 @@ async def create_achievement(user_id: str):
 ```python
 async def create_adaptive_mission(user_id: str):
     engine = AIGamificationEngine()
-    
+
     # Generate mission based on recent performance
     mission = await engine.generate_adaptive_mission(
         user_id=user_id,
         mission_type="weekly"
     )
-    
+
     print(f"Mission Brief: {mission.title}")
     print(f"Objectives: {mission.requirements}")
 ```
@@ -215,6 +215,7 @@ content = await engine.generate_personalized_content(
 ## Content Types
 
 ### 1. Challenges
+
 Dynamic tasks that adapt to user skill level and trading style.
 
 ```python
@@ -222,25 +223,27 @@ ContentGenerationType.CHALLENGE
 ```
 
 **Example Output:**
+
 ```json
 {
-    "title": "Sniper's Precision",
-    "description": "Execute 5 trades with 90% accuracy using technical analysis",
-    "requirements": {
-        "trades": 5,
-        "accuracy": 0.9,
-        "analysis_type": "technical"
-    },
-    "rewards": {
-        "xp": 300,
-        "badge": "precision_sniper"
-    },
-    "difficulty_level": 7,
-    "estimated_completion_time": 45
+  "title": "Sniper's Precision",
+  "description": "Execute 5 trades with 90% accuracy using technical analysis",
+  "requirements": {
+    "trades": 5,
+    "accuracy": 0.9,
+    "analysis_type": "technical"
+  },
+  "rewards": {
+    "xp": 300,
+    "badge": "precision_sniper"
+  },
+  "difficulty_level": 7,
+  "estimated_completion_time": 45
 }
 ```
 
 ### 2. Achievements
+
 Milestone-based accomplishments with tiered rewards.
 
 ```python
@@ -248,24 +251,26 @@ ContentGenerationType.ACHIEVEMENT
 ```
 
 **Example Output:**
+
 ```json
 {
+  "title": "Market Dominator",
+  "description": "Achieve 20% portfolio growth in a single month",
+  "requirements": {
+    "growth_percentage": 20,
+    "timeframe_days": 30
+  },
+  "rewards": {
+    "xp": 1000,
     "title": "Market Dominator",
-    "description": "Achieve 20% portfolio growth in a single month",
-    "requirements": {
-        "growth_percentage": 20,
-        "timeframe_days": 30
-    },
-    "rewards": {
-        "xp": 1000,
-        "title": "Market Dominator",
-        "unlock": "elite_strategies"
-    },
-    "difficulty_level": 9
+    "unlock": "elite_strategies"
+  },
+  "difficulty_level": 9
 }
 ```
 
 ### 3. Mission Briefs
+
 Story-driven objectives that integrate with the BITTEN universe.
 
 ```python
@@ -273,20 +278,21 @@ ContentGenerationType.MISSION_BRIEF
 ```
 
 **Example Output:**
+
 ```json
 {
-    "title": "Operation Market Storm",
-    "description": "Intel suggests major volatility incoming. Prepare defensive positions.",
-    "requirements": {
-        "set_stop_losses": true,
-        "reduce_position_size": 0.5,
-        "monitor_news": true
-    },
-    "rewards": {
-        "xp": 500,
-        "intel_points": 50
-    },
-    "narrative_element": "Whispers from the underground suggest institutional moves..."
+  "title": "Operation Market Storm",
+  "description": "Intel suggests major volatility incoming. Prepare defensive positions.",
+  "requirements": {
+    "set_stop_losses": true,
+    "reduce_position_size": 0.5,
+    "monitor_news": true
+  },
+  "rewards": {
+    "xp": 500,
+    "intel_points": 50
+  },
+  "narrative_element": "Whispers from the underground suggest institutional moves..."
 }
 ```
 
@@ -295,6 +301,7 @@ ContentGenerationType.MISSION_BRIEF
 The engine creates comprehensive user profiles based on:
 
 ### Trading Personas
+
 - **BRUTE**: Aggressive, high-risk, action-oriented
 - **SCHOLAR**: Analytical, patient, data-driven
 - **PHANTOM**: Cautious, stealthy, risk-averse
@@ -302,6 +309,7 @@ The engine creates comprehensive user profiles based on:
 - **FERAL**: Unpredictable, wild, instinct-driven
 
 ### Profile Components
+
 ```python
 @dataclass
 class UserBehaviorProfile:
@@ -322,6 +330,7 @@ class UserBehaviorProfile:
 ## AI Prompt Engineering
 
 ### OpenAI Prompts
+
 The engine uses structured prompts optimized for GPT-4:
 
 ```python
@@ -337,6 +346,7 @@ The engine uses structured prompts optimized for GPT-4:
 ```
 
 ### Claude Prompts
+
 Optimized for Claude's analytical capabilities:
 
 ```python
@@ -388,7 +398,7 @@ from src.bitten_core.achievement_system import AchievementSystem
 
 async def award_ai_achievement(user_id: str, achievement_data: GeneratedContent):
     achievement_system = AchievementSystem()
-    
+
     # Convert AI-generated achievement to system achievement
     achievement_id = await achievement_system.create_custom_achievement(
         name=achievement_data.title,
@@ -397,7 +407,7 @@ async def award_ai_achievement(user_id: str, achievement_data: GeneratedContent)
         rewards=achievement_data.rewards,
         tier=AchievementTier.GOLD
     )
-    
+
     # Track progress
     await achievement_system.update_progress(user_id, achievement_id)
 ```
@@ -415,13 +425,13 @@ async def generate_content():
     data = request.json
     user_id = data.get('user_id')
     content_type = ContentGenerationType[data.get('content_type', 'CHALLENGE')]
-    
+
     content = await engine.generate_personalized_content(
         user_id=user_id,
         content_type=content_type,
         context=data.get('context', {})
     )
-    
+
     return jsonify({
         'success': True,
         'content': {
@@ -445,10 +455,10 @@ scheduler = AsyncIOScheduler()
 async def generate_daily_content_for_all_users():
     """Generate daily challenges for all active users"""
     engine = AIGamificationEngine()
-    
+
     # Get active users from database
     active_users = get_active_users()  # Your implementation
-    
+
     for user_id in active_users:
         try:
             challenges = await engine.generate_daily_challenges(user_id)
@@ -471,6 +481,7 @@ scheduler.start()
 ## Best Practices
 
 ### 1. API Key Management
+
 ```python
 # Use environment variables
 os.environ['OPENAI_API_KEY'] = 'your-key'
@@ -485,6 +496,7 @@ engine = AIGamificationEngine(
 ```
 
 ### 2. Rate Limiting
+
 ```python
 # Implement rate limiting for API calls
 from asyncio import Semaphore
@@ -493,13 +505,14 @@ class RateLimitedEngine(AIGamificationEngine):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.semaphore = Semaphore(10)  # Max 10 concurrent requests
-    
+
     async def generate_personalized_content(self, *args, **kwargs):
         async with self.semaphore:
             return await super().generate_personalized_content(*args, **kwargs)
 ```
 
 ### 3. Caching Strategy
+
 ```python
 from functools import lru_cache
 from aiocache import cached
@@ -511,6 +524,7 @@ class CachedEngine(AIGamificationEngine):
 ```
 
 ### 4. Error Handling
+
 ```python
 async def safe_generate_content(engine, user_id, content_type):
     try:
@@ -538,24 +552,25 @@ async def safe_generate_content(engine, user_id, content_type):
 ## Monitoring and Analytics
 
 ### 1. Track Generation Performance
+
 ```python
 import time
 
 async def monitored_generation(engine, *args, **kwargs):
     start_time = time.time()
-    
+
     try:
         content = await engine.generate_personalized_content(*args, **kwargs)
         generation_time = time.time() - start_time
-        
+
         # Log metrics
         logger.info(f"Generation completed in {generation_time:.2f}s")
         logger.info(f"Personalization score: {content.personalization_score:.2%}")
-        
+
         # Send to monitoring service
         send_metric('gamification.generation_time', generation_time)
         send_metric('gamification.personalization_score', content.personalization_score)
-        
+
         return content
     except Exception as e:
         send_metric('gamification.generation_error', 1)
@@ -563,23 +578,24 @@ async def monitored_generation(engine, *args, **kwargs):
 ```
 
 ### 2. A/B Testing
+
 ```python
 async def ab_test_providers(engine, user_id, content_type):
     """Test different AI providers"""
-    
+
     # Generate with both providers
     openai_content = await engine.generate_personalized_content(
         user_id=user_id,
         content_type=content_type,
         preferred_provider=AIProvider.OPENAI
     )
-    
+
     claude_content = await engine.generate_personalized_content(
         user_id=user_id,
         content_type=content_type,
         preferred_provider=AIProvider.CLAUDE
     )
-    
+
     # Track which performs better
     return {
         'openai': {
@@ -598,18 +614,21 @@ async def ab_test_providers(engine, user_id, content_type):
 ### Common Issues
 
 1. **API Key Errors**
+
    ```
    Error: Invalid API key
    Solution: Verify environment variables are set correctly
    ```
 
 2. **Rate Limiting**
+
    ```
    Error: Rate limit exceeded
    Solution: Implement exponential backoff and request queuing
    ```
 
 3. **Generation Timeouts**
+
    ```
    Error: Request timeout
    Solution: Increase timeout settings or use simpler prompts
@@ -672,6 +691,7 @@ content = await engine.generate_personalized_content(
 ## Support
 
 For issues or questions:
+
 1. Check the troubleshooting section
 2. Review the example implementations
 3. Consult the API documentation for OpenAI/Claude
@@ -679,6 +699,6 @@ For issues or questions:
 
 ---
 
-**Version:** 1.0.0  
-**Last Updated:** 2025-07-12  
+**Version:** 1.0.0
+**Last Updated:** 2025-07-12
 **License:** MIT

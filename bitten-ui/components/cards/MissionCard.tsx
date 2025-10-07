@@ -1,24 +1,24 @@
-"use client"
+"use client";
 
-import React from 'react'
-import Link from 'next/link'
-import { motion } from 'framer-motion'
+import React from "react";
+import Link from "next/link";
+import { motion } from "framer-motion";
 import {
   TrendingUp,
   TrendingDown,
   Clock,
   Shield,
   Zap,
-  Check
-} from 'lucide-react'
-import { type Mission, useUI } from '@/lib/store'
+  Check,
+} from "lucide-react";
+import { type Mission, useUI } from "@/lib/store";
 
 interface MissionCardProps {
-  mission: Mission
+  mission: Mission;
 }
 
 export function MissionCard({ mission }: MissionCardProps) {
-  const { acceptMission, selectMission } = useUI()
+  const { acceptMission, selectMission } = useUI();
 
   const {
     id,
@@ -31,10 +31,10 @@ export function MissionCard({ mission }: MissionCardProps) {
     pattern,
     type,
     expiresIn,
-    status
-  } = mission
-  const isLong = direction === 'BUY'
-  const riskReward = Math.abs((tp - entry) / (entry - sl)).toFixed(2)
+    status,
+  } = mission;
+  const isLong = direction === "BUY";
+  const riskReward = Math.abs((tp - entry) / (entry - sl)).toFixed(2);
 
   return (
     <motion.div
@@ -42,18 +42,20 @@ export function MissionCard({ mission }: MissionCardProps) {
       whileTap={{ scale: 0.98 }}
       className={`
         panel p-4 cursor-pointer transition-all
-        ${status === 'CLOSED' ? 'opacity-50' : ''}
-        ${status === 'LIVE' ? 'border-mint glow-mint' : ''}
-        ${status === 'ACCEPTED' ? 'border-cyan' : ''}
+        ${status === "CLOSED" ? "opacity-50" : ""}
+        ${status === "LIVE" ? "border-mint glow-mint" : ""}
+        ${status === "ACCEPTED" ? "border-cyan" : ""}
       `}
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <div className={`
+          <div
+            className={`
             w-8 h-8 rounded-lg flex items-center justify-center
-            ${isLong ? 'bg-success/20' : 'bg-danger/20'}
-          `}>
+            ${isLong ? "bg-success/20" : "bg-danger/20"}
+          `}
+          >
             {isLong ? (
               <TrendingUp size={16} className="text-success" />
             ) : (
@@ -62,14 +64,20 @@ export function MissionCard({ mission }: MissionCardProps) {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-primary">{symbol}</span>
-              <span className={`
+              <span className="text-sm font-semibold text-primary">
+                {symbol}
+              </span>
+              <span
+                className={`
                 px-2 py-0.5 rounded text-xs font-medium
-                ${type === 'SNIPER'
-                  ? 'bg-cyan/20 text-cyan'
-                  : 'bg-warning/20 text-warning'}
-              `}>
-                {type === 'SNIPER' ? '🎯' : '⚡'} {type}
+                ${
+                  type === "SNIPER"
+                    ? "bg-cyan/20 text-cyan"
+                    : "bg-warning/20 text-warning"
+                }
+              `}
+              >
+                {type === "SNIPER" ? "🎯" : "⚡"} {type}
               </span>
             </div>
             <span className="text-xs text-tertiary">{pattern}</span>
@@ -90,7 +98,9 @@ export function MissionCard({ mission }: MissionCardProps) {
       <div className="space-y-2 mb-3">
         <div className="flex items-center justify-between text-xs">
           <span className="text-tertiary">Entry</span>
-          <span className="mono font-medium text-primary">{entry.toFixed(5)}</span>
+          <span className="mono font-medium text-primary">
+            {entry.toFixed(5)}
+          </span>
         </div>
         <div className="flex items-center justify-between text-xs">
           <span className="text-tertiary">Stop Loss</span>
@@ -105,21 +115,26 @@ export function MissionCard({ mission }: MissionCardProps) {
       {/* Footer */}
       <div className="flex items-center justify-between pt-3 border-t border-default">
         <div className="flex items-center gap-1">
-          <Clock size={12} className={`
-            ${expiresIn < 5 ? 'text-danger' : 'text-tertiary'}
-          `} />
-          <span className={`
-            text-xs ${expiresIn < 5 ? 'text-danger font-medium' : 'text-tertiary'}
-          `}>
+          <Clock
+            size={12}
+            className={`
+            ${expiresIn < 5 ? "text-danger" : "text-tertiary"}
+          `}
+          />
+          <span
+            className={`
+            text-xs ${expiresIn < 5 ? "text-danger font-medium" : "text-tertiary"}
+          `}
+          >
             {expiresIn}m remaining
           </span>
         </div>
 
-        {status === 'NEW' && (
+        {status === "NEW" && (
           <div className="flex gap-2">
             <button
               onClick={() => {
-                acceptMission(id)
+                acceptMission(id);
               }}
               className="px-2 py-1 bg-mint/20 text-mint text-xs font-semibold rounded hover:bg-mint/30 transition-colors flex items-center gap-1"
             >
@@ -135,7 +150,7 @@ export function MissionCard({ mission }: MissionCardProps) {
             </Link>
           </div>
         )}
-        {status === 'ACCEPTED' && (
+        {status === "ACCEPTED" && (
           <Link
             href={`/mission-brief?id=${id}`}
             onClick={() => selectMission(id)}
@@ -144,16 +159,16 @@ export function MissionCard({ mission }: MissionCardProps) {
             EXECUTE
           </Link>
         )}
-        {status === 'LIVE' && (
+        {status === "LIVE" && (
           <div className="flex items-center gap-1">
             <Zap size={12} className="text-mint animate-pulse" />
             <span className="text-xs font-medium text-mint">LIVE</span>
           </div>
         )}
-        {status === 'CLOSED' && (
+        {status === "CLOSED" && (
           <span className="text-xs text-tertiary">CLOSED</span>
         )}
       </div>
     </motion.div>
-  )
+  );
 }

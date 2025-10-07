@@ -5,7 +5,7 @@ market_data:
   api_key: ${API_KEY_MARKET_DATA}
   api_secret: ${API_SECRET_MARKET_DATA}
   base_url: https://api.marketdata.com/v1
-  rate_limit: 100  # requests per second
+  rate_limit: 100 # requests per second
   timeout: 30
   retry_count: 3
   headers:

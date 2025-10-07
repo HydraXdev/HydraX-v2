@@ -17,6 +17,7 @@ The fix worked perfectly! EA v3.004 sent hello message and registered:
 ## ✅ QUEUED COMMANDS DELIVERED
 
 All previously queued commands were immediately sent to EA:
+
 - TEST_FIRE_1759382306 → Sent
 - TEST_FIRE_1759380652 → Sent
 - TEST_1759381920 → Sent
@@ -25,12 +26,14 @@ All previously queued commands were immediately sent to EA:
 ## 📊 CURRENT STATUS
 
 ### Working:
+
 1. **DEALER Socket**: ✅ Connected and registered as COMMANDER_DEV_001
 2. **Command Routing**: ✅ Fire commands reach EA immediately
 3. **Identity Mapping**: ✅ Router knows COMMANDER_DEV_001
 4. **Fire Pipeline**: ✅ IPC → Router → EA working
 
 ### Issues to Investigate:
+
 1. **Confirmations**: Fire commands sent but no MT5 execution confirmations
 2. **Heartbeats**: Still not detected on port 5560
 3. **Tick Stream**: May have stopped after EA restart
@@ -38,15 +41,18 @@ All previously queued commands were immediately sent to EA:
 ## 🔍 POSSIBLE REMAINING ISSUES
 
 ### 1. Market Closed
+
 - It's currently outside market hours
 - EA may reject trades when market is closed
 - Need to wait for market open to test live execution
 
 ### 2. Demo Account Restrictions
+
 - Account 843859 is a demo account
 - May have restrictions on order execution
 
 ### 3. Tick/Heartbeat Stream
+
 - EA connected DEALER socket successfully
 - But tick publishing may need reconnection
 - Check if EA needs to reconnect PUSH sockets too
@@ -83,11 +89,13 @@ python3 /root/HydraX-v2/test_complete_flow.py
 ## 📈 MAJOR PROGRESS
 
 **Before v3.004**:
+
 - DEALER socket connected but silent
 - Commands queued forever
 - No route to EA
 
 **After v3.004**:
+
 - DEALER registered immediately with hello message
 - All queued commands delivered
 - Fire commands reach EA instantly

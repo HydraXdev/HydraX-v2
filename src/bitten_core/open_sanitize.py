@@ -1,9 +1,20 @@
 # src/bitten_core/open_sanitize.py
 EXIT_KEYS = {
-    "tp", "tp_price", "tp1", "tp2", "tp3", "targets",
-    "trail", "trailing", "trail_pips", "trail_points",
-    "rr", "rr_target", "exit_profile"
+    "tp",
+    "tp_price",
+    "tp1",
+    "tp2",
+    "tp3",
+    "targets",
+    "trail",
+    "trailing",
+    "trail_pips",
+    "trail_points",
+    "rr",
+    "rr_target",
+    "exit_profile",
 }
+
 
 def sanitize_open(payload: dict) -> dict:
     """Keep TP/SL for proper trade execution - DO NOT strip them"""

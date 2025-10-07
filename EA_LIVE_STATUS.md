@@ -8,16 +8,17 @@
 
 ### Active Data Streams
 
-| Port | Status | Data Type | Activity |
-|------|--------|-----------|----------|
-| 5555 | ✅ CONNECTED | Commands | Ready for DEALER connection |
-| 5556 | ⏳ WAITING | Ticks | Ready to receive |
-| 5558 | ⏳ WAITING | Confirmations | Ready to receive |
-| 5560 | ✅ STREAMING | Published Data | 26+ ticks/second |
+| Port | Status       | Data Type      | Activity                    |
+| ---- | ------------ | -------------- | --------------------------- |
+| 5555 | ✅ CONNECTED | Commands       | Ready for DEALER connection |
+| 5556 | ⏳ WAITING   | Ticks          | Ready to receive            |
+| 5558 | ⏳ WAITING   | Confirmations  | Ready to receive            |
+| 5560 | ✅ STREAMING | Published Data | 26+ ticks/second            |
 
 ### Live Data Received
 
 **📊 Tick Stream Active**
+
 - **EA Identity**: COMMANDER_DEV_001
 - **Active Symbols**: 26 pairs streaming
 - **Tick Rate**: ~26 messages per second
@@ -28,6 +29,7 @@
   - All major and cross pairs
 
 ### Sample Tick Data
+
 ```json
 {
   "type": "tick",
@@ -42,6 +44,7 @@
 ## ✅ System Integration Status
 
 ### What's Working:
+
 1. **EA → Server Communication**
    - Tick data flowing on port 5560
    - EA identified as COMMANDER_DEV_001
@@ -62,12 +65,14 @@
 ## 📈 Next Steps
 
 ### EA Should Now:
+
 1. **Connect DEALER socket** to port 5555 for bidirectional commands
 2. **Send heartbeat** messages every 30 seconds with account info
 3. **Push confirmations** to port 5558 when trades execute
 4. **Continue tick streaming** for pattern detection
 
 ### Server is Ready to:
+
 1. **Process tick data** for pattern detection
 2. **Send trade commands** when signals trigger
 3. **Track positions** from confirmations
@@ -99,4 +104,5 @@ ss -tn | grep -E ":5555|:5556|:5558|:5560"
 4. ⏳ Position tracking (waiting for confirmations on 5558)
 
 ---
+
 **STATUS: EA CONNECTED - SYSTEM OPERATIONAL**

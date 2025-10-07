@@ -67,6 +67,7 @@ OPERATOR_USER_ID = "7176191872"               # Telegram alert recipient
 ## 📊 Monitoring
 
 ### Log File
+
 ```bash
 # View live logs
 tail -f /root/HydraX-v2/infra/venom_watchdog.log
@@ -76,6 +77,7 @@ cat /root/HydraX-v2/infra/venom_watchdog.log | tail -20
 ```
 
 ### Systemd Logs
+
 ```bash
 # Live system logs
 journalctl -u venom_watchdog -f
@@ -85,6 +87,7 @@ journalctl -u venom_watchdog --since "1 hour ago"
 ```
 
 ### Process Status
+
 ```bash
 # Check if watchdog is running
 ps aux | grep venom_watchdog
@@ -106,6 +109,7 @@ The watchdog sends alerts for:
 4. **Shutdown**: When watchdog stops
 
 Example alert:
+
 ```
 🐍 VENOM Engine Restart Alert
 
@@ -139,6 +143,7 @@ print(w.format_startup_alert())
 ## 🛠️ Troubleshooting
 
 ### Watchdog Won't Start
+
 ```bash
 # Check for duplicate processes
 ps aux | grep venom_watchdog
@@ -151,6 +156,7 @@ ls -la /root/HydraX-v2/infra/venom_watchdog.py
 ```
 
 ### VENOM Won't Restart
+
 ```bash
 # Check if script exists
 ls -la /root/HydraX-v2/venom_scalp_master.py
@@ -163,6 +169,7 @@ python3 /root/HydraX-v2/venom_scalp_master.py
 ```
 
 ### No Telegram Alerts
+
 ```bash
 # Check bot token configuration
 python3 -c "
@@ -225,6 +232,7 @@ systemctl status venom_watchdog
 ## 🎯 Success Criteria
 
 The watchdog is working correctly when you see:
+
 - ✅ No duplicate process errors
 - ✅ Regular health check logs (every 60s)
 - ✅ Automatic restarts when VENOM dies

@@ -60,12 +60,12 @@ sqlite3 /root/HydraX-v2/bitten.db "SELECT COUNT(*) FROM signals WHERE outcome IS
 tail -20 /root/HydraX-v2/signal_tracking.jsonl
 
 # Check win rate
-sqlite3 /root/HydraX-v2/bitten.db "SELECT 
+sqlite3 /root/HydraX-v2/bitten.db "SELECT
     COUNT(CASE WHEN outcome = 'WIN' THEN 1 END) as wins,
     COUNT(CASE WHEN outcome = 'LOSS' THEN 1 END) as losses,
-    ROUND(CAST(COUNT(CASE WHEN outcome = 'WIN' THEN 1 END) AS FLOAT) / 
+    ROUND(CAST(COUNT(CASE WHEN outcome = 'WIN' THEN 1 END) AS FLOAT) /
           COUNT(*) * 100, 1) as win_rate_pct
-FROM signals 
+FROM signals
 WHERE outcome IS NOT NULL;"
 ```
 

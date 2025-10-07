@@ -9,11 +9,12 @@ import logging
 import time
 from typing import Dict, Optional
 
-from symbols import SYMBOLS
+from backfill_v2 import Bar, EnhancedBackfillManager
 from subscriptions_v2 import EnhancedSubscriptionManager
-from backfill_v2 import EnhancedBackfillManager, Bar
+from symbols import SYMBOLS
 
 logger = logging.getLogger(__name__)
+
 
 class CompleteMetaSocketIntegration:
     """Complete MetaSocket integration with TypeScript-mirrored components"""
@@ -24,20 +25,11 @@ class CompleteMetaSocketIntegration:
         self.backfill_port = ports[1]
 
         # Enhanced components
-        self.subscription_manager = EnhancedSubscriptionManager(
-            f"ws://{host}:{self.subscription_port}"
-        )
-        self.backfill_manager = EnhancedBackfillManager(
-            f"ws://{host}:{self.backfill_port}"
-        )
+        self.subscription_manager = EnhancedSubscriptionManager(f"ws://{host}:{self.subscription_port}")
+        self.backfill_manager = EnhancedBackfillManager(f"ws://{host}:{self.backfill_port}")
 
         # Integration statistics
-        self.stats = {
-            "ticks_processed": 0,
-            "bars_completed": 0,
-            "snapshots_created": 0,
-            "start_time": None
-        }
+        self.stats = {"ticks_processed": 0, "bars_completed": 0, "snapshots_created": 0, "start_time": None}
 
         # External callbacks
         self.external_tick_callback = None
@@ -46,9 +38,9 @@ class CompleteMetaSocketIntegration:
 
     def set_callbacks(self, **callbacks):
         """Set external callbacks for Elite Guard integration"""
-        self.external_tick_callback = callbacks.get('tick_callback')
-        self.external_ohlc_callback = callbacks.get('ohlc_callback')
-        self.external_snapshot_callback = callbacks.get('snapshot_callback')
+        self.external_tick_callback = callbacks.get("tick_callback")
+        self.external_ohlc_callback = callbacks.get("ohlc_callback")
+        self.external_snapshot_callback = callbacks.get("snapshot_callback")
 
     async def handle_tick(self, tick_data: dict):
         """Handle incoming tick data from subscriptions"""
@@ -76,7 +68,7 @@ class CompleteMetaSocketIntegration:
                 h=ohlc_data.get("high", 0),
                 l=ohlc_data.get("low", 0),
                 c=ohlc_data.get("close", 0),
-                v=ohlc_data.get("volume")
+                v=ohlc_data.get("volume"),
             )
 
             # Add to store (this would normally happen through tick processing)
@@ -112,7 +104,7 @@ class CompleteMetaSocketIntegration:
             result = await self.backfill_manager.perform_backfill()
             logger.info(f"✅ Backfill completed: {result['success']}/{len(SYMBOLS)} symbols successful")
 
-            if result['failed']:
+            if result["failed"]:
                 logger.warning(f"⚠️ Failed symbols: {result['failed']}")
 
         except Exception as e:
@@ -128,10 +120,7 @@ class CompleteMetaSocketIntegration:
         logger.info(f"📊 Backfill endpoint: ws://{self.host}:{self.backfill_port}")
 
         # Set up subscription callbacks
-        self.subscription_manager.set_callbacks(
-            tick_cb=self.handle_tick,
-            ohlc_cb=self.handle_ohlc
-        )
+        self.subscription_manager.set_callbacks(tick_cb=self.handle_tick, ohlc_cb=self.handle_ohlc)
 
         # Start backfill first
         await self.start_backfill_process()
@@ -149,8 +138,10 @@ class CompleteMetaSocketIntegration:
         await self.subscription_manager.stop()
 
         uptime = time.time() - (self.stats["start_time"] or time.time())
-        logger.info(f"📊 Final stats - Uptime: {uptime:.1f}s, Ticks: {self.stats['ticks_processed']:,}, "
-                   f"Bars: {self.stats['bars_completed']}, Snapshots: {self.stats['snapshots_created']}")
+        logger.info(
+            f"📊 Final stats - Uptime: {uptime:.1f}s, Ticks: {self.stats['ticks_processed']:,}, "
+            f"Bars: {self.stats['bars_completed']}, Snapshots: {self.stats['snapshots_created']}"
+        )
 
     def get_health_status(self) -> dict:
         """Get comprehensive health status"""
@@ -161,21 +152,23 @@ class CompleteMetaSocketIntegration:
         uptime = current_time - (self.stats["start_time"] or current_time)
 
         return {
-            "overall_status": "healthy" if subscription_health["connected"] and backfill_health["backfill_completed"] else "degraded",
+            "overall_status": (
+                "healthy" if subscription_health["connected"] and backfill_health["backfill_completed"] else "degraded"
+            ),
             "uptime_seconds": uptime,
             "symbols_configured": len(SYMBOLS),
             "subscriptions": subscription_health,
             "backfill": backfill_health,
-            "stats": self.stats
+            "stats": self.stats,
         }
 
     def print_status_banner(self):
         """Print current status banner"""
         health = self.get_health_status()
 
-        print("\n" + "="*70)
+        print("\n" + "=" * 70)
         print("📊 COMPLETE METASOCKET INTEGRATION STATUS")
-        print("="*70)
+        print("=" * 70)
         print(f"🔗 Status: {health['overall_status'].upper()}")
         print(f"⏱️  Uptime: {health['uptime_seconds']:.1f}s")
         print(f"📈 Symbols: {health['symbols_configured']}")
@@ -186,18 +179,21 @@ class CompleteMetaSocketIntegration:
         print(f"📸 Snapshots Created: {health['stats']['snapshots_created']}")
 
         # Show stale symbols if any
-        stale_symbols = health['subscriptions']['metrics']['stale_symbols']
+        stale_symbols = health["subscriptions"]["metrics"]["stale_symbols"]
         if stale_symbols:
-            print(f"⚠️  Stale Symbols: {len(stale_symbols)} ({stale_symbols[:3]}{'...' if len(stale_symbols) > 3 else ''})")
+            print(
+                f"⚠️  Stale Symbols: {len(stale_symbols)} ({stale_symbols[:3]}{'...' if len(stale_symbols) > 3 else ''})"
+            )
 
-        print("="*70)
+        print("=" * 70)
+
 
 # Example integration with Elite Guard simulation
 async def elite_guard_integration_example():
     """Example showing integration with Elite Guard-style callbacks"""
 
     print("🎯 Complete MetaSocket → Elite Guard Integration Example")
-    print("="*60)
+    print("=" * 60)
 
     # Elite Guard simulation callbacks
     async def elite_guard_tick_handler(tick):
@@ -232,7 +228,7 @@ async def elite_guard_integration_example():
     integration.set_callbacks(
         tick_callback=elite_guard_tick_handler,
         ohlc_callback=elite_guard_ohlc_handler,
-        snapshot_callback=elite_guard_snapshot_handler
+        snapshot_callback=elite_guard_snapshot_handler,
     )
 
     print(f"✅ Integration configured with {len(SYMBOLS)} symbols")
@@ -251,7 +247,7 @@ async def elite_guard_integration_example():
         "ask": 1.10502,
         "mid": 1.10501,
         "ts_epoch_ms": int(time.time() * 1000),
-        "src": "metasocket"
+        "src": "metasocket",
     }
 
     await integration.handle_tick(test_tick)
@@ -266,7 +262,7 @@ async def elite_guard_integration_example():
         "close": 1.10510,
         "volume": 1000,
         "ts_epoch_ms": int(time.time() * 1000),
-        "src": "metasocket"
+        "src": "metasocket",
     }
 
     await integration.handle_ohlc(test_ohlc)
@@ -274,9 +270,15 @@ async def elite_guard_integration_example():
     # Create snapshot
     # First add some test data to backfill
     from backfill_v2 import Bar
+
     test_bars = [
-        Bar(int(time.time() * 1000) - i * 60000, 1.10500 + i * 0.0001,
-            1.10520 + i * 0.0001, 1.10480 + i * 0.0001, 1.10510 + i * 0.0001)
+        Bar(
+            int(time.time() * 1000) - i * 60000,
+            1.10500 + i * 0.0001,
+            1.10520 + i * 0.0001,
+            1.10480 + i * 0.0001,
+            1.10510 + i * 0.0001,
+        )
         for i in range(50)
     ]
     integration.backfill_manager.store.put("EURUSD", test_bars)
@@ -289,6 +291,7 @@ async def elite_guard_integration_example():
 
     print("\n🎉 Integration example completed successfully!")
     print("🔗 Ready for production deployment with Elite Guard")
+
 
 # Main execution
 async def main():
@@ -304,11 +307,9 @@ async def main():
     print(f"4. Monitor health with: integration.get_health_status()")
     print(f"5. Create snapshots with: await integration.create_snapshot(symbol)")
 
+
 if __name__ == "__main__":
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    )
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
     print("🚀 Complete Enhanced MetaSocket Integration")
     print("=" * 50)

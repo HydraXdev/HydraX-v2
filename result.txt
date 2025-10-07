@@ -1,7 +1,7 @@
 MISSION COMPLETE - Signal Persistence & Fire Endpoint Fixed
 
 Signals added to DB in last 15m: 0 (Elite Guard back to normal thresholds)
-Missions (templates) added in last 15m: 0 
+Missions (templates) added in last 15m: 0
 Backfilled from last 24h: 110 signals, 98 template missions
 
 Fire endpoint issue: enqueue_fire import hanging (IPC queue dependency)

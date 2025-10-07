@@ -9,12 +9,14 @@ This report identifies duplicate, fragmented, and potentially conflicting files 
 ## 1. Signal Engine Files (Multiple Implementations)
 
 ### Active Signal Engines
+
 1. **AUTHORIZED_SIGNAL_ENGINE.py** - Claims to be the "ONLY authorized bot" with bulletproof protection
-2. **production_signal_engine.py** - "Final live system" 
+2. **production_signal_engine.py** - "Final live system"
 3. **live_signal_engine.py** - Uses Self-Optimizing TCS
 4. **simple_live_engine.py** - Simplified standalone version
 
 ### Archived/Disabled Signal Engines
+
 - `/archive/disabled_bots/SIGNALS_CLEAN.py`
 - `/archive/disabled_bots/SIGNALS_LIVE_DATA.py`
 - `/archive/disabled_bots/SIGNALS_REALISTIC.py`
@@ -25,6 +27,7 @@ This report identifies duplicate, fragmented, and potentially conflicting files 
 ## 2. Signal Sender Files (Massive Duplication)
 
 ### Active Senders (30+ files)
+
 - SEND_BITTEN_ULTIMATE.py
 - SEND_CLEAN_SIGNAL.py
 - SEND_DIRECT_SIGNAL.py
@@ -37,6 +40,7 @@ This report identifies duplicate, fragmented, and potentially conflicting files 
 - send_compact_signal.py
 
 ### Archived Duplicate Senders
+
 - `/archive/duplicate_senders/` contains 6 more variants
 - `/archive/alert_variants/` contains 8 alert sending variations
 - `/archive/telegram_variants/` contains 6 telegram sender variations
@@ -46,6 +50,7 @@ This report identifies duplicate, fragmented, and potentially conflicting files 
 ## 3. WebApp Server Implementations
 
 ### Active WebApp Files
+
 - webapp_server.py (main)
 - webapp_telegram_fixed.py
 - webapp_mt5_live_addon.py
@@ -54,6 +59,7 @@ This report identifies duplicate, fragmented, and potentially conflicting files 
 - WEBAPP_WORKING_SIGNAL.py
 
 ### Archived WebApp Versions (11 files)
+
 - webapp_military_v1.py, v2.py, v3.py
 - webapp_bitten_ultimate.py
 - webapp_commander_bit.py
@@ -68,12 +74,14 @@ This report identifies duplicate, fragmented, and potentially conflicting files 
 
 ## 4. Test Files Status
 
-### Test Files Count: 72 test_*.py files
+### Test Files Count: 72 test\_\*.py files
+
 - Many appear to be quick test scripts rather than proper unit tests
 - Multiple tests for the same functionality (e.g., 3 hard_lock tests, 3 stealth tests)
 - Test organization is fragmented between root directory and /tests/ folder
 
 ### Incomplete/Fragmented Tests
+
 Files with TODO/FIXME/INCOMPLETE markers: 50+ files
 
 **Recommendation**: Organize all tests under /tests/ directory with proper structure.
@@ -81,11 +89,13 @@ Files with TODO/FIXME/INCOMPLETE markers: 50+ files
 ## 5. Backup and Archive Analysis
 
 ### Backup Directory Structure
+
 - `/backups/20250708_005652/` - Empty
-- `/backups/20250708_005658/` - Empty  
+- `/backups/20250708_005658/` - Empty
 - `/backups/20250708_005951/` - Contains full bitten_core backup
 
 ### Archive Directory Issues
+
 - Contains 60+ files that should be deleted
 - Many files marked as "disabled" but still present
 - Security quarantine contains sensitive files
@@ -96,6 +106,7 @@ Files with TODO/FIXME/INCOMPLETE markers: 50+ files
 ## 6. Configuration Duplication
 
 ### Multiple Config Files
+
 - `/config/` directory with various configs
 - Inline configuration in multiple files
 - Both JSON and YAML configs for similar purposes
@@ -105,17 +116,20 @@ Files with TODO/FIXME/INCOMPLETE markers: 50+ files
 ## 7. Duplicate Functionality Patterns
 
 ### Telegram Bot Implementations
+
 - Multiple telegram router implementations
 - Several telegram messenger variants
 - Duplicate webhook servers
 
 ### Signal Flow Implementations
+
 - complete_signal_flow.py
 - complete_signal_flow_v2.py
 - complete_signal_flow_v3.py
 - SIGNAL_FLOW_UNIFIED.py
 
 ### Bot Managers
+
 - BULLETPROOF_BOT_MANAGER.py
 - BULLETPROOF_AGENT_SYSTEM.py
 - Multiple agent implementations in /bulletproof_agents/
@@ -123,19 +137,22 @@ Files with TODO/FIXME/INCOMPLETE markers: 50+ files
 ## 8. Critical Cleanup Recommendations
 
 ### Immediate Actions Required:
+
 1. **Delete /archive/ directory** - Contains 60+ obsolete files
-2. **Remove duplicate SEND_*.py files** - Keep only one implementation
+2. **Remove duplicate SEND\_\*.py files** - Keep only one implementation
 3. **Consolidate signal engines** - Choose between AUTHORIZED or production
 4. **Clean up test files** - Move to proper test directory structure
 5. **Remove backup directories** - After verifying no unique code exists
 6. **Delete all webapp variants** - Keep only production version
 
 ### File Count Impact:
+
 - Current duplicate/obsolete files: ~150+
 - Potential reduction: 70-80% of these files
 - Estimated cleanup: Remove 100-120 files
 
 ### Risk Assessment:
+
 - **High Risk**: Multiple signal engines may conflict
 - **Medium Risk**: Confusion over which files are active
 - **Low Risk**: Test file duplication (mainly causes confusion)
@@ -143,6 +160,7 @@ Files with TODO/FIXME/INCOMPLETE markers: 50+ files
 ## 9. Incomplete/Fragmented Implementations
 
 Files showing signs of incomplete work:
+
 - Multiple TODO/FIXME markers in 50+ files
 - Test files without proper assertions
 - Temporary debugging code left in production files
@@ -164,6 +182,7 @@ Files showing signs of incomplete work:
 ## Conclusion
 
 The HydraX-v2 project contains significant duplication and fragmentation. A systematic cleanup would:
+
 - Reduce codebase size by ~30-40%
 - Eliminate confusion about which files are active
 - Reduce potential for conflicts

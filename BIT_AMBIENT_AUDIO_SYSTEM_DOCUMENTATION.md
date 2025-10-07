@@ -62,6 +62,7 @@ The audio system is built around the core principle that **Bit is not just a mas
 ## 🎵 Audio Types and Moods
 
 ### Audio Types
+
 - **CHIRP**: Quick, attention-getting sounds
 - **PURR**: Soothing, continuous comfort sounds
 - **MEOW**: Expressive vocalizations for significant events
@@ -70,6 +71,7 @@ The audio system is built around the core principle that **Bit is not just a mas
 - **AMBIENT**: Background atmospheric audio
 
 ### Audio Moods
+
 - **CALM**: Peaceful, steady states
 - **ALERT**: Attentive, focused states
 - **CAUTIOUS**: Careful, concerned states
@@ -126,18 +128,21 @@ The system creates authentic Mississippi Delta ambiance through:
 ## 🎯 Trading Integration
 
 ### Signal Events
+
 - **Signal Received**: Alert chirps based on signal strength
 - **Trade Opened**: Confirmation sounds with TCS-based feedback
 - **Trade Closed**: Outcome-appropriate responses
 - **Risk Warnings**: Escalating concern based on danger level
 
 ### Performance Feedback
+
 - **Excellent Decisions** (TCS >85%): Confident approval purrs
 - **Good Decisions** (TCS 75-85%): Supportive chirps
 - **Risky Decisions** (TCS <70%): Questioning, concerned sounds
 - **Dangerous Decisions** (TCS <60%): Warning hisses and protests
 
 ### Achievement Celebrations
+
 - **First Wins**: Memory of Bit's first approving purr
 - **Milestones**: Victory stretches and excited trills
 - **Streak Achievements**: Building celebration sequences
@@ -145,12 +150,14 @@ The system creates authentic Mississippi Delta ambiance through:
 ## ⚙️ Configuration System
 
 ### Audio Quality Levels
+
 - **LOW**: Minimal audio, basic chirps only
 - **MEDIUM**: Standard experience with core features
 - **HIGH**: Full audio with environmental sounds
 - **ULTRA**: Maximum immersion with all features
 
 ### Focus Modes
+
 - **DISTRACTION_FREE**: Minimal audio, critical events only
 - **FOCUSED**: Reduced ambient, key trading events
 - **BALANCED**: Standard experience (default)
@@ -186,6 +193,7 @@ The system creates authentic Mississippi Delta ambiance through:
 ## 🔧 Technical Implementation
 
 ### Audio Clip Structure
+
 ```python
 @dataclass
 class AudioClip:
@@ -203,6 +211,7 @@ class AudioClip:
 ```
 
 ### Event Processing Flow
+
 1. **Event Trigger** → Market condition or user action
 2. **Context Analysis** → Determine appropriate response
 3. **Audio Selection** → Choose clips based on mood/story phase
@@ -213,6 +222,7 @@ class AudioClip:
 ### Integration Points
 
 The system integrates seamlessly with:
+
 - **Notification Handler**: Automatic audio for notifications
 - **User Settings**: Volume and preference management
 - **Norman Story Engine**: Story phase progression
@@ -221,6 +231,7 @@ The system integrates seamlessly with:
 ## 🚀 Usage Examples
 
 ### Basic Integration
+
 ```python
 from src.bitten_core.bit_ambient_system import (
     start_bit_for_user,
@@ -247,6 +258,7 @@ await stop_bit_for_user("user_123")
 ```
 
 ### Configuration Management
+
 ```python
 from src.bitten_core.audio_configuration import (
     apply_audio_preset,
@@ -267,18 +279,21 @@ update_audio_config("user_123", {
 ## 📊 Monitoring and Analytics
 
 ### System Statistics
+
 - Active user sessions
 - Total audio events triggered
 - Memory sequences played
 - User engagement metrics
 
 ### User Analytics
+
 - Audio preferences and usage patterns
 - Emotional journey progression
 - Feature adoption rates
 - Session duration and activity
 
 ### Performance Metrics
+
 - Audio trigger accuracy
 - User satisfaction with feedback
 - System resource usage
@@ -287,6 +302,7 @@ update_audio_config("user_123", {
 ## 🎨 Audio Asset Requirements
 
 ### File Structure
+
 ```
 assets/audio/
 ├── bit/
@@ -309,6 +325,7 @@ assets/audio/
 ```
 
 ### Audio Specifications
+
 - **Format**: WAV or MP3
 - **Quality**: 44.1kHz, 16-bit minimum
 - **Duration**: 0.5-30 seconds for events, up to 5 minutes for ambient
@@ -318,6 +335,7 @@ assets/audio/
 ## 🔮 Future Enhancements
 
 ### Planned Features
+
 1. **AI-Generated Variations**: Dynamic audio generation for infinite variety
 2. **Voice Integration**: Optional narrative elements
 3. **Binaural Audio**: 3D spatial audio for enhanced immersion
@@ -326,6 +344,7 @@ assets/audio/
 6. **Real-time Synthesis**: Dynamic audio generation based on market data
 
 ### Advanced Integrations
+
 - **Haptic Feedback**: Vibration patterns for mobile devices
 - **Visual Synchronization**: Coordinated visual and audio experiences
 - **Biometric Responses**: Heart rate and stress level integration
@@ -334,12 +353,14 @@ assets/audio/
 ## 🤝 Contributing
 
 ### Adding New Audio Clips
+
 1. Follow naming conventions: `{category}_{description}_{variant}.wav`
 2. Add clip definition in appropriate engine
 3. Tag appropriately for context-based selection
 4. Test with various user configurations
 
 ### Extending Functionality
+
 1. Follow existing patterns for new audio types
 2. Maintain compatibility with configuration system
 3. Add appropriate documentation and examples
@@ -355,4 +376,4 @@ This is not just an audio system—it's Bit coming to life to walk alongside eve
 
 ---
 
-*"Sometimes the best trading partner is one who purrs when you do well and stays close when you don't."* - Norman, reflecting on his years with Bit
+_"Sometimes the best trading partner is one who purrs when you do well and stays close when you don't."_ - Norman, reflecting on his years with Bit

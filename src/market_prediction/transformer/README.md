@@ -5,6 +5,7 @@ A sophisticated deep learning system for financial market prediction using trans
 ## Features
 
 ### 1. **Advanced Transformer Architecture**
+
 - Custom transformer model optimized for time series prediction
 - Multiple attention mechanisms:
   - Local attention for short-term patterns
@@ -14,24 +15,28 @@ A sophisticated deep learning system for financial market prediction using trans
   - Hierarchical attention for market regime detection
 
 ### 2. **Comprehensive Data Pipeline**
+
 - Automated feature engineering with 50+ technical indicators
 - Robust data preprocessing with multiple normalization methods
 - Support for streaming real-time data
 - Data augmentation for improved generalization
 
 ### 3. **Uncertainty Quantification**
+
 - Monte Carlo Dropout for epistemic uncertainty
 - Probabilistic predictions with confidence intervals
 - Adaptive uncertainty scaling based on market conditions
 - Calibrated confidence scores
 
 ### 4. **Production-Ready Inference**
+
 - High-performance batch inference engine
 - Real-time streaming predictions
 - TorchScript optimization for faster inference
 - Automatic model versioning and A/B testing
 
 ### 5. **Model Management**
+
 - Automated version control with Git integration
 - MLflow experiment tracking
 - A/B testing framework
@@ -65,6 +70,7 @@ This creates a default `config.json` file. Modify it according to your needs.
 ### 2. Prepare Your Data
 
 Expected data format (CSV with columns):
+
 - `timestamp`: DateTime index
 - `open`, `high`, `low`, `close`: Price data
 - `volume`: Trading volume
@@ -100,15 +106,15 @@ python main.py --config config.json --mode serve
 ```json
 {
   "model": {
-    "type": "temporal",  // "standard" or "temporal"
-    "input_dim": 50,     // Number of features after preprocessing
-    "d_model": 512,      // Transformer dimension
-    "n_heads": 8,        // Number of attention heads
-    "n_layers": 6,       // Number of transformer layers
-    "d_ff": 2048,        // Feed-forward dimension
-    "max_seq_len": 100,  // Maximum sequence length
-    "n_outputs": 5,      // Prediction horizon
-    "dropout": 0.1       // Dropout rate
+    "type": "temporal", // "standard" or "temporal"
+    "input_dim": 50, // Number of features after preprocessing
+    "d_model": 512, // Transformer dimension
+    "n_heads": 8, // Number of attention heads
+    "n_layers": 6, // Number of transformer layers
+    "d_ff": 2048, // Feed-forward dimension
+    "max_seq_len": 100, // Maximum sequence length
+    "n_outputs": 5, // Prediction horizon
+    "dropout": 0.1 // Dropout rate
   }
 }
 ```
@@ -118,9 +124,9 @@ python main.py --config config.json --mode serve
 ```json
 {
   "data": {
-    "sequence_length": 60,      // Input sequence length
-    "prediction_horizon": 5,    // How many steps to predict
-    "normalization_method": "robust",  // "standard", "robust", or "minmax"
+    "sequence_length": 60, // Input sequence length
+    "prediction_horizon": 5, // How many steps to predict
+    "normalization_method": "robust", // "standard", "robust", or "minmax"
     "train_split": 0.7,
     "val_split": 0.15,
     "features": {

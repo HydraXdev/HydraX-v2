@@ -2,9 +2,10 @@
 """
 Capture and display complete position data from HydraSocket EA
 """
-import socket
 import json
+import socket
 import threading
+
 
 def handle_connection(conn, addr):
     """Handle incoming EA connection and display full position data"""
@@ -19,20 +20,20 @@ def handle_connection(conn, addr):
             if not data:
                 break
 
-            buffer += data.decode('utf-8', errors='ignore')
+            buffer += data.decode("utf-8", errors="ignore")
 
-            while '\n' in buffer:
-                line, buffer = buffer.split('\n', 1)
+            while "\n" in buffer:
+                line, buffer = buffer.split("\n", 1)
                 if line.strip():
                     try:
                         event = json.loads(line)
 
-                        if event.get('type') == 'position_heartbeat':
-                            ticket = event.get('ticket', 'unknown')
+                        if event.get("type") == "position_heartbeat":
+                            ticket = event.get("ticket", "unknown")
                             positions[ticket] = event
 
                             # Display complete position data
-                            print("\n" + "="*60)
+                            print("\n" + "=" * 60)
                             print(f"🎯 POSITION {ticket}:")
                             print(f"  Symbol: {event.get('symbol')}")
                             print(f"  Type: {event.get('direction')}")
@@ -45,9 +46,9 @@ def handle_connection(conn, addr):
                             print(f"  Commission: ${event.get('commission')}")
                             print(f"  Swap: ${event.get('swap')}")
                             print(f"  Open Time: {event.get('open_time')}")
-                            print("="*60)
+                            print("=" * 60)
 
-                        elif event.get('type') == 'account_summary':
+                        elif event.get("type") == "account_summary":
                             print(f"\n💰 ACCOUNT UPDATE:")
                             print(f"  Balance: ${event.get('balance')}")
                             print(f"  Equity: ${event.get('equity')}")
@@ -65,16 +66,19 @@ def handle_connection(conn, addr):
     print(f"\n📊 FINAL POSITION SUMMARY:")
     print(f"Total Open Positions: {len(positions)}")
     for ticket, pos in positions.items():
-        print(f"  - {pos.get('symbol')} {pos.get('direction')} {pos.get('volume')} @ {pos.get('open_price')} | P&L: ${pos.get('profit')}")
+        print(
+            f"  - {pos.get('symbol')} {pos.get('direction')} {pos.get('volume')} @ {pos.get('open_price')} | P&L: ${pos.get('profit')}"
+        )
 
     conn.close()
+
 
 # Create server on port 5559 to intercept events
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
 # We'll listen on a different port to not interfere
-server.bind(('0.0.0.0', 5561))
+server.bind(("0.0.0.0", 5561))
 server.listen(10)
 
 print("🔍 Position Monitor listening on port 5561")
@@ -88,9 +92,9 @@ print("Connecting to existing event stream on port 5559...")
 # Connect as a client to capture data
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 try:
-    client.connect(('127.0.0.1', 5559))
+    client.connect(("127.0.0.1", 5559))
     print("Connected to event stream!")
-    handle_connection(client, ('127.0.0.1', 5559))
+    handle_connection(client, ("127.0.0.1", 5559))
 except Exception as e:
     print(f"Could not connect to existing stream: {e}")
     print("\nAlternatively, waiting for direct EA connection on 5561...")

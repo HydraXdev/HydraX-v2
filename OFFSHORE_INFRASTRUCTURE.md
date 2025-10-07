@@ -1,6 +1,6 @@
 # 🌍 Offshore Signal Infrastructure
 
-**Implementation Date**: August 1, 2025  
+**Implementation Date**: August 1, 2025
 **Status**: ✅ COMPLETE - Infrastructure ready for XAUUSD private routing
 
 ## Overview
@@ -12,6 +12,7 @@ This infrastructure enables private delivery of XAUUSD (GOLD) signals to offshor
 ### UserRegistryManager Updates (`/src/bitten_core/user_registry_manager.py`)
 
 Added two new fields to user profiles:
+
 - `user_region`: string - Either `"US"` or `"INTL"` (default: `"US"`)
 - `offshore_opt_in`: boolean - User consent for offshore signals (default: `false`)
 
@@ -21,7 +22,7 @@ Added two new fields to user profiles:
 # Update user's region
 update_user_region(telegram_id: str, region: str) -> bool
 
-# Update offshore opt-in status  
+# Update offshore opt-in status
 update_offshore_opt_in(telegram_id: str, opt_in: bool) -> bool
 ```
 
@@ -30,30 +31,37 @@ update_offshore_opt_in(telegram_id: str, opt_in: bool) -> bool
 ### BittenProductionBot Updates (`/bitten_production_bot.py`)
 
 #### 1. **send_dm_signal()** - Private Signal Delivery
+
 ```python
 def send_dm_signal(telegram_id: str, signal_text: str, parse_mode: str = "MarkdownV2") -> bool
 ```
+
 - Sends private signals to specific users
 - Automatically adds "🔒 Private Signal (Offshore Only)" header for XAUUSD/GOLD signals
 - Returns True on success, False on failure
 
-#### 2. **lookup_telegram_id()** - User ID Mapping  
+#### 2. **lookup_telegram_id()** - User ID Mapping
+
 ```python
 def lookup_telegram_id(user_id: str) -> Optional[str]
 ```
+
 - Maps internal user_id to telegram_id using registry
 - Returns None if user not found
 
 #### 3. **is_offshore_eligible()** - Eligibility Check
+
 ```python
 def is_offshore_eligible(telegram_id: str) -> bool
 ```
+
 - Checks if user can receive offshore signals
 - Requirements: `user_region == "INTL"` AND `offshore_opt_in == True`
 
 ## Usage Examples
 
 ### Setting Up a User for Offshore Signals
+
 ```python
 from src.bitten_core.user_registry_manager import update_user_region, update_offshore_opt_in
 
@@ -65,6 +73,7 @@ update_offshore_opt_in("7176191872", True)
 ```
 
 ### Checking Eligibility
+
 ```python
 # In signal distribution logic
 if bot.is_offshore_eligible(telegram_id):
@@ -72,6 +81,7 @@ if bot.is_offshore_eligible(telegram_id):
 ```
 
 ### Sending Private Signal
+
 ```python
 # Format signal text
 signal_text = """
@@ -96,8 +106,9 @@ bot.send_dm_signal("7176191872", signal_text)
 ## Current User Status
 
 As of testing:
+
 - User `7176191872` (Chris): `INTL` region, offshore opt-in ✅ ELIGIBLE
-- User `222222222` (Test INTL): `INTL` region, offshore opt-in ✅ ELIGIBLE  
+- User `222222222` (Test INTL): `INTL` region, offshore opt-in ✅ ELIGIBLE
 - User `111111111` (Test US): `US` region, offshore opt-in ❌ NOT ELIGIBLE
 
 ## Security Considerations
@@ -110,14 +121,16 @@ As of testing:
 ## Integration Points
 
 The infrastructure is ready for integration with:
+
 - Elite Guard signal distribution
-- VENOM signal generation 
+- VENOM signal generation
 - CITADEL Shield filtering
 - WebApp user settings page
 
 ## Next Steps
 
 To route XAUUSD signals privately:
+
 1. Modify Elite Guard to check symbol == "XAUUSD"
 2. Get list of offshore-eligible users
 3. Use `send_dm_signal()` instead of group broadcast

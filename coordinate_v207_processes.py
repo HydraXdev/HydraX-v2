@@ -9,13 +9,14 @@ This script coordinates:
 - confirm_listener_v207.py (PID 2420923) on port 5558
 """
 
-import subprocess
-import time
-import signal
-import os
-import sys
 import json
+import os
+import signal
+import subprocess
+import sys
+import time
 from pathlib import Path
+
 
 class ProcessCoordinator:
     def __init__(self):
@@ -27,7 +28,7 @@ class ProcessCoordinator:
         """Load previously stopped process state"""
         if self.config_file.exists():
             try:
-                with open(self.config_file, 'r') as f:
+                with open(self.config_file, "r") as f:
                     self.stopped_processes = json.load(f)
                 print(f"📂 Loaded state: {len(self.stopped_processes)} processes tracked")
             except Exception as e:
@@ -37,7 +38,7 @@ class ProcessCoordinator:
     def save_state(self):
         """Save stopped process state for restoration"""
         try:
-            with open(self.config_file, 'w') as f:
+            with open(self.config_file, "w") as f:
                 json.dump(self.stopped_processes, f, indent=2)
             print(f"💾 Saved state: {len(self.stopped_processes)} processes tracked")
         except Exception as e:
@@ -46,8 +47,9 @@ class ProcessCoordinator:
     def get_process_info(self, pid):
         """Get detailed process information"""
         try:
-            result = subprocess.run(['ps', '-p', str(pid), '-o', 'pid,ppid,cmd', '--no-headers'],
-                                  capture_output=True, text=True, timeout=5)
+            result = subprocess.run(
+                ["ps", "-p", str(pid), "-o", "pid,ppid,cmd", "--no-headers"], capture_output=True, text=True, timeout=5
+            )
             if result.returncode == 0:
                 return result.stdout.strip()
             return None
@@ -57,14 +59,15 @@ class ProcessCoordinator:
     def get_processes_on_port(self, port):
         """Find all processes using a specific port"""
         try:
-            result = subprocess.run(['ss', '-tulpen'], capture_output=True, text=True, timeout=5)
-            lines = result.stdout.split('\n')
+            result = subprocess.run(["ss", "-tulpen"], capture_output=True, text=True, timeout=5)
+            lines = result.stdout.split("\n")
 
             pids = []
             for line in lines:
-                if f':{port}' in line and 'pid=' in line:
+                if f":{port}" in line and "pid=" in line:
                     import re
-                    pid_match = re.search(r'pid=(\d+)', line)
+
+                    pid_match = re.search(r"pid=(\d+)", line)
                     if pid_match:
                         pids.append(int(pid_match.group(1)))
             return pids
@@ -125,7 +128,7 @@ class ProcessCoordinator:
             5555: ("command_router", "command_router.py"),
             5556: ("zmq_bridge", "zmq_telemetry_bridge_v207.py"),
             5558: ("confirm_listener", "confirm_listener_v207.py"),
-            5560: ("zmq_bridge_pub", "zmq_telemetry_bridge_v207.py")
+            5560: ("zmq_bridge_pub", "zmq_telemetry_bridge_v207.py"),
         }
 
         stopped_count = 0
@@ -144,11 +147,11 @@ class ProcessCoordinator:
 
                     # Save process info for restoration
                     self.stopped_processes[str(pid)] = {
-                        'name': proc_name,
-                        'script': script_name,
-                        'port': port,
-                        'cmd': proc_info,
-                        'stopped_at': time.time()
+                        "name": proc_name,
+                        "script": script_name,
+                        "port": port,
+                        "cmd": proc_info,
+                        "stopped_at": time.time(),
                     }
 
                     if self.stop_process_gracefully(pid, proc_name):
@@ -174,8 +177,8 @@ class ProcessCoordinator:
         failed_count = 0
 
         for pid_str, proc_info in list(self.stopped_processes.items()):
-            script_name = proc_info['script']
-            proc_name = proc_info['name']
+            script_name = proc_info["script"]
+            proc_name = proc_info["name"]
 
             print(f"\n🔄 Restoring {proc_name} ({script_name})...")
 
@@ -189,10 +192,10 @@ class ProcessCoordinator:
 
                 # Start the process
                 process = subprocess.Popen(
-                    ['python3', str(script_path)],
+                    ["python3", str(script_path)],
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
-                    start_new_session=True
+                    start_new_session=True,
                 )
 
                 # Give it a moment to start
@@ -263,11 +266,15 @@ class ProcessCoordinator:
         if self.stopped_processes:
             print(f"\n📝 Tracked stopped processes: {len(self.stopped_processes)}")
             for pid_str, proc_info in self.stopped_processes.items():
-                print(f"   {proc_info['name']} (was PID {pid_str}) - stopped {time.time() - proc_info['stopped_at']:.0f}s ago")
+                print(
+                    f"   {proc_info['name']} (was PID {pid_str}) - stopped {time.time() - proc_info['stopped_at']:.0f}s ago"
+                )
+
 
 def main():
     if len(sys.argv) < 2:
-        print("""
+        print(
+            """
 🎛️ EA v2.07 Process Coordinator
 
 Usage:
@@ -283,7 +290,8 @@ Examples:
   python3 coordinate_v207_processes.py stop
   python3 coordinate_v207_processes.py restore
   python3 coordinate_v207_processes.py status
-""")
+"""
+        )
         sys.exit(1)
 
     coordinator = ProcessCoordinator()
@@ -305,6 +313,7 @@ Examples:
     else:
         print(f"❌ Unknown command: {command}")
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

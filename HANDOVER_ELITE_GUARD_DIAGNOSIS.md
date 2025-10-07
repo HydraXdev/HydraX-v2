@@ -1,8 +1,8 @@
 # 🚨 ELITE GUARD ENGINE DIAGNOSIS - CRITICAL HANDOVER DOCUMENT
 
-**Date**: August 8, 2025  
-**Diagnosed By**: Claude Code Agent  
-**Status**: ❌ BROKEN - No signals generated for 25+ hours  
+**Date**: August 8, 2025
+**Diagnosed By**: Claude Code Agent
+**Status**: ❌ BROKEN - No signals generated for 25+ hours
 **Priority**: 🔴 CRITICAL - Production system down
 
 ---
@@ -11,8 +11,8 @@
 
 The Elite Guard signal engine has been **completely non-functional for over 25 hours**, generating ZERO signals since August 7, 2025 at 02:58:52 UTC. Despite having market data flowing and the process running continuously, the pattern detection system is fundamentally broken due to a **candle data accumulation failure**.
 
-**Last Known Signal**: August 7, 2025 02:58:52 UTC (EURJPY SELL)  
-**Total Signals in 25+ Hours**: 0  
+**Last Known Signal**: August 7, 2025 02:58:52 UTC (EURJPY SELL)
+**Total Signals in 25+ Hours**: 0
 **Expected Signals**: 500-750 (based on 20-30/day target)
 
 ---
@@ -22,6 +22,7 @@ The Elite Guard signal engine has been **completely non-functional for over 25 h
 ### 1. SIGNAL GENERATION TIMELINE
 
 Complete Elite Guard signal history (only 7 signals total):
+
 ```
 1. 2025-08-06 21:06:34 - EURUSD (First signal)
 2. 2025-08-06 22:40:40 - XAUUSD (1h 34m gap)
@@ -60,12 +61,14 @@ The Elite Guard requires OHLC candle data to detect patterns, but the candle acc
 ### 3. PATTERN DETECTION ANALYSIS
 
 #### **Configuration Changes Made During Diagnosis:**
+
 - ✅ Lowered confidence threshold: 65% → 50% (line 1036)
 - ✅ Added score distribution logging (lines 1025-1041)
 - ✅ Added pattern detection debugging (lines 1167-1172)
 - ✅ Changed candle data logging from DEBUG to INFO (lines 445-448)
 
 #### **Pattern Detection Results:**
+
 ```
 🔍 XAUUSD scanned but no patterns detected at all
 🔍 USDJPY scanned but no patterns detected at all
@@ -81,6 +84,7 @@ The Elite Guard requires OHLC candle data to detect patterns, but the candle acc
 ### 4. FALSE POSITIVE: "Ready for Pattern Analysis"
 
 During diagnosis, logs showed:
+
 ```
 ✅ EURUSD ready for pattern analysis - M1:200, M5:200, M15:90
 ✅ GBPUSD ready for pattern analysis - M1:200, M5:200, M15:90
@@ -88,6 +92,7 @@ During diagnosis, logs showed:
 ```
 
 **This was misleading!** Investigation revealed:
+
 - These messages appear AFTER receiving candle batches
 - BUT the candle batch processing function never actually executes
 - The buffers remain empty despite the "ready" message
@@ -96,18 +101,21 @@ During diagnosis, logs showed:
 ### 5. SYSTEM ARCHITECTURE FINDINGS
 
 #### **ZMQ Data Flow (Working ✅)**
+
 - Port 5556: Market data from EA → ESTABLISHED connection
 - Port 5560: Telemetry bridge redistributing data → Working
 - Port 5557: Elite Guard signal publisher → Ready but unused
 - Tick Reception: ~8-10 ticks/second for all symbols
 
 #### **Process Status**
+
 - Elite Guard Main: Running (various PIDs during testing)
 - Elite Guard ZMQ Relay: Running (PID 2454558)
 - CPU Usage: 0.3-0.7% (very low, indicating no heavy processing)
 - Memory: ~80MB (normal)
 
 #### **Configuration Issues Found**
+
 - Signal cooldown: 2 minutes per pair (line 103)
 - Daily limit: 30 signals max (line 1122) - NOT the issue (only had 7)
 - Main loop sleep: 15-30 seconds (lines 1193-1195)
@@ -120,6 +128,7 @@ During diagnosis, logs showed:
 ### **PRIORITY 1: Fix Candle Batch Processing**
 
 **Option A: Fix Symbol Filtering**
+
 ```python
 # Line 350-352 in elite_guard_with_citadel.py
 # Current (BROKEN):
@@ -131,6 +140,7 @@ if symbol not in self.trading_pairs:
 ```
 
 **Option B: Debug Why process_candle_batch() Isn't Called**
+
 ```python
 # Line 1272-1276 - Add detailed logging
 logger.info(f"🕯️ Received candle batch for {symbol}")
@@ -145,6 +155,7 @@ except Exception as e:
 ### **PRIORITY 2: Lower Data Requirements**
 
 **Current Requirements (Too Strict):**
+
 ```python
 # Line 412-416
 has_m1 = len(self.m1_data[symbol]) >= 5
@@ -155,6 +166,7 @@ if has_m1 and has_m5 and has_m15:  # Requires ALL three
 ```
 
 **Suggested Fix:**
+
 ```python
 # Allow pattern detection with just M1 data
 has_m1 = len(self.m1_data[symbol]) >= 3  # Lower requirement
@@ -165,6 +177,7 @@ if has_m1:  # Don't require M5 and M15
 ### **PRIORITY 3: Add Emergency Bypass**
 
 Create a temporary bypass to generate signals even with minimal data:
+
 ```python
 # Add emergency mode flag
 self.emergency_mode = True  # Temporary while fixing
@@ -182,16 +195,19 @@ if self.emergency_mode and len(self.m1_data[symbol]) >= 1:
 ## 📁 KEY FILES AND LOCATIONS
 
 ### **Main Files:**
+
 - `/root/HydraX-v2/elite_guard_with_citadel.py` - Main engine (62KB)
 - `/root/HydraX-v2/elite_guard_zmq_relay.py` - ZMQ relay (running)
 - `/root/HydraX-v2/truth_log.jsonl` - Signal history log
 
 ### **Log Files Created During Diagnosis:**
+
 - `/root/HydraX-v2/elite_guard_output.log` - Initial debugging
 - `/root/HydraX-v2/elite_guard_debug.log` - Extended debugging
 - `/root/HydraX-v2/elite_guard_fresh.log` - Latest test run
 
 ### **Critical Code Sections:**
+
 - **Lines 85-109**: Trading pairs configuration
 - **Lines 339-425**: `process_candle_batch()` function (BROKEN)
 - **Lines 427-591**: Pattern detection functions (working but no data)
@@ -204,6 +220,7 @@ if self.emergency_mode and len(self.m1_data[symbol]) >= 1:
 ## 🚀 RECOMMENDED ACTION PLAN
 
 ### **Step 1: Emergency Restart with Logging**
+
 ```bash
 # Kill any running instances
 pkill -9 -f elite_guard_with_citadel
@@ -213,21 +230,26 @@ python3 /root/HydraX-v2/elite_guard_with_citadel.py 2>&1 | tee elite_guard_emerg
 ```
 
 ### **Step 2: Monitor Candle Processing**
+
 ```bash
 # Watch for candle batch processing
 tail -f elite_guard_emergency.log | grep -E "Received candle batch|ready for pattern|ERROR"
 ```
 
 ### **Step 3: Verify Symbol Matching**
+
 Check if candle batch symbols exactly match configured symbols. Case sensitivity and format must be identical.
 
 ### **Step 4: Implement Quick Fix**
+
 If candle batches still aren't processing, bypass the system:
+
 1. Comment out lines 350-352 (symbol filtering)
 2. Lower data requirements to M1 ≥ 1
 3. Add emergency signal generation
 
 ### **Step 5: Test Signal Generation**
+
 Once candles are processing, signals should start appearing within 2-3 minutes.
 
 ---
@@ -245,6 +267,7 @@ Once candles are processing, signals should start appearing within 2-3 minutes.
 ## 📞 ESCALATION CONTACTS
 
 If unable to resolve within 2 hours:
+
 1. Check CLAUDE.md for system architecture
 2. Review EA_DATA_FLOW_CONTRACT.md for data flow specs
 3. Examine ELITE_GUARD_BLUEPRINT.md for original design
@@ -254,6 +277,7 @@ If unable to resolve within 2 hours:
 ## ✅ VALIDATION CHECKLIST
 
 Once fixed, verify:
+
 - [ ] Candle batches processing (see "Successfully processed" in logs)
 - [ ] Patterns being detected (not just "no patterns detected")
 - [ ] Signals appearing in truth_log.jsonl
@@ -262,11 +286,11 @@ Once fixed, verify:
 
 ---
 
-**HANDOVER COMPLETE**  
+**HANDOVER COMPLETE**
 **Next Agent**: This system is CRITICAL and has been down for 25+ hours. Users are expecting signals. The diagnosis is complete - the issue is in candle batch processing. Fix that first, and signals should resume immediately.
 
-**Diagnostic Time**: 3 hours  
-**Root Cause**: Candle batch processing failure due to symbol filtering  
+**Diagnostic Time**: 3 hours
+**Root Cause**: Candle batch processing failure due to symbol filtering
 **Estimated Fix Time**: 30 minutes with the information provided
 
 Good luck! The fix should be straightforward now that we know exactly what's broken.

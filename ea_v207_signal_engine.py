@@ -18,28 +18,27 @@ EA PUSH -> CONFIRM -> Engine receives trade results
 Based on user's exact code structure requirements.
 """
 
-import zmq
 import json
-import time
-import threading
+import logging
 import signal
 import sys
-import logging
+import threading
+import time
+import traceback
 from collections import defaultdict, deque
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any
-import traceback
+from typing import Any, Dict, List, Optional
+
+import zmq
 
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler('/root/HydraX-v2/logs/ea_v207_signal_engine.log'),
-        logging.StreamHandler()
-    ]
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[logging.FileHandler("/root/HydraX-v2/logs/ea_v207_signal_engine.log"), logging.StreamHandler()],
 )
-logger = logging.getLogger('EA_V207_SignalEngine')
+logger = logging.getLogger("EA_V207_SignalEngine")
+
 
 class CandleBook:
     """
@@ -54,12 +53,7 @@ class CandleBook:
         self.current_candles = defaultdict(dict)
 
         # Timeframe definitions in seconds
-        self.timeframes = {
-            'M1': 60,
-            'M5': 300,
-            'M15': 900,
-            'H1': 3600
-        }
+        self.timeframes = {"M1": 60, "M5": 300, "M15": 900, "H1": 3600}
 
     def add_tick(self, symbol: str, price: float, timestamp: int):
         """Process a tick and update candles for all timeframes"""
@@ -80,24 +74,24 @@ class CandleBook:
         if current_key not in self.current_candles[symbol]:
             # Create new candle
             self.current_candles[symbol][current_key] = {
-                'symbol': symbol,
-                'timeframe': timeframe,
-                'timestamp': candle_start,
-                'open': price,
-                'high': price,
-                'low': price,
-                'close': price,
-                'volume': 1,
-                'tick_count': 1
+                "symbol": symbol,
+                "timeframe": timeframe,
+                "timestamp": candle_start,
+                "open": price,
+                "high": price,
+                "low": price,
+                "close": price,
+                "volume": 1,
+                "tick_count": 1,
             }
         else:
             # Update existing candle
             candle = self.current_candles[symbol][current_key]
-            candle['high'] = max(candle['high'], price)
-            candle['low'] = min(candle['low'], price)
-            candle['close'] = price
-            candle['volume'] += 1
-            candle['tick_count'] += 1
+            candle["high"] = max(candle["high"], price)
+            candle["low"] = min(candle["low"], price)
+            candle["close"] = price
+            candle["volume"] += 1
+            candle["tick_count"] += 1
 
         # Check if we need to finalize the previous candle
         self._finalize_old_candles(symbol, timeframe, candle_start, tf_seconds)
@@ -110,7 +104,7 @@ class CandleBook:
             if not key.startswith(f"{timeframe}_"):
                 continue
 
-            candle_start = candle['timestamp']
+            candle_start = candle["timestamp"]
             if candle_start < current_start:
                 # This candle is complete, move to permanent storage
                 self.candles[symbol][timeframe].append(candle.copy())
@@ -135,6 +129,7 @@ class CandleBook:
                 return candle
         return None
 
+
 class EAV207SignalEngine:
     """
     Complete EA v2.07 Signal Engine Implementation
@@ -157,18 +152,31 @@ class EAV207SignalEngine:
 
         # Trading pairs to monitor
         self.trading_pairs = [
-            'EURUSD', 'GBPUSD', 'USDJPY', 'USDCHF', 'USDCAD', 'AUDUSD', 'NZDUSD',
-            'EURJPY', 'GBPJPY', 'EURGBP', 'EURAUD', 'EURCAD', 'GBPAUD', 'GBPCAD',
-            'XAUUSD', 'XAGUSD'
+            "EURUSD",
+            "GBPUSD",
+            "USDJPY",
+            "USDCHF",
+            "USDCAD",
+            "AUDUSD",
+            "NZDUSD",
+            "EURJPY",
+            "GBPJPY",
+            "EURGBP",
+            "EURAUD",
+            "EURCAD",
+            "GBPAUD",
+            "GBPCAD",
+            "XAUUSD",
+            "XAGUSD",
         ]
 
         # Performance tracking
         self.stats = {
-            'ticks_processed': 0,
-            'signals_generated': 0,
-            'fire_commands_sent': 0,
-            'confirmations_received': 0,
-            'start_time': time.time()
+            "ticks_processed": 0,
+            "signals_generated": 0,
+            "fire_commands_sent": 0,
+            "confirmations_received": 0,
+            "start_time": time.time(),
         }
 
     def setup_ports(self):
@@ -176,19 +184,19 @@ class EAV207SignalEngine:
         if self.use_alternative_ports:
             # Alternative ports (if conflicts exist)
             self.ports = {
-                'router': 5565,    # Fire commands (alternative to 5555)
-                'pull_market': 5566,   # Market data (alternative to 5556)
-                'pull_confirm': 5568,  # Confirmations (alternative to 5558)
-                'pull_secondary': 5570 # Secondary data (alternative to 5560)
+                "router": 5565,  # Fire commands (alternative to 5555)
+                "pull_market": 5566,  # Market data (alternative to 5556)
+                "pull_confirm": 5568,  # Confirmations (alternative to 5558)
+                "pull_secondary": 5570,  # Secondary data (alternative to 5560)
             }
             logger.info("Using alternative ports to avoid conflicts")
         else:
             # Standard EA v2.07 ports
             self.ports = {
-                'router': 5555,    # Fire commands
-                'pull_market': 5556,   # Market data from EA
-                'pull_confirm': 5558,  # Trade confirmations from EA
-                'pull_secondary': 5560 # Additional EA data streams
+                "router": 5555,  # Fire commands
+                "pull_market": 5556,  # Market data from EA
+                "pull_confirm": 5558,  # Trade confirmations from EA
+                "pull_secondary": 5560,  # Additional EA data streams
             }
             logger.info("Using standard EA v2.07 ports")
 
@@ -236,8 +244,8 @@ class EAV207SignalEngine:
     def handle_hello_message(self, routing_id: bytes, message: Dict):
         """Handle HELLO handshake from EA to learn routing identity"""
         try:
-            ea_uuid = message.get('uuid', 'UNKNOWN')
-            ea_version = message.get('version', 'UNKNOWN')
+            ea_uuid = message.get("uuid", "UNKNOWN")
+            ea_version = message.get("version", "UNKNOWN")
 
             # Store routing identity for this EA
             self.uuid_route[ea_uuid] = routing_id
@@ -247,10 +255,10 @@ class EAV207SignalEngine:
 
             # Send acknowledgment back to EA
             ack_response = {
-                'type': 'hello_ack',
-                'server_version': 'EA_V207_SIGNAL_ENGINE_1.0',
-                'timestamp': int(time.time()),
-                'status': 'ready'
+                "type": "hello_ack",
+                "server_version": "EA_V207_SIGNAL_ENGINE_1.0",
+                "timestamp": int(time.time()),
+                "status": "ready",
             }
 
             self.send_router_json(routing_id, ack_response)
@@ -262,10 +270,10 @@ class EAV207SignalEngine:
     def handle_tick_message(self, message: Dict):
         """Process TICK message from EA and update candles"""
         try:
-            symbol = message.get('symbol')
-            bid = message.get('bid')
-            ask = message.get('ask')
-            timestamp = message.get('timestamp', int(time.time()))
+            symbol = message.get("symbol")
+            bid = message.get("bid")
+            ask = message.get("ask")
+            timestamp = message.get("timestamp", int(time.time()))
 
             if not symbol or bid is None or ask is None:
                 logger.warning(f"Invalid TICK data: {message}")
@@ -277,10 +285,10 @@ class EAV207SignalEngine:
             # Add tick to candle book
             self.candle_book.add_tick(symbol, mid_price, timestamp)
 
-            self.stats['ticks_processed'] += 1
+            self.stats["ticks_processed"] += 1
 
             # Check for signal generation (every 100 ticks to avoid spam)
-            if self.stats['ticks_processed'] % 100 == 0:
+            if self.stats["ticks_processed"] % 100 == 0:
                 self.maybe_signal(symbol)
 
         except Exception as e:
@@ -289,16 +297,16 @@ class EAV207SignalEngine:
     def handle_confirm_message(self, message: Dict):
         """Process trade confirmation from EA"""
         try:
-            fire_id = message.get('fire_id')
-            status = message.get('status')
-            ticket = message.get('ticket')
-            price = message.get('price')
+            fire_id = message.get("fire_id")
+            status = message.get("status")
+            ticket = message.get("ticket")
+            price = message.get("price")
 
             logger.info(f"📋 CONFIRM: {fire_id} -> {status}")
             if ticket:
                 logger.info(f"   Ticket: {ticket}, Price: {price}")
 
-            self.stats['confirmations_received'] += 1
+            self.stats["confirmations_received"] += 1
 
             # Here you could update database or notify other systems
             # For now, just log the confirmation
@@ -318,8 +326,8 @@ class EAV207SignalEngine:
                 return
 
             # Get recent candles for analysis
-            m5_candles = self.candle_book.get_candles(symbol, 'M5', 20)
-            m15_candles = self.candle_book.get_candles(symbol, 'M15', 20)
+            m5_candles = self.candle_book.get_candles(symbol, "M5", 20)
+            m15_candles = self.candle_book.get_candles(symbol, "M15", 20)
 
             if len(m5_candles) < 10 or len(m15_candles) < 5:
                 return  # Not enough data
@@ -346,7 +354,7 @@ class EAV207SignalEngine:
             # Calculate recent volatility (simplified)
             recent_ranges = []
             for candle in m5_candles[-10:]:
-                range_pips = (candle['high'] - candle['low']) * 10000  # Rough pip calculation
+                range_pips = (candle["high"] - candle["low"]) * 10000  # Rough pip calculation
                 recent_ranges.append(range_pips)
 
             avg_range = sum(recent_ranges) / len(recent_ranges)
@@ -359,28 +367,28 @@ class EAV207SignalEngine:
                 prev_candle = m5_candles[-2] if len(m5_candles) > 1 else last_candle
 
                 # Determine direction
-                direction = "BUY" if last_candle['close'] > prev_candle['close'] else "SELL"
+                direction = "BUY" if last_candle["close"] > prev_candle["close"] else "SELL"
 
                 # Calculate entry, SL, TP
-                entry = last_candle['close']
+                entry = last_candle["close"]
 
                 if direction == "BUY":
-                    sl = last_candle['low'] - (20 * 0.0001)  # 20 pip SL
+                    sl = last_candle["low"] - (20 * 0.0001)  # 20 pip SL
                     tp = entry + (30 * 0.0001)  # 30 pip TP
                 else:
-                    sl = last_candle['high'] + (20 * 0.0001)  # 20 pip SL
+                    sl = last_candle["high"] + (20 * 0.0001)  # 20 pip SL
                     tp = entry - (30 * 0.0001)  # 30 pip TP
 
                 signal = {
-                    'signal_id': f"VCB_{symbol}_{int(time.time())}",
-                    'symbol': symbol,
-                    'direction': direction,
-                    'entry': round(entry, 5),
-                    'sl': round(sl, 5),
-                    'tp': round(tp, 5),
-                    'confidence': 75.0,
-                    'pattern_type': 'VCB_BREAKOUT',
-                    'timestamp': int(time.time())
+                    "signal_id": f"VCB_{symbol}_{int(time.time())}",
+                    "symbol": symbol,
+                    "direction": direction,
+                    "entry": round(entry, 5),
+                    "sl": round(sl, 5),
+                    "tp": round(tp, 5),
+                    "confidence": 75.0,
+                    "pattern_type": "VCB_BREAKOUT",
+                    "timestamp": int(time.time()),
                 }
 
                 logger.info(f"🎯 VCB Signal detected: {symbol} {direction} @ {entry}")
@@ -399,26 +407,26 @@ class EAV207SignalEngine:
         try:
             # Create fire command matching EA v2.07 format
             fire_command = {
-                'type': 'fire',
-                'fire_id': signal['signal_id'],
-                'target_uuid': 'COMMANDER_DEV_001',  # Default EA target
-                'symbol': signal['symbol'],
-                'direction': signal['direction'],
-                'entry': signal['entry'],
-                'sl': signal['sl'],
-                'tp': signal['tp'],
-                'lot': 0.01,  # Default lot size
-                'timestamp': signal['timestamp']
+                "type": "fire",
+                "fire_id": signal["signal_id"],
+                "target_uuid": "COMMANDER_DEV_001",  # Default EA target
+                "symbol": signal["symbol"],
+                "direction": signal["direction"],
+                "entry": signal["entry"],
+                "sl": signal["sl"],
+                "tp": signal["tp"],
+                "lot": 0.01,  # Default lot size
+                "timestamp": signal["timestamp"],
             }
 
             # Find the appropriate EA routing ID
-            target_uuid = fire_command['target_uuid']
+            target_uuid = fire_command["target_uuid"]
             if target_uuid in self.uuid_route:
                 routing_id = self.uuid_route[target_uuid]
                 self.send_router_json(routing_id, fire_command)
 
-                self.stats['fire_commands_sent'] += 1
-                self.stats['signals_generated'] += 1
+                self.stats["fire_commands_sent"] += 1
+                self.stats["signals_generated"] += 1
 
                 logger.info(f"🔥 FIRE command sent: {fire_command['fire_id']}")
                 logger.info(f"   {fire_command['symbol']} {fire_command['direction']} @ {fire_command['entry']}")
@@ -433,7 +441,7 @@ class EAV207SignalEngine:
         """Send JSON message via ROUTER socket to specific EA"""
         try:
             json_str = json.dumps(data)
-            self.router.send_multipart([routing_id, json_str.encode('utf-8')])
+            self.router.send_multipart([routing_id, json_str.encode("utf-8")])
         except Exception as e:
             logger.error(f"❌ Error sending router message: {e}")
 
@@ -452,10 +460,10 @@ class EAV207SignalEngine:
                 if self.router in events:
                     try:
                         routing_id, message_bytes = self.router.recv_multipart(zmq.NOBLOCK)
-                        message = json.loads(message_bytes.decode('utf-8'))
+                        message = json.loads(message_bytes.decode("utf-8"))
 
-                        msg_type = message.get('type', 'unknown')
-                        if msg_type == 'hello':
+                        msg_type = message.get("type", "unknown")
+                        if msg_type == "hello":
                             self.handle_hello_message(routing_id, message)
                         else:
                             logger.info(f"📨 Router message: {msg_type} from {routing_id.hex()}")
@@ -469,10 +477,10 @@ class EAV207SignalEngine:
                 if self.pull_market in events:
                     try:
                         message_bytes = self.pull_market.recv(zmq.NOBLOCK)
-                        message = json.loads(message_bytes.decode('utf-8'))
+                        message = json.loads(message_bytes.decode("utf-8"))
 
-                        msg_type = message.get('type', 'unknown')
-                        if msg_type == 'tick':
+                        msg_type = message.get("type", "unknown")
+                        if msg_type == "tick":
                             self.handle_tick_message(message)
                         else:
                             logger.debug(f"📈 Market message: {msg_type}")
@@ -486,10 +494,10 @@ class EAV207SignalEngine:
                 if self.pull_confirm in events:
                     try:
                         message_bytes = self.pull_confirm.recv(zmq.NOBLOCK)
-                        message = json.loads(message_bytes.decode('utf-8'))
+                        message = json.loads(message_bytes.decode("utf-8"))
 
-                        msg_type = message.get('type', 'unknown')
-                        if msg_type == 'confirm':
+                        msg_type = message.get("type", "unknown")
+                        if msg_type == "confirm":
                             self.handle_confirm_message(message)
                         else:
                             logger.info(f"📋 Confirm message: {msg_type}")
@@ -503,7 +511,7 @@ class EAV207SignalEngine:
                 if self.pull_secondary in events:
                     try:
                         message_bytes = self.pull_secondary.recv(zmq.NOBLOCK)
-                        message = json.loads(message_bytes.decode('utf-8'))
+                        message = json.loads(message_bytes.decode("utf-8"))
 
                         logger.debug(f"📡 Secondary message: {message.get('type', 'unknown')}")
 
@@ -528,7 +536,7 @@ class EAV207SignalEngine:
 
     def print_stats(self):
         """Print current engine statistics"""
-        uptime = time.time() - self.stats['start_time']
+        uptime = time.time() - self.stats["start_time"]
         hours = int(uptime // 3600)
         minutes = int((uptime % 3600) // 60)
 
@@ -584,7 +592,7 @@ class EAV207SignalEngine:
         self.running = False
 
         # Close sockets
-        for attr_name in ['router', 'pull_market', 'pull_confirm', 'pull_secondary']:
+        for attr_name in ["router", "pull_market", "pull_confirm", "pull_secondary"]:
             if hasattr(self, attr_name):
                 socket = getattr(self, attr_name)
                 socket.close()
@@ -593,6 +601,7 @@ class EAV207SignalEngine:
         # Terminate context
         self.context.term()
         logger.info("✅ Cleanup complete")
+
 
 def main():
     """Main entry point"""
@@ -612,6 +621,7 @@ def main():
     except Exception as e:
         logger.error(f"💥 Engine failed: {e}")
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

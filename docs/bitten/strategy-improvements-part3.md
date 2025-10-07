@@ -19,6 +19,7 @@ The Strategy Orchestrator is the **master brain** that coordinates all strategie
    - Prevents overtrading
 
 3. **Backup Strategy System**
+
    ```
    Primary fails → Try backup strategies:
    - London Breakout → SR → Momentum
@@ -34,6 +35,7 @@ The Strategy Orchestrator is the **master brain** that coordinates all strategie
    - Updates strategy effectiveness
 
 ### Processing Flow:
+
 ```
 1. Market update arrives
 2. Update market analyzer
@@ -48,6 +50,7 @@ The Strategy Orchestrator is the **master brain** that coordinates all strategie
 ```
 
 ### Why This Matters:
+
 - Intelligent strategy selection
 - Prevents overtrading with cooldowns
 - Tracks real performance

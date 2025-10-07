@@ -2,15 +2,17 @@
 """
 Ask-anchored MF-3 success test with ultra-wide distances
 """
-import zmq
 import json
 import time
+
+import zmq
+
 
 def send_ask_anchored_fire():
     """Send ask-anchored BUY fire with ultra-wide SL/TP"""
 
     # Live tick data
-    symbol = 'XAUUSD'
+    symbol = "XAUUSD"
     ask = 2651.00
     point = 0.01
     digits = 2
@@ -39,7 +41,7 @@ def send_ask_anchored_fire():
         "sl": sl,
         "tp": tp,
         "lot": 0.01,
-        "snapshot_tf": "M1"
+        "snapshot_tf": "M1",
     }
 
     print(f"🎯 ASK-ANCHORED MF-3:")
@@ -59,6 +61,7 @@ def send_ask_anchored_fire():
     context.term()
 
     return fire_id, ask, point, digits, sl, tp, sl_pts, tp_pts
+
 
 if __name__ == "__main__":
     fire_id, ask, point, digits, sl, tp, sl_pts, tp_pts = send_ask_anchored_fire()

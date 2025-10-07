@@ -8,16 +8,16 @@ $mt5DataPath = "$env:APPDATA\MetaQuotes\Terminal"
 
 if (Test-Path $mt5DataPath) {
     $terminals = Get-ChildItem -Path $mt5DataPath -Directory
-    
+
     foreach ($terminal in $terminals) {
         Write-Host "`n📂 Terminal: $($terminal.Name)" -ForegroundColor Yellow
-        
+
         $filesPath = Join-Path $terminal.FullName "MQL5\Files"
-        
+
         # Check for tick data files
         Write-Host "`n📊 Checking for tick data files:" -ForegroundColor Green
         $tickFiles = Get-ChildItem -Path $filesPath -Filter "tick_data_*.json" -ErrorAction SilentlyContinue
-        
+
         if ($tickFiles) {
             Write-Host "  ✅ Found $($tickFiles.Count) tick data files:" -ForegroundColor Green
             foreach ($file in $tickFiles | Select-Object -First 3) {
@@ -28,14 +28,14 @@ if (Test-Path $mt5DataPath) {
         } else {
             Write-Host "  ❌ No tick data files found" -ForegroundColor Red
         }
-        
+
         # Check BITTEN folder
         $bittenPath = Join-Path $filesPath "BITTEN"
         Write-Host "`n📁 Checking BITTEN folder:" -ForegroundColor Green
-        
+
         if (Test-Path $bittenPath) {
             Write-Host "  ✅ BITTEN folder exists" -ForegroundColor Green
-            
+
             # Check fire.txt
             $firePath = Join-Path $bittenPath "fire.txt"
             if (Test-Path $firePath) {
@@ -48,7 +48,7 @@ if (Test-Path $mt5DataPath) {
             } else {
                 Write-Host "  ❌ fire.txt not found" -ForegroundColor Red
             }
-            
+
             # Check trade_result.txt
             $resultPath = Join-Path $bittenPath "trade_result.txt"
             if (Test-Path $resultPath) {
@@ -58,7 +58,7 @@ if (Test-Path $mt5DataPath) {
         } else {
             Write-Host "  ❌ BITTEN folder not found" -ForegroundColor Red
         }
-        
+
         # Check uuid.txt
         $uuidPath = Join-Path $filesPath "uuid.txt"
         if (Test-Path $uuidPath) {
@@ -66,7 +66,7 @@ if (Test-Path $mt5DataPath) {
             Write-Host "`n🆔 UUID: $uuid" -ForegroundColor Magenta
         }
     }
-    
+
 } else {
     Write-Host "❌ MetaQuotes folder not found" -ForegroundColor Red
 }

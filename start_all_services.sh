@@ -19,7 +19,7 @@ mkdir -p logs
 start_service() {
     local service_name=$1
     local script_name=$2
-    
+
     echo "Starting $service_name..."
     nohup python3 $script_name > logs/${service_name}_startup.log 2>&1 &
     local pid=$!

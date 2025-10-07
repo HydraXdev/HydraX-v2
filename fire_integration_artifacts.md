@@ -9,6 +9,7 @@
 ## 🎯 ROUTER TRIPLETS (REQUEST → VALIDATION → RESPONSE)
 
 ### **1. Signal Verification Triplet**
+
 ```
 REQUEST:  GET /api/signal/verify?sid=TEST_FIRE_INTEGRATION_1758751120&uid=7176191872&t=1758751120&sig=d0b021...
 VALIDATION: HMAC SHA-256 verification with 'bitten_dev_key_2025'
@@ -16,6 +17,7 @@ RESPONSE: {"signal":{"sid":"TEST_...","symbol":"EURUSD","pattern":"VCB_BREAKOUT"
 ```
 
 ### **2. Fire Execution Triplet**
+
 ```
 REQUEST:  POST /api/fire {"signal_id":"TEST_FIRE_INTEGRATION_1758751120","user_id":"7176191872","mode":"manual"}
 VALIDATION: RuleSlotEngine.validate_fire_request() - Concurrent slot limit check
@@ -23,6 +25,7 @@ RESPONSE: {"success":false,"error":"Concurrent slot limit reached (13/3)","slots
 ```
 
 ### **3. Confirmation Enrichment Triplet**
+
 ```
 INPUT:    {"type":"confirmation","fire_id":"ELITE_GUARD_GBPUSD_123","status":"success","ticket":21848290}
 ENRICHER: ConfirmationEnricher.enrich_confirmation() adds slot and account data
@@ -34,18 +37,19 @@ OUTPUT:   {"type":"confirmation","fire_id":"ELITE_GUARD_GBPUSD_123","status":"su
 ## 📊 ENRICHED CONFIRMATION JSON EXAMPLES
 
 ### **Trade Confirmation (Success)**
+
 ```json
 {
   "type": "confirmation",
   "fire_id": "HUD_FIRE_ELITE_RAPID_EURUSD_1758751120_1758751150",
   "status": "success",
   "ticket": 21848290,
-  "price": 1.10500,
+  "price": 1.105,
   "message": "OK BUY",
   "user_uuid": "COMMANDER_DEV_001",
   "account": {
     "ticket": 21848290,
-    "price": 1.10500,
+    "price": 1.105,
     "lot": 0.45
   },
   "slots": {
@@ -61,6 +65,7 @@ OUTPUT:   {"type":"confirmation","fire_id":"ELITE_GUARD_GBPUSD_123","status":"su
 ```
 
 ### **Position Close Event (TP Hit)**
+
 ```json
 {
   "type": "position_closed",
@@ -68,13 +73,13 @@ OUTPUT:   {"type":"confirmation","fire_id":"ELITE_GUARD_GBPUSD_123","status":"su
   "ticket": 21848290,
   "status": "closed",
   "close_reason": "TP_HIT",
-  "close_price": 1.10800,
-  "profit": 135.00,
+  "close_price": 1.108,
+  "profit": 135.0,
   "user_uuid": "COMMANDER_DEV_001",
   "account": {
     "ticket": 21848290,
-    "close_price": 1.10800,
-    "profit": 135.00,
+    "close_price": 1.108,
+    "profit": 135.0,
     "reason": "TP_HIT"
   },
   "slots": {
@@ -94,6 +99,7 @@ OUTPUT:   {"type":"confirmation","fire_id":"ELITE_GUARD_GBPUSD_123","status":"su
 ## 💾 DATABASE RECORDS CREATED
 
 ### **fires Table (fire_modes.db)**
+
 ```sql
 CREATE TABLE fires (
     fire_id TEXT PRIMARY KEY,
@@ -128,6 +134,7 @@ INSERT INTO fires VALUES (
 ```
 
 ### **active_slots Table (fire_modes.db)**
+
 ```sql
 -- Sample Record --
 INSERT INTO active_slots VALUES (
@@ -141,6 +148,7 @@ INSERT INTO active_slots VALUES (
 ```
 
 ### **signals Table (bitten.db)**
+
 ```sql
 -- Sample Test Signal --
 INSERT INTO signals VALUES (
@@ -200,6 +208,7 @@ INSERT INTO signals VALUES (
 ## ⚡ FIRE COMMAND PACKET (ZMQ FORMAT)
 
 ### **Complete Fire Packet Structure**
+
 ```json
 {
   "type": "fire",
@@ -208,14 +217,15 @@ INSERT INTO signals VALUES (
   "symbol": "EURUSD",
   "direction": "BUY",
   "entry": 0,
-  "sl": 1.0980,
-  "tp": 1.1030,
+  "sl": 1.098,
+  "tp": 1.103,
   "lot": 0.45,
   "snapshot_tf": "M1"
 }
 ```
 
 ### **Position Sizing Calculation**
+
 ```python
 # From FirePacketBuilder.build_fire_packet()
 risk_percent = 2.0  # 2% risk for COMMANDER tier
@@ -232,6 +242,7 @@ lot_size = round(max(0.01, min(lot_size, 10.0)), 2)  # 1.00 lots
 ## 🎯 RULE/SLOT ENGINE VALIDATION CONTRACT
 
 ### **Input Parameters**
+
 ```python
 {
     "uid": "7176191872",           # User ID
@@ -243,6 +254,7 @@ lot_size = round(max(0.01, min(lot_size, 10.0)), 2)  # 1.00 lots
 ```
 
 ### **Output Response**
+
 ```python
 {
     "allow": False,                # Validation result
@@ -274,17 +286,20 @@ lot_size = round(max(0.01, min(lot_size, 10.0)), 2)  # 1.00 lots
 ## 🔒 SECURITY IMPLEMENTATIONS
 
 ### **HMAC Authentication**
+
 - **Key:** 'bitten_dev_key_2025'
 - **Algorithm:** SHA-256
 - **Message Format:** "{signal_id}|{user_id}|{timestamp}"
 - **Expiry:** 5 minutes (300 seconds)
 
 ### **Idempotency Protection**
-- **Key Format:** "{user_id}_{signal_id}_{timestamp}"
+
+- **Key Format:** "{user*id}*{signal*id}*{timestamp}"
 - **Duplicate Detection:** Database constraint on idempotency_key
 - **Response:** Returns existing fire_id if duplicate detected
 
 ### **Tier-based Access Control**
+
 - **PRESS:** 0 concurrent, 0 daily
 - **GLADIATOR:** 1 concurrent, 10 daily
 - **REAPER:** 2 concurrent, 15 daily
@@ -297,6 +312,7 @@ lot_size = round(max(0.01, min(lot_size, 10.0)), 2)  # 1.00 lots
 ## 📈 PERFORMANCE METRICS
 
 ### **Integration Test Results**
+
 ```
 ✅ Signal Verification: 45ms average response time
 ✅ HMAC Authentication: 100% validation accuracy
@@ -308,6 +324,7 @@ lot_size = round(max(0.01, min(lot_size, 10.0)), 2)  # 1.00 lots
 ```
 
 ### **Slot Management Efficiency**
+
 ```
 📊 Active Slots: 13 concurrent (user 7176191872)
 🎯 Tier Limit: 3 concurrent (COMMANDER tier)
@@ -345,15 +362,18 @@ lot_size = round(max(0.01, min(lot_size, 10.0)), 2)  # 1.00 lots
 ### **🚀 DEPLOYMENT ARTIFACTS**
 
 **Modified Files:**
+
 - `/root/HydraX-v2/fire_integration.py` - Complete rule/slot engine implementation
 - `/root/HydraX-v2/webapp_server_optimized.py` - Enhanced /api/fire endpoint + signal verification
 - `/root/HydraX-v2/confirm_listener_v207.py` - Confirmation enrichment integration
 
 **Created Tables:**
+
 - `fire_modes.db::fires` - Fire execution records with policy echo
 - `fire_modes.db::active_slots` - Slot allocation and management
 
 **Test Artifacts:**
+
 - `/root/HydraX-v2/test_fire_integration.py` - Comprehensive integration test
 - `/root/HydraX-v2/fire_integration_artifacts.md` - This document
 
@@ -362,11 +382,13 @@ lot_size = round(max(0.01, min(lot_size, 10.0)), 2)  # 1.00 lots
 ## 🎯 FINAL INTEGRATION VERIFICATION
 
 **Integration Command:**
+
 ```bash
 python3 test_fire_integration.py
 ```
 
 **Expected Output:**
+
 ```
 🎯 TESTING COMPLETE FIRE INTEGRATION
 ==================================================
@@ -380,6 +402,6 @@ python3 test_fire_integration.py
 
 ---
 
-*End of Fire Integration Artifacts Report*
-*Generated: September 24, 2025*
-*Session: STRICT_EXECUTION_PROTOCOL — INTEGRATION ONLY*
+_End of Fire Integration Artifacts Report_
+_Generated: September 24, 2025_
+_Session: STRICT_EXECUTION_PROTOCOL — INTEGRATION ONLY_

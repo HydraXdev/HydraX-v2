@@ -13,10 +13,11 @@ The HydraX Core → BittenProductionBot integration is fully wired and tested. H
    - ✅ User session caching (10 active signals, 50 history per user)
 
 2. **HUD Message Format** - Matches specification exactly:
+
 ```
 🎯 [VENOM v7 Signal]
 🧠 Symbol: EURUSD
-📈 Direction: BUY  
+📈 Direction: BUY
 🔥 Confidence: 88.3%
 🛡️ Strategy: RAPID_ASSAULT
 ⏳ Expires in: 42 min
@@ -26,6 +27,7 @@ Reply: /fire VENOM_UNFILTERED_EURUSD_000123 to execute
 ### **🤖 Bot Integration Steps:**
 
 #### **Step 1: Connect BittenProductionBot to Core**
+
 ```python
 # In bitten_production_bot.py initialization:
 
@@ -40,29 +42,31 @@ self.bitten_core.set_production_bot(self)
 ```
 
 #### **Step 2: Handle /fire Commands**
+
 ```python
 # In your /fire command handler:
 
 elif message.text.startswith("/fire "):
     signal_id = message.text.split(" ", 1)[1] if len(message.text.split(" ")) > 1 else None
-    
+
     if signal_id:
         user_id = str(message.from_user.id)
-        
+
         # Execute via Core
         result = self.bitten_core.execute_fire_command(user_id, signal_id)
-        
+
         if result['success']:
             response = f"🔥 Signal {signal_id} executed successfully!"
         else:
             response = f"❌ Execution failed: {result['message']}"
-            
+
         self.send_adaptive_response(message.chat.id, response, user_tier)
     else:
         self.send_adaptive_response(message.chat.id, "❌ Usage: /fire {signal_id}", user_tier)
 ```
 
 #### **Step 3: Enable Live VENOM Signal Generation**
+
 ```python
 # Add to your bot startup or initialization:
 
@@ -82,7 +86,7 @@ self.venom_engine = ApexVenomV7WithTimer(core_system=self.bitten_core)
 hydrax_engine_node_v7 (real tick data)
     ↓
 ApexVenomV7WithTimer.generate_venom_signal_with_timer()
-    ↓  
+    ↓
 BittenCore.process_signal()
     ↓
 BittenCore._deliver_signal_to_users()
@@ -103,7 +107,7 @@ MT5BridgeAdapter → Trade execution
 ### **🛡️ Features Included:**
 
 - ✅ **High-value filtering** (75%+ confidence only)
-- ✅ **User authorization** (ready_for_fire users only)  
+- ✅ **User authorization** (ready_for_fire users only)
 - ✅ **Session caching** (per-user signal history)
 - ✅ **Tier-based delivery** (NIBBLER, COMMANDER, etc.)
 - ✅ **Signal expiry tracking** (timer-aware)
@@ -114,7 +118,7 @@ MT5BridgeAdapter → Trade execution
 The integration is **production-ready**. Simply:
 
 1. Add the 3 code snippets above to `bitten_production_bot.py`
-2. Test with mock users in user registry  
+2. Test with mock users in user registry
 3. Deploy with high-value VENOM filtering active
 
 **All Core → Bot communication is fully functional!** 🎯

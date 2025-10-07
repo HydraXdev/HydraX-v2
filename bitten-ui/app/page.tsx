@@ -1,15 +1,15 @@
-"use client"
+"use client";
 
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
-  const router = useRouter()
+  const router = useRouter();
 
   useEffect(() => {
     // Redirect to War Room on landing
-    router.push('/war-room')
-  }, [router])
+    router.push("/war-room");
+  }, [router]);
 
   return (
     <div className="flex items-center justify-center min-h-screen">
@@ -18,5 +18,5 @@ export default function Home() {
         <p className="text-secondary">Loading tactical interface...</p>
       </div>
     </div>
-  )
+  );
 }

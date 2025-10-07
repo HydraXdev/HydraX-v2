@@ -4,12 +4,14 @@ Monitor BITTEN v3.002 ZMQ Data Flow
 Shows real-time activity on all ZMQ ports
 """
 
-import zmq
 import json
 import threading
 import time
-from datetime import datetime
 from collections import defaultdict
+from datetime import datetime
+
+import zmq
+
 
 class ZMQMonitor:
     def __init__(self):
@@ -28,27 +30,27 @@ class ZMQMonitor:
         while self.running:
             try:
                 message = socket.recv_string()
-                self.stats['metrics'] += 1
+                self.stats["metrics"] += 1
 
                 # Try to parse JSON
                 try:
                     data = json.loads(message)
-                    msg_type = data.get('type', 'unknown')
-                    symbol = data.get('symbol') or data.get('sym', '')
-                    self.last_messages['metrics'] = f"{msg_type} {symbol}"
+                    msg_type = data.get("type", "unknown")
+                    symbol = data.get("symbol") or data.get("sym", "")
+                    self.last_messages["metrics"] = f"{msg_type} {symbol}"
                 except:
                     # If not JSON, just show raw
                     if message.startswith('{"'):
-                        self.last_messages['metrics'] = message[:50]
+                        self.last_messages["metrics"] = message[:50]
                     else:
                         # Skip non-JSON prefixed messages
-                        parts = message.split(' ', 1)
-                        if len(parts) > 1 and parts[1].startswith('{'):
+                        parts = message.split(" ", 1)
+                        if len(parts) > 1 and parts[1].startswith("{"):
                             try:
                                 data = json.loads(parts[1])
-                                msg_type = data.get('type', 'unknown')
-                                symbol = data.get('symbol') or data.get('sym', '')
-                                self.last_messages['metrics'] = f"{msg_type} {symbol}"
+                                msg_type = data.get("type", "unknown")
+                                symbol = data.get("symbol") or data.get("sym", "")
+                                self.last_messages["metrics"] = f"{msg_type} {symbol}"
                             except:
                                 pass
             except zmq.Again:
@@ -87,7 +89,7 @@ class ZMQMonitor:
         """Start monitoring threads"""
         threads = [
             threading.Thread(target=self.monitor_metrics, daemon=True),
-            threading.Thread(target=self.display_stats, daemon=True)
+            threading.Thread(target=self.display_stats, daemon=True),
         ]
 
         for t in threads:
@@ -101,6 +103,7 @@ class ZMQMonitor:
             self.running = False
             time.sleep(1)
             self.context.term()
+
 
 if __name__ == "__main__":
     monitor = ZMQMonitor()

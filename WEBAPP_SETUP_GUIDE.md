@@ -22,6 +22,7 @@ The error you're seeing occurs because the bot hasn't been properly configured i
 ## Step 3: Verify WebApp Domain
 
 Your webapp must be accessible via HTTPS. Test these URLs:
+
 - ✅ https://joinbitten.com/hud
 - ✅ https://joinbitten.com/test
 - ✅ https://joinbitten.com/
@@ -33,22 +34,27 @@ After configuring in BotFather, the WebApp buttons should work without the "Butt
 ## Key Requirements for WebApp Integration
 
 ### 1. HTTPS Only
+
 - WebApps MUST use HTTPS
 - No HTTP allowed
 - Valid SSL certificate required
 
 ### 2. BotFather Configuration
+
 - Main Mini App URL must be set
 - Menu button should be configured
 - Bot must be properly registered
 
 ### 3. WebApp JavaScript
+
 Your webapp needs the Telegram WebApp script:
+
 ```html
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 ```
 
 ### 4. Proper URL Structure
+
 - Base URL: `https://joinbitten.com/hud`
 - With data: `https://joinbitten.com/hud?data=...`
 - Data must be URL-encoded JSON
@@ -71,18 +77,22 @@ python3 send_signal_webapp_fixed.py
 ## Common Issues and Solutions
 
 ### 1. Button_type_invalid
+
 **Cause**: Bot not configured in BotFather
 **Solution**: Set Mini App URL in BotFather settings
 
 ### 2. WebApp doesn't open
+
 **Cause**: HTTPS issues or invalid URL
 **Solution**: Verify SSL certificate and URL accessibility
 
 ### 3. Confirmation dialog still appears
+
 **Cause**: Incomplete BotFather setup
 **Solution**: Set both Main Mini App and Menu Button
 
 ### 4. Data not passed correctly
+
 **Cause**: JSON encoding issues
 **Solution**: Use urllib.parse.quote for data encoding
 
@@ -107,8 +117,9 @@ python3 send_signal_webapp_fixed.py
 ## Production Deployment
 
 Once working, you can:
+
 - Send signals with embedded WebApp buttons
-- Users click "🎯 VIEW INTEL" 
+- Users click "🎯 VIEW INTEL"
 - WebApp opens directly in Telegram
 - No confirmation dialogs
 - Full signal intelligence displayed
@@ -116,6 +127,7 @@ Once working, you can:
 ## Support
 
 If you continue to have issues after BotFather configuration:
+
 1. Check bot token is correct
 2. Verify webapp server is running
 3. Test HTTPS accessibility

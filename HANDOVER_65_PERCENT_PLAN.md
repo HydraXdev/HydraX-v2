@@ -1,8 +1,8 @@
 # BITTEN SYSTEM HANDOVER - PATH TO 65% WIN RATE
 
-**Last Updated**: September 10, 2025 01:10 UTC  
-**Current Win Rate**: 41.7% (baseline before optimizations)  
-**Target Win Rate**: 65% consistent daily average  
+**Last Updated**: September 10, 2025 01:10 UTC
+**Current Win Rate**: 41.7% (baseline before optimizations)
+**Target Win Rate**: 65% consistent daily average
 **Gap to Close**: +23.3%
 **Status**: OPTIMIZATIONS IMPLEMENTED ✅
 
@@ -38,6 +38,7 @@
    - Restarted with environment variable: `CANON_FLOOR_RR=0.45`
 
 ### Expected Impact:
+
 - **Fewer Signals**: ~50% reduction from BB_SCALP and KALMAN_QUICKFIRE filtering
 - **Higher Quality**: Focusing on 65-75% confidence sweet spot
 - **Better Win Rate**: Removing 31-42% WR patterns from high volume
@@ -51,6 +52,7 @@
 ### Current Performance Analysis (September 9, 2025)
 
 **Pattern Performance Rankings:**
+
 1. **MOMENTUM_BURST**: 75% WR (3W/1L) ✅ KEEP
 2. **SWEEP_RETURN**: 57% WR (4W/3L) ✅ KEEP
 3. **LIQUIDITY_SWEEP_REVERSAL**: 50% WR (1W/1L) ⚠️ MONITOR
@@ -60,11 +62,13 @@
 7. **FAIR_VALUE_GAP_FILL**: 31% WR (20W/44L) ❌ DISABLE IMMEDIATELY
 
 **Best Trading Pairs:**
+
 - **GBPUSD**: 67% WR ✅
 - **EURUSD**: 60% WR ✅
 - **XAUUSD**: 53% WR ✅
 
 **Worst Trading Pairs:**
+
 - **USDCHF**: 22% WR ❌
 - **USDJPY**: 23% WR ❌
 - **XAGUSD**: 23% WR ❌
@@ -77,6 +81,7 @@
 ## 📋 IMPLEMENTATION ROADMAP TO 65% WIN RATE
 
 ### ✅ ALREADY COMPLETED (September 9, 2025)
+
 1. **TP Tightened**: All patterns now 0.6-0.98x R:R (was 0.8-1.3x)
 2. **Auto-fire Threshold**: Lowered to 70% (capturing best performers)
 3. **Pair Adjustments**: Grokkeeper ML applies +5/-10% adjustments
@@ -90,7 +95,7 @@
 
 PATTERN_MINIMUM_CONFIDENCE = {
     'FAIR_VALUE_GAP_FILL': 99.0,    # Effectively disabled (31% WR)
-    'BB_SCALP': 85.0,                # Raise threshold (35% WR) 
+    'BB_SCALP': 85.0,                # Raise threshold (35% WR)
     'KALMAN_QUICKFIRE': 80.0,        # Raise threshold (42% WR)
     'ORDER_BLOCK_BOUNCE': 75.0,      # Moderate threshold (44% WR)
     'SWEEP_RETURN': 70.0,            # Keep accessible (57% WR)
@@ -104,16 +109,19 @@ PATTERN_MINIMUM_CONFIDENCE = {
 ### 🎯 PRIORITY 2: TIME-BASED FILTERING
 
 **Best Trading Hours (UTC):**
+
 - **03:00**: 62% WR ✅ PRIORITIZE
-- **14:00**: 56% WR ✅ PRIORITIZE  
+- **14:00**: 56% WR ✅ PRIORITIZE
 - **16:00**: 53% WR ✅ GOOD
 
 **Worst Trading Hours (UTC):**
+
 - **17:00**: 12% WR ❌ AVOID
 - **19:00**: 20% WR ❌ AVOID
 - **04:00**: 22% WR ❌ REDUCE
 
 **Implementation**: Add session filtering in Elite Guard
+
 ```python
 # Reduce confidence during bad hours
 if hour in [17, 18, 19]:
@@ -159,6 +167,7 @@ elif pattern == 'MOMENTUM_BURST':
 ### 🎯 PRIORITY 5: VOLUME & VOLATILITY GATES
 
 Add pre-signal validation:
+
 ```python
 # Check market conditions before signal
 if volume < average_volume * 0.5:
@@ -194,6 +203,7 @@ sqlite3 /root/HydraX-v2/bitten.db "SELECT COUNT(*) FROM fires WHERE created_at >
 ## 🎯 SUCCESS METRICS
 
 **Target Achieved When:**
+
 - Overall win rate: 65%+ sustained for 24 hours
 - Top 3 patterns: All above 60% WR
 - Bottom patterns: Disabled or above 50% WR
@@ -215,7 +225,7 @@ sqlite3 /root/HydraX-v2/bitten.db "SELECT COUNT(*) FROM fires WHERE created_at >
 ## 📈 EXPECTED TIMELINE
 
 - **Hour 1-6**: Disable FAIR_VALUE_GAP_FILL, monitor impact
-- **Hour 6-12**: Implement time filtering, see session improvements  
+- **Hour 6-12**: Implement time filtering, see session improvements
 - **Hour 12-24**: Confidence inversion should show 55%+ WR
 - **Day 2**: Fine-tune based on data, should approach 60% WR
 - **Day 3**: With all optimizations, achieve stable 65% WR
@@ -242,12 +252,12 @@ sqlite3 /root/HydraX-v2/bitten.db "SELECT COUNT(*) FROM fires WHERE created_at >
 ## 💡 QUICK WINS (Do These First!)
 
 1. **Disable FAIR_VALUE_GAP_FILL** - Instant +3-5% win rate
-2. **Avoid 17:00-19:00 UTC** - Instant +2-3% win rate  
+2. **Avoid 17:00-19:00 UTC** - Instant +2-3% win rate
 3. **Boost 70-75% confidence signals** - They're already at 63% WR!
 
 With these optimizations, achieving 65% win rate is very realistic within 24-48 hours.
 
 ---
 
-**Last Agent**: Tightened TPs, lowered auto-fire to 70%, killed simulations  
+**Last Agent**: Tightened TPs, lowered auto-fire to 70%, killed simulations
 **Next Agent**: Execute this plan to reach 65% win rate target

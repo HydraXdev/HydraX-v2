@@ -78,6 +78,7 @@ python start_metaquotes_services.py
 ```
 
 This starts:
+
 - Account pool manager
 - Health monitoring
 - Credential delivery processor
@@ -173,6 +174,7 @@ config = DemoAccountConfig(
 ### Health Checks
 
 The system performs automatic health checks:
+
 - Account connectivity verification
 - Balance and status monitoring
 - Expiration tracking
@@ -181,6 +183,7 @@ The system performs automatic health checks:
 ### Metrics
 
 Key metrics tracked:
+
 - Pool availability rate
 - Account provisioning speed
 - Credential delivery success rate
@@ -189,6 +192,7 @@ Key metrics tracked:
 ### Logs
 
 Log files location:
+
 - Service logs: `/root/HydraX-v2/logs/metaquotes_services.log`
 - Health checks: Database table `demo_account_health_logs`
 - Access logs: Database table `credential_access_logs`
@@ -215,12 +219,14 @@ Log files location:
 ### Manual Operations
 
 Force pool replenishment:
+
 ```bash
 curl -X POST https://api.bitten.com/api/v1/metaquotes/pool/replenish?count=10 \
   -H "Authorization: Bearer YOUR_API_KEY"
 ```
 
 Resend credentials:
+
 ```bash
 curl -X POST https://api.bitten.com/api/v1/metaquotes/account/resend-credentials \
   -H "Authorization: Bearer YOUR_API_KEY" \
@@ -272,6 +278,7 @@ The MetaQuotes system integrates seamlessly with BITTEN's architecture:
 ## Future Enhancements
 
 Planned improvements:
+
 - [ ] Real-time account usage analytics
 - [ ] Advanced fraud detection
 - [ ] Multi-broker support
@@ -282,6 +289,7 @@ Planned improvements:
 ## Support
 
 For issues or questions:
+
 - Technical documentation: This README
 - API documentation: `/api/docs`
 - Support: support@bitten.com

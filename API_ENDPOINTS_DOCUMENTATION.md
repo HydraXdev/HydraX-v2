@@ -3,6 +3,7 @@
 This document describes the new API endpoints added to the HydraX v2 webapp server.
 
 ## Base URL
+
 ```
 http://localhost:8888
 ```
@@ -10,9 +11,11 @@ http://localhost:8888
 ## Endpoints
 
 ### 1. POST /api/fire
+
 Handle user fire actions with user_id and signal_id.
 
 **Request:**
+
 ```json
 {
   "user_id": "string",
@@ -21,6 +24,7 @@ Handle user fire actions with user_id and signal_id.
 ```
 
 **Response (Success):**
+
 ```json
 {
   "success": true,
@@ -32,6 +36,7 @@ Handle user fire actions with user_id and signal_id.
 ```
 
 **Response (Error):**
+
 ```json
 {
   "success": false,
@@ -40,17 +45,21 @@ Handle user fire actions with user_id and signal_id.
 ```
 
 **HTTP Status Codes:**
+
 - 200: Success
 - 400: Bad Request (missing or invalid parameters)
 - 500: Internal Server Error
 
 ### 2. GET /api/stats/<signal_id>
+
 Return live engagement data for a specific signal.
 
 **Parameters:**
+
 - `signal_id`: The ID of the signal to get stats for
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -68,17 +77,21 @@ Return live engagement data for a specific signal.
 ```
 
 **HTTP Status Codes:**
+
 - 200: Success
 - 400: Bad Request (missing signal_id)
 - 500: Internal Server Error
 
 ### 3. GET /api/user/<user_id>/stats
+
 Return real user statistics.
 
 **Parameters:**
+
 - `user_id`: The ID of the user to get stats for
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -99,14 +112,17 @@ Return real user statistics.
 ```
 
 **HTTP Status Codes:**
+
 - 200: Success
 - 400: Bad Request (missing user_id)
 - 500: Internal Server Error
 
 ### 4. GET /api/signals/active
+
 Return all active signals with engagement counts.
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -139,6 +155,7 @@ Return all active signals with engagement counts.
 ```
 
 **HTTP Status Codes:**
+
 - 200: Success
 - 500: Internal Server Error
 
@@ -148,11 +165,11 @@ The fire endpoint also emits real-time updates via WebSocket to subscribers in t
 
 ```javascript
 // Client receives this event when someone fires on a signal
-socket.on('fire_update', function(data) {
+socket.on("fire_update", function (data) {
   // data contains:
   // {
   //   user_id: "string",
-  //   signal_id: "string", 
+  //   signal_id: "string",
   //   timestamp: "ISO8601 timestamp"
   // }
 });
@@ -169,6 +186,7 @@ All endpoints include proper error handling:
 ## Example Usage
 
 ### Using curl:
+
 ```bash
 # Fire on a signal
 curl -X POST http://localhost:8888/api/fire \
@@ -186,24 +204,26 @@ curl http://localhost:8888/api/signals/active
 ```
 
 ### Using JavaScript:
+
 ```javascript
 // Fire on a signal
-fetch('/api/fire', {
-  method: 'POST',
+fetch("/api/fire", {
+  method: "POST",
   headers: {
-    'Content-Type': 'application/json'},
+    "Content-Type": "application/json",
+  },
   body: JSON.stringify({
-    user_id: 'user123',
-    signal_id: 'EURUSD_LONDON_RAID_001'
-  })
+    user_id: "user123",
+    signal_id: "EURUSD_LONDON_RAID_001",
+  }),
 })
-.then(response => response.json())
-.then(data => console.log(data));
+  .then((response) => response.json())
+  .then((data) => console.log(data));
 
 // Get signal stats
-fetch('/api/stats/EURUSD_LONDON_RAID_001')
-  .then(response => response.json())
-  .then(data => console.log(data));
+fetch("/api/stats/EURUSD_LONDON_RAID_001")
+  .then((response) => response.json())
+  .then((data) => console.log(data));
 ```
 
 ## Database Integration

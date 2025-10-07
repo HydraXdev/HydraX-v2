@@ -1,4 +1,3 @@
-
 🔧 GOOGLE DRIVE SERVICE ACCOUNT SETUP (For Headless Authentication)
 
 1. Go to https://console.cloud.google.com/
@@ -10,6 +9,7 @@
 7. Update this script to use service account authentication
 
 Example service account code:
+
 ```python
 from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive

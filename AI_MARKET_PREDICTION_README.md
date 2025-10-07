@@ -5,19 +5,23 @@ A comprehensive market prediction AI that combines multiple free APIs to provide
 ## Features
 
 ### 1. Multi-Source Data Aggregation
+
 - **Alpha Vantage**: Real-time market data and technical indicators
 - **NewsAPI**: News sentiment analysis from multiple sources
 - **Reddit API**: Social sentiment from trading communities
 - **Twitter API**: Real-time social media sentiment (optional)
 
 ### 2. Ensemble Prediction Model
+
 - Technical analysis scoring (RSI, moving averages, price trends)
 - Fundamental analysis based on news and market performance
 - Social sentiment analysis from Reddit and Twitter
 - Weighted ensemble scoring for balanced predictions
 
 ### 3. Personality-Based Commentary
+
 Generate market commentary from 10 different trading personalities:
+
 - **Aggressive Bull**: Ultra-optimistic, always looking for moon shots
 - **Cautious Bear**: Pessimistic, always warning of crashes
 - **Technical Analyst**: Chart-focused, indicator-driven analysis
@@ -30,6 +34,7 @@ Generate market commentary from 10 different trading personalities:
 - **Crypto Enthusiast**: Crypto-specific slang and enthusiasm
 
 ### 4. Advanced Features
+
 - Intelligent caching to reduce API calls
 - Asynchronous operations for performance
 - Time-weighted news relevance scoring
@@ -82,7 +87,7 @@ async def predict_market():
         'reddit_client_secret': 'YOUR_REDDIT_CLIENT_SECRET',
         'twitter_bearer_token': 'OPTIONAL_TWITTER_TOKEN'
     }
-    
+
     async with MarketPredictionEnsemble(config) as predictor:
         # Predict stock
         prediction = await predictor.predict('AAPL', keywords=['iPhone', 'earnings'])
@@ -119,7 +124,7 @@ async def batch_predict(symbols):
     async with MarketPredictionEnsemble(config) as predictor:
         tasks = [predictor.predict(symbol) for symbol in symbols]
         predictions = await asyncio.gather(*tasks, return_exceptions=True)
-        
+
         for pred in predictions:
             if isinstance(pred, Exception):
                 print(f"Error: {pred}")
@@ -173,6 +178,7 @@ class MarketSentiment(Enum):
 **Generated at:** 2025-07-12 15:30:00
 
 ## Current Market Status
+
 - **Current Price:** $182.50
 - **Market Sentiment:** Bullish
 - **Recommendation:** Buy
@@ -180,11 +186,13 @@ class MarketSentiment(Enum):
 - **Confidence:** 72.5%
 
 ## Price Predictions
+
 - **1 Hour:** $183.25 (+0.41%)
 - **24 Hours:** $185.50 (+1.64%)
 - **7 Days:** $190.75 (+4.52%)
 
 ## Analysis Scores
+
 - **Technical Analysis:** 65.0%
 - **Fundamental Analysis:** 70.0%
 - **News Sentiment:** 75.0%
@@ -193,33 +201,43 @@ class MarketSentiment(Enum):
 ## Personality Commentaries
 
 ### Aggressive Bull
+
 🚀 TO THE MOON! AAPL is absolutely crushing it! Load up the truck!
 
 ### Cautious Bear
+
 Proceed with caution. AAPL rally losing steam.
 
 ### Technical Analyst
+
 AAPL testing resistance. Break above 185.0 targets 190.0.
 
 ### Fundamental Trader
+
 AAPL showing strong fundamentals. Revenue growth accelerating.
 
 ### Contrarian
+
 Getting crowded. AAPL sentiment too positive for comfort.
 
 ### Momentum Trader
+
 AAPL momentum building. Adding on strength!
 
 ### Value Investor
+
 AAPL approaching fair value. Still room for appreciation.
 
 ### Day Trader
+
 Nice intraday setup on AAPL. Looking for quick 2-3%.
 
 ### Swing Trader
+
 AAPL swing trade triggered. 2-4 week target: 190.0.
 
 ### Crypto Enthusiast
+
 AAPL looking good! Accumulation phase ending soon!
 ```
 
@@ -227,12 +245,12 @@ AAPL looking good! Accumulation phase ending soon!
 
 Be aware of free tier limitations:
 
-| API | Free Tier Limit | Notes |
-|-----|----------------|-------|
-| Alpha Vantage | 5 calls/minute, 500/day | Use caching |
-| NewsAPI | 100 requests/day | Batch requests when possible |
-| Reddit | 60 requests/minute | Respect subreddit rules |
-| Twitter | Varies by endpoint | Optional, requires approval |
+| API           | Free Tier Limit         | Notes                        |
+| ------------- | ----------------------- | ---------------------------- |
+| Alpha Vantage | 5 calls/minute, 500/day | Use caching                  |
+| NewsAPI       | 100 requests/day        | Batch requests when possible |
+| Reddit        | 60 requests/minute      | Respect subreddit rules      |
+| Twitter       | Varies by endpoint      | Optional, requires approval  |
 
 ## Best Practices
 

@@ -1,6 +1,7 @@
 # 📱 Telegram WebApp Solution - Smart Signal System
 
 ## The Problem
+
 - Signal buttons require 2 clicks (button → confirm)
 - Menu button also requires 2 clicks (menu → HUD) but doesn't know which signal
 - Both methods end up being 2 clicks
@@ -15,7 +16,7 @@
    - Signals expire after 10 minutes automatically
 
 2. **Two Access Methods**
-   
+
    **Method 1: Direct Signal Button (2 clicks)**
    - Click "VIEW MISSION INTEL" on signal
    - Confirm "Open link?"
@@ -56,6 +57,7 @@
 ### Usage:
 
 Send a signal with storage:
+
 ```bash
 python3 SEND_STORED_SIGNAL.py
 ```

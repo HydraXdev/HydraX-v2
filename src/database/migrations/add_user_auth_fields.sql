@@ -3,7 +3,7 @@
 -- Description: Adds fields needed for proper user authentication and session management
 
 -- Add missing fields to users table if they don't exist
-ALTER TABLE users 
+ALTER TABLE users
 ADD COLUMN IF NOT EXISTS username VARCHAR(255) UNIQUE,
 ADD COLUMN IF NOT EXISTS first_name VARCHAR(255),
 ADD COLUMN IF NOT EXISTS last_name VARCHAR(255),
@@ -94,13 +94,13 @@ CREATE INDEX IF NOT EXISTS idx_email_verifications_user_id ON email_verification
 CREATE INDEX IF NOT EXISTS idx_email_verifications_code ON email_verifications(verification_code);
 
 -- Update existing Press Pass accounts to have proper tier
-UPDATE users 
-SET tier = 'PRESS_PASS' 
-WHERE tier IS NULL 
+UPDATE users
+SET tier = 'PRESS_PASS'
+WHERE tier IS NULL
   AND subscription_status = 'trial';
 
 -- Set default notification settings for existing users
-UPDATE user_profiles 
+UPDATE user_profiles
 SET notification_settings = '{
     "trades": true,
     "signals": true,
@@ -112,7 +112,7 @@ SET notification_settings = '{
 WHERE notification_settings IS NULL OR notification_settings = '{}'::jsonb;
 
 -- Set default trading preferences for existing users
-UPDATE user_profiles 
+UPDATE user_profiles
 SET trading_preferences = '{
     "theater": "DEMO",
     "risk_mode": "default",

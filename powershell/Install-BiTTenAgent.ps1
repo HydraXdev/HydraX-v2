@@ -3,7 +3,7 @@
 param(
     [Parameter(Mandatory=$true)]
     [string]$UserUUID,
-    
+
     [string]$BrokerType = "auto-detect",
     [string]$InstallPath = "C:\BiTTen\Agent"
 )
@@ -89,22 +89,22 @@ if (-not (Test-Path $nssmPath)) {
         # Download NSSM
         Write-Host "   Downloading NSSM..." -ForegroundColor Gray
         Invoke-WebRequest -Uri $nssmUrl -OutFile $nssmZip -UseBasicParsing
-        
+
         # Extract NSSM
         Add-Type -AssemblyName System.IO.Compression.FileSystem
         [System.IO.Compression.ZipFile]::ExtractToDirectory($nssmZip, "$InstallPath\Tools\nssm_temp")
-        
+
         # Copy the appropriate version
         if ([Environment]::Is64BitOperatingSystem) {
             Copy-Item "$InstallPath\Tools\nssm_temp\nssm-2.24\win64\nssm.exe" $nssmPath -Force
         } else {
             Copy-Item "$InstallPath\Tools\nssm_temp\nssm-2.24\win32\nssm.exe" $nssmPath -Force
         }
-        
+
         # Cleanup
         Remove-Item "$InstallPath\Tools\nssm_temp" -Recurse -Force
         Remove-Item $nssmZip -Force
-        
+
         Write-Host "   ✓ NSSM installed successfully" -ForegroundColor Gray
     }
     catch {
@@ -116,11 +116,11 @@ if (-not (Test-Path $nssmPath)) {
 # Install as Windows Service
 if (Test-Path $nssmPath) {
     Write-Host "`n🚀 Installing Windows service..." -ForegroundColor Yellow
-    
+
     $serviceName = "BiTTenDualAgent"
     $serviceDisplayName = "BiTTen Dual Agent - $UserUUID"
     $serviceDescription = "BiTTen Windows VPS Guardian Agent for user $UserUUID"
-    
+
     # Remove existing service if present
     $existingService = Get-Service -Name $serviceName -ErrorAction SilentlyContinue
     if ($existingService) {
@@ -128,11 +128,11 @@ if (Test-Path $nssmPath) {
         & $nssmPath stop $serviceName | Out-Null
         & $nssmPath remove $serviceName confirm | Out-Null
     }
-    
+
     # Install new service
     Write-Host "   Installing service..." -ForegroundColor Gray
     & $nssmPath install $serviceName powershell.exe | Out-Null
-    
+
     # Configure service
     & $nssmPath set $serviceName Application powershell.exe | Out-Null
     & $nssmPath set $serviceName AppParameters "-ExecutionPolicy Bypass -NoProfile -File `"$InstallPath\BiTTenDualAgent.ps1`" -Action run -UserUUID $UserUUID -BrokerType $BrokerType" | Out-Null
@@ -140,11 +140,11 @@ if (Test-Path $nssmPath) {
     & $nssmPath set $serviceName DisplayName "$serviceDisplayName" | Out-Null
     & $nssmPath set $serviceName Description "$serviceDescription" | Out-Null
     & $nssmPath set $serviceName Start SERVICE_AUTO_START | Out-Null
-    
+
     # Configure service recovery
     & $nssmPath set $serviceName AppExit Default Restart | Out-Null
     & $nssmPath set $serviceName AppRestartDelay 30000 | Out-Null
-    
+
     # Configure logging
     & $nssmPath set $serviceName AppStdout "$InstallPath\Logs\service_stdout.log" | Out-Null
     & $nssmPath set $serviceName AppStderr "$InstallPath\Logs\service_stderr.log" | Out-Null
@@ -153,13 +153,13 @@ if (Test-Path $nssmPath) {
     & $nssmPath set $serviceName AppRotateFiles 1 | Out-Null
     & $nssmPath set $serviceName AppRotateOnline 1 | Out-Null
     & $nssmPath set $serviceName AppRotateBytes 10485760 | Out-Null
-    
+
     Write-Host "   ✓ Service installed successfully" -ForegroundColor Gray
-    
+
     # Set service to run as SYSTEM
     Write-Host "   Setting service permissions..." -ForegroundColor Gray
     sc.exe config $serviceName obj= "LocalSystem" | Out-Null
-    
+
     Write-Host "   ✓ Service configured" -ForegroundColor Gray
 }
 
@@ -247,7 +247,7 @@ $service = Get-Service -Name $serviceName -ErrorAction SilentlyContinue
 if ($service) {
     Write-Host "Stopping service..." -ForegroundColor Gray
     Stop-Service -Name $serviceName -Force -ErrorAction SilentlyContinue
-    
+
     $nssmPath = "$installPath\Tools\nssm.exe"
     if (Test-Path $nssmPath) {
         & $nssmPath remove $serviceName confirm
@@ -307,7 +307,7 @@ if ($response -eq 'Y' -or $response -eq 'y') {
     Write-Host "`nStarting service..." -ForegroundColor Yellow
     Start-Service -Name "BiTTenDualAgent" -ErrorAction SilentlyContinue
     Start-Sleep -Seconds 2
-    
+
     $service = Get-Service -Name "BiTTenDualAgent" -ErrorAction SilentlyContinue
     if ($service -and $service.Status -eq "Running") {
         Write-Host "✅ Service started successfully!" -ForegroundColor Green

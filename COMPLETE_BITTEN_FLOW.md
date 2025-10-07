@@ -1,6 +1,7 @@
 # 🎯 Complete BITTEN Flow Documentation
 
 ## 🚀 System Overview
+
 BITTEN is a military-themed forex trading system that guides users from onboarding through trade execution with gamification elements.
 
 ---
@@ -10,10 +11,12 @@ BITTEN is a military-themed forex trading system that guides users from onboardi
 ### 1️⃣ **User Discovery & Onboarding**
 
 #### A. User Finds BITTEN
+
 - Discovers bot through Telegram search or invite link
 - Joins main Telegram group: `-1002581996861`
 
 #### B. First Contact
+
 ```
 User: /start
 
@@ -24,6 +27,7 @@ Bot: 🎖️ **WELCOME TO B.I.T.T.E.N.**
 ```
 
 #### C. Onboarding Flow
+
 1. **Tier Selection**
    - Nibbler ($39) - Basic scalping
    - Fang ($89) - Advanced filters
@@ -45,11 +49,13 @@ Bot: 🎖️ **WELCOME TO B.I.T.T.E.N.**
 ### 2️⃣ **Signal Detection & Distribution**
 
 #### A. Signal Generation Flow
+
 ```
 Market Data → Detection Modules → TCS Scoring → Fire Mode Router → Signal Alert
 ```
 
 #### B. Signal Types
+
 1. **Arcade Scalps** (All tiers)
    - Quick 5-30 pip trades
    - 70%+ TCS required
@@ -66,6 +72,7 @@ Market Data → Detection Modules → TCS Scoring → Fire Mode Router → Signa
    - Unity bonuses
 
 #### C. Signal Alert Format
+
 ```
 ⚡ **SIGNAL DETECTED**
 EUR/USD | BUY | 87% confidence
@@ -78,6 +85,7 @@ EUR/USD | BUY | 87% confidence
 ### 3️⃣ **WebApp Intelligence System**
 
 #### A. User Clicks "VIEW INTEL"
+
 - Opens https://joinbitten.com/hud
 - Passes signal data via URL parameters
 - Authenticates user tier
@@ -85,41 +93,48 @@ EUR/USD | BUY | 87% confidence
 #### B. Tier-Based Intelligence Display
 
 **Nibbler View:**
+
 - Basic entry/exit points
 - Simple risk calculation
 - Countdown timer
 
 **Fang View:**
-- + Technical indicators
-- + Market context
-- + Historical performance
+
+- - Technical indicators
+- - Market context
+- - Historical performance
 
 **Commander View:**
-- + Advanced analytics
-- + Multi-timeframe analysis
-- + Auto-trade options
+
+- - Advanced analytics
+- - Multi-timeframe analysis
+- - Auto-trade options
 
 **View:**
-- + Full market depth
-- + Algorithmic insights
-- + Custom parameters
+
+- - Full market depth
+- - Algorithmic insights
+- - Custom parameters
 
 ---
 
 ### 4️⃣ **Trade Execution**
 
 #### A. Manual Execution (Nibbler/Fang)
+
 1. User reviews intel in WebApp
 2. Clicks "EXECUTE" button
 3. Trade parameters sent to MT5
 4. Confirmation returned to Telegram
 
 #### B. Semi-Auto (Commander)
+
 1. Pre-approved parameters
 2. One-click execution
 3. Automatic position management
 
 #### C. Full Auto ()
+
 1. Signals auto-execute
 2. Dynamic position sizing
 3. Advanced risk management
@@ -129,6 +144,7 @@ EUR/USD | BUY | 87% confidence
 ### 5️⃣ **Post-Trade Flow**
 
 #### A. Trade Confirmation
+
 ```
 ✅ **TRADE EXECUTED**
 EUR/USD | BUY @ 1.0850
@@ -138,11 +154,13 @@ Take Profit: 1.0880
 ```
 
 #### B. Position Monitoring
+
 - Real-time P/L updates
 - Trailing stop activation
 - News event protection
 
 #### C. Trade Closure
+
 ```
 🎯 **TARGET HIT**
 EUR/USD | +30 pips
@@ -155,16 +173,19 @@ XP Earned: +150
 ### 6️⃣ **Gamification & Progress**
 
 #### A. XP System
+
 - Base XP per trade
 - Multipliers for streaks
 - Bonus for accuracy
 
 #### B. Rank Progression
+
 - Recruit → Soldier → Warrior → Elite → Legend
 - Unlock perks and features
 - Visual badge upgrades
 
 #### C. Daily Missions
+
 - Trade X times
 - Achieve X% accuracy
 - Capture X pips
@@ -174,6 +195,7 @@ XP Earned: +150
 ## 🔧 Technical Implementation
 
 ### Component Architecture
+
 ```
 Telegram Bot (7854827710:AAHnUNfP5GyxoYePoAV5BeOtDbmEJo6i_EQ)
      ↓
@@ -188,21 +210,22 @@ Database (user data, trades, XP)
 
 ### Key Files by Function
 
-| Function | Primary File | Description |
-|----------|-------------|-------------|
-| Bot Commands | `telegram_router.py` | Handles /start, /stats, etc |
-| Signal Alerts | `signal_alerts.py` | Creates brief alerts with WebApp buttons |
-| WebApp Server | `webapp_server.py` | Serves mission briefing interface |
-| Signal Detection | `fire_router.py` | Routes signals to appropriate handlers |
-| Trade Execution | `mt5_bridge.py` | Executes trades on MT5 |
-| User Management | `user_manager.py` | Tier access, XP, progression |
-| Risk Management | `risk_manager.py` | Position sizing, daily limits |
+| Function         | Primary File         | Description                              |
+| ---------------- | -------------------- | ---------------------------------------- |
+| Bot Commands     | `telegram_router.py` | Handles /start, /stats, etc              |
+| Signal Alerts    | `signal_alerts.py`   | Creates brief alerts with WebApp buttons |
+| WebApp Server    | `webapp_server.py`   | Serves mission briefing interface        |
+| Signal Detection | `fire_router.py`     | Routes signals to appropriate handlers   |
+| Trade Execution  | `mt5_bridge.py`      | Executes trades on MT5                   |
+| User Management  | `user_manager.py`    | Tier access, XP, progression             |
+| Risk Management  | `risk_manager.py`    | Position sizing, daily limits            |
 
 ---
 
 ## 🚨 Safety Systems
 
 ### Protective Mechanisms
+
 1. **Daily Loss Limit**: -7% automatic cutoff
 2. **Tilt Detection**: Forced break after 3 losses
 3. **News Lockout**: No trades during high-impact events
@@ -210,6 +233,7 @@ Database (user data, trades, XP)
 5. **Emergency Stop**: Instant close all positions
 
 ### Cooldown System
+
 - Nibbler: 30 min between trades
 - Fang: 15 min cooldown
 - Commander: 5 min cooldown
@@ -220,6 +244,7 @@ Database (user data, trades, XP)
 ## 📱 User Commands
 
 ### Essential Commands
+
 - `/start` - Begin onboarding
 - `/help` - Command list
 - `/stats` - View performance
@@ -228,6 +253,7 @@ Database (user data, trades, XP)
 - `/stop` - Emergency stop
 
 ### Advanced Commands
+
 - `/firetest` - Test signal
 - `/missions` - Daily objectives
 - `/squad` - Team features
@@ -238,12 +264,14 @@ Database (user data, trades, XP)
 ## 🔗 WebApp URLs
 
 ### Production
+
 - Main HUD: `https://joinbitten.com/hud`
 - Mission Brief: `https://joinbitten.com/mission`
 - Stats Dashboard: `https://joinbitten.com/stats`
 - Settings: `https://joinbitten.com/settings`
 
 ### Development
+
 - Local: `http://localhost:5000/hud`
 - Staging: `https://staging.joinbitten.com/hud`
 
@@ -286,12 +314,14 @@ python send_test_signal.py
 ## 📞 Support & Troubleshooting
 
 ### Common Issues
+
 1. **WebApp won't open**: Check HTTPS certificate
 2. **Signal not received**: Verify bot permissions
 3. **Trade failed**: Check MT5 connection
 4. **Wrong tier access**: Verify subscription status
 
 ### Debug Commands
+
 - `/debug` - System status
 - `/modules` - Component health
 - `/reconnect` - Reset connections

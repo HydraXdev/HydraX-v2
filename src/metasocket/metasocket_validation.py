@@ -5,33 +5,32 @@ Tests all components with production scenarios and strict thresholds
 """
 
 import asyncio
-import websockets
 import json
-import time
 import logging
-import sys
-from typing import Dict, List, Any, Set
-from dataclasses import dataclass
 import statistics
+import sys
+import time
 import traceback
+from dataclasses import dataclass
+from typing import Any, Dict, List, Set
+
+import websockets
+from backfill_v2 import EnhancedBackfillManager
+from enhanced_integration_complete import CompleteMetaSocketIntegration
+from subscriptions_v2 import EnhancedSubscriptionManager, MetricsTracker
 
 # Import our components
 from symbols import SYMBOLS
-from subscriptions_v2 import EnhancedSubscriptionManager, MetricsTracker
-from backfill_v2 import EnhancedBackfillManager
-from enhanced_integration_complete import CompleteMetaSocketIntegration
 
 # Configure logging to capture all warnings/errors
 logging.basicConfig(
     level=logging.WARNING,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.StreamHandler(sys.stdout),
-        logging.FileHandler('/tmp/metasocket_validation.log')
-    ]
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[logging.StreamHandler(sys.stdout), logging.FileHandler("/tmp/metasocket_validation.log")],
 )
 
 logger = logging.getLogger(__name__)
+
 
 @dataclass
 class ValidationResult:
@@ -41,6 +40,7 @@ class ValidationResult:
     metrics: Dict[str, Any] = None
     warnings: List[str] = None
     errors: List[str] = None
+
 
 class MetaSocketValidator:
     """Comprehensive MetaSocket integration validator"""
@@ -95,9 +95,7 @@ class MetaSocketValidator:
         except Exception as e:
             logger.error(f"Validation suite failed: {e}")
             traceback.print_exc()
-            self.results.append(ValidationResult(
-                "validation_suite", False, f"Suite failed: {e}"
-            ))
+            self.results.append(ValidationResult("validation_suite", False, f"Suite failed: {e}"))
 
         finally:
             await self._cleanup()
@@ -112,9 +110,7 @@ class MetaSocketValidator:
 
         # Set up callbacks for data collection
         self.integration.set_callbacks(
-            tick_callback=self._handle_tick,
-            ohlc_callback=self._handle_ohlc,
-            snapshot_callback=self._handle_snapshot
+            tick_callback=self._handle_tick, ohlc_callback=self._handle_ohlc, snapshot_callback=self._handle_snapshot
         )
 
         # Start integration (non-blocking)
@@ -159,7 +155,7 @@ class MetaSocketValidator:
             if self.tick_timestamps[symbol]:
                 last_tick_age = current_time - max(self.tick_timestamps[symbol])
             else:
-                last_tick_age = float('inf')
+                last_tick_age = float("inf")
 
             if tick_rate >= 0.5 and last_tick_age < 2000:
                 passed_symbols.append(symbol)
@@ -174,15 +170,19 @@ class MetaSocketValidator:
         if failed_symbols:
             details += f" | Failed: {failed_symbols[:5]}"  # Show first 5 failures
 
-        self.results.append(ValidationResult(
-            "tick_flow_90s", all_passed, details,
-            metrics={
-                "total_ticks": sum(self.tick_counts.values()),
-                "avg_tick_rate": sum(self.tick_counts.values()) / test_duration / len(SYMBOLS),
-                "passed_symbols": len(passed_symbols),
-                "failed_symbols": len(failed_symbols)
-            }
-        ))
+        self.results.append(
+            ValidationResult(
+                "tick_flow_90s",
+                all_passed,
+                details,
+                metrics={
+                    "total_ticks": sum(self.tick_counts.values()),
+                    "avg_tick_rate": sum(self.tick_counts.values()) / test_duration / len(SYMBOLS),
+                    "passed_symbols": len(passed_symbols),
+                    "failed_symbols": len(failed_symbols),
+                },
+            )
+        )
 
     async def _test_2_forced_reconnect(self):
         """Test 2: Forced Reconnect Recovery"""
@@ -201,7 +201,7 @@ class MetaSocketValidator:
 
         # Force disconnect by stopping subscription manager
         try:
-            if hasattr(self.integration.subscription_manager, 'connection'):
+            if hasattr(self.integration.subscription_manager, "connection"):
                 await self.integration.subscription_manager.connection.close()
             print("Connection terminated")
         except Exception as e:
@@ -220,9 +220,9 @@ class MetaSocketValidator:
             await asyncio.sleep(0.5)
 
             # Check if we're getting ticks again
-            if self.integration and hasattr(self.integration, 'subscription_manager'):
+            if self.integration and hasattr(self.integration, "subscription_manager"):
                 health = self.integration.subscription_manager.get_health_status()
-                if health.get('connected', False):
+                if health.get("connected", False):
                     reconnect_time = time.time() - reconnect_start
                     reconnected = True
                     print(f"✅ Reconnected after {reconnect_time:.2f}s")
@@ -249,14 +249,18 @@ class MetaSocketValidator:
         passed = reconnected and reconnect_time <= max_reconnect_time and not gap_detected
         details = f"Reconnect: {reconnect_time:.2f}s, OHLC continuity: {'OK' if not gap_detected else 'GAPS'}"
 
-        self.results.append(ValidationResult(
-            "forced_reconnect", passed, details,
-            metrics={
-                "reconnect_time": reconnect_time,
-                "ohlc_continuity": not gap_detected,
-                "duplicate_bars": duplicate_bars
-            }
-        ))
+        self.results.append(
+            ValidationResult(
+                "forced_reconnect",
+                passed,
+                details,
+                metrics={
+                    "reconnect_time": reconnect_time,
+                    "ohlc_continuity": not gap_detected,
+                    "duplicate_bars": duplicate_bars,
+                },
+            )
+        )
 
     async def _test_3_position_events(self):
         """Test 3: Position Events Validation"""
@@ -289,17 +293,17 @@ class MetaSocketValidator:
         recent_events = self.position_events[initial_events:]
 
         for event in recent_events:
-            reason = event.get('reason', 'other')
-            state = event.get('state', '')
+            reason = event.get("reason", "other")
+            state = event.get("state", "")
 
-            if state == 'CLOSE':
-                if reason == 'manual':
+            if state == "CLOSE":
+                if reason == "manual":
                     manual_close_detected = True
-                elif reason == 'sl':
+                elif reason == "sl":
                     sl_close_detected = True
 
                 # Check latency (assuming event timestamp is recent)
-                event_time = event.get('ts_epoch_ms', 0)
+                event_time = event.get("ts_epoch_ms", 0)
                 if event_time > 0:
                     latency = time.time() * 1000 - event_time
                     if latency > 500:  # 500ms threshold
@@ -309,15 +313,19 @@ class MetaSocketValidator:
         passed = len(recent_events) >= 0  # Pass if no errors, regardless of manual actions
         details = f"Events: {len(recent_events)}, Manual: {manual_close_detected}, SL: {sl_close_detected}"
 
-        self.results.append(ValidationResult(
-            "position_events", passed, details,
-            metrics={
-                "total_events": len(recent_events),
-                "manual_close": manual_close_detected,
-                "sl_close": sl_close_detected,
-                "latency_ok": event_latency_ok
-            }
-        ))
+        self.results.append(
+            ValidationResult(
+                "position_events",
+                passed,
+                details,
+                metrics={
+                    "total_events": len(recent_events),
+                    "manual_close": manual_close_detected,
+                    "sl_close": sl_close_detected,
+                    "latency_ok": event_latency_ok,
+                },
+            )
+        )
 
     async def _test_4_account_summary(self):
         """Test 4: Account Summary Accuracy"""
@@ -337,16 +345,15 @@ class MetaSocketValidator:
             current_snapshots = len(self.account_snapshots)
             if current_snapshots > initial_snapshots:
                 latest = self.account_snapshots[-1]
-                print(f"  📊 Balance: {latest.get('balance', 0):.2f}, "
-                      f"Equity: {latest.get('equity', 0):.2f}")
+                print(f"  📊 Balance: {latest.get('balance', 0):.2f}, " f"Equity: {latest.get('equity', 0):.2f}")
 
         # Analyze account data consistency
         recent_snapshots = self.account_snapshots[initial_snapshots:]
 
         if len(recent_snapshots) >= 2:
             # Check consistency between snapshots
-            balances = [s.get('balance', 0) for s in recent_snapshots]
-            equities = [s.get('equity', 0) for s in recent_snapshots]
+            balances = [s.get("balance", 0) for s in recent_snapshots]
+            equities = [s.get("equity", 0) for s in recent_snapshots]
 
             balance_variance = max(balances) - min(balances)
             equity_variance = max(equities) - min(equities)
@@ -362,14 +369,18 @@ class MetaSocketValidator:
             passed = False
             details = f"Insufficient data: {len(recent_snapshots)} snapshots"
 
-        self.results.append(ValidationResult(
-            "account_summary", passed, details,
-            metrics={
-                "snapshots_collected": len(recent_snapshots),
-                "balance_variance": balance_variance if len(recent_snapshots) >= 2 else 0,
-                "equity_variance": equity_variance if len(recent_snapshots) >= 2 else 0
-            }
-        ))
+        self.results.append(
+            ValidationResult(
+                "account_summary",
+                passed,
+                details,
+                metrics={
+                    "snapshots_collected": len(recent_snapshots),
+                    "balance_variance": balance_variance if len(recent_snapshots) >= 2 else 0,
+                    "equity_variance": equity_variance if len(recent_snapshots) >= 2 else 0,
+                },
+            )
+        )
 
     async def _test_5_health_monitoring(self):
         """Test 5: Health Endpoint Monitoring"""
@@ -389,37 +400,32 @@ class MetaSocketValidator:
                 # Get health status from integration
                 if self.integration:
                     health = self.integration.get_health_status()
-                    health['timestamp'] = time.time() * 1000
-                    health['http_status'] = 200 if health.get('overall_status') == 'healthy' else 503
+                    health["timestamp"] = time.time() * 1000
+                    health["http_status"] = 200 if health.get("overall_status") == "healthy" else 503
                     health_responses.append(health)
 
-                    status = health.get('overall_status', 'unknown')
-                    stale_count = len(health.get('subscriptions', {}).get('metrics', {}).get('stale_symbols', []))
+                    status = health.get("overall_status", "unknown")
+                    stale_count = len(health.get("subscriptions", {}).get("metrics", {}).get("stale_symbols", []))
 
                     print(f"  📊 Status: {status}, Stale symbols: {stale_count}")
 
             except Exception as e:
                 logger.error(f"Health check failed: {e}")
-                health_responses.append({
-                    'http_status': 500,
-                    'error': str(e),
-                    'timestamp': time.time() * 1000
-                })
+                health_responses.append({"http_status": 500, "error": str(e), "timestamp": time.time() * 1000})
 
             await asyncio.sleep(1)
 
         # Analyze health responses
-        http_200_count = sum(1 for r in health_responses if r.get('http_status') == 200)
+        http_200_count = sum(1 for r in health_responses if r.get("http_status") == 200)
         http_200_rate = http_200_count / len(health_responses) if health_responses else 0
 
         # Check for stable lag (if p95 data available)
-        p95_lags = [r.get('event_lag_ms_p95', 0) for r in health_responses if 'event_lag_ms_p95' in r]
+        p95_lags = [r.get("event_lag_ms_p95", 0) for r in health_responses if "event_lag_ms_p95" in r]
         p95_stable = len(set(p95_lags)) <= 3 if p95_lags else True  # Stable if ≤3 different values
 
         # Check auto-resubscribe behavior
         stale_symbol_counts = [
-            len(r.get('subscriptions', {}).get('metrics', {}).get('stale_symbols', []))
-            for r in health_responses
+            len(r.get("subscriptions", {}).get("metrics", {}).get("stale_symbols", [])) for r in health_responses
         ]
         max_stale = max(stale_symbol_counts) if stale_symbol_counts else 0
         auto_resubscribe_ok = max_stale <= 5  # Allow up to 5 stale symbols temporarily
@@ -427,22 +433,26 @@ class MetaSocketValidator:
         passed = http_200_rate >= 0.8 and p95_stable and auto_resubscribe_ok
         details = f"HTTP 200: {http_200_rate:.1%}, P95 stable: {p95_stable}, Max stale: {max_stale}"
 
-        self.results.append(ValidationResult(
-            "health_monitoring", passed, details,
-            metrics={
-                "http_200_rate": http_200_rate,
-                "responses_collected": len(health_responses),
-                "p95_stable": p95_stable,
-                "max_stale_symbols": max_stale
-            }
-        ))
+        self.results.append(
+            ValidationResult(
+                "health_monitoring",
+                passed,
+                details,
+                metrics={
+                    "http_200_rate": http_200_rate,
+                    "responses_collected": len(health_responses),
+                    "p95_stable": p95_stable,
+                    "max_stale_symbols": max_stale,
+                },
+            )
+        )
 
     async def _handle_tick(self, tick_data: dict):
         """Handle incoming tick data for validation"""
-        symbol = tick_data.get('symbol')
+        symbol = tick_data.get("symbol")
         if symbol in self.tick_counts:
             self.tick_counts[symbol] += 1
-            timestamp = tick_data.get('ts_epoch_ms', time.time() * 1000)
+            timestamp = tick_data.get("ts_epoch_ms", time.time() * 1000)
             self.tick_timestamps[symbol].append(timestamp)
 
             # Validate tick schema
@@ -450,7 +460,7 @@ class MetaSocketValidator:
 
     async def _handle_ohlc(self, ohlc_data: dict):
         """Handle OHLC data for validation"""
-        symbol = ohlc_data.get('symbol')
+        symbol = ohlc_data.get("symbol")
         if symbol in self.ohlc_bars:
             self.ohlc_bars[symbol].append(ohlc_data)
 
@@ -464,27 +474,27 @@ class MetaSocketValidator:
 
     def _validate_tick_schema(self, tick: dict):
         """Validate tick data schema"""
-        required_fields = ['symbol', 'bid', 'ask', 'mid', 'ts_epoch_ms', 'src']
+        required_fields = ["symbol", "bid", "ask", "mid", "ts_epoch_ms", "src"]
         for field in required_fields:
             if field not in tick:
                 self.schema_violations.append(f"Tick missing field: {field}")
 
-        if tick.get('src') != 'metasocket':
+        if tick.get("src") != "metasocket":
             self.schema_violations.append(f"Tick invalid src: {tick.get('src')}")
 
     def _validate_ohlc_schema(self, ohlc: dict):
         """Validate OHLC data schema"""
-        required_fields = ['symbol', 'timeframe', 'open', 'high', 'low', 'close', 'ts_epoch_ms', 'src']
+        required_fields = ["symbol", "timeframe", "open", "high", "low", "close", "ts_epoch_ms", "src"]
         for field in required_fields:
             if field not in ohlc:
                 self.schema_violations.append(f"OHLC missing field: {field}")
 
-        if ohlc.get('src') != 'metasocket':
+        if ohlc.get("src") != "metasocket":
             self.schema_violations.append(f"OHLC invalid src: {ohlc.get('src')}")
 
     def _validate_snapshot_schema(self, snapshot: dict):
         """Validate snapshot data schema"""
-        required_fields = ['type', 'symbol', 'timeframe', 'bars', 'price', 'ts_epoch_ms', 'src']
+        required_fields = ["type", "symbol", "timeframe", "bars", "price", "ts_epoch_ms", "src"]
         for field in required_fields:
             if field not in snapshot:
                 self.schema_violations.append(f"Snapshot missing field: {field}")
@@ -547,6 +557,7 @@ class MetaSocketValidator:
 
         return passed_tests == total_tests
 
+
 class ValidationLogHandler(logging.Handler):
     """Custom log handler to capture warnings and errors"""
 
@@ -561,6 +572,7 @@ class ValidationLogHandler(logging.Handler):
                 self.validator.captured_errors.append(msg)
             else:
                 self.validator.captured_warnings.append(msg)
+
 
 async def main():
     """Main validation execution"""
@@ -578,6 +590,7 @@ async def main():
         print(f"\n💥 Validation failed: {e}")
         traceback.print_exc()
         return 1
+
 
 if __name__ == "__main__":
     exit_code = asyncio.run(main())

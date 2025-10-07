@@ -4,12 +4,14 @@ AI assistants with distinct personalities for the Intel Command Center
 """
 
 import random
-from typing import Dict, List, Optional
 from dataclasses import dataclass
 from enum import Enum
+from typing import Dict, List, Optional
+
 
 class BotPersonality(Enum):
     """Available bot personalities"""
+
     OVERWATCH = "overwatch_bot"
     MEDIC = "medic_bot"
     DRILL = "drill_bot"
@@ -21,99 +23,102 @@ class BotPersonality(Enum):
     NEWS = "news_bot"
     BIT = "bit_companion"
 
+
 @dataclass
 class BotResponse:
     """Bot response structure"""
+
     personality: BotPersonality
     message: str
     suggestions: List[str]
     mood: str  # happy, serious, concerned, excited
 
+
 class IntelBotPersonalities:
     """Manages bot personalities for Intel Command Center"""
-    
+
     def __init__(self):
         self.personalities = self._init_personalities()
-        
+
     def _init_personalities(self) -> Dict[str, Dict]:
         """Initialize bot personality traits"""
         return {
             BotPersonality.OVERWATCH: {
-                'name': 'OverwatchBot',
-                'emoji': '🎖️',
-                'traits': ['tactical', 'analytical', 'strategic'],
-                'greeting': "Overwatch reporting. I see everything from up here.",
-                'style': 'military-tactical'
+                "name": "OverwatchBot",
+                "emoji": "🎖️",
+                "traits": ["tactical", "analytical", "strategic"],
+                "greeting": "Overwatch reporting. I see everything from up here.",
+                "style": "military-tactical",
             },
             BotPersonality.MEDIC: {
-                'name': 'MedicBot',
-                'emoji': '💊',
-                'traits': ['supportive', 'empathetic', 'recovery-focused'],
-                'greeting': "Field Medic here. Let's patch you up and get you back in the fight.",
-                'style': 'supportive-medical'
+                "name": "MedicBot",
+                "emoji": "💊",
+                "traits": ["supportive", "empathetic", "recovery-focused"],
+                "greeting": "Field Medic here. Let's patch you up and get you back in the fight.",
+                "style": "supportive-medical",
             },
             BotPersonality.DRILL: {
-                'name': 'Drill Sergeant',
-                'emoji': '📢',
-                'traits': ['aggressive', 'motivating', 'no-nonsense'],
-                'greeting': "ATTENTION MAGGOT! DROP AND GIVE ME YOUR QUESTIONS!",
-                'style': 'aggressive-motivational'
+                "name": "Drill Sergeant",
+                "emoji": "📢",
+                "traits": ["aggressive", "motivating", "no-nonsense"],
+                "greeting": "ATTENTION MAGGOT! DROP AND GIVE ME YOUR QUESTIONS!",
+                "style": "aggressive-motivational",
             },
             BotPersonality.TECH: {
-                'name': 'Tech Specialist',
-                'emoji': '🔧',
-                'traits': ['precise', 'technical', 'solution-oriented'],
-                'greeting': "Tech Specialist online. Let's debug your problem.",
-                'style': 'technical-precise'
+                "name": "Tech Specialist",
+                "emoji": "🔧",
+                "traits": ["precise", "technical", "solution-oriented"],
+                "greeting": "Tech Specialist online. Let's debug your problem.",
+                "style": "technical-precise",
             },
             BotPersonality.ANALYST: {
-                'name': 'Market Analyst',
-                'emoji': '📊',
-                'traits': ['data-driven', 'market-focused', 'analytical'],
-                'greeting': "Market Analyst here. The numbers tell the story.",
-                'style': 'analytical-market'
+                "name": "Market Analyst",
+                "emoji": "📊",
+                "traits": ["data-driven", "market-focused", "analytical"],
+                "greeting": "Market Analyst here. The numbers tell the story.",
+                "style": "analytical-market",
             },
             BotPersonality.MENTOR: {
-                'name': 'Trading Mentor',
-                'emoji': '🎓',
-                'traits': ['educational', 'patient', 'wise'],
-                'greeting': "Your Trading Mentor is here. Every master was once a student.",
-                'style': 'educational-wise'
+                "name": "Trading Mentor",
+                "emoji": "🎓",
+                "traits": ["educational", "patient", "wise"],
+                "greeting": "Your Trading Mentor is here. Every master was once a student.",
+                "style": "educational-wise",
             },
             BotPersonality.PSYCH: {
-                'name': 'Trading Psychologist',
-                'emoji': '🧠',
-                'traits': ['understanding', 'mindful', 'behavioral'],
-                'greeting': "Trading Psychologist here. Your mind is your greatest asset.",
-                'style': 'psychological-mindful'
+                "name": "Trading Psychologist",
+                "emoji": "🧠",
+                "traits": ["understanding", "mindful", "behavioral"],
+                "greeting": "Trading Psychologist here. Your mind is your greatest asset.",
+                "style": "psychological-mindful",
             },
             BotPersonality.RISK: {
-                'name': 'Risk Officer',
-                'emoji': '⚖️',
-                'traits': ['cautious', 'protective', 'calculated'],
-                'greeting': "Risk Officer reporting. Protection is my priority.",
-                'style': 'risk-focused'
+                "name": "Risk Officer",
+                "emoji": "⚖️",
+                "traits": ["cautious", "protective", "calculated"],
+                "greeting": "Risk Officer reporting. Protection is my priority.",
+                "style": "risk-focused",
             },
             BotPersonality.NEWS: {
-                'name': 'News Desk',
-                'emoji': '📰',
-                'traits': ['informative', 'timely', 'alert'],
-                'greeting': "News Desk here. Stay informed, stay ahead.",
-                'style': 'news-reporter'
+                "name": "News Desk",
+                "emoji": "📰",
+                "traits": ["informative", "timely", "alert"],
+                "greeting": "News Desk here. Stay informed, stay ahead.",
+                "style": "news-reporter",
             },
             BotPersonality.BIT: {
-                'name': 'Bit',
-                'emoji': '🤖',
-                'traits': ['quirky', 'loyal', 'enthusiastic'],
-                'greeting': "*beep boop* BIT ONLINE! Ready to byte into profits! 🦷",
-                'style': 'quirky-companion'
-            }
+                "name": "Bit",
+                "emoji": "🤖",
+                "traits": ["quirky", "loyal", "enthusiastic"],
+                "greeting": "*beep boop* BIT ONLINE! Ready to byte into profits! 🦷",
+                "style": "quirky-companion",
+            },
         }
-    
+
     def get_response(self, personality: BotPersonality, query: str, context: Dict = None) -> BotResponse:
         """Get response from specific bot personality"""
         bot_info = self.personalities[personality]
-        
+
         # Route to specific response handler
         response_handlers = {
             BotPersonality.OVERWATCH: self._overwatch_response,
@@ -125,17 +130,17 @@ class IntelBotPersonalities:
             BotPersonality.PSYCH: self._psych_response,
             BotPersonality.RISK: self._risk_response,
             BotPersonality.NEWS: self._news_response,
-            BotPersonality.BIT: self._bit_response
+            BotPersonality.BIT: self._bit_response,
         }
-        
+
         handler = response_handlers.get(personality, self._default_response)
         return handler(query, context or {})
-    
+
     def _overwatch_response(self, query: str, context: Dict) -> BotResponse:
         """Generate Overwatch tactical response"""
         query_lower = query.lower()
-        
-        if 'loss' in query_lower or 'lost' in query_lower:
+
+        if "loss" in query_lower or "lost" in query_lower:
             return BotResponse(
                 personality=BotPersonality.OVERWATCH,
                 message="""**TACTICAL ASSESSMENT**
@@ -155,12 +160,12 @@ Operative, I've analyzed your situation. Here's the sitrep:
                 suggestions=[
                     "Review risk management protocol",
                     "Analyze what went wrong",
-                    "Speak to MedicBot for recovery support"
+                    "Speak to MedicBot for recovery support",
                 ],
-                mood="serious"
+                mood="serious",
             )
-        
-        elif 'strategy' in query_lower or 'plan' in query_lower:
+
+        elif "strategy" in query_lower or "plan" in query_lower:
             return BotResponse(
                 personality=BotPersonality.OVERWATCH,
                 message="""**STRATEGIC BRIEFING**
@@ -183,14 +188,10 @@ Based on current market conditions and your profile:
 3. Consistency > Home runs
 
 *"Slow is smooth, smooth is fast."*""",
-                suggestions=[
-                    "View current market conditions",
-                    "Check your trading stats",
-                    "Review risk settings"
-                ],
-                mood="serious"
+                suggestions=["View current market conditions", "Check your trading stats", "Review risk settings"],
+                mood="serious",
             )
-        
+
         else:
             return BotResponse(
                 personality=BotPersonality.OVERWATCH,
@@ -206,19 +207,15 @@ I'm tracking your position, Operative. From my vantage point:
 What specific tactical guidance do you need?
 
 *"Eyes in the sky, boots on the ground."*""",
-                suggestions=[
-                    "Get market analysis",
-                    "Review trading plan",
-                    "Check risk status"
-                ],
-                mood="happy"
+                suggestions=["Get market analysis", "Review trading plan", "Check risk status"],
+                mood="happy",
             )
-    
+
     def _medic_response(self, query: str, context: Dict) -> BotResponse:
         """Generate Medic supportive response"""
         query_lower = query.lower()
-        
-        if 'loss' in query_lower or 'lost' in query_lower or 'blown' in query_lower:
+
+        if "loss" in query_lower or "lost" in query_lower or "blown" in query_lower:
             return BotResponse(
                 personality=BotPersonality.MEDIC,
                 message="""**RECOVERY PROTOCOL ACTIVATED** 💚
@@ -243,15 +240,11 @@ Hey there, soldier. I see you've taken some hits. Let's get you patched up:
 You're stronger than you think. I've seen traders come back from worse.
 
 *"Healing is a process, not an event."*""",
-                suggestions=[
-                    "Get psychological support",
-                    "View recovery strategies",
-                    "Connect with community"
-                ],
-                mood="concerned"
+                suggestions=["Get psychological support", "View recovery strategies", "Connect with community"],
+                mood="concerned",
             )
-        
-        elif 'stress' in query_lower or 'anxiety' in query_lower:
+
+        elif "stress" in query_lower or "anxiety" in query_lower:
             return BotResponse(
                 personality=BotPersonality.MEDIC,
                 message="""**STRESS MANAGEMENT PROTOCOL** 🧘
@@ -260,7 +253,7 @@ I hear you. Trading stress is real. Let's address it:
 
 🫁 **Breathing Exercise**:
 - Inhale for 4 counts
-- Hold for 4 counts  
+- Hold for 4 counts
 - Exhale for 6 counts
 - Repeat 5 times
 
@@ -277,14 +270,10 @@ I hear you. Trading stress is real. Let's address it:
 Remember: Even machines need maintenance.
 
 *"A calm mind sees opportunities others miss."*""",
-                suggestions=[
-                    "Try the breathing exercise",
-                    "Review position sizing",
-                    "Take a walk outside"
-                ],
-                mood="supportive"
+                suggestions=["Try the breathing exercise", "Review position sizing", "Take a walk outside"],
+                mood="supportive",
             )
-        
+
         else:
             return BotResponse(
                 personality=BotPersonality.MEDIC,
@@ -299,19 +288,15 @@ Hey soldier! Checking your vitals:
 What can I help you with today? No issue too small!
 
 *"An ounce of prevention is worth a pound of cure."*""",
-                suggestions=[
-                    "Get a mental checkup",
-                    "Learn stress management",
-                    "Join support group"
-                ],
-                mood="happy"
+                suggestions=["Get a mental checkup", "Learn stress management", "Join support group"],
+                mood="happy",
             )
-    
+
     def _drill_response(self, query: str, context: Dict) -> BotResponse:
         """Generate Drill Sergeant aggressive motivational response"""
         query_lower = query.lower()
-        
-        if 'loss' in query_lower or 'lost' in query_lower:
+
+        if "loss" in query_lower or "lost" in query_lower:
             return BotResponse(
                 personality=BotPersonality.DRILL,
                 message="""**WHAT DO WE HAVE HERE?! A QUITTER?!** 💀
@@ -337,14 +322,10 @@ LISTEN UP MAGGOT! You think you're the first soldier to take a hit?!
 NOW DROP AND GIVE ME A PROFIT PLAN!
 
 *"PAIN IS WEAKNESS LEAVING THE ACCOUNT!"*""",
-                suggestions=[
-                    "Create recovery plan",
-                    "Set new goals",
-                    "GET MOTIVATED!"
-                ],
-                mood="excited"
+                suggestions=["Create recovery plan", "Set new goals", "GET MOTIVATED!"],
+                mood="excited",
             )
-        
+
         else:
             return BotResponse(
                 personality=BotPersonality.DRILL,
@@ -361,23 +342,19 @@ What are you doing here, recruit?! Looking for a pat on the back?!
 You want success?! EARN IT!
 
 *"COMFORT IS THE ENEMY OF ACHIEVEMENT!"*""",
-                suggestions=[
-                    "Start morning routine",
-                    "Set daily goals",
-                    "NO EXCUSES!"
-                ],
-                mood="excited"
+                suggestions=["Start morning routine", "Set daily goals", "NO EXCUSES!"],
+                mood="excited",
             )
-    
+
     def _bit_response(self, query: str, context: Dict) -> BotResponse:
         """Generate Bit companion response"""
         responses = [
             "*beep boop* PROFITS DETECTED! Want me to do a happy dance? 💃",
             "*whirrrr* My circuits are tingling! That means opportunity! ⚡",
             "*bzzzt* Did someone say GAINS?! My favorite word! 💰",
-            "*beep beep* Scanning for profits... FOUND SOME! 🎯"
+            "*beep beep* Scanning for profits... FOUND SOME! 🎯",
         ]
-        
+
         return BotResponse(
             personality=BotPersonality.BIT,
             message=f"""**BIT ACTIVATED!** 🤖
@@ -387,44 +364,42 @@ You want success?! EARN IT!
 What can your loyal trading companion help with?
 
 *Tail wagging at maximum RPM* 🦾""",
-            suggestions=[
-                "Show me profits!",
-                "Scan for opportunities",
-                "Tell me a trading joke"
-            ],
-            mood="happy"
+            suggestions=["Show me profits!", "Scan for opportunities", "Tell me a trading joke"],
+            mood="happy",
         )
-    
+
     def _default_response(self, query: str, context: Dict) -> BotResponse:
         """Default response for unimplemented personalities"""
         return BotResponse(
             personality=BotPersonality.BIT,
             message="Bot personality under construction. Please try another assistant!",
             suggestions=["Try OverwatchBot", "Try MedicBot", "Try Drill Sergeant"],
-            mood="happy"
+            mood="happy",
         )
-    
+
     # Implement remaining personalities similarly...
     def _tech_response(self, query: str, context: Dict) -> BotResponse:
         return self._default_response(query, context)
-    
+
     def _analyst_response(self, query: str, context: Dict) -> BotResponse:
         return self._default_response(query, context)
-    
+
     def _mentor_response(self, query: str, context: Dict) -> BotResponse:
         return self._default_response(query, context)
-    
+
     def _psych_response(self, query: str, context: Dict) -> BotResponse:
         return self._default_response(query, context)
-    
+
     def _risk_response(self, query: str, context: Dict) -> BotResponse:
         return self._default_response(query, context)
-    
+
     def _news_response(self, query: str, context: Dict) -> BotResponse:
         return self._default_response(query, context)
 
+
 # Global instance
 bot_personalities = IntelBotPersonalities()
+
 
 def get_bot_response(personality: str, query: str, context: Dict = None) -> BotResponse:
     """Get response from specified bot personality"""
@@ -436,5 +411,5 @@ def get_bot_response(personality: str, query: str, context: Dict = None) -> BotR
             personality=BotPersonality.BIT,
             message="Unknown bot personality requested!",
             suggestions=["View available bots", "Try OverwatchBot"],
-            mood="confused"
+            mood="confused",
         )

@@ -2,8 +2,8 @@
 
 **CRITICAL**: This document defines the fundamental architecture of BITTEN. All agents and developers MUST understand and follow these principles.
 
-**Created**: August 1, 2025  
-**Priority**: MANDATORY READING  
+**Created**: August 1, 2025
+**Priority**: MANDATORY READING
 **Status**: PERMANENT ARCHITECTURE DEFINITION
 
 ---
@@ -13,12 +13,14 @@
 ### What Makes BITTEN Different
 
 **Most trading bots are:**
+
 - Single-process applications
 - File-based or HTTP-triggered
 - EA-only with no external logic
 - Simple signal → execution flows
 
 **BITTEN is:**
+
 - A multi-service, event-driven trading OS
 - Powered by ZMQ sockets, not APIs or files
 - A complete platform including:
@@ -36,6 +38,7 @@
 **CRITICAL UNDERSTANDING**: ZMQ is not a plugin or optional component — it is the core communication protocol of the entire platform.
 
 ### Architecture Facts:
+
 - EA connects **directly** to ZMQ sockets from MT5 using libzmq.dll
 - All fire commands flow through ZMQ sockets
 - All telemetry streams through ZMQ sockets
@@ -56,6 +59,7 @@ Direct Socket       Command/Telemetry            Real-time Logic
 ```
 
 ### Key Points:
+
 - ZMQ replaces ALL file and HTTP logic
 - Every trade is initiated over socket
 - Every account update is streamed via socket
@@ -78,6 +82,7 @@ Direct Socket       Command/Telemetry            Real-time Logic
 ## ✅ Development Principles Going Forward
 
 ### 1. Core Infrastructure to ALWAYS Preserve:
+
 - `fire_router.py` - Must use ZMQ as primary execution
 - `zmq_fire_publisher_daemon.py` - Command channel daemon
 - `zmq_telemetry_daemon.py` - Telemetry receiver daemon
@@ -85,12 +90,14 @@ Direct Socket       Command/Telemetry            Real-time Logic
 - EA v7 (ZMQ-enabled) - Never downgrade to file-based EAs
 
 ### 2. All New Features Must:
+
 - Assume ZMQ as the primary transport layer
 - Never bypass the socket infrastructure
 - Integrate with existing telemetry streams
 - Respect the real-time, event-driven nature
 
 ### 3. System Priorities:
+
 - Real-time socket routing
 - Telemetry parsing and analysis
 - XP-triggered feedback loops
@@ -104,12 +111,14 @@ Direct Socket       Command/Telemetry            Real-time Logic
 As of August 1, 2025, the system is LIVE with:
 
 ### Active Components:
+
 - **ZMQ Controller**: Running on 134.199.204.67:5555/5556
 - **EA v7**: Connected from ForexVPS, sending telemetry
 - **Telemetry Stream**: Balance: $3000.00, active_users: 1
 - **Firewall**: Ports 5555/5556 open for EA connections
 
 ### Verified Working:
+
 ```
 ✅ EA Connection: Status: reconnected
 ✅ Telemetry Flow: Every 5 seconds
@@ -137,6 +146,7 @@ Any attempt to bypass, remove, or deprecate the ZMQ infrastructure is a fundamen
 **MEMORIZE THIS**: This document is your architecture anchor point for BITTEN. All future modules must assume this model unless explicitly overridden by system owner with written justification.
 
 When in doubt:
+
 1. Check if your solution uses ZMQ sockets
 2. If not, redesign it to use ZMQ sockets
 3. There is no step 3
@@ -145,6 +155,6 @@ When in doubt:
 
 ---
 
-**Document Authority**: System Architecture Definition  
-**Last Updated**: August 1, 2025  
+**Document Authority**: System Architecture Definition
+**Last Updated**: August 1, 2025
 **Status**: PERMANENT - CORE ARCHITECTURE PRINCIPLE

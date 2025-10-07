@@ -253,9 +253,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "firemode"
-      ],
+      "component_mentions": ["firemode"],
       "sections": {
         "BITTEN Stealth Protocol Implementation Summary": 14,
         "Basic usage": 1,
@@ -403,9 +401,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "PressPass"
-      ],
+      "component_mentions": ["PressPass"],
       "sections": {
         "\ud83d\ude80 Smart Press Pass Recycling System": 22,
         "Every minute: Check for upgrades and instant recycle": 1,
@@ -618,9 +614,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "RAPIDASSAULT"
-      ],
+      "component_mentions": ["RAPIDASSAULT"],
       "sections": {
         "\ud83d\ude80 **BITTEN PLATFORM AI UPGRADE SPECIFICATION v3.0**": 29,
         "config/ai_settings.py": 15
@@ -1054,9 +1048,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "MT5bridge"
-      ],
+      "component_mentions": ["MT5bridge"],
       "sections": {
         "BITTEN System Handoff - Session Progress": 20,
         "Check services": 1,
@@ -1219,21 +1211,11 @@
       "file": "/root/HydraX-v2/aaa_validation_report.json",
       "size": 1108,
       "hash": "c92de841a2942e9f46c77e4f9149f000",
-      "keys": [
-        "module",
-        "functions",
-        "integration",
-        "validation"
-      ],
+      "keys": ["module", "functions", "integration", "validation"],
       "array_length": null,
       "structure": {
         "type": "object",
-        "keys": [
-          "module",
-          "functions",
-          "integration",
-          "validation"
-        ],
+        "keys": ["module", "functions", "integration", "validation"],
         "nested": {
           "module": {
             "type": "str"
@@ -1243,11 +1225,7 @@
             "length": 4,
             "sample": {
               "type": "object",
-              "keys": [
-                "name",
-                "purpose",
-                "returns"
-              ],
+              "keys": ["name", "purpose", "returns"],
               "nested": {
                 "name": {
                   "type": "truncated"
@@ -1263,11 +1241,7 @@
           },
           "integration": {
             "type": "object",
-            "keys": [
-              "compatible_with",
-              "signal_types",
-              "format_styles"
-            ],
+            "keys": ["compatible_with", "signal_types", "format_styles"],
             "nested": {
               "compatible_with": {
                 "type": "array",
@@ -1294,11 +1268,7 @@
           },
           "validation": {
             "type": "object",
-            "keys": [
-              "timestamp",
-              "status",
-              "shepherd_compatible"
-            ],
+            "keys": ["timestamp", "status", "shepherd_compatible"],
             "nested": {
               "timestamp": {
                 "type": "str"
@@ -1403,11 +1373,7 @@
           },
           "compatibility": {
             "type": "object",
-            "keys": [
-              "signal_types",
-              "formats",
-              "integration_ready"
-            ],
+            "keys": ["signal_types", "formats", "integration_ready"],
             "nested": {
               "signal_types": {
                 "type": "array",
@@ -1495,9 +1461,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "WebApp"
-      ],
+      "component_mentions": ["WebApp"],
       "sections": {
         "\ud83c\udfaf Personalized Mission Briefs - ACTIVE": 9
       },
@@ -1611,9 +1575,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "riskmanagement"
-      ],
+      "component_mentions": ["riskmanagement"],
       "sections": {
         "AAA v3.0 Mathematical - Production Configuration": 18
       },
@@ -1625,29 +1587,17 @@
       "file": "/root/HydraX-v2/docker-compose.market_prediction.yml",
       "size": 1627,
       "hash": "5364de00deae04426bde2b19ec0f7e87",
-      "keys": [
-        "version",
-        "services",
-        "volumes"
-      ],
+      "keys": ["version", "services", "volumes"],
       "structure": {
         "type": "object",
-        "keys": [
-          "version",
-          "services",
-          "volumes"
-        ],
+        "keys": ["version", "services", "volumes"],
         "nested": {
           "version": {
             "type": "str"
           },
           "services": {
             "type": "object",
-            "keys": [
-              "market-prediction-api",
-              "redis",
-              "nginx"
-            ],
+            "keys": ["market-prediction-api", "redis", "nginx"],
             "nested": {
               "market-prediction-api": {
                 "type": "object",
@@ -1679,13 +1629,7 @@
               },
               "redis": {
                 "type": "object",
-                "keys": [
-                  "image",
-                  "ports",
-                  "volumes",
-                  "restart",
-                  "command"
-                ],
+                "keys": ["image", "ports", "volumes", "restart", "command"],
                 "nested": {
                   "image": {
                     "type": "truncated"
@@ -1706,13 +1650,7 @@
               },
               "nginx": {
                 "type": "object",
-                "keys": [
-                  "image",
-                  "ports",
-                  "volumes",
-                  "depends_on",
-                  "restart"
-                ],
+                "keys": ["image", "ports", "volumes", "depends_on", "restart"],
                 "nested": {
                   "image": {
                     "type": "truncated"
@@ -1735,9 +1673,7 @@
           },
           "volumes": {
             "type": "object",
-            "keys": [
-              "redis-data"
-            ],
+            "keys": ["redis-data"],
             "nested": {
               "redis-data": {
                 "type": "NoneType"
@@ -1972,11 +1908,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "WebApp",
-        "firemode",
-        "MT5bridge"
-      ],
+      "component_mentions": ["WebApp", "firemode", "MT5bridge"],
       "sections": {
         "BITTEN Emergency Stop System - Implementation Summary": 46
       },
@@ -2183,9 +2115,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "riskmanagement"
-      ],
+      "component_mentions": ["riskmanagement"],
       "sections": {
         "\ud83d\udc8e The REAL BITTEN Revolution: Breaking the Poverty Cycle": 21
       },
@@ -2311,9 +2241,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "RAPIDASSAULT"
-      ],
+      "component_mentions": ["RAPIDASSAULT"],
       "sections": {
         "\ud83e\udde0 BITTEN AI Enhancement - COMPLETE": 7,
         "Create AI-enhanced engine": 1,
@@ -2330,9 +2258,7 @@
       "size": 1401,
       "hash": "91802d1964d66b01a979227e38272efd",
       "lines": 29,
-      "component_mentions": [
-        "MT5bridge"
-      ],
+      "component_mentions": ["MT5bridge"],
       "last_modified": "2025-07-09T16:30:56.742329"
     },
     {
@@ -2607,9 +2533,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "WebApp"
-      ],
+      "component_mentions": ["WebApp"],
       "sections": {
         "Enhanced Mission Briefing System": 33,
         "Recommended Redis settings": 6,
@@ -2809,9 +2733,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "MT5bridge"
-      ],
+      "component_mentions": ["MT5bridge"],
       "sections": {
         "\ud83e\udde0 SHEPHERD_BOOTSTRAP.md \u2014 Ultimate Agent Blueprint for BITTEN": 7,
         "@shepherd-meta": 1,
@@ -2960,9 +2882,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "PressPass"
-      ],
+      "component_mentions": ["PressPass"],
       "sections": {
         "BITTEN Press Pass Implementation Summary": 26
       },
@@ -3126,9 +3046,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "WebApp"
-      ],
+      "component_mentions": ["WebApp"],
       "sections": {
         "Telegram WebApp Implementation Summary": 28
       },
@@ -4578,9 +4496,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "MT5bridge"
-      ],
+      "component_mentions": ["MT5bridge"],
       "sections": {
         "\ud83e\udde0 SHEPHERD USAGE GUIDE": 6,
         "One-time setup": 1,
@@ -4734,9 +4650,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "WebApp"
-      ],
+      "component_mentions": ["WebApp"],
       "sections": {
         "HydraX v2 Engagement System Infrastructure Summary": 25
       },
@@ -5137,9 +5051,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "riskmanagement"
-      ],
+      "component_mentions": ["riskmanagement"],
       "sections": {
         "Norman's Story Integration - Implementation Summary": 35
       },
@@ -6860,10 +6772,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "WebApp",
-        "MT5bridge"
-      ],
+      "component_mentions": ["WebApp", "MT5bridge"],
       "sections": {
         "Infrastructure Repair Report - July 11, 2025": 15,
         "After 3 failures:": 8
@@ -7122,10 +7031,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "WebApp",
-        "riskmanagement"
-      ],
+      "component_mentions": ["WebApp", "riskmanagement"],
       "sections": {
         "HydraX Mobile Navigation System": 11,
         "Already added to webapp_router.py": 3,
@@ -7352,11 +7258,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "riskmanagement",
-        "trademanager",
-        "MT5bridge"
-      ],
+      "component_mentions": ["riskmanagement", "trademanager", "MT5bridge"],
       "sections": {
         "BITTEN Security Audit Report": 4,
         "VULNERABLE CODE": 30
@@ -7511,9 +7413,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "PressPass"
-      ],
+      "component_mentions": ["PressPass"],
       "sections": {
         "BITTEN Press Pass Manager - Database Setup Guide": 28
       },
@@ -8539,9 +8439,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "WebApp"
-      ],
+      "component_mentions": ["WebApp"],
       "sections": {
         "\ud83d\udce5 Getting the EA to Windows AWS Server": 4,
         "Create directory": 1,
@@ -8980,10 +8878,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "WebApp",
-        "MT5bridge"
-      ],
+      "component_mentions": ["WebApp", "MT5bridge"],
       "sections": {
         "\ud83d\uddc2\ufe0f BITTEN SYSTEM ORGANIZATION & FILE PATHS": 16,
         "Check Windows agent": 1,
@@ -9477,9 +9372,7 @@
       "size": 554,
       "hash": "c69f2324317c87dc8cf36b21eee6356d",
       "lines": 38,
-      "component_mentions": [
-        "PressPass"
-      ],
+      "component_mentions": ["PressPass"],
       "last_modified": "2025-07-08T00:58:37.421617"
     },
     {
@@ -9533,11 +9426,7 @@
       "code_blocks": [],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "WebApp",
-        "XP(?:system|economy)",
-        "PressPass"
-      ],
+      "component_mentions": ["WebApp", "XP(?:system|economy)", "PressPass"],
       "sections": {
         "BITTEN PRESS PASS Onboarding Funnel - Full Specification": 10
       },
@@ -9850,11 +9739,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "firemode",
-        "riskmanagement",
-        "PressPass"
-      ],
+      "component_mentions": ["firemode", "riskmanagement", "PressPass"],
       "sections": {
         "\ud83c\udfaf BITTEN TOC System - Complete Integration Guide": 12,
         "Add to .env file": 1,
@@ -10159,9 +10044,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "WebApp"
-      ],
+      "component_mentions": ["WebApp"],
       "sections": {
         "\ud83d\udcca UX METRICS & MONITORING FRAMEWORK": 17,
         "Error handling metrics": 4,
@@ -10476,10 +10359,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "riskmanagement",
-        "MT5bridge"
-      ],
+      "component_mentions": ["riskmanagement", "MT5bridge"],
       "sections": {
         "\ud83c\udfaf BITTEN Historical Forex Data Extraction - Complete Report": 17,
         "Example: Load data for backtesting": 1,
@@ -10600,9 +10480,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "riskmanagement"
-      ],
+      "component_mentions": ["riskmanagement"],
       "sections": {
         "BITTEN Risk Management Safety Features": 11,
         "Example usage": 3,
@@ -10724,9 +10602,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "WebApp"
-      ],
+      "component_mentions": ["WebApp"],
       "sections": {
         "\ud83e\udd16 AI Assistant Quick Reference for BITTEN": 4,
         "Look at: /root/HydraX-v2/send_proper_signal.py": 1,
@@ -10939,9 +10815,7 @@
       "size": 126,
       "hash": "153c562ff0eb07477f85f0da36c87d3a",
       "lines": 5,
-      "component_mentions": [
-        "PressPass"
-      ],
+      "component_mentions": ["PressPass"],
       "last_modified": "2025-07-11T04:36:40.006225"
     },
     {
@@ -11896,11 +11770,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "riskmanagement",
-        "trademanager",
-        "MT5bridge"
-      ],
+      "component_mentions": ["riskmanagement", "trademanager", "MT5bridge"],
       "sections": {
         "BITTEN Security Hardening - Completion Summary": 9,
         "Every input is now validated": 2,
@@ -12094,9 +11964,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "PressPass"
-      ],
+      "component_mentions": ["PressPass"],
       "sections": {
         "\ud83c\udfaf MT5 FARM FINAL STATUS REPORT - July 11, 2025": 29,
         "View farm structure": 1,
@@ -13568,11 +13436,7 @@
         }
       ],
       "todos": [],
-      "component_mentions": [
-        "WebApp",
-        "riskmanagement",
-        "PressPass"
-      ],
+      "component_mentions": ["WebApp", "riskmanagement", "PressPass"],
       "sections": {
         "HydraX-v2 Deployment and Operations Specifications": 11,
         "System packages": 1,
@@ -13926,9 +13790,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "WebApp"
-      ],
+      "component_mentions": ["WebApp"],
       "sections": {
         "\ud83d\ude80 BITTEN Seamless Signal Solution": 4,
         "Initial brief signal": 1,
@@ -14054,10 +13916,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "RAPIDASSAULT",
-        "SNIPEROPS"
-      ],
+      "component_mentions": ["RAPIDASSAULT", "SNIPEROPS"],
       "sections": {
         "AAA v3.0 Mathematical Engine": 23
       },
@@ -14115,10 +13974,7 @@
               },
               "signal_type_distribution": {
                 "type": "object",
-                "keys": [
-                  "RAPID_ASSAULT",
-                  "SNIPER_OPS"
-                ],
+                "keys": ["RAPID_ASSAULT", "SNIPER_OPS"],
                 "nested": {
                   "RAPID_ASSAULT": {
                     "type": "truncated"
@@ -14162,10 +14018,7 @@
               },
               "signal_type_performance": {
                 "type": "object",
-                "keys": [
-                  "RAPID_ASSAULT",
-                  "SNIPER_OPS"
-                ],
+                "keys": ["RAPID_ASSAULT", "SNIPER_OPS"],
                 "nested": {
                   "RAPID_ASSAULT": {
                     "type": "truncated"
@@ -14571,9 +14424,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "XP(?:system|economy)"
-      ],
+      "component_mentions": ["XP(?:system|economy)"],
       "sections": {
         "BITTEN Elite Referral System": 33
       },
@@ -14697,9 +14548,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "WebApp"
-      ],
+      "component_mentions": ["WebApp"],
       "sections": {
         "BITTEN UX Improvements Summary": 19,
         "Send test signal": 1,
@@ -14832,10 +14681,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "WebApp",
-        "PressPass"
-      ],
+      "component_mentions": ["WebApp", "PressPass"],
       "sections": {
         "\ud83d\udcc1 EA Location & MT5 Allocator Summary": 10,
         "Allocate instance for new Press Pass user": 1,
@@ -15039,9 +14885,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "riskmanagement"
-      ],
+      "component_mentions": ["riskmanagement"],
       "sections": {
         "Educational Game Mechanics in Fire Router": 4,
         "Instead of: \"Warning: Low TCS score\"": 1,
@@ -15475,9 +15319,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "WebApp"
-      ],
+      "component_mentions": ["WebApp"],
       "sections": {
         "API Endpoints Documentation": 11,
         "Fire on a signal": 1,
@@ -18023,9 +17865,7 @@
       "code_blocks": [],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "PressPass"
-      ],
+      "component_mentions": ["PressPass"],
       "sections": {
         "Press Pass XP Reset Test Report": 15
       },
@@ -18067,12 +17907,7 @@
         "nested": {
           "tier_account_requirements": {
             "type": "object",
-            "keys": [
-              "nibbler",
-              "fang",
-              "commander",
-              "apex"
-            ],
+            "keys": ["nibbler", "fang", "commander", "apex"],
             "nested": {
               "nibbler": {
                 "type": "float"
@@ -18090,12 +17925,7 @@
           },
           "monthly_gains": {
             "type": "object",
-            "keys": [
-              "nibbler",
-              "fang",
-              "commander",
-              "apex"
-            ],
+            "keys": ["nibbler", "fang", "commander", "apex"],
             "nested": {
               "nibbler": {
                 "type": "int"
@@ -18136,12 +17966,7 @@
           },
           "lot_sizes": {
             "type": "object",
-            "keys": [
-              "nibbler",
-              "fang",
-              "commander",
-              "apex"
-            ],
+            "keys": ["nibbler", "fang", "commander", "apex"],
             "nested": {
               "nibbler": {
                 "type": "float"
@@ -18159,12 +17984,7 @@
           },
           "pip_values": {
             "type": "object",
-            "keys": [
-              "nibbler",
-              "fang",
-              "commander",
-              "apex"
-            ],
+            "keys": ["nibbler", "fang", "commander", "apex"],
             "nested": {
               "nibbler": {
                 "type": "float"
@@ -18667,10 +18487,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "firemode",
-        "riskmanagement"
-      ],
+      "component_mentions": ["firemode", "riskmanagement"],
       "sections": {
         "\ud83d\udd0d BITTEN Trading System Weakness Analysis": 8,
         "WEAKNESS: Risk controller can be bypassed if fire_mode_validator.py fails": 1,
@@ -19033,10 +18850,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "WebApp",
-        "riskmanagement"
-      ],
+      "component_mentions": ["WebApp", "riskmanagement"],
       "sections": {
         "\ud83c\udfaf STRATEGIC UX/IX IMPLEMENTATION PLAN": 12,
         "Enhancement to existing tier system": 41
@@ -19192,9 +19006,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "MT5bridge"
-      ],
+      "component_mentions": ["MT5bridge"],
       "sections": {
         "AWS MT5 Bridge Recursion Fix Summary": 10
       },
@@ -19292,10 +19104,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "RAPIDASSAULT",
-        "SNIPEROPS"
-      ],
+      "component_mentions": ["RAPIDASSAULT", "SNIPEROPS"],
       "sections": {
         "Multi-Timeframe AI Engine - The Proven Winner": 18
       },
@@ -19513,9 +19322,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "WebApp"
-      ],
+      "component_mentions": ["WebApp"],
       "sections": {
         "Current Infrastructure Status Report - July 11, 2025": 13
       },
@@ -19723,9 +19530,7 @@
       "code_blocks": [],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "firemode"
-      ],
+      "component_mentions": ["firemode"],
       "sections": {
         "BITTEN Emergency Stop System - Security Fixes Summary": 22
       },
@@ -19791,10 +19596,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "firemode",
-        "riskmanagement"
-      ],
+      "component_mentions": ["firemode", "riskmanagement"],
       "sections": {
         "CLAUDE.md Cleanup Plan": 10
       },
@@ -19924,10 +19726,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "WebApp",
-        "MT5bridge"
-      ],
+      "component_mentions": ["WebApp", "MT5bridge"],
       "sections": {
         "BITTEN System Status Report": 15,
         "Start everything": 1,
@@ -20123,11 +19922,7 @@
       "code_blocks": [],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "riskmanagement",
-        "RAPIDASSAULT",
-        "SNIPEROPS"
-      ],
+      "component_mentions": ["riskmanagement", "RAPIDASSAULT", "SNIPEROPS"],
       "sections": {
         "\ud83d\ude80 AAA SIGNAL ENGINE EVOLUTION - COMPLETE JOURNEY": 43
       },
@@ -20353,9 +20148,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "riskmanagement"
-      ],
+      "component_mentions": ["riskmanagement"],
       "sections": {
         "\ud83e\ude9f AWS WINDOWS MANUAL CLEANUP & ORGANIZATION": 5,
         "Remove old bridge/hydra files (keep BITTEN files)": 1,
@@ -20543,9 +20336,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "WebApp"
-      ],
+      "component_mentions": ["WebApp"],
       "sections": {
         "\ud83d\udd27 MISSION BRIEF WEBAPP - ISSUE DIAGNOSIS & SOLUTION": 7,
         "webapp_server.py - HUD route now handles:": 2,
@@ -20761,9 +20552,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "WebApp"
-      ],
+      "component_mentions": ["WebApp"],
       "sections": {
         "\ud83d\udea8 PHASE 1: CRITICAL FIXES - IMPLEMENTATION GUIDE": 34
       },
@@ -20889,9 +20678,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "XP(?:system|economy)"
-      ],
+      "component_mentions": ["XP(?:system|economy)"],
       "sections": {
         "\ud83c\udfaf Intel Command Center - Complete Deployment Summary": 24
       },
@@ -21001,10 +20788,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "WebApp",
-        "XP(?:system|economy)"
-      ],
+      "component_mentions": ["WebApp", "XP(?:system|economy)"],
       "sections": {
         "\ud83d\udccb Persistent Intel Command Center Menu - Always Accessible": 3,
         "File: setup_persistent_menu.py": 12,
@@ -21420,9 +21204,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "WebApp"
-      ],
+      "component_mentions": ["WebApp"],
       "sections": {
         "\ud83e\udd16 BotFather WebApp Configuration": 12
       },
@@ -21688,10 +21470,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "WebApp",
-        "riskmanagement"
-      ],
+      "component_mentions": ["WebApp", "riskmanagement"],
       "sections": {
         "BITTEN Tactical Mission Framework - Complete Implementation": 17,
         "Signal \u2192 Mission Conversion": 1,
@@ -22028,9 +21807,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "MT5bridge"
-      ],
+      "component_mentions": ["MT5bridge"],
       "sections": {
         "Infrastructure Manager - Singleton Pattern Implementation": 6,
         "This will always return the same instance": 1,
@@ -22166,9 +21943,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "WebApp"
-      ],
+      "component_mentions": ["WebApp"],
       "sections": {
         "Telegram WebApp Setup Guide": 12,
         "Start the webapp server": 1,
@@ -22349,9 +22124,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "MT5bridge"
-      ],
+      "component_mentions": ["MT5bridge"],
       "sections": {
         "\ud83e\uddf9 HydraX-v2 Comprehensive Cleanup Report": 13,
         "BITTEN Core System Dependencies": 25
@@ -22510,10 +22283,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "XP(?:system|economy)",
-        "PressPass"
-      ],
+      "component_mentions": ["XP(?:system|economy)", "PressPass"],
       "sections": {
         "\ud83c\udfaf PRESS PASS MT5 INSTALLATION GUIDE": 7,
         "Download MetaQuotes MT5 directly to server": 4,
@@ -23180,9 +22950,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "WebApp"
-      ],
+      "component_mentions": ["WebApp"],
       "sections": {
         "\ud83d\udd12 BITTEN SECURITY PATCH & DEPLOYMENT SUMMARY": 5,
         "Signal ID validation": 1,
@@ -23340,9 +23108,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "firemode"
-      ],
+      "component_mentions": ["firemode"],
       "sections": {
         "\ud83d\ude80 B.I.T.T.E.N. Quick Start - Phase 1 Implementation": 3,
         "Add to fire_router.py after line 50": 2,
@@ -23635,9 +23401,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "PressPass"
-      ],
+      "component_mentions": ["PressPass"],
       "sections": {
         "Press Pass Flow - Comprehensive Test Report": 20,
         "Run full test suite": 1,
@@ -23860,9 +23624,7 @@
       "code_blocks": [],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "WebApp"
-      ],
+      "component_mentions": ["WebApp"],
       "sections": {
         "HydraX-v2 Duplicate and Fragmented Files Analysis Report": 30
       },
@@ -24012,10 +23774,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "SignalAlertSystem",
-        "WebApp"
-      ],
+      "component_mentions": ["SignalAlertSystem", "WebApp"],
       "sections": {
         "\ud83d\udea8 BITTEN Signal Flow Documentation": 6,
         "Location: src/bitten_core/signal_alerts.py": 1,
@@ -24540,9 +24299,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "PressPass"
-      ],
+      "component_mentions": ["PressPass"],
       "sections": {
         "\ud83d\ude80 BITTEN INTEGRATION DEPLOYMENT - COMPLETE": 25
       },
@@ -24744,9 +24501,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "riskmanagement"
-      ],
+      "component_mentions": ["riskmanagement"],
       "sections": {
         "AAA v3.0 Mathematical Engine - Comprehensive Test Summary": 22,
         "Create engine": 1,
@@ -24871,9 +24626,7 @@
       "code_blocks": [],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "riskmanagement"
-      ],
+      "component_mentions": ["riskmanagement"],
       "sections": {
         "\ud83c\udfaf BITTEN WINNING ODDS & EXPECTED GAINS ANALYSIS": 25
       },
@@ -25072,11 +24825,7 @@
       "code_blocks": [],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "firemode",
-        "riskmanagement",
-        "PressPass"
-      ],
+      "component_mentions": ["firemode", "riskmanagement", "PressPass"],
       "sections": {
         "Nibbler TCS Threshold Update Summary": 14
       },
@@ -25306,9 +25055,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "WebApp"
-      ],
+      "component_mentions": ["WebApp"],
       "sections": {
         "\ud83d\udea8 CRITICAL EMERGENCY HANDOVER - TELEGRAM BOT CONFLICTS": 16,
         "Check if systemd services are actually stopped": 1,
@@ -25537,11 +25284,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "firemode",
-        "XP(?:system|economy)",
-        "MT5bridge"
-      ],
+      "component_mentions": ["firemode", "XP(?:system|economy)", "MT5bridge"],
       "sections": {
         "\ud83c\udfaf B.I.T.T.E.N. Complete Implementation Roadmap": 35
       },
@@ -26028,11 +25771,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "WebApp",
-        "firemode",
-        "PressPass"
-      ],
+      "component_mentions": ["WebApp", "firemode", "PressPass"],
       "sections": {
         "\ud83e\udd16 AI Assistant Quick Reference Guide": 12,
         "From config/trading_pairs.yml v3.0.0": 22,
@@ -26373,10 +26112,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "BittenCore",
-        "WebApp"
-      ],
+      "component_mentions": ["BittenCore", "WebApp"],
       "sections": {
         "BITTEN Production Monitoring System": 14,
         "Install dependencies": 1,
@@ -26664,10 +26400,7 @@
       "code_blocks": [],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "firemode",
-        "riskmanagement"
-      ],
+      "component_mentions": ["firemode", "riskmanagement"],
       "sections": {
         "\ud83c\udfae BITTEN COMPLETE GAME PLAN - THE TOTAL EXPERIENCE": 46
       },
@@ -26700,12 +26433,7 @@
           },
           "player_type_results": {
             "type": "object",
-            "keys": [
-              "GRINDER",
-              "HUNTER",
-              "SNIPER",
-              "WHALE"
-            ],
+            "keys": ["GRINDER", "HUNTER", "SNIPER", "WHALE"],
             "nested": {
               "GRINDER": {
                 "type": "object",
@@ -26854,21 +26582,11 @@
           },
           "characteristics": {
             "type": "object",
-            "keys": [
-              "GRINDER",
-              "HUNTER",
-              "SNIPER",
-              "WHALE"
-            ],
+            "keys": ["GRINDER", "HUNTER", "SNIPER", "WHALE"],
             "nested": {
               "GRINDER": {
                 "type": "object",
-                "keys": [
-                  "description",
-                  "strategy",
-                  "mindset",
-                  "ideal_for"
-                ],
+                "keys": ["description", "strategy", "mindset", "ideal_for"],
                 "nested": {
                   "description": {
                     "type": "truncated"
@@ -26886,12 +26604,7 @@
               },
               "HUNTER": {
                 "type": "object",
-                "keys": [
-                  "description",
-                  "strategy",
-                  "mindset",
-                  "ideal_for"
-                ],
+                "keys": ["description", "strategy", "mindset", "ideal_for"],
                 "nested": {
                   "description": {
                     "type": "truncated"
@@ -26909,12 +26622,7 @@
               },
               "SNIPER": {
                 "type": "object",
-                "keys": [
-                  "description",
-                  "strategy",
-                  "mindset",
-                  "ideal_for"
-                ],
+                "keys": ["description", "strategy", "mindset", "ideal_for"],
                 "nested": {
                   "description": {
                     "type": "truncated"
@@ -26932,12 +26640,7 @@
               },
               "WHALE": {
                 "type": "object",
-                "keys": [
-                  "description",
-                  "strategy",
-                  "mindset",
-                  "ideal_for"
-                ],
+                "keys": ["description", "strategy", "mindset", "ideal_for"],
                 "nested": {
                   "description": {
                     "type": "truncated"
@@ -27039,9 +26742,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "riskmanagement"
-      ],
+      "component_mentions": ["riskmanagement"],
       "sections": {
         "\ud83d\udd12 HARD LOCK Trade Size Validation - Implementation Complete": 16
       },
@@ -27263,10 +26964,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "firemode",
-        "riskmanagement"
-      ],
+      "component_mentions": ["firemode", "riskmanagement"],
       "sections": {
         "\ud83c\udfaf BITTEN BACKTESTING SYSTEM": 11,
         "Expected Results:": 2,
@@ -27378,10 +27076,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "XP(?:system|economy)",
-        "PressPass"
-      ],
+      "component_mentions": ["XP(?:system|economy)", "PressPass"],
       "sections": {
         "Press Pass XP Reset Functionality - Comprehensive Test Report": 22
       },
@@ -27439,9 +27134,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "WebApp"
-      ],
+      "component_mentions": ["WebApp"],
       "sections": {
         "\ud83d\udcf1 Telegram WebApp Solution - Smart Signal System": 9
       },
@@ -27519,9 +27212,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "PressPass"
-      ],
+      "component_mentions": ["PressPass"],
       "sections": {
         "BITTEN Press Pass System - Complete Implementation Handover": 14
       },
@@ -28292,10 +27983,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "RAPIDASSAULT",
-        "SNIPEROPS"
-      ],
+      "component_mentions": ["RAPIDASSAULT", "SNIPEROPS"],
       "sections": {
         "AAA v2.0 Engine Analysis Report": 17,
         "Create optimized engine": 1,
@@ -28765,9 +28453,7 @@
       "code_blocks": [],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "XP(?:system|economy)"
-      ],
+      "component_mentions": ["XP(?:system|economy)"],
       "sections": {
         "\ud83e\udde0 BITTEN PSYCHOLOGICAL TRIGGER MASTER LIST": 11,
         "\ud83d\udd17 CONNECTION STRATEGIES": 2
@@ -29016,9 +28702,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "riskmanagement"
-      ],
+      "component_mentions": ["riskmanagement"],
       "sections": {
         "\ud83c\udfd7\ufe0f PHASE 2: CORE ENHANCEMENTS - IMPLEMENTATION GUIDE": 28
       },
@@ -29811,9 +29495,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "riskmanagement"
-      ],
+      "component_mentions": ["riskmanagement"],
       "sections": {
         "News Event Detection and Auto-Pause Feature Summary": 7,
         "When checking trading restrictions:": 5,
@@ -29944,11 +29626,7 @@
       "code_blocks": [],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "firemode",
-        "riskmanagement",
-        "MT5bridge"
-      ],
+      "component_mentions": ["firemode", "riskmanagement", "MT5bridge"],
       "sections": {
         "\ud83d\udccb BITTEN COMPREHENSIVE TODO LIST": 28
       },
@@ -30005,9 +29683,7 @@
       "code_blocks": [],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "WebApp"
-      ],
+      "component_mentions": ["WebApp"],
       "sections": {
         "SEND_*.py Files Cleanup Report": 10
       },
@@ -30289,9 +29965,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "PressPass"
-      ],
+      "component_mentions": ["PressPass"],
       "sections": {
         "BITTEN Landing Page & Email Capture System - Complete Deployment Guide": 11,
         "Install Python dependencies": 1,
@@ -30383,10 +30057,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "WebApp",
-        "MT5bridge"
-      ],
+      "component_mentions": ["WebApp", "MT5bridge"],
       "sections": {
         "\ud83e\udde0 SHEPHERD STARTUP REPORT": 14
       },
@@ -30398,19 +30069,11 @@
       "file": "/root/HydraX-v2/winning_odds_complete_analysis.json",
       "size": 5087,
       "hash": "717f30e5ca8af0395d087c0541e17077",
-      "keys": [
-        "analysis_date",
-        "calibrated_system_data",
-        "tiers"
-      ],
+      "keys": ["analysis_date", "calibrated_system_data", "tiers"],
       "array_length": null,
       "structure": {
         "type": "object",
-        "keys": [
-          "analysis_date",
-          "calibrated_system_data",
-          "tiers"
-        ],
+        "keys": ["analysis_date", "calibrated_system_data", "tiers"],
         "nested": {
           "analysis_date": {
             "type": "str"
@@ -30426,12 +30089,7 @@
             "nested": {
               "base_win_rates": {
                 "type": "object",
-                "keys": [
-                  "87_tcs",
-                  "90_tcs",
-                  "93_tcs",
-                  "96_tcs"
-                ],
+                "keys": ["87_tcs", "90_tcs", "93_tcs", "96_tcs"],
                 "nested": {
                   "87_tcs": {
                     "type": "truncated"
@@ -30460,12 +30118,7 @@
           },
           "tiers": {
             "type": "object",
-            "keys": [
-              "nibbler",
-              "fang",
-              "commander",
-              "apex"
-            ],
+            "keys": ["nibbler", "fang", "commander", "apex"],
             "nested": {
               "nibbler": {
                 "type": "object",
@@ -30967,9 +30620,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "PressPass"
-      ],
+      "component_mentions": ["PressPass"],
       "sections": {
         "\ud83c\udfaf MT5 Instance Identification System": 8,
         "When user gets Press Pass:": 1,
@@ -31187,9 +30838,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "PressPass"
-      ],
+      "component_mentions": ["PressPass"],
       "sections": {
         "MT5 Farm Setup Guide - 5 Master Templates": 9,
         "Suggested directory structure:": 8,
@@ -31203,12 +30852,7 @@
       "file": "/root/HydraX-v2/aaa_v2_optimized_results.json",
       "size": 298,
       "hash": "ff7f5c10d26cde489ae2b91171c52813",
-      "keys": [
-        "test_date",
-        "optimization",
-        "results",
-        "ready_for_production"
-      ],
+      "keys": ["test_date", "optimization", "results", "ready_for_production"],
       "array_length": null,
       "structure": {
         "type": "object",
@@ -31299,12 +30943,7 @@
             "nested": {
               "casual": {
                 "type": "object",
-                "keys": [
-                  "name",
-                  "trades_per_day",
-                  "win_rate",
-                  "description"
-                ],
+                "keys": ["name", "trades_per_day", "win_rate", "description"],
                 "nested": {
                   "name": {
                     "type": "truncated"
@@ -31322,12 +30961,7 @@
               },
               "active": {
                 "type": "object",
-                "keys": [
-                  "name",
-                  "trades_per_day",
-                  "win_rate",
-                  "description"
-                ],
+                "keys": ["name", "trades_per_day", "win_rate", "description"],
                 "nested": {
                   "name": {
                     "type": "truncated"
@@ -31345,12 +30979,7 @@
               },
               "hardcore": {
                 "type": "object",
-                "keys": [
-                  "name",
-                  "trades_per_day",
-                  "win_rate",
-                  "description"
-                ],
+                "keys": ["name", "trades_per_day", "win_rate", "description"],
                 "nested": {
                   "name": {
                     "type": "truncated"
@@ -31368,12 +30997,7 @@
               },
               "newbie": {
                 "type": "object",
-                "keys": [
-                  "name",
-                  "trades_per_day",
-                  "win_rate",
-                  "description"
-                ],
+                "keys": ["name", "trades_per_day", "win_rate", "description"],
                 "nested": {
                   "name": {
                     "type": "truncated"
@@ -31391,12 +31015,7 @@
               },
               "weekend_warrior": {
                 "type": "object",
-                "keys": [
-                  "name",
-                  "trades_per_day",
-                  "win_rate",
-                  "description"
-                ],
+                "keys": ["name", "trades_per_day", "win_rate", "description"],
                 "nested": {
                   "name": {
                     "type": "truncated"
@@ -31416,20 +31035,11 @@
           },
           "xp_configuration": {
             "type": "object",
-            "keys": [
-              "thresholds",
-              "rewards",
-              "achievements"
-            ],
+            "keys": ["thresholds", "rewards", "achievements"],
             "nested": {
               "thresholds": {
                 "type": "object",
-                "keys": [
-                  "USER",
-                  "AUTHORIZED",
-                  "ELITE",
-                  "ADMIN"
-                ],
+                "keys": ["USER", "AUTHORIZED", "ELITE", "ADMIN"],
                 "nested": {
                   "USER": {
                     "type": "truncated"
@@ -31629,10 +31239,7 @@
         "nested": {
           "broker_education": {
             "type": "object",
-            "keys": [
-              "text",
-              "buttons"
-            ],
+            "keys": ["text", "buttons"],
             "nested": {
               "text": {
                 "type": "str"
@@ -31648,10 +31255,7 @@
           },
           "broker_regulated": {
             "type": "object",
-            "keys": [
-              "text",
-              "buttons"
-            ],
+            "keys": ["text", "buttons"],
             "nested": {
               "text": {
                 "type": "str"
@@ -31667,10 +31271,7 @@
           },
           "broker_offshore": {
             "type": "object",
-            "keys": [
-              "text",
-              "buttons"
-            ],
+            "keys": ["text", "buttons"],
             "nested": {
               "text": {
                 "type": "str"
@@ -31686,10 +31287,7 @@
           },
           "broker_comparison": {
             "type": "object",
-            "keys": [
-              "text",
-              "buttons"
-            ],
+            "keys": ["text", "buttons"],
             "nested": {
               "text": {
                 "type": "str"
@@ -31705,10 +31303,7 @@
           },
           "broker_recommendations": {
             "type": "object",
-            "keys": [
-              "text",
-              "buttons"
-            ],
+            "keys": ["text", "buttons"],
             "nested": {
               "text": {
                 "type": "str"
@@ -31923,20 +31518,11 @@
           },
           "xp_configuration": {
             "type": "object",
-            "keys": [
-              "thresholds",
-              "rewards",
-              "achievements"
-            ],
+            "keys": ["thresholds", "rewards", "achievements"],
             "nested": {
               "thresholds": {
                 "type": "object",
-                "keys": [
-                  "USER",
-                  "AUTHORIZED",
-                  "ELITE",
-                  "ADMIN"
-                ],
+                "keys": ["USER", "AUTHORIZED", "ELITE", "ADMIN"],
                 "nested": {
                   "USER": {
                     "type": "truncated"
@@ -32076,17 +31662,11 @@
       "file": "/root/HydraX-v2/data/analyst/analyst_profile.json",
       "size": 2158,
       "hash": "4688f00bb560f970ac65599e44720842",
-      "keys": [
-        "test_user_123",
-        "interaction_test"
-      ],
+      "keys": ["test_user_123", "interaction_test"],
       "array_length": null,
       "structure": {
         "type": "object",
-        "keys": [
-          "test_user_123",
-          "interaction_test"
-        ],
+        "keys": ["test_user_123", "interaction_test"],
         "nested": {
           "test_user_123": {
             "type": "object",
@@ -32702,9 +32282,7 @@
       "code_blocks": [],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "PressPass"
-      ],
+      "component_mentions": ["PressPass"],
       "sections": {
         "Press Pass & TCS++ Deployment Checklist": 17
       },
@@ -32717,9 +32295,7 @@
       "size": 1316,
       "hash": "2a1add814f60e674be56c4f8557227d9",
       "lines": 41,
-      "component_mentions": [
-        "PressPass"
-      ],
+      "component_mentions": ["PressPass"],
       "last_modified": "2025-07-08T01:00:59.759212"
     },
     {
@@ -32846,10 +32422,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "XP(?:system|economy)",
-        "PressPass"
-      ],
+      "component_mentions": ["XP(?:system|economy)", "PressPass"],
       "sections": {
         "Press Pass & TCS++ Integration Deployment Summary": 17,
         "Single check": 1,
@@ -32965,9 +32538,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "PressPass"
-      ],
+      "component_mentions": ["PressPass"],
       "sections": {
         "Press Pass Deployment Rollback Plan": 6,
         "Stop bot service": 1,
@@ -33216,19 +32787,8 @@
       "file": "/root/HydraX-v2/migrations/run_press_pass_migrations.sql",
       "size": 7736,
       "hash": "479a9bf07ab44cd4dd4ecf219e9de399",
-      "tables": [
-        "migration_history",
-        "subscription_plans",
-        "trades",
-        "users"
-      ],
-      "columns": [
-        "v_applied",
-        "filename",
-        "INSERT",
-        "v_pending",
-        "RETURNS"
-      ],
+      "tables": ["migration_history", "subscription_plans", "trades", "users"],
+      "columns": ["v_applied", "filename", "INSERT", "v_pending", "RETURNS"],
       "lines": 221,
       "last_modified": "2025-07-08T00:30:17.209661"
     },
@@ -33376,9 +32936,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "PressPass"
-      ],
+      "component_mentions": ["PressPass"],
       "sections": {
         "Press Pass Migration Guide": 19
       },
@@ -33642,9 +33200,7 @@
       "file": "/root/HydraX-v2/migrations/add_callsign_column.sql",
       "size": 787,
       "hash": "0a3def72d2ea941352ab47f4c330859d",
-      "tables": [
-        "user_profiles"
-      ],
+      "tables": ["user_profiles"],
       "columns": [],
       "lines": 20,
       "last_modified": "2025-07-06T20:19:21.741620"
@@ -33745,9 +33301,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "PressPass"
-      ],
+      "component_mentions": ["PressPass"],
       "sections": {
         "Press Pass Database Migration Report": 19
       },
@@ -33874,14 +33428,8 @@
       "file": "/root/HydraX-v2/migrations/add_press_pass_tier_enum.sql",
       "size": 3403,
       "hash": "f2cf7b570afdf367e639812459a7bb17",
-      "tables": [
-        "subscription_plans",
-        "trades",
-        "users"
-      ],
-      "columns": [
-        "INSERT"
-      ],
+      "tables": ["subscription_plans", "trades", "users"],
+      "columns": ["INSERT"],
       "lines": 97,
       "last_modified": "2025-07-08T00:14:31.728129"
     },
@@ -33941,28 +33489,18 @@
       "file": "/root/HydraX-v2/onboarding/test_data.json",
       "size": 238,
       "hash": "6ca03c64949becc41e5c2bcf6239bc97",
-      "keys": [
-        "press_passes",
-        "analytics"
-      ],
+      "keys": ["press_passes", "analytics"],
       "array_length": null,
       "structure": {
         "type": "object",
-        "keys": [
-          "press_passes",
-          "analytics"
-        ],
+        "keys": ["press_passes", "analytics"],
         "nested": {
           "press_passes": {
             "type": "array",
             "length": 1,
             "sample": {
               "type": "object",
-              "keys": [
-                "email",
-                "pass_id",
-                "status"
-              ],
+              "keys": ["email", "pass_id", "status"],
               "nested": {
                 "email": {
                   "type": "truncated"
@@ -33978,11 +33516,7 @@
           },
           "analytics": {
             "type": "object",
-            "keys": [
-              "total_visits",
-              "conversion_rate",
-              "avg_time_on_page"
-            ],
+            "keys": ["total_visits", "conversion_rate", "avg_time_on_page"],
             "nested": {
               "total_visits": {
                 "type": "int"
@@ -34005,23 +33539,11 @@
       "file": "/root/HydraX-v2/.shepherd/checkpoints/test_checkpoint/snapshot.json",
       "size": 39495,
       "hash": "6d4f5f6ea7dd44ad7997d1843a47cafa",
-      "keys": [
-        "timestamp",
-        "label",
-        "state_hash",
-        "metadata",
-        "modules"
-      ],
+      "keys": ["timestamp", "label", "state_hash", "metadata", "modules"],
       "array_length": null,
       "structure": {
         "type": "object",
-        "keys": [
-          "timestamp",
-          "label",
-          "state_hash",
-          "metadata",
-          "modules"
-        ],
+        "keys": ["timestamp", "label", "state_hash", "metadata", "modules"],
         "nested": {
           "timestamp": {
             "type": "str"
@@ -34068,27 +33590,18 @@
       "file": "/root/HydraX-v2/bitten/data/signal_history.json",
       "size": 207,
       "hash": "aa258cfa68181e1fcff6b4505d8a43a5",
-      "keys": [
-        "7176191872"
-      ],
+      "keys": ["7176191872"],
       "array_length": null,
       "structure": {
         "type": "object",
-        "keys": [
-          "7176191872"
-        ],
+        "keys": ["7176191872"],
         "nested": {
           "7176191872": {
             "type": "array",
             "length": 2,
             "sample": {
               "type": "object",
-              "keys": [
-                "pair",
-                "result",
-                "risk",
-                "timestamp"
-              ],
+              "keys": ["pair", "result", "risk", "timestamp"],
               "nested": {
                 "pair": {
                   "type": "truncated"
@@ -34115,17 +33628,11 @@
       "file": "/root/HydraX-v2/bitten/data/user_persona.json",
       "size": 287,
       "hash": "93a85933c7ec6ee9d2deaacb8c288eca",
-      "keys": [
-        "user_personas",
-        "last_updated"
-      ],
+      "keys": ["user_personas", "last_updated"],
       "array_length": null,
       "structure": {
         "type": "object",
-        "keys": [
-          "user_personas",
-          "last_updated"
-        ],
+        "keys": ["user_personas", "last_updated"],
         "nested": {
           "user_personas": {
             "type": "object",
@@ -34169,26 +33676,15 @@
       "file": "/root/HydraX-v2/bitten/data/shepherd/document_index.json",
       "size": 1534547,
       "hash": "160b912c3e13a0f1c280804170461d6f",
-      "keys": [
-        "metadata",
-        "documents"
-      ],
+      "keys": ["metadata", "documents"],
       "array_length": null,
       "structure": {
         "type": "object",
-        "keys": [
-          "metadata",
-          "documents"
-        ],
+        "keys": ["metadata", "documents"],
         "nested": {
           "metadata": {
             "type": "object",
-            "keys": [
-              "generated_at",
-              "base_path",
-              "version",
-              "total_documents"
-            ],
+            "keys": ["generated_at", "base_path", "version", "total_documents"],
             "nested": {
               "generated_at": {
                 "type": "str"
@@ -34252,17 +33748,11 @@
       "file": "/root/HydraX-v2/bitten/data/shepherd/shepherd_index.json",
       "size": 7576773,
       "hash": "abacc2feabfee8da1097653aa7b2911e",
-      "keys": [
-        "metadata",
-        "components"
-      ],
+      "keys": ["metadata", "components"],
       "array_length": null,
       "structure": {
         "type": "object",
-        "keys": [
-          "metadata",
-          "components"
-        ],
+        "keys": ["metadata", "components"],
         "nested": {
           "metadata": {
             "type": "object",
@@ -34340,17 +33830,11 @@
       "file": "/root/HydraX-v2/bitten/data/shepherd/quick_index.json",
       "size": 313456,
       "hash": "9256092ef99095b35e309ea3ae3cef55",
-      "keys": [
-        "metadata",
-        "components"
-      ],
+      "keys": ["metadata", "components"],
       "array_length": null,
       "structure": {
         "type": "object",
-        "keys": [
-          "metadata",
-          "components"
-        ],
+        "keys": ["metadata", "components"],
         "nested": {
           "metadata": {
             "type": "object",
@@ -34427,19 +33911,11 @@
       "file": "/root/HydraX-v2/bitten/data/shepherd/docs_digest.json",
       "size": 10146,
       "hash": "9b61ba18d0c0c3756d40ec1b0d6a511a",
-      "keys": [
-        "metadata",
-        "summaries",
-        "errors"
-      ],
+      "keys": ["metadata", "summaries", "errors"],
       "array_length": null,
       "structure": {
         "type": "object",
-        "keys": [
-          "metadata",
-          "summaries",
-          "errors"
-        ],
+        "keys": ["metadata", "summaries", "errors"],
         "nested": {
           "metadata": {
             "type": "object",
@@ -34491,11 +33967,7 @@
             "nested": {
               "docs/blueprint/BITTEN_SYSTEM_BLUEPRINT.md": {
                 "type": "object",
-                "keys": [
-                  "summary",
-                  "word_count",
-                  "key_points"
-                ],
+                "keys": ["summary", "word_count", "key_points"],
                 "nested": {
                   "summary": {
                     "type": "truncated"
@@ -34510,11 +33982,7 @@
               },
               "docs/blueprint/BITTEN_FULL_PROJECT_SPEC.md": {
                 "type": "object",
-                "keys": [
-                  "summary",
-                  "word_count",
-                  "key_points"
-                ],
+                "keys": ["summary", "word_count", "key_points"],
                 "nested": {
                   "summary": {
                     "type": "truncated"
@@ -34529,11 +33997,7 @@
               },
               "docs/education/OPERATION_EDUCATION_FULL_BLUEPRINT.md": {
                 "type": "object",
-                "keys": [
-                  "summary",
-                  "word_count",
-                  "key_points"
-                ],
+                "keys": ["summary", "word_count", "key_points"],
                 "nested": {
                   "summary": {
                     "type": "truncated"
@@ -34548,11 +34012,7 @@
               },
               "docs/USER_MANAGEMENT_TIER_SYSTEM_SPECIFICATIONS.md": {
                 "type": "object",
-                "keys": [
-                  "summary",
-                  "word_count",
-                  "key_points"
-                ],
+                "keys": ["summary", "word_count", "key_points"],
                 "nested": {
                   "summary": {
                     "type": "truncated"
@@ -34567,11 +34027,7 @@
               },
               "docs/MT5_BRIDGE_SETUP.md": {
                 "type": "object",
-                "keys": [
-                  "summary",
-                  "word_count",
-                  "key_points"
-                ],
+                "keys": ["summary", "word_count", "key_points"],
                 "nested": {
                   "summary": {
                     "type": "truncated"
@@ -34601,19 +34057,11 @@
       "file": "/root/HydraX-v2/bitten/data/shepherd/digest_seed_memory.json",
       "size": 5806,
       "hash": "fca73a2e8844b0c129467780a574d238",
-      "keys": [
-        "base_truth",
-        "digests",
-        "system_truth"
-      ],
+      "keys": ["base_truth", "digests", "system_truth"],
       "array_length": null,
       "structure": {
         "type": "object",
-        "keys": [
-          "base_truth",
-          "digests",
-          "system_truth"
-        ],
+        "keys": ["base_truth", "digests", "system_truth"],
         "nested": {
           "base_truth": {
             "type": "object",
@@ -34681,11 +34129,7 @@
           },
           "system_truth": {
             "type": "object",
-            "keys": [
-              "core_mission",
-              "primary_constraint",
-              "deployment_status"
-            ],
+            "keys": ["core_mission", "primary_constraint", "deployment_status"],
             "nested": {
               "core_mission": {
                 "type": "str"
@@ -34847,9 +34291,7 @@
               },
               "tier_system": {
                 "type": "object",
-                "keys": [
-                  "active_tiers"
-                ],
+                "keys": ["active_tiers"],
                 "nested": {
                   "active_tiers": {
                     "type": "truncated"
@@ -35009,11 +34451,7 @@
               },
               "demographics": {
                 "type": "object",
-                "keys": [
-                  "timezone",
-                  "preferred_language",
-                  "account_age_days"
-                ],
+                "keys": ["timezone", "preferred_language", "account_age_days"],
                 "nested": {
                   "timezone": {
                     "type": "truncated"
@@ -35062,9 +34500,7 @@
           },
           "default_values": {
             "type": "object",
-            "keys": [
-              "new_user"
-            ],
+            "keys": ["new_user"],
             "nested": {
               "new_user": {
                 "type": "object",
@@ -35368,11 +34804,7 @@
             "nested": {
               "time_based_patterns": {
                 "type": "object",
-                "keys": [
-                  "morning_trader",
-                  "afternoon_trader",
-                  "night_owl"
-                ],
+                "keys": ["morning_trader", "afternoon_trader", "night_owl"],
                 "nested": {
                   "morning_trader": {
                     "type": "truncated"
@@ -35387,11 +34819,7 @@
               },
               "strategy_patterns": {
                 "type": "object",
-                "keys": [
-                  "scalper",
-                  "day_trader",
-                  "swing_trader"
-                ],
+                "keys": ["scalper", "day_trader", "swing_trader"],
                 "nested": {
                   "scalper": {
                     "type": "truncated"
@@ -35406,9 +34834,7 @@
               },
               "emotional_patterns": {
                 "type": "object",
-                "keys": [
-                  "tilt_indicators"
-                ],
+                "keys": ["tilt_indicators"],
                 "nested": {
                   "tilt_indicators": {
                     "type": "truncated"
@@ -36315,20 +35741,11 @@
         "nested": {
           "personas": {
             "type": "object",
-            "keys": [
-              "default",
-              "brute",
-              "scholar",
-              "phantom",
-              "warden"
-            ],
+            "keys": ["default", "brute", "scholar", "phantom", "warden"],
             "nested": {
               "default": {
                 "type": "object",
-                "keys": [
-                  "tone",
-                  "characteristics"
-                ],
+                "keys": ["tone", "characteristics"],
                 "nested": {
                   "tone": {
                     "type": "truncated"
@@ -36340,10 +35757,7 @@
               },
               "brute": {
                 "type": "object",
-                "keys": [
-                  "tone",
-                  "characteristics"
-                ],
+                "keys": ["tone", "characteristics"],
                 "nested": {
                   "tone": {
                     "type": "truncated"
@@ -36355,10 +35769,7 @@
               },
               "scholar": {
                 "type": "object",
-                "keys": [
-                  "tone",
-                  "characteristics"
-                ],
+                "keys": ["tone", "characteristics"],
                 "nested": {
                   "tone": {
                     "type": "truncated"
@@ -36370,10 +35781,7 @@
               },
               "phantom": {
                 "type": "object",
-                "keys": [
-                  "tone",
-                  "characteristics"
-                ],
+                "keys": ["tone", "characteristics"],
                 "nested": {
                   "tone": {
                     "type": "truncated"
@@ -36385,10 +35793,7 @@
               },
               "warden": {
                 "type": "object",
-                "keys": [
-                  "tone",
-                  "characteristics"
-                ],
+                "keys": ["tone", "characteristics"],
                 "nested": {
                   "tone": {
                     "type": "truncated"
@@ -36413,13 +35818,7 @@
             "nested": {
               "wins": {
                 "type": "object",
-                "keys": [
-                  "default",
-                  "brute",
-                  "scholar",
-                  "phantom",
-                  "warden"
-                ],
+                "keys": ["default", "brute", "scholar", "phantom", "warden"],
                 "nested": {
                   "default": {
                     "type": "truncated"
@@ -36440,13 +35839,7 @@
               },
               "losses": {
                 "type": "object",
-                "keys": [
-                  "default",
-                  "brute",
-                  "scholar",
-                  "phantom",
-                  "warden"
-                ],
+                "keys": ["default", "brute", "scholar", "phantom", "warden"],
                 "nested": {
                   "default": {
                     "type": "truncated"
@@ -36467,13 +35860,7 @@
               },
               "nudges": {
                 "type": "object",
-                "keys": [
-                  "default",
-                  "brute",
-                  "scholar",
-                  "phantom",
-                  "warden"
-                ],
+                "keys": ["default", "brute", "scholar", "phantom", "warden"],
                 "nested": {
                   "default": {
                     "type": "truncated"
@@ -36494,13 +35881,7 @@
               },
               "streaks": {
                 "type": "object",
-                "keys": [
-                  "default",
-                  "brute",
-                  "scholar",
-                  "phantom",
-                  "warden"
-                ],
+                "keys": ["default", "brute", "scholar", "phantom", "warden"],
                 "nested": {
                   "default": {
                     "type": "truncated"
@@ -36521,13 +35902,7 @@
               },
               "tilts": {
                 "type": "object",
-                "keys": [
-                  "default",
-                  "brute",
-                  "scholar",
-                  "phantom",
-                  "warden"
-                ],
+                "keys": ["default", "brute", "scholar", "phantom", "warden"],
                 "nested": {
                   "default": {
                     "type": "truncated"
@@ -36557,11 +35932,7 @@
           },
           "easter_eggs": {
             "type": "object",
-            "keys": [
-              "trigger_phrases",
-              "special_dates",
-              "achievement_unlocks"
-            ],
+            "keys": ["trigger_phrases", "special_dates", "achievement_unlocks"],
             "nested": {
               "trigger_phrases": {
                 "type": "object",
@@ -36592,12 +35963,7 @@
               },
               "special_dates": {
                 "type": "object",
-                "keys": [
-                  "01-01",
-                  "03-14",
-                  "10-31",
-                  "12-25"
-                ],
+                "keys": ["01-01", "03-14", "10-31", "12-25"],
                 "nested": {
                   "01-01": {
                     "type": "truncated"
@@ -36671,10 +36037,7 @@
               },
               "activity_based_timing": {
                 "type": "object",
-                "keys": [
-                  "high_activity",
-                  "low_activity"
-                ],
+                "keys": ["high_activity", "low_activity"],
                 "nested": {
                   "high_activity": {
                     "type": "truncated"
@@ -36686,13 +36049,7 @@
               },
               "persona_specific_timing": {
                 "type": "object",
-                "keys": [
-                  "default",
-                  "brute",
-                  "scholar",
-                  "phantom",
-                  "warden"
-                ],
+                "keys": ["default", "brute", "scholar", "phantom", "warden"],
                 "nested": {
                   "default": {
                     "type": "truncated"
@@ -36891,9 +36248,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "riskmanagement"
-      ],
+      "component_mentions": ["riskmanagement"],
       "sections": {
         "Shepherd Interfaces for HydraX-v2": 3,
         "Show connections for a module": 1,
@@ -36965,10 +36320,7 @@
               },
               "databases": {
                 "type": "object",
-                "keys": [
-                  "terminal_assignments",
-                  "bitten_main"
-                ],
+                "keys": ["terminal_assignments", "bitten_main"],
                 "nested": {
                   "terminal_assignments": {
                     "type": "truncated"
@@ -36985,22 +36337,11 @@
           },
           "bridge_terminals": {
             "type": "object",
-            "keys": [
-              "press_pass",
-              "demo",
-              "live"
-            ],
+            "keys": ["press_pass", "demo", "live"],
             "nested": {
               "press_pass": {
                 "type": "object",
-                "keys": [
-                  "name",
-                  "ip",
-                  "port",
-                  "folder",
-                  "max_users",
-                  "broker"
-                ],
+                "keys": ["name", "ip", "port", "folder", "max_users", "broker"],
                 "nested": {
                   "name": {
                     "type": "truncated"
@@ -37021,14 +36362,7 @@
               },
               "demo": {
                 "type": "object",
-                "keys": [
-                  "name",
-                  "ip",
-                  "port",
-                  "folder",
-                  "max_users",
-                  "broker"
-                ],
+                "keys": ["name", "ip", "port", "folder", "max_users", "broker"],
                 "nested": {
                   "name": {
                     "type": "truncated"
@@ -37049,14 +36383,7 @@
               },
               "live": {
                 "type": "object",
-                "keys": [
-                  "name",
-                  "ip",
-                  "port",
-                  "folder",
-                  "max_users",
-                  "broker"
-                ],
+                "keys": ["name", "ip", "port", "folder", "max_users", "broker"],
                 "nested": {
                   "name": {
                     "type": "truncated"
@@ -37129,13 +36456,7 @@
               },
               "max_daily_trades": {
                 "type": "object",
-                "keys": [
-                  "PRESS_PASS",
-                  "NIBBLER",
-                  "FANG",
-                  "COMMANDER",
-                  "APEX"
-                ],
+                "keys": ["PRESS_PASS", "NIBBLER", "FANG", "COMMANDER", "APEX"],
                 "nested": {
                   "PRESS_PASS": {
                     "type": "truncated"
@@ -37156,13 +36477,7 @@
               },
               "cooldown_periods": {
                 "type": "object",
-                "keys": [
-                  "PRESS_PASS",
-                  "NIBBLER",
-                  "FANG",
-                  "COMMANDER",
-                  "APEX"
-                ],
+                "keys": ["PRESS_PASS", "NIBBLER", "FANG", "COMMANDER", "APEX"],
                 "nested": {
                   "PRESS_PASS": {
                     "type": "truncated"
@@ -37253,12 +36568,7 @@
             "nested": {
               "major_pairs": {
                 "type": "object",
-                "keys": [
-                  "EURUSD",
-                  "GBPUSD",
-                  "USDJPY",
-                  "USDCAD"
-                ],
+                "keys": ["EURUSD", "GBPUSD", "USDJPY", "USDCAD"],
                 "nested": {
                   "EURUSD": {
                     "type": "truncated"
@@ -37276,12 +36586,7 @@
               },
               "volatile_pairs": {
                 "type": "object",
-                "keys": [
-                  "GBPJPY",
-                  "EURJPY",
-                  "AUDJPY",
-                  "GBPCHF"
-                ],
+                "keys": ["GBPJPY", "EURJPY", "AUDJPY", "GBPCHF"],
                 "nested": {
                   "GBPJPY": {
                     "type": "truncated"
@@ -37299,12 +36604,7 @@
               },
               "commodity_pairs": {
                 "type": "object",
-                "keys": [
-                  "AUDUSD",
-                  "NZDUSD",
-                  "USDCHF",
-                  "EURGBP"
-                ],
+                "keys": ["AUDUSD", "NZDUSD", "USDCHF", "EURGBP"],
                 "nested": {
                   "AUDUSD": {
                     "type": "truncated"
@@ -37322,11 +36622,7 @@
               },
               "volatility_monsters": {
                 "type": "object",
-                "keys": [
-                  "GBPNZD",
-                  "GBPAUD",
-                  "EURAUD"
-                ],
+                "keys": ["GBPNZD", "GBPAUD", "EURAUD"],
                 "nested": {
                   "GBPNZD": {
                     "type": "truncated"
@@ -37468,12 +36764,7 @@
           },
           "apex_v5_sessions": {
             "type": "object",
-            "keys": [
-              "asian",
-              "london",
-              "new_york",
-              "overlap_london_ny"
-            ],
+            "keys": ["asian", "london", "new_york", "overlap_london_ny"],
             "nested": {
               "asian": {
                 "type": "object",
@@ -37702,10 +36993,7 @@
         "nested": {
           "modes": {
             "type": "object",
-            "keys": [
-              "bit_mode",
-              "commander_mode"
-            ],
+            "keys": ["bit_mode", "commander_mode"],
             "nested": {
               "bit_mode": {
                 "type": "object",
@@ -37769,12 +37057,7 @@
           },
           "tactical_modes": {
             "type": "object",
-            "keys": [
-              "auto",
-              "semi",
-              "sniper",
-              "leroy"
-            ],
+            "keys": ["auto", "semi", "sniper", "leroy"],
             "nested": {
               "auto": {
                 "type": "object",
@@ -37900,10 +37183,7 @@
               },
               "position_sizing": {
                 "type": "object",
-                "keys": [
-                  "method",
-                  "default_percent"
-                ],
+                "keys": ["method", "default_percent"],
                 "nested": {
                   "method": {
                     "type": "truncated"
@@ -37915,11 +37195,7 @@
               },
               "stop_loss": {
                 "type": "object",
-                "keys": [
-                  "default_pips",
-                  "max_pips",
-                  "trailing_enabled"
-                ],
+                "keys": ["default_pips", "max_pips", "trailing_enabled"],
                 "nested": {
                   "default_pips": {
                     "type": "truncated"
@@ -37936,11 +37212,7 @@
           },
           "tcs_config": {
             "type": "object",
-            "keys": [
-              "min_score",
-              "high_confidence",
-              "factors"
-            ],
+            "keys": ["min_score", "high_confidence", "factors"],
             "nested": {
               "min_score": {
                 "type": "int"
@@ -37980,10 +37252,7 @@
           },
           "instruments": {
             "type": "object",
-            "keys": [
-              "forex",
-              "indices"
-            ],
+            "keys": ["forex", "indices"],
             "nested": {
               "forex": {
                 "type": "array",
@@ -38043,12 +37312,7 @@
             "nested": {
               "major_pairs": {
                 "type": "object",
-                "keys": [
-                  "EURUSD",
-                  "GBPUSD",
-                  "USDJPY",
-                  "USDCAD"
-                ],
+                "keys": ["EURUSD", "GBPUSD", "USDJPY", "USDCAD"],
                 "nested": {
                   "EURUSD": {
                     "type": "truncated"
@@ -38066,12 +37330,7 @@
               },
               "volatile_pairs": {
                 "type": "object",
-                "keys": [
-                  "GBPJPY",
-                  "EURJPY",
-                  "AUDJPY",
-                  "GBPCHF"
-                ],
+                "keys": ["GBPJPY", "EURJPY", "AUDJPY", "GBPCHF"],
                 "nested": {
                   "GBPJPY": {
                     "type": "truncated"
@@ -38089,12 +37348,7 @@
               },
               "commodity_pairs": {
                 "type": "object",
-                "keys": [
-                  "AUDUSD",
-                  "NZDUSD",
-                  "USDCHF",
-                  "EURGBP"
-                ],
+                "keys": ["AUDUSD", "NZDUSD", "USDCHF", "EURGBP"],
                 "nested": {
                   "AUDUSD": {
                     "type": "truncated"
@@ -38112,11 +37366,7 @@
               },
               "volatility_monsters": {
                 "type": "object",
-                "keys": [
-                  "GBPNZD",
-                  "GBPAUD",
-                  "EURAUD"
-                ],
+                "keys": ["GBPNZD", "GBPAUD", "EURAUD"],
                 "nested": {
                   "GBPNZD": {
                     "type": "truncated"
@@ -38258,12 +37508,7 @@
           },
           "apex_v5_sessions": {
             "type": "object",
-            "keys": [
-              "asian",
-              "london",
-              "new_york",
-              "overlap_london_ny"
-            ],
+            "keys": ["asian", "london", "new_york", "overlap_london_ny"],
             "nested": {
               "asian": {
                 "type": "object",
@@ -38462,10 +37707,7 @@
           },
           "xp_system": {
             "type": "object",
-            "keys": [
-              "base_xp_values",
-              "persona_multipliers"
-            ],
+            "keys": ["base_xp_values", "persona_multipliers"],
             "nested": {
               "base_xp_values": {
                 "type": "object",
@@ -38527,10 +37769,7 @@
           },
           "persona_evolution": {
             "type": "object",
-            "keys": [
-              "check_interval",
-              "evolution_triggers"
-            ],
+            "keys": ["check_interval", "evolution_triggers"],
             "nested": {
               "check_interval": {
                 "type": "int"
@@ -38614,19 +37853,11 @@
         "nested": {
           "position_limits": {
             "type": "object",
-            "keys": [
-              "balance_thresholds"
-            ],
+            "keys": ["balance_thresholds"],
             "nested": {
               "balance_thresholds": {
                 "type": "object",
-                "keys": [
-                  500,
-                  1000,
-                  2000,
-                  5000,
-                  10000
-                ],
+                "keys": [500, 1000, 2000, 5000, 10000],
                 "nested": {
                   "500": {
                     "type": "truncated"
@@ -38649,13 +37880,7 @@
           },
           "tiers": {
             "type": "object",
-            "keys": [
-              "PRESS_PASS",
-              "NIBBLER",
-              "FANG",
-              "COMMANDER",
-              "APEX"
-            ],
+            "keys": ["PRESS_PASS", "NIBBLER", "FANG", "COMMANDER", "APEX"],
             "nested": {
               "PRESS_PASS": {
                 "type": "object",
@@ -38796,11 +38021,7 @@
           },
           "special_modes": {
             "type": "object",
-            "keys": [
-              "chaingun",
-              "midnight_hammer",
-              "stealth"
-            ],
+            "keys": ["chaingun", "midnight_hammer", "stealth"],
             "nested": {
               "chaingun": {
                 "type": "object",
@@ -38832,11 +38053,7 @@
               },
               "midnight_hammer": {
                 "type": "object",
-                "keys": [
-                  "unity_multiplier",
-                  "time_window",
-                  "description"
-                ],
+                "keys": ["unity_multiplier", "time_window", "description"],
                 "nested": {
                   "unity_multiplier": {
                     "type": "truncated"
@@ -38950,19 +38167,11 @@
       "file": "/root/HydraX-v2/config/mt5_bridge.json",
       "size": 792,
       "hash": "f1706cbd66cd818d025f81101d040869",
-      "keys": [
-        "mt5",
-        "bridge",
-        "logging"
-      ],
+      "keys": ["mt5", "bridge", "logging"],
       "array_length": null,
       "structure": {
         "type": "object",
-        "keys": [
-          "mt5",
-          "bridge",
-          "logging"
-        ],
+        "keys": ["mt5", "bridge", "logging"],
         "nested": {
           "mt5": {
             "type": "object",
@@ -39019,10 +38228,7 @@
           },
           "logging": {
             "type": "object",
-            "keys": [
-              "level",
-              "file"
-            ],
+            "keys": ["level", "file"],
             "nested": {
               "level": {
                 "type": "str"
@@ -39042,20 +38248,10 @@
       "file": "/root/HydraX-v2/config/stealth_settings.yml",
       "size": 3017,
       "hash": "f24f794b58e25fbba778f111cb7da220",
-      "keys": [
-        "stealth",
-        "tier_stealth",
-        "special_behaviors",
-        "logging"
-      ],
+      "keys": ["stealth", "tier_stealth", "special_behaviors", "logging"],
       "structure": {
         "type": "object",
-        "keys": [
-          "stealth",
-          "tier_stealth",
-          "special_behaviors",
-          "logging"
-        ],
+        "keys": ["stealth", "tier_stealth", "special_behaviors", "logging"],
         "nested": {
           "stealth": {
             "type": "object",
@@ -39078,12 +38274,7 @@
               },
               "entry_delay": {
                 "type": "object",
-                "keys": [
-                  "low",
-                  "medium",
-                  "high",
-                  "ghost"
-                ],
+                "keys": ["low", "medium", "high", "ghost"],
                 "nested": {
                   "low": {
                     "type": "truncated"
@@ -39101,12 +38292,7 @@
               },
               "lot_jitter": {
                 "type": "object",
-                "keys": [
-                  "low",
-                  "medium",
-                  "high",
-                  "ghost"
-                ],
+                "keys": ["low", "medium", "high", "ghost"],
                 "nested": {
                   "low": {
                     "type": "truncated"
@@ -39124,12 +38310,7 @@
               },
               "tp_sl_offset": {
                 "type": "object",
-                "keys": [
-                  "low",
-                  "medium",
-                  "high",
-                  "ghost"
-                ],
+                "keys": ["low", "medium", "high", "ghost"],
                 "nested": {
                   "low": {
                     "type": "truncated"
@@ -39149,19 +38330,11 @@
           },
           "tier_stealth": {
             "type": "object",
-            "keys": [
-              "nibbler",
-              "fang",
-              "commander",
-              "apex"
-            ],
+            "keys": ["nibbler", "fang", "commander", "apex"],
             "nested": {
               "nibbler": {
                 "type": "object",
-                "keys": [
-                  "enabled",
-                  "max_level"
-                ],
+                "keys": ["enabled", "max_level"],
                 "nested": {
                   "enabled": {
                     "type": "truncated"
@@ -39173,11 +38346,7 @@
               },
               "fang": {
                 "type": "object",
-                "keys": [
-                  "enabled",
-                  "max_level",
-                  "modes"
-                ],
+                "keys": ["enabled", "max_level", "modes"],
                 "nested": {
                   "enabled": {
                     "type": "truncated"
@@ -39192,11 +38361,7 @@
               },
               "commander": {
                 "type": "object",
-                "keys": [
-                  "enabled",
-                  "max_level",
-                  "modes"
-                ],
+                "keys": ["enabled", "max_level", "modes"],
                 "nested": {
                   "enabled": {
                     "type": "truncated"
@@ -39211,11 +38376,7 @@
               },
               "apex": {
                 "type": "object",
-                "keys": [
-                  "enabled",
-                  "max_level",
-                  "modes"
-                ],
+                "keys": ["enabled", "max_level", "modes"],
                 "nested": {
                   "enabled": {
                     "type": "truncated"
@@ -39232,18 +38393,11 @@
           },
           "special_behaviors": {
             "type": "object",
-            "keys": [
-              "win_streak",
-              "pattern_break",
-              "time_variations"
-            ],
+            "keys": ["win_streak", "pattern_break", "time_variations"],
             "nested": {
               "win_streak": {
                 "type": "object",
-                "keys": [
-                  "threshold",
-                  "loss_size_multiplier"
-                ],
+                "keys": ["threshold", "loss_size_multiplier"],
                 "nested": {
                   "threshold": {
                     "type": "truncated"
@@ -39255,10 +38409,7 @@
               },
               "pattern_break": {
                 "type": "object",
-                "keys": [
-                  "enabled",
-                  "trade_interval"
-                ],
+                "keys": ["enabled", "trade_interval"],
                 "nested": {
                   "enabled": {
                     "type": "truncated"
@@ -39523,12 +38674,7 @@
         "nested": {
           "system": {
             "type": "object",
-            "keys": [
-              "name",
-              "version",
-              "environment",
-              "debug"
-            ],
+            "keys": ["name", "version", "environment", "debug"],
             "nested": {
               "name": {
                 "type": "str"
@@ -39636,11 +38782,7 @@
           },
           "pipeline": {
             "type": "object",
-            "keys": [
-              "buffer_size",
-              "processing_threads",
-              "max_queue_size"
-            ],
+            "keys": ["buffer_size", "processing_threads", "max_queue_size"],
             "nested": {
               "buffer_size": {
                 "type": "int"
@@ -39946,10 +39088,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "WebApp",
-        "riskmanagement"
-      ],
+      "component_mentions": ["WebApp", "riskmanagement"],
       "sections": {
         "HydraX Mission Command Center": 23
       },
@@ -40168,9 +39307,7 @@
       "code_blocks": [],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "WebApp"
-      ],
+      "component_mentions": ["WebApp"],
       "sections": {
         "BITTEN WebApp: Sniper Mission Brief HUD": 7
       },
@@ -40358,9 +39495,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "PressPass"
-      ],
+      "component_mentions": ["PressPass"],
       "sections": {
         "MetaQuotes Demo Account Provisioning System": 29
       },
@@ -40625,11 +39760,7 @@
           },
           "http_headers": {
             "type": "object",
-            "keys": [
-              "Content-Type",
-              "X-Signal-Source",
-              "X-API-Version"
-            ],
+            "keys": ["Content-Type", "X-Signal-Source", "X-API-Version"],
             "nested": {
               "Content-Type": {
                 "type": "str"
@@ -41160,22 +40291,10 @@
       "file": "/root/HydraX-v2/.github/ISSUE_TEMPLATE/feature_request.yml",
       "size": 2599,
       "hash": "b9e3bdcb81191d95992f864f879d266b",
-      "keys": [
-        "name",
-        "description",
-        "title",
-        "labels",
-        "body"
-      ],
+      "keys": ["name", "description", "title", "labels", "body"],
       "structure": {
         "type": "object",
-        "keys": [
-          "name",
-          "description",
-          "title",
-          "labels",
-          "body"
-        ],
+        "keys": ["name", "description", "title", "labels", "body"],
         "nested": {
           "name": {
             "type": "str"
@@ -41198,10 +40317,7 @@
             "length": 9,
             "sample": {
               "type": "object",
-              "keys": [
-                "type",
-                "attributes"
-              ],
+              "keys": ["type", "attributes"],
               "nested": {
                 "type": {
                   "type": "truncated"
@@ -41222,22 +40338,10 @@
       "file": "/root/HydraX-v2/.github/ISSUE_TEMPLATE/bug_report.yml",
       "size": 2217,
       "hash": "8d808a93c225781b05f642ad2004b908",
-      "keys": [
-        "name",
-        "description",
-        "title",
-        "labels",
-        "body"
-      ],
+      "keys": ["name", "description", "title", "labels", "body"],
       "structure": {
         "type": "object",
-        "keys": [
-          "name",
-          "description",
-          "title",
-          "labels",
-          "body"
-        ],
+        "keys": ["name", "description", "title", "labels", "body"],
         "nested": {
           "name": {
             "type": "str"
@@ -41260,10 +40364,7 @@
             "length": 8,
             "sample": {
               "type": "object",
-              "keys": [
-                "type",
-                "attributes"
-              ],
+              "keys": ["type", "attributes"],
               "nested": {
                 "type": {
                   "type": "truncated"
@@ -41284,34 +40385,21 @@
       "file": "/root/HydraX-v2/.github/workflows/ci.yml",
       "size": 1581,
       "hash": "02a33cb0c63e40f24333fd990b05e683",
-      "keys": [
-        "name",
-        true,
-        "jobs"
-      ],
+      "keys": ["name", true, "jobs"],
       "structure": {
         "type": "object",
-        "keys": [
-          "name",
-          true,
-          "jobs"
-        ],
+        "keys": ["name", true, "jobs"],
         "nested": {
           "name": {
             "type": "str"
           },
           "true": {
             "type": "object",
-            "keys": [
-              "push",
-              "pull_request"
-            ],
+            "keys": ["push", "pull_request"],
             "nested": {
               "push": {
                 "type": "object",
-                "keys": [
-                  "branches"
-                ],
+                "keys": ["branches"],
                 "nested": {
                   "branches": {
                     "type": "truncated"
@@ -41320,9 +40408,7 @@
               },
               "pull_request": {
                 "type": "object",
-                "keys": [
-                  "branches"
-                ],
+                "keys": ["branches"],
                 "nested": {
                   "branches": {
                     "type": "truncated"
@@ -41333,18 +40419,11 @@
           },
           "jobs": {
             "type": "object",
-            "keys": [
-              "test",
-              "security"
-            ],
+            "keys": ["test", "security"],
             "nested": {
               "test": {
                 "type": "object",
-                "keys": [
-                  "runs-on",
-                  "strategy",
-                  "steps"
-                ],
+                "keys": ["runs-on", "strategy", "steps"],
                 "nested": {
                   "runs-on": {
                     "type": "truncated"
@@ -41359,10 +40438,7 @@
               },
               "security": {
                 "type": "object",
-                "keys": [
-                  "runs-on",
-                  "steps"
-                ],
+                "keys": ["runs-on", "steps"],
                 "nested": {
                   "runs-on": {
                     "type": "truncated"
@@ -41429,10 +40505,7 @@
       "code_blocks": [],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "riskmanagement",
-        "MT5bridge"
-      ],
+      "component_mentions": ["riskmanagement", "MT5bridge"],
       "sections": {
         "Pull Request": 10
       },
@@ -41594,9 +40667,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "firemode"
-      ],
+      "component_mentions": ["firemode"],
       "sections": {
         "TCS++ and Stealth Protocol Test Suite": 11,
         "Run all tests": 1,
@@ -43134,9 +42205,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "riskmanagement"
-      ],
+      "component_mentions": ["riskmanagement"],
       "sections": {
         "MT5 Enhanced Features Documentation": 5,
         "Execute with 2% risk": 10,
@@ -43406,9 +42475,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "MT5bridge"
-      ],
+      "component_mentions": ["MT5bridge"],
       "sections": {
         "HydraX v2 Cleanup & Restoration Guide": 15,
         "View available archive branches": 1,
@@ -43776,9 +42843,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "WebApp"
-      ],
+      "component_mentions": ["WebApp"],
       "sections": {
         "BITTEN Squad Chat System": 14,
         "Initialize chat system": 1,
@@ -44012,9 +43077,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "riskmanagement"
-      ],
+      "component_mentions": ["riskmanagement"],
       "sections": {
         "Cross-Asset Correlation System Documentation": 21,
         "Initialize system": 1,
@@ -44198,9 +43261,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "firemode"
-      ],
+      "component_mentions": ["firemode"],
       "sections": {
         "BITTEN Security Fixes Applied": 13,
         "\u2705 Secure random for stealth mode variations": 1,
@@ -44313,9 +43374,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "firemode"
-      ],
+      "component_mentions": ["firemode"],
       "sections": {
         "TCS++ Engine Documentation": 19,
         "Calculate TCS score": 2
@@ -44466,10 +43525,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "XP(?:system|economy)",
-        "PressPass"
-      ],
+      "component_mentions": ["XP(?:system|economy)", "PressPass"],
       "sections": {
         "Press Pass XP Reset System": 10,
         "Install service": 1,
@@ -44683,9 +43739,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "firemode"
-      ],
+      "component_mentions": ["firemode"],
       "sections": {
         "BITTEN Stealth Protocol Implementation": 20,
         "Initialize stealth": 1,
@@ -45202,11 +44256,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "riskmanagement",
-        "trademanager",
-        "MT5bridge"
-      ],
+      "component_mentions": ["riskmanagement", "trademanager", "MT5bridge"],
       "sections": {
         "BITTEN Security Audit Report": 10,
         "Example HMAC implementation": 1,
@@ -45903,9 +44953,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "WebApp"
-      ],
+      "component_mentions": ["WebApp"],
       "sections": {
         "BITTEN WebApp Process Manager": 4,
         "Run as root": 2,
@@ -46144,9 +45192,7 @@
         }
       ],
       "todos": [],
-      "component_mentions": [
-        "MT5bridge"
-      ],
+      "component_mentions": ["MT5bridge"],
       "sections": {
         "HydraX v2 Documentation Hub": 16
       },
@@ -46416,9 +45462,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "MT5bridge"
-      ],
+      "component_mentions": ["MT5bridge"],
       "sections": {
         "Development Guide": 4,
         "Clone the repository": 1,
@@ -47116,11 +46160,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "firemode",
-        "riskmanagement",
-        "MT5bridge"
-      ],
+      "component_mentions": ["firemode", "riskmanagement", "MT5bridge"],
       "sections": {
         "MT5 Bridge Setup Guide": 6,
         "Enable MT5 bridge": 1,
@@ -47279,9 +46319,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "WebApp"
-      ],
+      "component_mentions": ["WebApp"],
       "sections": {
         "BITTEN Signal Fusion System Documentation": 13,
         "Initialize": 1,
@@ -47392,10 +46430,7 @@
       "code_blocks": [],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "firemode",
-        "XP(?:system|economy)"
-      ],
+      "component_mentions": ["firemode", "XP(?:system|economy)"],
       "sections": {
         "\ud83c\udf0d How to Tell the World About BITTEN": 23
       },
@@ -47517,9 +46552,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "riskmanagement"
-      ],
+      "component_mentions": ["riskmanagement"],
       "sections": {
         "News Event Detection and Auto-Pause Feature": 8,
         "News API Configuration": 8,
@@ -47785,11 +46818,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "firemode",
-        "riskmanagement",
-        "MT5bridge"
-      ],
+      "component_mentions": ["firemode", "riskmanagement", "MT5bridge"],
       "sections": {
         "BITTEN Centralized Trading Pairs Configuration": 7,
         "Get the global configuration instance": 1,
@@ -48589,9 +47618,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "MT5bridge"
-      ],
+      "component_mentions": ["MT5bridge"],
       "sections": {
         "HydraX v2 Deployment Guide": 8,
         "Update system": 1,
@@ -48998,9 +48025,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "PressPass"
-      ],
+      "component_mentions": ["PressPass"],
       "sections": {
         "BITTEN User Registration and Authentication System": 9,
         "User starts with /start command": 3,
@@ -49137,9 +48162,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "XP(?:system|economy)"
-      ],
+      "component_mentions": ["XP(?:system|economy)"],
       "sections": {
         "HydraX Education XP System": 23
       },
@@ -49342,10 +48365,7 @@
         }
       ],
       "todos": [],
-      "component_mentions": [
-        "riskmanagement",
-        "MT5bridge"
-      ],
+      "component_mentions": ["riskmanagement", "MT5bridge"],
       "sections": {
         "HydraX v2 Project Analysis & Information Hub": 16,
         "Core Configuration": 1,
@@ -49626,9 +48646,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "PressPass"
-      ],
+      "component_mentions": ["PressPass"],
       "sections": {
         "BITTEN Email Service Setup Guide": 5,
         "Email Provider (smtp, sendgrid, or ses)": 1,
@@ -50526,9 +49544,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "riskmanagement"
-      ],
+      "component_mentions": ["riskmanagement"],
       "sections": {
         "MT5 Enhanced Features Documentation": 5,
         "Execute with 2% risk": 10,
@@ -50693,10 +49709,7 @@
       "code_blocks": [],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "firemode",
-        "riskmanagement"
-      ],
+      "component_mentions": ["firemode", "riskmanagement"],
       "sections": {
         "\ud83e\udde0 The Psychology Behind BITTEN: Research-Based Gamification in Trading": 35
       },
@@ -50870,10 +49883,7 @@
         }
       ],
       "todos": [],
-      "component_mentions": [
-        "riskmanagement",
-        "MT5bridge"
-      ],
+      "component_mentions": ["riskmanagement", "MT5bridge"],
       "sections": {
         "HydraX v2 Development Roadmap": 37
       },
@@ -51035,11 +50045,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "firemode",
-        "XP(?:system|economy)",
-        "MT5bridge"
-      ],
+      "component_mentions": ["firemode", "XP(?:system|economy)", "MT5bridge"],
       "sections": {
         "\ud83c\udfaf MT5 Bridge Result Parser Implementation": 10,
         "Handles various MT5 formats": 6,
@@ -52582,9 +51588,7 @@
         }
       ],
       "todos": [],
-      "component_mentions": [
-        "XP(?:system|economy)"
-      ],
+      "component_mentions": ["XP(?:system|economy)"],
       "sections": {
         "BITTEN Security Implementation Guide": 7,
         "src/bitten_core/auth_manager.py": 3,
@@ -52645,9 +51649,7 @@
       "code_blocks": [],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "WebApp"
-      ],
+      "component_mentions": ["WebApp"],
       "sections": {
         "OPERATION EDUCATION: WebApp Layer Spec": 2
       },
@@ -52965,17 +51967,11 @@
       "file": "/root/HydraX-v2/docs/onboarding/onboarding_dialogue.json",
       "size": 22186,
       "hash": "e74875af008c107658529271d6419e3b",
-      "keys": [
-        "phases",
-        "callsign_validation"
-      ],
+      "keys": ["phases", "callsign_validation"],
       "array_length": null,
       "structure": {
         "type": "object",
-        "keys": [
-          "phases",
-          "callsign_validation"
-        ],
+        "keys": ["phases", "callsign_validation"],
         "nested": {
           "phases": {
             "type": "object",
@@ -53075,11 +52071,7 @@
               },
               "training_setup": {
                 "type": "object",
-                "keys": [
-                  "title",
-                  "nexus_guidance",
-                  "steps"
-                ],
+                "keys": ["title", "nexus_guidance", "steps"],
                 "nested": {
                   "title": {
                     "type": "truncated"
@@ -53973,10 +52965,7 @@
         }
       ],
       "todos": [],
-      "component_mentions": [
-        "riskmanagement",
-        "PressPass"
-      ],
+      "component_mentions": ["riskmanagement", "PressPass"],
       "sections": {
         "Press Pass Analytics & Metrics Documentation": 44
       },
@@ -54194,9 +53183,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "PressPass"
-      ],
+      "component_mentions": ["PressPass"],
       "sections": {
         "Press Pass Monitoring System Documentation": 13,
         "Initialize components": 1,
@@ -54377,9 +53364,7 @@
       "code_blocks": [],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "firemode"
-      ],
+      "component_mentions": ["firemode"],
       "sections": {
         "BITTEN World Lore & Design Bible": 37
       },
@@ -54512,9 +53497,7 @@
       "code_blocks": [],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "firemode"
-      ],
+      "component_mentions": ["firemode"],
       "sections": {
         "\ud83d\udcdc BITTEN RULES OF ENGAGEMENT - THE LAW": 8
       },
@@ -54763,9 +53746,7 @@
       "code_blocks": [],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "riskmanagement"
-      ],
+      "component_mentions": ["riskmanagement"],
       "sections": {
         "BITTEN Strategy Improvements - Summary": 6
       },
@@ -54867,9 +53848,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "firemode"
-      ],
+      "component_mentions": ["firemode"],
       "sections": {
         "\ud83c\udf9a\ufe0f COMMANDER SELECTOR SWITCH GUIDE": 17
       },
@@ -55099,9 +54078,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "riskmanagement"
-      ],
+      "component_mentions": ["riskmanagement"],
       "sections": {
         "BITTEN Bot Commands Reference": 49
       },
@@ -55375,10 +54352,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "riskmanagement",
-        "MT5bridge"
-      ],
+      "component_mentions": ["riskmanagement", "MT5bridge"],
       "sections": {
         "BITTEN System Blueprint Analysis": 23,
         "BITTEN Configuration": 1,
@@ -55451,10 +54425,7 @@
       "size": 2387,
       "hash": "985b0bfebe5bd4bb736a057aa480e17a",
       "lines": 31,
-      "component_mentions": [
-        "WebApp",
-        "PressPass"
-      ],
+      "component_mentions": ["WebApp", "PressPass"],
       "last_modified": "2025-07-08T00:59:51.904356"
     },
     {
@@ -55484,20 +54455,11 @@
         "nested": {
           "trading_pairs": {
             "type": "object",
-            "keys": [
-              "core_pairs",
-              "extra_pairs"
-            ],
+            "keys": ["core_pairs", "extra_pairs"],
             "nested": {
               "core_pairs": {
                 "type": "object",
-                "keys": [
-                  "GBPUSD",
-                  "EURUSD",
-                  "USDJPY",
-                  "GBPJPY",
-                  "USDCAD"
-                ],
+                "keys": ["GBPUSD", "EURUSD", "USDJPY", "GBPJPY", "USDCAD"],
                 "nested": {
                   "GBPUSD": {
                     "type": "truncated"
@@ -55557,11 +54519,7 @@
             "nested": {
               "arcade_strategy": {
                 "type": "object",
-                "keys": [
-                  "description",
-                  "allowed_pairs",
-                  "min_tcs"
-                ],
+                "keys": ["description", "allowed_pairs", "min_tcs"],
                 "nested": {
                   "description": {
                     "type": "truncated"
@@ -55576,11 +54534,7 @@
               },
               "sniper_strategy": {
                 "type": "object",
-                "keys": [
-                  "description",
-                  "allowed_pairs",
-                  "min_tcs"
-                ],
+                "keys": ["description", "allowed_pairs", "min_tcs"],
                 "nested": {
                   "description": {
                     "type": "truncated"
@@ -55595,11 +54549,7 @@
               },
               "all_pairs_strategy": {
                 "type": "object",
-                "keys": [
-                  "description",
-                  "allowed_pairs",
-                  "min_tcs"
-                ],
+                "keys": ["description", "allowed_pairs", "min_tcs"],
                 "nested": {
                   "description": {
                     "type": "truncated"
@@ -55673,20 +54623,11 @@
           },
           "sessions": {
             "type": "object",
-            "keys": [
-              "asian",
-              "london",
-              "new_york",
-              "overlap_london_ny"
-            ],
+            "keys": ["asian", "london", "new_york", "overlap_london_ny"],
             "nested": {
               "asian": {
                 "type": "object",
-                "keys": [
-                  "hours",
-                  "timezone",
-                  "optimal_pairs"
-                ],
+                "keys": ["hours", "timezone", "optimal_pairs"],
                 "nested": {
                   "hours": {
                     "type": "truncated"
@@ -55701,11 +54642,7 @@
               },
               "london": {
                 "type": "object",
-                "keys": [
-                  "hours",
-                  "timezone",
-                  "optimal_pairs"
-                ],
+                "keys": ["hours", "timezone", "optimal_pairs"],
                 "nested": {
                   "hours": {
                     "type": "truncated"
@@ -55720,11 +54657,7 @@
               },
               "new_york": {
                 "type": "object",
-                "keys": [
-                  "hours",
-                  "timezone",
-                  "optimal_pairs"
-                ],
+                "keys": ["hours", "timezone", "optimal_pairs"],
                 "nested": {
                   "hours": {
                     "type": "truncated"
@@ -55799,10 +54732,7 @@
         "nested": {
           "modes": {
             "type": "object",
-            "keys": [
-              "bit_mode",
-              "commander_mode"
-            ],
+            "keys": ["bit_mode", "commander_mode"],
             "nested": {
               "bit_mode": {
                 "type": "object",
@@ -55866,12 +54796,7 @@
           },
           "tactical_modes": {
             "type": "object",
-            "keys": [
-              "auto",
-              "semi",
-              "sniper",
-              "leroy"
-            ],
+            "keys": ["auto", "semi", "sniper", "leroy"],
             "nested": {
               "auto": {
                 "type": "object",
@@ -55997,10 +54922,7 @@
               },
               "position_sizing": {
                 "type": "object",
-                "keys": [
-                  "method",
-                  "default_percent"
-                ],
+                "keys": ["method", "default_percent"],
                 "nested": {
                   "method": {
                     "type": "truncated"
@@ -56012,11 +54934,7 @@
               },
               "stop_loss": {
                 "type": "object",
-                "keys": [
-                  "default_pips",
-                  "max_pips",
-                  "trailing_enabled"
-                ],
+                "keys": ["default_pips", "max_pips", "trailing_enabled"],
                 "nested": {
                   "default_pips": {
                     "type": "truncated"
@@ -56033,11 +54951,7 @@
           },
           "tcs_config": {
             "type": "object",
-            "keys": [
-              "min_score",
-              "high_confidence",
-              "factors"
-            ],
+            "keys": ["min_score", "high_confidence", "factors"],
             "nested": {
               "min_score": {
                 "type": "int"
@@ -56077,10 +54991,7 @@
           },
           "instruments": {
             "type": "object",
-            "keys": [
-              "forex",
-              "indices"
-            ],
+            "keys": ["forex", "indices"],
             "nested": {
               "forex": {
                 "type": "array",
@@ -56137,19 +55048,11 @@
         "nested": {
           "position_limits": {
             "type": "object",
-            "keys": [
-              "balance_thresholds"
-            ],
+            "keys": ["balance_thresholds"],
             "nested": {
               "balance_thresholds": {
                 "type": "object",
-                "keys": [
-                  500,
-                  1000,
-                  2000,
-                  5000,
-                  10000
-                ],
+                "keys": [500, 1000, 2000, 5000, 10000],
                 "nested": {
                   "500": {
                     "type": "truncated"
@@ -56172,13 +55075,7 @@
           },
           "tiers": {
             "type": "object",
-            "keys": [
-              "PRESS_PASS",
-              "NIBBLER",
-              "FANG",
-              "COMMANDER",
-              "APEX"
-            ],
+            "keys": ["PRESS_PASS", "NIBBLER", "FANG", "COMMANDER", "APEX"],
             "nested": {
               "PRESS_PASS": {
                 "type": "object",
@@ -56319,11 +55216,7 @@
           },
           "special_modes": {
             "type": "object",
-            "keys": [
-              "chaingun",
-              "midnight_hammer",
-              "stealth"
-            ],
+            "keys": ["chaingun", "midnight_hammer", "stealth"],
             "nested": {
               "chaingun": {
                 "type": "object",
@@ -56355,11 +55248,7 @@
               },
               "midnight_hammer": {
                 "type": "object",
-                "keys": [
-                  "unity_multiplier",
-                  "time_window",
-                  "description"
-                ],
+                "keys": ["unity_multiplier", "time_window", "description"],
                 "nested": {
                   "unity_multiplier": {
                     "type": "truncated"
@@ -56473,19 +55362,11 @@
       "file": "/root/HydraX-v2/backups/20250708_005951/config/mt5_bridge.json",
       "size": 792,
       "hash": "f1706cbd66cd818d025f81101d040869",
-      "keys": [
-        "mt5",
-        "bridge",
-        "logging"
-      ],
+      "keys": ["mt5", "bridge", "logging"],
       "array_length": null,
       "structure": {
         "type": "object",
-        "keys": [
-          "mt5",
-          "bridge",
-          "logging"
-        ],
+        "keys": ["mt5", "bridge", "logging"],
         "nested": {
           "mt5": {
             "type": "object",
@@ -56542,10 +55423,7 @@
           },
           "logging": {
             "type": "object",
-            "keys": [
-              "level",
-              "file"
-            ],
+            "keys": ["level", "file"],
             "nested": {
               "level": {
                 "type": "str"
@@ -56565,20 +55443,10 @@
       "file": "/root/HydraX-v2/backups/20250708_005951/config/stealth_settings.yml",
       "size": 3017,
       "hash": "f24f794b58e25fbba778f111cb7da220",
-      "keys": [
-        "stealth",
-        "tier_stealth",
-        "special_behaviors",
-        "logging"
-      ],
+      "keys": ["stealth", "tier_stealth", "special_behaviors", "logging"],
       "structure": {
         "type": "object",
-        "keys": [
-          "stealth",
-          "tier_stealth",
-          "special_behaviors",
-          "logging"
-        ],
+        "keys": ["stealth", "tier_stealth", "special_behaviors", "logging"],
         "nested": {
           "stealth": {
             "type": "object",
@@ -56601,12 +55469,7 @@
               },
               "entry_delay": {
                 "type": "object",
-                "keys": [
-                  "low",
-                  "medium",
-                  "high",
-                  "ghost"
-                ],
+                "keys": ["low", "medium", "high", "ghost"],
                 "nested": {
                   "low": {
                     "type": "truncated"
@@ -56624,12 +55487,7 @@
               },
               "lot_jitter": {
                 "type": "object",
-                "keys": [
-                  "low",
-                  "medium",
-                  "high",
-                  "ghost"
-                ],
+                "keys": ["low", "medium", "high", "ghost"],
                 "nested": {
                   "low": {
                     "type": "truncated"
@@ -56647,12 +55505,7 @@
               },
               "tp_sl_offset": {
                 "type": "object",
-                "keys": [
-                  "low",
-                  "medium",
-                  "high",
-                  "ghost"
-                ],
+                "keys": ["low", "medium", "high", "ghost"],
                 "nested": {
                   "low": {
                     "type": "truncated"
@@ -56672,19 +55525,11 @@
           },
           "tier_stealth": {
             "type": "object",
-            "keys": [
-              "nibbler",
-              "fang",
-              "commander",
-              "apex"
-            ],
+            "keys": ["nibbler", "fang", "commander", "apex"],
             "nested": {
               "nibbler": {
                 "type": "object",
-                "keys": [
-                  "enabled",
-                  "max_level"
-                ],
+                "keys": ["enabled", "max_level"],
                 "nested": {
                   "enabled": {
                     "type": "truncated"
@@ -56696,11 +55541,7 @@
               },
               "fang": {
                 "type": "object",
-                "keys": [
-                  "enabled",
-                  "max_level",
-                  "modes"
-                ],
+                "keys": ["enabled", "max_level", "modes"],
                 "nested": {
                   "enabled": {
                     "type": "truncated"
@@ -56715,11 +55556,7 @@
               },
               "commander": {
                 "type": "object",
-                "keys": [
-                  "enabled",
-                  "max_level",
-                  "modes"
-                ],
+                "keys": ["enabled", "max_level", "modes"],
                 "nested": {
                   "enabled": {
                     "type": "truncated"
@@ -56734,11 +55571,7 @@
               },
               "apex": {
                 "type": "object",
-                "keys": [
-                  "enabled",
-                  "max_level",
-                  "modes"
-                ],
+                "keys": ["enabled", "max_level", "modes"],
                 "nested": {
                   "enabled": {
                     "type": "truncated"
@@ -56755,18 +55588,11 @@
           },
           "special_behaviors": {
             "type": "object",
-            "keys": [
-              "win_streak",
-              "pattern_break",
-              "time_variations"
-            ],
+            "keys": ["win_streak", "pattern_break", "time_variations"],
             "nested": {
               "win_streak": {
                 "type": "object",
-                "keys": [
-                  "threshold",
-                  "loss_size_multiplier"
-                ],
+                "keys": ["threshold", "loss_size_multiplier"],
                 "nested": {
                   "threshold": {
                     "type": "truncated"
@@ -56778,10 +55604,7 @@
               },
               "pattern_break": {
                 "type": "object",
-                "keys": [
-                  "enabled",
-                  "trade_interval"
-                ],
+                "keys": ["enabled", "trade_interval"],
                 "nested": {
                   "enabled": {
                     "type": "truncated"
@@ -57020,9 +55843,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "PressPass"
-      ],
+      "component_mentions": ["PressPass"],
       "sections": {
         "MetaQuotes Demo Account Provisioning System": 29
       },
@@ -57083,10 +55904,7 @@
               },
               "databases": {
                 "type": "object",
-                "keys": [
-                  "terminal_assignments",
-                  "bitten_main"
-                ],
+                "keys": ["terminal_assignments", "bitten_main"],
                 "nested": {
                   "terminal_assignments": {
                     "type": "truncated"
@@ -57103,22 +55921,11 @@
           },
           "bridge_terminals": {
             "type": "object",
-            "keys": [
-              "press_pass",
-              "demo",
-              "live"
-            ],
+            "keys": ["press_pass", "demo", "live"],
             "nested": {
               "press_pass": {
                 "type": "object",
-                "keys": [
-                  "name",
-                  "ip",
-                  "port",
-                  "folder",
-                  "max_users",
-                  "broker"
-                ],
+                "keys": ["name", "ip", "port", "folder", "max_users", "broker"],
                 "nested": {
                   "name": {
                     "type": "truncated"
@@ -57139,14 +55946,7 @@
               },
               "demo": {
                 "type": "object",
-                "keys": [
-                  "name",
-                  "ip",
-                  "port",
-                  "folder",
-                  "max_users",
-                  "broker"
-                ],
+                "keys": ["name", "ip", "port", "folder", "max_users", "broker"],
                 "nested": {
                   "name": {
                     "type": "truncated"
@@ -57167,14 +55967,7 @@
               },
               "live": {
                 "type": "object",
-                "keys": [
-                  "name",
-                  "ip",
-                  "port",
-                  "folder",
-                  "max_users",
-                  "broker"
-                ],
+                "keys": ["name", "ip", "port", "folder", "max_users", "broker"],
                 "nested": {
                   "name": {
                     "type": "truncated"
@@ -57247,13 +56040,7 @@
               },
               "max_daily_trades": {
                 "type": "object",
-                "keys": [
-                  "PRESS_PASS",
-                  "NIBBLER",
-                  "FANG",
-                  "COMMANDER",
-                  "APEX"
-                ],
+                "keys": ["PRESS_PASS", "NIBBLER", "FANG", "COMMANDER", "APEX"],
                 "nested": {
                   "PRESS_PASS": {
                     "type": "truncated"
@@ -57274,13 +56061,7 @@
               },
               "cooldown_periods": {
                 "type": "object",
-                "keys": [
-                  "PRESS_PASS",
-                  "NIBBLER",
-                  "FANG",
-                  "COMMANDER",
-                  "APEX"
-                ],
+                "keys": ["PRESS_PASS", "NIBBLER", "FANG", "COMMANDER", "APEX"],
                 "nested": {
                   "PRESS_PASS": {
                     "type": "truncated"
@@ -57360,20 +56141,11 @@
         "nested": {
           "trading_pairs": {
             "type": "object",
-            "keys": [
-              "core_pairs",
-              "extra_pairs"
-            ],
+            "keys": ["core_pairs", "extra_pairs"],
             "nested": {
               "core_pairs": {
                 "type": "object",
-                "keys": [
-                  "GBPUSD",
-                  "EURUSD",
-                  "USDJPY",
-                  "GBPJPY",
-                  "USDCAD"
-                ],
+                "keys": ["GBPUSD", "EURUSD", "USDJPY", "GBPJPY", "USDCAD"],
                 "nested": {
                   "GBPUSD": {
                     "type": "truncated"
@@ -57433,11 +56205,7 @@
             "nested": {
               "arcade_strategy": {
                 "type": "object",
-                "keys": [
-                  "description",
-                  "allowed_pairs",
-                  "min_tcs"
-                ],
+                "keys": ["description", "allowed_pairs", "min_tcs"],
                 "nested": {
                   "description": {
                     "type": "truncated"
@@ -57452,11 +56220,7 @@
               },
               "sniper_strategy": {
                 "type": "object",
-                "keys": [
-                  "description",
-                  "allowed_pairs",
-                  "min_tcs"
-                ],
+                "keys": ["description", "allowed_pairs", "min_tcs"],
                 "nested": {
                   "description": {
                     "type": "truncated"
@@ -57566,20 +56330,11 @@
           },
           "sessions": {
             "type": "object",
-            "keys": [
-              "asian",
-              "london",
-              "new_york",
-              "overlap_london_ny"
-            ],
+            "keys": ["asian", "london", "new_york", "overlap_london_ny"],
             "nested": {
               "asian": {
                 "type": "object",
-                "keys": [
-                  "hours",
-                  "timezone",
-                  "optimal_pairs"
-                ],
+                "keys": ["hours", "timezone", "optimal_pairs"],
                 "nested": {
                   "hours": {
                     "type": "truncated"
@@ -57594,11 +56349,7 @@
               },
               "london": {
                 "type": "object",
-                "keys": [
-                  "hours",
-                  "timezone",
-                  "optimal_pairs"
-                ],
+                "keys": ["hours", "timezone", "optimal_pairs"],
                 "nested": {
                   "hours": {
                     "type": "truncated"
@@ -57613,11 +56364,7 @@
               },
               "new_york": {
                 "type": "object",
-                "keys": [
-                  "hours",
-                  "timezone",
-                  "optimal_pairs"
-                ],
+                "keys": ["hours", "timezone", "optimal_pairs"],
                 "nested": {
                   "hours": {
                     "type": "truncated"
@@ -57741,10 +56488,7 @@
         "nested": {
           "modes": {
             "type": "object",
-            "keys": [
-              "bit_mode",
-              "commander_mode"
-            ],
+            "keys": ["bit_mode", "commander_mode"],
             "nested": {
               "bit_mode": {
                 "type": "object",
@@ -57808,12 +56552,7 @@
           },
           "tactical_modes": {
             "type": "object",
-            "keys": [
-              "auto",
-              "semi",
-              "sniper",
-              "leroy"
-            ],
+            "keys": ["auto", "semi", "sniper", "leroy"],
             "nested": {
               "auto": {
                 "type": "object",
@@ -57939,10 +56678,7 @@
               },
               "position_sizing": {
                 "type": "object",
-                "keys": [
-                  "method",
-                  "default_percent"
-                ],
+                "keys": ["method", "default_percent"],
                 "nested": {
                   "method": {
                     "type": "truncated"
@@ -57954,11 +56690,7 @@
               },
               "stop_loss": {
                 "type": "object",
-                "keys": [
-                  "default_pips",
-                  "max_pips",
-                  "trailing_enabled"
-                ],
+                "keys": ["default_pips", "max_pips", "trailing_enabled"],
                 "nested": {
                   "default_pips": {
                     "type": "truncated"
@@ -57975,11 +56707,7 @@
           },
           "tcs_config": {
             "type": "object",
-            "keys": [
-              "min_score",
-              "high_confidence",
-              "factors"
-            ],
+            "keys": ["min_score", "high_confidence", "factors"],
             "nested": {
               "min_score": {
                 "type": "int"
@@ -58019,10 +56747,7 @@
           },
           "instruments": {
             "type": "object",
-            "keys": [
-              "forex",
-              "indices"
-            ],
+            "keys": ["forex", "indices"],
             "nested": {
               "forex": {
                 "type": "array",
@@ -58082,12 +56807,7 @@
             "nested": {
               "major_pairs": {
                 "type": "object",
-                "keys": [
-                  "EURUSD",
-                  "GBPUSD",
-                  "USDJPY",
-                  "USDCAD"
-                ],
+                "keys": ["EURUSD", "GBPUSD", "USDJPY", "USDCAD"],
                 "nested": {
                   "EURUSD": {
                     "type": "truncated"
@@ -58105,12 +56825,7 @@
               },
               "volatile_pairs": {
                 "type": "object",
-                "keys": [
-                  "GBPJPY",
-                  "EURJPY",
-                  "AUDJPY",
-                  "GBPCHF"
-                ],
+                "keys": ["GBPJPY", "EURJPY", "AUDJPY", "GBPCHF"],
                 "nested": {
                   "GBPJPY": {
                     "type": "truncated"
@@ -58128,12 +56843,7 @@
               },
               "commodity_pairs": {
                 "type": "object",
-                "keys": [
-                  "AUDUSD",
-                  "NZDUSD",
-                  "USDCHF",
-                  "EURGBP"
-                ],
+                "keys": ["AUDUSD", "NZDUSD", "USDCHF", "EURGBP"],
                 "nested": {
                   "AUDUSD": {
                     "type": "truncated"
@@ -58151,11 +56861,7 @@
               },
               "volatility_monsters": {
                 "type": "object",
-                "keys": [
-                  "GBPNZD",
-                  "GBPAUD",
-                  "EURAUD"
-                ],
+                "keys": ["GBPNZD", "GBPAUD", "EURAUD"],
                 "nested": {
                   "GBPNZD": {
                     "type": "truncated"
@@ -58297,12 +57003,7 @@
           },
           "apex_v5_sessions": {
             "type": "object",
-            "keys": [
-              "asian",
-              "london",
-              "new_york",
-              "overlap_london_ny"
-            ],
+            "keys": ["asian", "london", "new_york", "overlap_london_ny"],
             "nested": {
               "asian": {
                 "type": "object",
@@ -58501,10 +57202,7 @@
           },
           "xp_system": {
             "type": "object",
-            "keys": [
-              "base_xp_values",
-              "persona_multipliers"
-            ],
+            "keys": ["base_xp_values", "persona_multipliers"],
             "nested": {
               "base_xp_values": {
                 "type": "object",
@@ -58566,10 +57264,7 @@
           },
           "persona_evolution": {
             "type": "object",
-            "keys": [
-              "check_interval",
-              "evolution_triggers"
-            ],
+            "keys": ["check_interval", "evolution_triggers"],
             "nested": {
               "check_interval": {
                 "type": "int"
@@ -58653,19 +57348,11 @@
         "nested": {
           "position_limits": {
             "type": "object",
-            "keys": [
-              "balance_thresholds"
-            ],
+            "keys": ["balance_thresholds"],
             "nested": {
               "balance_thresholds": {
                 "type": "object",
-                "keys": [
-                  500,
-                  1000,
-                  2000,
-                  5000,
-                  10000
-                ],
+                "keys": [500, 1000, 2000, 5000, 10000],
                 "nested": {
                   "500": {
                     "type": "truncated"
@@ -58688,13 +57375,7 @@
           },
           "tiers": {
             "type": "object",
-            "keys": [
-              "PRESS_PASS",
-              "NIBBLER",
-              "FANG",
-              "COMMANDER",
-              "APEX"
-            ],
+            "keys": ["PRESS_PASS", "NIBBLER", "FANG", "COMMANDER", "APEX"],
             "nested": {
               "PRESS_PASS": {
                 "type": "object",
@@ -58835,11 +57516,7 @@
           },
           "special_modes": {
             "type": "object",
-            "keys": [
-              "chaingun",
-              "midnight_hammer",
-              "stealth"
-            ],
+            "keys": ["chaingun", "midnight_hammer", "stealth"],
             "nested": {
               "chaingun": {
                 "type": "object",
@@ -58871,11 +57548,7 @@
               },
               "midnight_hammer": {
                 "type": "object",
-                "keys": [
-                  "unity_multiplier",
-                  "time_window",
-                  "description"
-                ],
+                "keys": ["unity_multiplier", "time_window", "description"],
                 "nested": {
                   "unity_multiplier": {
                     "type": "truncated"
@@ -58989,19 +57662,11 @@
       "file": "/root/HydraX-v2/backups/pre_v5_20250713_211307/config/mt5_bridge.json",
       "size": 792,
       "hash": "f1706cbd66cd818d025f81101d040869",
-      "keys": [
-        "mt5",
-        "bridge",
-        "logging"
-      ],
+      "keys": ["mt5", "bridge", "logging"],
       "array_length": null,
       "structure": {
         "type": "object",
-        "keys": [
-          "mt5",
-          "bridge",
-          "logging"
-        ],
+        "keys": ["mt5", "bridge", "logging"],
         "nested": {
           "mt5": {
             "type": "object",
@@ -59058,10 +57723,7 @@
           },
           "logging": {
             "type": "object",
-            "keys": [
-              "level",
-              "file"
-            ],
+            "keys": ["level", "file"],
             "nested": {
               "level": {
                 "type": "str"
@@ -59081,20 +57743,10 @@
       "file": "/root/HydraX-v2/backups/pre_v5_20250713_211307/config/stealth_settings.yml",
       "size": 3017,
       "hash": "f24f794b58e25fbba778f111cb7da220",
-      "keys": [
-        "stealth",
-        "tier_stealth",
-        "special_behaviors",
-        "logging"
-      ],
+      "keys": ["stealth", "tier_stealth", "special_behaviors", "logging"],
       "structure": {
         "type": "object",
-        "keys": [
-          "stealth",
-          "tier_stealth",
-          "special_behaviors",
-          "logging"
-        ],
+        "keys": ["stealth", "tier_stealth", "special_behaviors", "logging"],
         "nested": {
           "stealth": {
             "type": "object",
@@ -59117,12 +57769,7 @@
               },
               "entry_delay": {
                 "type": "object",
-                "keys": [
-                  "low",
-                  "medium",
-                  "high",
-                  "ghost"
-                ],
+                "keys": ["low", "medium", "high", "ghost"],
                 "nested": {
                   "low": {
                     "type": "truncated"
@@ -59140,12 +57787,7 @@
               },
               "lot_jitter": {
                 "type": "object",
-                "keys": [
-                  "low",
-                  "medium",
-                  "high",
-                  "ghost"
-                ],
+                "keys": ["low", "medium", "high", "ghost"],
                 "nested": {
                   "low": {
                     "type": "truncated"
@@ -59163,12 +57805,7 @@
               },
               "tp_sl_offset": {
                 "type": "object",
-                "keys": [
-                  "low",
-                  "medium",
-                  "high",
-                  "ghost"
-                ],
+                "keys": ["low", "medium", "high", "ghost"],
                 "nested": {
                   "low": {
                     "type": "truncated"
@@ -59188,19 +57825,11 @@
           },
           "tier_stealth": {
             "type": "object",
-            "keys": [
-              "nibbler",
-              "fang",
-              "commander",
-              "apex"
-            ],
+            "keys": ["nibbler", "fang", "commander", "apex"],
             "nested": {
               "nibbler": {
                 "type": "object",
-                "keys": [
-                  "enabled",
-                  "max_level"
-                ],
+                "keys": ["enabled", "max_level"],
                 "nested": {
                   "enabled": {
                     "type": "truncated"
@@ -59212,11 +57841,7 @@
               },
               "fang": {
                 "type": "object",
-                "keys": [
-                  "enabled",
-                  "max_level",
-                  "modes"
-                ],
+                "keys": ["enabled", "max_level", "modes"],
                 "nested": {
                   "enabled": {
                     "type": "truncated"
@@ -59231,11 +57856,7 @@
               },
               "commander": {
                 "type": "object",
-                "keys": [
-                  "enabled",
-                  "max_level",
-                  "modes"
-                ],
+                "keys": ["enabled", "max_level", "modes"],
                 "nested": {
                   "enabled": {
                     "type": "truncated"
@@ -59250,11 +57871,7 @@
               },
               "apex": {
                 "type": "object",
-                "keys": [
-                  "enabled",
-                  "max_level",
-                  "modes"
-                ],
+                "keys": ["enabled", "max_level", "modes"],
                 "nested": {
                   "enabled": {
                     "type": "truncated"
@@ -59271,18 +57888,11 @@
           },
           "special_behaviors": {
             "type": "object",
-            "keys": [
-              "win_streak",
-              "pattern_break",
-              "time_variations"
-            ],
+            "keys": ["win_streak", "pattern_break", "time_variations"],
             "nested": {
               "win_streak": {
                 "type": "object",
-                "keys": [
-                  "threshold",
-                  "loss_size_multiplier"
-                ],
+                "keys": ["threshold", "loss_size_multiplier"],
                 "nested": {
                   "threshold": {
                     "type": "truncated"
@@ -59294,10 +57904,7 @@
               },
               "pattern_break": {
                 "type": "object",
-                "keys": [
-                  "enabled",
-                  "trade_interval"
-                ],
+                "keys": ["enabled", "trade_interval"],
                 "nested": {
                   "enabled": {
                     "type": "truncated"
@@ -59562,12 +58169,7 @@
         "nested": {
           "system": {
             "type": "object",
-            "keys": [
-              "name",
-              "version",
-              "environment",
-              "debug"
-            ],
+            "keys": ["name", "version", "environment", "debug"],
             "nested": {
               "name": {
                 "type": "str"
@@ -59675,11 +58277,7 @@
           },
           "pipeline": {
             "type": "object",
-            "keys": [
-              "buffer_size",
-              "processing_threads",
-              "max_queue_size"
-            ],
+            "keys": ["buffer_size", "processing_threads", "max_queue_size"],
             "nested": {
               "buffer_size": {
                 "type": "int"
@@ -59969,12 +58567,7 @@
             "nested": {
               "casual": {
                 "type": "object",
-                "keys": [
-                  "name",
-                  "trades_per_day",
-                  "win_rate",
-                  "description"
-                ],
+                "keys": ["name", "trades_per_day", "win_rate", "description"],
                 "nested": {
                   "name": {
                     "type": "truncated"
@@ -59992,12 +58585,7 @@
               },
               "active": {
                 "type": "object",
-                "keys": [
-                  "name",
-                  "trades_per_day",
-                  "win_rate",
-                  "description"
-                ],
+                "keys": ["name", "trades_per_day", "win_rate", "description"],
                 "nested": {
                   "name": {
                     "type": "truncated"
@@ -60015,12 +58603,7 @@
               },
               "hardcore": {
                 "type": "object",
-                "keys": [
-                  "name",
-                  "trades_per_day",
-                  "win_rate",
-                  "description"
-                ],
+                "keys": ["name", "trades_per_day", "win_rate", "description"],
                 "nested": {
                   "name": {
                     "type": "truncated"
@@ -60038,12 +58621,7 @@
               },
               "newbie": {
                 "type": "object",
-                "keys": [
-                  "name",
-                  "trades_per_day",
-                  "win_rate",
-                  "description"
-                ],
+                "keys": ["name", "trades_per_day", "win_rate", "description"],
                 "nested": {
                   "name": {
                     "type": "truncated"
@@ -60061,12 +58639,7 @@
               },
               "weekend_warrior": {
                 "type": "object",
-                "keys": [
-                  "name",
-                  "trades_per_day",
-                  "win_rate",
-                  "description"
-                ],
+                "keys": ["name", "trades_per_day", "win_rate", "description"],
                 "nested": {
                   "name": {
                     "type": "truncated"
@@ -60086,20 +58659,11 @@
           },
           "xp_configuration": {
             "type": "object",
-            "keys": [
-              "thresholds",
-              "rewards",
-              "achievements"
-            ],
+            "keys": ["thresholds", "rewards", "achievements"],
             "nested": {
               "thresholds": {
                 "type": "object",
-                "keys": [
-                  "USER",
-                  "AUTHORIZED",
-                  "ELITE",
-                  "ADMIN"
-                ],
+                "keys": ["USER", "AUTHORIZED", "ELITE", "ADMIN"],
                 "nested": {
                   "USER": {
                     "type": "truncated"
@@ -60299,10 +58863,7 @@
         "nested": {
           "broker_education": {
             "type": "object",
-            "keys": [
-              "text",
-              "buttons"
-            ],
+            "keys": ["text", "buttons"],
             "nested": {
               "text": {
                 "type": "str"
@@ -60318,10 +58879,7 @@
           },
           "broker_regulated": {
             "type": "object",
-            "keys": [
-              "text",
-              "buttons"
-            ],
+            "keys": ["text", "buttons"],
             "nested": {
               "text": {
                 "type": "str"
@@ -60337,10 +58895,7 @@
           },
           "broker_offshore": {
             "type": "object",
-            "keys": [
-              "text",
-              "buttons"
-            ],
+            "keys": ["text", "buttons"],
             "nested": {
               "text": {
                 "type": "str"
@@ -60356,10 +58911,7 @@
           },
           "broker_comparison": {
             "type": "object",
-            "keys": [
-              "text",
-              "buttons"
-            ],
+            "keys": ["text", "buttons"],
             "nested": {
               "text": {
                 "type": "str"
@@ -60375,10 +58927,7 @@
           },
           "broker_recommendations": {
             "type": "object",
-            "keys": [
-              "text",
-              "buttons"
-            ],
+            "keys": ["text", "buttons"],
             "nested": {
               "text": {
                 "type": "str"
@@ -60593,20 +59142,11 @@
           },
           "xp_configuration": {
             "type": "object",
-            "keys": [
-              "thresholds",
-              "rewards",
-              "achievements"
-            ],
+            "keys": ["thresholds", "rewards", "achievements"],
             "nested": {
               "thresholds": {
                 "type": "object",
-                "keys": [
-                  "USER",
-                  "AUTHORIZED",
-                  "ELITE",
-                  "ADMIN"
-                ],
+                "keys": ["USER", "AUTHORIZED", "ELITE", "ADMIN"],
                 "nested": {
                   "USER": {
                     "type": "truncated"
@@ -60746,17 +59286,11 @@
       "file": "/root/HydraX-v2/data/analyst/analyst_profile.json",
       "size": 2158,
       "hash": "4688f00bb560f970ac65599e44720842",
-      "keys": [
-        "test_user_123",
-        "interaction_test"
-      ],
+      "keys": ["test_user_123", "interaction_test"],
       "array_length": null,
       "structure": {
         "type": "object",
-        "keys": [
-          "test_user_123",
-          "interaction_test"
-        ],
+        "keys": ["test_user_123", "interaction_test"],
         "nested": {
           "test_user_123": {
             "type": "object",
@@ -61613,9 +60147,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "WebApp"
-      ],
+      "component_mentions": ["WebApp"],
       "sections": {
         "BITTEN Squad Chat System": 14,
         "Initialize chat system": 1,
@@ -61849,9 +60381,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "riskmanagement"
-      ],
+      "component_mentions": ["riskmanagement"],
       "sections": {
         "Cross-Asset Correlation System Documentation": 21,
         "Initialize system": 1,
@@ -62035,9 +60565,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "firemode"
-      ],
+      "component_mentions": ["firemode"],
       "sections": {
         "BITTEN Security Fixes Applied": 13,
         "\u2705 Secure random for stealth mode variations": 1,
@@ -62150,9 +60678,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "firemode"
-      ],
+      "component_mentions": ["firemode"],
       "sections": {
         "TCS++ Engine Documentation": 19,
         "Calculate TCS score": 2
@@ -62303,10 +60829,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "XP(?:system|economy)",
-        "PressPass"
-      ],
+      "component_mentions": ["XP(?:system|economy)", "PressPass"],
       "sections": {
         "Press Pass XP Reset System": 10,
         "Install service": 1,
@@ -62520,9 +61043,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "firemode"
-      ],
+      "component_mentions": ["firemode"],
       "sections": {
         "BITTEN Stealth Protocol Implementation": 20,
         "Initialize stealth": 1,
@@ -63039,11 +61560,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "riskmanagement",
-        "trademanager",
-        "MT5bridge"
-      ],
+      "component_mentions": ["riskmanagement", "trademanager", "MT5bridge"],
       "sections": {
         "BITTEN Security Audit Report": 10,
         "Example HMAC implementation": 1,
@@ -63740,9 +62257,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "WebApp"
-      ],
+      "component_mentions": ["WebApp"],
       "sections": {
         "BITTEN WebApp Process Manager": 4,
         "Run as root": 2,
@@ -63981,9 +62496,7 @@
         }
       ],
       "todos": [],
-      "component_mentions": [
-        "MT5bridge"
-      ],
+      "component_mentions": ["MT5bridge"],
       "sections": {
         "HydraX v2 Documentation Hub": 16
       },
@@ -64253,9 +62766,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "MT5bridge"
-      ],
+      "component_mentions": ["MT5bridge"],
       "sections": {
         "Development Guide": 4,
         "Clone the repository": 1,
@@ -64953,11 +63464,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "firemode",
-        "riskmanagement",
-        "MT5bridge"
-      ],
+      "component_mentions": ["firemode", "riskmanagement", "MT5bridge"],
       "sections": {
         "MT5 Bridge Setup Guide": 6,
         "Enable MT5 bridge": 1,
@@ -65116,9 +63623,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "WebApp"
-      ],
+      "component_mentions": ["WebApp"],
       "sections": {
         "BITTEN Signal Fusion System Documentation": 13,
         "Initialize": 1,
@@ -65229,10 +63734,7 @@
       "code_blocks": [],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "firemode",
-        "XP(?:system|economy)"
-      ],
+      "component_mentions": ["firemode", "XP(?:system|economy)"],
       "sections": {
         "\ud83c\udf0d How to Tell the World About BITTEN": 23
       },
@@ -65354,9 +63856,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "riskmanagement"
-      ],
+      "component_mentions": ["riskmanagement"],
       "sections": {
         "News Event Detection and Auto-Pause Feature": 8,
         "News API Configuration": 8,
@@ -65622,11 +64122,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "firemode",
-        "riskmanagement",
-        "MT5bridge"
-      ],
+      "component_mentions": ["firemode", "riskmanagement", "MT5bridge"],
       "sections": {
         "BITTEN Centralized Trading Pairs Configuration": 7,
         "Get the global configuration instance": 1,
@@ -66426,9 +64922,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "MT5bridge"
-      ],
+      "component_mentions": ["MT5bridge"],
       "sections": {
         "HydraX v2 Deployment Guide": 8,
         "Update system": 1,
@@ -66835,9 +65329,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "PressPass"
-      ],
+      "component_mentions": ["PressPass"],
       "sections": {
         "BITTEN User Registration and Authentication System": 9,
         "User starts with /start command": 3,
@@ -66974,9 +65466,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "XP(?:system|economy)"
-      ],
+      "component_mentions": ["XP(?:system|economy)"],
       "sections": {
         "HydraX Education XP System": 23
       },
@@ -67179,10 +65669,7 @@
         }
       ],
       "todos": [],
-      "component_mentions": [
-        "riskmanagement",
-        "MT5bridge"
-      ],
+      "component_mentions": ["riskmanagement", "MT5bridge"],
       "sections": {
         "HydraX v2 Project Analysis & Information Hub": 16,
         "Core Configuration": 1,
@@ -67463,9 +65950,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "PressPass"
-      ],
+      "component_mentions": ["PressPass"],
       "sections": {
         "BITTEN Email Service Setup Guide": 5,
         "Email Provider (smtp, sendgrid, or ses)": 1,
@@ -68363,9 +66848,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "riskmanagement"
-      ],
+      "component_mentions": ["riskmanagement"],
       "sections": {
         "MT5 Enhanced Features Documentation": 5,
         "Execute with 2% risk": 10,
@@ -68530,10 +67013,7 @@
       "code_blocks": [],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "firemode",
-        "riskmanagement"
-      ],
+      "component_mentions": ["firemode", "riskmanagement"],
       "sections": {
         "\ud83e\udde0 The Psychology Behind BITTEN: Research-Based Gamification in Trading": 35
       },
@@ -68707,10 +67187,7 @@
         }
       ],
       "todos": [],
-      "component_mentions": [
-        "riskmanagement",
-        "MT5bridge"
-      ],
+      "component_mentions": ["riskmanagement", "MT5bridge"],
       "sections": {
         "HydraX v2 Development Roadmap": 37
       },
@@ -68872,11 +67349,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "firemode",
-        "XP(?:system|economy)",
-        "MT5bridge"
-      ],
+      "component_mentions": ["firemode", "XP(?:system|economy)", "MT5bridge"],
       "sections": {
         "\ud83c\udfaf MT5 Bridge Result Parser Implementation": 10,
         "Handles various MT5 formats": 6,
@@ -70419,9 +68892,7 @@
         }
       ],
       "todos": [],
-      "component_mentions": [
-        "XP(?:system|economy)"
-      ],
+      "component_mentions": ["XP(?:system|economy)"],
       "sections": {
         "BITTEN Security Implementation Guide": 7,
         "src/bitten_core/auth_manager.py": 3,
@@ -70482,9 +68953,7 @@
       "code_blocks": [],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "WebApp"
-      ],
+      "component_mentions": ["WebApp"],
       "sections": {
         "OPERATION EDUCATION: WebApp Layer Spec": 2
       },
@@ -70802,17 +69271,11 @@
       "file": "/root/HydraX-v2/docs/onboarding/onboarding_dialogue.json",
       "size": 22186,
       "hash": "e74875af008c107658529271d6419e3b",
-      "keys": [
-        "phases",
-        "callsign_validation"
-      ],
+      "keys": ["phases", "callsign_validation"],
       "array_length": null,
       "structure": {
         "type": "object",
-        "keys": [
-          "phases",
-          "callsign_validation"
-        ],
+        "keys": ["phases", "callsign_validation"],
         "nested": {
           "phases": {
             "type": "object",
@@ -70912,11 +69375,7 @@
               },
               "training_setup": {
                 "type": "object",
-                "keys": [
-                  "title",
-                  "nexus_guidance",
-                  "steps"
-                ],
+                "keys": ["title", "nexus_guidance", "steps"],
                 "nested": {
                   "title": {
                     "type": "truncated"
@@ -71810,10 +70269,7 @@
         }
       ],
       "todos": [],
-      "component_mentions": [
-        "riskmanagement",
-        "PressPass"
-      ],
+      "component_mentions": ["riskmanagement", "PressPass"],
       "sections": {
         "Press Pass Analytics & Metrics Documentation": 44
       },
@@ -72031,9 +70487,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "PressPass"
-      ],
+      "component_mentions": ["PressPass"],
       "sections": {
         "Press Pass Monitoring System Documentation": 13,
         "Initialize components": 1,
@@ -72214,9 +70668,7 @@
       "code_blocks": [],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "firemode"
-      ],
+      "component_mentions": ["firemode"],
       "sections": {
         "BITTEN World Lore & Design Bible": 37
       },
@@ -72349,9 +70801,7 @@
       "code_blocks": [],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "firemode"
-      ],
+      "component_mentions": ["firemode"],
       "sections": {
         "\ud83d\udcdc BITTEN RULES OF ENGAGEMENT - THE LAW": 8
       },
@@ -72600,9 +71050,7 @@
       "code_blocks": [],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "riskmanagement"
-      ],
+      "component_mentions": ["riskmanagement"],
       "sections": {
         "BITTEN Strategy Improvements - Summary": 6
       },
@@ -72704,9 +71152,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "firemode"
-      ],
+      "component_mentions": ["firemode"],
       "sections": {
         "\ud83c\udf9a\ufe0f COMMANDER SELECTOR SWITCH GUIDE": 17
       },
@@ -72936,9 +71382,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "riskmanagement"
-      ],
+      "component_mentions": ["riskmanagement"],
       "sections": {
         "BITTEN Bot Commands Reference": 49
       },
@@ -73212,10 +71656,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "riskmanagement",
-        "MT5bridge"
-      ],
+      "component_mentions": ["riskmanagement", "MT5bridge"],
       "sections": {
         "BITTEN System Blueprint Analysis": 23,
         "BITTEN Configuration": 1,
@@ -73336,10 +71777,7 @@
               },
               "databases": {
                 "type": "object",
-                "keys": [
-                  "terminal_assignments",
-                  "bitten_main"
-                ],
+                "keys": ["terminal_assignments", "bitten_main"],
                 "nested": {
                   "terminal_assignments": {
                     "type": "truncated"
@@ -73356,22 +71794,11 @@
           },
           "bridge_terminals": {
             "type": "object",
-            "keys": [
-              "press_pass",
-              "demo",
-              "live"
-            ],
+            "keys": ["press_pass", "demo", "live"],
             "nested": {
               "press_pass": {
                 "type": "object",
-                "keys": [
-                  "name",
-                  "ip",
-                  "port",
-                  "folder",
-                  "max_users",
-                  "broker"
-                ],
+                "keys": ["name", "ip", "port", "folder", "max_users", "broker"],
                 "nested": {
                   "name": {
                     "type": "truncated"
@@ -73392,14 +71819,7 @@
               },
               "demo": {
                 "type": "object",
-                "keys": [
-                  "name",
-                  "ip",
-                  "port",
-                  "folder",
-                  "max_users",
-                  "broker"
-                ],
+                "keys": ["name", "ip", "port", "folder", "max_users", "broker"],
                 "nested": {
                   "name": {
                     "type": "truncated"
@@ -73420,14 +71840,7 @@
               },
               "live": {
                 "type": "object",
-                "keys": [
-                  "name",
-                  "ip",
-                  "port",
-                  "folder",
-                  "max_users",
-                  "broker"
-                ],
+                "keys": ["name", "ip", "port", "folder", "max_users", "broker"],
                 "nested": {
                   "name": {
                     "type": "truncated"
@@ -73500,13 +71913,7 @@
               },
               "max_daily_trades": {
                 "type": "object",
-                "keys": [
-                  "PRESS_PASS",
-                  "NIBBLER",
-                  "FANG",
-                  "COMMANDER",
-                  "APEX"
-                ],
+                "keys": ["PRESS_PASS", "NIBBLER", "FANG", "COMMANDER", "APEX"],
                 "nested": {
                   "PRESS_PASS": {
                     "type": "truncated"
@@ -73527,13 +71934,7 @@
               },
               "cooldown_periods": {
                 "type": "object",
-                "keys": [
-                  "PRESS_PASS",
-                  "NIBBLER",
-                  "FANG",
-                  "COMMANDER",
-                  "APEX"
-                ],
+                "keys": ["PRESS_PASS", "NIBBLER", "FANG", "COMMANDER", "APEX"],
                 "nested": {
                   "PRESS_PASS": {
                     "type": "truncated"
@@ -73624,12 +72025,7 @@
             "nested": {
               "major_pairs": {
                 "type": "object",
-                "keys": [
-                  "EURUSD",
-                  "GBPUSD",
-                  "USDJPY",
-                  "USDCAD"
-                ],
+                "keys": ["EURUSD", "GBPUSD", "USDJPY", "USDCAD"],
                 "nested": {
                   "EURUSD": {
                     "type": "truncated"
@@ -73647,12 +72043,7 @@
               },
               "volatile_pairs": {
                 "type": "object",
-                "keys": [
-                  "GBPJPY",
-                  "EURJPY",
-                  "AUDJPY",
-                  "GBPCHF"
-                ],
+                "keys": ["GBPJPY", "EURJPY", "AUDJPY", "GBPCHF"],
                 "nested": {
                   "GBPJPY": {
                     "type": "truncated"
@@ -73670,12 +72061,7 @@
               },
               "commodity_pairs": {
                 "type": "object",
-                "keys": [
-                  "AUDUSD",
-                  "NZDUSD",
-                  "USDCHF",
-                  "EURGBP"
-                ],
+                "keys": ["AUDUSD", "NZDUSD", "USDCHF", "EURGBP"],
                 "nested": {
                   "AUDUSD": {
                     "type": "truncated"
@@ -73693,11 +72079,7 @@
               },
               "volatility_monsters": {
                 "type": "object",
-                "keys": [
-                  "GBPNZD",
-                  "GBPAUD",
-                  "EURAUD"
-                ],
+                "keys": ["GBPNZD", "GBPAUD", "EURAUD"],
                 "nested": {
                   "GBPNZD": {
                     "type": "truncated"
@@ -73839,12 +72221,7 @@
           },
           "apex_v5_sessions": {
             "type": "object",
-            "keys": [
-              "asian",
-              "london",
-              "new_york",
-              "overlap_london_ny"
-            ],
+            "keys": ["asian", "london", "new_york", "overlap_london_ny"],
             "nested": {
               "asian": {
                 "type": "object",
@@ -74073,10 +72450,7 @@
         "nested": {
           "modes": {
             "type": "object",
-            "keys": [
-              "bit_mode",
-              "commander_mode"
-            ],
+            "keys": ["bit_mode", "commander_mode"],
             "nested": {
               "bit_mode": {
                 "type": "object",
@@ -74140,12 +72514,7 @@
           },
           "tactical_modes": {
             "type": "object",
-            "keys": [
-              "auto",
-              "semi",
-              "sniper",
-              "leroy"
-            ],
+            "keys": ["auto", "semi", "sniper", "leroy"],
             "nested": {
               "auto": {
                 "type": "object",
@@ -74271,10 +72640,7 @@
               },
               "position_sizing": {
                 "type": "object",
-                "keys": [
-                  "method",
-                  "default_percent"
-                ],
+                "keys": ["method", "default_percent"],
                 "nested": {
                   "method": {
                     "type": "truncated"
@@ -74286,11 +72652,7 @@
               },
               "stop_loss": {
                 "type": "object",
-                "keys": [
-                  "default_pips",
-                  "max_pips",
-                  "trailing_enabled"
-                ],
+                "keys": ["default_pips", "max_pips", "trailing_enabled"],
                 "nested": {
                   "default_pips": {
                     "type": "truncated"
@@ -74307,11 +72669,7 @@
           },
           "tcs_config": {
             "type": "object",
-            "keys": [
-              "min_score",
-              "high_confidence",
-              "factors"
-            ],
+            "keys": ["min_score", "high_confidence", "factors"],
             "nested": {
               "min_score": {
                 "type": "int"
@@ -74351,10 +72709,7 @@
           },
           "instruments": {
             "type": "object",
-            "keys": [
-              "forex",
-              "indices"
-            ],
+            "keys": ["forex", "indices"],
             "nested": {
               "forex": {
                 "type": "array",
@@ -74414,12 +72769,7 @@
             "nested": {
               "major_pairs": {
                 "type": "object",
-                "keys": [
-                  "EURUSD",
-                  "GBPUSD",
-                  "USDJPY",
-                  "USDCAD"
-                ],
+                "keys": ["EURUSD", "GBPUSD", "USDJPY", "USDCAD"],
                 "nested": {
                   "EURUSD": {
                     "type": "truncated"
@@ -74437,12 +72787,7 @@
               },
               "volatile_pairs": {
                 "type": "object",
-                "keys": [
-                  "GBPJPY",
-                  "EURJPY",
-                  "AUDJPY",
-                  "GBPCHF"
-                ],
+                "keys": ["GBPJPY", "EURJPY", "AUDJPY", "GBPCHF"],
                 "nested": {
                   "GBPJPY": {
                     "type": "truncated"
@@ -74460,12 +72805,7 @@
               },
               "commodity_pairs": {
                 "type": "object",
-                "keys": [
-                  "AUDUSD",
-                  "NZDUSD",
-                  "USDCHF",
-                  "EURGBP"
-                ],
+                "keys": ["AUDUSD", "NZDUSD", "USDCHF", "EURGBP"],
                 "nested": {
                   "AUDUSD": {
                     "type": "truncated"
@@ -74483,11 +72823,7 @@
               },
               "volatility_monsters": {
                 "type": "object",
-                "keys": [
-                  "GBPNZD",
-                  "GBPAUD",
-                  "EURAUD"
-                ],
+                "keys": ["GBPNZD", "GBPAUD", "EURAUD"],
                 "nested": {
                   "GBPNZD": {
                     "type": "truncated"
@@ -74629,12 +72965,7 @@
           },
           "apex_v5_sessions": {
             "type": "object",
-            "keys": [
-              "asian",
-              "london",
-              "new_york",
-              "overlap_london_ny"
-            ],
+            "keys": ["asian", "london", "new_york", "overlap_london_ny"],
             "nested": {
               "asian": {
                 "type": "object",
@@ -74833,10 +73164,7 @@
           },
           "xp_system": {
             "type": "object",
-            "keys": [
-              "base_xp_values",
-              "persona_multipliers"
-            ],
+            "keys": ["base_xp_values", "persona_multipliers"],
             "nested": {
               "base_xp_values": {
                 "type": "object",
@@ -74898,10 +73226,7 @@
           },
           "persona_evolution": {
             "type": "object",
-            "keys": [
-              "check_interval",
-              "evolution_triggers"
-            ],
+            "keys": ["check_interval", "evolution_triggers"],
             "nested": {
               "check_interval": {
                 "type": "int"
@@ -74985,19 +73310,11 @@
         "nested": {
           "position_limits": {
             "type": "object",
-            "keys": [
-              "balance_thresholds"
-            ],
+            "keys": ["balance_thresholds"],
             "nested": {
               "balance_thresholds": {
                 "type": "object",
-                "keys": [
-                  500,
-                  1000,
-                  2000,
-                  5000,
-                  10000
-                ],
+                "keys": [500, 1000, 2000, 5000, 10000],
                 "nested": {
                   "500": {
                     "type": "truncated"
@@ -75020,13 +73337,7 @@
           },
           "tiers": {
             "type": "object",
-            "keys": [
-              "PRESS_PASS",
-              "NIBBLER",
-              "FANG",
-              "COMMANDER",
-              "APEX"
-            ],
+            "keys": ["PRESS_PASS", "NIBBLER", "FANG", "COMMANDER", "APEX"],
             "nested": {
               "PRESS_PASS": {
                 "type": "object",
@@ -75167,11 +73478,7 @@
           },
           "special_modes": {
             "type": "object",
-            "keys": [
-              "chaingun",
-              "midnight_hammer",
-              "stealth"
-            ],
+            "keys": ["chaingun", "midnight_hammer", "stealth"],
             "nested": {
               "chaingun": {
                 "type": "object",
@@ -75203,11 +73510,7 @@
               },
               "midnight_hammer": {
                 "type": "object",
-                "keys": [
-                  "unity_multiplier",
-                  "time_window",
-                  "description"
-                ],
+                "keys": ["unity_multiplier", "time_window", "description"],
                 "nested": {
                   "unity_multiplier": {
                     "type": "truncated"
@@ -75321,19 +73624,11 @@
       "file": "/root/HydraX-v2/config/mt5_bridge.json",
       "size": 792,
       "hash": "f1706cbd66cd818d025f81101d040869",
-      "keys": [
-        "mt5",
-        "bridge",
-        "logging"
-      ],
+      "keys": ["mt5", "bridge", "logging"],
       "array_length": null,
       "structure": {
         "type": "object",
-        "keys": [
-          "mt5",
-          "bridge",
-          "logging"
-        ],
+        "keys": ["mt5", "bridge", "logging"],
         "nested": {
           "mt5": {
             "type": "object",
@@ -75390,10 +73685,7 @@
           },
           "logging": {
             "type": "object",
-            "keys": [
-              "level",
-              "file"
-            ],
+            "keys": ["level", "file"],
             "nested": {
               "level": {
                 "type": "str"
@@ -75413,20 +73705,10 @@
       "file": "/root/HydraX-v2/config/stealth_settings.yml",
       "size": 3017,
       "hash": "f24f794b58e25fbba778f111cb7da220",
-      "keys": [
-        "stealth",
-        "tier_stealth",
-        "special_behaviors",
-        "logging"
-      ],
+      "keys": ["stealth", "tier_stealth", "special_behaviors", "logging"],
       "structure": {
         "type": "object",
-        "keys": [
-          "stealth",
-          "tier_stealth",
-          "special_behaviors",
-          "logging"
-        ],
+        "keys": ["stealth", "tier_stealth", "special_behaviors", "logging"],
         "nested": {
           "stealth": {
             "type": "object",
@@ -75449,12 +73731,7 @@
               },
               "entry_delay": {
                 "type": "object",
-                "keys": [
-                  "low",
-                  "medium",
-                  "high",
-                  "ghost"
-                ],
+                "keys": ["low", "medium", "high", "ghost"],
                 "nested": {
                   "low": {
                     "type": "truncated"
@@ -75472,12 +73749,7 @@
               },
               "lot_jitter": {
                 "type": "object",
-                "keys": [
-                  "low",
-                  "medium",
-                  "high",
-                  "ghost"
-                ],
+                "keys": ["low", "medium", "high", "ghost"],
                 "nested": {
                   "low": {
                     "type": "truncated"
@@ -75495,12 +73767,7 @@
               },
               "tp_sl_offset": {
                 "type": "object",
-                "keys": [
-                  "low",
-                  "medium",
-                  "high",
-                  "ghost"
-                ],
+                "keys": ["low", "medium", "high", "ghost"],
                 "nested": {
                   "low": {
                     "type": "truncated"
@@ -75520,19 +73787,11 @@
           },
           "tier_stealth": {
             "type": "object",
-            "keys": [
-              "nibbler",
-              "fang",
-              "commander",
-              "apex"
-            ],
+            "keys": ["nibbler", "fang", "commander", "apex"],
             "nested": {
               "nibbler": {
                 "type": "object",
-                "keys": [
-                  "enabled",
-                  "max_level"
-                ],
+                "keys": ["enabled", "max_level"],
                 "nested": {
                   "enabled": {
                     "type": "truncated"
@@ -75544,11 +73803,7 @@
               },
               "fang": {
                 "type": "object",
-                "keys": [
-                  "enabled",
-                  "max_level",
-                  "modes"
-                ],
+                "keys": ["enabled", "max_level", "modes"],
                 "nested": {
                   "enabled": {
                     "type": "truncated"
@@ -75563,11 +73818,7 @@
               },
               "commander": {
                 "type": "object",
-                "keys": [
-                  "enabled",
-                  "max_level",
-                  "modes"
-                ],
+                "keys": ["enabled", "max_level", "modes"],
                 "nested": {
                   "enabled": {
                     "type": "truncated"
@@ -75582,11 +73833,7 @@
               },
               "apex": {
                 "type": "object",
-                "keys": [
-                  "enabled",
-                  "max_level",
-                  "modes"
-                ],
+                "keys": ["enabled", "max_level", "modes"],
                 "nested": {
                   "enabled": {
                     "type": "truncated"
@@ -75603,18 +73850,11 @@
           },
           "special_behaviors": {
             "type": "object",
-            "keys": [
-              "win_streak",
-              "pattern_break",
-              "time_variations"
-            ],
+            "keys": ["win_streak", "pattern_break", "time_variations"],
             "nested": {
               "win_streak": {
                 "type": "object",
-                "keys": [
-                  "threshold",
-                  "loss_size_multiplier"
-                ],
+                "keys": ["threshold", "loss_size_multiplier"],
                 "nested": {
                   "threshold": {
                     "type": "truncated"
@@ -75626,10 +73866,7 @@
               },
               "pattern_break": {
                 "type": "object",
-                "keys": [
-                  "enabled",
-                  "trade_interval"
-                ],
+                "keys": ["enabled", "trade_interval"],
                 "nested": {
                   "enabled": {
                     "type": "truncated"
@@ -75894,12 +74131,7 @@
         "nested": {
           "system": {
             "type": "object",
-            "keys": [
-              "name",
-              "version",
-              "environment",
-              "debug"
-            ],
+            "keys": ["name", "version", "environment", "debug"],
             "nested": {
               "name": {
                 "type": "str"
@@ -76007,11 +74239,7 @@
           },
           "pipeline": {
             "type": "object",
-            "keys": [
-              "buffer_size",
-              "processing_threads",
-              "max_queue_size"
-            ],
+            "keys": ["buffer_size", "processing_threads", "max_queue_size"],
             "nested": {
               "buffer_size": {
                 "type": "int"
@@ -76361,19 +74589,8 @@
       "file": "/root/HydraX-v2/migrations/run_press_pass_migrations.sql",
       "size": 7736,
       "hash": "479a9bf07ab44cd4dd4ecf219e9de399",
-      "tables": [
-        "migration_history",
-        "subscription_plans",
-        "trades",
-        "users"
-      ],
-      "columns": [
-        "v_applied",
-        "filename",
-        "INSERT",
-        "v_pending",
-        "RETURNS"
-      ],
+      "tables": ["migration_history", "subscription_plans", "trades", "users"],
+      "columns": ["v_applied", "filename", "INSERT", "v_pending", "RETURNS"],
       "lines": 221,
       "last_modified": "2025-07-08T00:30:17.209661"
     },
@@ -76521,9 +74738,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "PressPass"
-      ],
+      "component_mentions": ["PressPass"],
       "sections": {
         "Press Pass Migration Guide": 19
       },
@@ -76787,9 +75002,7 @@
       "file": "/root/HydraX-v2/migrations/add_callsign_column.sql",
       "size": 787,
       "hash": "0a3def72d2ea941352ab47f4c330859d",
-      "tables": [
-        "user_profiles"
-      ],
+      "tables": ["user_profiles"],
       "columns": [],
       "lines": 20,
       "last_modified": "2025-07-06T20:19:21.741620"
@@ -76890,9 +75103,7 @@
       ],
       "links": [],
       "todos": [],
-      "component_mentions": [
-        "PressPass"
-      ],
+      "component_mentions": ["PressPass"],
       "sections": {
         "Press Pass Database Migration Report": 19
       },
@@ -77019,14 +75230,8 @@
       "file": "/root/HydraX-v2/migrations/add_press_pass_tier_enum.sql",
       "size": 3403,
       "hash": "f2cf7b570afdf367e639812459a7bb17",
-      "tables": [
-        "subscription_plans",
-        "trades",
-        "users"
-      ],
-      "columns": [
-        "INSERT"
-      ],
+      "tables": ["subscription_plans", "trades", "users"],
+      "columns": ["INSERT"],
       "lines": 97,
       "last_modified": "2025-07-08T00:14:31.728129"
     }

@@ -20,7 +20,7 @@
       "label": "Dashboard view on mobile"
     },
     {
-      "src": "/assets/screenshots/mobile-signals.png", 
+      "src": "/assets/screenshots/mobile-signals.png",
       "sizes": "375x667",
       "type": "image/png",
       "form_factor": "narrow",

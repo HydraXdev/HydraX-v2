@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-import telebot
 import os
 
+import telebot
+
 # Get bot token
-BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN', '7247085683:AAFOd25veZFLRHCvhGBiLuDQb3tKnAlQYOo')
+BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "7247085683:AAFOd25veZFLRHCvhGBiLuDQb3tKnAlQYOo")
 USER_ID = 7176191872
 
 # Initialize bot

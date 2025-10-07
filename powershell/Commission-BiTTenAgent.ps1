@@ -3,7 +3,7 @@
 param(
     [Parameter(Mandatory=$true)]
     [string]$UserUUID,
-    
+
     [string]$ConfigPath = "C:\BiTTen\Agent\config.json"
 )
 
@@ -22,9 +22,9 @@ function Test-Component {
         [string]$SuccessMessage = "Working",
         [string]$FailureMessage = "Failed"
     )
-    
+
     Write-Host -NoNewline "Testing $Name... " -ForegroundColor Yellow
-    
+
     try {
         $result = & $Test
         if ($result) {
@@ -171,7 +171,7 @@ $test8 = Test-Component -Name "Broker Detection" -Test {
     # Load agent modules
     $modulePath = Split-Path $ConfigPath -Parent
     $modulePath = Join-Path $modulePath "Modules\BrokerHandler.psm1"
-    
+
     if (Test-Path $modulePath) {
         Import-Module $modulePath -Force
         $brokerHandler = New-Object BrokerCompatibilityManager
@@ -188,7 +188,7 @@ $commissioningResults += $test8
 $test9 = Test-Component -Name "Symbol Mapping" -Test {
     $bittenPath = "C:\Program Files\MetaTrader 5\MQL5\Files\BITTEN"
     $fireFile = Join-Path $bittenPath "fire.txt"
-    
+
     if (Test-Path $fireFile) {
         # Test signal format
         $testSignal = @{
@@ -200,11 +200,11 @@ $test9 = Test-Component -Name "Symbol Mapping" -Test {
             tp = 0
             comment = "Commissioning test"
         } | ConvertTo-Json
-        
+
         try {
             $testSignal | Set-Content $fireFile -Force
             Start-Sleep -Milliseconds 500
-            
+
             # Check if file was processed (should be empty)
             $content = Get-Content $fireFile -Raw
             if (-not $content -or $content.Trim().Length -eq 0) {
@@ -224,13 +224,13 @@ $commissioningResults += $test9
 # Test 10: Performance Metrics
 $test10 = Test-Component -Name "System Performance" -Test {
     $cpu = (Get-Counter '\Processor(_Total)\% Processor Time' -SampleInterval 1 -MaxSamples 1).CounterSamples.CookedValue
-    $memory = Get-CimInstance Win32_OperatingSystem | 
+    $memory = Get-CimInstance Win32_OperatingSystem |
               Select-Object @{Name="MemoryUsage";Expression={[math]::Round((($_.TotalVisibleMemorySize - $_.FreePhysicalMemory) / $_.TotalVisibleMemorySize) * 100, 2)}}
-    $disk = Get-PSDrive -Name C | 
+    $disk = Get-PSDrive -Name C |
             Select-Object @{Name="FreeGB";Expression={[math]::Round($_.Free / 1GB, 2)}}
-    
+
     $status = "CPU: $([math]::Round($cpu, 2))%, Memory: $($memory.MemoryUsage)%, Disk Free: $($disk.FreeGB)GB"
-    
+
     if ($cpu -lt 80 -and $memory.MemoryUsage -lt 80 -and $disk.FreeGB -gt 10) {
         return $status
     }
@@ -246,8 +246,8 @@ $passCount = ($commissioningResults | Where-Object { $_.Status -eq "PASS" }).Cou
 $failCount = ($commissioningResults | Where-Object { $_.Status -eq "FAIL" }).Count
 $errorCount = ($commissioningResults | Where-Object { $_.Status -eq "ERROR" }).Count
 
-$overallStatus = if ($failCount -eq 0 -and $errorCount -eq 0) { "COMMISSIONED" } 
-                 elseif ($passCount -ge 7) { "PARTIALLY_COMMISSIONED" } 
+$overallStatus = if ($failCount -eq 0 -and $errorCount -eq 0) { "COMMISSIONED" }
+                 elseif ($passCount -ge 7) { "PARTIALLY_COMMISSIONED" }
                  else { "NOT_READY" }
 
 # Display summary
@@ -310,11 +310,11 @@ Write-Host "   $reportPath" -ForegroundColor White
 # Send report to BITTEN if service is running and network is available
 if ($overallStatus -ne "NOT_READY" -and $test7.Status -eq "PASS") {
     Write-Host "`n📡 Sending commissioning report to BITTEN..." -ForegroundColor Yellow
-    
+
     try {
         $endpoint = "https://terminus.joinbitten.com/metrics/commission"
         $json = $report | ConvertTo-Json -Depth 5 -Compress
-        
+
         $response = Invoke-RestMethod -Uri $endpoint -Method Post -Body $json -ContentType "application/json" -TimeoutSec 10
         Write-Host "✅ Report sent successfully" -ForegroundColor Green
     }
@@ -326,10 +326,10 @@ if ($overallStatus -ne "NOT_READY" -and $test7.Status -eq "PASS") {
 # Recommendations
 if ($failCount -gt 0 -or $errorCount -gt 0) {
     Write-Host "`n📋 RECOMMENDATIONS:" -ForegroundColor Yellow
-    
+
     foreach ($result in $commissioningResults | Where-Object { $_.Status -ne "PASS" }) {
         Write-Host "   • $($result.Component): " -NoNewline -ForegroundColor Yellow
-        
+
         switch ($result.Component) {
             "Windows Service" {
                 Write-Host "Run 'Start-Service BiTTenDualAgent' as Administrator"

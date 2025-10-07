@@ -16,17 +16,20 @@ The Social Brag Notification System automatically sends military-themed squad no
 ## Components
 
 ### 1. Social Brag System (`social_brag_system.py`)
+
 - Main notification engine
 - Message templates and formatting
 - Squad member discovery
 - Notification delivery coordination
 
 ### 2. Integration Helper (`social_brag_integration.py`)
+
 - Initialization and setup utilities
 - Helper functions for other systems
 - Global integration management
 
 ### 3. XP Economy Integration
+
 - Automatic detection of tactical strategy unlocks
 - Username lookup functionality
 - Seamless integration with existing XP system
@@ -34,16 +37,19 @@ The Social Brag Notification System automatically sends military-themed squad no
 ## Message Types
 
 ### Tactical Strategy Unlocks
+
 - **FIRST_BLOOD**: "🎯 {username} just unlocked FIRST BLOOD! This soldier is ready for combat!"
 - **DOUBLE_TAP**: "🎯 {username} just unlocked DOUBLE TAP! Precision firepower at its finest!"
 - **TACTICAL_COMMAND**: "🎯 {username} just unlocked TACTICAL COMMAND! Another leader emerges from the ranks!"
 
 ### Rank Promotions
+
 - **FANG**: "🏆 {username} just achieved FANG rank! Sharp teeth, sharper trades!"
 - **COMMANDER**: "🏆 {username} just achieved COMMANDER rank! Leadership through firepower!"
-- ****: "🏆 {username} just achieved rank! The pinnacle of trading warfare!"
+- \*\*\*\*: "🏆 {username} just achieved rank! The pinnacle of trading warfare!"
 
 ### Prestige Achievements
+
 - **Level 1**: "⭐ {username} just achieved PRESTIGE LEVEL 1! Legendary status unlocked!"
 - **Level 2**: "⭐ {username} just achieved PRESTIGE LEVEL 2! Double legendary!"
 - **Level 3**: "⭐ {username} just achieved PRESTIGE LEVEL 3! Triple threat activated!"
@@ -123,7 +129,7 @@ brag_system.notify_tactical_strategy_unlock(
 # Manual rank promotion notification
 brag_system.notify_rank_promotion(
     user_id="user123",
-    username="ALPHA-1", 
+    username="ALPHA-1",
     new_rank="FANG",
     old_rank="NIBBLER"
 )
@@ -142,11 +148,13 @@ This creates a network effect where achievements are shared with the extended sq
 ## Notification Channels
 
 ### In-Game Notifications (via NotificationHandler)
+
 - High-priority achievement notifications
 - Sound effects and visual feedback
 - WebApp integration ready
 
 ### Chat Notifications (via ChatNotificationService)
+
 - Email notifications
 - Telegram bot messages
 - Push notifications
@@ -187,6 +195,7 @@ self.notification_cooldown = 300  # 5 minutes between same achievement notificat
 ### Message Formatting
 
 Messages support format strings with these variables:
+
 - `{username}`: Display name of the achieving user
 - `{strategy_name}`: Name of the unlocked strategy
 - Custom variables can be added in the metadata
@@ -201,6 +210,7 @@ logging.getLogger('bitten_core.social_brag_system').setLevel(logging.DEBUG)
 ```
 
 Key log messages:
+
 - Tactical strategy unlock brags sent
 - Squad member discovery results
 - Notification delivery status
@@ -219,9 +229,9 @@ Key log messages:
 # Test the system with mock data
 if __name__ == "__main__":
     from bitten_core.social_brag_system import SocialBragSystem
-    
+
     brag_system = SocialBragSystem()
-    
+
     # Test tactical strategy unlock
     result = brag_system.notify_tactical_strategy_unlock(
         user_id="test_user",
@@ -231,7 +241,7 @@ if __name__ == "__main__":
         strategy_description="Test strategy",
         xp_amount=120
     )
-    
+
     print(f"Brag result: {result}")
 ```
 
@@ -254,18 +264,21 @@ if __name__ == "__main__":
 ## Integration with Other Systems
 
 ### Battle Pass Integration
+
 ```python
 # When user completes battle pass tier
 handle_user_rank_promotion(user_id, new_tier, old_tier, username)
 ```
 
 ### Achievement System Integration
+
 ```python
 # When user unlocks major achievement
 brag_system.notify_milestone_achievement(user_id, achievement_name, description)
 ```
 
 ### Trade System Integration
+
 ```python
 # Already integrated via XP economy automatic tactical unlocks
 # No additional code needed for basic strategy unlocks
@@ -282,6 +295,7 @@ brag_system.notify_milestone_achievement(user_id, achievement_name, description)
 ## API Reference
 
 See the docstrings in the source files for detailed API documentation:
+
 - `SocialBragSystem` class methods
 - Helper functions in `social_brag_integration.py`
 - XP Economy integration points

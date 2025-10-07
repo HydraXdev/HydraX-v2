@@ -59,7 +59,7 @@ try:
     subscriber.connect('tcp://127.0.0.1:5560')
     subscriber.subscribe(b'')
     subscriber.setsockopt(zmq.RCVTIMEO, 5000)  # 5 second timeout
-    
+
     print('⏳ Waiting for tick data...')
     msg = subscriber.recv_json()
     print(f'✅ Data flowing! Received: {msg.get(\"symbol\")} @ {msg.get(\"bid\")}')

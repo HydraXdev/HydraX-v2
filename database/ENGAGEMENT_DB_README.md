@@ -14,6 +14,7 @@ The SQLite database infrastructure for user engagement tracking provides compreh
 ### Tables
 
 #### 1. `signal_fires`
+
 Primary table for tracking signal fire events.
 
 ```sql
@@ -28,6 +29,7 @@ CREATE TABLE signal_fires (
 ```
 
 #### 2. `user_stats`
+
 User performance and engagement statistics.
 
 ```sql
@@ -41,6 +43,7 @@ CREATE TABLE user_stats (
 ```
 
 #### 3. `signal_metrics`
+
 Signal-level engagement metrics.
 
 ```sql
@@ -268,6 +271,7 @@ python3 database/verify_db_structure.py
 ## Logging
 
 The system includes comprehensive logging for:
+
 - Database operations
 - Error conditions
 - Performance metrics
@@ -287,7 +291,7 @@ def handle_signal_fire(user_id, signal_id):
         signal_id=signal_id,
         executed=True
     )
-    
+
     if success:
         # Send confirmation to user
         send_telegram_message(user_id, "Signal fired successfully!")
@@ -310,6 +314,7 @@ def on_trade_close(user_id, pnl, is_win):
 ## Monitoring and Analytics
 
 The system provides real-time analytics for:
+
 - Daily engagement metrics
 - User performance tracking
 - Signal popularity analysis
@@ -320,6 +325,7 @@ The system provides real-time analytics for:
 ## Future Enhancements
 
 Potential future features:
+
 - Time-based engagement analysis
 - Advanced streak rewards
 - Social features integration
@@ -339,6 +345,7 @@ Potential future features:
 ### Log Analysis
 
 Check logs for:
+
 - Database connection errors
 - Query performance issues
 - Data validation failures
@@ -347,6 +354,7 @@ Check logs for:
 ## Support
 
 For issues or questions regarding the engagement database system, check:
+
 - Error logs in the application
 - Database file permissions
 - Available disk space

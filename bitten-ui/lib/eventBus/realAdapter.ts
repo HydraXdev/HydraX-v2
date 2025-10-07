@@ -1,12 +1,13 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from 'react';
-import type { BusTopics, TopicName } from './contracts';
+import { useEffect, useState } from "react";
+import type { BusTopics, TopicName } from "./contracts";
 
 type TopicHandler<T extends TopicName> = (data: BusTopics[T]) => void;
 type Unsubscribe = () => void;
 
-const SOCKET_URL = process.env.NEXT_PUBLIC_BUS_URL || 'ws://localhost:8888/socket.io';
+const SOCKET_URL =
+  process.env.NEXT_PUBLIC_BUS_URL || "ws://localhost:8888/socket.io";
 
 type GenericHandler = (data: unknown) => void;
 
@@ -30,7 +31,7 @@ class RealEventBusAdapter {
   private lastHeartbeat = Date.now();
 
   constructor() {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       this.connect();
     }
   }
@@ -41,18 +42,18 @@ class RealEventBusAdapter {
         ? `${SOCKET_URL}?token=${encodeURIComponent(token)}`
         : SOCKET_URL;
 
-      console.log('[EventBus] Connecting to', url);
+      console.log("[EventBus] Connecting to", url);
       this.ws = new WebSocket(url);
 
       this.ws.onopen = () => {
-        console.log('[EventBus] Connected');
+        console.log("[EventBus] Connected");
         this.reconnectAttempts = 0;
         this.reconnectDelay = 1000;
         this.startHeartbeat();
-        this.emit('system.status', {
+        this.emit("system.status", {
           secure: true,
           latencyMs: 0,
-          hydraNode: 'OK',
+          hydraNode: "OK",
         });
       };
 
@@ -62,27 +63,27 @@ class RealEventBusAdapter {
           const message = JSON.parse(event.data);
           this.route(message);
         } catch (error) {
-          console.error('[EventBus] Failed to parse message:', error);
+          console.error("[EventBus] Failed to parse message:", error);
         }
       };
 
       this.ws.onclose = () => {
-        console.log('[EventBus] Disconnected');
+        console.log("[EventBus] Disconnected");
         this.stopHeartbeat();
-        this.emit('system.status', {
+        this.emit("system.status", {
           secure: false,
           latencyMs: -1,
-          hydraNode: 'DOWN',
+          hydraNode: "DOWN",
         });
         this.scheduleReconnect();
       };
 
       this.ws.onerror = (error) => {
-        console.error('[EventBus] Error:', error);
+        console.error("[EventBus] Error:", error);
         this.scheduleReconnect();
       };
     } catch (error) {
-      console.error('[EventBus] Failed to create WebSocket:', error);
+      console.error("[EventBus] Failed to create WebSocket:", error);
       this.scheduleReconnect();
     }
   }
@@ -93,7 +94,7 @@ class RealEventBusAdapter {
     const { topic, data } = message;
 
     if (!topic) {
-      console.warn('[EventBus] Message missing topic:', message);
+      console.warn("[EventBus] Message missing topic:", message);
       return;
     }
 
@@ -102,16 +103,18 @@ class RealEventBusAdapter {
 
   private scheduleReconnect() {
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-      console.error('[EventBus] Max reconnect attempts reached');
+      console.error("[EventBus] Max reconnect attempts reached");
       return;
     }
 
     const delay = Math.min(
       this.reconnectDelay * Math.pow(2, this.reconnectAttempts),
-      30000 // Max 30 seconds
+      30000, // Max 30 seconds
     );
 
-    console.log(`[EventBus] Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts + 1})`);
+    console.log(
+      `[EventBus] Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts + 1})`,
+    );
 
     setTimeout(() => {
       this.reconnectAttempts++;
@@ -123,12 +126,12 @@ class RealEventBusAdapter {
     this.heartbeatInterval = setInterval(() => {
       if (this.ws?.readyState === WebSocket.OPEN) {
         const latency = Date.now() - this.lastHeartbeat;
-        this.ws.send(JSON.stringify({ type: 'ping', timestamp: Date.now() }));
+        this.ws.send(JSON.stringify({ type: "ping", timestamp: Date.now() }));
 
-        this.emit('system.status', {
+        this.emit("system.status", {
           secure: true,
           latencyMs: latency,
-          hydraNode: latency < 1000 ? 'OK' : 'WARN',
+          hydraNode: latency < 1000 ? "OK" : "WARN",
         });
       }
     }, 5000); // Every 5 seconds
@@ -143,7 +146,7 @@ class RealEventBusAdapter {
 
   subscribe<T extends TopicName>(
     topic: T,
-    handler: TopicHandler<T>
+    handler: TopicHandler<T>,
   ): Unsubscribe {
     if (!this.handlers.has(topic)) {
       this.handlers.set(topic, new Set());
@@ -179,7 +182,7 @@ class RealEventBusAdapter {
     if (this.ws?.readyState === WebSocket.OPEN) {
       this.ws.send(JSON.stringify(message));
     } else {
-      console.warn('[EventBus] Cannot send, not connected');
+      console.warn("[EventBus] Cannot send, not connected");
     }
   }
 
@@ -211,7 +214,7 @@ export const eventBus = {
  * React hook to subscribe to a topic
  */
 export function useTopic<T extends TopicName>(
-  topic: T
+  topic: T,
 ): { data: BusTopics[T] | null; loading: boolean; error: Error | null } {
   const [data, setData] = useState<BusTopics[T] | null>(null);
   const [loading, setLoading] = useState(true);

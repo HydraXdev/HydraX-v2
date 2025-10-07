@@ -15,6 +15,7 @@ audit = get_audit_logger()
 # EXAMPLE 1: Mission Session Management
 # ============================================================
 
+
 def create_mission_session(user_id: str, alert_id: str) -> dict:
     """
     Example: Creating a mission session from an alert
@@ -35,13 +36,10 @@ def create_mission_session(user_id: str, alert_id: str) -> dict:
         aid=alert_id,
         ttl=ttl_seconds,
         created_via="telegram_bot",  # Extra context
-        session_type="fire_mission"
+        session_type="fire_mission",
     )
 
-    return {
-        'session_id': session_id,
-        'expires_at': datetime.utcnow() + timedelta(seconds=ttl_seconds)
-    }
+    return {"session_id": session_id, "expires_at": datetime.utcnow() + timedelta(seconds=ttl_seconds)}
 
 
 def validate_mission_session(user_id: str, session_id: str) -> bool:
@@ -57,11 +55,7 @@ def validate_mission_session(user_id: str, session_id: str) -> bool:
 
     # Log validation attempt
     audit.log_session_validated(
-        sub=user_id,
-        ms=session_id,
-        result=is_valid,
-        reason=reason,
-        validation_method="jwt_claim_check"
+        sub=user_id, ms=session_id, result=is_valid, reason=reason, validation_method="jwt_claim_check"
     )
 
     return is_valid
@@ -77,12 +71,7 @@ def execute_mission_session(user_id: str, session_id: str) -> str:
     operation_id = f"fire_{uuid.uuid4().hex[:12]}"
 
     # Log session execution
-    audit.log_session_executed(
-        sub=user_id,
-        ms=session_id,
-        op_id=operation_id,
-        execution_method="auto_fire"
-    )
+    audit.log_session_executed(sub=user_id, ms=session_id, op_id=operation_id, execution_method="auto_fire")
 
     return operation_id
 
@@ -91,12 +80,9 @@ def execute_mission_session(user_id: str, session_id: str) -> str:
 # EXAMPLE 2: Fire Command Execution with Guardrails
 # ============================================================
 
+
 def execute_fire_command(
-    user_id: str,
-    session_id: str,
-    alert_id: str,
-    risk_pct: float,
-    client_request_id: str = None
+    user_id: str, session_id: str, alert_id: str, risk_pct: float, client_request_id: str = None
 ) -> dict:
     """
     Example: Fire command with risk checks and idempotency
@@ -111,22 +97,15 @@ def execute_fire_command(
         cached_fire_id = check_idempotency_cache(client_request_id)
         if cached_fire_id:
             audit.log_fire_idempotent_hit(
-                sub=user_id,
-                ms=session_id,
-                client_request_id=client_request_id,
-                cached_op_id=cached_fire_id
+                sub=user_id, ms=session_id, client_request_id=client_request_id, cached_op_id=cached_fire_id
             )
-            return {'fire_id': cached_fire_id, 'cached': True}
+            return {"fire_id": cached_fire_id, "cached": True}
 
     # Check risk guardrails
     max_risk = get_max_risk_for_user(user_id)
     if risk_pct > max_risk:
         audit.log_fire_risk_violation(
-            sub=user_id,
-            ms=session_id,
-            requested_risk=risk_pct,
-            max_risk=max_risk,
-            alert_id=alert_id
+            sub=user_id, ms=session_id, requested_risk=risk_pct, max_risk=max_risk, alert_id=alert_id
         )
         raise ValueError(f"Risk {risk_pct}% exceeds maximum {max_risk}%")
 
@@ -135,27 +114,19 @@ def execute_fire_command(
     required_scope = "fire:execute"
     if required_scope not in user_scopes:
         audit.log_fire_scope_violation(
-            sub=user_id,
-            ms=session_id,
-            required_scope=required_scope,
-            had_scopes=user_scopes
+            sub=user_id, ms=session_id, required_scope=required_scope, had_scopes=user_scopes
         )
         raise PermissionError(f"User lacks required scope: {required_scope}")
 
     # Log fire request
     audit.log_fire_requested(
-        sub=user_id,
-        ms=session_id,
-        aid=alert_id,
-        op_id=fire_id,
-        risk_pct=risk_pct,
-        client_request_id=client_request_id
+        sub=user_id, ms=session_id, aid=alert_id, op_id=fire_id, risk_pct=risk_pct, client_request_id=client_request_id
     )
 
     # Execute fire command (simulated)
     # ... actual fire logic here ...
 
-    return {'fire_id': fire_id, 'cached': False}
+    return {"fire_id": fire_id, "cached": False}
 
 
 def check_idempotency_cache(request_id: str) -> str:
@@ -180,6 +151,7 @@ def get_user_scopes(user_id: str) -> list:
 # EXAMPLE 3: WebSocket Connection Management
 # ============================================================
 
+
 class WebSocketConnectionHandler:
     """Example: WebSocket connection with authentication and authorization"""
 
@@ -191,16 +163,9 @@ class WebSocketConnectionHandler:
         import time
 
         # Log connection attempt (no user yet)
-        audit.log_ws_connected(
-            sid=sid,
-            ip=environ.get('REMOTE_ADDR'),
-            user_agent=environ.get('HTTP_USER_AGENT')
-        )
+        audit.log_ws_connected(sid=sid, ip=environ.get("REMOTE_ADDR"), user_agent=environ.get("HTTP_USER_AGENT"))
 
-        self.connections[sid] = {
-            'user_id': None,
-            'connected_at': time.time()
-        }
+        self.connections[sid] = {"user_id": None, "connected_at": time.time()}
 
     def authenticate_connection(self, sid: str, token: str) -> bool:
         """Authenticate WebSocket connection via JWT"""
@@ -210,20 +175,13 @@ class WebSocketConnectionHandler:
 
             if user_id:
                 # Log successful auth
-                audit.log_auth_success(
-                    sub=user_id,
-                    method="jwt",
-                    connection_type="websocket"
-                )
+                audit.log_auth_success(sub=user_id, method="jwt", connection_type="websocket")
 
                 # Update connection
-                self.connections[sid]['user_id'] = user_id
+                self.connections[sid]["user_id"] = user_id
 
                 # Re-log connection with user
-                audit.log_ws_connected(
-                    sid=sid,
-                    sub=user_id
-                )
+                audit.log_ws_connected(sid=sid, sub=user_id)
 
                 return True
             else:
@@ -231,33 +189,22 @@ class WebSocketConnectionHandler:
 
         except Exception as e:
             # Log auth failure
-            audit.log_ws_auth_failed(
-                sid=sid,
-                reason=str(e)
-            )
+            audit.log_ws_auth_failed(sid=sid, reason=str(e))
             return False
 
     def subscribe_to_topic(self, sid: str, topic: str) -> bool:
         """Subscribe WebSocket to a topic with authorization"""
-        user_id = self.connections.get(sid, {}).get('user_id')
+        user_id = self.connections.get(sid, {}).get("user_id")
 
         if not user_id:
-            audit.log_ws_auth_failed(
-                sid=sid,
-                reason="Not authenticated"
-            )
+            audit.log_ws_auth_failed(sid=sid, reason="Not authenticated")
             return False
 
         # Check authorization
         authorized = is_user_authorized_for_topic(user_id, topic)
 
         # Log subscription attempt
-        audit.log_ws_subscribed(
-            sid=sid,
-            sub=user_id,
-            topic=topic,
-            authorized=authorized
-        )
+        audit.log_ws_subscribed(sid=sid, sub=user_id, topic=topic, authorized=authorized)
 
         return authorized
 
@@ -266,17 +213,13 @@ class WebSocketConnectionHandler:
         import time
 
         connection = self.connections.get(sid, {})
-        user_id = connection.get('user_id')
-        connected_at = connection.get('connected_at', time.time())
+        user_id = connection.get("user_id")
+        connected_at = connection.get("connected_at", time.time())
 
         duration = time.time() - connected_at
 
         # Log disconnection
-        audit.log_ws_disconnected(
-            sid=sid,
-            sub=user_id,
-            duration=duration
-        )
+        audit.log_ws_disconnected(sid=sid, sub=user_id, duration=duration)
 
         # Cleanup
         self.connections.pop(sid, None)
@@ -299,6 +242,7 @@ def is_user_authorized_for_topic(user_id: str, topic: str) -> bool:
 # EXAMPLE 4: Rate Limiting with Audit Logs
 # ============================================================
 
+
 def check_rate_limit(user_id: str, endpoint: str, limit: int = 10) -> bool:
     """
     Example: Rate limiting with audit logging
@@ -308,12 +252,7 @@ def check_rate_limit(user_id: str, endpoint: str, limit: int = 10) -> bool:
 
     if current_requests >= limit:
         # Log rate limit violation
-        audit.log_rate_limit_exceeded(
-            sub=user_id,
-            endpoint=endpoint,
-            limit=limit,
-            current_requests=current_requests
-        )
+        audit.log_rate_limit_exceeded(sub=user_id, endpoint=endpoint, limit=limit, current_requests=current_requests)
         return False
 
     return True
@@ -329,6 +268,7 @@ def get_request_count(user_id: str, endpoint: str) -> int:
 # EXAMPLE 5: Session Expiration Monitoring
 # ============================================================
 
+
 def monitor_session_expiration(session_id: str, expires_at: str):
     """
     Example: Background task monitoring session expiration
@@ -341,11 +281,7 @@ def monitor_session_expiration(session_id: str, expires_at: str):
 
     if now >= expiry:
         # Log expiration
-        audit.log_session_expired(
-            ms=session_id,
-            expired_at=expires_at,
-            cleanup_performed=True
-        )
+        audit.log_session_expired(ms=session_id, expired_at=expires_at, cleanup_performed=True)
 
         # Cleanup session
         cleanup_expired_session(session_id)
@@ -361,6 +297,7 @@ def cleanup_expired_session(session_id: str):
 # EXAMPLE 6: Authentication Flow
 # ============================================================
 
+
 def login_user(username: str, password: str) -> dict:
     """
     Example: User login with audit logging
@@ -370,19 +307,12 @@ def login_user(username: str, password: str) -> dict:
 
     if user:
         # Log successful authentication
-        audit.log_auth_success(
-            sub=user['id'],
-            method="password",
-            username=username  # Username is OK, password is NOT
-        )
+        audit.log_auth_success(sub=user["id"], method="password", username=username)  # Username is OK, password is NOT
 
-        return {'token': generate_jwt(user['id']), 'user_id': user['id']}
+        return {"token": generate_jwt(user["id"]), "user_id": user["id"]}
     else:
         # Log failed authentication
-        audit.log_auth_failed(
-            reason="Invalid credentials",
-            username=username  # No user ID available
-        )
+        audit.log_auth_failed(reason="Invalid credentials", username=username)  # No user ID available
 
         raise ValueError("Invalid credentials")
 
@@ -391,7 +321,7 @@ def validate_credentials(username: str, password: str) -> dict:
     """Simulated credential validation"""
     # Replace with actual user lookup
     if username == "commander" and password == "correct":
-        return {'id': '7176191872', 'tier': 'COMMANDER'}
+        return {"id": "7176191872", "tier": "COMMANDER"}
     return None
 
 
@@ -414,27 +344,25 @@ def log_user_action_safely(user_id: str, action: str, data: dict):
     """
     # Data might contain sensitive info
     user_data = {
-        'user_id': user_id,
-        'action': action,
-        'account_balance': 10000.50,  # Will be redacted
-        'account_number': '12345678',  # Will be redacted
-        'tier': 'COMMANDER',  # Safe
-        'timestamp': '2025-10-05T12:00:00Z'  # Safe
+        "user_id": user_id,
+        "action": action,
+        "account_balance": 10000.50,  # Will be redacted
+        "account_number": "12345678",  # Will be redacted
+        "tier": "COMMANDER",  # Safe
+        "timestamp": "2025-10-05T12:00:00Z",  # Safe
     }
 
     # Sanitize before logging
     safe_data = sanitize_data(user_data)
 
     # Now safe to log
-    audit.logger.info(
-        f"User action: {action}",
-        extra={'extra_data': safe_data}
-    )
+    audit.logger.info(f"User action: {action}", extra={"extra_data": safe_data})
 
 
 # ============================================================
 # EXAMPLE 8: Integration with Existing BITTEN Components
 # ============================================================
+
 
 def integrate_with_webapp_server():
     """
@@ -505,6 +433,7 @@ def integrate_with_metasocket():
 # EXAMPLE 9: Querying Audit Logs
 # ============================================================
 
+
 def query_audit_logs_example():
     """
     Example: How to query audit logs for security analysis
@@ -516,10 +445,10 @@ def query_audit_logs_example():
 
     # Find all failed authentication attempts
     failed_auths = []
-    with open(log_file, 'r') as f:
+    with open(log_file, "r") as f:
         for line in f:
             data = json.loads(line)
-            if data['event_type'] == 'auth.failed':
+            if data["event_type"] == "auth.failed":
                 failed_auths.append(data)
 
     # Analyze patterns
@@ -528,10 +457,10 @@ def query_audit_logs_example():
     # Find all fire requests by specific user
     user_id = "7176191872"
     user_fires = []
-    with open(log_file, 'r') as f:
+    with open(log_file, "r") as f:
         for line in f:
             data = json.loads(line)
-            if data['event_type'] == 'fire.requested' and data.get('sub') == user_id:
+            if data["event_type"] == "fire.requested" and data.get("sub") == user_id:
                 user_fires.append(data)
 
     print(f"User {user_id} made {len(user_fires)} fire requests")
@@ -554,10 +483,7 @@ if __name__ == "__main__":
     print("\n2. Executing fire command...")
     try:
         result = execute_fire_command(
-            user_id="7176191872",
-            session_id=session['session_id'],
-            alert_id="alert_xyz789",
-            risk_pct=2.0
+            user_id="7176191872", session_id=session["session_id"], alert_id="alert_xyz789", risk_pct=2.0
         )
         print(f"   Fire ID: {result['fire_id']}")
     except Exception as e:
@@ -566,18 +492,14 @@ if __name__ == "__main__":
     # Example 3: WebSocket connection
     print("\n3. Handling WebSocket connection...")
     ws_handler = WebSocketConnectionHandler()
-    ws_handler.on_connect("socket_123", {'REMOTE_ADDR': '192.168.1.100'})
+    ws_handler.on_connect("socket_123", {"REMOTE_ADDR": "192.168.1.100"})
     ws_handler.authenticate_connection("socket_123", "fake_token")
     ws_handler.subscribe_to_topic("socket_123", "signals:EURUSD")
     ws_handler.on_disconnect("socket_123")
 
     # Example 4: Data sanitization
     print("\n4. Sanitizing data before logging...")
-    log_user_action_safely(
-        user_id="7176191872",
-        action="view_balance",
-        data={'balance': 10000.50}
-    )
+    log_user_action_safely(user_id="7176191872", action="view_balance", data={"balance": 10000.50})
 
     print("\n" + "=" * 60)
     print("All examples completed. Check /var/log/bitten/audit.log")

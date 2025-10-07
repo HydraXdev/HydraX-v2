@@ -1,4 +1,5 @@
 # BITTEN COMPLETE SYSTEM INTEGRATION PLAN
+
 **Date**: October 1, 2025 02:52 UTC
 **Agent**: Claude Code (Sonnet 4.5)
 **Objective**: Wire up HydraSocket v1.0 (native TCP) with existing BITTEN infrastructure (ZMQ)
@@ -10,6 +11,7 @@
 **Goal**: Enable complete data flow from MT5 EA → Elite Guard → Telegram → Fire → Execution → Confirmation with full analytics and telemetry.
 
 **Current State**:
+
 - ✅ EA attached to chart, sending account data
 - ❌ EA not sending market data (watchlist not initialized)
 - ❌ EA cannot receive commands (TCP/ZMQ protocol mismatch on port 5555)
@@ -134,12 +136,14 @@
 **Solution Options**:
 
 **Option A - TCP Command Bridge (Proper, Long-term)**
+
 1. Create TCP server on port 5557 for EA command connection
 2. Bridge to ZMQ command_router for command delivery
 3. Send feed_set command through bridge
 4. EA initializes watchlist and starts streaming data
 
 **Option B - Manual Config File (Quick, Temporary)**
+
 1. User creates `HydraFeed.cfg` in MT5's `MQL5/Files/` directory:
    ```
    symbols=XAUUSD,EURUSD,GBPJPY,USDJPY,GBPUSD,USDCAD,USDCHF,AUDUSD,NZDUSD,EURJPY,EURGBP,EURCAD,EURAUD,AUDJPY,NZDJPY,GBPCAD,CHFJPY,GBPCHF,EURCHF
@@ -151,6 +155,7 @@
 4. Market data starts flowing immediately
 
 **Option C - EA Code Fix (Permanent, Requires Recompile)**
+
 1. Modify EA OnInit() to use input defaults when no config file exists
 2. Recompile and redeploy EA
 3. EA initializes automatically on attach
@@ -158,12 +163,14 @@
 **Recommended**: Option A (proper architecture) with Option B as immediate workaround.
 
 **Actions**:
+
 1. ✅ Universal Bridge already fixed to forward to port 5556 (done)
 2. Create TCP Command Bridge (port 5557)
 3. Send feed_set command
 4. Verify market data appears in logs within 30 seconds
 
 **Validation**:
+
 ```bash
 # Should show bar_closed, custom_bar_closed events
 tail -f /var/log/hydrasocket_universal_bridge.log | grep -E "bar_closed|custom_bar"
@@ -181,6 +188,7 @@ pm2 logs elite-guard | grep "PATTERN SCAN"
 **Components**:
 
 **A. TCP Command Bridge (NEW)**
+
 ```python
 # File: /root/HydraX-v2/zmq_to_tcp_command_bridge.py
 
@@ -245,17 +253,20 @@ class CommandBridge:
 ```
 
 **B. Integration with Existing Systems**
+
 - command_router already routes by target_uuid
 - Fire commands from IPC queue → command_router → CommandBridge → EA
 - No changes needed to webapp or enqueue_fire.py
 
 **Actions**:
+
 1. Create `/root/HydraX-v2/zmq_to_tcp_command_bridge.py`
 2. Start as background process or PM2
 3. Verify EA connects successfully
 4. Test fire command delivery
 
 **Validation**:
+
 ```bash
 # Bridge should show EA connection
 tail -f /var/log/command_bridge.log | grep "EA connected"
@@ -278,12 +289,14 @@ pm2 logs confirm_listener | grep "FILLED"
 **Requirement**: Verify listener supports native TCP from EA (not just ZMQ)
 
 **Actions**:
+
 1. Check confirm_listener code for TCP support
 2. If ZMQ-only, add TCP socket listener
 3. Test with manual fire command
 4. Verify fires table updates with ticket/price
 
 **Validation**:
+
 ```bash
 # Database should show FILLED status
 sqlite3 /root/HydraX-v2/bitten.db \
@@ -300,6 +313,7 @@ sqlite3 /root/HydraX-v2/bitten.db \
 **Objective**: Verify complete signal flow from Elite Guard to Telegram
 
 **Components to Verify**:
+
 1. Elite Guard scanning with 20 symbols of live data
 2. Signal publishing to port 5557 (ZMQ PUB)
 3. signals_zmq_to_redis capturing and storing
@@ -307,12 +321,14 @@ sqlite3 /root/HydraX-v2/bitten.db \
 5. athena_broadcaster sending Telegram notifications
 
 **Actions**:
+
 1. Monitor Elite Guard for pattern detections
 2. Check Redis stream for signals
 3. Verify webapp /api/signals endpoint
 4. Check Telegram group for alerts
 
 **Validation**:
+
 ```bash
 # Elite Guard should detect patterns
 pm2 logs elite-guard | grep "PATTERN DETECTED"
@@ -331,18 +347,21 @@ redis-cli XLEN signals_stream
 **Objective**: Ensure all events logged and tracked properly
 
 **Components**:
+
 1. Event Bus - Receives all EA events
 2. comprehensive_tracking.jsonl - Signal tracking
 3. canonical_tracker - Performance metrics
 4. Database tables - Complete schema
 
 **Actions**:
+
 1. Verify event_bus receiving EA events
 2. Check comprehensive_tracking.jsonl for new signals
 3. Verify canonical_tracker updating metrics
 4. Audit database schema completeness
 
 **Validation**:
+
 ```bash
 # Event bus should show EA events
 pm2 logs event_bus | grep "843859"
@@ -362,6 +381,7 @@ sqlite3 /root/HydraX-v2/bitten.db \
 **Objective**: Integrate user-specific risk preferences with live balance
 
 **Current State**:
+
 - Account State Manager captures live balance ($7,978.85)
 - Position sizing uses hardcoded 2% risk
 - User preferences NOT in database
@@ -369,6 +389,7 @@ sqlite3 /root/HydraX-v2/bitten.db \
 **Required Changes**:
 
 **A. Database Schema**
+
 ```sql
 -- Add to users table or create user_settings
 ALTER TABLE users ADD COLUMN risk_percent REAL DEFAULT 0.02;
@@ -377,6 +398,7 @@ ALTER TABLE users ADD COLUMN min_position_size REAL DEFAULT 0.01;
 ```
 
 **B. Position Sizing Integration**
+
 ```python
 # In enqueue_fire.py or fire command handler
 
@@ -395,12 +417,14 @@ lot_size = round(max(0.01, min(lot_size, 10.0)), 2)
 ```
 
 **Actions**:
+
 1. Add risk_percent column to database
 2. Create user settings management functions
 3. Update position sizing in enqueue_fire.py
 4. Add UI controls in webapp/Telegram for risk adjustment
 
 **Validation**:
+
 ```bash
 # Database should have user risk settings
 sqlite3 /root/HydraX-v2/bitten.db \
@@ -418,6 +442,7 @@ python3 -c "from enqueue_fire import calculate_position_size; \
 **Objective**: Verify complete system integration with real trade
 
 **Test Scenario**:
+
 1. EA sending market data (20 symbols, M1/M5/H1)
 2. Elite Guard detects pattern → generates signal
 3. Signal published to Redis/WebApp
@@ -432,6 +457,7 @@ python3 -c "from enqueue_fire import calculate_position_size; \
 12. Analytics logged in comprehensive_tracking.jsonl
 
 **Validation Checklist**:
+
 ```bash
 # 1. Market Data
 tail -f /var/log/hydrasocket_universal_bridge.log | head -10
@@ -506,28 +532,33 @@ tail -1 /root/HydraX-v2/comprehensive_tracking.jsonl | jq .
 **System is fully wired when:**
 
 ✅ **Data Flow**:
+
 - [ ] EA sending bar_closed/custom_bar_closed (20 symbols × 3 timeframes)
 - [ ] Elite Guard receiving data (logs show "20 symbols have M1 data")
 - [ ] Pattern scanning active (detecting 6 pattern types)
 - [ ] Signals publishing to Redis and webapp
 
 ✅ **Command Flow**:
+
 - [ ] Fire commands reach EA within 100ms
 - [ ] EA executes trades on MT5
 - [ ] Trades appear in MT5 terminal
 
 ✅ **Confirmation Flow**:
+
 - [ ] EA confirmations received on port 5558
 - [ ] fires table updates with ticket/price
 - [ ] Webapp shows FILLED status
 
 ✅ **Analytics**:
+
 - [ ] Event bus receiving all EA events
 - [ ] comprehensive_tracking.jsonl logging signals
 - [ ] canonical_tracker showing metrics
 - [ ] All databases updating correctly
 
 ✅ **User Experience**:
+
 - [ ] Telegram alerts within 2 seconds of signal
 - [ ] Fire button works reliably
 - [ ] Position sizing uses live balance + user risk
@@ -597,21 +628,25 @@ watch -n5 'redis-cli XLEN signals_stream'
 ## 🚨 TROUBLESHOOTING GUIDE
 
 **Issue**: No market data from EA
+
 - Check: Universal Bridge logs for bar_closed events
 - Fix: Send feed_set command via Command Bridge
 - Verify: EA has HydraFeed.cfg or received feed_set
 
 **Issue**: Fire commands not reaching EA
+
 - Check: Command Bridge connection status
 - Fix: Restart bridge, verify EA reconnects
 - Verify: command_router logs show "Sent to COMMANDER_DEV_001"
 
 **Issue**: Confirmations not received
+
 - Check: confirm_listener supports TCP (not just ZMQ)
 - Fix: Add TCP socket listener to confirm_listener
 - Verify: EA logs show "sent confirmation to port 5558"
 
 **Issue**: Elite Guard not detecting patterns
+
 - Check: Receiving market data from telemetry bridge?
 - Fix: Verify port 5560 subscription
 - Verify: Elite Guard logs show "X symbols have M1 data"

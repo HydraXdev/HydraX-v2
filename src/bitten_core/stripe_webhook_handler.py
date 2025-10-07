@@ -281,10 +281,10 @@ def setup_stripe_products():
             'monthly_price': 18900,
             'annual_price': 111200
         },
-        '': {
+        'APEX': {
             'name': 'BITTEN Apex',
             'description': 'Elite tier with unlimited trades and priority support',
-            'monthly_price': ,
+            'monthly_price': 18900,
             'annual_price': 150400
         }
     }

@@ -146,7 +146,7 @@ class SundayTrainingOps:
         tier_hierarchy = {
             "NIBBLER": 0,
             "FANG": 1,
-            "COMMANDER": 2: 3
+            "COMMANDER": 2
         }
         
         user_level = tier_hierarchy.get(tier, 0)

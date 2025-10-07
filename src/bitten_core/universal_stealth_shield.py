@@ -168,8 +168,8 @@ class UniversalStealthShield:
                 max_total_concurrent=8,
                 shuffle_queue=True
             ),
-            
-            TierLevel.: StealthConfig(
+
+            TierLevel.COMMANDER: StealthConfig(
                 enabled=True,
                 level=StealthLevel.HIGH,
                 entry_delay_min=2.0,

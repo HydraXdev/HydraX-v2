@@ -157,9 +157,9 @@ async def handle_shield_status(user_id: int, tier: TierLevel) -> str:
     return message
 
 async def handle_shield_toggle(user_id: int, tier: TierLevel, enabled: bool) -> str:
-    """Handle /shield on/off command (only)"""
-    if tier != TierLevel.:
-        return "⚠️ Shield control is -exclusive. Shield is always ON for your protection."
+    """Handle /shield on/off command (APEX only)"""
+    if tier != TierLevel.APEX:
+        return "⚠️ Shield control is APEX-exclusive. Shield is always ON for your protection."
     
     shield_integration.enabled = enabled
     

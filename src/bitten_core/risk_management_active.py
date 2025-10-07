@@ -122,8 +122,8 @@ class v5RiskParameters:
 
 class v5RiskManager:
     """v5.0 Risk Manager - Optimized for ultra-aggressive trading"""
-    
-    def __init__(self, tier: str = risk_mode: v5RiskMode = v5RiskMode.STANDARD):
+
+    def __init__(self, tier: str = "NIBBLER", risk_mode: v5RiskMode = v5RiskMode.STANDARD):
         self.tier = tier
         self.risk_mode = risk_mode
         self.params = v5RiskParameters()
@@ -178,14 +178,18 @@ class v5RiskManager:
                 adjusted_risk *= 1.4  # MEGA confluence
             
             # Tier-based adjustments
-            if self.tier == :
-                adjusted_risk *= 1.2  # 20% bonus
+            if self.tier == "FANG":
+                adjusted_risk *= 1.2  # 20% FANG bonus
             elif self.tier == "COMMANDER":
                 adjusted_risk *= 1.1  # 10% COMMANDER bonus
             
             # Apply risk mode multiplier
             mode_multipliers = {
-                v5RiskMode.CONSERVATIVE: 0.5v5RiskMode.STANDARD: 1.0v5RiskMode.AGGRESSIVE: 1.5v5RiskMode.ULTRA: 2.0v5RiskMode._BEAST: 3.0
+                v5RiskMode.CONSERVATIVE: 0.5,
+                v5RiskMode.STANDARD: 1.0,
+                v5RiskMode.AGGRESSIVE: 1.5,
+                v5RiskMode.ULTRA: 2.0,
+                v5RiskMode._BEAST: 3.0
             }
             adjusted_risk *= mode_multipliers.get(self.risk_mode, 1.0)
             
@@ -470,6 +474,6 @@ def get_apex_v5_risk_manager(tier: str, risk_mode: str = "standard") -> v5RiskMa
         'ultra': v5RiskMode.ULTRA,
         'apex_beast': v5RiskMode._BEAST
     }
-    
-    risk_mode_enum = mode_mapping.get(risk_mode.lower()v5RiskMode.STANDARD)
+
+    risk_mode_enum = mode_mapping.get(risk_mode.lower(), v5RiskMode.STANDARD)
     return v5RiskManager(tier=tier, risk_mode=risk_mode_enum)

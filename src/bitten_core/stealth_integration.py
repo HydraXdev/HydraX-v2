@@ -53,8 +53,8 @@ class StealthFireModeIntegration:
             config.level = StealthLevel.MEDIUM
             config.entry_delay_max = 8.0
             config.lot_jitter_max = 0.07
-            
-        elif tier == TierLevel.:
+
+        elif tier == TierLevel.APEX:
             # Apex: Full stealth capabilities
             config.enabled = True
             config.level = StealthLevel.HIGH
@@ -76,12 +76,12 @@ class StealthFireModeIntegration:
         if fire_mode in self.fire_mode_stealth_levels:
             self.stealth.set_level(self.fire_mode_stealth_levels[fire_mode])
             
-        # Special handling for STEALTH mode (only)
+        # Special handling for STEALTH mode (APEX only)
         if fire_mode == FireMode.STEALTH:
-            if tier != TierLevel.:
+            if tier != TierLevel.APEX:
                 return {
                     'success': False,
-                    'error': 'STEALTH mode is -exclusive'
+                    'error': 'STEALTH mode is APEX-exclusive'
                 }
             # Use maximum stealth
             self.stealth.set_level(StealthLevel.GHOST)
@@ -189,8 +189,8 @@ class StealthModeCommands:
         
     async def handle_stealth_status(self, user_id: int, tier: TierLevel) -> str:
         """Handle /stealth_status command"""
-        if tier not in [TierLevel.COMMANDER, TierLevel.]:
-            return "⚠️ Stealth protocols are available for COMMANDER and tiers only."
+        if tier not in [TierLevel.COMMANDER, TierLevel.APEX]:
+            return "⚠️ Stealth protocols are available for COMMANDER and APEX tiers only."
             
         report = self.integration.get_stealth_report(user_id)
         
@@ -207,11 +207,11 @@ class StealthModeCommands:
             
         return message
         
-    async def handle_stealth_level(self, user_id: int, tier: TierLevel, 
+    async def handle_stealth_level(self, user_id: int, tier: TierLevel,
                                  level: str) -> str:
         """Handle /stealth_level command"""
-        if tier != TierLevel.:
-            return "⚠️ Manual stealth level control is -exclusive."
+        if tier != TierLevel.APEX:
+            return "⚠️ Manual stealth level control is APEX-exclusive."
             
         try:
             stealth_level = StealthLevel(level.lower())
@@ -225,8 +225,8 @@ class StealthModeCommands:
         
     async def handle_stealth_logs(self, user_id: int, tier: TierLevel) -> str:
         """Handle /stealth_logs command"""
-        if tier not in [TierLevel.COMMANDER, TierLevel.]:
-            return "⚠️ Stealth logs are available for COMMANDER and tiers only."
+        if tier not in [TierLevel.COMMANDER, TierLevel.APEX]:
+            return "⚠️ Stealth logs are available for COMMANDER and APEX tiers only."
             
         # Get recent logs
         logs = self.integration.stealth.export_logs()[-5:]  # Last 5 actions

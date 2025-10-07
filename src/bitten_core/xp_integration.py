@@ -161,7 +161,9 @@ class XPIntegrationManager:
             "LIEUTENANT": "FANG",
             "CAPTAIN": "COMMANDER",
             "MAJOR": "COMMANDER",
-            "COLONEL": "GENERAL": "COMMANDER": }
+            "COLONEL": "COMMANDER",
+            "GENERAL": "COMMANDER"
+        }
         user_tier = rank_to_tier.get(profile["rank"], "NIBBLER")
         
         # Get user stats for requirements checking
@@ -249,7 +251,9 @@ class XPIntegrationManager:
             "LIEUTENANT": "FANG",
             "CAPTAIN": "COMMANDER",
             "MAJOR": "COMMANDER",
-            "COLONEL": "GENERAL": "COMMANDER": }
+            "COLONEL": "COMMANDER",
+            "GENERAL": "APEX"
+        }
         user_tier = rank_to_tier.get(profile["rank"], "NIBBLER")
         
         # Get shop display

@@ -75,8 +75,9 @@ TIER_CONFIGS = {
         has_stealth=False,
         auto_mode_min_tcs=80  # AUTO mode requires 80% TCS (lowered from 91)
     ),
-    TierLevel.: TierConfig(
-        name=price=188,
+    TierLevel.FANG: TierConfig(
+        name="FANG",
+        price=188,
         daily_shots=9999,  # Unlimited
         min_tcs=50,  # Lowered from 91 to 50
         has_chaingun=True,

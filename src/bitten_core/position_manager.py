@@ -136,9 +136,9 @@ class PositionManager:
     
     def _get_position_limit(self, balance: float, tier: TierLevel) -> int:
         """Get position limit based on balance and tier"""
-        
-        # gets special treatment
-        if tier == TierLevel.:
+
+        # COMMANDER gets special treatment
+        if tier == TierLevel.COMMANDER:
             if balance >= 10000:
                 return 99  # Effectively unlimited
             elif balance >= 5000:
@@ -163,8 +163,7 @@ class PositionManager:
         min_balances = {
             TierLevel.NIBBLER: 500,
             TierLevel.FANG: 500,
-            TierLevel.COMMANDER: 1000,
-            TierLevel.: 2000
+            TierLevel.COMMANDER: 1000
         }
         return min_balances.get(tier, 500)
     

@@ -185,7 +185,7 @@ class XPEconomyDB:
             description="Ultimate risk management suite",
             cost=15000,
             purchase_type=PurchaseType.FORTRESS_MODE,
-            tier_required=)
+            tier_required="COMMANDER")
         
         # Ammunition (consumables)
         self.items["extended_mag"] = XPItem(

@@ -12,17 +12,19 @@ from enum import Enum
 class RiskTier(Enum):
     """Risk tier definitions"""
     STANDARD = "STANDARD"
-    = @property
+    PREMIUM = "PREMIUM"
+
+    @property
     def base_reward_rate(self) -> float:
         """Get base reward rate for tier"""
-        return 0.03 if self == RiskTier.else 0.02
+        return 0.03 if self == RiskTier.PREMIUM else 0.02
     
     @property
     def xp_bonus(self) -> float:
         """Get XP bonus multiplier for tier"""
         tier_bonuses = {
             RiskTier.STANDARD: 0.0,   # 0% bonus
-            RiskTier.: 0.15        # 15% bonus
+            RiskTier.PREMIUM: 0.15    # 15% bonus
         }
         return tier_bonuses.get(self, 0.0)
 
@@ -516,7 +518,7 @@ class RewardSystem:
             user_id, current_profit, RiskTier.STANDARD
         )
         apex_reward = self.calculate_reward(
-            user_id, current_profit, RiskTier.)
+            user_id, current_profit, RiskTier.PREMIUM)
         
         # Calculate difference
         additional_reward = apex_reward.total_amount - standard_reward.total_amount
@@ -614,7 +616,7 @@ class RewardSystem:
     def simulate_reward(self, user_id: int, profit: float,
                        risk_tier: str = "STANDARD") -> Dict:
         """Simulate reward calculation for planning"""
-        tier = RiskTier.if risk_tier == else RiskTier.STANDARD
+        tier = RiskTier.PREMIUM if risk_tier == "PREMIUM" else RiskTier.STANDARD
         calculation = self.calculate_reward(user_id, profit, tier)
         
         return {

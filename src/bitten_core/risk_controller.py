@@ -27,7 +27,8 @@ class TierLevel(Enum):
     NIBBLER = "NIBBLER"
     FANG = "FANG"
     COMMANDER = "COMMANDER"
-    = @dataclass
+
+@dataclass
 class TierRiskConfig:
     """Risk configuration per tier"""
     tier: TierLevel
@@ -64,15 +65,6 @@ TIER_CONFIGS = {
     TierLevel.COMMANDER: TierRiskConfig(
         tier=TierLevel.COMMANDER,
         default_risk=1.25,
-        boost_risk=2.0,
-        max_trades_per_day=10,
-        drawdown_cap=8.5,
-        cooldown_hours=4,
-        cooldown_max_trades=4,
-        cooldown_risk=1.0
-    ),
-    TierLevel.: TierRiskConfig(
-        tier=TierLevel.default_risk=1.25,
         boost_risk=2.0,
         max_trades_per_day=10,
         drawdown_cap=8.5,

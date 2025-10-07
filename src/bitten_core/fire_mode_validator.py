@@ -267,7 +267,7 @@ class FireModeValidator:
         """AUTO-FIRE: Commander+ only, autonomous trading"""
         
         user_tier = TierLevel(profile.get('tier', 'nibbler'))
-        if user_tier not in [TierLevel.COMMANDER, TierLevel.]:
+        if user_tier not in [TierLevel.COMMANDER, TierLevel.FANG]:
             return ValidationResult(
                 valid=False,
                 reason="AUTO-FIRE: COMMANDER+ ONLY",
@@ -306,7 +306,7 @@ class FireModeValidator:
                         "medicbot": "70% confidence required for Nibbler tier."
                     }
                 )
-        elif user_tier not in [TierLevel.COMMANDER, TierLevel.]:
+        elif user_tier not in [TierLevel.COMMANDER, TierLevel.FANG]:
             return ValidationResult(
                 valid=False,
                 reason="SEMI-AUTO: COMMANDER+ ONLY",
@@ -317,7 +317,7 @@ class FireModeValidator:
             )
         
         # SEMI-AUTO requires 75%+ TCS for Commander+ (same as Fang arcade)
-        if user_tier in [TierLevel.COMMANDER, TierLevel.] and payload.get('tcs', 0) < 75:
+        if user_tier in [TierLevel.COMMANDER, TierLevel.FANG] and payload.get('tcs', 0) < 75:
             return ValidationResult(
                 valid=False,
                 reason="SEMI-AUTO REQUIRES 75%+ TCS",

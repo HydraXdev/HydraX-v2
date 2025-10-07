@@ -29,9 +29,9 @@ class SelectorIntegration:
         
     def get_user_selector(self, user_id: int, tier: TierLevel) -> Optional[CommanderSelector]:
         """Get or create selector for user"""
-        
-        # Only COMMANDER and get selectors
-        if tier not in [TierLevel.COMMANDER, TierLevel.]:
+
+        # Only COMMANDER and APEX get selectors
+        if tier not in [TierLevel.COMMANDER, TierLevel.APEX]:
             return None
         
         if user_id not in self.user_selectors:

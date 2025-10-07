@@ -65,7 +65,8 @@ class TierUpgradeRouter:
             tier_features = {
                 "NIBBLER": "• 6 trades/day\n• 75% TCS minimum\n• Manual trading only\n• Basic features",
                 "FANG": "• 10 trades/day\n• 80% TCS for sniper\n• Chaingun unlocked\n• Sniper mode access",
-                "COMMANDER": "• 20 trades/day\n• 90% TCS auto / 75% semi\n• Auto-fire unlocked\n• Stealth mode\n• All features": "• Unlimited trades\n• 91% TCS minimum\n• Midnight Hammer\n• Priority support\n• Elite network access"
+                "COMMANDER": "• 20 trades/day\n• 90% TCS auto / 75% semi\n• Auto-fire unlocked\n• Stealth mode\n• All features",
+                "APEX": "• Unlimited trades\n• 91% TCS minimum\n• Midnight Hammer\n• Priority support\n• Elite network access"
             }
             
             for tier in self.tier_order:
@@ -271,7 +272,8 @@ Type `/fire` to experience your upgraded firepower!"""
         unlocks = {
             "NIBBLER": [],
             "FANG": ["🎯 Sniper Mode", "⚡ Chaingun", "📊 Advanced Filters"],
-            "COMMANDER": ["🤖 Auto-Fire Mode", "👻 Stealth Mode", "🔧 Semi-Auto Toggle", "📈 Elite Strategies"]: ["🔨 Midnight Hammer", "♾️ Unlimited Trades", "🌟 Priority Support", "🏆 Elite Network"]
+            "COMMANDER": ["🤖 Auto-Fire Mode", "👻 Stealth Mode", "🔧 Semi-Auto Toggle", "📈 Elite Strategies"],
+            "APEX": ["🔨 Midnight Hammer", "♾️ Unlimited Trades", "🌟 Priority Support", "🏆 Elite Network"]
         }
         
         old_features = set()

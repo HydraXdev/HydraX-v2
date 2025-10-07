@@ -67,7 +67,8 @@ class AthenaPersonality:
         authority_phrases = {
             "NIBBLER": "Training mission authorized.",
             "FANG": "Strike mission approved.",
-            "COMMANDER": "Priority operation sanctioned.": "Elite protocol engaged."
+            "COMMANDER": "Priority operation sanctioned.",
+            "APEX": "Elite protocol engaged."
         }
         
         authority = authority_phrases.get(user_tier, "Mission authorized.")
@@ -262,7 +263,8 @@ This operation matters - fire when ready.
                 "Leadership requires sacrifice. Your decisions shape the battlefield.",
                 "Command presence detected. Other operatives look to you.",
                 "Strategic thinking is your strength. Use it wisely."
-            ]: [
+            ],
+            "APEX": [
                 "Elite status earned through discipline. Maintain that standard.",
                 "Your tactical expertise inspires the entire squad.",
                 "Peak performance achieved. Now help others reach your level."

@@ -69,8 +69,8 @@ async def poll_account(
             metrics["lastAccountTs"] = out["ts_epoch_ms"]
 
             logger.debug(
-                f"📊 Account: {out[\"currency\"]} {out[\"balance\"]:.2f} "
-                f"(equity: {out[\"equity\"]:.2f}, margin: {out[\"margin\"]:.2f})"
+                f"📊 Account: {out['currency']} {out['balance']:.2f} "
+                f"(equity: {out['equity']:.2f}, margin: {out['margin']:.2f})"
             )
 
         except Exception as e:

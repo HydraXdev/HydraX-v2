@@ -838,7 +838,7 @@ async def example_usage():
     profile = RiskProfile(
         user_id=123456,
         current_xp=20000,  # Unlocks Leroy Jenkins
-        tier_level=)
+        tier_level=TierLevel.COMMANDER)
     
     # Get management plans
     plans = []

@@ -65,7 +65,8 @@ class WeekendSafetyBriefing:
                 "• Thin liquidity = Wide spreads\n"
                 "• Make smart choices out there\n\n"
                 "_Liberty granted. Stay sharp, Commander._"
-            ): (
+            ),
+            "APEX": (
                 "⚫ **LIBERTY PROTOCOL:**\n"
                 "• No restrictions - You know the game\n"
                 "• Weekend chaos is your playground\n"
@@ -119,7 +120,8 @@ class WeekendSafetyBriefing:
                 "• Worst case: ±200+ pips\n\n"
                 "You have command authority.\n\n"
                 "_Liberty approved. Brief complete._"
-            ): (
+            ),
+            "APEX": (
                 "⚫ **ACKNOWLEDGMENT ONLY:**\n"
                 "\nPositions detected. Brief noted.\n\n"
                 "The weekend market takes no prisoners.\n"

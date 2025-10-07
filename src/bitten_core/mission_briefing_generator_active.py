@@ -334,15 +334,14 @@ class v5MissionBriefingGenerator:
             return v5MissionType.VOLATILITY_MONSTER_HUNT
         elif signal_class == v5SignalClass.M3_PRIMARY:
             return v5MissionType.M3_LIGHTNING_RAID
+        elif signal_class == v5SignalClass.M1_INSTANT:
+            return v5MissionType.ULTRA_VOLUME_ASSAULT
         else:
             # Use centralized threshold
             from tcs_controller import get_current_threshold
             threshold = get_current_threshold()
             if tcs_score >= (threshold + 15):
-                return v5MissionType._BEAST_UNLEASHED
-        elif signal_class == v5SignalClass.M1_INSTANT:
-            return v5MissionType.ULTRA_VOLUME_ASSAULT
-        else:
+                return v5MissionType.BEAST_UNLEASHED
             return v5MissionType.RAPID_ASSAULT_SCALP
     
     def _determine_v5_urgency(self, timeframe: str, tcs_score: float, session: str) -> v5UrgencyLevel:
@@ -350,6 +349,8 @@ class v5MissionBriefingGenerator:
         
         if timeframe == 'M1' or session == 'OVERLAP':
             return v5UrgencyLevel.CRITICAL
+        elif timeframe == 'M15':
+            return v5UrgencyLevel.MEDIUM
         else:
             # Use centralized threshold
             from tcs_controller import get_current_threshold
@@ -358,9 +359,6 @@ class v5MissionBriefingGenerator:
                 return v5UrgencyLevel.ULTRA_HIGH
             elif timeframe == 'M5' or tcs_score >= threshold:
                 return v5UrgencyLevel.HIGH
-        elif timeframe == 'M15':
-            return v5UrgencyLevel.MEDIUM
-        else:
             return v5UrgencyLevel.LOW
     
     def _calculate_v5_position_sizing(self, signal_data: Dict, account_balance: float, 
@@ -491,8 +489,8 @@ class v5MissionBriefingGenerator:
             threshold = get_current_threshold()
             if tcs_score >= (threshold + 15):
                 description = f"{base_desc} ⭐ Ultra-high confidence signal detected!"
-        else:
-            description = base_desc
+            else:
+                description = base_desc
         
         return title, description
     

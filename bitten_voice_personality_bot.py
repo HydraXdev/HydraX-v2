@@ -5,7 +5,7 @@ Dedicated bot for Drill Sergeant, NEXUS, DOC, OBSERVER personalities
 Separate from trading signals - handles all voice and character interactions
 (ATHENA moved to dedicated athena_mission_bot.py)
 
-TOKEN: 8103700393:AAEK3RjTGHHYyy_X1Uc9FUuUoRcLuzYZe4k
+🔒 SECURITY: Token loaded from environment variable
 """
 
 import os
@@ -65,16 +65,34 @@ class BittenVoicePersonalityBot:
     
     def __init__(self):
         self.bot = telebot.TeleBot(VOICE_BOT_TOKEN)
+
+        # 🔒 SECURITY: Authorized users (Commander only for now)
+        self.AUTHORIZED_USERS = {"7176191872"}
+
+        # 🔒 SECURITY: Allowed commands whitelist
+        self.ALLOWED_COMMANDS = {
+            "start", "help", "drill", "nexus", "doc", "observer",
+            "personality", "voice", "status", "report"
+        }
+
         self.setup_personality_systems()
         self.setup_handlers()
-        
+
         # User session tracking
         self.user_sessions = {}
         self.active_personalities = {}
         
         logger.info("🎭 BITTEN Voice & Personality Bot initialized")
         logger.info(f"🤖 Token: {VOICE_BOT_TOKEN[:20]}...")
-    
+
+    def is_authorized_user(self, user_id: str) -> bool:
+        """🔒 SECURITY: Check if user is authorized"""
+        return user_id in self.AUTHORIZED_USERS
+
+    def log_security_event(self, event_type: str, user_id: str, message_text: str = ""):
+        """🔒 SECURITY: Log security events"""
+        logger.warning(f"🚨 SECURITY {event_type}: User {user_id} - {message_text[:100]}")
+
     def setup_personality_systems(self):
         """Initialize all personality systems"""
         try:

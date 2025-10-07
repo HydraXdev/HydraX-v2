@@ -7,9 +7,15 @@ Ensures users never execute stale signals with outdated parameters
 
 import json
 import logging
+import sys
+import os
 from datetime import datetime
 from typing import Dict, Optional, Tuple
 from dataclasses import dataclass
+
+# Add parent directory to path for imports
+sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
+from fix_individualized_risk import get_user_risk_profile
 
 logger = logging.getLogger(__name__)
 
@@ -171,18 +177,20 @@ class FreshFireBuilder:
     def _get_risk_percent(self, user_profile: Dict) -> float:
         """Get risk percent based on user tier and settings"""
         tier = user_profile.get('tier', 'NIBBLER')
-        
-        # EXPERIMENTAL: 5% risk for tonight's testing (normally 2%)
-        base_risk = 5.0
-        
-        # Adjust based on tier or user preferences
+        user_id = user_profile.get('user_id', user_profile.get('telegram_id'))
+
+        # Get user-specific risk profile if user_id available
+        if user_id:
+            risk_profile = get_user_risk_profile(str(user_id))
+            return risk_profile.get('risk_percentage', 2.0)
+
+        # Fallback based on tier for legacy compatibility
         if tier == 'PRESS_PASS':
             return 1.0  # Demo accounts use 1%
         elif tier == 'COMMANDER':
-            # EXPERIMENTAL: Commanders can use up to 5% for tonight
-            return min(5.0, user_profile.get('risk_preference', 5.0))
+            return 5.0  # Default for commanders
         else:
-            return base_risk
+            return 2.0  # Default for other tiers
     
     def _calculate_position_size(
         self,
@@ -227,15 +235,16 @@ class FreshFireBuilder:
         
         final_lot = max(min_lot, min(lot_size, max_lot))
         
-        # SAFETY CHECK: Verify actual risk doesn't exceed 3%
+        # SAFETY CHECK: Verify actual risk doesn't exceed user's max (with 0.5% buffer)
         actual_risk = final_lot * sl_distance * pip_value
         actual_risk_pct = (actual_risk / balance) * 100
-        if actual_risk_pct > 3.5:  # Allow 3.5% max (small buffer for rounding)
-            logger.warning(f"⚠️ RISK EXCEEDED: {actual_risk_pct:.1f}% > 3.5% max! Reducing lot size...")
-            # Recalculate to enforce 3% max
-            final_lot = (balance * 0.03) / (sl_distance * pip_value)
+        max_allowed = risk_percent + 0.5  # Allow small buffer for rounding
+        if actual_risk_pct > max_allowed:
+            logger.warning(f"⚠️ RISK EXCEEDED: {actual_risk_pct:.1f}% > {max_allowed:.1f}% max! Reducing lot size...")
+            # Reduce to exactly user's risk percentage
+            final_lot = (balance * (risk_percent / 100)) / (sl_distance * pip_value)
             final_lot = round(final_lot, 2)
-            logger.info(f"   Adjusted to {final_lot} lots for 3% risk")
+            logger.info(f"   Adjusted to {final_lot} lots for {risk_percent}% risk")
         
         return final_lot
     
@@ -246,7 +255,7 @@ class FreshFireBuilder:
         elif symbol in ['XAUUSD']:
             return 10  # For XAUUSD: 0.1 price movement = 1 pip (e.g., 2405.0 to 2405.1)
         elif symbol in ['XAGUSD']:
-            return 100  # For XAGUSD: 0.01 price movement = 1 pip (e.g., 38.50 to 38.51)
+            return 1000  # For XAGUSD: 0.001 price movement = 1 pip (e.g., 38.500 to 38.501)
         elif symbol in ['BTCUSD', 'ETHUSD']:
             return 1
         elif symbol == 'XRPUSD':
@@ -345,10 +354,10 @@ class FreshFireBuilder:
         if packet.vitality_score < 20:
             return False, "Signal expired - vitality too low"
         
-        # Check risk amount
-        max_risk = packet.user_balance * 0.05  # Max 5% per trade
+        # Check risk amount against user's max risk percentage
+        max_risk = packet.user_balance * (packet.risk_percent / 100)  # Use user's risk percentage
         if packet.risk_dollars > max_risk:
-            return False, f"Risk too high: ${packet.risk_dollars:.2f} exceeds 5% limit"
+            return False, f"Risk too high: ${packet.risk_dollars:.2f} exceeds {packet.risk_percent}% limit"
         
         # Check lot size
         if packet.lot_size < 0.01:

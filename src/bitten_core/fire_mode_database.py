@@ -34,6 +34,7 @@ class FireModeDatabase:
                 auto_slots_in_use INTEGER DEFAULT 0,
                 manual_slots_in_use INTEGER DEFAULT 0,
                 last_mode_change TIMESTAMP,
+                trading_enabled BOOLEAN DEFAULT TRUE,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
@@ -120,16 +121,43 @@ class FireModeDatabase:
         except sqlite3.OperationalError:
             pass
             
+        # Trading enabled migration: Add trading_enabled column
+        try:
+            cursor.execute("ALTER TABLE user_fire_modes ADD COLUMN trading_enabled BOOLEAN DEFAULT TRUE")
+        except sqlite3.OperationalError:
+            pass
+            
         # Migrate old slots_in_use to auto_slots_in_use
         cursor.execute('''
-            UPDATE user_fire_modes 
-            SET auto_slots_in_use = slots_in_use 
+            UPDATE user_fire_modes
+            SET auto_slots_in_use = slots_in_use
             WHERE auto_slots_in_use = 0 AND slots_in_use > 0
         ''')
-        
+
+        # Add CHECK constraint to prevent slot overflow
+        try:
+            cursor.execute('''
+                CREATE TRIGGER prevent_auto_slot_overflow
+                BEFORE UPDATE ON user_fire_modes
+                FOR EACH ROW
+                WHEN NEW.auto_slots_in_use > NEW.max_auto_slots
+                BEGIN
+                    SELECT RAISE(ABORT, 'Auto slots cannot exceed maximum');
+                END
+            ''')
+        except sqlite3.OperationalError:
+            pass  # Trigger already exists
+
+        # Fix any existing overflow issues
+        cursor.execute('''
+            UPDATE user_fire_modes
+            SET auto_slots_in_use = MIN(auto_slots_in_use, max_auto_slots)
+            WHERE auto_slots_in_use > max_auto_slots
+        ''')
+
         conn.commit()
         conn.close()
-        logger.info("Fire mode database initialized")
+        logger.info("Fire mode database initialized with overflow protection")
     
     def get_user_mode(self, user_id: str) -> Dict:
         """Get user's current fire mode settings"""
@@ -138,7 +166,7 @@ class FireModeDatabase:
         
         try:
             cursor.execute('''
-                SELECT current_mode, max_auto_slots, auto_slots_in_use, manual_slots_in_use, last_mode_change, bitmode_enabled
+                SELECT current_mode, max_auto_slots, auto_slots_in_use, manual_slots_in_use, last_mode_change, bitmode_enabled, trading_enabled
                 FROM user_fire_modes
                 WHERE user_id = ?
             ''', (user_id,))
@@ -154,6 +182,7 @@ class FireModeDatabase:
                     'manual_slots_in_use': result[3],
                     'last_mode_change': result[4],
                     'bitmode_enabled': bool(result[5]) if len(result) > 5 else False,
+                    'trading_enabled': bool(result[6]) if len(result) > 6 else True,
                     # For backward compatibility
                     'max_slots': result[1],
                     'slots_in_use': result[2]
@@ -174,6 +203,7 @@ class FireModeDatabase:
                     'manual_slots_in_use': 0,
                     'last_mode_change': None,
                     'bitmode_enabled': False,
+                    'trading_enabled': True,
                     # For backward compatibility
                     'max_slots': 75,
                     'slots_in_use': 0
@@ -228,11 +258,11 @@ class FireModeDatabase:
     def get_tier_slot_limits(tier: str) -> Dict[str, int]:
         """Get maximum allowed slots based on user tier"""
         tier_limits = {
-            'NIBBLER': {'manual': 1, 'auto': 0},      # 1 manual slot only, no auto
-            'FANG': {'manual': 2, 'auto': 0},         # 2 manual slots only, no auto
-            'COMMANDER': {'manual': 10, 'auto': 5}    # 10 manual slots, 5 auto slots (testing)
+            'NIBBLER': {'manual': 1, 'auto': 0, 'total': 1, 'trades_per_day': 6},
+            'FANG': {'manual': 2, 'auto': 0, 'total': 2, 'trades_per_day': 10},
+            'COMMANDER': {'manual': 10, 'auto': 10, 'total': 10, 'trades_per_day': 999999}
         }
-        return tier_limits.get(tier.upper(), {'manual': 1, 'auto': 0})
+        return tier_limits.get(tier.upper(), {'manual': 1, 'auto': 0, 'total': 1, 'trades_per_day': 6})
     
     def set_max_auto_slots(self, user_id: str, max_slots: int, user_tier: str = 'COMMANDER') -> bool:
         """Set user's maximum auto slots (only for COMMANDER tier)"""
@@ -295,21 +325,24 @@ class FireModeDatabase:
                 VALUES (?, ?, ?, ?)
             ''', (user_id, mission_id, symbol, slot_type))
             
-            # Increment appropriate slot counter
+            # Increment appropriate slot counter WITH BOUNDS CHECK
             if slot_type == 'AUTO':
                 cursor.execute('''
-                    UPDATE user_fire_modes 
-                    SET auto_slots_in_use = auto_slots_in_use + 1,
+                    UPDATE user_fire_modes
+                    SET auto_slots_in_use = MIN(auto_slots_in_use + 1, max_auto_slots),
                         updated_at = CURRENT_TIMESTAMP
                     WHERE user_id = ?
                 ''', (user_id,))
             else:  # MANUAL
+                # Get tier limit for bounds check
+                limits = self.get_tier_slot_limits(user_tier)
+                max_manual = limits['manual']
                 cursor.execute('''
-                    UPDATE user_fire_modes 
-                    SET manual_slots_in_use = manual_slots_in_use + 1,
+                    UPDATE user_fire_modes
+                    SET manual_slots_in_use = MIN(manual_slots_in_use + 1, ?),
                         updated_at = CURRENT_TIMESTAMP
                     WHERE user_id = ?
-                ''', (user_id,))
+                ''', (max_manual, user_id))
             
             conn.commit()
             conn.close()
@@ -472,6 +505,246 @@ class FireModeDatabase:
 # [DISABLED BITMODE]         """Check if BITMODE is enabled for user"""
         user_mode = self.get_user_mode(user_id)
         return user_mode.get('bitmode_enabled', False)
+    
+    def get_all_users(self) -> List[str]:
+        """Get all user_ids that have fire mode settings"""
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            
+            cursor.execute("SELECT DISTINCT user_id FROM user_fire_modes")
+            results = cursor.fetchall()
+            conn.close()
+            
+            return [row[0] for row in results] if results else []
+            
+        except Exception as e:
+            logger.error(f"Error getting all users: {e}")
+            return []
+    
+    def set_trading_enabled(self, user_id: str, enabled: bool) -> bool:
+        """Enable or disable trading for a user"""
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            
+            # Update or insert user trading status
+            cursor.execute('''
+                INSERT INTO user_fire_modes (user_id, trading_enabled, updated_at)
+                VALUES (?, ?, datetime('now'))
+                ON CONFLICT(user_id) DO UPDATE SET
+                    trading_enabled = excluded.trading_enabled,
+                    updated_at = excluded.updated_at
+            ''', (user_id, enabled))
+            
+            conn.commit()
+            conn.close()
+            
+            logger.info(f"User {user_id} trading {'enabled' if enabled else 'disabled'}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error setting trading status for {user_id}: {e}")
+            return False
+    
+    def is_trading_enabled(self, user_id: str) -> bool:
+        """Check if trading is enabled for user"""
+        user_mode = self.get_user_mode(user_id)
+        return user_mode.get('trading_enabled', True)
+
+    def get_real_time_slot_usage(self, user_id: str) -> Dict[str, int]:
+        """Get real-time slot usage from EA event bus (positions_live table)"""
+        # Connect to the main bitten.db for real EA data
+        bitten_db_path = "/root/HydraX-v2/bitten.db"
+        conn = sqlite3.connect(bitten_db_path)
+        cursor = conn.cursor()
+
+        try:
+            # Count actual open positions from EA event bus
+            cursor.execute('''
+                SELECT COUNT(*) as total_positions
+                FROM positions_live
+                WHERE user_id = ?
+            ''', (user_id,))
+
+            result = cursor.fetchone()
+            total_open = result[0] or 0
+            conn.close()
+
+            # For now, treat all positions as manual since we need to distinguish
+            # auto vs manual in the positions_live table schema
+            # TODO: Add fire_mode column to positions_live table to track auto vs manual
+            return {
+                'manual_slots_used': total_open,  # All counted as manual for now
+                'auto_slots_used': 0,  # Need to enhance positions_live to track this
+                'total_slots_used': total_open
+            }
+
+        except Exception as e:
+            logger.error(f"Error getting real-time slot usage from EA event bus for {user_id}: {e}")
+            if conn:
+                conn.close()
+            return {'manual_slots_used': 0, 'auto_slots_used': 0, 'total_slots_used': 0}
+
+    def check_daily_trade_limit(self, user_id: str, user_tier: str) -> Dict[str, any]:
+        """Check if user has exceeded daily trade limit with session-based reset"""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+
+        try:
+            # Get current trading session start time (Sunday 5PM EST = 22:00 UTC)
+            from datetime import datetime, timezone, timedelta
+            now = datetime.now(timezone.utc)
+
+            # Calculate current trading week start (Sunday 22:00 UTC)
+            days_since_sunday = (now.weekday() + 1) % 7  # Monday = 0, Sunday = 6
+            hours_since_sunday_start = days_since_sunday * 24 + now.hour
+
+            if now.weekday() == 6 and now.hour >= 22:  # After Sunday 22:00 UTC
+                session_start = now.replace(hour=22, minute=0, second=0, microsecond=0)
+            elif hours_since_sunday_start >= (6 * 24 + 22):  # After current week Sunday 22:00
+                session_start = now.replace(hour=22, minute=0, second=0, microsecond=0) - timedelta(days=days_since_sunday)
+            else:  # Before this week's Sunday 22:00, use last week
+                session_start = now.replace(hour=22, minute=0, second=0, microsecond=0) - timedelta(days=days_since_sunday + 7)
+
+            session_start_timestamp = int(session_start.timestamp())
+
+            # Get user's tier limits
+            tier_limits = self.get_tier_slot_limits(user_tier)
+            max_trades = tier_limits['trades_per_day']
+
+            # Count trades since session start
+            cursor.execute('''
+                SELECT COUNT(*) FROM active_slots
+                WHERE user_id = ? AND opened_at >= ?
+            ''', (user_id, session_start_timestamp))
+
+            trades_used = cursor.fetchone()[0] or 0
+
+            conn.close()
+
+            return {
+                'trades_used': trades_used,
+                'max_trades': max_trades,
+                'can_trade': trades_used < max_trades,
+                'session_start': session_start.isoformat(),
+                'unlimited': max_trades >= 999999
+            }
+
+        except Exception as e:
+            logger.error(f"Error checking daily trade limit for {user_id}: {e}")
+            conn.close()
+            return {'trades_used': 0, 'max_trades': 6, 'can_trade': True, 'session_start': '', 'unlimited': False}
+
+    def can_user_fire_trade(self, user_id: str, trade_type: str = 'MANUAL') -> Dict[str, any]:
+        """Comprehensive check if user can fire a trade based on tier, slots, and daily limits"""
+        try:
+            # Get user tier
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            cursor.execute('SELECT subscription_tier FROM user_fire_modes WHERE user_id = ?', (user_id,))
+            result = cursor.fetchone()
+            user_tier = result[0] if result else 'NIBBLER'
+            conn.close()
+
+            # Get tier limits
+            tier_limits = self.get_tier_slot_limits(user_tier)
+
+            # Check slot availability
+            current_usage = self.get_real_time_slot_usage(user_id)
+
+            # For COMMANDER tier, they have 10 slots that can be used for either manual or auto
+            if user_tier == 'COMMANDER':
+                slots_available = current_usage['total_slots_used'] < tier_limits['total']
+                if trade_type == 'AUTO' and user_tier != 'COMMANDER':
+                    slots_available = False  # Only COMMANDER can auto-fire
+            else:
+                # For NIBBLER/FANG, check specific slot types
+                if trade_type == 'AUTO':
+                    slots_available = False  # No auto-fire for NIBBLER/FANG
+                else:
+                    slots_available = current_usage['manual_slots_used'] < tier_limits['manual']
+
+            # Check daily trade limit
+            daily_limit_check = self.check_daily_trade_limit(user_id, user_tier)
+
+            # Auto-fire availability
+            auto_fire_available = (user_tier == 'COMMANDER' and trade_type == 'AUTO')
+
+            return {
+                'can_fire': slots_available and daily_limit_check['can_trade'],
+                'tier': user_tier,
+                'slots_available': slots_available,
+                'daily_limit_ok': daily_limit_check['can_trade'],
+                'auto_fire_available': auto_fire_available,
+                'current_usage': current_usage,
+                'daily_stats': daily_limit_check,
+                'tier_limits': tier_limits,
+                'reasons': {
+                    'slots_full': not slots_available,
+                    'daily_limit_exceeded': not daily_limit_check['can_trade'],
+                    'auto_fire_not_allowed': trade_type == 'AUTO' and user_tier != 'COMMANDER'
+                }
+            }
+
+        except Exception as e:
+            logger.error(f"Error checking if user {user_id} can fire trade: {e}")
+            return {
+                'can_fire': False,
+                'tier': 'NIBBLER',
+                'slots_available': False,
+                'daily_limit_ok': False,
+                'auto_fire_available': False,
+                'error': str(e)
+            }
+
+    def get_user_tier_summary(self, user_id: str) -> Dict[str, any]:
+        """Get comprehensive tier information for user"""
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+
+            cursor.execute('''
+                SELECT subscription_tier, max_manual_slots, max_auto_slots_separate,
+                       tier_max_trades_per_day, auto_fire_enabled, current_mode
+                FROM user_fire_modes
+                WHERE user_id = ?
+            ''', (user_id,))
+
+            result = cursor.fetchone()
+            conn.close()
+
+            if result:
+                tier = result[0]
+                tier_limits = self.get_tier_slot_limits(tier)
+                current_usage = self.get_real_time_slot_usage(user_id)
+                daily_check = self.check_daily_trade_limit(user_id, tier)
+
+                return {
+                    'tier': tier,
+                    'auto_fire_enabled': bool(result[4]),
+                    'current_mode': result[5],
+                    'limits': tier_limits,
+                    'current_usage': current_usage,
+                    'daily_stats': daily_check,
+                    'available_slots': {
+                        'manual': tier_limits['manual'] - current_usage['manual_slots_used'],
+                        'auto': tier_limits['auto'] - current_usage['auto_slots_used'] if tier == 'COMMANDER' else 0,
+                        'total': tier_limits['total'] - current_usage['total_slots_used']
+                    }
+                }
+            else:
+                return {
+                    'tier': 'NIBBLER',
+                    'auto_fire_enabled': False,
+                    'current_mode': 'SELECT',
+                    'limits': self.get_tier_slot_limits('NIBBLER'),
+                    'error': 'User not found'
+                }
+
+        except Exception as e:
+            logger.error(f"Error getting tier summary for {user_id}: {e}")
+            return {'tier': 'NIBBLER', 'error': str(e)}
 
 # Create singleton instance
 fire_mode_db = FireModeDatabase()

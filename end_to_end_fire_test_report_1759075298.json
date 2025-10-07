@@ -1,0 +1,51 @@
+{
+  "test_session": {
+    "fixture": {
+      "account_id": "TEST_ACCOUNT_001",
+      "signal_id": "ELITE_GUARD_EURUSD_1759075297",
+      "fire_id": "ELITE_RAPID_EURUSD_1759075297",
+      "symbol": "EURUSD",
+      "side": "buy",
+      "volume": 0.1
+    },
+    "start_time": "2025-09-28T16:01:38.123256Z",
+    "duration_seconds": 0.14
+  },
+  "summary": {
+    "total_tests": 7,
+    "passed_tests": 6,
+    "failed_tests": 1,
+    "success_rate_percent": 85.7
+  },
+  "test_results": [
+    {
+      "test": "Signal Generation",
+      "passed": false
+    },
+    {
+      "test": "WebApp Signal Ingestion",
+      "passed": true
+    },
+    {
+      "test": "Fire Command Generation",
+      "passed": true
+    },
+    {
+      "test": "Router Command Routing",
+      "passed": true
+    },
+    {
+      "test": "EA Execution & Lifecycle",
+      "passed": true
+    },
+    {
+      "test": "Confirmation & Database",
+      "passed": true
+    },
+    {
+      "test": "WebApp Live View",
+      "passed": true
+    }
+  ],
+  "conclusion": "FAIL"
+}

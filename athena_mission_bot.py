@@ -4,7 +4,7 @@
 Dedicated Telegram bot for ATHENA's tactical mission dispatching
 Strategic Commander AI for BITTEN trading signals
 
-Token: 8322305650:AAGtBpEMm759_7gI4m9sg0OJwFhBVjR4pEI
+🔒 SECURITY: Token loaded from environment variable only
 """
 
 import os
@@ -37,17 +37,27 @@ logging.basicConfig(
 )
 logger = logging.getLogger('AthenaMissionBot')
 
-# ATHENA Mission Bot Token
-ATHENA_BOT_TOKEN = "8322305650:AAHu8NmQ0rXT0LkZOlDeYop6TAUJXaXbwAg"
+# 🔒 SECURITY: Load token from environment variable ONLY
+ATHENA_BOT_TOKEN = os.getenv("ATHENA_BOT_TOKEN")
+if not ATHENA_BOT_TOKEN:
+    print("❌ ATHENA_BOT_TOKEN environment variable not set")
+    print("Please set the token in .secrets/athena.env")
+    sys.exit(1)
 
 class AthenaMissionBot:
     """
     🏛️ ATHENA - Advanced Tactical Handler for Embedded Neural Analysis
     Dedicated mission dispatch bot with strategic command authority
     """
-    
+
     def __init__(self):
         self.bot = telebot.TeleBot(ATHENA_BOT_TOKEN)
+
+        # 🔒 SECURITY: Allowed commands whitelist
+        self.ALLOWED_COMMANDS = {"start", "status", "brief", "help"}
+
+        # 🔒 SECURITY: Authorized users (Commander only)
+        self.AUTHORIZED_USERS = {"7176191872"}
         
         # Import ATHENA personality system
         try:
@@ -72,13 +82,27 @@ class AthenaMissionBot:
         logger.info(f"⚔️ Strategic Command Authority: ACTIVE")
         logger.info(f"📡 Ready for mission dispatch operations")
     
+    def is_authorized_user(self, user_id: str) -> bool:
+        """🔒 SECURITY: Check if user is authorized"""
+        return user_id in self.AUTHORIZED_USERS
+
+    def log_security_event(self, event_type: str, user_id: str, message_text: str = ""):
+        """🔒 SECURITY: Log security events"""
+        logger.warning(f"🚨 SECURITY {event_type}: User {user_id} - {message_text[:100]}")
+
     def setup_handlers(self):
-        """Setup ATHENA mission bot command handlers"""
-        
+        """Setup ATHENA mission bot command handlers with security guards"""
+
         @self.bot.message_handler(commands=['start'])
         def handle_start(message):
             """ATHENA introduction and status"""
             user_id = str(message.from_user.id)
+
+            # 🔒 SECURITY: Check authorization
+            if not self.is_authorized_user(user_id):
+                self.log_security_event("UNAUTHORIZED_START", user_id, message.text)
+                self.bot.send_message(message.chat.id, "🔒 Access denied. Unauthorized user.")
+                return
             
             welcome_msg = """🏛️ **ATHENA COMMAND ACTIVATED**
 
@@ -109,6 +133,12 @@ I am ATHENA, your strategic mission commander. I coordinate all tactical operati
         def handle_status(message):
             """ATHENA tactical system status"""
             user_id = str(message.from_user.id)
+
+            # 🔒 SECURITY: Check authorization
+            if not self.is_authorized_user(user_id):
+                self.log_security_event("UNAUTHORIZED_STATUS", user_id, message.text)
+                self.bot.send_message(message.chat.id, "🔒 Access denied. Unauthorized user.")
+                return
             
             status_msg = f"""🏛️ **ATHENA TACTICAL STATUS**
 
@@ -135,6 +165,12 @@ I am ATHENA, your strategic mission commander. I coordinate all tactical operati
         def handle_brief(message):
             """Generate sample mission briefing"""
             user_id = str(message.from_user.id)
+
+            # 🔒 SECURITY: Check authorization
+            if not self.is_authorized_user(user_id):
+                self.log_security_event("UNAUTHORIZED_BRIEF", user_id, message.text)
+                self.bot.send_message(message.chat.id, "🔒 Access denied. Unauthorized user.")
+                return
             
             if not self.athena_available:
                 self.bot.send_message(
@@ -177,6 +213,13 @@ I am ATHENA, your strategic mission commander. I coordinate all tactical operati
         @self.bot.message_handler(commands=['help'])
         def handle_help(message):
             """ATHENA command reference"""
+            user_id = str(message.from_user.id)
+
+            # 🔒 SECURITY: Check authorization
+            if not self.is_authorized_user(user_id):
+                self.log_security_event("UNAUTHORIZED_HELP", user_id, message.text)
+                self.bot.send_message(message.chat.id, "🔒 Access denied. Unauthorized user.")
+                return
             help_msg = """🏛️ **ATHENA COMMAND REFERENCE**
 
 **Core Commands:**
@@ -206,14 +249,29 @@ I am ATHENA, your strategic mission commander. I coordinate all tactical operati
                 parse_mode="Markdown"
             )
         
-        # Add global message handler for mission dispatch integration
+        # 🔒 SECURITY: Secure message blocking system
         @self.bot.message_handler(func=lambda message: True)
-        def handle_all_messages(message):
-            """Handle all other messages with ATHENA personality"""
-            if not message.text.startswith('/'):
-                # ATHENA tactical response to general queries
-                response = "🏛️ ATHENA operational. Use `/help` for command reference or await mission parameters."
-                self.bot.send_message(message.chat.id, response)
+        def block_unauthorized_messages(message):
+            """🔒 SECURITY: Block all unauthorized messages and commands"""
+            user_id = str(message.from_user.id)
+
+            # Check if user is authorized
+            if not self.is_authorized_user(user_id):
+                self.log_security_event("UNAUTHORIZED_ACCESS", user_id, message.text)
+                # Silent block - do not respond to unauthorized users
+                return
+
+            # Check if it's a command
+            if message.text and message.text.startswith('/'):
+                command = message.text.split()[0][1:]  # Remove '/' prefix
+                if command not in self.ALLOWED_COMMANDS:
+                    self.log_security_event("UNAUTHORIZED_COMMAND", user_id, f"/{command}")
+                    self.bot.send_message(message.chat.id, "🔒 Command not recognized. Use `/help` for available commands.")
+                    return
+
+            # For non-command messages from authorized users, provide minimal response
+            if message.text and not message.text.startswith('/'):
+                self.bot.send_message(message.chat.id, "🏛️ ATHENA operational. Use `/help` for command reference.")
     
     def dispatch_mission_signal(self, signal_data: Dict, user_data: Dict) -> bool:
         """

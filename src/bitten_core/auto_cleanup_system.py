@@ -39,7 +39,7 @@ class AutoCleanupSystem:
         # Telegram bot tokens
         self.bot_tokens = {
             'production': '7854827710:AAE6m_sNuMk2X6Z3yf2mYO6-6-Clqan-F2c',
-            'athena': '8322305650:AAHu8NmQ0rXT0LkZOlDeYop6TAUJXaXbwAg'
+            'athena': '8322305650:AAHSnZiY4nX-qFQm0URUg_WyXrGrgb7kkBM'
         }
         
         # Start cleanup thread

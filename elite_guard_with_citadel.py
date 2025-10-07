@@ -25,7 +25,11 @@ import statistics
 import sys
 import traceback
 sys.path.insert(0, '/root/HydraX-v2')
-from comprehensive_tracking_layer import log_signal_comprehensive as log_trade
+# Comprehensive tracking disabled - using direct DB writes
+# from comprehensive_tracking_layer import log_signal_comprehensive as log_trade
+def log_trade(*args, **kwargs):
+    """Stub for disabled comprehensive tracking"""
+    pass
 
 # Setup logging
 logging.basicConfig(
@@ -118,6 +122,20 @@ class DynamicThresholdManager:
                 'min_conf': 75,           # Quality signals only
                 'vol_gate': 2.5,          # Strong volume for momentum
                 'momentum_mult': 1.5      # 1.5x average momentum required
+            },
+            'TRAPDOOR_SSR': {
+                'sweep_min_pips': 3.0,    # Minimum session high/low sweep distance
+                'min_conf': 72,           # Minimum 72% confidence for SSR
+                'vol_gate': 1.2,          # Volume confirmation requirement
+                'ltf_confirmation': True, # Require LTF break of structure
+                'entry_window_minutes': 30 # Entry window after sweep detection (updated from 15)
+            },
+            'PRESSURE_VALVE_VCB': {
+                'compression_bars': 5,    # Minimum bars in compression
+                'max_compression_atr': 0.8, # Max range vs ATR for compression
+                'break_multiplier': 1.3,  # Breakout size vs ATR
+                'min_conf': 70,           # Minimum confidence
+                'entry_window_minutes': 25 # Time window for entry (updated from 20)
             }
         }
         
@@ -313,11 +331,26 @@ class EliteGuardBalanced:
         
         # Market data storage - EXPANDED for proper pattern detection
         self.tick_data = defaultdict(lambda: deque(maxlen=500))
+
+        # CUSTOM 15-SECOND BARS (4x faster than M1) - NEW FOR RAPID PATTERN DETECTION
+        self.s15_data = defaultdict(lambda: deque(maxlen=400))   # 15s bars (~100 minutes / 1.6 hours)
+        self.s15_timestamps = defaultdict(set)  # Dedup by timestamp
+
         self.m1_data = defaultdict(lambda: deque(maxlen=500))    # M1 OHLC data (~8 hours)
         self.m5_data = defaultdict(lambda: deque(maxlen=300))    # M5 OHLC data (~25 hours)
         self.m15_data = defaultdict(lambda: deque(maxlen=200))   # M15 OHLC data (~50 hours)
+        self.m30_data = defaultdict(lambda: deque(maxlen=100))   # M30 OHLC data (~50 hours)
+        self.h1_data = defaultdict(lambda: deque(maxlen=100))    # H1 OHLC data (~100 hours)
+        self.h4_data = defaultdict(lambda: deque(maxlen=50))     # H4 OHLC data (~200 hours)
         self.current_candles = {}  # For building M1 candles from ticks
         self.last_tick_time = defaultdict(float)
+
+        # Custom bar statistics
+        self.custom_bar_stats = {
+            'received': 0,
+            'duplicates': 0,
+            'processed': 0
+        }
         
         # CITADEL Protection System
         self.citadel = CitadelProtection()
@@ -338,10 +371,10 @@ class EliteGuardBalanced:
             "CHFJPY", "CADJPY", "AUDCAD",
             # Additional Pairs (2)
             "USDCNH", "AUDNZD",
-            # Precious Metals (1)
+            # Precious Metals (2)
             "XAUUSD",  # GOLD
-            # "XAGUSD"   # SILVER - Disabled Sept 14 - pending more data
-            # Total: 21 pairs
+            "XAGUSD",  # SILVER - Re-enabled for MetaSocket integration
+            # Total: 22 pairs
         ]
         
         # Load candle cache on startup (AFTER trading_pairs defined)
@@ -395,8 +428,22 @@ class EliteGuardBalanced:
             'newyork': (13, 22),
             'overlap_london_ny': (13, 17)
         }
-        
+
         self.running = False
+
+    def get_session(self):
+        """Determine current trading session based on UTC time"""
+        from datetime import datetime
+        hour = datetime.utcnow().hour
+        if 22 <= hour or hour < 7:
+            return 'ASIAN'  # Low volatility session
+        elif 7 <= hour < 12:
+            return 'LONDON'  # Medium-high volatility
+        elif 12 <= hour < 17:
+            return 'NY'  # High volatility
+        elif 17 <= hour < 22:
+            return 'LATE_NY'  # Medium volatility
+        return 'UNKNOWN'
         
     def analyze_signal_quality(self):
         """Analyze signal quality from last 30 minutes of truth log"""
@@ -460,31 +507,27 @@ class EliteGuardBalanced:
     def setup_zmq(self):
         """Setup ZMQ connections"""
         try:
-            # Subscribe to market data (ticks)
-            self.subscriber = self.context.socket(zmq.SUB)
-            self.subscriber.connect("tcp://127.0.0.1:5560")
-            self.subscriber.setsockopt_string(zmq.SUBSCRIBE, "")
-            
-            # Subscribe DIRECTLY to port 5556 where EA sends OHLC data
-            # EA's PushOHLCData sends M1/M5/M15 OHLC to this port
-            self.ohlc_subscriber = self.context.socket(zmq.SUB)
-            self.ohlc_subscriber.connect("tcp://127.0.0.1:5556")
-            self.ohlc_subscriber.setsockopt_string(zmq.SUBSCRIBE, "")  # Subscribe to ALL messages
-            self.ohlc_subscriber.setsockopt(zmq.RCVTIMEO, 100)  # 100ms timeout for non-blocking
-            print(f"🔌 OHLC SUB connected to 5556 for direct EA OHLC data")
-            
+            # SUB to the telemetry bridge PUB stream on port 5560
+            # HydraSocket pushes to 5556 → Telemetry bridge pulls and publishes to 5560
+            self.tick_consumer = self.context.socket(zmq.SUB)
+            self.tick_consumer.connect("tcp://127.0.0.1:5560")
+            self.tick_consumer.setsockopt_string(zmq.SUBSCRIBE, "")  # Subscribe to all messages
+            self.tick_consumer.setsockopt(zmq.RCVTIMEO, 100)  # 100ms timeout for non-blocking
+            print(f"🔌 Tick/OHLC SUB consumer connected to 5560 - Telemetry bridge relay")
+
             # Publisher for signals
             self.publisher = self.context.socket(zmq.PUB)
             self.publisher.bind("tcp://*:5557")
-            
+            print(f"🔌 Signal PUB bound to 5557")
+
             # Subscribe to Grokkeeper ML adjustments on port 5565
             self.ml_subscriber = self.context.socket(zmq.SUB)
             self.ml_subscriber.connect("tcp://127.0.0.1:5565")
             self.ml_subscriber.setsockopt_string(zmq.SUBSCRIBE, "PATTERN_ADJUSTMENT")
             self.ml_subscriber.setsockopt(zmq.RCVTIMEO, 100)  # Non-blocking
             print("🤖 Connected to Grokkeeper ML feedback on port 5565")
-            
-            logger.info("✅ ZMQ connections established (5560 for ticks, 5556 for OHLC, 5557 for signals, 5565 for ML)")
+
+            logger.info("✅ ZMQ connections established (5560 SUB for ticks/OHLC, 5557 PUB for signals, 5565 SUB for ML)")
             return True
         except Exception as e:
             logger.error(f"❌ ZMQ setup failed: {e}")
@@ -1323,713 +1366,464 @@ class EliteGuardBalanced:
             return None
     def detect_sweep_and_return(self, symbol: str) -> Optional[PatternSignal]:
         """
-        INSTITUTIONAL LIQUIDITY SWEEP: Professional stop-hunt detection with Smart Money validation
-        Identifies deliberate liquidity raids by banks/funds with multi-factor confirmation
+        SWEEP & RETURN: Simplified liquidity sweep detection
+        Real ICT approach: Find sweep of obvious levels + immediate return
+
+        QUALITY IMPROVEMENTS (Oct 7, 2025):
+        - FIX #1: Defined min_sweep variable (was causing crashes)
+        - FIX #2: Raised base confidence from 68% to 75%
+        - FIX #3: Re-enabled volume filter for quality control
+        - FIX #4: Increased return requirement from 0.5 to 2.0 pips
+        - FIX #5: Disabled during ASIAN/LATE_NY sessions (low quality)
         """
         try:
-            # KILL ZONE VALIDATION - Only trade during institutional sessions
-            current_hour = datetime.now().hour
-            # London Kill Zone: 7-10 UTC (2-5AM EST)
-            # NY Kill Zone: 12-15 UTC (7-10AM EST)
-            in_kill_zone = (7 <= current_hour <= 10) or (12 <= current_hour <= 15)
-            
-            if not in_kill_zone:
+            # FIX #5: SESSION GATING - Disable during low-quality sessions
+            session = self.get_current_session()
+            if session in ['ASIAN', 'LATE_NY', 'TOKYO']:
+                print(f"🎯 SWEEP_RETURN {symbol}: Disabled during {session} session (low quality)")
                 return None
-            
-            # Need extensive history for proper liquidity zone identification
-            if len(self.m5_data[symbol]) < 20:
+
+            # SIMPLIFIED: Just need basic candle data
+            if len(self.m5_data[symbol]) < 10:
                 return None
-                
-            candles = list(self.m5_data[symbol])[-20:]
+
+            candles = list(self.m5_data[symbol])[-10:]
             current = candles[-1]
-            
-            # Professional pip size calculation
+
             pip_size = get_pip_size(symbol)
-            
-            # STEP 1: IDENTIFY LIQUIDITY POOLS (Where retail stops cluster)
-            # Professional traders know retail places stops at obvious levels
-            liquidity_zones = []
-            
-            # Find significant swing highs/lows (minimum 10 candles apart for validity)
-            for i in range(5, 15):
-                test_candle = candles[-i]
-                
-                # Check if this is a swing high (retail shorts have stops above)
-                is_swing_high = True
-                for j in range(max(0, -i-3), min(-i+3, -1)):
-                    if j >= -1:
-                        continue
-                    compare = candles[j]
-                    if compare['high'] >= test_candle['high']:
-                        is_swing_high = False
-                        break
-                
-                if is_swing_high:
-                    # This is Buyside Liquidity (BSL) - shorts' stop losses
-                    liquidity_zones.append({
-                        'type': 'BSL',
-                        'level': test_candle['high'],
-                        'candle_index': i,
-                        'strength': 0  # Will calculate based on touches
-                    })
-                
-                # Check if this is a swing low (retail longs have stops below)
-                is_swing_low = True
-                for j in range(max(0, -i-3), min(-i+3, -1)):
-                    if j >= -1:
-                        continue
-                    compare = candles[j]
-                    if compare['low'] <= test_candle['low']:
-                        is_swing_low = False
-                        break
-                
-                if is_swing_low:
-                    # This is Sellside Liquidity (SSL) - longs' stop losses
-                    liquidity_zones.append({
-                        'type': 'SSL',
-                        'level': test_candle['low'],
-                        'candle_index': i,
-                        'strength': 0  # Will calculate based on touches
-                    })
-            
-            if not liquidity_zones:
-                print(f"🎯 SRL {symbol}: No valid liquidity zones identified")
+            if pip_size == 0:
                 return None
-            
-            # STEP 2: CALCULATE LIQUIDITY STRENGTH (More touches = stronger magnet)
-            for zone in liquidity_zones:
-                touches = 0
-                for candle in candles[-zone['candle_index']+1:-1]:
-                    if zone['type'] == 'BSL':
-                        # Count times price approached but respected this high
-                        if abs(candle['high'] - zone['level']) / pip_size <= 3:
-                            touches += 1
-                    else:  # SSL
-                        # Count times price approached but respected this low
-                        if abs(candle['low'] - zone['level']) / pip_size <= 3:
-                            touches += 1
-                
-                zone['strength'] = touches
-                
-            # Sort zones by strength (institutional targets strongest zones)
-            liquidity_zones.sort(key=lambda x: x['strength'], reverse=True)
-            
-            # STEP 3: DETECT LIQUIDITY SWEEP WITH INSTITUTIONAL CRITERIA
-            for zone in liquidity_zones[:3]:  # Check top 3 strongest zones
-                
-                # For BEARISH sweep (BSL raid - sweep highs then reverse down)
-                if zone['type'] == 'BSL':
-                    # Check if recent price swept this level
-                    sweep_candle = None
-                    sweep_distance = 0
-                    
-                    # Look for sweep in last 3 candles
-                    for i in range(1, min(4, len(candles))):
-                        test = candles[-i]
-                        if test['high'] > zone['level']:
-                            sweep_distance = (test['high'] - zone['level']) / pip_size
-                            if sweep_distance >= 3:  # Institutional minimum 3 pip sweep
-                                sweep_candle = test
-                                sweep_index = i
-                                break
-                    
-                    if sweep_candle and sweep_distance >= 3:
-                        # VALIDATION 1: Aggressive rejection (wick must be 60%+ of candle)
-                        sweep_range = sweep_candle['high'] - sweep_candle['low']
-                        upper_wick = sweep_candle['high'] - max(sweep_candle['open'], sweep_candle['close'])
-                        wick_ratio = upper_wick / sweep_range if sweep_range > 0 else 0
-                        
-                        if wick_ratio < 0.6:  # Not aggressive enough rejection
-                            continue
-                        
-                        # VALIDATION 2: Return below liquidity level (sweep failed)
-                        if current['close'] >= zone['level']:  # Still above = not returned
-                            continue
-                        
-                        return_distance = (zone['level'] - current['close']) / pip_size
-                        if return_distance < 2:  # Need meaningful return
-                            continue
-                        
-                        # VALIDATION 3: Volume spike on sweep (institutional footprint)
-                        avg_volume = sum(c.get('volume', 1000) for c in candles[-20:-1]) / 19
-                        sweep_volume = sweep_candle.get('volume', 1000)
-                        volume_spike = sweep_volume / avg_volume if avg_volume > 0 else 1.0
-                        
-                        if volume_spike < 1.5:  # Need 50%+ volume increase per research
-                            continue
-                        
-                        # VALIDATION 4: Speed of rejection (fast = institutional)
-                        if sweep_index > 2:  # Took too long to reject = weak
-                            continue
-                        
-                        # VALIDATION 5: Market structure context
-                        # Check if we're at resistance (better for shorts)
-                        recent_high = max(c['high'] for c in candles[-10:])
-                        at_resistance = (recent_high - current['high']) / pip_size <= 5
-                        
-                        # PROFESSIONAL CONFIDENCE CALCULATION
-                        base_confidence = 68.0  # Base for validated sweep
-                        
-                        # Sweep depth bonus (deeper = more stops triggered)
-                        depth_bonus = min(12, sweep_distance * 2)  # 6 pips = 12 points
-                        
-                        # Rejection quality bonus (stronger wick = better)
-                        rejection_bonus = min(10, (wick_ratio - 0.6) * 25)  # 80% wick = 5 points
-                        
-                        # Return strength bonus (further return = more conviction)
-                        return_bonus = min(10, return_distance * 2)  # 5 pips return = 10 points
-                        
-                        # Volume confirmation bonus
-                        volume_bonus = min(8, (volume_spike - 1.0) * 8)  # 2x volume = 8 points
-                        
-                        # Liquidity strength bonus (more touches = stronger zone)
-                        strength_bonus = min(8, zone['strength'] * 2)  # 4 touches = 8 points
-                        
-                        # Speed bonus (faster rejection = more institutional)
-                        speed_bonus = (3 - sweep_index) * 3  # Same candle = 6, next = 3
-                        
-                        # Context bonus
-                        context_bonus = 5 if at_resistance else 0
-                        
-                        # Session bonus
-                        session = self.get_current_session()
-                        session_bonus = {'LONDON': 8, 'OVERLAP': 7, 'NEWYORK': 5, 'ASIAN': 2}.get(session, 0)
-                        
-                        confidence_score = (base_confidence + depth_bonus + rejection_bonus + 
-                                          return_bonus + volume_bonus + strength_bonus + 
-                                          speed_bonus + context_bonus + session_bonus)
-                        confidence_score = min(94.0, max(68.0, confidence_score))
-                        
-                        # Professional entry calculation
-                        entry_price = current['close'] - (pip_size * 0.5)  # Half pip below close
-                        
-                        print(f"🏆 SRL {symbol}: INSTITUTIONAL BSL SWEEP DETECTED!")
-                        print(f"   Liquidity Level: {zone['level']:.5f} ({zone['strength']} touches)")
-                        print(f"   Sweep Depth: {sweep_distance:.1f} pips")
-                        print(f"   Rejection: {wick_ratio:.1%} wick")
-                        print(f"   Return: {return_distance:.1f} pips below level")
-                        print(f"   Volume Spike: {volume_spike:.1f}x")
-                        print(f"   Speed: {sweep_index} candle(s) ago")
-                        print(f"   Confidence: {confidence_score:.1f}%")
-                        
-                        return PatternSignal(
-                            pattern="SWEEP_RETURN",
-                            direction="SELL",
-                            entry_price=entry_price,
-                            confidence=confidence_score,
-                            timeframe="M5",
-                            pair=symbol,
-                            quality_score=confidence_score
-                        )
-                
-                # For BULLISH sweep (SSL raid - sweep lows then reverse up)
-                elif zone['type'] == 'SSL':
-                    # Check if recent price swept this level
-                    sweep_candle = None
-                    sweep_distance = 0
-                    
-                    # Look for sweep in last 3 candles
-                    for i in range(1, min(4, len(candles))):
-                        test = candles[-i]
-                        if test['low'] < zone['level']:
-                            sweep_distance = (zone['level'] - test['low']) / pip_size
-                            if sweep_distance >= 3:  # Institutional minimum 3 pip sweep
-                                sweep_candle = test
-                                sweep_index = i
-                                break
-                    
-                    if sweep_candle and sweep_distance >= 3:
-                        # VALIDATION 1: Aggressive rejection (wick must be 60%+ of candle)
-                        sweep_range = sweep_candle['high'] - sweep_candle['low']
-                        lower_wick = min(sweep_candle['open'], sweep_candle['close']) - sweep_candle['low']
-                        wick_ratio = lower_wick / sweep_range if sweep_range > 0 else 0
-                        
-                        if wick_ratio < 0.6:  # Not aggressive enough rejection
-                            continue
-                        
-                        # VALIDATION 2: Return above liquidity level (sweep failed)
-                        if current['close'] <= zone['level']:  # Still below = not returned
-                            continue
-                        
-                        return_distance = (current['close'] - zone['level']) / pip_size
-                        if return_distance < 2:  # Need meaningful return
-                            continue
-                        
-                        # VALIDATION 3: Volume spike on sweep
-                        avg_volume = sum(c.get('volume', 1000) for c in candles[-10:-1]) / 9
-                        sweep_volume = sweep_candle.get('volume', 1000)
-                        volume_spike = sweep_volume / avg_volume if avg_volume > 0 else 1.0
-                        
-                        if volume_spike < 1.3:  # No institutional participation
-                            continue
-                        
-                        # VALIDATION 4: Speed of rejection
-                        if sweep_index > 2:  # Took too long to reject = weak
-                            continue
-                        
-                        # VALIDATION 5: Market structure context
-                        # Check if we're at support (better for longs)
-                        recent_low = min(c['low'] for c in candles[-10:])
-                        at_support = (current['low'] - recent_low) / pip_size <= 5
-                        
-                        # PROFESSIONAL CONFIDENCE CALCULATION
-                        base_confidence = 68.0
-                        
-                        depth_bonus = min(12, sweep_distance * 2)
-                        rejection_bonus = min(10, (wick_ratio - 0.6) * 25)
-                        return_bonus = min(10, return_distance * 2)
-                        volume_bonus = min(8, (volume_spike - 1.0) * 8)
-                        strength_bonus = min(8, zone['strength'] * 2)
-                        speed_bonus = (3 - sweep_index) * 3
-                        context_bonus = 5 if at_support else 0
-                        
-                        session = self.get_current_session()
-                        session_bonus = {'LONDON': 8, 'OVERLAP': 7, 'NEWYORK': 5, 'ASIAN': 2}.get(session, 0)
-                        
-                        confidence_score = (base_confidence + depth_bonus + rejection_bonus + 
-                                          return_bonus + volume_bonus + strength_bonus + 
-                                          speed_bonus + context_bonus + session_bonus)
-                        confidence_score = min(94.0, max(68.0, confidence_score))
-                        
-                        # Professional entry calculation
-                        entry_price = current['close'] + (pip_size * 0.5)  # Half pip above close
-                        
-                        print(f"🏆 SRL {symbol}: INSTITUTIONAL SSL SWEEP DETECTED!")
-                        print(f"   Liquidity Level: {zone['level']:.5f} ({zone['strength']} touches)")
-                        print(f"   Sweep Depth: {sweep_distance:.1f} pips")
-                        print(f"   Rejection: {wick_ratio:.1%} wick")
-                        print(f"   Return: {return_distance:.1f} pips above level")
-                        print(f"   Volume Spike: {volume_spike:.1f}x")
-                        print(f"   Speed: {sweep_index} candle(s) ago")
-                        print(f"   Confidence: {confidence_score:.1f}%")
-                        
-                        return PatternSignal(
-                            pattern="SWEEP_RETURN",
-                            direction="BUY",
-                            entry_price=entry_price,
-                            confidence=confidence_score,
-                            timeframe="M5",
-                            pair=symbol,
-                            quality_score=confidence_score
-                        )
-            
+
+            # FIX #1: Define minimum sweep distance (was undefined, causing crashes)
+            min_sweep = 2.0  # Minimum 2 pips for valid sweep
+
+            # SIMPLIFIED: Find recent swing high and low (last 8 candles)
+            highs = [c['high'] for c in candles[-8:-1]]  # Exclude current
+            lows = [c['low'] for c in candles[-8:-1]]    # Exclude current
+
+            recent_high = max(highs)
+            recent_low = min(lows)
+
+            # ENHANCED SWEEP DETECTION WITH PERFORMANCE FILTERS
+            swept_high = current['high'] > recent_high
+            swept_low = current['low'] < recent_low
+
+            if swept_high:
+                sweep_distance = (current['high'] - recent_high) / pip_size
+
+                # Check minimum sweep requirement
+                if sweep_distance < min_sweep:
+                    print(f"🎯 SWEEP_RETURN {symbol}: Sweep too small ({sweep_distance:.1f}p < {min_sweep}p)")
+                    return None
+
+                # PERFORMANCE FILTER: Aggressive rejection wick (60%+ of candle)
+                candle_range = current['high'] - current['low']
+                upper_wick = current['high'] - max(current['open'], current['close'])
+                wick_ratio = upper_wick / candle_range if candle_range > 0 else 0
+
+                if wick_ratio < 0.4:  # TIGHTENED: 10% → 40% for quality
+                    print(f"🎯 SWEEP_RETURN {symbol}: Weak rejection wick ({wick_ratio:.1%} < 40%)")
+                    return None
+
+                # FIX #3: RE-ENABLED VOLUME FILTER for quality control
+                volumes = [c.get('volume', 1000) for c in candles[-5:]]
+                avg_volume = sum(volumes[:-1]) / 4
+                current_volume = volumes[-1]
+                volume_surge = current_volume / avg_volume if avg_volume > 0 else 1.0
+
+                if volume_surge < 1.5:  # Need 50%+ volume surge
+                    print(f"🎯 SWEEP_RETURN {symbol}: No volume spike ({volume_surge:.1f}x < 1.5x)")
+                    return None
+
+                # FIX #4: TIGHTENED return requirement from 0.5 to 2.0 pips
+                return_distance = (current['high'] - current['close']) / pip_size
+                if return_distance < 2.0:  # TIGHTENED: 0.5p → 2.0p for quality
+                    print(f"🎯 SWEEP_RETURN {symbol}: Weak return ({return_distance:.1f}p < 2.0p)")
+                    return None
+
+                # Calculate optimized levels
+                entry_price = current['close']
+                # Dynamic SL based on sweep distance (larger sweep = wider SL)
+                sl_distance = min(15, max(10, int(sweep_distance * 0.8)))  # 10-15 pips
+                tp_distance = int(sl_distance * 1.5)  # 1.5:1 R:R
+                stop_price = entry_price + (sl_distance * pip_size)
+                target_price = entry_price - (tp_distance * pip_size)
+
+                # FIX #2: Raised base confidence from 68% to 75%
+                session_bonus = 0
+                if session == 'LONDON':
+                    session_bonus = 15
+                elif session == 'NEWYORK':
+                    session_bonus = 12
+                elif session == 'LONDON_NY':  # Overlap session
+                    session_bonus = 20
+
+                confidence = 75 + session_bonus  # RAISED: 68% → 75%
+                confidence = min(confidence, 95)  # Allow higher confidence for best setups
+
+                print(f"✅ SWEEP_RETURN {symbol}: High swept & returned - SELL at {confidence}%")
+
+                return PatternSignal(
+                        pattern="SWEEP_RETURN",
+                        pair=symbol,
+                        direction="SELL",
+                        entry_price=entry_price,
+                        confidence=confidence,
+                        timeframe="M5",
+                        quality_score=confidence
+                    )
+
+            elif swept_low:
+                sweep_distance = (recent_low - current['low']) / pip_size
+                if sweep_distance < min_sweep:
+                    print(f"🎯 SWEEP_RETURN {symbol}: Sweep too small ({sweep_distance:.1f}p < {min_sweep}p)")
+                    return None
+
+                # PERFORMANCE FILTER: Aggressive rejection wick (60%+ of candle)
+                candle_range = current['high'] - current['low']
+                lower_wick = min(current['open'], current['close']) - current['low']
+                wick_ratio = lower_wick / candle_range if candle_range > 0 else 0
+
+                if wick_ratio < 0.6:  # Need aggressive rejection
+                    print(f"🎯 SWEEP_RETURN {symbol}: Weak rejection wick ({wick_ratio:.1%} < 60%)")
+                    return None
+
+                # PERFORMANCE FILTER: Volume spike confirmation
+                volumes = [c.get('volume', 1000) for c in candles[-5:]]
+                avg_volume = sum(volumes[:-1]) / 4
+                current_volume = volumes[-1]
+                volume_surge = current_volume / avg_volume if avg_volume > 0 else 1.0
+
+                if volume_surge < 1.5:  # Need 50%+ volume surge
+                    print(f"🎯 SWEEP_RETURN {symbol}: No volume spike ({volume_surge:.1f}x < 1.5x)")
+                    return None
+
+                # RETURN DETECTION: Price came back significantly
+                return_distance = (current['close'] - current['low']) / pip_size
+                if return_distance < 2:  # Need meaningful return
+                    print(f"🎯 SWEEP_RETURN {symbol}: Weak return ({return_distance:.1f}p < 2p)")
+                    return None
+
+                # Calculate optimized levels
+                entry_price = current['close']
+                # Dynamic SL based on sweep distance
+                sl_distance = min(15, max(10, int(sweep_distance * 0.8)))  # 10-15 pips
+                tp_distance = int(sl_distance * 1.5)  # 1.5:1 R:R
+                stop_price = entry_price - (sl_distance * pip_size)
+                target_price = entry_price + (tp_distance * pip_size)
+
+                # FIX #2: Raised base confidence from 68% to 75%
+                session_bonus = 0
+                if session == 'LONDON':
+                    session_bonus = 15
+                elif session == 'NEWYORK':
+                    session_bonus = 12
+                elif session == 'LONDON_NY':  # Overlap session
+                    session_bonus = 20
+
+                confidence = 75 + session_bonus  # RAISED: 68% → 75%
+                confidence = min(confidence, 95)  # Allow higher confidence for best setups
+
+                print(f"✅ SWEEP_RETURN {symbol}: Low swept & returned - BUY at {confidence}%")
+
+                return PatternSignal(
+                        pattern="SWEEP_RETURN",
+                        pair=symbol,
+                        direction="BUY",
+                        entry_price=entry_price,
+                        confidence=confidence,
+                        timeframe="M5",
+                        quality_score=confidence
+                    )
+
             return None
-            
+
         except Exception as e:
-            print(f"❌ SRL {symbol}: Error in institutional analysis: {str(e)}")
-            logger.exception(f"Sweep & Return pattern detection error for {symbol}")
-            traceback.print_exc()
+            print(f"⚠️ SWEEP_RETURN {symbol}: Error - {e}")
             return None
     
     def detect_vcb_breakout(self, symbol: str) -> Optional[PatternSignal]:
         """
-        INSTITUTIONAL VCB BREAKOUT: Professional BB/KC Squeeze + ATR Compression
-        Combines Bollinger Bands, Keltner Channels, and ATR analysis for supreme accuracy
+        VCB BREAKOUT: Simplified Volatility Compression + Expansion
+        Real ICT approach: Focus on probability, not perfection
         """
         try:
-            # Need sufficient candles for comprehensive analysis
-            if len(self.m5_data[symbol]) < 25:
+            if len(self.m5_data[symbol]) < 10:
                 return None
-                
-            candles = list(self.m5_data[symbol])[-25:]
+
+            candles = list(self.m5_data[symbol])[-10:]
             current = candles[-1]
-            
-            # Professional pip size calculation
+
             pip_size = get_pip_size(symbol)
-            print(f"🏛️ VCB {symbol}: Using pip_size={pip_size}")
-            
-            # STEP 1: BOLLINGER BANDS CALCULATION (20-period SMA + 2 StdDev)
-            closes = [c['close'] for c in candles[-20:]]  # Last 20 periods
-            sma_20 = sum(closes) / 20
-            
-            # Calculate standard deviation
-            variance = sum((close - sma_20) ** 2 for close in closes) / 20
-            std_dev = variance ** 0.5
-            
-            bb_upper = sma_20 + (2.0 * std_dev)
-            bb_lower = sma_20 - (2.0 * std_dev)
-            bb_width = (bb_upper - bb_lower) / pip_size
-            
-            print(f"🏛️ VCB {symbol}: BB Width: {bb_width:.1f} pips")
-            
-            # STEP 2: KELTNER CHANNELS CALCULATION (20-period EMA + 1.5 * ATR)
-            # Calculate EMA-20
-            ema_multiplier = 2.0 / (20 + 1)
-            ema_20 = closes[0]  # Start with first close
-            for close in closes[1:]:
-                ema_20 = (close * ema_multiplier) + (ema_20 * (1 - ema_multiplier))
-            
-            # Calculate ATR-20 
+            if pip_size == 0:
+                return None
+
+            print(f"🏛️ VCB {symbol}: Checking volatility compression...")
+
+            # SIMPLIFIED: Just use ATR for volatility measurement
             atr_values = []
-            for i in range(1, len(candles[-20:])):
-                high = candles[-(20-i)]['high']
-                low = candles[-(20-i)]['low']
-                prev_close = candles[-(20-i)+1]['close']
-                
+            for i in range(1, len(candles)):
+                high = candles[i]['high']
+                low = candles[i]['low']
+                prev_close = candles[i-1]['close']
+
                 true_range = max(
                     high - low,
                     abs(high - prev_close),
                     abs(low - prev_close)
                 )
                 atr_values.append(true_range)
-            
-            if len(atr_values) < 19:
-                print(f"🏛️ VCB {symbol}: Need 19+ ATR values, have {len(atr_values)}")
+
+            if len(atr_values) < 5:
                 return None
-                
-            atr_20 = sum(atr_values) / len(atr_values)
-            
-            kc_upper = ema_20 + (1.5 * atr_20)
-            kc_lower = ema_20 - (1.5 * atr_20)
-            kc_width = (kc_upper - kc_lower) / pip_size
-            
-            print(f"🏛️ VCB {symbol}: KC Width: {kc_width:.1f} pips")
-            
-            # STEP 3: PROFESSIONAL SQUEEZE DETECTION
-            # Check for BB/KC convergence (more realistic than full squeeze)
-            # Instead of BB completely inside KC, check if BB width is less than KC width
-            bb_squeeze = bb_width < kc_width * 0.8  # BB is 80% or less of KC width
-            
-            # Also check for recent volatility compression
-            recent_widths = []
-            for i in range(5, 10):
-                old_closes = [c['close'] for c in candles[-20-i:-i]]
-                old_sma = sum(old_closes) / len(old_closes)
-                old_variance = sum((close - old_sma) ** 2 for close in old_closes) / len(old_closes)
-                old_std = old_variance ** 0.5
-                old_width = (2.0 * old_std * 2) / pip_size
-                recent_widths.append(old_width)
-            
-            avg_recent_width = sum(recent_widths) / len(recent_widths) if recent_widths else bb_width
-            volatility_compressed = bb_width < avg_recent_width * 0.7  # Current width is 70% of recent average
-            
-            squeeze_active = bb_squeeze and volatility_compressed
-            
-            if not squeeze_active:
-                print(f"🏛️ VCB {symbol}: No squeeze detected (BB/KC: {bb_squeeze}, Vol compressed: {volatility_compressed})")
+
+            # Current ATR vs Recent ATR
+            current_atr = sum(atr_values[-3:]) / 3  # Last 3 periods
+            recent_atr = sum(atr_values[-6:-3]) / 3  # Previous 3 periods
+
+            # ONLY REQUIREMENT: Current volatility is compressed
+            compression_ratio = current_atr / recent_atr if recent_atr > 0 else 1.0
+
+            if compression_ratio > 0.9:  # LOOSENED: 0.7 → 0.9 for more signals
+                print(f"🏛️ VCB {symbol}: No compression ({compression_ratio:.2f})")
                 return None
-            
-            # STEP 4: SQUEEZE INTENSITY ANALYSIS
-            # Tighter squeeze = higher probability breakout
-            bb_kc_ratio = bb_width / kc_width if kc_width > 0 else 1.0
-            squeeze_intensity = 1.0 - bb_kc_ratio  # Lower ratio = tighter squeeze
-            
-            print(f"🏛️ VCB {symbol}: Squeeze intensity: {squeeze_intensity:.3f} (BB/KC ratio: {bb_kc_ratio:.3f})")
-            
-            # More reasonable squeeze intensity requirement
-            if squeeze_intensity < 0.05:  # Just need SOME compression (5% minimum)
-                print(f"🏛️ VCB {symbol}: Squeeze not tight enough ({squeeze_intensity:.3f} < 0.05)")
+
+            print(f"🏛️ VCB {symbol}: Volatility compressed ({compression_ratio:.2f}) - Looking for breakout...")
+
+            # ENHANCED BREAKOUT DETECTION WITH PERFORMANCE OPTIMIZATIONS
+            current_range = (current['high'] - current['low']) / pip_size
+            avg_range = sum((c['high'] - c['low']) / pip_size for c in candles[-5:-1]) / 4
+
+            # PERFORMANCE FILTER 1: Expansion must be significant (1.5x+ average)
+            if current_range < avg_range * 1.5:
+                print(f"🏛️ VCB {symbol}: No expansion yet ({current_range:.1f}p vs avg {avg_range:.1f}p)")
                 return None
-            
-            # STEP 5: CONTRACTION STAGES VALIDATION (VCP REQUIREMENT)
-            # Must have 2-3 contractions, each smaller than the last
-            contractions = []
-            lookback_ranges = [5, 10, 15]  # Check different lookback periods
-            
-            for lookback in lookback_ranges:
-                if len(candles) < lookback + 5:
-                    continue
-                period_candles = candles[-lookback-5:-lookback]
-                if len(period_candles) >= 3:
-                    period_high = max(c['high'] for c in period_candles)
-                    period_low = min(c['low'] for c in period_candles)
-                    period_range = (period_high - period_low) / pip_size
-                    contractions.append(period_range)
-            
-            # Check if contractions are getting tighter
-            valid_contractions = len(contractions) >= 2
-            for i in range(1, len(contractions)):
-                if contractions[i] >= contractions[i-1] * 0.8:  # Each must be 20% tighter
-                    valid_contractions = False
-                    break
-            
-            if not valid_contractions:
-                print(f"🏛️ VCB {symbol}: No valid contraction pattern found")
+
+            # PERFORMANCE FILTER 2: Volume confirmation (institutional footprint)
+            volumes = [c.get('volume', 1000) for c in candles[-5:]]
+            avg_volume = sum(volumes[:-1]) / 4  # Average of last 4
+            current_volume = volumes[-1]
+            volume_surge = current_volume / avg_volume if avg_volume > 0 else 1.0
+
+            if volume_surge < 1.3:  # Need 30%+ volume increase
+                print(f"🏛️ VCB {symbol}: No volume confirmation ({volume_surge:.1f}x < 1.3x)")
                 return None
-            
-            # STEP 6: VOLUME DECLINE DURING CONTRACTION (INSTITUTIONAL SIGNAL)
-            # Volume should decrease during compression
-            recent_volumes = [c.get('volume', 1000) for c in candles[-10:-1]]
-            older_volumes = [c.get('volume', 1000) for c in candles[-20:-10]]
-            avg_recent_volume = sum(recent_volumes) / len(recent_volumes)
-            avg_older_volume = sum(older_volumes) / len(older_volumes)
-            
-            volume_compression = avg_recent_volume < avg_older_volume * 0.8  # 20% volume decline
-            
-            if not volume_compression:
-                print(f"🏛️ VCB {symbol}: No volume compression detected")
+
+            # PERFORMANCE FILTER 3: Strong directional body (conviction)
+            body_size = abs(current['close'] - current['open'])
+            body_ratio = body_size / (current['high'] - current['low']) if current['high'] != current['low'] else 0
+
+            if body_ratio < 0.6:  # Need 60%+ body
+                print(f"🏛️ VCB {symbol}: Weak body ratio ({body_ratio:.1%} < 60%)")
                 return None
-            
-            # STEP 6: BREAKOUT DETECTION WITH VOLUME CONFIRMATION
-            # Check if current price breaks out of squeeze zone
-            current_price = current['close']
-            breakout_threshold = max(bb_upper, kc_upper) + (2 * pip_size)  # 2 pips above resistance
-            breakdown_threshold = min(bb_lower, kc_lower) - (2 * pip_size)  # 2 pips below support
-            
-            direction = None
-            breakout_strength = 0
-            
-            # Volume analysis
-            volumes = [c.get('volume', 1000) for c in candles[-10:]]
-            avg_volume = sum(volumes) / len(volumes)
-            current_volume = current.get('volume', 1000)
-            volume_expansion = current_volume / avg_volume if avg_volume > 0 else 1.0
-            
-            print(f"🏛️ VCB {symbol}: Volume expansion: {volume_expansion:.2f}x")
-            
-            # Bullish breakout detection
-            if current_price > breakout_threshold:
-                breakout_strength = (current_price - breakout_threshold) / pip_size
-                if volume_expansion >= 1.3:  # Require 30% volume increase
+
+            # PERFORMANCE FILTER 4: Range breakout validation (breaks recent levels)
+            recent_highs = [c['high'] for c in candles[-8:-1]]
+            recent_lows = [c['low'] for c in candles[-8:-1]]
+            resistance = max(recent_highs) if recent_highs else current['high']
+            support = min(recent_lows) if recent_lows else current['low']
+
+            breakout_confirmed = False
+
+            if current['close'] > current['open']:
+                # BULLISH BREAKOUT: Must break resistance
+                if current['high'] > resistance + (2 * pip_size):  # 2 pip breakout minimum
                     direction = 'BUY'
-                    print(f"🏛️ VCB {symbol}: BULLISH SQUEEZE BREAKOUT: {breakout_strength:.1f} pips")
+                    breakout_confirmed = True
+                    print(f"🏛️ VCB {symbol}: Bullish breakout above {resistance:.5f}")
                 else:
-                    print(f"🏛️ VCB {symbol}: Breakout without volume confirmation ({volume_expansion:.2f}x < 1.3x)")
+                    print(f"🏛️ VCB {symbol}: No resistance breakout ({current['high']:.5f} vs {resistance:.5f})")
                     return None
-            
-            # Bearish breakdown detection  
-            elif current_price < breakdown_threshold:
-                breakout_strength = (breakdown_threshold - current_price) / pip_size
-                if volume_expansion >= 1.3:  # Require 30% volume increase
+            else:
+                # BEARISH BREAKOUT: Must break support
+                if current['low'] < support - (2 * pip_size):  # 2 pip breakdown minimum
                     direction = 'SELL'
-                    print(f"🏛️ VCB {symbol}: BEARISH SQUEEZE BREAKDOWN: {breakout_strength:.1f} pips")
+                    breakout_confirmed = True
+                    print(f"🏛️ VCB {symbol}: Bearish breakdown below {support:.5f}")
                 else:
-                    print(f"🏛️ VCB {symbol}: Breakdown without volume confirmation ({volume_expansion:.2f}x < 1.3x)")
+                    print(f"🏛️ VCB {symbol}: No support breakdown ({current['low']:.5f} vs {support:.5f})")
                     return None
-            else:
-                print(f"🏛️ VCB {symbol}: No breakout from squeeze zone")
+
+            if not breakout_confirmed:
                 return None
-            
-            # STEP 7: INSTITUTIONAL CONFIDENCE CALCULATION
-            base_confidence = 72.0  # High base for institutional pattern
-            
-            # Squeeze intensity bonus (max +18)
-            intensity_bonus = squeeze_intensity * 18  # 0.15 = +2.7, 1.0 = +18
-            
-            # Duration bonus (max +12) - longer squeeze = more energy
-            duration_bonus = min(12, squeeze_duration * 1.5)  # 8 candles = max bonus
-            
-            # Volume expansion bonus (max +10)
-            volume_bonus = min(10, (volume_expansion - 1.0) * 5)  # 3x volume = max bonus
-            
-            # Breakout strength bonus (max +8)
-            strength_bonus = min(8, breakout_strength * 1.5)
-            
-            # Session timing bonus  
-            session = self.get_current_session()
-            session_bonus = {'LONDON': 8, 'OVERLAP': 6, 'NEWYORK': 4, 'ASIAN': 2}.get(session, 0)
-            
-            # Multi-timeframe alignment bonus (check M1 for micro-structure)
-            alignment_bonus = 0
-            if len(self.m1_data.get(symbol, [])) >= 20:
-                m1_candles = list(self.m1_data[symbol])[-20:]
-                m1_trend_up = sum(1 for c in m1_candles[-5:] if c['close'] > c['open']) >= 3
-                m1_trend_down = sum(1 for c in m1_candles[-5:] if c['close'] < c['open']) >= 3
-                
-                if (direction == 'BUY' and m1_trend_up) or (direction == 'SELL' and m1_trend_down):
-                    alignment_bonus = 6
-                    print(f"🏛️ VCB {symbol}: M1 alignment confirmed (+{alignment_bonus})")
-            
-            confidence_score = (base_confidence + intensity_bonus + duration_bonus + 
-                               volume_bonus + strength_bonus + session_bonus + alignment_bonus)
-            confidence_score = min(95.0, max(72.0, confidence_score))
-            
-            print(f"🏛️ VCB {symbol}: INSTITUTIONAL CONFIDENCE BREAKDOWN:")
-            print(f"   Base: {base_confidence:.1f}%")  
-            print(f"   Squeeze Intensity: +{intensity_bonus:.1f}% ({squeeze_intensity:.3f})")
-            print(f"   Duration: +{duration_bonus:.1f}% ({squeeze_duration} candles)")
-            print(f"   Volume: +{volume_bonus:.1f}% ({volume_expansion:.2f}x)")
-            print(f"   Breakout Strength: +{strength_bonus:.1f}% ({breakout_strength:.1f}p)")
-            print(f"   Session ({session}): +{session_bonus:.1f}%")
-            print(f"   M1 Alignment: +{alignment_bonus:.1f}%")
-            print(f"   FINAL: {confidence_score:.1f}%")
-            
-            # Professional entry price calculation
+
+            # PERFORMANCE OPTIMIZED TRADE LEVELS
             if direction == 'BUY':
-                entry_price = current_price + (pip_size * 0.5)  # Half pip above breakout
+                entry_price = current['close']
+                # Dynamic SL based on compression level (tighter compression = tighter SL)
+                sl_distance = max(12, int(20 * compression_ratio))  # 12-14 pips for good compression
+                tp_distance = int(sl_distance * 1.8)  # 1.8:1 R:R for better expectancy
+                stop_price = entry_price - (sl_distance * pip_size)
+                target_price = entry_price + (tp_distance * pip_size)
             else:
-                entry_price = current_price - (pip_size * 0.5)  # Half pip below breakdown
-            
-            print(f"🎯 VCB {symbol}: INSTITUTIONAL SQUEEZE BREAKOUT CONFIRMED!")
-            print(f"   Pattern: BB/KC Squeeze + Volume Expansion")
-            print(f"   Direction: {direction}")
-            print(f"   Entry: {entry_price}")
-            print(f"   Squeeze: {squeeze_duration} candles, {squeeze_intensity:.3f} intensity")
-            print(f"   Volume: {volume_expansion:.2f}x expansion") 
-            print(f"   Confidence: {confidence_score:.1f}%")
-            
+                entry_price = current['close']
+                sl_distance = max(12, int(20 * compression_ratio))
+                tp_distance = int(sl_distance * 1.8)
+                stop_price = entry_price + (sl_distance * pip_size)
+                target_price = entry_price - (tp_distance * pip_size)
+
+            # Session bonus
+            session_bonus = 0
+            session = self.get_current_session()
+            if session == 'LONDON':
+                session_bonus = 18
+            elif session == 'NEWYORK':
+                session_bonus = 15
+            elif session == 'LONDON_NY':  # Overlap session
+                session_bonus = 22
+
+            confidence = 72 + session_bonus
+            confidence = min(confidence, 90)
+
+            print(f"✅ VCB_BREAKOUT {symbol}: {direction} expansion breakout at {confidence}% confidence")
+
             return PatternSignal(
                 pattern="VCB_BREAKOUT",
+                symbol=symbol,
                 direction=direction,
                 entry_price=entry_price,
-                confidence=confidence_score,
-                timeframe="M5",
-                pair=symbol,
-                quality_score=confidence_score
+                stop_loss=stop_price,
+                take_profit=target_price,
+                confidence=confidence,
+                reasoning=f"Volatility compressed ({compression_ratio:.2f}) then expanded {current_range:.1f} pips"
             )
-            
+
         except Exception as e:
-            logger.exception(f"VCB pattern detection error for {symbol}")
+            print(f"⚠️ VCB_BREAKOUT {symbol}: Error - {e}")
             return None
 
     def detect_momentum_breakout(self, symbol: str) -> Optional[PatternSignal]:
         """
-        INSTITUTIONAL MOMENTUM BREAKOUT: Professional trend continuation with volume surge
-        Identifies institutional-driven breakouts with 50%+ volume increase and strong momentum
+        MOMENTUM BREAKOUT: Simplified momentum expansion detection
+        Real ICT approach: Price accelerating with volume + directional body
         """
         try:
-            # Need sufficient history for momentum and volume analysis
-            if len(self.m5_data[symbol]) < 20:
+            # SIMPLIFIED: Just need basic candle data
+            if len(self.m5_data[symbol]) < 6:
                 return None
-                
-            candles = list(self.m5_data[symbol])[-20:]
+
+            candles = list(self.m5_data[symbol])[-6:]
             current = candles[-1]
-            
-            # Professional pip size calculation
+            prev_candles = candles[-4:-1]  # Last 3 candles
+
             pip_size = get_pip_size(symbol)
-            
-            # STEP 1: IDENTIFY CONSOLIDATION ZONE (Base formation)
-            # Professional traders look for 5-10 candle consolidation before breakout
-            consolidation_candles = candles[-10:-1]  # Last 9 candles before current
-            consolidation_high = max(c['high'] for c in consolidation_candles)
-            consolidation_low = min(c['low'] for c in consolidation_candles)
-            consolidation_range = (consolidation_high - consolidation_low) / pip_size
-            
-            # Skip if consolidation range is too wide (not a proper base)
-            max_consolidation = {'XAUUSD': 100, 'XAGUSD': 50}.get(symbol, 30)
-            if consolidation_range > max_consolidation:
+            if pip_size == 0:
                 return None
-            
-            # STEP 2: MOMENTUM CANDLE VALIDATION
-            # Current candle must be momentum candle (2-3x average size)
-            avg_candle_range = sum((c['high'] - c['low']) for c in candles[-10:-1]) / 9
-            current_range = current['high'] - current['low']
-            momentum_multiplier = current_range / avg_candle_range if avg_candle_range > 0 else 0
-            
-            if momentum_multiplier < 1.3:  # Reduced from 2.0 for more signals
+
+            # ENHANCED MOMENTUM DETECTION WITH PERFORMANCE FILTERS
+
+            # PERFORMANCE FILTER 1: Momentum acceleration (increasing velocity over 3 candles)
+            ranges = [c['high'] - c['low'] for c in candles[-4:]]  # Last 4 candles including current
+            momentum_acceleration = True
+            for i in range(1, len(ranges)):
+                if ranges[i] <= ranges[i-1] * 1.1:  # Each candle should be 10% larger
+                    momentum_acceleration = False
+                    break
+
+            if not momentum_acceleration:
+                print(f"💨 MOMENTUM_BURST {symbol}: No momentum acceleration detected")
                 return None
-            
-            # Body must be significant (60%+ of candle)
-            current_body = abs(current['close'] - current['open'])
-            body_ratio = current_body / current_range if current_range > 0 else 0
-            
-            if body_ratio < 0.6:
-                return None
-            
-            # STEP 3: VOLUME SURGE VALIDATION (Institutional footprint)
-            # Professional requirement: 50%+ volume increase
-            avg_volume = sum(c.get('volume', 1000) for c in candles[-20:-1]) / 19
-            current_volume = current.get('volume', 1000)
+
+            # PERFORMANCE FILTER 2: Volume confirmation (1.3x volume surge)
+            volumes = [c.get('volume', 1000) for c in candles[-4:]]
+            avg_volume = sum(volumes[:-1]) / 3  # Average of last 3
+            current_volume = volumes[-1]
             volume_surge = current_volume / avg_volume if avg_volume > 0 else 1.0
-            
-            if volume_surge < 1.5:  # 50% increase minimum
+
+            if volume_surge < 1.3:  # Need 30%+ volume increase
+                print(f"💨 MOMENTUM_BURST {symbol}: No volume surge ({volume_surge:.1f}x < 1.3x)")
                 return None
-            
-            # STEP 4: BREAKOUT DETECTION WITH CLEAN BREAK
+
+            # PERFORMANCE FILTER 3: Range breakout validation (breaks recent high/low)
+            lookback_candles = candles[-8:-1]  # Last 7 candles before current
+            recent_high = max(c['high'] for c in lookback_candles)
+            recent_low = min(c['low'] for c in lookback_candles)
+
+            # PERFORMANCE FILTER 4: Strong directional body (60%+ conviction)
+            current_range = current['high'] - current['low']
+            body_size = abs(current['close'] - current['open'])
+            body_ratio = body_size / current_range if current_range > 0 else 0
+
+            if body_ratio < 0.6:
+                print(f"💨 MOMENTUM_BURST {symbol}: Weak body conviction ({body_ratio:.1%} < 60%)")
+                return None
+
+            # DETERMINE DIRECTION WITH BREAKOUT VALIDATION
             direction = None
             breakout_distance = 0
-            
-            # BULLISH BREAKOUT
-            if current['close'] > consolidation_high and current['close'] > current['open']:
-                breakout_distance = (current['close'] - consolidation_high) / pip_size
-                
-                # Professional minimum: 3% or symbol-specific
-                min_breakout = {'XAUUSD': 15, 'XAGUSD': 8}.get(symbol, 5)
-                
-                if breakout_distance >= min_breakout:
-                    # Validate clean break (minimal upper wick)
-                    upper_wick = (current['high'] - current['close']) / pip_size
-                    if upper_wick <= breakout_distance * 0.3:  # Wick < 30% of breakout
+
+            if current['close'] > current['open']:
+                # BULLISH: Must break recent high + significant movement
+                if current['high'] > recent_high + (2 * pip_size):
+                    breakout_distance = (current['high'] - recent_high) / pip_size
+                    body_movement = (current['close'] - current['open']) / pip_size
+                    if body_movement >= 3:  # Minimum 3 pip body
                         direction = 'BUY'
-                        print(f"🚀 MOMENTUM {symbol}: BULLISH breakout {breakout_distance:.1f} pips")
-            
-            # BEARISH BREAKOUT
-            elif current['close'] < consolidation_low and current['close'] < current['open']:
-                breakout_distance = (consolidation_low - current['close']) / pip_size
-                
-                min_breakout = {'XAUUSD': 15, 'XAGUSD': 8}.get(symbol, 5)
-                
-                if breakout_distance >= min_breakout:
-                    # Validate clean break (minimal lower wick)
-                    lower_wick = (current['close'] - current['low']) / pip_size
-                    if lower_wick <= breakout_distance * 0.3:
+                        print(f"💨 MOMENTUM_BURST {symbol}: Bullish breakout {breakout_distance:.1f}p + {body_movement:.1f}p body")
+
+            elif current['close'] < current['open']:
+                # BEARISH: Must break recent low + significant movement
+                if current['low'] < recent_low - (2 * pip_size):
+                    breakout_distance = (recent_low - current['low']) / pip_size
+                    body_movement = (current['open'] - current['close']) / pip_size
+                    if body_movement >= 3:  # Minimum 3 pip body
                         direction = 'SELL'
-                        print(f"🚀 MOMENTUM {symbol}: BEARISH breakout {breakout_distance:.1f} pips")
-            
+                        print(f"💨 MOMENTUM_BURST {symbol}: Bearish breakdown {breakout_distance:.1f}p + {body_movement:.1f}p body")
+
             if not direction:
+                print(f"💨 MOMENTUM_BURST {symbol}: No valid breakout with momentum")
                 return None
-            
-            # STEP 5: TREND ALIGNMENT VALIDATION
-            # Breakout should align with higher timeframe trend
-            longer_trend_candles = candles[-20:-10]
-            trend_direction = 'UP' if sum(1 for c in longer_trend_candles if c['close'] > c['open']) >= 6 else 'DOWN'
-            
-            # Continuation breakouts are more reliable than reversals
-            is_continuation = (direction == 'BUY' and trend_direction == 'UP') or \
-                            (direction == 'SELL' and trend_direction == 'DOWN')
-            
-            # STEP 6: PROFESSIONAL CONFIDENCE CALCULATION
-            base_confidence = 70.0 if is_continuation else 65.0  # Continuation gets bonus
-            
-            # Momentum strength bonus (max +12)
-            momentum_bonus = min(12, (momentum_multiplier - 2.0) * 6)  # 3x = 6 points, 4x = 12
-            
-            # Volume surge bonus (max +10)
-            volume_bonus = min(10, (volume_surge - 1.5) * 5)  # 2.5x = 5 points, 3.5x = 10
-            
-            # Breakout strength bonus (max +8)
-            min_breakout = {'XAUUSD': 15, 'XAGUSD': 8}.get(symbol, 5)
-            breakout_ratio = breakout_distance / min_breakout
-            breakout_bonus = min(8, (breakout_ratio - 1.0) * 4)  # 2x min = 4 points, 3x = 8
-            
-            # Body strength bonus (max +5)
-            body_bonus = min(5, (body_ratio - 0.6) * 12.5)  # 80% body = 2.5, 100% = 5
-            
-            # Clean break bonus (max +5)
-            clean_bonus = 5 if is_continuation else 2.5  # Continuation patterns get full bonus
-            
-            # Session timing bonus
-            session = self.get_current_session()
-            session_bonus = {'LONDON': 8, 'OVERLAP': 7, 'NEWYORK': 5, 'ASIAN': 2}.get(session, 0)
-            
-            # Consolidation quality bonus (tighter = better)
-            consolidation_quality = 1.0 - (consolidation_range / max_consolidation)
-            consolidation_bonus = consolidation_quality * 5
-            
-            confidence_score = (base_confidence + momentum_bonus + volume_bonus + 
-                              breakout_bonus + body_bonus + clean_bonus + 
-                              session_bonus + consolidation_bonus)
-            confidence_score = min(93.0, max(65.0, confidence_score))
-            
-            # Professional entry calculation
+
+            # PERFORMANCE OPTIMIZED TRADE LEVELS
+            # R:R feasibility check (minimum 1.5:1)
             if direction == 'BUY':
-                entry_price = current['close'] + (pip_size * 0.5)
+                entry_price = current['close']
+                # Dynamic SL based on breakout strength (stronger breakout = tighter SL)
+                sl_distance = max(12, int(18 - (breakout_distance * 0.5)))  # 12-18 pips
+                tp_distance = int(sl_distance * 1.6)  # 1.6:1 R:R for momentum trades
+                stop_price = entry_price - (sl_distance * pip_size)
+                target_price = entry_price + (tp_distance * pip_size)
             else:
-                entry_price = current['close'] - (pip_size * 0.5)
-            
-            print(f"🎯 MOMENTUM {symbol}: INSTITUTIONAL BREAKOUT CONFIRMED!")
-            print(f"   Type: {'Continuation' if is_continuation else 'Reversal'}")
-            print(f"   Direction: {direction}")
-            print(f"   Momentum: {momentum_multiplier:.1f}x average")
-            print(f"   Volume Surge: {volume_surge:.1f}x")
-            print(f"   Breakout: {breakout_distance:.1f} pips")
-            print(f"   Body Ratio: {body_ratio:.1%}")
-            print(f"   Confidence: {confidence_score:.1f}%")
-            
+                entry_price = current['close']
+                sl_distance = max(12, int(18 - (breakout_distance * 0.5)))
+                tp_distance = int(sl_distance * 1.6)
+                stop_price = entry_price + (sl_distance * pip_size)
+                target_price = entry_price - (tp_distance * pip_size)
+
+            # PERFORMANCE FILTER 5: R:R feasibility check
+            risk_reward_ratio = tp_distance / sl_distance if sl_distance > 0 else 0
+            if risk_reward_ratio < 1.5:
+                print(f"💨 MOMENTUM_BURST {symbol}: Poor R:R ratio ({risk_reward_ratio:.1f} < 1.5)")
+                return None
+
+            # Session bonus
+            session_bonus = 0
+            session = self.get_current_session()
+            if session == 'LONDON':
+                session_bonus = 15
+            elif session == 'NEWYORK':
+                session_bonus = 12
+            elif session == 'LONDON_NY':  # Overlap session
+                session_bonus = 18
+
+            confidence = 70 + session_bonus
+            confidence = min(confidence, 88)
+
+            print(f"✅ MOMENTUM_BURST {symbol}: {direction} momentum at {confidence}% confidence")
+
             return PatternSignal(
                 pattern="MOMENTUM_BURST",
+                symbol=symbol,
                 direction=direction,
                 entry_price=entry_price,
-                confidence=confidence_score,
-                timeframe="M5",
-                pair=symbol,
-                quality_score=confidence_score
+                stop_loss=stop_price,
+                take_profit=target_price,
+                confidence=confidence,
+                reasoning=f"Strong {direction.lower()} momentum candle with {body_size/pip_size:.1f} pip body"
             )
-            
+
         except Exception as e:
-            print(f"❌ MOMENTUM {symbol}: Error in institutional analysis: {str(e)}")
-            logger.exception(f"Momentum breakout pattern detection error for {symbol}")
-            traceback.print_exc()
+            print(f"⚠️ MOMENTUM_BURST {symbol}: Error - {e}")
             return None
     def detect_fair_value_gap_fill(self, symbol: str) -> Optional[PatternSignal]:
         """
@@ -2060,15 +1854,15 @@ class EliteGuardBalanced:
                 if candle3['low'] > candle1['high']:
                     gap_size = (candle3['low'] - candle1['high']) / pip_size
                     
-                    # INSTITUTIONAL MINIMUM: 10 pips for majors, 100 for gold (was 5)
-                    min_gap_pips = 10 if symbol != 'XAUUSD' else 100
+                    # REALISTIC MINIMUM: 4 pips for majors, 15 for gold
+                    min_gap_pips = 4 if symbol != 'XAUUSD' else 15
                     if gap_size >= min_gap_pips:
                         # Validate displacement candle (must be strong bullish)
                         displacement_body = candle2['close'] - candle2['open']
                         displacement_range = candle2['high'] - candle2['low']
                         body_ratio = displacement_body / displacement_range if displacement_range > 0 else 0
                         
-                        if body_ratio >= 0.6:  # Strong bullish candle (60%+ body)
+                        if body_ratio >= 0.4:  # Moderate bullish candle (40%+ body)
                             fvg_zones.append({
                                 'type': 'BULLISH',
                                 'gap_top': candle3['low'],
@@ -2085,15 +1879,15 @@ class EliteGuardBalanced:
                 elif candle3['high'] < candle1['low']:
                     gap_size = (candle1['low'] - candle3['high']) / pip_size
                     
-                    # INSTITUTIONAL MINIMUM: 10 pips for majors, 100 for gold
-                    min_gap_pips = 10 if symbol != 'XAUUSD' else 100
+                    # REALISTIC MINIMUM: 4 pips for majors, 15 for gold
+                    min_gap_pips = 4 if symbol != 'XAUUSD' else 15
                     if gap_size >= min_gap_pips:
                         # Validate displacement candle (must be strong bearish)
                         displacement_body = candle2['open'] - candle2['close']
                         displacement_range = candle2['high'] - candle2['low']
                         body_ratio = displacement_body / displacement_range if displacement_range > 0 else 0
                         
-                        if body_ratio >= 0.6:  # Strong bearish candle (60%+ body)
+                        if body_ratio >= 0.4:  # Moderate bearish candle (40%+ body)
                             fvg_zones.append({
                                 'type': 'BEARISH',
                                 'gap_top': candle1['low'],
@@ -2153,7 +1947,7 @@ class EliteGuardBalanced:
                     # Price should be near 50% fill level
                     distance_to_midpoint = abs(current['low'] - gap_midpoint) / pip_size
                     print(f"💎 FVG {symbol}: Distance to midpoint: {distance_to_midpoint:.1f} pips")
-                    if distance_to_midpoint <= 10:  # Reasonable distance for quality
+                    if distance_to_midpoint <= 15:  # More flexible distance for quality
                         # VALIDATION 1: Market structure must be bullish (loosened)
                         recent_trend_up = sum(1 for c in candles[-5:] if c['close'] > c['open']) >= 2  # 2 of 5 instead of 3
                         
@@ -2203,7 +1997,7 @@ class EliteGuardBalanced:
                             
                             return PatternSignal(
                                 pattern="FAIR_VALUE_GAP_FILL",
-                                direction="BUY",
+                                direction="SELL",  # FIXED: Bullish gap = SELL (gap becomes resistance)
                                 entry_price=entry_price,
                                 confidence=confidence_score,
                                 timeframe="M5",
@@ -2219,7 +2013,7 @@ class EliteGuardBalanced:
                     # Price should be near 50% fill level
                     distance_to_midpoint = abs(current['high'] - gap_midpoint) / pip_size
                     print(f"💎 FVG {symbol}: Distance to midpoint: {distance_to_midpoint:.1f} pips")
-                    if distance_to_midpoint <= 10:  # Reasonable distance for quality
+                    if distance_to_midpoint <= 15:  # More flexible distance for quality
                         # VALIDATION 1: Market structure must be bearish (loosened)
                         recent_trend_down = sum(1 for c in candles[-5:] if c['close'] < c['open']) >= 2  # 2 of 5 instead of 3
                         
@@ -2263,7 +2057,7 @@ class EliteGuardBalanced:
                             
                             return PatternSignal(
                                 pattern="FAIR_VALUE_GAP_FILL",
-                                direction="SELL",
+                                direction="BUY",  # FIXED: Bearish gap = BUY (gap becomes support)
                                 entry_price=entry_price,
                                 confidence=confidence_score,
                                 timeframe="M5",
@@ -2279,6 +2073,873 @@ class EliteGuardBalanced:
             traceback.print_exc()
             return None
     
+    def detect_blind_spot(self, symbol: str) -> Optional[PatternSignal]:
+        """
+        BLIND SPOT - Displacement + Partial Retracement Pattern
+        Based on ICT methodology: Strong displacement followed by incomplete retracement
+        Creates a "blind spot" where retail traders miss the continuation
+        """
+        print(f"🔍 BLIND SPOT {symbol}: Starting detection")
+
+        # Need M5 data for displacement detection
+        m5_candles = self.m5_data.get(symbol, deque())
+        if len(m5_candles) < 20:
+            print(f"🔍 BLIND_SPOT {symbol}: Need 20+ M5 candles, have {len(m5_candles)}")
+            return None
+
+        candles = list(m5_candles)[-20:]  # Last 20 candles
+        pip_size = get_pip_size(symbol)
+
+        # Calculate ATR for displacement threshold
+        ranges = []
+        for i in range(1, len(candles)):
+            high_low = candles[i]['high'] - candles[i]['low']
+            ranges.append(high_low)
+
+        if not ranges:
+            return None
+
+        avg_range = sum(ranges) / len(ranges)
+        displacement_threshold = avg_range * 2.0  # 2x average range = significant displacement
+
+        # Look for displacement candle in recent 10 candles
+        displacement_found = False
+        displacement_candle = None
+        displacement_direction = None
+
+        for i in range(len(candles) - 10, len(candles)):
+            if i < 0:
+                continue
+
+            candle = candles[i]
+            candle_range = candle['high'] - candle['low']
+            body_size = abs(candle['close'] - candle['open'])
+
+            # Strong displacement: Large range + strong body (>70% of range)
+            if candle_range >= displacement_threshold and body_size >= (candle_range * 0.7):
+                displacement_found = True
+                displacement_candle = i
+                displacement_direction = 'BUY' if candle['close'] > candle['open'] else 'SELL'
+                print(f"🔍 BLIND_SPOT {symbol}: Displacement found at candle {i}, direction {displacement_direction}")
+                break
+
+        if not displacement_found:
+            print(f"🔍 BLIND_SPOT {symbol}: No displacement found")
+            return None
+
+        # Check for partial retracement (incomplete mitigation)
+        displacement = candles[displacement_candle]
+        current = candles[-1]
+
+        if displacement_direction == 'BUY':
+            # Bullish displacement - look for partial retrace down
+            displacement_low = displacement['low']
+            displacement_high = displacement['high']
+            retrace_range = displacement_high - displacement_low
+
+            # Current price should be in 38-78% retracement zone (partial, not full)
+            fib_38 = displacement_high - (retrace_range * 0.38)
+            fib_78 = displacement_high - (retrace_range * 0.78)
+
+            if fib_78 <= current['close'] <= fib_38:
+                print(f"🔍 BLIND_SPOT {symbol}: Bullish setup in retracement zone")
+
+                # Entry setup
+                entry_price = current['close']
+                stop_pips = max(10, int((entry_price - displacement_low) / pip_size))
+                target_pips = int(stop_pips * 2.0)  # 2:1 RR minimum
+
+                # Basic confluence scoring
+                base_confidence = 72.0
+
+                return PatternSignal(
+                    signal_id=f"BLIND_SPOT_{symbol}_{int(time.time())}",
+                    symbol=symbol,
+                    direction='BUY',
+                    entry_price=entry_price,
+                    stop_pips=stop_pips,
+                    target_pips=target_pips,
+                    confidence=base_confidence,
+                    pattern='BLIND_SPOT',
+                    quality_score=0.75,
+                    momentum_score=0.7,
+                    volume_quality=0.6
+                )
+
+        else:  # SELL displacement
+            # Bearish displacement - look for partial retrace up
+            displacement_low = displacement['low']
+            displacement_high = displacement['high']
+            retrace_range = displacement_high - displacement_low
+
+            # Current price should be in 38-78% retracement zone
+            fib_38 = displacement_low + (retrace_range * 0.38)
+            fib_78 = displacement_low + (retrace_range * 0.78)
+
+            if fib_38 <= current['close'] <= fib_78:
+                print(f"🔍 BLIND_SPOT {symbol}: Bearish setup in retracement zone")
+
+                # Entry setup
+                entry_price = current['close']
+                stop_pips = max(10, int((displacement_high - entry_price) / pip_size))
+                target_pips = int(stop_pips * 2.0)  # 2:1 RR minimum
+
+                # Basic confluence scoring
+                base_confidence = 72.0
+
+                return PatternSignal(
+                    signal_id=f"BLIND_SPOT_{symbol}_{int(time.time())}",
+                    symbol=symbol,
+                    direction='SELL',
+                    entry_price=entry_price,
+                    stop_pips=stop_pips,
+                    target_pips=target_pips,
+                    confidence=base_confidence,
+                    pattern='BLIND_SPOT',
+                    quality_score=0.75,
+                    momentum_score=0.7,
+                    volume_quality=0.6
+                )
+
+        print(f"🔍 BLIND_SPOT {symbol}: No valid retracement setup found")
+        return None
+
+        # Step 4: Use M5 for trigger instead of M1 (more stable for scalping)
+        latest_m5 = m5[-1]
+        prev_m5 = m5[-2] if len(m5) > 1 else m5[-1]
+        trigger_detected = False
+
+        if direction == 'BUY':
+            # BOS: latest high > prev high OR Sweep: low < liquidity_low with reversal
+            if latest_m5['high'] > prev_m5['high'] or \
+               (latest_m5['low'] < liquidity_low and latest_m5['close'] > latest_m5['open'] and
+                latest_m5['close'] > prev_m5['close']):
+                trigger_detected = True
+        else:
+            # BOS: latest low < prev low OR Sweep: high > liquidity_high with reversal
+            if latest_m5['low'] < prev_m5['low'] or \
+               (latest_m5['high'] > liquidity_high and latest_m5['close'] < latest_m5['open'] and
+                latest_m5['close'] < prev_m5['close']):
+                trigger_detected = True
+
+        if not trigger_detected:
+            return None
+
+        # Step 5: SNIPER R:R CALCULATION - MINIMUM 2:1
+        entry_price = latest_m5['close']
+
+        # Find invalidation point (where pattern fails)
+        recent_m5_low = min([c['low'] for c in list(m5)[-3:]])
+        recent_m5_high = max([c['high'] for c in list(m5)[-3:]])
+
+        # Add buffer for wicks/spread
+        buffer = pip_size * 1.5
+
+        if direction == 'BUY':
+            stop_loss = recent_m5_low - buffer
+            if stop_loss >= entry_price:
+                return None
+            risk = entry_price - stop_loss
+
+            # Find nearest liquidity target (15M high)
+            target_levels = [c['high'] for c in list(m15)[-10:]]
+            take_profit = max(target_levels)
+
+            # Ensure minimum TP based on profile
+            min_tp = entry_price + (profile['min_tp'] * pip_size)
+            take_profit = max(take_profit, min_tp)
+
+        else:
+            stop_loss = recent_m5_high + buffer
+            if stop_loss <= entry_price:
+                return None
+            risk = stop_loss - entry_price
+
+            # Find nearest liquidity target (15M low)
+            target_levels = [c['low'] for c in list(m15)[-10:]]
+            take_profit = min(target_levels)
+
+            # Ensure minimum TP based on profile
+            min_tp = entry_price - (profile['min_tp'] * pip_size)
+            take_profit = min(take_profit, min_tp)
+
+        # Calculate actual R:R
+        reward = abs(take_profit - entry_price)
+        risk_pips = risk / pip_size
+        reward_pips = reward / pip_size
+        actual_rr = reward / risk if risk > 0 else 0
+
+        # SNIPER STANDARD: Minimum 2:1 RR
+        if actual_rr < 2.0:
+            return None
+
+        # Reject if SL exceeds profile maximum
+        if risk_pips > profile['max_sl']:
+            return None
+
+        # Cap TP to profile maximum
+        if reward_pips > profile['max_tp']:
+            if direction == 'BUY':
+                take_profit = entry_price + (profile['max_tp'] * pip_size)
+            else:
+                take_profit = entry_price - (profile['max_tp'] * pip_size)
+            reward_pips = profile['max_tp']
+
+        # Session Guards - Only trade in prime sessions
+        session = self.get_session()
+        if session == 'ASIAN':
+            return None  # Skip Asian session for sniper patterns
+
+        # Check spread vs profile maximum
+        current_spread = self.spreads.get(symbol, 0)
+        if current_spread > profile['max_spread']:
+            return None
+
+        # Confidence based on R:R quality
+        # 2:1 = 70%, 3:1 = 75%, 4:1+ = 80%
+        if actual_rr >= 4.0:
+            confidence = 80
+        elif actual_rr >= 3.0:
+            confidence = 75
+        else:
+            confidence = 70
+
+        # Session bonus for prime times
+        if session == 'LONDON':
+            confidence += 5
+        elif session == 'OVERLAP':
+            confidence += 8
+        elif session == 'NEWYORK':
+            confidence += 3
+
+        # Inside bar bonus (tighter pattern)
+        if inside_bar:
+            confidence += 5
+
+        confidence = min(confidence, 85)  # Cap at 85%
+
+        # Store calculated levels for signal (used later in signal processing)
+        self.blind_spot_levels = {
+            'stop_loss': stop_loss,
+            'take_profit': take_profit,
+            'risk_pips': risk_pips,
+            'reward_pips': reward_pips,
+            'rr_ratio': actual_rr
+        }
+
+        print(f"🎯 BLIND SPOT {symbol}: TRUE SNIPER - {direction} RR={actual_rr:.1f}:1, SL={risk_pips:.1f}p, TP={reward_pips:.1f}p")
+
+        return PatternSignal(
+            pattern='BLIND_SPOT',
+            direction=direction,
+            entry_price=entry_price,
+            confidence=confidence,
+            timeframe='H4',
+            pair=symbol,
+            quality_score=confidence / 100,
+            momentum_score=0.7 if trigger_detected else 0.5,
+            volume_quality=0.6
+        )
+
+    def detect_trapdoor_ssr(self, symbol: str) -> Optional[PatternSignal]:
+        """
+        TRAPDOOR SSR - Session Sweep Reversal Pattern
+        Based on ICT methodology: Session high/low sweeps that reverse quickly
+        Creates liquidity grabs during London-NY transitions
+        """
+        print(f"🔍 TRAPDOOR SSR {symbol}: Starting detection")
+
+        # Need M15 data for session analysis
+        m15_candles = self.m15_data.get(symbol, deque())
+        if len(m15_candles) < 30:
+            print(f"🔍 TRAPDOOR SSR {symbol}: Need 30+ M15 candles, have {len(m15_candles)}")
+            return None
+
+        candles = list(m15_candles)[-30:]  # Last 30 M15 candles (7.5 hours)
+        pip_size = get_pip_size(symbol)
+
+        # Get current session info
+        session = self.get_current_session()
+        print(f"🔍 TRAPDOOR SSR {symbol}: Current session: {session}")
+
+        # Focus on London-NY transition periods
+        if session not in ['LONDON', 'OVERLAP', 'NY']:
+            print(f"🔍 TRAPDOOR SSR {symbol}: Session {session} not optimal for SSR")
+            return None
+
+        # Find session boundaries (last 15 candles = ~4 hours)
+        session_candles = candles[-15:]
+        if len(session_candles) < 10:
+            return None
+
+        session_high = max(c['high'] for c in session_candles)
+        session_low = min(c['low'] for c in session_candles)
+        current = candles[-1]
+
+        # Sweep thresholds by pair
+        sweep_thresholds = {
+            'EURUSD': 3.0, 'GBPUSD': 4.0, 'USDJPY': 3.0,
+            'GBPJPY': 8.0, 'EURJPY': 6.0,
+            'XAUUSD': 50.0, 'XAGUSD': 10.0
+        }
+        min_sweep_pips = sweep_thresholds.get(symbol, 3.0)
+
+        # Check for recent sweep and reversal in last 5 candles
+        sweep_found = False
+        sweep_direction = None
+
+        for i in range(len(candles) - 5, len(candles)):
+            if i < 0:
+                continue
+
+            candle = candles[i]
+
+            # High sweep (bearish reversal setup)
+            if candle['high'] > session_high:
+                sweep_pips = (candle['high'] - session_high) / pip_size
+                if sweep_pips >= min_sweep_pips:
+                    # Must close back below session high (rejection)
+                    if candle['close'] < session_high:
+                        # Check if current price is still below swept level
+                        if current['close'] < session_high:
+                            sweep_found = True
+                            sweep_direction = 'SELL'
+                            print(f"🔍 TRAPDOOR SSR {symbol}: Bearish sweep found, {sweep_pips:.1f} pips above session high")
+                            break
+
+            # Low sweep (bullish reversal setup)
+            elif candle['low'] < session_low:
+                sweep_pips = (session_low - candle['low']) / pip_size
+                if sweep_pips >= min_sweep_pips:
+                    # Must close back above session low (rejection)
+                    if candle['close'] > session_low:
+                        # Check if current price is still above swept level
+                        if current['close'] > session_low:
+                            sweep_found = True
+                            sweep_direction = 'BUY'
+                            print(f"🔍 TRAPDOOR SSR {symbol}: Bullish sweep found, {sweep_pips:.1f} pips below session low")
+                            break
+
+        if not sweep_found:
+            print(f"🔍 TRAPDOOR SSR {symbol}: No valid sweep and reversal found")
+            return None
+
+        # Entry setup based on sweep direction
+        entry_price = current['close']
+
+        if sweep_direction == 'BUY':
+            # Bullish SSR: Stop below swept low, target session high + extension
+            stop_loss = session_low - (5 * pip_size)  # 5 pips buffer below sweep
+            target = session_high + (10 * pip_size)   # Target above session high
+
+            stop_pips = max(8, int((entry_price - stop_loss) / pip_size))
+            target_pips = int((target - entry_price) / pip_size)
+
+        else:  # SELL
+            # Bearish SSR: Stop above swept high, target session low - extension
+            stop_loss = session_high + (5 * pip_size)  # 5 pips buffer above sweep
+            target = session_low - (10 * pip_size)     # Target below session low
+
+            stop_pips = max(8, int((stop_loss - entry_price) / pip_size))
+            target_pips = int((entry_price - target) / pip_size)
+
+        # Ensure minimum 1:1.5 risk/reward
+        if target_pips < (stop_pips * 1.5):
+            target_pips = int(stop_pips * 1.5)
+
+        # Session-based confidence scoring
+        base_confidence = 74.0
+        if session == 'OVERLAP':  # London-NY overlap is prime time
+            base_confidence += 4.0
+
+        print(f"🔍 TRAPDOOR SSR {symbol}: {sweep_direction} setup, SL={stop_pips}p, TP={target_pips}p, RR={target_pips/stop_pips:.1f}")
+
+        return PatternSignal(
+            signal_id=f"TRAPDOOR_SSR_{symbol}_{int(time.time())}",
+            symbol=symbol,
+            direction=sweep_direction,
+            entry_price=entry_price,
+            stop_pips=stop_pips,
+            target_pips=target_pips,
+            confidence=base_confidence,
+            pattern='TRAPDOOR_SSR',
+            quality_score=0.74,
+            momentum_score=0.8,  # High momentum from sweep reversal
+            volume_quality=0.7
+        )
+
+    def get_current_session(self):
+        """Determine current trading session based on UTC time"""
+        return self.get_session()
+
+    def get_session_boundaries(self, session):
+        """Get session start and end times in UTC hours"""
+        session_times = {
+            'ASIAN': (22, 7),    # 22:00 - 07:00 UTC
+            'LONDON': (7, 17),   # 07:00 - 17:00 UTC
+            'NY': (12, 22),      # 12:00 - 22:00 UTC
+            'OVERLAP': (12, 17), # 12:00 - 17:00 UTC (London/NY overlap)
+            'LATE_NY': (17, 22)  # 17:00 - 22:00 UTC
+        }
+        return session_times.get(session, (None, None))
+
+    def get_session_candles(self, candles, session_start, session_end):
+        """Filter candles to current session timeframe"""
+        session_candles = []
+        current_time = datetime.utcnow()
+
+        # For simplicity, use last 4 hours of candles as session
+        # In production, you'd use actual session time filtering
+        if len(candles) >= 48:  # 4 hours of M5 candles
+            session_candles = candles[-48:]
+        else:
+            session_candles = candles
+
+        return session_candles
+
+    def validate_ltf_break_of_structure(self, candles, direction):
+        """Validate lower timeframe break of structure away from sweep"""
+        if len(candles) < 5:
+            return False
+
+        current = candles[-1]
+
+        if direction == 'BUY':
+            # Look for bullish BOS - break above recent swing high
+            recent_high = max(c['high'] for c in candles[-5:-1])
+            return current['high'] > recent_high
+        else:  # SELL
+            # Look for bearish BOS - break below recent swing low
+            recent_low = min(c['low'] for c in candles[-5:-1])
+            return current['low'] < recent_low
+
+    def identify_retest_zone(self, candles, direction, pip_size):
+        """Identify order block/FVG retest zone for entry"""
+        if len(candles) < 3:
+            return None
+
+        if direction == 'BUY':
+            # Entry zone based on recent demand area
+            entry_zone_low = min(c['low'] for c in candles[-3:])
+            entry_zone_high = entry_zone_low + (5 * pip_size)  # 5 pip zone
+            entry = (entry_zone_low + entry_zone_high) / 2
+        else:  # SELL
+            # Entry zone based on recent supply area
+            entry_zone_high = max(c['high'] for c in candles[-3:])
+            entry_zone_low = entry_zone_high - (5 * pip_size)  # 5 pip zone
+            entry = (entry_zone_low + entry_zone_high) / 2
+
+        return {'entry': entry, 'zone_high': entry_zone_high, 'zone_low': entry_zone_low}
+
+    def get_recent_volume(self, symbol):
+        """Get recent volume for volume confirmation"""
+        if symbol in self.m5_data and len(self.m5_data[symbol]) >= 3:
+            recent_candles = list(self.m5_data[symbol])[-3:]
+            return sum(c.get('volume', 1) for c in recent_candles) / len(recent_candles)
+        return 1  # Default volume if not available
+
+    def get_average_volume(self, symbol):
+        """Get average volume over longer period"""
+        if symbol in self.m5_data and len(self.m5_data[symbol]) >= 20:
+            candles = list(self.m5_data[symbol])[-20:]
+            return sum(c.get('volume', 1) for c in candles) / len(candles)
+        return 1  # Default volume if not available
+
+    def detect_pressure_valve(self, symbol: str) -> Optional[PatternSignal]:
+        """
+        PRESSURE VALVE - Volatility Compression Breakout Pattern
+        Based on Bollinger Band squeeze + ATR compression detection
+        Detects explosive breakouts after periods of low volatility
+        """
+        print(f"🔍 PRESSURE VALVE {symbol}: Starting detection")
+
+        # Need M15 data for volatility analysis
+        m15_candles = self.m15_data.get(symbol, deque())
+        if len(m15_candles) < 20:
+            print(f"🔍 PRESSURE_VALVE {symbol}: Need 20+ M15 candles, have {len(m15_candles)}")
+            return None
+
+        candles = list(m15_candles)[-20:]  # Last 20 M15 candles
+        pip_size = get_pip_size(symbol)
+
+        # Calculate Bollinger Bands and ATR for compression detection
+        closes = [c['close'] for c in candles]
+        highs = [c['high'] for c in candles]
+        lows = [c['low'] for c in candles]
+
+        # Simple Bollinger Band calculation (20-period SMA, 2 std dev)
+        if len(closes) < 20:
+            return None
+
+        sma = sum(closes[-20:]) / 20
+        variance = sum((close - sma) ** 2 for close in closes[-20:]) / 20
+        std_dev = variance ** 0.5
+
+        upper_bb = sma + (2 * std_dev)
+        lower_bb = sma - (2 * std_dev)
+        bb_width = (upper_bb - lower_bb) / sma
+
+        # Calculate ATR for last 14 periods
+        atr_values = []
+        for i in range(1, min(15, len(candles))):
+            true_range = max(
+                highs[i] - lows[i],
+                abs(highs[i] - closes[i-1]),
+                abs(lows[i] - closes[i-1])
+            )
+            atr_values.append(true_range)
+
+        if not atr_values:
+            return None
+
+        current_atr = sum(atr_values) / len(atr_values)
+        atr_avg = current_atr  # Simplified average
+
+        # Compression detection: Low BB width AND low ATR
+        # Thresholds based on research
+        bb_squeeze_threshold = 0.02  # 2% width is considered tight
+        atr_compression_factor = 0.7  # Current ATR < 70% of average = compressed
+
+        is_bb_squeezed = bb_width < bb_squeeze_threshold
+        is_atr_compressed = current_atr < (atr_compression_factor * atr_avg)
+
+        compression_detected = is_bb_squeezed and is_atr_compressed
+
+        if not compression_detected:
+            print(f"🔍 PRESSURE_VALVE {symbol}: No compression detected (BB width: {bb_width:.4f}, ATR ratio: {current_atr/atr_avg:.2f})")
+            return None
+
+        print(f"🔍 PRESSURE_VALVE {symbol}: Compression detected! BB width: {bb_width:.4f}, ATR compressed")
+
+        # Look for breakout in recent candles
+        current = candles[-1]
+        prev = candles[-2]
+
+        breakout_detected = False
+        breakout_direction = None
+
+        # Breakout above upper BB
+        if current['close'] > upper_bb and prev['close'] <= upper_bb:
+            breakout_size = current['close'] - upper_bb
+            if breakout_size >= (current_atr * 1.5):  # Significant breakout
+                breakout_detected = True
+                breakout_direction = 'BUY'
+                print(f"🔍 PRESSURE_VALVE {symbol}: Bullish breakout detected above BB")
+
+        # Breakout below lower BB
+        elif current['close'] < lower_bb and prev['close'] >= lower_bb:
+            breakout_size = lower_bb - current['close']
+            if breakout_size >= (current_atr * 1.5):  # Significant breakout
+                breakout_detected = True
+                breakout_direction = 'SELL'
+                print(f"🔍 PRESSURE_VALVE {symbol}: Bearish breakout detected below BB")
+
+        if not breakout_detected:
+            print(f"🔍 PRESSURE_VALVE {symbol}: Compression found but no significant breakout")
+            return None
+
+        # Entry setup
+        entry_price = current['close']
+
+        if breakout_direction == 'BUY':
+            # Bullish breakout
+            stop_loss = lower_bb - (current_atr * 0.5)  # Stop below BB with buffer
+            target = entry_price + (current_atr * 3.0)  # Target 3x ATR above entry
+
+            stop_pips = max(8, int((entry_price - stop_loss) / pip_size))
+            target_pips = int((target - entry_price) / pip_size)
+
+        else:  # SELL
+            # Bearish breakout
+            stop_loss = upper_bb + (current_atr * 0.5)  # Stop above BB with buffer
+            target = entry_price - (current_atr * 3.0)  # Target 3x ATR below entry
+
+            stop_pips = max(8, int((stop_loss - entry_price) / pip_size))
+            target_pips = int((entry_price - target) / pip_size)
+
+        # Ensure minimum 1:2 risk/reward
+        if target_pips < (stop_pips * 2.0):
+            target_pips = int(stop_pips * 2.0)
+
+        # Confidence scoring based on compression quality
+        base_confidence = 72.0
+
+        # Compression strength bonus
+        if bb_width < 0.01:  # Very tight squeeze
+            base_confidence += 4.0
+        if current_atr < (0.5 * atr_avg):  # Very low volatility
+            base_confidence += 3.0
+
+        # Breakout strength bonus
+        breakout_strength = breakout_size / current_atr
+        if breakout_strength >= 2.0:
+            base_confidence += 5.0
+
+        print(f"🔍 PRESSURE_VALVE {symbol}: {breakout_direction} setup, SL={stop_pips}p, TP={target_pips}p, RR={target_pips/stop_pips:.1f}")
+
+        return PatternSignal(
+            signal_id=f"PRESSURE_VALVE_{symbol}_{int(time.time())}",
+            symbol=symbol,
+            direction=breakout_direction,
+            entry_price=entry_price,
+            stop_pips=stop_pips,
+            target_pips=target_pips,
+            confidence=base_confidence,
+            pattern='PRESSURE_VALVE',
+            quality_score=0.75,
+            momentum_score=0.85,  # High momentum from compression release
+            volume_quality=0.7
+        )
+
+    def get_enhanced_4h_bias(self, h4_candles: List) -> str:
+        """Enhanced 4H trend bias using EMA and recent price action"""
+        if len(h4_candles) < 10:
+            return 'NEUTRAL'
+
+        # EMA-based bias with more sophisticated logic
+        closes = [candle['close'] for candle in h4_candles[-10:]]
+        ema_9 = sum(closes[-9:]) / 9
+        ema_21 = sum(closes) / 10  # Simplified 21 EMA
+
+        current_price = h4_candles[-1]['close']
+        prev_price = h4_candles[-2]['close']
+
+        # Strong trend conditions
+        if current_price > ema_9 > ema_21 and prev_price < current_price:
+            return 'BULLISH'
+        elif current_price < ema_9 < ema_21 and prev_price > current_price:
+            return 'BEARISH'
+        else:
+            return 'NEUTRAL'
+
+    def identify_enhanced_compression_block(self, candles: List, atr_m5: float, thresholds: Dict) -> Optional[Tuple]:
+        """Enhanced compression block identification with configurable parameters"""
+        min_bars = thresholds['compression_bars']
+        max_atr_ratio = thresholds['max_compression_atr']
+
+        # Look for compression in recent 20 candles
+        for start_idx in range(len(candles) - min_bars - 5, len(candles) - min_bars):
+            if start_idx < 0:
+                continue
+
+            # Check compression blocks of different lengths
+            for block_length in range(min_bars, min(15, len(candles) - start_idx)):
+                end_idx = start_idx + block_length
+                block = candles[start_idx:end_idx]
+
+                if len(block) < min_bars:
+                    continue
+
+                # Calculate block range
+                block_high = max(candle['high'] for candle in block)
+                block_low = min(candle['low'] for candle in block)
+                block_range = block_high - block_low
+
+                # Check if range is compressed (≤max_compression_atr×ATR)
+                if block_range <= (atr_m5 * max_atr_ratio):
+                    return (start_idx, end_idx, block_high, block_low)
+
+        return None
+
+    def detect_enhanced_impulsive_breakout(self, candles: List, comp_start: int, comp_end: int,
+                                         comp_high: float, comp_low: float, atr_m5: float,
+                                         h4_bias: str, thresholds: Dict) -> Optional[Tuple]:
+        """Enhanced impulsive breakout detection with configurable multiplier"""
+        break_multiplier = thresholds['break_multiplier']
+
+        # Look for breakout in candles after compression
+        for i in range(comp_end, min(comp_end + 5, len(candles))):
+            candle = candles[i]
+            candle_range = candle['high'] - candle['low']
+
+            # Check if candle is impulsive (≥break_multiplier×ATR)
+            if candle_range < (atr_m5 * break_multiplier):
+                continue
+
+            # Check breakout direction aligned with 4H bias
+            bullish_break = candle['high'] > comp_high and candle['close'] > comp_high
+            bearish_break = candle['low'] < comp_low and candle['close'] < comp_low
+
+            if h4_bias == 'BULLISH' and bullish_break:
+                return (i, 'BUY', candle_range)
+            elif h4_bias == 'BEARISH' and bearish_break:
+                return (i, 'SELL', candle_range)
+
+        return None
+
+    def calculate_enhanced_pressure_valve_levels(self, candles: List, breakout_idx: int, direction: str,
+                                               comp_high: float, comp_low: float, comp_height: float,
+                                               pip_size: float) -> Optional[Tuple]:
+        """Enhanced entry, SL, and TP calculation with flexible pullback band (45-65%)"""
+        breakout_candle = candles[breakout_idx]
+
+        if direction == 'BUY':
+            # Flexible 45-65% pullback band
+            break_range = breakout_candle['high'] - comp_high
+            pullback_45 = breakout_candle['high'] - (break_range * 0.45)
+            pullback_65 = breakout_candle['high'] - (break_range * 0.65)
+            entry_price = breakout_candle['high'] - (break_range * 0.55)  # Default 55%
+
+            # SL: Below compression low with 5 pip buffer
+            sl_price = comp_low - (5 * pip_size)
+
+            # TP: Measured move (compression height projected from breakout high)
+            tp_price = breakout_candle['high'] + comp_height
+
+            # Allow wider band if RR still ≥ 2.0
+            risk_45 = abs(pullback_45 - sl_price)
+            reward_45 = abs(tp_price - pullback_45)
+            rr_45 = reward_45 / risk_45 if risk_45 > 0 else 0
+
+            if rr_45 >= 2.0:
+                entry_zone = {'high': pullback_45, 'low': pullback_65}
+                # Use more aggressive entry if RR allows
+                entry_price = pullback_45
+
+        else:  # SELL
+            # Flexible 45-65% pullback band
+            break_range = comp_low - breakout_candle['low']
+            pullback_45 = breakout_candle['low'] + (break_range * 0.45)
+            pullback_65 = breakout_candle['low'] + (break_range * 0.65)
+            entry_price = breakout_candle['low'] + (break_range * 0.55)  # Default 55%
+
+            # SL: Above compression high with 5 pip buffer
+            sl_price = comp_high + (5 * pip_size)
+
+            # TP: Measured move (compression height projected from breakout low)
+            tp_price = breakout_candle['low'] - comp_height
+
+            # Allow wider band if RR still ≥ 2.0
+            risk_45 = abs(sl_price - pullback_45)
+            reward_45 = abs(pullback_45 - tp_price)
+            rr_45 = reward_45 / risk_45 if risk_45 > 0 else 0
+
+            if rr_45 >= 2.0:
+                entry_zone = {'high': pullback_45, 'low': pullback_65}
+                # Use more aggressive entry if RR allows
+                entry_price = pullback_45
+
+        return (entry_price, sl_price, tp_price)
+
+    def find_m15_liquidity_pools(self, symbol: str, direction: str) -> List[float]:
+        """Find M15 liquidity pools (swing highs/lows) for TP extension"""
+        if symbol not in self.m15_data or len(self.m15_data[symbol]) < 20:
+            return []
+
+        m15_candles = list(self.m15_data[symbol])
+        pools = []
+        pip_size = get_pip_size(symbol)
+
+        # Look for significant swing points in last 20 M15 candles
+        for i in range(5, len(m15_candles) - 5):
+            candle = m15_candles[i]
+
+            if direction == 'BUY':
+                # Find resistance levels (swing highs)
+                is_swing_high = True
+                for j in range(i - 3, i + 4):
+                    if j != i and j >= 0 and j < len(m15_candles):
+                        if m15_candles[j]['high'] >= candle['high']:
+                            is_swing_high = False
+                            break
+
+                if is_swing_high and candle['high'] > m15_candles[-1]['close']:
+                    pools.append(candle['high'])
+
+            else:  # SELL
+                # Find support levels (swing lows)
+                is_swing_low = True
+                for j in range(i - 3, i + 4):
+                    if j != i and j >= 0 and j < len(m15_candles):
+                        if m15_candles[j]['low'] <= candle['low']:
+                            is_swing_low = False
+                            break
+
+                if is_swing_low and candle['low'] < m15_candles[-1]['close']:
+                    pools.append(candle['low'])
+
+        # Sort pools by proximity to current price
+        current_price = m15_candles[-1]['close']
+        if direction == 'BUY':
+            pools = [p for p in pools if p > current_price]
+            pools.sort()  # Closest resistance first
+        else:
+            pools = [p for p in pools if p < current_price]
+            pools.sort(reverse=True)  # Closest support first
+
+        return pools[:3]  # Return top 3 nearest levels
+
+    def calculate_rr_with_tp(self, entry_price: float, sl_price: float, tp_price: float) -> float:
+        """Calculate risk/reward ratio"""
+        risk = abs(entry_price - sl_price)
+        reward = abs(tp_price - entry_price)
+        return reward / risk if risk > 0 else 0
+
+    def get_current_spread(self, symbol: str) -> float:
+        """Get current spread in pips (simplified estimate)"""
+        # This would normally get real-time spread data
+        # For now, using typical spreads by symbol type
+        spread_estimates = {
+            'EURUSD': 0.8, 'GBPUSD': 1.2, 'USDJPY': 0.9, 'USDCHF': 1.1,
+            'AUDUSD': 1.4, 'USDCAD': 1.3, 'NZDUSD': 1.8,
+            'EURJPY': 1.5, 'GBPJPY': 2.0, 'EURGBP': 1.0,
+            'XAUUSD': 35.0, 'XAGUSD': 3.5, 'BTCUSD': 50.0
+        }
+        return spread_estimates.get(symbol, 2.0)  # Default 2 pips
+
+    def validate_spread_guard(self, symbol: str, entry_price: float, sl_price: float) -> bool:
+        """Spread guard (20% of SL distance max)"""
+        spread = self.get_current_spread(symbol)
+        pip_size = get_pip_size(symbol)
+        sl_distance = abs(entry_price - sl_price) / pip_size
+        return spread <= (sl_distance * 0.20)
+
+    def calculate_enhanced_pressure_valve_confidence(self, compression_result: Tuple, breakout_size: float,
+                                                   atr_m5: float, h4_bias: str, rr_ratio: float, symbol: str) -> float:
+        """Enhanced confidence calculation with multiple factors"""
+        base_confidence = 70.0
+
+        # Compression quality bonus (longer compression = higher confidence)
+        comp_start, comp_end, comp_high, comp_low = compression_result
+        compression_bars = comp_end - comp_start
+        if compression_bars >= 8:
+            base_confidence += 8
+        elif compression_bars >= 6:
+            base_confidence += 5
+
+        # Breakout strength bonus (stronger breakout = higher confidence)
+        breakout_strength = breakout_size / atr_m5
+        if breakout_strength >= 2.0:
+            base_confidence += 10
+        elif breakout_strength >= 1.5:
+            base_confidence += 6
+
+        # 4H bias alignment bonus
+        if h4_bias in ['BULLISH', 'BEARISH']:
+            base_confidence += 8
+
+        # Risk/reward bonus
+        if rr_ratio >= 3.0:
+            base_confidence += 8
+        elif rr_ratio >= 2.5:
+            base_confidence += 5
+
+        # Session bonus
+        session = self.get_current_session()
+        if session in ['LONDON', 'OVERLAP']:
+            base_confidence += 6
+        elif session == 'NEWYORK':
+            base_confidence += 4
+
+        # Volume quality bonus
+        volume_quality = self.get_current_volume_quality(symbol)
+        if volume_quality > 1.3:
+            base_confidence += 5
+        elif volume_quality > 1.1:
+            base_confidence += 3
+
+        return min(base_confidence, 95.0)  # Cap at 95%
+
     def detect_bb_scalp(self, symbol: str) -> Optional[PatternSignal]:
         """
         BB_SCALP FIXED: Major flaws corrected
@@ -2555,10 +3216,14 @@ class EliteGuardBalanced:
             
             # Professional pip size calculation
             pip_size = get_pip_size(symbol)
-            
+            if pip_size == 0 or pip_size is None:
+                return None
+
             # STEP 1: SIMPLIFIED KALMAN FILTER IMPLEMENTATION
             # State estimation for price prediction with noise reduction
             closes = [c['close'] for c in candles]
+            if len(closes) < 10:
+                return None
             
             # Initialize Kalman parameters
             # Process variance (Q) - how much we trust the model
@@ -2586,7 +3251,11 @@ class EliteGuardBalanced:
                 
                 # UPDATE PHASE
                 # Calculate Kalman gain
-                K = p_predict / (p_predict + R)
+                # Add division-by-zero protection
+                denominator = p_predict + R
+                if denominator == 0 or denominator is None:
+                    return None
+                K = p_predict / denominator
                 
                 # Update estimate with measurement
                 measurement = closes[i]
@@ -2602,12 +3271,19 @@ class EliteGuardBalanced:
             if len(residuals) < 10:
                 return None
                 
+            if len(residuals) == 0:
+                return None
             residual_mean = sum(residuals) / len(residuals)
-            residual_std = (sum((r - residual_mean) ** 2 for r in residuals) / len(residuals)) ** 0.5
-            
+            residual_variance = sum((r - residual_mean) ** 2 for r in residuals) / len(residuals)
+            if residual_variance <= 0:
+                return None
+            residual_std = residual_variance ** 0.5
+
             # Current residual (deviation from prediction)
             current_residual = current['close'] - x_estimate
-            current_z_score = (current_residual - residual_mean) / residual_std if residual_std > 0 else 0
+            if residual_std == 0 or residual_std is None:
+                return None
+            current_z_score = (current_residual - residual_mean) / residual_std
             
             print(f"📈 KALMAN {symbol}: Z-score: {current_z_score:.2f}, Residual: {current_residual/pip_size:.1f} pips")
             
@@ -2784,6 +3460,12 @@ class EliteGuardBalanced:
             closes = [c['close'] for c in candles]
             volumes = [c['volume'] for c in candles]
             pip_size = get_pip_size(symbol)
+
+            # Add basic protection
+            if pip_size == 0 or pip_size is None:
+                return None
+            if len(closes) == 0 or len(volumes) == 0:
+                return None
             
             # PROFESSIONAL EMA CALCULATION (9/21 standard)
             # Using exponential weighting, not simple average
@@ -2811,20 +3493,28 @@ class EliteGuardBalanced:
             
             avg_gain = sum(gains) / 14
             avg_loss = sum(losses) / 14
-            
-            if avg_loss == 0:
+
+            # Add division-by-zero protection
+            if avg_loss == 0 or avg_loss is None:
                 rsi = 100 if avg_gain > 0 else 50
             else:
                 rs = avg_gain / avg_loss
                 rsi = 100 - (100 / (1 + rs))
             
             # BOLLINGER BANDS (20,2 standard)
-            sma20 = sum(closes[-20:]) / 20
-            variance = sum((x - sma20) ** 2 for x in closes[-20:]) / 20
+            bb_data = closes[-20:]
+            if len(bb_data) == 0:
+                return None
+            sma20 = sum(bb_data) / len(bb_data)
+            variance = sum((x - sma20) ** 2 for x in bb_data) / len(bb_data)
             std_dev = variance ** 0.5
             bb_upper = sma20 + (2 * std_dev)
             bb_lower = sma20 - (2 * std_dev)
             bb_width = (bb_upper - bb_lower) / pip_size
+
+            # Add protection for zero width
+            if bb_width == 0 or (bb_upper - bb_lower) == 0:
+                return None
             
             # BB SQUEEZE DETECTION (Keltner Channel comparison)
             atr = self.calculate_atr(symbol)
@@ -2836,12 +3526,18 @@ class EliteGuardBalanced:
             
             # VWAP CALCULATION (Volume Weighted Average Price)
             # Professional: Use full session data
-            typical_prices = [(candles[i]['high'] + candles[i]['low'] + candles[i]['close']) / 3 
+            typical_prices = [(candles[i]['high'] + candles[i]['low'] + candles[i]['close']) / 3
                             for i in range(-20, 0)]
-            vwap = sum(tp * v for tp, v in zip(typical_prices, volumes[-20:])) / sum(volumes[-20:])
+            total_volume = sum(volumes[-20:])
+            if total_volume == 0 or total_volume is None:
+                return None
+            vwap = sum(tp * v for tp, v in zip(typical_prices, volumes[-20:])) / total_volume
             
             # VOLUME ANALYSIS
-            avg_volume = sum(volumes[-20:]) / 20
+            volume_data = volumes[-20:]
+            if len(volume_data) == 0:
+                return None
+            avg_volume = sum(volume_data) / len(volume_data)
             current_volume = candles[-1]['volume']
             volume_surge = current_volume / avg_volume if avg_volume > 0 else 0
             
@@ -3189,20 +3885,21 @@ class EliteGuardBalanced:
         # Each pattern has optimal R:R based on its behavior characteristics
         pattern_type = pattern_signal.pattern
         
-        # Pattern-specific R:R configuration for scalping with ATR stops (OPTIMIZED for 65% WR)
+        # Pattern-specific R:R configuration (MINIMUM 1.5:1 for profitability)
+        # With 1.5:1 RR you only need 40% win rate to break even
         pattern_rr_config = {
-            'BB_SCALP': 0.5,             # ULTRA-TIGHT: 35% WR needs 50% of stop
-            'KALMAN_QUICKFIRE': 0.6,     # TIGHT: 42% WR needs 60% of stop
-            'MOMENTUM_BURST': 0.7,       # ADJUSTED: 75% WR pattern, small tweak
-            'FAIR_VALUE_GAP_FILL': 0.68, # Gap fills are fast, take 68% quickly
-            'VCB_BREAKOUT': 0.75,        # Balanced - tighter for higher win rate
-            'SWEEP_RETURN': 0.83,        # Liquidity grabs, slightly extended
-            'ORDER_BLOCK_BOUNCE': 0.9,   # Institutional levels, still good reward
-            'LIQUIDITY_SWEEP_REVERSAL': 0.98  # Strongest reversals, near 1:1
+            'BB_SCALP': 1.5,             # Minimum acceptable RR
+            'KALMAN_QUICKFIRE': 1.5,     # Mean reversion - tight but acceptable
+            'MOMENTUM_BURST': 1.8,       # Momentum carries further
+            'FAIR_VALUE_GAP_FILL': 1.7,  # Gap fills can extend
+            'VCB_BREAKOUT': 2.0,         # Breakouts capture moves
+            'SWEEP_RETURN': 2.0,         # Liquidity sweeps extend
+            'ORDER_BLOCK_BOUNCE': 2.2,   # Institutional levels strong
+            'LIQUIDITY_SWEEP_REVERSAL': 2.5  # Major reversals capture most
         }
         
-        # Get base R:R for this pattern (default to 0.75 if not specified - tightened)
-        base_rr = pattern_rr_config.get(pattern_type, 0.75)
+        # Get base R:R for this pattern (default to 1.5 if not specified - minimum acceptable)
+        base_rr = pattern_rr_config.get(pattern_type, 1.5)
         
         # Quality score adjustment - higher quality can push for slightly more
         quality_bonus = 0
@@ -3329,16 +4026,7 @@ class EliteGuardBalanced:
         lot_size = risk_amount / (stop_pips * pip_value_per_lot)
         lot_size = round(lot_size, 2)  # Round to 2 decimals for MT5
         
-        print(f"💰 SCALPING CONFIG: {symbol} {pattern_signal.direction}")
-        print(f"   Pattern: {pattern_type}")
-        print(f"   Risk: {risk_percent*100}% = ${risk_amount}")
-        print(f"   SL: {stop_pips:.1f} pips (ATR x{atr_multiplier:.1f})")
-        print(f"   TP: {target_pips:.1f} pips")
-        print(f"   R:R: 1:{rr_ratio:.2f} (pattern-optimized)")
-        print(f"   Lot Size: {lot_size:.2f} lots")
-        print(f"   Entry: {entry_price:.5f}")
-        print(f"   Stop Loss: {stop_loss:.5f}")
-        print(f"   Take Profit: {take_profit:.5f}")
+        print(f"💰 {symbol} {pattern_signal.direction} | SL: {stop_pips:.1f}p TP: {target_pips:.1f}p | R:R: 1:{rr_ratio:.2f} | Lot: {lot_size:.2f}")
         
         # Get news impact for this symbol
         news_impact = self.get_news_impact(pattern_signal.pair)
@@ -3353,6 +4041,9 @@ class EliteGuardBalanced:
         # Create signal ID with class prefix
         signal_id_prefix = 'ELITE_SNIPER' if signal_class == 'SNIPER' else 'ELITE_RAPID'
         
+        # Determine signal_type based on signal_class for BittenCore compatibility
+        signal_type = 'RAPID_ASSAULT' if signal_class == 'RAPID' else 'PRECISION_STRIKE'
+
         signal = {
             'signal_id': f'{signal_id_prefix}_{pattern_signal.pair}_{int(time.time())}',
             'pair': pattern_signal.pair,
@@ -3361,6 +4052,7 @@ class EliteGuardBalanced:
             'pattern': pattern_signal.pattern,
             'pattern_type': pattern_signal.pattern,  # For compatibility
             'signal_class': signal_class,  # RAPID or SNIPER
+            'signal_type': signal_type,  # CRITICAL: BittenCore requires this field for Telegram alerts & AUTO fire
             'confidence': round(pattern_signal.confidence, 1),
             'quality_score': round(pattern_signal.quality_score, 1),
             'quality_tier': quality_tier,
@@ -3401,31 +4093,188 @@ class EliteGuardBalanced:
         else:
             return "LATE_NY"
     
-    def process_tick(self, message: str):
-        """Process incoming tick data"""
+    def process_market_message(self, message: str):
+        """Process incoming market data from EA stream (TICK, OHLC, or custom_bar_closed packets)"""
         try:
-            if "tick" not in message.lower():
-                return
-                
-            data = json.loads(message.split(" ", 1)[1] if " " in message else message)
-            
+            data = json.loads(message)
+            message_type = data.get('type')
             symbol = data.get('symbol')
-            if not symbol:
+
+            if not symbol or not message_type:
                 return
-            
+
+            # Route to appropriate handler based on packet type (case-insensitive)
+            if message_type.lower() == "tick":
+                self.process_tick_packet(data)
+            elif message_type.lower() == "ohlc":
+                self.process_ohlc_packet(data)
+            elif message_type == "custom_bar_closed":
+                # NEW: Handle custom 15-second bars from EA (4x faster than M1)
+                self.process_custom_bar(data)
+
+        except Exception as e:
+            logger.debug(f"Market message processing error: {e}")
+
+    def process_tick_packet(self, data: dict):
+        """Process TICK packets from EA stream"""
+        try:
+            symbol = data['symbol']
+            bid = data.get('bid', 0)
+            ask = data.get('ask', 0)
+
+            # Parse EA timestamp - can be Unix timestamp or string format
+            timestamp_val = data.get('timestamp')
+            if timestamp_val:
+                if isinstance(timestamp_val, (int, float)):
+                    # Unix timestamp format (what we're getting from EA)
+                    tick_timestamp = float(timestamp_val)
+                    timestamp_str = str(timestamp_val)
+                elif isinstance(timestamp_val, str):
+                    try:
+                        # Parse EA format: "2025.09.25 15:44:02"
+                        parsed_time = datetime.strptime(timestamp_val, '%Y.%m.%d %H:%M:%S')
+                        tick_timestamp = parsed_time.timestamp()
+                        timestamp_str = timestamp_val
+                    except (ValueError, TypeError):
+                        # Fallback to current time if parsing fails
+                        tick_timestamp = time.time()
+                        timestamp_str = str(tick_timestamp)
+                else:
+                    tick_timestamp = time.time()
+                    timestamp_str = str(tick_timestamp)
+            else:
+                tick_timestamp = time.time()
+                timestamp_str = str(tick_timestamp)
+
+            # Convert to internal tick format for existing logic
+            tick_data = {
+                'symbol': symbol,
+                'bid': bid,
+                'ask': ask,
+                'spread': data.get('spread', ask - bid),
+                'volume': data.get('volume', 0),
+                'timestamp': timestamp_str,
+                'mid_price': (bid + ask) / 2
+            }
+
             # Store tick
-            self.tick_data[symbol].append(data)
-            self.last_tick_time[symbol] = time.time()
-            
-            # Build candles using proper M1->M5 aggregation
-            self.build_candles_from_tick(symbol, data)
-            
+            self.tick_data[symbol].append(tick_data)
+            self.last_tick_time[symbol] = tick_timestamp
+
+            # Build candles from ticks (existing logic)
+            self.build_candles_from_tick(symbol, tick_data)
+
             # Log first few ticks to verify reception
             if len(self.tick_data[symbol]) <= 3:
-                logger.info(f"📊 Received tick for {symbol}: bid={data.get('bid')} ask={data.get('ask')}")
-            
+                print(f"📊 TICK: {symbol} bid={bid} ask={ask} spread={data.get('spread', 0)}")
+
         except Exception as e:
-            logger.debug(f"Tick processing error: {e}")
+            logger.debug(f"Tick packet processing error: {e}")
+
+    def process_ohlc_packet(self, data: dict):
+        """Process OHLC packets from EA stream"""
+        try:
+            symbol = data['symbol']
+            timeframe = data.get('timeframe', 'M1')
+
+            # Convert to internal OHLC format
+            ohlc_data = {
+                'symbol': symbol,
+                'timeframe': timeframe,
+                'time': data.get('time', 0),
+                'open': data.get('open', 0),
+                'high': data.get('high', 0),
+                'low': data.get('low', 0),
+                'close': data.get('close', 0),
+                'timestamp': data.get('timestamp')
+            }
+
+            # Store in appropriate timeframe buffer
+            if timeframe == 'M1':
+                self.m1_data[symbol].append(ohlc_data)
+            elif timeframe == 'M5':
+                self.m5_data[symbol].append(ohlc_data)
+            elif timeframe == 'M15':
+                self.m15_data[symbol].append(ohlc_data)
+            elif timeframe == 'M30':
+                self.m30_data[symbol].append(ohlc_data)
+            elif timeframe == 'H1':
+                self.h1_data[symbol].append(ohlc_data)
+
+            # Log first few OHLC packets to verify reception
+            if len(self.m1_data[symbol]) <= 3:
+                print(f"📈 OHLC: {symbol} {timeframe} O={ohlc_data['open']} H={ohlc_data['high']} L={ohlc_data['low']} C={ohlc_data['close']}")
+
+        except Exception as e:
+            logger.debug(f"OHLC packet processing error: {e}")
+
+    def process_custom_bar(self, data: dict):
+        """
+        Process custom 15-second bars from EA (4x faster pattern detection than M1)
+
+        Expected format:
+        {
+            "type": "custom_bar_closed",
+            "symbol": "EURUSD",
+            "tf_seconds": 15,
+            "feed_ver": 2,
+            "t": 1727702580,  # Unix timestamp
+            "o": 1.08500,
+            "h": 1.08550,
+            "l": 1.08490,
+            "c": 1.08520,
+            "v": 1234
+        }
+        """
+        try:
+            symbol = data['symbol']
+            timestamp = data.get('t', 0)
+            feed_ver = data.get('feed_ver', 0)
+            tf_seconds = data.get('tf_seconds', 0)
+
+            self.custom_bar_stats['received'] += 1
+
+            # Validate custom bar format (must be feed_ver=2, tf_seconds=15)
+            if feed_ver != 2 or tf_seconds != 15:
+                logger.warning(f"Invalid custom bar format: feed_ver={feed_ver}, tf_seconds={tf_seconds}")
+                return
+
+            # Deduplication by timestamp (multiple EAs may send same bar)
+            if timestamp in self.s15_timestamps[symbol]:
+                self.custom_bar_stats['duplicates'] += 1
+                return
+
+            # Convert to internal format
+            bar_data = {
+                'symbol': symbol,
+                'timestamp': timestamp,
+                'datetime': datetime.fromtimestamp(timestamp),
+                'open': data.get('o', 0),
+                'high': data.get('h', 0),
+                'low': data.get('l', 0),
+                'close': data.get('c', 0),
+                'volume': data.get('v', 0),
+                'timeframe': 'S15'  # Custom 15-second timeframe
+            }
+
+            # Store in 15-second buffer
+            self.s15_data[symbol].append(bar_data)
+            self.s15_timestamps[symbol].add(timestamp)
+            self.custom_bar_stats['processed'] += 1
+
+            # Log first few custom bars to verify reception
+            if len(self.s15_data[symbol]) <= 5:
+                print(f"⚡ CUSTOM 15s BAR: {symbol} O={bar_data['open']:.5f} H={bar_data['high']:.5f} "
+                      f"L={bar_data['low']:.5f} C={bar_data['close']:.5f} (bars={len(self.s15_data[symbol])})")
+
+            # IMPORTANT: Trigger rapid pattern detection when we have enough 15s bars
+            # 20 bars = 5 minutes of data (4x faster than M1)
+            if len(self.s15_data[symbol]) >= 20:
+                # Pattern detection will use s15_data alongside m5_data
+                pass  # Pattern detection happens in main scan loop
+
+        except Exception as e:
+            logger.debug(f"Custom bar processing error: {e}")
     
     def fetch_ohlc_data(self):
         """Fetch OHLC data from telemetry bridge (EA messages republished)"""
@@ -3539,6 +4388,18 @@ class EliteGuardBalanced:
             # Aggregate M5 → M15 (every 3 M5 candles)
             if len(self.m5_data[symbol]) >= 3 and len(self.m5_data[symbol]) % 3 == 0:
                 self.aggregate_m5_to_m15(symbol)
+
+            # Aggregate M15 → M30 (every 2 M15 candles)
+            if len(self.m15_data[symbol]) >= 2 and len(self.m15_data[symbol]) % 2 == 0:
+                self.aggregate_m15_to_m30(symbol)
+
+            # Aggregate M30 → H1 (every 2 M30 candles)
+            if len(self.m30_data[symbol]) >= 2 and len(self.m30_data[symbol]) % 2 == 0:
+                self.aggregate_m30_to_h1(symbol)
+
+            # Aggregate H1 → H4 (every 4 H1 candles)
+            if len(self.h1_data[symbol]) >= 4 and len(self.h1_data[symbol]) % 4 == 0:
+                self.aggregate_h1_to_h4(symbol)
         
         # ALSO add current forming candle for real-time pattern detection
         if current_minute in self.current_candles[symbol]:
@@ -3672,7 +4533,67 @@ class EliteGuardBalanced:
             }
             self.m15_data[symbol].append(m15_candle)
             print(f"📊 {symbol}: Created M15 candle from {len(last_3)} M5 candles")
-    
+
+    def aggregate_m15_to_m30(self, symbol: str):
+        """Build M30 candle from last 2 M15 candles"""
+        if len(self.m15_data[symbol]) >= 2:
+            last_2 = list(self.m15_data[symbol])[-2:]
+
+            # Check if we already have this M30 timestamp
+            m30_timestamp = last_2[0]['timestamp']
+            if self.m30_data[symbol] and self.m30_data[symbol][-1]['timestamp'] == m30_timestamp:
+                return
+
+            m30_candle = {
+                'open': last_2[0]['open'],
+                'high': max(c['high'] for c in last_2),
+                'low': min(c['low'] for c in last_2),
+                'close': last_2[-1]['close'],
+                'volume': sum(c['volume'] for c in last_2),
+                'timestamp': m30_timestamp
+            }
+            self.m30_data[symbol].append(m30_candle)
+
+    def aggregate_m30_to_h1(self, symbol: str):
+        """Build H1 candle from last 2 M30 candles"""
+        if len(self.m30_data[symbol]) >= 2:
+            last_2 = list(self.m30_data[symbol])[-2:]
+
+            # Check if we already have this H1 timestamp
+            h1_timestamp = last_2[0]['timestamp']
+            if self.h1_data[symbol] and self.h1_data[symbol][-1]['timestamp'] == h1_timestamp:
+                return
+
+            h1_candle = {
+                'open': last_2[0]['open'],
+                'high': max(c['high'] for c in last_2),
+                'low': min(c['low'] for c in last_2),
+                'close': last_2[-1]['close'],
+                'volume': sum(c['volume'] for c in last_2),
+                'timestamp': h1_timestamp
+            }
+            self.h1_data[symbol].append(h1_candle)
+
+    def aggregate_h1_to_h4(self, symbol: str):
+        """Build H4 candle from last 4 H1 candles"""
+        if len(self.h1_data[symbol]) >= 4:
+            last_4 = list(self.h1_data[symbol])[-4:]
+
+            # Check if we already have this H4 timestamp
+            h4_timestamp = last_4[0]['timestamp']
+            if self.h4_data[symbol] and self.h4_data[symbol][-1]['timestamp'] == h4_timestamp:
+                return
+
+            h4_candle = {
+                'open': last_4[0]['open'],
+                'high': max(c['high'] for c in last_4),
+                'low': min(c['low'] for c in last_4),
+                'close': last_4[-1]['close'],
+                'volume': sum(c['volume'] for c in last_4),
+                'timestamp': h4_timestamp
+            }
+            self.h4_data[symbol].append(h4_candle)
+
     def save_candles(self):
         """Save candle and tick data to cache file"""
         try:
@@ -3714,13 +4635,7 @@ class EliteGuardBalanced:
             with open('/root/HydraX-v2/candle_cache.json', 'w') as f:
                 json.dump(cache_data, f)
             
-            # Log saved counts for verification
-            print(f"💾 Saved candles to cache:")
-            print(f"   Total M1: {total_m1}, M5: {total_m5}, M15: {total_m15}")
-            
-            # Show EURUSD specifically as requested
-            if 'EURUSD' in self.m1_data:
-                print(f"   EURUSD: M1={len(self.m1_data['EURUSD'])}, M5={len(self.m5_data.get('EURUSD', []))}, M15={len(self.m15_data.get('EURUSD', []))}")
+            print(f"💾 Saved candles: M1:{total_m1}, M5:{total_m5}, M15:{total_m15}")
             
         except Exception as e:
             print(f"❌ Error saving candles: {e}")
@@ -3762,8 +4677,8 @@ class EliteGuardBalanced:
                     # Load tick data
                     if symbol in cache_data.get('tick_data', {}):
                         self.tick_data[symbol] = deque(cache_data['tick_data'][symbol], maxlen=1000)
-                        if cache_data['tick_data'][symbol]:
-                            self.last_tick_time[symbol] = time.time()
+                        # DO NOT set last_tick_time from cached data - let freshness check detect stale data
+                        # self.last_tick_time[symbol] will be set by first REAL tick from EA
                 
                 # Log loaded counts for verification
                 print(f"🔍 Loaded candles from cache:")
@@ -3905,15 +4820,29 @@ class EliteGuardBalanced:
         
         # QUALITY GATE #2: PATTERN-SPECIFIC THRESHOLDS - BALANCED for signals
         pattern_thresholds = {
-            'FAIR_VALUE_GAP_FILL': 99.0,      # DISABLED: 31% WR - effectively off
-            'ORDER_BLOCK_BOUNCE': 75.0,       # MODERATE: 44% WR - raised
-            'LIQUIDITY_SWEEP_REVERSAL': 70.0, # STANDARD: 50% WR - standard
-            'VCB_BREAKOUT': 75.0,              # QUALITY: Only high-confidence VCB
-            'SWEEP_RETURN': 78.0,              # QUALITY: Clear liquidity sweeps only  
-            'MOMENTUM_BURST': 75.0,            # QUALITY: Strong momentum only
-            'MOMENTUM_BREAKOUT': 75.0,        # QUALITY: Same as MOMENTUM_BURST
-            'BB_SCALP': 85.0,                 # HIGH: 35% WR - filter heavily
-            'KALMAN_QUICKFIRE': 80.0          # HIGH: 42% WR - filter most
+            # KEEP WORKING PATTERNS - PROVEN PERFORMERS
+            'KALMAN_QUICKFIRE': 80.0,          # Working @ 83.8% avg - KEEP
+            'BB_SCALP': 85.0,                  # Working @ 85.4% avg - KEEP
+            'LIQUIDITY_SWEEP_REVERSAL': 70.0, # Working @ 81.9% avg - KEEP
+
+            # RESCUE BLOCKED SNIPER PATTERNS - RESEARCH-BASED THRESHOLDS
+            'VCB_BREAKOUT': 65.0,              # REDUCED: 75% → 65% (expect 5-10/day)
+            'ORDER_BLOCK_BOUNCE': 65.0,        # REDUCED: 75% → 65% (expect 8-15/day)
+            'SWEEP_RETURN': 68.0,              # REDUCED: 78% → 68% (expect 10-20/day)
+            'MOMENTUM_BURST': 65.0,            # REDUCED: 75% → 65% (expect 12-25/day)
+            'MOMENTUM_BREAKOUT': 65.0,         # REDUCED: 75% → 65% (same as MOMENTUM_BURST)
+
+            # ENABLE NEW PATTERNS - TESTING THRESHOLDS
+            'BLIND_SPOT': 70.0,                # ENABLED: Was default 79% (FVG replacement)
+            'TRAPDOOR_SSR': 70.0,              # ENABLED: Was default 79% (session-specific)
+            'PRESSURE_VALVE': 70.0,            # ENABLED: Was default 79% (enhanced VCB)
+
+            # TECHNICAL INDICATOR PATTERNS - ENABLE FOR VARIETY
+            'EMA_RSI_BB_VWAP': 70.0,           # ENABLED: Was default 79% (multi-confluence)
+            'EMA_RSI_SCALP': 70.0,             # ENABLED: Was default 79% (46.4% proven WR)
+
+            # DISABLED POOR PERFORMERS
+            'FAIR_VALUE_GAP_FILL': 99.0,       # KEEP DISABLED: 31% WR - replaced by BLIND_SPOT
         }
         
         # Get pattern-specific threshold
@@ -4693,15 +5622,40 @@ class EliteGuardBalanced:
                 if m5_count < 2:
                     print(f"❌ {symbol} OB: Only {m5_count} M5 candles (need 2+)")
             
-            # 3. Fair Value Gap Fill
-            signal = self.detect_fair_value_gap_fill(symbol)
+            # 3. BLIND SPOT (Replaces Fair Value Gap - which had 26.3% win rate)
+            # SNIPER CLASS PATTERNS - Minimum 2:1 RR enforced
+            signal = self.detect_blind_spot(symbol)
             if signal:
                 should_publish, tier_reason, ml_score = self.apply_ml_filter(signal, session)
                 if should_publish:
-                    logger.info(f"✅ FAIR VALUE GAP on {symbol} - {tier_reason}")
+                    logger.info(f"✅ BLIND SPOT on {symbol} - {tier_reason}")
+                    patterns.append(signal)
+            else:
+                print(f"🔍 BLIND SPOT {symbol}: No signal detected")
+
+            # TRAPDOOR SSR - Session Sweep Reversal
+            signal = self.detect_trapdoor_ssr(symbol)
+            if signal:
+                should_publish, tier_reason, ml_score = self.apply_ml_filter(signal, session)
+                if should_publish:
+                    print(f"✅ TRAPDOOR SSR on {symbol} - {tier_reason} - CONF: {signal.confidence}")
                     patterns.append(signal)
                 else:
-                    logger.debug(f"🚫 FAIR VALUE GAP on {symbol} filtered: {tier_reason}")
+                    print(f"🚫 TRAPDOOR SSR on {symbol} filtered: {tier_reason}")
+            else:
+                print(f"🔍 TRAPDOOR SSR {symbol}: No signal detected")
+
+            # PRESSURE VALVE VCB - Volatility Compression Break
+            signal = self.detect_pressure_valve(symbol)
+            if signal:
+                should_publish, tier_reason, ml_score = self.apply_ml_filter(signal, session)
+                if should_publish:
+                    print(f"🔥 PRESSURE VALVE VCB on {symbol} - {tier_reason} - CONF: {signal.confidence}")
+                    patterns.append(signal)
+                else:
+                    print(f"🚫 PRESSURE VALVE VCB on {symbol} filtered: {tier_reason}")
+            else:
+                print(f"🔍 PRESSURE VALVE {symbol}: No signal detected")
             
             # 4. VCB Breakout
             signal = self.detect_vcb_breakout(symbol)
@@ -4776,6 +5730,8 @@ class EliteGuardBalanced:
                     patterns.append(signal)
                 else:
                     print(f"🚫 EMA_RSI_SCALP on {symbol} filtered: {tier_reason}")
+
+            # Duplicate pattern calls removed - these patterns already called above
             
             # Pick best pattern based on quality score
             if patterns:
@@ -4881,45 +5837,28 @@ class EliteGuardBalanced:
                         self.hourly_signal_count[symbol] += 1
                         self.signal_history.append(protected_signal)
                         
-                        # Debug: Check if SL/TP present before publishing
-                        if not protected_signal.get('stop_pips') or not protected_signal.get('target_pips'):
-                            print(f"⚠️ WARNING: Missing SL/TP in signal: stop_pips={protected_signal.get('stop_pips')}, target_pips={protected_signal.get('target_pips')}")
-                            print(f"   Original signal keys: {list(signal.keys())}")
-                            print(f"   Protected signal keys: {list(protected_signal.keys())}")
                         
+                        # Enhanced signal JSON with pattern-specific telemetry
+                        if protected_signal.get('pattern') == 'TRAPDOOR_SSR':
+                            # Add TRAPDOOR-specific telemetry fields
+                            protected_signal.update({
+                                'swept_level': best_pattern.swept_level if hasattr(best_pattern, 'swept_level') else None,
+                                'session': self.get_current_session(),
+                                'ltf_confirmed': True,
+                                'sweep_size_pts': getattr(best_pattern, 'sweep_size_pts', None)
+                            })
+                        elif protected_signal.get('pattern') == 'PRESSURE_VALVE_VCB':
+                            # Add PRESSURE_VALVE-specific telemetry fields
+                            protected_signal.update({
+                                'compression_bars': getattr(best_pattern, 'compression_bars', None),
+                                'break_strength': getattr(best_pattern, 'break_strength', None),
+                                'h4_bias': getattr(best_pattern, 'h4_bias', None),
+                                'compression_height': getattr(best_pattern, 'compression_height', None)
+                            })
+
                         # Publish
                         self.publish_signal(protected_signal)
                         
-                        # EXOTIC PAIR EXECUTION DEBUGGING (Error 4756 investigation)
-                        exotic_pairs = ['USDMXN', 'USDSEK', 'USDCNH', 'XAGUSD']
-                        if protected_signal.get('symbol') in exotic_pairs:
-                            symbol = protected_signal['symbol']
-                            sl_pips = protected_signal.get('stop_pips', 0)
-                            tp_pips = protected_signal.get('target_pips', 0)
-                            entry = protected_signal.get('entry', 0)
-                            sl = protected_signal.get('stop_loss', 0)
-                            tp = protected_signal.get('take_profit', 0)
-                            
-                            print(f"🚀 EXOTIC ATTEMPT: {symbol} @ {protected_signal.get('confidence', 0):.1f}%")
-                            print(f"   📏 Pips: SL={sl_pips}, TP={tp_pips}")
-                            print(f"   💰 Prices: Entry={entry:.5f}, SL={sl:.5f}, TP={tp:.5f}")
-                            
-                            # Calculate actual pip distances for verification
-                            pip_size = get_pip_size(symbol)
-                            actual_sl_pips = abs(entry - sl) / pip_size if pip_size > 0 else 0
-                            actual_tp_pips = abs(tp - entry) / pip_size if pip_size > 0 else 0
-                            
-                            print(f"   ✅ Actual distances: SL={actual_sl_pips:.1f}p, TP={actual_tp_pips:.1f}p")
-                            print(f"   🔍 Signal ID: {protected_signal.get('signal_id', 'UNKNOWN')}")
-                            
-                            # Check if distances meet minimum requirements
-                            min_required = {'USDMXN': 15, 'USDSEK': 15, 'USDCNH': 20, 'XAGUSD': 25}
-                            min_stop = min_required.get(symbol, 10)
-                            if actual_sl_pips < min_stop:
-                                print(f"   ⚠️ WARNING: SL too tight! {actual_sl_pips:.1f}p < {min_stop}p minimum")
-                                print(f"   🔧 MT5 Error 4756 likely - adjusting stops needed!")
-                            else:
-                                print(f"   ✅ Stops OK: {actual_sl_pips:.1f}p >= {min_stop}p minimum")
                         
                         # Use emoji based on signal class
                         emoji = "⚡" if protected_signal['signal_class'] == 'RAPID' else "🎯"
@@ -5097,12 +6036,38 @@ class EliteGuardBalanced:
                 signal_msg = json.dumps(signal)
                 self.publisher.send_string(f"ELITE_GUARD_SIGNAL {signal_msg}")
                 print(f"   📡 ZMQ sent to port 5557 - has SL: {signal.get('stop_loss') is not None}, has TP: {signal.get('take_profit') is not None}")
-                
+
                 # ZMQ debug logging
                 self.log_zmq_debug('PUBLISH', signal.get('signal_id'), signal_msg)
             except Exception as e:
                 print(f"   ❌ ZMQ failed: {e}")
                 self.log_zmq_debug('PUBLISH_ERROR', signal.get('signal_id'), str(e))
+
+        # 1.5. Redis Stream Publishing (ALERT BUS)
+        try:
+            import redis
+            import time
+            r = redis.Redis(host='localhost', port=6379, decode_responses=True)
+
+            # Build alert payload
+            alert_payload = {
+                'type': 'signal_alert',
+                'alert_id': signal.get('signal_id'),
+                'uid': signal.get('user_id', 'system'),
+                'account_id': signal.get('account_id', 'default'),
+                'symbol': signal.get('symbol'),
+                'direction': signal.get('direction'),
+                'confidence': str(signal.get('confidence', 0)),
+                'text': f"[{signal.get('pattern_type', 'PATTERN')}] {signal.get('symbol')} {signal.get('direction')} @ {signal.get('confidence', 0)}%",
+                'ts': str(int(time.time())),
+                'idempotency_key': signal.get('signal_id')
+            }
+
+            # Add to Redis stream
+            stream_id = r.xadd('alerts:v1', alert_payload)
+            print(f"   📮 [ALERT_ENQUEUED] alert_id={signal.get('signal_id')} stream_id={stream_id}")
+        except Exception as e:
+            print(f"   ❌ Redis stream failed: {e}")
         
         # 2. Optimized Tracking JSONL (SECONDARY - for backward compatibility)
         try:
@@ -5177,48 +6142,18 @@ class EliteGuardBalanced:
             print(f"ZMQ debug logging error: {e}")
     
     def data_listener(self):
-        """Listen for market data"""
-        logger.info("📡 Starting data listener")
-        print("📡 Data listener started, waiting for ticks...")
-        
+        """Listen for market data from EA tick stream"""
+        print("📡 Data listener started, connecting to EA tick stream (port 5556)...")
+
         while self.running:
             try:
-                if self.subscriber.poll(timeout=100):
-                    message = self.subscriber.recv_string()
-                    
-                    # Handle pure JSON format from telemetry bridge
-                    if message.startswith("{"):
-                        try:
-                            tick_data = json.loads(message)
-                            # Process tick if it's a TICK type message
-                            if tick_data.get('type') == 'TICK' and 'symbol' in tick_data and 'bid' in tick_data:
-                                symbol = tick_data.get('symbol')
-                                if symbol and symbol in self.trading_pairs:
-                                    self.tick_data[symbol].append(tick_data)
-                                    self.last_tick_time[symbol] = time.time()
-                                    self.build_candles_from_tick(symbol, tick_data)
-                                    
-                                    # Log every 100th tick for debugging
-                                    tick_count = len(self.tick_data[symbol])
-                                    if tick_count % 100 == 0:
-                                        print(f"📈 {symbol}: {tick_count} ticks, {len(self.m1_data.get(symbol, []))} M1 candles")
-                        except json.JSONDecodeError as e:
-                            logger.debug(f"Failed to parse JSON: {e}")
-                    # Handle old "tick " prefix format (backward compatibility)
-                    elif message.startswith("tick "):
-                        json_data = message[5:]  # Skip "tick " prefix
-                        try:
-                            tick_data = json.loads(json_data)
-                            if 'symbol' in tick_data and 'bid' in tick_data:
-                                symbol = tick_data.get('symbol')
-                                if symbol and symbol in self.trading_pairs:
-                                    self.tick_data[symbol].append(tick_data)
-                                    self.last_tick_time[symbol] = time.time()
-                                    self.build_candles_from_tick(symbol, tick_data)
-                        except json.JSONDecodeError:
-                            logger.debug(f"Failed to parse: {json_data[:50]}")
-                    else:
-                        self.process_tick(message)
+                # Use PULL socket to consume from EA tick/OHLC stream
+                if self.tick_consumer.poll(timeout=100):
+                    message = self.tick_consumer.recv_string()
+
+                    # Process EA market messages (TICK or OHLC packets)
+                    self.process_market_message(message)
+
             except Exception as e:
                 logger.debug(f"Listener error: {e}")
                 time.sleep(0.1)
@@ -5279,11 +6214,20 @@ class EliteGuardBalanced:
         # Data feed status
         logger.info(f"\n📡 DATA FEED STATUS:")
         logger.info(f"  Total symbols tracked: {len(self.tick_data)}")
+
+        # NEW: Custom 15-second bar statistics
+        logger.info(f"\n⚡ CUSTOM 15s BARS (4x faster than M1):")
+        logger.info(f"  Received: {self.custom_bar_stats['received']}")
+        logger.info(f"  Duplicates: {self.custom_bar_stats['duplicates']}")
+        logger.info(f"  Processed: {self.custom_bar_stats['processed']}")
+        logger.info(f"  Symbols with 15s data: {len([s for s in self.s15_data if len(self.s15_data[s]) > 0])}")
+
         for symbol in list(self.tick_data.keys())[:10]:
             age = time.time() - self.last_tick_time.get(symbol, 0)
             tick_count = len(self.tick_data[symbol])
+            s15_count = len(self.s15_data[symbol])
             status = "✅" if age < 5 else "⚠️" if age < 30 else "❌"
-            logger.info(f"  {symbol}: {tick_count} ticks | Last: {age:.0f}s ago {status}")
+            logger.info(f"  {symbol}: {tick_count} ticks, {s15_count} 15s bars | Last: {age:.0f}s ago {status}")
         
         # CITADEL Protection stats
         citadel_stats = self.citadel.get_protection_stats()
@@ -5324,8 +6268,7 @@ class EliteGuardBalanced:
             try:
                 current_time = time.time()
                 
-                # Fetch OHLC data continuously
-                self.fetch_ohlc_data()
+                # Note: OHLC data now comes via data_listener from unified EA stream (port 5556)
                 
                 # Check for ML threshold updates from Grokkeeper
                 self.update_pattern_thresholds_from_ml()
@@ -5334,8 +6277,21 @@ class EliteGuardBalanced:
                 if current_time - last_scan >= 15:
                     print(f"⏰ SCAN TRIGGER: 15-second interval reached, active_session={self.is_active_session()}")
                     logger.info(f"⏰ 15-second scan trigger, active_session={self.is_active_session()}")
-                    if self.is_active_session():
+
+                    # DATA FRESHNESS CHECK - Prevent signals from stale data
+                    most_recent_tick = 0
+                    for symbol in self.last_tick_time:
+                        most_recent_tick = max(most_recent_tick, self.last_tick_time[symbol])
+
+                    time_since_last_tick = current_time - most_recent_tick if most_recent_tick > 0 else 999999
+
+                    if time_since_last_tick > 300:  # 5 minutes = stale data
+                        logger.warning(f"⚠️ STALE DATA DETECTED - Last tick was {int(time_since_last_tick)}s ago")
+                        logger.warning(f"⚠️ SKIPPING PATTERN SCAN - Waiting for fresh market data from EA")
+                        print(f"⚠️ STALE DATA: Last tick {int(time_since_last_tick)}s ago - PAUSING SIGNAL GENERATION")
+                    elif self.is_active_session():
                         self.scan_for_patterns()
+
                     # Check CITADEL delayed signals
                     self.check_citadel_delayed_signals()
                     last_scan = current_time
@@ -5394,8 +6350,17 @@ class EliteGuardBalanced:
             "timestamp": time.time()
         }
         
-        # Process the test tick
-        self.process_tick(test_tick)
+        # Process the test tick using new packet format
+        test_packet = {
+            "type": "TICK",
+            "symbol": "EURUSD",
+            "bid": 1.1647,
+            "ask": 1.1649,
+            "spread": 0.2,
+            "volume": 1,
+            "timestamp": "2025.09.24 21:45:00"
+        }
+        self.process_tick_packet(test_packet)
         
         # Report candle counts
         print(f"✅ EURUSD M1: {len(self.m1_data.get('EURUSD', []))} candles")
@@ -5420,10 +6385,12 @@ class EliteGuardBalanced:
         print("💾 Saving candles before shutdown...")
         self.save_candles()
         
-        if self.subscriber:
-            self.subscriber.close()
-        if self.publisher:
+        if hasattr(self, 'tick_consumer') and self.tick_consumer:
+            self.tick_consumer.close()
+        if hasattr(self, 'publisher') and self.publisher:
             self.publisher.close()
+        if hasattr(self, 'ml_subscriber') and self.ml_subscriber:
+            self.ml_subscriber.close()
         
         self.context.term()
         logger.info("✅ Elite Guard Balanced shutdown complete")

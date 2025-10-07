@@ -1,0 +1,20 @@
+/root/HydraX-v2/node_modules/@ts-morph/common/dist/ts-morph-common.js:1897
+            throw this.getFileNotFoundErrorIfNecessary(err, filePath);
+            ^
+
+FileNotFoundError: File not found: /root/HydraX-v2/tsconfig.json
+    at RealFileSystemHost.getFileNotFoundErrorIfNecessary (/root/HydraX-v2/node_modules/@ts-morph/common/dist/ts-morph-common.js:1955:50)
+    at RealFileSystemHost.readFileSync (/root/HydraX-v2/node_modules/@ts-morph/common/dist/ts-morph-common.js:1897:24)
+    at TransactionalFileSystem.readFileSync (/root/HydraX-v2/node_modules/@ts-morph/common/dist/ts-morph-common.js:2431:32)
+    at TsConfigResolver.getTsConfigFileJson (/root/HydraX-v2/node_modules/@ts-morph/common/dist/ts-morph-common.js:2985:38)
+    at TsConfigResolver.decorator (/root/HydraX-v2/node_modules/@ts-morph/common/dist/ts-morph-common.js:2811:46)
+    at TsConfigResolver.parseJsonConfigFileContent (/root/HydraX-v2/node_modules/@ts-morph/common/dist/ts-morph-common.js:2981:70)
+    at TsConfigResolver.decorator (/root/HydraX-v2/node_modules/@ts-morph/common/dist/ts-morph-common.js:2811:46)
+    at TsConfigResolver.getCompilerOptions (/root/HydraX-v2/node_modules/@ts-morph/common/dist/ts-morph-common.js:2950:21)
+    at TsConfigResolver.decorator (/root/HydraX-v2/node_modules/@ts-morph/common/dist/ts-morph-common.js:2811:46)
+    at getTsConfigCompilerOptions (/root/HydraX-v2/node_modules/ts-morph/dist/ts-morph.js:20009:111) {
+  path: '/root/HydraX-v2/tsconfig.json',
+  code: 'ENOENT'
+}
+
+Node.js v20.19.3

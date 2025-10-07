@@ -110,15 +110,18 @@ export function useEventIntegration(options: EventIntegrationOptions = {}) {
 
     // Connect to real backend signal service
     if (enableMissionStream) {
-      // Use the real signal service instead of mock WebSocket
-      signalService.connect()
+      // Temporarily disabled for demo - would cause page hangs if backend unavailable
+      // signalService.connect()
+      console.log('Event integration: Mission stream disabled for demo mode')
     }
 
     if (enablePriceStream && symbols.length > 0) {
-      symbols.forEach(symbol => {
-        const priceStream = getPriceStream(symbol)
-        priceStream.connect()
-      })
+      // Temporarily disabled for demo - would cause page hangs if backend unavailable
+      // symbols.forEach(symbol => {
+      //   const priceStream = getPriceStream(symbol)
+      //   priceStream.connect()
+      // })
+      console.log('Event integration: Price stream disabled for demo mode')
     }
 
     // Cleanup
@@ -143,10 +146,11 @@ export function usePriceSubscription(symbol: string, callback: (price: PriceData
     const unsubscribe = eventBus.on(eventName, callback)
 
     // Connect price stream if not already connected
-    const stream = getPriceStream(symbol)
-    if (stream.getState() !== WebSocket.OPEN) {
-      stream.connect()
-    }
+    // Temporarily disabled for demo mode
+    // const stream = getPriceStream(symbol)
+    // if (stream.getState() !== WebSocket.OPEN) {
+    //   stream.connect()
+    // }
 
     return () => {
       unsubscribe()

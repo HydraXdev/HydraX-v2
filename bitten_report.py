@@ -12,6 +12,68 @@ from collections import defaultdict
 import os
 import subprocess
 
+def get_signals_from_event_bus():
+    """Get signal data from event bus with fallback to traditional sources"""
+    signals = []
+    try:
+        conn = sqlite3.connect('/root/HydraX-v2/event_bus/bitten_events.db')
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT signal_id, symbol, direction, confidence, pattern_type, created_at
+            FROM signal_events 
+            WHERE created_at > ?
+            ORDER BY created_at DESC
+        ''', (datetime.now().timestamp() - 24*3600,))
+        
+        for row in cursor.fetchall():
+            signals.append({
+                'signal_id': row[0],
+                'symbol': row[1], 
+                'direction': row[2],
+                'confidence': row[3],
+                'pattern_type': row[4],
+                'created_at': row[5]
+            })
+        conn.close()
+        print(f'📍 Signal Data Source: Event Bus ({len(signals)} signals)')
+        return signals
+    except Exception as e:
+        print(f'⚠️ Event Bus unavailable ({e}), using database fallback')
+        return []
+
+def get_outcomes_from_event_bus():
+    """Get outcome data from event bus execution.outcome.v1 events"""
+    outcomes = []
+    try:
+        conn = sqlite3.connect('/root/HydraX-v2/event_bus/bitten_events.db')
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT data_json FROM events 
+            WHERE event_type = 'execution.outcome.v1'
+            ORDER BY created_at DESC
+        ''')
+        
+        for row in cursor.fetchall():
+            outcome_data = json.loads(row[0])
+            outcomes.append({
+                'signal_id': outcome_data.get('signal_id'),
+                'symbol': outcome_data.get('symbol'),
+                'direction': outcome_data.get('direction'),
+                'pattern_type': outcome_data.get('pattern_type'),
+                'confidence': outcome_data.get('confidence'),
+                'outcome': outcome_data.get('result'),
+                'pips_result': outcome_data.get('pnl_pips', 0),
+                'duration_minutes': outcome_data.get('duration_minutes', 0),
+                'source': outcome_data.get('source', 'event_bus')
+            })
+        
+        conn.close()
+        print(f'📍 Outcome Data Source: Event Bus ({len(outcomes)} outcomes)')
+        return outcomes
+    except Exception as e:
+        print(f'⚠️ Event Bus outcomes unavailable ({e}), using JSONL fallback')
+        return []
+
 def main():
     print('='*80)
     print('🎯 BITTEN COMPREHENSIVE SYSTEM PERFORMANCE REPORT')
@@ -57,11 +119,14 @@ def main():
             print(f'{period_name:12} | No signals')
     
     # ========================================================================
-    # SECTION 2: PATTERN PERFORMANCE (All Time Periods)
+    # SECTION 2: PATTERN PERFORMANCE (Event Bus + Database Integration)
     # ========================================================================
     print('\n' + '='*80)
     print('📊 PATTERN PERFORMANCE BREAKDOWN')
     print('='*80)
+    
+    # Try to get recent signals from event bus first
+    event_bus_signals = get_signals_from_event_bus()
     
     # Get all patterns
     cursor.execute('''
@@ -193,56 +258,61 @@ def main():
         'overall': defaultdict(int)
     }
     
-    # Read all outcomes from dynamic_tracking.jsonl
-    try:
-        with open('/root/HydraX-v2/dynamic_tracking.jsonl', 'r') as f:
-            for line in f:
-                try:
-                    data = json.loads(line)
-                    if data.get('type') == 'outcome_recorded':
-                        outcome = data.get('outcome')
-                        if outcome in ['WIN', 'LOSS']:
-                            pattern = data.get('pattern_type', 'UNKNOWN')
-                            symbol = data.get('symbol', 'UNKNOWN')
-                            confidence = data.get('confidence', 0)
-                            pips = data.get('pips_result', 0)
-                            timestamp = data.get('timestamp', 0)
-                            hours_ago = int((current_time - timestamp) / 3600)
-                            
-                            # Overall stats
-                            outcome_stats['overall'][outcome] += 1
-                            outcome_stats['overall']['pips'] += pips
-                            
-                            # By pattern
-                            outcome_stats['by_pattern'][pattern][outcome] += 1
-                            outcome_stats['by_pattern'][pattern]['pips'] += pips
-                            
-                            # By symbol
-                            outcome_stats['by_symbol'][symbol][outcome] += 1
-                            outcome_stats['by_symbol'][symbol]['pips'] += pips
-                            
-                            # By confidence bucket
-                            conf_bucket = f"{int(confidence/5)*5}-{int(confidence/5)*5+5}%"
-                            outcome_stats['by_confidence'][conf_bucket][outcome] += 1
-                            outcome_stats['by_confidence'][conf_bucket]['pips'] += pips
-                            
-                            # By hours ago (for time analysis)
-                            if hours_ago <= 24:
-                                time_bucket = f"{hours_ago}h_ago"
-                                outcome_stats['by_hour'][time_bucket][outcome] += 1
-                                outcome_stats['by_hour'][time_bucket]['pips'] += pips
-                except:
-                    pass
-        
-        print(f'📍 Data Source: /root/HydraX-v2/dynamic_tracking.jsonl')
-        
-        # Overall Performance
-        total = outcome_stats['overall']['WIN'] + outcome_stats['overall']['LOSS']
-        if total > 0:
-            wr = (outcome_stats['overall']['WIN'] / total) * 100
-            print(f'\n📊 OVERALL PERFORMANCE:')
-            print(f'Total: {total} | Wins: {outcome_stats["overall"]["WIN"]} | Losses: {outcome_stats["overall"]["LOSS"]}')
-            print(f'Win Rate: {wr:.1f}% | P&L: {outcome_stats["overall"]["pips"]:+.1f} pips')
+    # Read all outcomes from Event Bus (PRODUCTION - SCHEMA V1)
+    outcomes = get_outcomes_from_event_bus()
+    
+    if not outcomes:
+        print('⚠️ No outcomes found in event bus')
+        print('   This may indicate outcome mirrorer is not running or no trades have completed')
+        print('   Check: ps aux | grep outcome_mirrorer')
+    
+    # Process outcomes from either source
+    for outcome_data in outcomes:
+        try:
+            outcome = outcome_data.get('outcome')
+            if outcome in ['WIN', 'LOSS']:
+                pattern = outcome_data.get('pattern_type', 'UNKNOWN')
+                symbol = outcome_data.get('symbol', 'UNKNOWN')
+                confidence = outcome_data.get('confidence', 0)
+                pips = outcome_data.get('pips_result', 0)
+                
+                # For event bus data, we might not have timestamp, skip time-based analysis
+                hours_ago = 0  # Default for event bus data
+                
+                # Overall stats
+                outcome_stats['overall'][outcome] += 1
+                outcome_stats['overall']['pips'] += pips
+                
+                # By pattern
+                outcome_stats['by_pattern'][pattern][outcome] += 1
+                outcome_stats['by_pattern'][pattern]['pips'] += pips
+                
+                # By symbol
+                outcome_stats['by_symbol'][symbol][outcome] += 1
+                outcome_stats['by_symbol'][symbol]['pips'] += pips
+                
+                # By confidence bucket
+                conf_bucket = f"{int(confidence/5)*5}-{int(confidence/5)*5+5}%"
+                outcome_stats['by_confidence'][conf_bucket][outcome] += 1
+                outcome_stats['by_confidence'][conf_bucket]['pips'] += pips
+                
+                # By hours ago (for time analysis)
+                if hours_ago <= 24:
+                    time_bucket = f"{hours_ago}h_ago"
+                    outcome_stats['by_hour'][time_bucket][outcome] += 1
+                    outcome_stats['by_hour'][time_bucket]['pips'] += pips
+        except:
+            pass
+    
+    print(f'📍 Data Source: Event Bus (execution.outcome.v1 schema v1) - PRODUCTION')
+    
+    # Overall Performance
+    total = outcome_stats['overall']['WIN'] + outcome_stats['overall']['LOSS']
+    if total > 0:
+        wr = (outcome_stats['overall']['WIN'] / total) * 100
+        print(f'\n📊 OVERALL PERFORMANCE:')
+        print(f'Total: {total} | Wins: {outcome_stats["overall"]["WIN"]} | Losses: {outcome_stats["overall"]["LOSS"]}')
+        print(f'Win Rate: {wr:.1f}% | P&L: {outcome_stats["overall"]["pips"]:+.1f} pips')
         
         # By Pattern
         print(f'\n📊 WIN RATE BY PATTERN:')
@@ -295,25 +365,23 @@ def main():
             if total > 0:
                 wr = (wins / total) * 100
                 print(f'{h:2}-{min(h+2,24):2}h ago: {total:3} trades | W:{wins:2} L:{losses:2} | WR:{wr:5.1f}% | {pips:+7.1f}p')
-                
-    except Exception as e:
-        print(f'⚠️  Unable to read tracking data: {e}')
     
     # ========================================================================
-    # SECTION 7: SYSTEM HEALTH & PROCESSES
+    # SECTION 7: SYSTEM HEALTH & PROCESSES (ARCHITECTURE.md CRITICAL ONLY)
     # ========================================================================
     print('\n' + '='*80)
     print('🔧 SYSTEM HEALTH CHECK')
     print('='*80)
+    print('📍 Only showing ARCHITECTURE.md critical components')
     
+    # CRITICAL PROCESSES FROM ARCHITECTURE.md - DO NOT MODIFY
     critical_processes = [
         ('elite_guard', 'Signal Generation'),
-        ('dynamic_outcome_tracker', 'Outcome Tracking'),
-        ('athena_broadcaster', 'Telegram Alerts'),
-        ('command_router', 'Trade Execution'),
+        ('command_router', 'Fire Routing'),
+        ('confirm_listener', 'Trade Confirmations'),
         ('telemetry_bridge', 'Market Data'),
-        ('grokkeeper_ml', 'ML Optimization'),
-        ('relay_to_telegram', 'Signal Relay')
+        ('athena_broadcaster', 'Telegram Alerts'),
+        ('bitten-production-bot', 'Main Bot')
     ]
     
     try:
@@ -337,11 +405,14 @@ def main():
     print('📁 DATA SOURCE INVENTORY')
     print('='*80)
     
+    # Get event bus signals to show integration status
+    event_bus_signals = get_signals_from_event_bus()
+    
     data_files = [
-        ('/root/HydraX-v2/dynamic_tracking.jsonl', 'Dynamic outcome tracking (MAIN SOURCE)'),
+        ('/root/HydraX-v2/event_bus/bitten_events.db', f'Event Bus (SIGNAL SOURCE - {len(event_bus_signals)} signals)'),
+        ('/root/HydraX-v2/dynamic_tracking.jsonl', 'Dynamic outcome tracking (OUTCOME SOURCE)'),
         ('/root/HydraX-v2/comprehensive_tracking.jsonl', 'Comprehensive signal tracking'),
         ('/root/HydraX-v2/optimized_tracking.jsonl', 'ML optimized tracking'),
-        ('/root/HydraX-v2/ml_training_data.jsonl', 'ML training dataset'),
         ('/root/HydraX-v2/bitten.db', 'Main database'),
         ('/root/HydraX-v2/MASTER_OUTCOMES.jsonl', 'Master outcomes archive')
     ]

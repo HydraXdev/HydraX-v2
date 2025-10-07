@@ -1,17 +1,27 @@
 module.exports = {
   apps: [
     {
-      name: "webapp",
-      script: "python3",
-      args: "webapp_server_optimized.py",
+      name: "hydrasocket-router",
+      script: "venv/bin/gunicorn",
+      args: "webapp_server_optimized:app -w 4 -k gevent --bind 0.0.0.0:8888 --timeout 90 --worker-connections 1000",
       cwd: "/root/HydraX-v2",
       instances: 1,
       autorestart: true,
       watch: false,
-      max_memory_restart: "1G",
+      max_memory_restart: "2G",
+      max_restarts: 10,
+      exp_backoff_restart_delay: 2000,
+      out_file: "/var/log/hydrasocket/out.log",
+      error_file: "/var/log/hydrasocket/err.log",
+      merge_logs: true,
+      kill_timeout: 5000,
+      listen_timeout: 10000,
       env: {
         BITTEN_DB: "/root/HydraX-v2/bitten.db",
-        PYTHONUNBUFFERED: "1"
+        PYTHONUNBUFFERED: "1",
+        WS_ACK_WINDOW: "256",
+        HYDRASOCKET_ENV: "production",
+        FLASK_ENV: "production"
       }
     },
     {

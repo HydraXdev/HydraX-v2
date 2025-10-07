@@ -4,10 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build --turbopack",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "smoke": "node scripts/route-smoke.mjs",
+    "qa": "npm run lint && npm run type-check && npm run build && npm run smoke",
+    "healthz": "curl -s http://localhost:3000/healthz | jq ."
   },
   "dependencies": {
     "framer-motion": "^12.23.16",

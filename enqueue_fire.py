@@ -5,6 +5,7 @@ Enqueue fire commands to IPC queue for command_router
 import zmq
 import os
 import json
+import time
 
 QUEUE_ADDR = os.getenv("BITTEN_QUEUE_ADDR", "ipc:///tmp/bitten_cmdqueue")
 _ctx = None
@@ -195,38 +196,41 @@ def create_fire_command(mission_id: str, user_id: str, symbol: str = None, direc
         target_uuid = "COMMANDER_DEV_001"  # Fallback if DB lookup fails
     
     # HEDGE PROTECTION: Check for existing open positions on this symbol
+    # FIXED: Query fires table directly - missions JOIN was broken
     try:
         conn = sqlite3.connect('/root/HydraX-v2/bitten.db')
         cursor = conn.cursor()
         # Check for ANY open positions on same symbol (not closed)
         cursor.execute("""
-            SELECT f.fire_id, s.direction, f.created_at 
-            FROM fires f
-            JOIN missions m ON f.mission_id = m.mission_id
-            JOIN signals s ON m.signal_id = s.signal_id
-            WHERE f.user_id = ? 
-            AND s.symbol = ? 
-            AND f.status = 'FILLED'
-            AND (f.closed_at IS NULL OR f.closed_at = 0)
-            ORDER BY f.created_at DESC
+            SELECT fire_id, direction, symbol, created_at
+            FROM fires
+            WHERE user_id = ?
+            AND symbol = ?
+            AND status = 'FILLED'
+            AND (closed_at IS NULL OR closed_at = 0)
+            ORDER BY created_at DESC
         """, (user_id, symbol))
-        
+
         open_positions = cursor.fetchall()
         conn.close()
-        
+
         if open_positions:
+            print(f"🔍 Hedge check: Found {len(open_positions)} open position(s) on {symbol}")
             for position in open_positions:
-                existing_direction = position[1]
+                fire_id, existing_direction, existing_symbol, created_at = position
                 if existing_direction != direction:
                     print(f"🚫 HEDGE BLOCKED: Opposite position detected!")
-                    print(f"   Existing: {existing_direction} position (fire_id: {position[0]})")
+                    print(f"   Existing: {existing_direction} position (fire_id: {fire_id})")
                     print(f"   Attempted: {direction} position")
                     print(f"   Symbol: {symbol}")
                     print(f"   Action: Trade blocked to prevent hedging")
                     return None  # Block hedging to prevent conflicting positions
-        
+            print(f"✅ Hedge check passed: All {len(open_positions)} position(s) are {direction}")
+
     except Exception as e:
-        print(f"Hedge check failed: {e}")
+        print(f"⚠️ Hedge check failed: {e}")
+        import traceback
+        traceback.print_exc()
     
     # SAFETY CHECK: Ensure we have valid SL and TP before proceeding
     if sl == 0 or tp == 0 or entry == 0:
@@ -240,8 +244,8 @@ def create_fire_command(mission_id: str, user_id: str, symbol: str = None, direc
                 default_sl_pips = 100  # 100 pips = $10 move for gold
                 pip_size = 0.1  # Gold: 1 pip = $0.10
             elif symbol in ['XAGUSD']:
-                default_sl_pips = 100  # Changed from 50 to 100 ($1.00 move)
-                pip_size = 0.01
+                default_sl_pips = 100  # 100 pips = $0.100 move
+                pip_size = 0.001  # FIXED: Was 0.01, should be 0.001 for XAGUSD
             elif symbol in ['USDMXN', 'USDSEK', 'USDCNH']:
                 default_sl_pips = 50
                 pip_size = 0.0001
@@ -488,15 +492,25 @@ def create_fire_command(mission_id: str, user_id: str, symbol: str = None, direc
     # If we calculated entry_rounded as current price, set to 0 for EA
     entry_for_ea = 0  # Always use 0 for market orders
     
-    # Determine correct decimal precision for each symbol
+    # Get actual symbol specifications for proper validation
+    # TODO: Fetch these from EA telemetry or symbol cache
+    # For now, use conservative defaults that should work for most symbols
     if 'JPY' in symbol:
         decimals = 3  # JPY pairs: 147.389
+        point = 0.01
+        min_stop_distance = 0.02  # 2 points minimum
     elif symbol == 'XAUUSD':
         decimals = 2  # Gold: 3645.19
+        point = 0.01
+        min_stop_distance = 1.50  # 150 points minimum for gold
     elif symbol == 'XAGUSD':
         decimals = 3  # Silver: 31.456
+        point = 0.001
+        min_stop_distance = 0.030  # 30 points minimum
     else:
         decimals = 5  # Most forex pairs: 1.17280
+        point = 0.00001
+        min_stop_distance = 0.00015  # 15 points minimum for major pairs
     
     # If SL or TP are None or 0, use emergency defaults
     if sl is None or sl == 0:
@@ -552,22 +566,14 @@ def create_fire_command(mission_id: str, user_id: str, symbol: str = None, direc
     
     # Add BITMODE/hybrid configuration if enabled
     if bitmode_config:
-        # Format hybrid exactly as EA expects
-        fire_command["hybrid"] = {
-            "enabled": True,
-            "partial1": {
-                "trigger": bitmode_config["partial1"]["trigger"],
-                "percent": bitmode_config["partial1"]["percent"]
-            },
-            "partial2": {
-                "trigger": bitmode_config["partial2"]["trigger"],
-                "percent": bitmode_config["partial2"]["percent"]
-            },
-            "trail": {
-                "distance": bitmode_config["trail"]["distance"]
-            }
-        }
-        print(f"🎯 BITMODE/Hybrid enabled with config")
+        # Format hybrid exactly as EA expects - FLAT structure, not nested
+        fire_command["hybrid_enabled"] = True
+        fire_command["hybrid_p1_trigger"] = bitmode_config["partial1"]["trigger"]
+        fire_command["hybrid_p1_percent"] = bitmode_config["partial1"]["percent"]
+        fire_command["hybrid_p2_trigger"] = bitmode_config["partial2"]["trigger"]
+        fire_command["hybrid_p2_percent"] = bitmode_config["partial2"]["percent"]
+        fire_command["hybrid_trail_distance"] = bitmode_config["trail"]["distance"]
+        print(f"🎯 BITMODE/Hybrid enabled with flat EA format")
     
     return fire_command
 
@@ -642,9 +648,10 @@ if __name__ == "__main__":
             # But brokers typically use $10 per pip per standard lot
             pip_value = 10.0  # Gold pip value per standard lot
         elif symbol == 'XAGUSD':
-            # For XAGUSD, 1 pip (0.001 movement) = $0.50 per standard lot (5000 oz)
-            # Standard market convention for silver
-            pip_value = 0.5  # Silver pip value per standard lot (0.001 movement)
+            # For XAGUSD, 1 pip (0.001 movement) = $5.00 per standard lot (5000 oz)
+            # FIXED: Was 0.5 causing 10x oversized lots!
+            # Calculation: 5000 oz × $0.001 move = $5.00 per pip per standard lot
+            pip_value = 5.0  # Silver pip value per standard lot (0.001 movement)
         elif symbol == 'USDCNH':
             # For USDCNH, pip value depends on CNH rate (~1.4 USD per pip at 7.2 rate)
             pip_value = 1.4  # Approximate - actual varies with CNH rate
@@ -664,24 +671,45 @@ if __name__ == "__main__":
             # For USDDKK, pip value ~1.5 USD per pip
             pip_value = 1.5  # Approximate - actual varies with DKK rate
         
-        # Calculate risk amount (5% of balance)
-        # Get user's actual balance from database - REQUIRED
-        import sqlite3
-        conn = sqlite3.connect('/root/HydraX-v2/bitten.db')
-        cursor = conn.cursor()
-        cursor.execute("SELECT last_balance FROM ea_instances WHERE user_id = ? ORDER BY last_seen DESC LIMIT 1", (user_id,))
-        result = cursor.fetchone()
-        conn.close()
-        
-        if not result or not result[0]:
-            print(f"❌ ERROR: No balance found for user {user_id}")
-            sys.exit(1)
-        
-        balance = float(result[0])
-        risk_amount = balance * 0.03  # 3% risk MAX for production
-        
-        print(f"💰 Account balance: ${balance:.2f}")
-        print(f"📊 Risk amount (3%): ${risk_amount:.2f}")
+        # Calculate risk amount (5% of REAL-TIME EQUITY from HEARTBEAT_METRICS)
+        try:
+            # Use new live equity tracker with HEARTBEAT_METRICS
+            from live_equity_tracker import get_live_balance_info, get_live_equity_data
+
+            # Get live equity data directly
+            equity_data = get_live_equity_data("COMMANDER_DEV_001")
+
+            if equity_data['success'] and equity_data['is_fresh']:
+                # Use real-time HEARTBEAT_METRICS data
+                equity = equity_data['equity']
+                balance = equity_data['balance']
+                floating_pnl = equity_data['floating_pnl']
+                print(f"⚡ Using LIVE HEARTBEAT_METRICS equity: ${equity:.2f} (Balance: ${balance:.2f} + Float: ${floating_pnl:.2f})")
+                print(f"📊 Data age: {equity_data['age_seconds']} seconds, Open positions: {equity_data['open_positions']}")
+            else:
+                raise Exception(f"HEARTBEAT_METRICS data not fresh: {equity_data.get('error', 'Unknown error')}")
+
+        except Exception as e:
+            # Fallback to database equity (should not happen with working EA)
+            print(f"⚠️ HEARTBEAT_METRICS unavailable ({e}), using database fallback")
+            import sqlite3
+            conn = sqlite3.connect('/root/HydraX-v2/bitten.db')
+            cursor = conn.cursor()
+            cursor.execute("SELECT last_equity, last_balance FROM ea_instances WHERE user_id = ? ORDER BY last_seen DESC LIMIT 1", (user_id,))
+            result = cursor.fetchone()
+            conn.close()
+
+            if not result or not result[0]:
+                print(f"❌ ERROR: No equity/balance found for user {user_id}")
+                sys.exit(1)
+
+            equity = float(result[0])  # Use equity (balance + floating P&L)
+            balance = float(result[1])  # Keep for reference
+            print(f"💰 Fallback balance: ${balance:.2f}")
+            print(f"⚡ Fallback equity: ${equity:.2f}")
+
+        risk_amount = equity * 0.05  # 5% risk of LIVE equity (increased from 3%)
+        print(f"📊 Risk amount (5% of equity): ${risk_amount:.2f}")
         
         # Calculate lot size: Risk Amount / (Stop Loss in Pips × Pip Value per Lot)
         if stop_pips > 0:
@@ -691,11 +719,35 @@ if __name__ == "__main__":
             # Apply reasonable limits for safety
             MAX_LOT_SIZE = 2.0  # Maximum 2 lots for safety
             MIN_LOT_SIZE = 0.01  # Minimum lot size
-            
+
+            # Symbol-specific maximum lot sizes (CRITICAL SAFETY)
+            SYMBOL_MAX_LOTS = {
+                'XAGUSD': 1.0,   # Silver: max 1 lot (high volatility, leverage risk)
+                'XAUUSD': 1.0,   # Gold: max 1 lot (high volatility)
+                'BTCUSD': 0.5,   # Bitcoin: max 0.5 lots (extreme volatility)
+                'EURUSD': 5.0,   # Major pairs: max 5 lots
+                'GBPUSD': 5.0,
+                'USDJPY': 5.0,
+                'AUDUSD': 5.0,
+                'NZDUSD': 5.0,
+                'USDCAD': 5.0,
+                'USDCHF': 5.0
+            }
+
+            # Check symbol-specific max FIRST (most restrictive)
+            symbol_max = SYMBOL_MAX_LOTS.get(symbol, MAX_LOT_SIZE)
+            if calculated_lot > symbol_max:
+                risk_exposure = calculated_lot * stop_pips * pip_value
+                print(f"🚫 CRITICAL: {symbol} lot size {calculated_lot:.2f} exceeds symbol max {symbol_max}")
+                print(f"   Risk exposure: ${risk_exposure:.2f} (${calculated_lot:.2f} × {stop_pips:.1f} pips × ${pip_value:.2f})")
+                print(f"   Capping to {symbol_max} lots for safety")
+                calculated_lot = symbol_max
+
+            # Then check global max
             if calculated_lot > MAX_LOT_SIZE:
-                print(f"⚠️ Lot size {calculated_lot:.2f} exceeds max {MAX_LOT_SIZE}, capping")
+                print(f"⚠️ Lot size {calculated_lot:.2f} exceeds global max {MAX_LOT_SIZE}, capping")
                 calculated_lot = MAX_LOT_SIZE
-            
+
             calculated_lot = round(calculated_lot, 2)  # Round to 2 decimals for MT5
             calculated_lot = max(calculated_lot, MIN_LOT_SIZE)
             print(f"✅ Final lot size: {calculated_lot}")

@@ -1,0 +1,13 @@
+🔒 Running HydraSocket RBAC & Idempotency Tests
+==================================================
+RBAC Test - Status: 403
+RBAC Test - Response: {'code': 'E_RBAC_TEST', 'error': 'RBAC test endpoint'}
+✅ RBAC test PASSED
+Idempotency Test 1 - Status: 403
+Idempotency Test 2 - Status: 403
+✅ Idempotency test PASSED
+Replay Test 1 - Status: 403
+Replay Test 2 - Status: 403
+✅ Replay attack test PASSED
+==================================================
+🎉 All security tests PASSED!

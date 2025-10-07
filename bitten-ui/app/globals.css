@@ -120,6 +120,211 @@
     -webkit-backdrop-filter: blur(10px);
   }
 
+  /* Military HUD Components */
+  .hud-panel {
+    background-color: rgb(var(--bg-secondary));
+    border: 1px solid rgb(var(--border-default));
+    border-radius: 0.5rem;
+    box-shadow: var(--shadow-elevation-low);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    box-shadow: 0 0 20px rgb(var(--accent-mint) / 0.1);
+  }
+
+  .hud-panel-accent {
+    background-color: rgb(var(--bg-secondary));
+    border: 1px solid rgb(var(--accent-mint) / 0.3);
+    border-radius: 0.5rem;
+    box-shadow: var(--shadow-elevation-low);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    box-shadow: 0 0 20px rgb(var(--accent-mint) / 0.2);
+  }
+
+  .neon-glow {
+    text-shadow: 0 0 10px currentColor;
+  }
+
+  .neon-border {
+    border: 1px solid rgb(var(--accent-mint));
+    box-shadow:
+      0 0 5px rgb(var(--accent-mint) / 0.3),
+      inset 0 0 5px rgb(var(--accent-mint) / 0.1);
+  }
+
+  .tactical-grid {
+    background-image:
+      linear-gradient(rgb(var(--accent-mint) / 0.1) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(var(--accent-mint) / 0.1) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+
+  /* Enhanced Button Styles */
+  .btn-primary {
+    background-color: rgb(var(--accent-mint));
+    color: black;
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.375rem;
+    transition: all 0.2s;
+    box-shadow: 0 0 15px rgb(var(--accent-mint) / 0.3);
+    font-family: 'Barlow Condensed', sans-serif;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .btn-primary:hover {
+    background-color: rgb(var(--accent-mint) / 0.9);
+  }
+
+  .btn-primary:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgb(var(--accent-mint) / 0.5);
+  }
+
+  .btn-secondary {
+    background-color: transparent;
+    border: 1px solid rgb(var(--accent-cyan));
+    color: rgb(var(--accent-cyan));
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.375rem;
+    transition: all 0.2s;
+    font-family: 'Barlow Condensed', sans-serif;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .btn-secondary:hover {
+    background-color: rgb(var(--accent-cyan) / 0.1);
+  }
+
+  .btn-secondary:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgb(var(--accent-cyan) / 0.5);
+  }
+
+  .btn-danger {
+    background-color: rgb(var(--accent-danger));
+    color: white;
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.375rem;
+    transition: all 0.2s;
+    box-shadow: 0 0 15px rgb(var(--accent-danger) / 0.3);
+    font-family: 'Barlow Condensed', sans-serif;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .btn-danger:hover {
+    background-color: rgb(var(--accent-danger) / 0.9);
+  }
+
+  .btn-danger:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgb(var(--accent-danger) / 0.5);
+  }
+
+  /* Status Indicators */
+  .status-active {
+    color: rgb(var(--accent-mint));
+    filter: drop-shadow(0 0 8px rgb(var(--accent-mint)));
+  }
+
+  .status-warning {
+    color: rgb(var(--accent-warning));
+    filter: drop-shadow(0 0 8px rgb(var(--accent-warning)));
+  }
+
+  .status-danger {
+    color: rgb(var(--accent-danger));
+    filter: drop-shadow(0 0 8px rgb(var(--accent-danger)));
+  }
+
+  .status-neutral {
+    color: rgb(var(--accent-cyan));
+    filter: drop-shadow(0 0 8px rgb(var(--accent-cyan)));
+  }
+
+  /* Mission Cards */
+  .mission-card {
+    background-color: rgb(var(--bg-secondary));
+    border: 1px solid rgb(var(--border-default));
+    border-radius: 0.5rem;
+    box-shadow: var(--shadow-elevation-low);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    box-shadow: 0 0 20px rgb(var(--accent-mint) / 0.1);
+    padding: 1.5rem;
+    transition: all 0.3s;
+  }
+
+  .mission-card:hover {
+    border-color: rgb(var(--accent-mint) / 0.5);
+    box-shadow: 0 0 25px rgb(var(--accent-mint) / 0.2);
+  }
+
+  .kill-card {
+    background-color: rgb(var(--bg-secondary));
+    border: 1px solid rgb(var(--border-default));
+    border-radius: 0.5rem;
+    box-shadow: var(--shadow-elevation-low);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    box-shadow: 0 0 20px rgb(var(--accent-mint) / 0.1);
+    padding: 1rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .kill-card.win {
+    border-color: rgb(var(--accent-mint) / 0.5);
+    background: linear-gradient(45deg, rgb(var(--accent-mint) / 0.05), transparent);
+  }
+
+  .kill-card.loss {
+    border-color: rgb(var(--accent-danger) / 0.5);
+    background: linear-gradient(45deg, rgb(var(--accent-danger) / 0.05), transparent);
+  }
+
+  /* Progress Bars */
+  .progress-bar {
+    background-color: rgb(var(--bg-secondary));
+    border-radius: 9999px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(to right, rgb(var(--accent-mint)), rgb(var(--accent-cyan)));
+    transition: all 0.5s;
+    box-shadow: 0 0 10px rgb(var(--accent-mint) / 0.5);
+  }
+
+  /* Technical Elements */
+  .chart-container {
+    background-color: rgb(var(--bg-secondary));
+    border: 1px solid rgb(var(--border-default));
+    border-radius: 0.5rem;
+    box-shadow: var(--shadow-elevation-low);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    box-shadow: 0 0 20px rgb(var(--accent-mint) / 0.1);
+    padding: 1rem;
+    background: radial-gradient(circle at center, rgb(var(--accent-mint) / 0.02), transparent);
+  }
+
+  .technical-readout {
+    background-color: rgb(var(--bg-overlay) / 0.5);
+    border-radius: 0.25rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid rgb(var(--border-active) / 0.3);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.875rem;
+    color: rgb(var(--text-secondary));
+  }
+
   /* Animations */
   @keyframes pulse-mint {
     0%, 100% { opacity: 1; }
@@ -128,5 +333,47 @@
 
   .animate-pulse-mint {
     animation: pulse-mint 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 5px rgb(var(--accent-mint) / 0.3); }
+    50% { box-shadow: 0 0 20px rgb(var(--accent-mint) / 0.6); }
+  }
+
+  .pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  @keyframes flicker {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.8; }
+  }
+
+  .flicker {
+    animation: flicker 3s ease-in-out infinite;
+  }
+
+  /* Utility Classes */
+  .font-tactical {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .font-code {
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .text-glow {
+    text-shadow: 0 0 10px currentColor;
+  }
+
+  .border-glow {
+    box-shadow: 0 0 10px rgb(var(--accent-mint) / 0.3);
+  }
+
+  .backdrop-blur-heavy {
+    backdrop-filter: blur(12px);
   }
 }

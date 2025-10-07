@@ -1,0 +1,101 @@
+groups:
+- name: hydrasocket
+  rules:
+  - alert: HighOrderLatencyP95
+    expr: order_to_open_ms_p95 > 250
+    for: 5m
+    labels:
+      severity: warning
+      service: hydrasocket
+    annotations:
+      summary: "HydraSocket order latency p95 high"
+      description: "Order processing latency p95 is {{ $value }}ms, above threshold of 250ms"
+      runbook_url: "https://docs.joinbitten.com/ops/50-alerts.md#high-order-latency"
+
+  - alert: EventLagHigh
+    expr: event_lag_ms_p95 > 500
+    for: 5m
+    labels:
+      severity: warning
+      service: hydrasocket
+    annotations:
+      summary: "HydraSocket event lag high"
+      description: "Event processing lag p95 is {{ $value }}ms, above threshold of 500ms"
+      runbook_url: "https://docs.joinbitten.com/ops/50-alerts.md#event-lag-high"
+
+  - alert: BackpressureDrops
+    expr: rate(backpressure_drops_total[5m]) > 1
+    for: 2m
+    labels:
+      severity: critical
+      service: hydrasocket
+    annotations:
+      summary: "HydraSocket backpressure drops detected"
+      description: "Message drops due to backpressure: {{ $value }} drops/sec"
+      runbook_url: "https://docs.joinbitten.com/ops/50-alerts.md#backpressure-drops"
+
+  - alert: RouterClientsDrop
+    expr: ws_clients < 1
+    for: 2m
+    labels:
+      severity: critical
+      service: hydrasocket
+    annotations:
+      summary: "No WebSocket clients connected"
+      description: "HydraSocket has no active WebSocket connections for {{ $for }}"
+      runbook_url: "https://docs.joinbitten.com/ops/50-alerts.md#no-ws-clients"
+
+  - alert: HydraSocketDown
+    expr: up{job="hydrasocket"} == 0
+    for: 1m
+    labels:
+      severity: critical
+      service: hydrasocket
+    annotations:
+      summary: "HydraSocket service down"
+      description: "HydraSocket router is not responding to health checks"
+      runbook_url: "https://docs.joinbitten.com/ops/20-restart.md"
+
+  - alert: DatabaseErrors
+    expr: rate(database_errors_total[5m]) > 0.1
+    for: 2m
+    labels:
+      severity: warning
+      service: hydrasocket
+    annotations:
+      summary: "HydraSocket database errors"
+      description: "Database error rate: {{ $value }} errors/sec"
+      runbook_url: "https://docs.joinbitten.com/ops/50-alerts.md#database-errors"
+
+  - alert: IdempotencyFailures
+    expr: rate(idempotency_failures_total[5m]) > 0.5
+    for: 3m
+    labels:
+      severity: warning
+      service: hydrasocket
+    annotations:
+      summary: "High idempotency failures"
+      description: "Idempotency check failures: {{ $value }} failures/sec"
+      runbook_url: "https://docs.joinbitten.com/ops/50-alerts.md#idempotency-failures"
+
+  - alert: AuthenticationFailures
+    expr: rate(auth_failures_total[5m]) > 2
+    for: 5m
+    labels:
+      severity: warning
+      service: hydrasocket
+    annotations:
+      summary: "High authentication failure rate"
+      description: "Authentication failures: {{ $value }} failures/sec"
+      runbook_url: "https://docs.joinbitten.com/ops/50-alerts.md#auth-failures"
+
+  - alert: MemoryUsageHigh
+    expr: process_resident_memory_bytes > 2000000000  # 2GB
+    for: 10m
+    labels:
+      severity: warning
+      service: hydrasocket
+    annotations:
+      summary: "HydraSocket memory usage high"
+      description: "Memory usage is {{ $value | humanize1024 }}, above 2GB threshold"
+      runbook_url: "https://docs.joinbitten.com/ops/50-alerts.md#memory-usage-high"

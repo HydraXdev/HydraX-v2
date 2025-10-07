@@ -1,0 +1,17 @@
+# BITTEN v2.1 - Additional dependencies for Postgres integration
+# Add these to existing requirements.txt
+
+# PostgreSQL adapter with binary support for performance
+psycopg[binary]>=3.1.0,<4.0.0
+
+# Connection pooling (optional but recommended for production)
+psycopg_pool>=3.1.0,<4.0.0
+
+# Async support (if we need async endpoints later)  
+psycopg[binary,pool]>=3.1.0,<4.0.0
+
+# Database migration tools (optional)
+alembic>=1.12.0,<2.0.0
+
+# Enhanced JSON handling
+orjson>=3.9.0,<4.0.0

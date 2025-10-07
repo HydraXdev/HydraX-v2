@@ -79,12 +79,13 @@ def fire_mission():
         else:
             target_uuid = ea_instance['target_uuid']
         
-        # Calculate position size based on user balance
+        # Calculate position size based on user equity (real-time balance)
+        equity = ea_instance['last_equity'] if ea_instance and ea_instance.get('last_equity') else 1000
         balance = ea_instance['last_balance'] if ea_instance else 1000
         sl_pips = abs(signal_data.get('sl', 0) - signal_data.get('entry', 0)) / 0.0001
-        
-        # Risk 2% of balance
-        risk_amount = balance * 0.02
+
+        # Risk 2% of equity (live balance including floating P&L)
+        risk_amount = equity * 0.02
         
         # Calculate lot size (simplified - would need proper pip value calculation)
         lot_size = round(risk_amount / (sl_pips * 10), 2)  # Simplified calculation

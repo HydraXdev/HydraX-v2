@@ -1,0 +1,106 @@
+openapi: 3.0.3
+info:
+  title: HYDRASOCKET API
+  version: "1.0.0"
+  description: "Router v1 (schema-frozen). Auth: API key (hsk_*) header or Bearer JWT."
+servers:
+  - url: https://{host}
+    variables: { host: { default: api.joinbitten.com } }
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Error:
+      type: object
+      required: [error, code]
+      properties:
+        error: { type: string }
+        code: { type: string, enum: [E_SPREAD_GUARD, E_HEDGE_BLOCKED, E_BROKER_REJECT, E_IDEMPOTENCY_DUP, E_SCHEMA_INVALID] }
+    TradeOpenRequest:
+      type: object
+      required: [account_id, symbol, side, volume]
+      properties:
+        idempotency_key: { type: string }
+        account_id: { type: string }
+        symbol: { type: string }
+        side: { type: string, enum: [buy, sell] }
+        volume: { type: number }
+        sl: { type: number, nullable: true }
+        tp: { type: number, nullable: true }
+        meta: { type: object, additionalProperties: true }
+    TradeOpenResponse:
+      type: object
+      required: [ticket, status]
+      properties:
+        ticket: { type: string }
+        status: { type: string, enum: [accepted, rejected, duplicate] }
+        reason: { type: string, nullable: true }
+        broker_ref: { type: string, nullable: true }
+    TradeCloseResponse:
+      type: object
+      required: [ticket, status]
+      properties:
+        ticket: { type: string }
+        status: { type: string, enum: [accepted, rejected] }
+        reason: { type: string, nullable: true }
+    AccountSummary:
+      type: object
+      required: [account_id, balance, equity, margin, free_margin, margin_level, ts]
+      properties:
+        account_id: { type: string }
+        balance: { type: number }
+        equity: { type: number }
+        margin: { type: number }
+        free_margin: { type: number }
+        margin_level: { type: number }
+        ts: { type: string, format: date-time }
+paths:
+  /v1/trades/open:
+    post:
+      security: [ { ApiKeyAuth: [] }, { BearerAuth: [] } ]
+      summary: Open trade
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/TradeOpenResponse" }}}}
+        "403": { description: RBAC forbidden, content: { application/json: { schema: { $ref: "#/components/schemas/Error" }}}}
+  /v1/trades/{ticket}/close:
+    post:
+      parameters: [ { name: ticket, in: path, required: true, schema: { type: string }} ]
+      security: [ { ApiKeyAuth: [] }, { BearerAuth: [] } ]
+      summary: Close trade
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/TradeCloseResponse" }}}}
+        "403": { description: RBAC forbidden, content: { application/json: { schema: { $ref: "#/components/schemas/Error" }}}}
+  /v1/account/{account_id}:
+    get:
+      parameters: [ { name: account_id, in: path, required: true, schema: { type: string }} ]
+      security: [ { ApiKeyAuth: [] }, { BearerAuth: [] } ]
+      summary: Get account summary
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/AccountSummary" }}}}
+  /v1/events:
+    get:
+      security: [ { ApiKeyAuth: [] }, { BearerAuth: [] } ]
+      summary: Replay events
+      parameters:
+        - { name: account_id, in: query, required: true, schema: { type: string } }
+        - { name: from_seq,  in: query, required: false, schema: { type: integer, minimum: 0 } }
+        - { name: since_ts,  in: query, required: false, schema: { type: string, format: date-time } }
+        - { name: limit,     in: query, required: false, schema: { type: integer, minimum: 1, maximum: 1000 }, description: "page size" }
+      responses:
+        "200": { description: Events page (contiguous slice) }
+  /healthz:
+    get:
+      summary: Liveness probe
+      responses: { "200": { description: OK } }
+  /api/health:
+    get:
+      summary: Detailed health
+      responses:
+        "200": { description: OK }

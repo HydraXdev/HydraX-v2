@@ -1,0 +1,188 @@
+{
+  "timestamp": "2025-10-05T17:33:24.250129",
+  "categories": {
+    "keys_storage": {
+      "tests": [
+        {
+          "name": "JWT private key exists",
+          "passed": true,
+          "details": "/root/HydraX-v2/keys/jwt_private.pem"
+        },
+        {
+          "name": "JWT public key exists",
+          "passed": true,
+          "details": "/root/HydraX-v2/keys/jwt_public.pem"
+        },
+        {
+          "name": "JWT private key permissions",
+          "passed": true,
+          "details": "600"
+        },
+        {
+          "name": "JWT public key permissions",
+          "passed": true,
+          "details": "644"
+        },
+        {
+          "name": "JWT key ID configured",
+          "passed": true,
+          "details": "key-2025-10"
+        },
+        {
+          "name": "JWT keys loadable",
+          "passed": true,
+          "details": "Keys loaded"
+        },
+        {
+          "name": "JWT kid in header",
+          "passed": true,
+          "details": "key-2025-10"
+        }
+      ],
+      "passed": 7,
+      "failed": 0
+    },
+    "mission_session_ttl": {
+      "tests": [
+        {
+          "name": "Mission session TTL in range",
+          "passed": true,
+          "details": "600s"
+        },
+        {
+          "name": "Mission session creation",
+          "passed": true,
+          "details": ""
+        },
+        {
+          "name": "Fresh session validation",
+          "passed": true,
+          "details": ""
+        },
+        {
+          "name": "Session expiration enforcement",
+          "passed": true,
+          "details": "Session expired"
+        }
+      ],
+      "passed": 4,
+      "failed": 0
+    },
+    "nonce_idempotency": {
+      "tests": [
+        {
+          "name": "Cache response storage",
+          "passed": true,
+          "details": "op_grbvrx8mJQo"
+        },
+        {
+          "name": "Duplicate detection",
+          "passed": true,
+          "details": ""
+        },
+        {
+          "name": "Same opId returned",
+          "passed": true,
+          "details": ""
+        },
+        {
+          "name": "Cache cleanup logic",
+          "passed": true,
+          "details": "600s TTL"
+        }
+      ],
+      "passed": 4,
+      "failed": 0
+    },
+    "risk_fuse": {
+      "tests": [
+        {
+          "name": "riskMaxUsd claim present",
+          "passed": true,
+          "details": ""
+        },
+        {
+          "name": "riskMaxUsd value correct",
+          "passed": true,
+          "details": "150.0"
+        },
+        {
+          "name": "Risk enforcement code exists (WARNING)",
+          "passed": false,
+          "details": "Not implemented - architectural requirement"
+        },
+        {
+          "name": "Risk limit validation",
+          "passed": true,
+          "details": "$200.0 > $150.0"
+        }
+      ],
+      "passed": 3,
+      "failed": 1
+    },
+    "rooms_topics": {
+      "tests": [
+        {
+          "name": "Socket.IO integration",
+          "passed": true,
+          "details": ""
+        },
+        {
+          "name": "Socket.IO room management",
+          "passed": true,
+          "details": ""
+        },
+        {
+          "name": "Socket.IO emit capability",
+          "passed": true,
+          "details": ""
+        },
+        {
+          "name": "User-scoped rooms",
+          "passed": true,
+          "details": "user_id scoping"
+        },
+        {
+          "name": "Topic authorization",
+          "passed": true,
+          "details": "JWT-based"
+        }
+      ],
+      "passed": 5,
+      "failed": 0
+    },
+    "audit_logs": {
+      "tests": [
+        {
+          "name": "Logging configured",
+          "passed": true,
+          "details": ""
+        },
+        {
+          "name": "Required log fields",
+          "passed": true,
+          "details": "sub, ms, aid, opId, status, error"
+        },
+        {
+          "name": "No PII in logs",
+          "passed": true,
+          "details": "balance, equity, password, api_key, secret"
+        },
+        {
+          "name": "Structured logging",
+          "passed": true,
+          "details": "JSON format"
+        }
+      ],
+      "passed": 4,
+      "failed": 0
+    }
+  },
+  "summary": {
+    "total_tests": 28,
+    "passed": 27,
+    "failed": 1,
+    "success_rate": 96.42857142857143,
+    "overall_status": "FAIL"
+  }
+}

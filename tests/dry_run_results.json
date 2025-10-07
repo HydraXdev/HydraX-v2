@@ -1,0 +1,72 @@
+{
+  "timestamp": "2025-10-05T17:31:50.295600",
+  "total_duration_ms": 7,
+  "total_tests": 9,
+  "passed": 0,
+  "failed": 9,
+  "tests": [
+    {
+      "name": "Generate Mission Session",
+      "passed": false,
+      "duration_ms": 7,
+      "error": "session_manager not found - module may not exist yet",
+      "details": {}
+    },
+    {
+      "name": "Simulate Telegram Alert",
+      "passed": false,
+      "duration_ms": 0,
+      "error": "Missing session data from previous test",
+      "details": {}
+    },
+    {
+      "name": "Mission Page Load",
+      "passed": false,
+      "duration_ms": 0,
+      "error": "session_manager not found",
+      "details": {}
+    },
+    {
+      "name": "Execute Action",
+      "passed": false,
+      "duration_ms": 0,
+      "error": "Missing session or mission data",
+      "details": {}
+    },
+    {
+      "name": "Event Delivery",
+      "passed": false,
+      "duration_ms": 0,
+      "error": "Missing op_id from execute test",
+      "details": {}
+    },
+    {
+      "name": "Idempotency",
+      "passed": false,
+      "duration_ms": 0,
+      "error": "Missing data from execute test",
+      "details": {}
+    },
+    {
+      "name": "Session Expiry",
+      "passed": false,
+      "duration_ms": 0,
+      "error": "session_manager not found",
+      "details": {}
+    },
+    {
+      "name": "Risk Fuse",
+      "passed": false,
+      "duration_ms": 0,
+      "error": "Missing session or risk data",
+      "details": {}
+    },
+    {
+      "name": "Stats Page",
+      "passed": false,
+      "duration_ms": 0,
+      "error": "Missing operation data",
+      "details": {}
+    }
+  ]
+}

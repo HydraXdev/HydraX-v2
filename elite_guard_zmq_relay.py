@@ -211,6 +211,7 @@ class EliteGuardZMQRelay:
             'direction': elite_signal.get('direction'),
             'signal_type': elite_signal.get('signal_type', 'ELITE_GUARD'),
             'pattern': elite_signal.get('pattern', 'UNKNOWN'),
+            'pattern_type': elite_signal.get('pattern_type', elite_signal.get('pattern', 'UNKNOWN')),  # CRITICAL: BittenCore needs this for AUTO fire
             
             # Confidence and scoring
             'confidence': elite_signal.get('confidence', 0),

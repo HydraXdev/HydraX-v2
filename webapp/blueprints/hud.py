@@ -69,9 +69,10 @@ def mission_hud():
         user_data = UserOperations.get_user(user_id)
         ea_data = UserOperations.get_user_ea_instance(user_id)
         
-        # Get balance and calculate position size
+        # Get equity and calculate position size based on real-time balance
+        equity = ea_data['last_equity'] if ea_data and ea_data.get('last_equity') else 1000
         balance = ea_data['last_balance'] if ea_data else 1000
-        risk_amount = balance * 0.02  # 2% risk
+        risk_amount = equity * 0.02  # 2% risk of live equity (balance + floating P&L)
         
         # Simple lot calculation
         if sl_pips > 0:

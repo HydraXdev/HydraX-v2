@@ -1,0 +1,28 @@
+{
+  "mf1": {
+    "fire_id": "SMOKE-MF1-1758745092",
+    "router_triplet": true,
+    "confirmation": {
+      "status": "failed",
+      "message": "REJECTED(SELL): SL/TP required"
+    }
+  },
+  "mf2": {
+    "fire_id": "SMOKE-MF2-1758745092",
+    "router_triplet": true,
+    "confirmation": {
+      "status": "failed",
+      "message": "REJECTED(BUY): BUY requires SL<price<TP"
+    }
+  },
+  "mf3": {
+    "fire_id": "SMOKE-MF3-1758745092",
+    "router_triplet": true,
+    "confirmation": {
+      "status": "success",
+      "ticket": 21848290,
+      "message": "OK SELL"
+    },
+    "telemetry_seen": true
+  }
+}

@@ -1,0 +1,45 @@
+import { NextRequest, NextResponse } from 'next/server';
+
+// Protected routes that require user_id parameter
+const PROTECTED_ROUTES = [
+  '/mission-brief',
+  '/live-trade',
+  '/war-room',
+  '/notebook'
+];
+
+export function middleware(request: NextRequest) {
+  const { pathname, searchParams } = request.nextUrl;
+
+  // Check if this is a protected route
+  const isProtectedRoute = PROTECTED_ROUTES.some(route => pathname.startsWith(route));
+
+  if (isProtectedRoute) {
+    const userId = searchParams.get('user_id');
+
+    if (!userId) {
+      // Redirect to login/auth page
+      const loginUrl = new URL('/auth/login', request.url);
+      loginUrl.searchParams.set('error', 'missing_user');
+      loginUrl.searchParams.set('message', 'Please access this page from the Telegram bot.');
+      return NextResponse.redirect(loginUrl);
+    }
+
+    // Valid user_id - add to headers for easy access in pages
+    const response = NextResponse.next();
+    response.headers.set('x-user-id', userId);
+    return response;
+  }
+
+  // Not a protected route, continue normally
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: [
+    '/mission-brief/:path*',
+    '/live-trade/:path*',
+    '/war-room/:path*',
+    '/notebook/:path*'
+  ]
+};

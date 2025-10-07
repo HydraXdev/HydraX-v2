@@ -1,0 +1,10 @@
+{
+  "status": "partial",
+  "jsonl_total": 120,
+  "bus_before": 59,
+  "bus_after": 59,
+  "backfilled": 0,
+  "failed": 120,
+  "duration_seconds": 0.7382333278656006,
+  "parity_achieved": false
+}

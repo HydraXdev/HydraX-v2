@@ -1,0 +1,59 @@
+{
+  "maintenance_duration_seconds": 0.08182096481323242,
+  "before_metrics": {
+    "event_counts": [
+      [
+        "system_health",
+        1257
+      ],
+      [
+        "execution.outcome.v1",
+        179
+      ],
+      [
+        "signal_generated",
+        55
+      ],
+      [
+        "signal_outcome_recorded",
+        32
+      ]
+    ],
+    "database_size_mb": 0.71,
+    "oldest_event": "2025-09-15 13:38:29.426070",
+    "newest_event": "2025-09-16 00:13:10.969221",
+    "retention_period_days": 30
+  },
+  "after_metrics": {
+    "event_counts": [
+      [
+        "system_health",
+        1257
+      ],
+      [
+        "execution.outcome.v1",
+        179
+      ],
+      [
+        "signal_generated",
+        55
+      ],
+      [
+        "signal_outcome_recorded",
+        32
+      ]
+    ],
+    "database_size_mb": 0.7,
+    "oldest_event": "2025-09-15 13:38:29.426070",
+    "newest_event": "2025-09-16 00:13:10.969221",
+    "retention_period_days": 30
+  },
+  "schema_violations": 0,
+  "performance_metrics": {
+    "recent_outcomes_24h": 179,
+    "event_bus_lag_hours": 0.46,
+    "duplicate_correlations": 5,
+    "timestamp": "2025-09-16T00:13:32.691801"
+  },
+  "timestamp": "2025-09-16T00:13:32.692798"
+}

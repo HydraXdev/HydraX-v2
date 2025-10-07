@@ -1,0 +1,90 @@
+{
+  "parity": {
+    "totals": {
+      "trades": {
+        "bus": 59,
+        "jsonl": 118,
+        "delta": 59,
+        "delta_pct": 50.0
+      },
+      "wins": {
+        "bus": 36,
+        "jsonl": 72,
+        "delta": 36,
+        "delta_pct": 50.0
+      },
+      "losses": {
+        "bus": 23,
+        "jsonl": 46,
+        "delta": 23,
+        "delta_pct": 50.0
+      }
+    },
+    "sums": {
+      "pips_net": {
+        "bus": 214.5,
+        "jsonl": 428.99999999999994,
+        "delta": 214.49999999999994,
+        "delta_pct": 49.99999999999999
+      },
+      "pnl_ccy": {
+        "bus": 0.0,
+        "jsonl": 0.0,
+        "delta": 0.0,
+        "delta_pct": 0.0
+      }
+    },
+    "ratios": {
+      "win_rate": {
+        "bus": 61.016949152542374,
+        "jsonl": 61.016949152542374,
+        "delta": 0.0
+      },
+      "rr_avg": {
+        "bus": 0.0,
+        "jsonl": 0.0,
+        "delta": 0.0
+      }
+    },
+    "violations": [
+      "Total trades: 50.00% > 0.5%",
+      "Total wins: 50.00% > 0.5%",
+      "Total losses: 50.00% > 0.5%",
+      "Sum pips_net: 50.00% > 0.5%"
+    ],
+    "status": "FAIL"
+  },
+  "idempotency": {
+    "count_before": 59,
+    "count_after": 59,
+    "duplicate_attempts": 0,
+    "duplicates_created": 0,
+    "status": "PASS"
+  },
+  "consistency": {
+    "violations": [],
+    "edge_cases": {
+      "partial_fills": 0,
+      "manual_closes": 0,
+      "breakevens": 0,
+      "timeouts": 0,
+      "trail_stops": 0
+    },
+    "status": "PASS"
+  },
+  "cross_audit": {
+    "status": "SKIP",
+    "reason": "No common trade IDs found"
+  },
+  "latency": {
+    "baseline_p95_ms": 150,
+    "current_p95_ms": 155,
+    "regression_pct": 3.3333333333333335,
+    "status": "PASS"
+  },
+  "overall": {
+    "status": "FAIL",
+    "duration_seconds": 0.2007884979248047,
+    "timestamp": "2025-09-15T23:59:13.932799"
+  }
+}

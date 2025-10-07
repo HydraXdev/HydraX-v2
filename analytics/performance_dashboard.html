@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BITTEN System Performance</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0e14;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            border: 2px solid #00ff00;
+            padding: 20px;
+            margin-bottom: 30px;
+            background: #111;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            text-shadow: 0 0 10px #00ff00;
+        }
+
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .report-btn {
+            background: #1a1a1a;
+            border: 2px solid #00ff00;
+            color: #00ff00;
+            padding: 15px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .report-btn:hover {
+            background: #00ff00;
+            color: #000;
+            box-shadow: 0 0 15px #00ff00;
+        }
+
+        .report-btn.active {
+            background: #003300;
+            border-color: #00ff00;
+        }
+
+        .results-container {
+            border: 2px solid #00ff00;
+            padding: 20px;
+            background: #111;
+            min-height: 400px;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #00ff00;
+        }
+
+        .stat-box {
+            background: #0a0e14;
+            border: 1px solid #00ff00;
+            padding: 10px 20px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #003300;
+        }
+
+        th {
+            background: #0a0e14;
+            color: #00ff00;
+            font-weight: bold;
+        }
+
+        tr:hover {
+            background: #001100;
+        }
+
+        .chart-container {
+            margin: 20px 0;
+            padding: 20px;
+            background: #0a0e14;
+            border: 1px solid #00ff00;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 18px;
+        }
+
+        .error {
+            color: #ff0000;
+            padding: 20px;
+            border: 2px solid #ff0000;
+            background: #110000;
+            text-align: center;
+        }
+
+        .win-rate-good {
+            color: #00ff00;
+        }
+
+        .win-rate-medium {
+            color: #ffff00;
+        }
+
+        .win-rate-bad {
+            color: #ff0000;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>⚔️ BITTEN SYSTEM PERFORMANCE ⚔️</h1>
+        <div style="margin-top: 10px; font-size: 14px;">Real-Time Pattern & Trade Analytics</div>
+    </div>
+
+    <div class="button-grid">
+        <button class="report-btn" onclick="loadReport('pattern')">📊 PATTERN PERFORMANCE</button>
+        <button class="report-btn" onclick="loadReport('confidence')">🎯 CONFIDENCE ANALYSIS</button>
+        <button class="report-btn" onclick="loadReport('session')">🕐 SESSION BREAKDOWN</button>
+        <button class="report-btn" onclick="loadReport('pair')">💱 PAIR PERFORMANCE</button>
+        <button class="report-btn" onclick="loadReport('time')">⏱️ TIME ANALYSIS</button>
+        <button class="report-btn" onclick="loadReport('recent')">📜 RECENT SIGNALS</button>
+    </div>
+
+    <div class="results-container" id="results">
+        <div class="loading">Select a report above to view analytics</div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8892';
+        let currentChart = null;
+
+        async function loadReport(reportType) {
+            // Highlight active button
+            document.querySelectorAll('.report-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<div class="loading">Loading...</div>';
+
+            try {
+                let endpoint = '';
+                switch(reportType) {
+                    case 'pattern':
+                        endpoint = '/api/performance/by_pattern';
+                        break;
+                    case 'confidence':
+                        endpoint = '/api/performance/by_confidence';
+                        break;
+                    case 'session':
+                        endpoint = '/api/performance/by_session';
+                        break;
+                    case 'pair':
+                        endpoint = '/api/performance/by_pair';
+                        break;
+                    case 'time':
+                        endpoint = '/api/performance/time_analysis';
+                        break;
+                    case 'recent':
+                        endpoint = '/api/performance/recent?limit=50';
+                        break;
+                }
+
+                const response = await fetch(API_BASE + endpoint);
+                const data = await response.json();
+
+                if (reportType === 'time') {
+                    displayTimeAnalysis(data);
+                } else if (reportType === 'recent') {
+                    displayRecentSignals(data);
+                } else {
+                    displayStandardReport(data, reportType);
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="error">❌ Error loading report: ${error.message}</div>`;
+            }
+        }
+
+        function displayStandardReport(data, reportType) {
+            const resultsDiv = document.getElementById('results');
+
+            // Calculate overall stats
+            const totalSignals = data.reduce((sum, item) => sum + item.total, 0);
+            const totalWins = data.reduce((sum, item) => sum + item.wins, 0);
+            const totalLosses = data.reduce((sum, item) => sum + item.losses, 0);
+            const completed = totalWins + totalLosses;
+            const overallWinRate = completed > 0 ? (totalWins / completed * 100).toFixed(1) : 0;
+
+            // Build HTML
+            let html = `
+                <div class="results-header">
+                    <div class="stat-box">
+                        <div class="stat-label">Total Signals</div>
+                        <div class="stat-value">${totalSignals}</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Win Rate</div>
+                        <div class="stat-value ${getWinRateClass(overallWinRate)}">${overallWinRate}%</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Wins / Losses</div>
+                        <div class="stat-value">${totalWins} / ${totalLosses}</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="performanceChart" height="80"></canvas>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>${reportType === 'pattern' ? 'Pattern' : reportType === 'confidence' ? 'Confidence Range' : reportType === 'session' ? 'Session' : 'Symbol'}</th>
+                            <th>Total</th>
+                            <th>Wins</th>
+                            <th>Losses</th>
+                            <th>Pending</th>
+                            <th>Win Rate</th>
+                            <th>Avg Pips</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            data.forEach(item => {
+                const nameField = item.pattern || item.confidence_range || item.session || item.symbol;
+                html += `
+                    <tr>
+                        <td><strong>${nameField}</strong></td>
+                        <td>${item.total}</td>
+                        <td style="color: #00ff00">${item.wins}</td>
+                        <td style="color: #ff0000">${item.losses}</td>
+                        <td>${item.pending}</td>
+                        <td class="${getWinRateClass(item.win_rate)}">${item.win_rate}%</td>
+                        <td>${item.avg_pips > 0 ? '+' : ''}${item.avg_pips}</td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table>';
+            resultsDiv.innerHTML = html;
+
+            // Create chart
+            createBarChart(data, reportType);
+        }
+
+        function displayTimeAnalysis(data) {
+            const resultsDiv = document.getElementById('results');
+            const html = `
+                <div class="results-header">
+                    <div class="stat-box">
+                        <div class="stat-label">Avg Win Duration</div>
+                        <div class="stat-value" style="color: #00ff00">${data.avg_win_lifespan_min} min</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Avg Loss Duration</div>
+                        <div class="stat-value" style="color: #ff0000">${data.avg_loss_lifespan_min} min</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Total Analyzed</div>
+                        <div class="stat-value">${data.total_wins + data.total_losses}</div>
+                    </div>
+                </div>
+
+                <div style="padding: 40px; text-align: center; font-size: 16px; line-height: 1.8;">
+                    <p>⏱️ Winning trades take an average of <strong style="color: #00ff00">${data.avg_win_lifespan_min} minutes</strong> to reach TP</p>
+                    <p>⏱️ Losing trades take an average of <strong style="color: #ff0000">${data.avg_loss_lifespan_min} minutes</strong> to hit SL</p>
+                    <p style="margin-top: 30px;">
+                        ${data.avg_win_lifespan_min < data.avg_loss_lifespan_min
+                            ? '✅ Wins happen faster than losses - Good sign!'
+                            : '⚠️ Losses happen faster than wins - Consider tighter SL or wider TP'}
+                    </p>
+                </div>
+            `;
+            resultsDiv.innerHTML = html;
+        }
+
+        function displayRecentSignals(data) {
+            const resultsDiv = document.getElementById('results');
+            let html = `
+                <div class="results-header">
+                    <div class="stat-box">
+                        <div class="stat-label">Recent Signals</div>
+                        <div class="stat-value">${data.length}</div>
+                    </div>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Symbol</th>
+                            <th>Pattern</th>
+                            <th>Confidence</th>
+                            <th>Direction</th>
+                            <th>Outcome</th>
+                            <th>Pips</th>
+                            <th>Session</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            data.forEach(sig => {
+                const outcomeClass = sig.outcome === 'WIN' ? 'win-rate-good' : sig.outcome === 'LOSS' ? 'win-rate-bad' : '';
+                html += `
+                    <tr>
+                        <td>${sig.symbol}</td>
+                        <td>${sig.pattern_type}</td>
+                        <td>${sig.confidence}%</td>
+                        <td>${sig.direction}</td>
+                        <td class="${outcomeClass}">${sig.outcome}</td>
+                        <td>${sig.pips_result > 0 ? '+' : ''}${sig.pips_result}</td>
+                        <td>${sig.session}</td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table>';
+            resultsDiv.innerHTML = html;
+        }
+
+        function createBarChart(data, reportType) {
+            const ctx = document.getElementById('performanceChart');
+
+            // Destroy existing chart
+            if (currentChart) {
+                currentChart.destroy();
+            }
+
+            const labels = data.map(item =>
+                item.pattern || item.confidence_range || item.session || item.symbol
+            );
+            const winRates = data.map(item => item.win_rate);
+
+            currentChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Win Rate %',
+                        data: winRates,
+                        backgroundColor: winRates.map(rate =>
+                            rate >= 60 ? 'rgba(0, 255, 0, 0.5)' :
+                            rate >= 50 ? 'rgba(255, 255, 0, 0.5)' :
+                            'rgba(255, 0, 0, 0.5)'
+                        ),
+                        borderColor: winRates.map(rate =>
+                            rate >= 60 ? '#00ff00' :
+                            rate >= 50 ? '#ffff00' :
+                            '#ff0000'
+                        ),
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#00ff00',
+                                font: { family: "'Courier New', monospace" }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: { color: '#00ff00' },
+                            grid: { color: '#003300' }
+                        },
+                        x: {
+                            ticks: { color: '#00ff00' },
+                            grid: { color: '#003300' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function getWinRateClass(rate) {
+            if (rate >= 60) return 'win-rate-good';
+            if (rate >= 50) return 'win-rate-medium';
+            return 'win-rate-bad';
+        }
+
+        // Auto-load pattern report on page load
+        window.addEventListener('load', () => {
+            document.querySelector('.report-btn').click();
+        });
+    </script>
+</body>
+</html>

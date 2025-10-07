@@ -90,7 +90,7 @@ export function SideNav() {
             </div>
             {!isCollapsed && (
               <motion.div
-                initial={{ opacity: 0 }}
+                initial={{ opacity: 1 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 className="flex flex-col"
@@ -128,7 +128,7 @@ export function SideNav() {
                 />
                 {!isCollapsed && (
                   <motion.span
-                    initial={{ opacity: 0 }}
+                    initial={{ opacity: 1 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     className={`

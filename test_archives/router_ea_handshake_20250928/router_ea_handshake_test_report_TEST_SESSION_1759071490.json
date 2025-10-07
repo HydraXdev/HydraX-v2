@@ -1,0 +1,212 @@
+{
+  "test_session": {
+    "session_id": "TEST_SESSION_1759071490",
+    "account_id": "TEST_ACCOUNT_001",
+    "node_id": "EA_TEST_NODE",
+    "start_time": "2025-09-28T14:58:10.931296Z",
+    "end_time": "2025-09-28T14:58:44.716815Z",
+    "total_duration_seconds": 34
+  },
+  "summary": {
+    "total_tests": 17,
+    "passed_tests": 15,
+    "failed_tests": 2,
+    "success_rate_percent": 88.2
+  },
+  "test_results": [
+    {
+      "test": "Boot Order - Config Snapshot",
+      "success": true,
+      "message": "Config event sent",
+      "details": {},
+      "timestamp": "2025-09-28T14:58:10.931296Z",
+      "session_id": "TEST_SESSION_1759071490"
+    },
+    {
+      "test": "Boot Order - EA Started",
+      "success": true,
+      "message": "EA started event sent",
+      "details": {},
+      "timestamp": "2025-09-28T14:58:11.433684Z",
+      "session_id": "TEST_SESSION_1759071490"
+    },
+    {
+      "test": "Boot Order - Idempotency Sync",
+      "success": true,
+      "message": "Idemp sync event sent",
+      "details": {},
+      "timestamp": "2025-09-28T14:58:11.934398Z",
+      "session_id": "TEST_SESSION_1759071490"
+    },
+    {
+      "test": "Boot Order - Portfolio Snapshot",
+      "success": true,
+      "message": "Portfolio snapshot sent",
+      "details": {
+        "positions": 1,
+        "balance": 10000.0,
+        "equity": 10005.15
+      },
+      "timestamp": "2025-09-28T14:58:12.435508Z",
+      "session_id": "TEST_SESSION_1759071490"
+    },
+    {
+      "test": "Idempotency - First Request",
+      "success": false,
+      "message": "No response to initial request",
+      "details": {},
+      "timestamp": "2025-09-28T14:58:17.440632Z",
+      "session_id": "TEST_SESSION_1759071490"
+    },
+    {
+      "test": "Summary Mode - Hz1 Enabled",
+      "success": true,
+      "message": "Summary with hz1=1 sent",
+      "details": {
+        "balance": 10000.0,
+        "equity": 10025.5,
+        "mode": "hz1=1 (enabled)"
+      },
+      "timestamp": "2025-09-28T14:58:17.440969Z",
+      "session_id": "TEST_SESSION_1759071490"
+    },
+    {
+      "test": "Summary Mode - Hz1 Disabled",
+      "success": true,
+      "message": "Summary with hz1=0 sent",
+      "details": {
+        "balance": 10000.0,
+        "equity": 10030.75,
+        "mode": "hz1=0 (disabled)"
+      },
+      "timestamp": "2025-09-28T14:58:17.941666Z",
+      "session_id": "TEST_SESSION_1759071490"
+    },
+    {
+      "test": "Feed Bootstrap - M1 Candle 1",
+      "success": true,
+      "message": "EURUSD M1 candle sent",
+      "details": {
+        "open": 1.1,
+        "close": 1.1002,
+        "volume": 1000,
+        "time": "14:54:17"
+      },
+      "timestamp": "2025-09-28T14:58:17.941999Z",
+      "session_id": "TEST_SESSION_1759071490"
+    },
+    {
+      "test": "Feed Bootstrap - M1 Candle 2",
+      "success": true,
+      "message": "EURUSD M1 candle sent",
+      "details": {
+        "open": 1.1001,
+        "close": 1.1003,
+        "volume": 1100,
+        "time": "14:55:17"
+      },
+      "timestamp": "2025-09-28T14:58:18.146305Z",
+      "session_id": "TEST_SESSION_1759071490"
+    },
+    {
+      "test": "Feed Bootstrap - M1 Candle 3",
+      "success": true,
+      "message": "EURUSD M1 candle sent",
+      "details": {
+        "open": 1.1002,
+        "close": 1.1004,
+        "volume": 1200,
+        "time": "14:56:17"
+      },
+      "timestamp": "2025-09-28T14:58:18.346733Z",
+      "session_id": "TEST_SESSION_1759071490"
+    },
+    {
+      "test": "Feed Bootstrap - M1 Candle 4",
+      "success": true,
+      "message": "EURUSD M1 candle sent",
+      "details": {
+        "open": 1.1003,
+        "close": 1.1005,
+        "volume": 1300,
+        "time": "14:57:17"
+      },
+      "timestamp": "2025-09-28T14:58:18.547201Z",
+      "session_id": "TEST_SESSION_1759071490"
+    },
+    {
+      "test": "Feed Bootstrap - M1 Candle 5",
+      "success": true,
+      "message": "EURUSD M1 candle sent",
+      "details": {
+        "open": 1.1004,
+        "close": 1.1006,
+        "volume": 1400,
+        "time": "14:58:17"
+      },
+      "timestamp": "2025-09-28T14:58:18.747678Z",
+      "session_id": "TEST_SESSION_1759071490"
+    },
+    {
+      "test": "Feed Bootstrap - Current Tick",
+      "success": true,
+      "message": "Live tick data sent",
+      "details": {
+        "bid": 1.10025,
+        "ask": 1.10028,
+        "spread": 0.3
+      },
+      "timestamp": "2025-09-28T14:58:18.948156Z",
+      "session_id": "TEST_SESSION_1759071490"
+    },
+    {
+      "test": "WebSocket - Health Check",
+      "success": true,
+      "message": "WebApp health endpoint responsive",
+      "details": {
+        "status_code": 200,
+        "response_time_ms": 18
+      },
+      "timestamp": "2025-09-28T14:58:19.495522Z",
+      "session_id": "TEST_SESSION_1759071490"
+    },
+    {
+      "test": "WebSocket - Position Heartbeat",
+      "success": true,
+      "message": "Heartbeat event for WS broadcast sent",
+      "details": {
+        "ticket": 12345001,
+        "mark_price": 1.1005,
+        "pnl": 5.25
+      },
+      "timestamp": "2025-09-28T14:58:19.495833Z",
+      "session_id": "TEST_SESSION_1759071490"
+    },
+    {
+      "test": "Metrics - Line Protocol",
+      "success": true,
+      "message": "Sent 6 line protocol metrics",
+      "details": {
+        "metrics_count": 6,
+        "sample": "account_summary_emitted=10"
+      },
+      "timestamp": "2025-09-28T14:58:39.712617Z",
+      "session_id": "TEST_SESSION_1759071490"
+    },
+    {
+      "test": "Metrics - JSON Format",
+      "success": false,
+      "message": "Failed to send JSON metrics: Resource temporarily unavailable",
+      "details": {},
+      "timestamp": "2025-09-28T14:58:44.716638Z",
+      "session_id": "TEST_SESSION_1759071490"
+    }
+  ],
+  "conclusions": {
+    "router_communication": "TESTED",
+    "idempotency_system": "TESTED",
+    "event_ingestion": "TESTED",
+    "metrics_collection": "TESTED",
+    "websocket_readiness": "TESTED"
+  }
+}

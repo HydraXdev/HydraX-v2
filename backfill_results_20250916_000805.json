@@ -1,0 +1,10 @@
+{
+  "status": "success",
+  "jsonl_total": 120,
+  "bus_before": 59,
+  "bus_after": 119,
+  "backfilled": 120,
+  "failed": 0,
+  "duration_seconds": 1.493058681488037,
+  "parity_achieved": false
+}

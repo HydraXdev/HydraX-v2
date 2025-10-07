@@ -2,7 +2,7 @@
 import os, json, redis, requests, time
 
 # ATHENA bot credentials
-ATHENA_TOKEN = "8322305650:AAHu8NmQ0rXT0LkZOlDeYop6TAUJXaXbwAg"
+ATHENA_TOKEN = "8322305650:AAHSnZiY4nX-qFQm0URUg_WyXrGrgb7kkBM"
 CHAT_ID = "-1002581996861"
 
 R = redis.Redis(host="127.0.0.1", port=6379, decode_responses=True)

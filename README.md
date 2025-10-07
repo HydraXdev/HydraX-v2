@@ -284,6 +284,14 @@ This is a proprietary trading system. For security reasons, contributions are li
 
 Proprietary - All Rights Reserved
 
+## 🔧 Operations
+
+### Mission-State Worker
+```bash
+export MISSION_STATE=1 MIN_RR=1.6 MAX_SPREAD_TO_SL_RATIO=0.18 EXPIRY_GRACE_MS=45000
+nohup python3 run_metasocket_adapter_daemon.py &
+```
+
 ## 🆘 Support
 
 For technical support or questions:

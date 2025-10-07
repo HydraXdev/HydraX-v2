@@ -1,6 +1,6 @@
 "use client"
 
-type EventCallback = (data: any) => void
+type EventCallback = (data: unknown) => void
 type UnsubscribeFn = () => void
 
 class EventBus {
@@ -16,7 +16,7 @@ class EventBus {
     return EventBus.instance
   }
 
-  emit(event: string, data?: any): void {
+  emit(event: string, data?: unknown): void {
     const callbacks = this.events.get(event)
     if (callbacks) {
       callbacks.forEach(callback => {
@@ -47,7 +47,7 @@ class EventBus {
   }
 
   once(event: string, callback: EventCallback): UnsubscribeFn {
-    const wrappedCallback = (data: any) => {
+    const wrappedCallback = (data: unknown) => {
       callback(data)
       this.off(event, wrappedCallback)
     }

@@ -24,7 +24,7 @@ class AthenaGroupDispatcher:
     
     def __init__(self):
         # ATHENA Mission Bot configuration
-        self.athena_bot_token = "8322305650:AAHu8NmQ0rXT0LkZOlDeYop6TAUJXaXbwAg"
+        self.athena_bot_token = "8322305650:AAHSnZiY4nX-qFQm0URUg_WyXrGrgb7kkBM"
         self.telegram_api_base = f"https://api.telegram.org/bot{self.athena_bot_token}"
         
         # Group configuration - BITTEN Signals group
@@ -66,17 +66,19 @@ class AthenaGroupDispatcher:
             signal_id = signal_data.get('signal_id', f'ATHENA_{int(time.time())}')
             symbol = signal_data.get('symbol', 'UNKNOWN').upper()
             direction = signal_data.get('direction', 'UNKNOWN').upper()
-            tcs_score = signal_data.get('tcs_score', 0)
-            confidence = round(tcs_score, 1)
+            # Try both tcs_score and confidence fields
+            tcs_score = signal_data.get('tcs_score') or signal_data.get('confidence', 0)
+            confidence = round(float(tcs_score), 1) if tcs_score else 0
             
             logger.info(f"🏛️ Dispatching group signal: {signal_id} - {symbol} {direction}")
             logger.info(f"📊 Debug - Signal data keys: {list(signal_data.keys())}")
             logger.info(f"📊 Debug - TCS Score: {tcs_score}, Confidence: {confidence}")
             
             # Mission files handled by PersonalizedMissionBrain via athena_signal_dispatcher
-            
-            # Generate HUD URL for full briefing
-            hud_url = self._generate_hud_url(signal_id)
+
+            # Generate HUD URL for full briefing (mission session deep link)
+            alert_id = signal_data.get('id') or signal_data.get('alert_id') or (hash(signal_id) % 1000000)
+            hud_url = self._generate_hud_url(signal_id, user_id='7176191872', alert_id=alert_id)
             
             # Generate tactical line based on TCS confidence
             tactical_line = self._get_tactical_line(confidence)
@@ -98,11 +100,10 @@ class AthenaGroupDispatcher:
                 mode_icon = "⚡" if confidence < 85 else "🎯"
                 mode_tag = "RAPID" if confidence < 85 else "SNIPER"
             
-            # Create short tactical message with mode icon
-            message = f"""{mode_icon} *{mode_tag} SIGNAL*
-📊 {symbol} {direction} | {confidence}% | {pattern_type}
-⚔️ {tactical_line}
-📥 [MISSION BRIEF]({hud_url})"""
+            # Create message in correct format (no tactical line!)
+            message = f"""{mode_icon} {mode_tag} • {symbol} {direction} • {confidence}% • {pattern_type}
+mission ready
+📥 [Mission Brief]({hud_url})"""
             
             # Send to group
             logger.info(f"📤 Attempting to send to group: {self.group_chat_id}")
@@ -171,12 +172,23 @@ class AthenaGroupDispatcher:
         else:
             return "Target is exposed. Greenlight. Precision is key."
     
-    def _generate_hud_url(self, signal_id: str) -> str:
-        """Generate HUD URL for full mission briefing"""
-        # Use the brief endpoint without user_id - will be determined on click
-        # Each user clicking the link gets their own personalized mission
-        base_url = "https://joinbitten.com"
-        return f"{base_url}/brief?signal_id={signal_id}"
+    def _generate_hud_url(self, signal_id: str, user_id: str = '7176191872', alert_id: int = None) -> str:
+        """
+        Generate HUD URL for mission brief
+        Uses server IP since domain is not configured
+        """
+        try:
+            # Use server IP address - domain joinbitten.com returns 404
+            base_url = "http://134.199.204.67:8888"
+            hud_url = f"{base_url}/brief?signal_id={signal_id}"
+
+            logger.info(f"✅ Generated HUD link for {signal_id}: {hud_url}")
+            return hud_url
+
+        except Exception as e:
+            logger.error(f"❌ Failed to generate HUD link: {e}")
+            # Fallback
+            return f"http://134.199.204.67:8888/brief?signal_id={signal_id}"
     
     def _send_telegram_message(self, chat_id: str, text: str, parse_mode: str = "Markdown", disable_web_page_preview: bool = False) -> Dict:
         """Send message via Telegram API"""

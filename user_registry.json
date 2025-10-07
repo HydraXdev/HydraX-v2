@@ -29,8 +29,8 @@
     },
     "capture_source": "tick_stream",
     "risk_profile": {
-      "risk_percentage": 3.0,
-      "max_daily_risk": 15.0,
+      "risk_percentage": 5.0,
+      "max_daily_risk": 25.0,
       "max_concurrent_trades": 3,
       "risk_mode": "MODERATE"
     }

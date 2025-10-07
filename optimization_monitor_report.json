@@ -1,0 +1,108 @@
+{
+  "timestamp": "2025-09-24T19:49:25.852464",
+  "hours_since_optimization": 0.0,
+  "total_signals": 141,
+  "baseline_comparison": {
+    "baseline_24h": 29,
+    "current_rate_24h": 482758074,
+    "improvement_factor": 16646830.14
+  },
+  "pattern_analysis": {
+    "BB_SCALP": {
+      "signals_count": 32,
+      "avg_confidence": 84.3,
+      "confidence_range": "73.4-92.0%",
+      "unique_symbols": 11,
+      "direction_balance": {
+        "BUY": 21,
+        "SELL": 11
+      }
+    },
+    "KALMAN_QUICKFIRE": {
+      "signals_count": 108,
+      "avg_confidence": 82.4,
+      "confidence_range": "71.6-92.0%",
+      "unique_symbols": 8,
+      "direction_balance": {
+        "BUY": 56,
+        "SELL": 52
+      }
+    },
+    "AUTO_TEST": {
+      "signals_count": 1,
+      "avg_confidence": 85.0,
+      "confidence_range": "85.0-85.0%",
+      "unique_symbols": 1,
+      "direction_balance": {
+        "BUY": 1,
+        "SELL": 0
+      }
+    }
+  },
+  "new_pattern_status": {
+    "BLIND_SPOT": {
+      "status": "\u274c NOT GENERATING",
+      "signals": 0,
+      "threshold": 70.0,
+      "note": "May need threshold adjustment or market conditions not met"
+    },
+    "TRAPDOOR_SSR": {
+      "status": "\u274c NOT GENERATING",
+      "signals": 0,
+      "threshold": 70.0,
+      "note": "May need threshold adjustment or market conditions not met"
+    },
+    "PRESSURE_VALVE": {
+      "status": "\u274c NOT GENERATING",
+      "signals": 0,
+      "threshold": 70.0,
+      "note": "May need threshold adjustment or market conditions not met"
+    }
+  },
+  "rescued_pattern_status": {
+    "VCB_BREAKOUT": {
+      "status": "\u26a0\ufe0f STILL BLOCKED",
+      "signals": 0,
+      "threshold_change": "75.0% \u2192 65.0%",
+      "rescue_success": false
+    },
+    "ORDER_BLOCK_BOUNCE": {
+      "status": "\u26a0\ufe0f STILL BLOCKED",
+      "signals": 0,
+      "threshold_change": "75.0% \u2192 65.0%",
+      "rescue_success": false
+    },
+    "SWEEP_RETURN": {
+      "status": "\u26a0\ufe0f STILL BLOCKED",
+      "signals": 0,
+      "threshold_change": "78.0% \u2192 68.0%",
+      "rescue_success": false
+    },
+    "MOMENTUM_BURST": {
+      "status": "\u26a0\ufe0f STILL BLOCKED",
+      "signals": 0,
+      "threshold_change": "75.0% \u2192 65.0%",
+      "rescue_success": false
+    }
+  },
+  "optimization_success_indicators": {
+    "pattern_diversity_restored": {
+      "baseline": 2,
+      "current": 3,
+      "target": "6+",
+      "success": false
+    },
+    "signal_volume_increase": {
+      "baseline_24h": 29,
+      "current_rate_24h": 482758074,
+      "target": "87+",
+      "success": true
+    },
+    "new_patterns_active": {
+      "active_count": 0,
+      "total_count": 3,
+      "target": "3",
+      "success": false
+    }
+  }
+}

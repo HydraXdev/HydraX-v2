@@ -1,0 +1,30 @@
+# HELP hydrasocket_order_to_open_ms_p95 Order processing latency 95th percentile in milliseconds
+# TYPE hydrasocket_order_to_open_ms_p95 gauge
+hydrasocket_order_to_open_ms_p95 127.8
+
+# HELP hydrasocket_event_lag_ms_p95 Event processing lag 95th percentile in milliseconds
+# TYPE hydrasocket_event_lag_ms_p95 gauge
+hydrasocket_event_lag_ms_p95 45.2
+
+# HELP hydrasocket_ws_clients Current WebSocket client connections
+# TYPE hydrasocket_ws_clients gauge
+hydrasocket_ws_clients 0
+
+# HELP hydrasocket_backpressure_drops_total Total messages dropped due to backpressure
+# TYPE hydrasocket_backpressure_drops_total counter
+hydrasocket_backpressure_drops_total 0
+
+# HELP hydrasocket_requests_total Total HTTP requests
+# TYPE hydrasocket_requests_total counter
+hydrasocket_requests_total{method="GET",endpoint="/healthz"} 248
+hydrasocket_requests_total{method="GET",endpoint="/api/health"} 95
+hydrasocket_requests_total{method="POST",endpoint="/v1/trades/open"} 150
+
+# HELP hydrasocket_request_duration_seconds HTTP request duration
+# TYPE hydrasocket_request_duration_seconds histogram
+hydrasocket_request_duration_seconds_bucket{le="0.1"} 180
+hydrasocket_request_duration_seconds_bucket{le="0.25"} 248
+hydrasocket_request_duration_seconds_bucket{le="0.5"} 248
+hydrasocket_request_duration_seconds_bucket{le="+Inf"} 248
+hydrasocket_request_duration_seconds_sum 11.45
+hydrasocket_request_duration_seconds_count 248

@@ -1,0 +1,327 @@
+{
+  "version": "2.082",
+  "description": "BITTEN Universal EA v2.082 JSON Message Schemas",
+  "last_updated": "2025-09-24",
+
+  "outbound_messages": {
+    "TICK": {
+      "port": 5556,
+      "description": "Deterministic tick data (1 per symbol per second minimum)",
+      "schema": {
+        "type": "TICK",
+        "node_id": "NODE_...",
+        "user_uuid": "...",
+        "symbol": "XAUUSD",
+        "bid": 2345.67,
+        "ask": 2346.12,
+        "spread": 4.5,
+        "tick_value": 1.0,
+        "tick_size": 0.01,
+        "point": 0.01,
+        "volume": 100,
+        "timestamp": "2025-09-24 01:23:45"
+      }
+    },
+
+    "OHLC": {
+      "port": 5556,
+      "description": "OHLC candle data for M1/M5/M15/M30/H1 timeframes",
+      "schema": {
+        "type": "OHLC",
+        "node_id": "NODE_...",
+        "user_uuid": "...",
+        "symbol": "EURUSD",
+        "timeframe": "M1",
+        "time": 1695420000,
+        "open": 1.0678,
+        "high": 1.0689,
+        "low": 1.0670,
+        "close": 1.0682,
+        "timestamp": "2025-09-24 01:24:00"
+      }
+    },
+
+    "signal_snapshot": {
+      "port": 5558,
+      "description": "Signal snapshot emitted before fire command execution",
+      "schema": {
+        "type": "signal_snapshot",
+        "user_uuid": "...",
+        "node_id": "NODE_...",
+        "symbol": "EURUSD",
+        "timeframe": "M1",
+        "t0": "2025-09-24 01:23:45",
+        "pattern": "TRAPDOOR",
+        "fire_id": "abc123",
+        "spread_pts": 4.3,
+        "overlays": {
+          "entry": 1.0682,
+          "sl": 1.0668,
+          "tp": 1.0715
+        },
+        "bars": [
+          {
+            "t": 1695420000,
+            "o": 1.0678,
+            "h": 1.0689,
+            "l": 1.0670,
+            "c": 1.0682
+          }
+        ],
+        "metrics": {
+          "dir": "BUY",
+          "lot": 0.10,
+          "sl": 1.0668,
+          "tp": 1.0715
+        }
+      }
+    },
+
+    "confirmation": {
+      "port": 5558,
+      "description": "Fire command execution result",
+      "schema": {
+        "type": "confirmation",
+        "version": "2.082",
+        "command_type": "fire",
+        "fire_id": "abc123",
+        "node_id": "NODE_...",
+        "user_uuid": "...",
+        "status": "success",
+        "ticket": 123456,
+        "price": 1.0682,
+        "lot": 0.10,
+        "message": "OK BUY",
+        "account": 843859,
+        "currency": "USD",
+        "balance": 1000.00,
+        "equity": 1002.50,
+        "floating_pnl": 2.50,
+        "timestamp": "2025-09-24 01:23:46"
+      },
+      "status_values": [
+        "success",
+        "failed",
+        "rejected",
+        "insufficient_margin",
+        "invalid_stops"
+      ]
+    },
+
+    "close_confirmation": {
+      "port": 5558,
+      "description": "Close command execution result",
+      "schema": {
+        "type": "close_confirmation",
+        "version": "2.082",
+        "command_type": "close_ticket",
+        "node_id": "NODE_...",
+        "user_uuid": "...",
+        "status": "success",
+        "ticket": 123456,
+        "close_price": 2346.12,
+        "lot": 0.10,
+        "message": "Closed",
+        "account": 843859,
+        "currency": "USD",
+        "balance": 1005.00,
+        "equity": 1005.00,
+        "floating_pnl": 0.00
+      }
+    },
+
+    "position_closed": {
+      "port": 5558,
+      "description": "Passive event emitted when position exits",
+      "schema": {
+        "type": "position_closed",
+        "ticket": 123456,
+        "fire_id": "",
+        "symbol": "XAUUSD",
+        "volume": 0.10,
+        "close_price": 2346.12,
+        "profit": 12.50,
+        "reason": "TP_HIT",
+        "uuid": "...",
+        "balance": 1005.00,
+        "equity": 1005.00,
+        "floating_pnl": 0.00,
+        "timestamp": 1695420220
+      },
+      "reason_values": [
+        "MANUAL",
+        "TP_HIT",
+        "SL_HIT",
+        "STOP_OUT"
+      ]
+    },
+
+    "HEARTBEAT_METRICS": {
+      "port": 5560,
+      "description": "Live account metrics and positions array (1-second cadence)",
+      "schema": {
+        "type": "HEARTBEAT_METRICS",
+        "target_uuid": "...",
+        "node_id": "NODE_...",
+        "currency": "USD",
+        "balance": 1000.00,
+        "equity": 1002.50,
+        "floating_pnl": 2.50,
+        "leverage": "500",
+        "margin": "120.50",
+        "free_margin": "881.99",
+        "margin_level": "830.78",
+        "ticks_processed": 12345,
+        "hybrid_positions": 0,
+        "open_positions": 1,
+        "positions": [
+          {
+            "ticket": 123456,
+            "fire_id": "abc123",
+            "symbol": "EURUSD",
+            "direction": "BUY",
+            "open_price": 1.0675,
+            "current_price": 1.0682,
+            "volume": 0.10,
+            "pnl": 2.50
+          }
+        ],
+        "timestamp": "2025-09-24 01:23:46"
+      }
+    },
+
+    "pong": {
+      "port": 5558,
+      "description": "Response to ping command for liveness check",
+      "schema": {
+        "type": "pong",
+        "ping_id": "xyz",
+        "node_id": "NODE_...",
+        "user_uuid": "...",
+        "hybrid_enabled": false,
+        "balance": 1000.00,
+        "equity": 1002.50,
+        "floating_pnl": 2.50,
+        "timestamp": "2025-09-24 01:23:46"
+      }
+    }
+  },
+
+  "inbound_commands": {
+    "fire": {
+      "port": 5555,
+      "description": "Market execution command with SL/TP",
+      "schema": {
+        "type": "fire",
+        "target_uuid": "COMMANDER_DEV_001",
+        "fire_id": "ELITE_RAPID_USDJPY_1758502680",
+        "symbol": "USDJPY",
+        "direction": "SELL",
+        "entry": 0,
+        "sl": 148.364,
+        "tp": 147.989,
+        "lot": 0.5
+      },
+      "validation": {
+        "entry": "Must be 0 for market execution",
+        "direction": "Must be 'BUY' or 'SELL' (uppercase)",
+        "sl_tp": "Must respect broker stops level distances",
+        "lot": "Must be normalized to symbol volume step"
+      }
+    },
+
+    "close_ticket": {
+      "port": 5555,
+      "description": "Close specific position by ticket",
+      "schema": {
+        "type": "close_ticket",
+        "target_uuid": "COMMANDER_DEV_001",
+        "ticket": 12345678
+      }
+    },
+
+    "close_all": {
+      "port": 5555,
+      "description": "Close all BITTEN positions (magic 7176191872)",
+      "schema": {
+        "type": "close_all",
+        "target_uuid": "COMMANDER_DEV_001"
+      }
+    },
+
+    "ping": {
+      "port": 5555,
+      "description": "Liveness check command",
+      "schema": {
+        "type": "ping",
+        "target_uuid": "COMMANDER_DEV_001",
+        "ping_id": "health_check_1758296000"
+      }
+    },
+
+    "wake": {
+      "port": 5555,
+      "description": "Route warmup command",
+      "schema": {
+        "type": "wake",
+        "target_uuid": "COMMANDER_DEV_001"
+      }
+    }
+  },
+
+  "configuration": {
+    "inputs": {
+      "InpVerboseLogging": {
+        "type": "bool",
+        "default": false,
+        "description": "Toggle detailed logging and comments"
+      },
+      "InpBlockOppositeHedge": {
+        "type": "bool",
+        "default": true,
+        "description": "Block opposite side positions on same symbol"
+      },
+      "InpMaxSpreadPoints": {
+        "type": "double",
+        "default": 0.0,
+        "description": "0=off; else reject if spread > limit (points)"
+      },
+      "InpDeviationPoints": {
+        "type": "int",
+        "default": 5,
+        "description": "Slippage/deviation for market orders (points)"
+      },
+      "InpTelemetryBeatSec": {
+        "type": "int",
+        "default": 1,
+        "description": "Heartbeat+metrics cadence (seconds)"
+      },
+      "InpRouterBeatSec": {
+        "type": "int",
+        "default": 5,
+        "description": "Router heartbeat cadence (seconds)"
+      },
+      "InpStreamTicks": {
+        "type": "bool",
+        "default": true,
+        "description": "Enable deterministic tick streaming"
+      },
+      "InpStreamOHLC": {
+        "type": "bool",
+        "default": true,
+        "description": "Enable OHLC streaming"
+      },
+      "InpSnapshotBars": {
+        "type": "int",
+        "default": 100,
+        "description": "Number of bars in signal snapshots"
+      },
+      "InpSnapshotTF": {
+        "type": "string",
+        "default": "M1",
+        "description": "Timeframe for snapshots",
+        "allowed_values": ["M1", "M5", "M15", "M30", "H1"]
+      }
+    }
+  }
+}

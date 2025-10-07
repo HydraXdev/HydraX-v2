@@ -1,0 +1,63 @@
+{
+  "validation_id": "E2E_VALIDATION_1758479883",
+  "overall_status": "READY",
+  "total_duration": 3.565979242324829,
+  "critical_checks_passed": 4,
+  "ea_status": {
+    "status": "STALE",
+    "age_seconds": 179136,
+    "user_id": "7176191872"
+  },
+  "detailed_results": [
+    {
+      "step": "PM2 Processes",
+      "status": "FAIL",
+      "details": "Only 2/4 critical processes running",
+      "duration_ms": 1493.6,
+      "timestamp": "2025-09-21T18:38:04.560478"
+    },
+    {
+      "step": "ZMQ Ports",
+      "status": "PASS",
+      "details": "All 5 ports listening",
+      "duration_ms": 584.0,
+      "timestamp": "2025-09-21T18:38:05.144696"
+    },
+    {
+      "step": "Database",
+      "status": "PASS",
+      "details": "All tables present, 4 EA instances",
+      "duration_ms": 9.1,
+      "timestamp": "2025-09-21T18:38:05.153808"
+    },
+    {
+      "step": "Fire Packet",
+      "status": "PASS",
+      "details": "Valid packet generated",
+      "duration_ms": 0.0,
+      "timestamp": "2025-09-21T18:38:05.154381"
+    },
+    {
+      "step": "IPC Transmission",
+      "status": "PASS",
+      "details": "Fire packet sent via IPC queue",
+      "duration_ms": 51.5,
+      "timestamp": "2025-09-21T18:38:05.205948"
+    },
+    {
+      "step": "EA Heartbeat",
+      "status": "WARN",
+      "details": "Stale heartbeat (179136s ago)",
+      "duration_ms": 0.9,
+      "timestamp": "2025-09-21T18:38:05.206826"
+    },
+    {
+      "step": "Command Router",
+      "status": "PASS",
+      "details": "Command router responsive",
+      "duration_ms": 1425.6,
+      "timestamp": "2025-09-21T18:38:06.632665"
+    }
+  ],
+  "timestamp": "2025-09-21T18:38:06.632705"
+}

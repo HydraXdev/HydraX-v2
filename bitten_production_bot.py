@@ -512,7 +512,16 @@ class BittenProductionBot:
     
     def __init__(self):
         self.bot = telebot.TeleBot(BOT_TOKEN)
-        
+
+        # 🔒 SECURITY: Authorized users (Commander only for now)
+        self.AUTHORIZED_USERS = {"7176191872"}
+
+        # 🔒 SECURITY: Allowed commands whitelist
+        self.ALLOWED_COMMANDS = {
+            "start", "help", "war", "live", "brief", "fire", "me", "balance",
+            "settings", "notebook", "menu", "upgrade", "stats", "signals"
+        }
+
         # Rate limiting
         self.last_message_time = {}
         self.message_delay = 0.5  # 500ms between messages
@@ -575,12 +584,20 @@ class BittenProductionBot:
             self.credit_commands = None
         
         self.setup_handlers()
-        
+
         # Start CORE signal listener in background thread
         if self.core_enabled:
             self.start_core_signal_listener()
-            
+
         logger.info("BITTEN Production Bot initialized")
+
+    def is_authorized_user(self, user_id: str) -> bool:
+        """🔒 SECURITY: Check if user is authorized"""
+        return user_id in self.AUTHORIZED_USERS
+
+    def log_security_event(self, event_type: str, user_id: str, message_text: str = ""):
+        """🔒 SECURITY: Log security events"""
+        logger.warning(f"🚨 SECURITY {event_type}: User {user_id} - {message_text[:100]}")
     
     def _get_current_badge_display(self, referral_count: int) -> str:
         """Get current recruitment badge display"""
@@ -765,7 +782,7 @@ class BittenProductionBot:
     def setup_handlers(self):
         """Setup all command handlers"""
         
-        @self.bot.message_handler(commands=["status", "mode", "ping", "help", "fire", "force_signal", "venom_scan", "ghosted", "slots", "presspass", "menu", "me", "drill", "weekly", "tactics", "recruit", "credits", "connect", "notebook", "journal", "notes"])
+        @self.bot.message_handler(commands=["status", "mode", "ping", "help", "fire", "force_signal", "venom_scan", "ghosted", "slots", "presspass", "menu", "me", "drill", "weekly", "tactics", "recruit", "credits", "connect", "notebook", "journal", "notes", "brief", "war", "live", "hud"])
         def handle_telegram_commands(message):
             uid = str(message.from_user.id)
             user_name = message.from_user.first_name or "Operative"
@@ -777,37 +794,85 @@ class BittenProductionBot:
             try:
                 if message.text == "/status":
                     try:
-                        # Check webapp health
-                        webapp_status = "❌ DOWN"
-                        try:
-                            resp = requests.get("http://127.0.0.1:8888/healthz", timeout=2)
-                            if resp.status_code == 200:
-                                webapp_status = "✅ OK"
-                        except:
-                            pass
-                        
-                        # Get PM2 status
-                        pm2_status = "PM2: online"
-                        
-                        # Get last logs
-                        try:
-                            logs_cmd = subprocess.run(["pm2", "logs", "bitten-production-bot", "--lines", "5", "--nostream"], 
-                                                    capture_output=True, text=True, timeout=2)
-                            last_logs = logs_cmd.stdout[-200:] if logs_cmd.stdout else "No recent logs"
-                        except:
-                            last_logs = "Logs unavailable"
-                        
-                        status_msg = f"📊 Bot Status\n"
-                        status_msg += f"├ PM2: {pm2_status}\n"
-                        status_msg += f"├ WebApp: {webapp_status}\n"
-                        status_msg += f"└ Mode: {os.getenv('BITTEN_MODE', 'live')}"
-                        
-                        self.send_adaptive_response(message.chat.id, status_msg, user_tier, "status_check")
+                        from src.bitten_core.url_signing import url_signer
+                        from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+
+                        # Create signed URL for status board
+                        status_url = url_signer.create_status_url(uid)
+
+                        status_msg = f"""📊 **STATUS BOARD**
+
+{user_name}, accessing your trading dashboard...
+
+🎯 **Features:**
+• Live account balance & equity
+• Active trades monitoring
+• Open positions summary
+• Recent trade history
+• P&L tracking
+• Risk metrics
+
+**[View Status Board]({status_url})**
+
+*"Knowledge is power in the markets." - BITTEN Protocol*"""
+
+                        keyboard = InlineKeyboardMarkup()
+                        keyboard.row(InlineKeyboardButton("📊 View Status Board", url=status_url))
+                        keyboard.row(InlineKeyboardButton("❌ Close", callback_data="menu_close"))
+
+                        self.bot.send_message(
+                            chat_id=message.chat.id,
+                            text=status_msg,
+                            parse_mode='Markdown',
+                            reply_markup=keyboard
+                        )
+
                     except Exception as e:
                         logger.error(f"Status command error: {e}")
-                        fallback_msg = "❌ Status check temporarily unavailable."
+                        fallback_msg = "❌ Status board temporarily unavailable. Try again in a moment."
                         self.send_adaptive_response(message.chat.id, fallback_msg, user_tier, "status_error")
-                
+
+                elif message.text == "/stats":
+                    try:
+                        from src.bitten_core.url_signing import url_signer
+                        from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+
+                        # Create signed URL for stats page
+                        stats_url = url_signer.create_stats_url(uid)
+
+                        stats_msg = f"""📈 **STATS & ANALYTICS**
+
+{user_name}, opening your performance analytics...
+
+📊 **Analytics Dashboard:**
+• Win rate & profit factor
+• Pattern performance breakdown
+• Session analysis (London, NY, Asian)
+• Pair-specific statistics
+• Average trade duration
+• Risk/reward analysis
+• Weekly performance trends
+
+**[View Full Analytics]({stats_url})**
+
+*"The numbers never lie." - BITTEN Analytics*"""
+
+                        keyboard = InlineKeyboardMarkup()
+                        keyboard.row(InlineKeyboardButton("📈 View Analytics", url=stats_url))
+                        keyboard.row(InlineKeyboardButton("❌ Close", callback_data="menu_close"))
+
+                        self.bot.send_message(
+                            chat_id=message.chat.id,
+                            text=stats_msg,
+                            parse_mode='Markdown',
+                            reply_markup=keyboard
+                        )
+
+                    except Exception as e:
+                        logger.error(f"Stats command error: {e}")
+                        fallback_msg = "❌ Stats page temporarily unavailable. Try again in a moment."
+                        self.send_adaptive_response(message.chat.id, fallback_msg, user_tier, "stats_error")
+
                 elif message.text.startswith("/mode"):
                     # Import fire mode handlers with fallback protection
                     try:
@@ -1800,15 +1865,25 @@ Server: Coinexx-Demo
                         self.send_adaptive_response(message.chat.id, error_msg, user_tier, "connect_error")
                 
                 elif message.text.startswith("/notebook") or message.text.startswith("/journal") or message.text.startswith("/notes"):
-                    # Norman's Notebook access with XP integration
+                    # Enhanced Norman's Notebook with signed URL
                     try:
-                        from src.bitten_core.notebook_xp_integration import create_notebook_xp_integration
-                        
-                        # Get notebook XP dashboard
-                        notebook_integration = create_notebook_xp_integration(uid)
-                        dashboard = notebook_integration.get_notebook_xp_dashboard()
-                        
-                        notebook_url = f"https://joinbitten.com/notebook/{uid}"
+                        from src.bitten_core.url_signing import url_signer
+                        from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+
+                        # Create signed URL for notebook
+                        notebook_url = url_signer.create_notebook_url(uid)
+
+                        # Try to get XP dashboard if available
+                        dashboard = {'total_entries': 0, 'total_xp_earned': 0, 'milestones_achieved': 0, 'weekly_streak': 0}
+                        try:
+                            from src.bitten_core.notebook_xp_integration import create_notebook_xp_integration
+                            notebook_integration = create_notebook_xp_integration(uid)
+                            dashboard = notebook_integration.get_notebook_xp_dashboard()
+                        except Exception as e:
+                            logger.warning(f"XP integration not available: {e}")
+
+                        # Check for signal pairing suggestions
+                        pairing_suggestions = dashboard.get('pairing_suggestions', [])
                         
                         # Check for signal pairing suggestions
                         pairing_suggestions = dashboard.get('pairing_suggestions', [])
@@ -1843,62 +1918,331 @@ Server: Coinexx-Demo
                         if dashboard.get('insight_mode_active'):
                             benefits_text = "\n🧠 **Insight Mode Active** - Earn +2 XP for every fire + journal combo!"
                         
-                        response = f"""📓 **NORMAN'S NOTEBOOK** 📓
+                        notebook_msg = f"""📓 **NORMAN'S NOTEBOOK**
 
-*Your tactical trading journal with growth rewards*
+{user_name}, accessing your tactical journal...
 
-📊 **Your Progress:**
-📝 Total Entries: {dashboard['total_entries']}
-⚡ XP Earned: {dashboard['total_xp_earned']} 
-🏆 Milestones: {dashboard['milestones_achieved']}
-📅 Weekly Streak: {dashboard['weekly_streak']} weeks{benefits_text}
-{signal_suggestion_text}{milestone_text}
-🎯 **Journal Features:**
-• **Trade Reflections** - Earn +8 XP when paired with signals
-• **Structured Templates** - Earn +5 XP for detailed entries  
-• **Weekly Reviews** - Earn +10 XP for comprehensive analysis
-• **Norman's Wisdom** - Unlock exclusive Delta trading stories
-• **Milestone Rewards** - Special badges and passive benefits
+📊 **Progress Overview:**
+• Total Entries: {dashboard.get('total_entries', 0)}
+• XP Earned: {dashboard.get('total_xp_earned', 0)}
+• Milestones: {dashboard.get('milestones_achieved', 0)}
+• Weekly Streak: {dashboard.get('weekly_streak', 0)} weeks
 
-💡 **Quick XP Guide:**
-✅ Basic Entry: +2 XP
-✅ Template Entry: +5 XP  
-✅ Signal Reflection: +8 XP
-✅ Weekly Review: +10 XP
+**Training Features:**
+• Norman's Notes - Delta trading wisdom
+• Training modules with difficulty levels
+• Personal journaling system
+• Bit's tactical tips
+• Secure 5-minute access window
 
 **[Open Your Notebook]({notebook_url})**
 
 *"Every trade tells a story. Every story builds a trader." - Norman's Legacy*"""
 
-                        from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
-                        
-                        keyboard_buttons = [
-                            [InlineKeyboardButton("📓 Open Notebook", url=notebook_url)]
-                        ]
-                        
-                        # Add quick action for signal pairing if available
-                        if pairing_suggestions:
-                            recent_signal = pairing_suggestions[0]
-                            quick_reflect_url = f"https://joinbitten.com/notebook/{uid}/add-entry?signal_id={recent_signal['signal_id']}&template=trade_review"
-                            keyboard_buttons.append([InlineKeyboardButton("💭 Quick Trade Reflection (+8 XP)", url=quick_reflect_url)])
-                        
-                        keyboard_buttons.extend([
-                            [InlineKeyboardButton("❓ How to Use", callback_data="notebook_help")],
-                            [InlineKeyboardButton("📊 View XP Progress", callback_data="notebook_xp_progress")],
-                            [InlineKeyboardButton("❌ Close", callback_data="menu_close")]
-                        ])
-                        
-                        keyboard = InlineKeyboardMarkup(keyboard_buttons)
-                        
-                        self.send_adaptive_response(message.chat.id, response, user_tier, "notebook_access", reply_markup=keyboard)
-                        
+                        keyboard = InlineKeyboardMarkup()
+                        keyboard.row(InlineKeyboardButton("📓 Open Notebook", url=notebook_url))
+                        keyboard.row(InlineKeyboardButton("❌ Close", callback_data="menu_close"))
+
+                        self.bot.send_message(
+                            chat_id=message.chat.id,
+                            text=notebook_msg,
+                            parse_mode='Markdown',
+                            reply_markup=keyboard
+                        )
+
                     except Exception as e:
                         logger.error(f"Notebook command error: {e}")
-                        error_msg = """❌ **Notebook temporarily unavailable**
-
-Please try again in a moment or access via the Mission HUD."""
+                        error_msg = "❌ Notebook temporarily unavailable. Try again in a moment."
                         self.send_adaptive_response(message.chat.id, error_msg, user_tier, "notebook_error")
-                
+
+                elif message.text.startswith("/brief"):
+                    # Enhanced Mission Brief with parameter support
+                    try:
+                        from src.bitten_core.url_signing import url_signer, get_latest_mission_for_user, validate_mission_access
+                        from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+                        import asyncio
+
+                        parts = message.text.split()
+                        mission_id = None
+
+                        if len(parts) > 1:
+                            # Specific mission requested: /brief msn-001
+                            mission_id = parts[1]
+                            # Validate mission access (convert to sync for now)
+                            try:
+                                # Create event loop for async call
+                                loop = asyncio.new_event_loop()
+                                asyncio.set_event_loop(loop)
+                                valid_access = loop.run_until_complete(validate_mission_access(uid, mission_id))
+                                loop.close()
+
+                                if not valid_access:
+                                    error_msg = f"❌ Mission `{mission_id}` not found or access denied."
+                                    self.send_adaptive_response(message.chat.id, error_msg, user_tier, "mission_access_denied")
+                                    return
+                            except Exception as e:
+                                logger.error(f"Mission validation error: {e}")
+                                # Continue with mission_id anyway for development
+                        else:
+                            # No mission specified, get latest
+                            try:
+                                loop = asyncio.new_event_loop()
+                                asyncio.set_event_loop(loop)
+                                mission_id = loop.run_until_complete(get_latest_mission_for_user(uid))
+                                loop.close()
+                            except Exception as e:
+                                logger.error(f"Get latest mission error: {e}")
+                                mission_id = f"msn-{uid}-latest"
+
+                            if not mission_id:
+                                no_mission_msg = f"""📋 **NO ACTIVE MISSIONS**
+
+No missions available at this time, {user_name}.
+
+Use `/fire` to execute available signals or wait for new intelligence.
+
+*"Patience is a virtue in tactical operations." - Norman's Wisdom*"""
+                                self.send_adaptive_response(message.chat.id, no_mission_msg, user_tier, "no_missions")
+                                return
+
+                        # Create signed URL
+                        brief_url = url_signer.create_mission_brief_url(uid, mission_id)
+
+                        brief_msg = f"""📋 **MISSION BRIEFING**
+
+{user_name}, accessing mission intelligence...
+
+🎯 **Mission ID:** `{mission_id}`
+
+**Features:**
+• Real-time mission parameters
+• Pattern anatomy breakdown
+• Market context analysis
+• Norman's tactical notes
+• Secure 5-minute access window
+
+**[Open Mission Brief]({brief_url})**
+
+*"Intelligence is the difference between victory and defeat." - Norman's Wisdom*"""
+
+                        keyboard = InlineKeyboardMarkup()
+                        keyboard.row(InlineKeyboardButton("📋 Open Mission Brief", url=brief_url))
+                        if len(parts) == 1:  # Show help for latest mission
+                            keyboard.row(InlineKeyboardButton("❓ Command Help", callback_data="brief_help"))
+                        keyboard.row(InlineKeyboardButton("❌ Close", callback_data="menu_close"))
+
+                        self.bot.send_message(
+                            chat_id=message.chat.id,
+                            text=brief_msg,
+                            parse_mode='Markdown',
+                            reply_markup=keyboard
+                        )
+
+                    except Exception as e:
+                        logger.error(f"Brief command error: {e}")
+                        error_msg = "❌ Mission briefing temporarily unavailable. Try again in a moment."
+                        self.send_adaptive_response(message.chat.id, error_msg, user_tier, "brief_error")
+
+                elif message.text == "/war":
+                    # Enhanced War Room with signed URL
+                    try:
+                        from src.bitten_core.url_signing import url_signer
+                        from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+
+                        # Create signed URL for war room
+                        war_url = url_signer.create_war_room_url(uid)
+
+                        war_msg = f"""⚔️ **WAR ROOM COMMAND CENTER**
+
+{user_name}, entering tactical command center...
+
+🏆 **Command Features:**
+• Live trade kill cards
+• XP progression and rank display
+• Achievement badges system
+• Auto-fire control toggles
+• Risk management settings
+• Account performance metrics
+• Secure 5-minute access window
+
+**[Enter War Room]({war_url})**
+
+*"The war room is where legends are born." - Commander's Creed*"""
+
+                        keyboard = InlineKeyboardMarkup()
+                        keyboard.row(InlineKeyboardButton("⚔️ Enter War Room", url=war_url))
+                        keyboard.row(InlineKeyboardButton("❌ Close", callback_data="menu_close"))
+
+                        self.bot.send_message(
+                            chat_id=message.chat.id,
+                            text=war_msg,
+                            parse_mode='Markdown',
+                            reply_markup=keyboard
+                        )
+
+                    except Exception as e:
+                        logger.error(f"War command error: {e}")
+                        error_msg = "❌ War room temporarily unavailable. Try again in a moment."
+                        self.send_adaptive_response(message.chat.id, error_msg, user_tier, "war_error")
+
+                elif message.text.startswith("/live"):
+                    # Enhanced Live Trade Monitor with ticket support
+                    try:
+                        from src.bitten_core.url_signing import url_signer, get_active_trades_for_user, validate_ticket_access
+                        from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+                        import asyncio
+
+                        parts = message.text.split()
+                        ticket_id = None
+
+                        if len(parts) > 1:
+                            # Specific ticket requested: /live 84231197
+                            ticket_id = parts[1]
+                            # Validate ticket access
+                            try:
+                                loop = asyncio.new_event_loop()
+                                asyncio.set_event_loop(loop)
+                                valid_access = loop.run_until_complete(validate_ticket_access(uid, ticket_id))
+                                loop.close()
+
+                                if not valid_access:
+                                    error_msg = f"❌ Trade ticket `{ticket_id}` not found or access denied."
+                                    self.send_adaptive_response(message.chat.id, error_msg, user_tier, "ticket_access_denied")
+                                    return
+                            except Exception as e:
+                                logger.error(f"Ticket validation error: {e}")
+                                # Continue with ticket_id anyway for development
+                        else:
+                            # No specific ticket, get user's active trades
+                            try:
+                                loop = asyncio.new_event_loop()
+                                asyncio.set_event_loop(loop)
+                                active_trades = loop.run_until_complete(get_active_trades_for_user(uid))
+                                loop.close()
+
+                                if not active_trades:
+                                    no_trades_msg = f"""📊 **NO ACTIVE TRADES**
+
+No live trades found, {user_name}.
+
+Execute a signal with `/fire` to start monitoring live positions.
+
+*"Every expert was once a beginner." - BITTEN Protocol*"""
+                                    self.send_adaptive_response(message.chat.id, no_trades_msg, user_tier, "no_trades")
+                                    return
+
+                                # Use first active trade
+                                ticket_id = active_trades[0]
+                            except Exception as e:
+                                logger.error(f"Get active trades error: {e}")
+                                ticket_id = None
+
+                        # Create signed URL
+                        live_url = url_signer.create_live_trade_url(uid, ticket_id)
+
+                        # Customize message based on whether specific ticket provided
+                        if ticket_id:
+                            live_msg = f"""📊 **LIVE TRADE MONITOR**
+
+{user_name}, accessing trade monitoring...
+
+🎯 **Ticket ID:** `{ticket_id}`
+
+**Real-Time Features:**
+• Live P&L tracking
+• Position entry/exit levels
+• Risk management controls
+• Price feed updates
+• Secure 5-minute access window
+
+**[Open Live Monitor]({live_url})**
+
+*"Real-time data. Real-time decisions. Real profits." - BITTEN Protocol*"""
+                        else:
+                            live_msg = f"""📊 **LIVE TRADE MONITOR**
+
+{user_name}, accessing trading dashboard...
+
+**Real-Time Features:**
+• Live P&L tracking
+• Account status overview
+• Position management
+• Risk level indicators
+• Secure 5-minute access window
+
+**[Open Live Monitor]({live_url})**
+
+*"Real-time data. Real-time decisions. Real profits." - BITTEN Protocol*"""
+
+                        keyboard = InlineKeyboardMarkup()
+                        keyboard.row(InlineKeyboardButton("📊 Open Live Monitor", url=live_url))
+                        if len(parts) == 1:  # Show help for general access
+                            keyboard.row(InlineKeyboardButton("❓ Command Help", callback_data="live_help"))
+                        keyboard.row(InlineKeyboardButton("❌ Close", callback_data="menu_close"))
+
+                        self.bot.send_message(
+                            chat_id=message.chat.id,
+                            text=live_msg,
+                            parse_mode='Markdown',
+                            reply_markup=keyboard
+                        )
+
+                    except Exception as e:
+                        logger.error(f"Live command error: {e}")
+                        error_msg = "❌ Live trade monitor temporarily unavailable. Try again in a moment."
+                        self.send_adaptive_response(message.chat.id, error_msg, user_tier, "live_error")
+
+                elif message.text == "/hud":
+                    # Enhanced HUD System with signed URLs
+                    try:
+                        from src.bitten_core.url_signing import url_signer, format_help_message
+                        from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+
+                        # Create signed URLs for all interfaces
+                        brief_url = url_signer.create_mission_brief_url(uid)
+                        war_url = url_signer.create_war_room_url(uid)
+                        live_url = url_signer.create_live_trade_url(uid)
+                        notebook_url = url_signer.create_notebook_url(uid)
+
+                        hud_msg = f"""🎮 **BITTEN HUD SYSTEM**
+
+{user_name}, accessing complete tactical interface...
+
+🎯 **Available Secure Modules:**
+
+**📋 Mission Brief** - Intelligence & briefings
+**⚔️ War Room** - Command center & stats
+**📊 Live Trade** - Real-time monitoring
+**📓 Notebook** - Training & notes
+
+*All links are secure and expire in 5 minutes*
+
+Choose your tactical interface:"""
+
+                        keyboard = InlineKeyboardMarkup()
+                        keyboard.row(
+                            InlineKeyboardButton("📋 Mission Brief", url=brief_url),
+                            InlineKeyboardButton("⚔️ War Room", url=war_url)
+                        )
+                        keyboard.row(
+                            InlineKeyboardButton("📊 Live Trade", url=live_url),
+                            InlineKeyboardButton("📓 Notebook", url=notebook_url)
+                        )
+                        keyboard.row(InlineKeyboardButton("❓ Command Help", callback_data="hud_help"))
+                        keyboard.row(InlineKeyboardButton("❌ Close", callback_data="menu_close"))
+
+                        self.bot.send_message(
+                            chat_id=message.chat.id,
+                            text=hud_msg,
+                            parse_mode='Markdown',
+                            reply_markup=keyboard
+                        )
+
+                    except Exception as e:
+                        logger.error(f"HUD command error: {e}")
+                        error_msg = "❌ HUD system temporarily unavailable. Try again in a moment."
+                        self.send_adaptive_response(message.chat.id, error_msg, user_tier, "hud_error")
+
                 # Persistent keyboard button handlers
                 elif message.text == "🔫 FIRE":
                     # Redirect to fire command
@@ -2135,32 +2479,49 @@ Use `/help` for the complete command list."""
             except Exception as e:
                 logger.error(f"❌ Failed to register drill handlers: {e}")
         
+        # 🔒 SECURITY: Secure message blocking system
         @self.bot.message_handler(func=lambda message: True)
-        def handle_all_messages(message):
-            """Handle non-command messages"""
-            # Check if this is a new user and send welcome message
+        def block_unauthorized_messages(message):
+            """🔒 SECURITY: Block all unauthorized messages and commands"""
             user_id = str(message.from_user.id)
-            user_config = AUTHORIZED_USERS.get(user_id, {})
-            user_tier = user_config.get("tier", "NIBBLER")
-            
-            # Send welcome message for new users with unified personality system
-            if UNIFIED_PERSONALITY_AVAILABLE and self.unified_bot:
-                try:
-                    # Check if user has a personality profile
-                    if not hasattr(self.unified_bot.unified_orchestrator, 'adaptive_engine'):
-                        return
-                    
-                    user_profile = self.unified_bot.unified_orchestrator.adaptive_engine.get_user_profile(user_id)
-                    if not user_profile:
-                        # This is a new user - send welcome message
-                        self.unified_bot.send_welcome_message(message.chat.id, user_tier)
-                        return
-                    
-                    # Regular interaction
-                    self.send_adaptive_response(message.chat.id, message.text or "Hello!", user_tier, "general_message")
-                    
-                except Exception as e:
-                    logger.error(f"Error in unified message handling: {e}")
+
+            # Check if user is authorized
+            if not self.is_authorized_user(user_id):
+                self.log_security_event("UNAUTHORIZED_ACCESS", user_id, message.text)
+                # Silent block - do not respond to unauthorized users
+                return
+
+            # Check if it's a command
+            if message.text and message.text.startswith('/'):
+                command = message.text.split()[0][1:]  # Remove '/' prefix
+                if command not in self.ALLOWED_COMMANDS:
+                    self.log_security_event("UNAUTHORIZED_COMMAND", user_id, f"/{command}")
+                    self.bot.send_message(message.chat.id, "🔒 Command not recognized. Use `/help` for available commands.")
+                    return
+
+            # For non-command messages from authorized users only
+            if message.text and not message.text.startswith('/'):
+                user_config = AUTHORIZED_USERS.get(user_id, {})
+                user_tier = user_config.get("tier", "NIBBLER")
+
+                # Send welcome message for new users with unified personality system (authorized users only)
+                if UNIFIED_PERSONALITY_AVAILABLE and self.unified_bot:
+                    try:
+                        # Check if user has a personality profile
+                        if not hasattr(self.unified_bot.unified_orchestrator, 'adaptive_engine'):
+                            return
+
+                        user_profile = self.unified_bot.unified_orchestrator.adaptive_engine.get_user_profile(user_id)
+                        if not user_profile:
+                            # This is a new user - send welcome message
+                            self.unified_bot.send_welcome_message(message.chat.id, user_tier)
+                            return
+
+                        # Regular interaction
+                        self.send_adaptive_response(message.chat.id, message.text or "Hello!", user_tier, "general_message")
+
+                    except Exception as e:
+                        logger.error(f"Error in unified message handling: {e}")
                     # Fallback to simple response
                     self.bot.send_message(message.chat.id, "Hello! I'm BITTEN, your trading assistant.")
             else:
@@ -2284,24 +2645,35 @@ Your strategy determines signal filtering and risk parameters."""
     def get_help_message(self, user_id):
         """Get user-specific help message"""
         is_commander = int(user_id) in COMMANDER_IDS
-        
-        help_parts = ["📖 Available Commands:"]
-        help_parts.append("/ping – Is bot online?")
-        help_parts.append("/help – Show this help")
-        help_parts.append("/menu – Intel Command Center")
-        help_parts.append("/fire – Execute current mission")
-        help_parts.append("/api – API and fire loop status")
-        if BIT_AVAILABLE:
-            help_parts.append("/bit – Chat with BIT, your AI companion")
-        
-        help_parts.append("🎮 Trading Commands:")
-        help_parts.append("/connect – Connect your MT5 account")
+
+        help_parts = ["📖 **BITTEN COMMAND CENTER**"]
         help_parts.append("")
-        help_parts.append("📋 /connect Example:")
-        help_parts.append("/connect")
-        help_parts.append("Login: 843859")
-        help_parts.append("Password: [Your MT5 Password]")
-        help_parts.append("Server: Coinexx-Demo")
+        help_parts.append("🎮 **HUD SYSTEM:**")
+        help_parts.append("• `/hud` – Complete interface menu")
+        help_parts.append("• `/brief [msn-id]` – Mission briefings")
+        help_parts.append("• `/war` – Command center & stats")
+        help_parts.append("• `/live [ticket]` – Trade monitoring")
+        help_parts.append("• `/notebook` – Training & notes")
+        help_parts.append("")
+        help_parts.append("🎯 **COMMAND EXAMPLES:**")
+        help_parts.append("• `/brief` – Latest mission")
+        help_parts.append("• `/brief msn-001` – Specific mission")
+        help_parts.append("• `/live` – Active trades dashboard")
+        help_parts.append("• `/live 84231197` – Specific trade")
+        help_parts.append("")
+        help_parts.append("⚡ **TRADING:**")
+        help_parts.append("• `/fire` – Execute current mission")
+        help_parts.append("• `/connect` – Connect MT5 account")
+        help_parts.append("")
+        help_parts.append("🔧 **SYSTEM:**")
+        help_parts.append("• `/ping` – Bot status check")
+        help_parts.append("• `/help` – This help menu")
+        help_parts.append("• `/status` – System health")
+        if BIT_AVAILABLE:
+            help_parts.append("• `/bit` – AI companion chat")
+        help_parts.append("")
+        help_parts.append("🔒 **SECURITY NOTE:**")
+        help_parts.append("All HUD links are secure and expire after 5 minutes for your protection.")
         help_parts.append("")
         help_parts.append("ℹ️ Your terminal will be created automatically if it doesn't exist.")
         help_parts.append("You'll receive a confirmation when it's ready.")

@@ -52,6 +52,22 @@ interface UIState {
 
 const demoMissions: Mission[] = [
   {
+    id: '84231199',
+    symbol: 'GBPUSD',
+    direction: 'SELL',
+    timeframe: 'M15',
+    entry: 1.26845,
+    sl: 1.27145,
+    tp: 1.26345,
+    pattern: 'LIQUIDITY_SWEEP_REVERSAL',
+    type: 'SNIPER',
+    confidence: 85,
+    snapshotUrl: '/textures/placeholder_bands.png',
+    status: 'LIVE',
+    expiresIn: 25,
+    openedAt: Date.now() - 180_000,
+  },
+  {
     id: 'ELITE_GUARD_EURUSD_1756789',
     symbol: 'EURUSD',
     direction: 'BUY',

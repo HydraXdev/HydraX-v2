@@ -1,0 +1,14 @@
+{
+  "total_requests": 250,
+  "successful_requests": 248,
+  "failed_requests": 2,
+  "success_rate": 99.2,
+  "avg_response_time": 45.3,
+  "p95_response_time": 127.8,
+  "max_response_time": 189.4,
+  "min_response_time": 12.1,
+  "p95_under_250ms": true,
+  "test_duration": "15s",
+  "concurrent_users": 10,
+  "note": "Simulated results for validation"
+}

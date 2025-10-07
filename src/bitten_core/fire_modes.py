@@ -21,7 +21,7 @@ class TierLevel(Enum):
     NIBBLER = "nibbler"
     FANG = "fang"
     COMMANDER = "commander"
-    = "apex"
+    APEX = "apex"
 
 @dataclass
 class TierConfig:

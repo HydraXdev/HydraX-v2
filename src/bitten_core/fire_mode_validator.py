@@ -32,7 +32,7 @@ class FireModeValidator:
             TierLevel.NIBBLER: self._validate_nibbler,
             TierLevel.FANG: self._validate_fang,
             TierLevel.COMMANDER: self._validate_commander,
-            TierLevel.: self._validate_apex
+            TierLevel.APEX: self._validate_apex
         }
         
         # Mode-specific validators

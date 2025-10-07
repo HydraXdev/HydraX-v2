@@ -61,7 +61,7 @@ class AmmunitionManager:
     BASE_SHOTS = {
         "NIBBLER": 3,
         "FANG": 5,
-        "COMMANDER": 7: 10
+        "COMMANDER": 7
     }
     
     # Upgrade configurations

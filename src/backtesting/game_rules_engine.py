@@ -203,9 +203,9 @@ class BittenGameRulesEngine:
     def _validate_daily_shot_limits(self, trade_attempt: TradeAttempt, user_state: UserGameState):
         """Validate daily shot limits"""
         tier_config = TIER_CONFIGS[user_state.tier]
-        
+
         # has unlimited shots
-        if user_state.tier == TierLevel.:
+        if user_state.tier == TierLevel.APEX:
             return
             
         if user_state.daily_shots_used >= tier_config.daily_shots:
@@ -316,7 +316,7 @@ class BittenGameRulesEngine:
     def _validate_stealth_rules(self, trade_attempt: TradeAttempt, user_state: UserGameState):
         """Validate STEALTH mode rules"""
         # STEALTH is exclusive
-        if user_state.tier != TierLevel.:
+        if user_state.tier != TierLevel.APEX:
             raise GameRuleViolation("STEALTH mode is exclusive")
             
     def _validate_midnight_hammer_rules(self, trade_attempt: TradeAttempt, user_state: UserGameState):

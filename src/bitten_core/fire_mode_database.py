@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 class FireModeDatabase:
     """Manages fire mode settings and slot tracking"""
 
-    def __init__(self, db_path: str = "/root/HydraX-v2/data/fire_modes.db"):
+    def __init__(self, db_path: str = "/root/HydraX-v2/bitten.db"):
         self.db_path = db_path
         self.init_database()
 
@@ -138,14 +138,17 @@ class FireModeDatabase:
         except sqlite3.OperationalError:
             pass
 
-        # Migrate old slots_in_use to auto_slots_in_use
-        cursor.execute(
+        # Migrate old slots_in_use to auto_slots_in_use (skip if column doesn't exist)
+        try:
+            cursor.execute(
+                """
+                UPDATE user_fire_modes
+                SET auto_slots_in_use = slots_in_use
+                WHERE auto_slots_in_use = 0 AND slots_in_use > 0
             """
-            UPDATE user_fire_modes
-            SET auto_slots_in_use = slots_in_use
-            WHERE auto_slots_in_use = 0 AND slots_in_use > 0
-        """
-        )
+            )
+        except sqlite3.OperationalError:
+            pass  # Column doesn't exist in bitten.db schema
 
         # Add CHECK constraint to prevent slot overflow
         try:
@@ -184,7 +187,7 @@ class FireModeDatabase:
         try:
             cursor.execute(
                 """
-                SELECT current_mode, max_auto_slots, auto_slots_in_use, manual_slots_in_use, last_mode_change, bitmode_enabled, trading_enabled
+                SELECT current_mode, max_auto_slots, auto_slots_in_use, manual_slots_in_use, bitmode_enabled, trading_enabled, trailing_enabled
                 FROM user_fire_modes
                 WHERE user_id = ?
             """,
@@ -200,9 +203,9 @@ class FireModeDatabase:
                     "max_auto_slots": result[1],
                     "auto_slots_in_use": result[2],
                     "manual_slots_in_use": result[3],
-                    "last_mode_change": result[4],
-                    "bitmode_enabled": bool(result[5]) if len(result) > 5 else False,
-                    "trading_enabled": bool(result[6]) if len(result) > 6 else True,
+                    "bitmode_enabled": bool(result[4]) if len(result) > 4 else False,
+                    "trading_enabled": bool(result[5]) if len(result) > 5 else True,
+                    "trailing_enabled": bool(result[6]) if len(result) > 6 else False,
                     # For backward compatibility
                     "max_slots": result[1],
                     "slots_in_use": result[2],
@@ -227,6 +230,7 @@ class FireModeDatabase:
                     "last_mode_change": None,
                     "bitmode_enabled": False,
                     "trading_enabled": True,
+                    "trailing_enabled": False,
                     # For backward compatibility
                     "max_slots": 75,
                     "slots_in_use": 0,
@@ -391,40 +395,52 @@ class FireModeDatabase:
             conn.close()
             return False
 
-    def release_slot(self, user_id: str, mission_id: str) -> bool:
-        """Release a slot when trade closes"""
+    def release_risk_slot(self, user_id: str, mission_id: str) -> bool:
+        """
+        Release risk slot when position reaches breakeven (Stage 1: Smart Unlock)
+
+        This is called when trailing stops are ARMED (+10 pips profit, SL at breakeven).
+        Position is now risk-free, so we free the slot for new trades.
+        Position continues running as a "free runner" to capture more profit.
+        """
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
         try:
-            # First get the slot type before closing
+            # Get slot info (type and current status)
             cursor.execute(
                 """
-                SELECT slot_type FROM active_slots
-                WHERE user_id = ? AND mission_id = ? AND status = 'OPEN'
+                SELECT slot_type, status FROM active_slots
+                WHERE user_id = ? AND mission_id = ?
             """,
                 (user_id, mission_id),
             )
 
             result = cursor.fetchone()
             if not result:
-                logger.warning(f"No open slot found for user {user_id}, mission {mission_id}")
+                logger.warning(f"No slot found for user {user_id}, mission {mission_id}")
                 conn.close()
                 return False
 
-            slot_type = result[0]
+            slot_type, current_status = result[0], result[1]
 
-            # Mark slot as closed
+            # Only release if currently OPEN (not already released or closed)
+            if current_status != 'OPEN':
+                logger.info(f"Slot already released or closed for mission {mission_id}, status: {current_status}")
+                conn.close()
+                return False
+
+            # Mark slot as BREAKEVEN (risk-free, but still running)
             cursor.execute(
                 """
                 UPDATE active_slots
-                SET status = 'CLOSED', closed_at = CURRENT_TIMESTAMP
-                WHERE user_id = ? AND mission_id = ? AND status = 'OPEN'
+                SET status = 'BREAKEVEN'
+                WHERE user_id = ? AND mission_id = ?
             """,
                 (user_id, mission_id),
             )
 
-            # Decrement appropriate slot counter
+            # Decrement slot counter (FREEING THE SLOT for new trades)
             if slot_type == "AUTO":
                 cursor.execute(
                     """
@@ -445,6 +461,77 @@ class FireModeDatabase:
                 """,
                     (user_id,),
                 )
+
+            conn.commit()
+            conn.close()
+
+            logger.info(f"✅ RISK SLOT RELEASED: User {user_id}, mission {mission_id} reached breakeven - slot freed for new trades")
+            return True
+
+        except Exception as e:
+            logger.error(f"Error releasing risk slot: {e}")
+            conn.close()
+            return False
+
+    def release_slot(self, user_id: str, mission_id: str) -> bool:
+        """Release a slot when trade closes (handles both OPEN and BREAKEVEN status)"""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+
+        try:
+            # Get slot info (type and current status)
+            cursor.execute(
+                """
+                SELECT slot_type, status FROM active_slots
+                WHERE user_id = ? AND mission_id = ? AND status != 'CLOSED'
+            """,
+                (user_id, mission_id),
+            )
+
+            result = cursor.fetchone()
+            if not result:
+                logger.warning(f"No open/breakeven slot found for user {user_id}, mission {mission_id}")
+                conn.close()
+                return False
+
+            slot_type, current_status = result[0], result[1]
+
+            # Mark slot as closed
+            cursor.execute(
+                """
+                UPDATE active_slots
+                SET status = 'CLOSED', closed_at = CURRENT_TIMESTAMP
+                WHERE user_id = ? AND mission_id = ?
+            """,
+                (user_id, mission_id),
+            )
+
+            # Only decrement counter if status was OPEN (not BREAKEVEN)
+            # If BREAKEVEN, the counter was already decremented in release_risk_slot()
+            if current_status == 'OPEN':
+                if slot_type == "AUTO":
+                    cursor.execute(
+                        """
+                        UPDATE user_fire_modes
+                        SET auto_slots_in_use = MAX(0, auto_slots_in_use - 1),
+                            updated_at = CURRENT_TIMESTAMP
+                        WHERE user_id = ?
+                    """,
+                        (user_id,),
+                    )
+                else:  # MANUAL
+                    cursor.execute(
+                        """
+                        UPDATE user_fire_modes
+                        SET manual_slots_in_use = MAX(0, manual_slots_in_use - 1),
+                            updated_at = CURRENT_TIMESTAMP
+                        WHERE user_id = ?
+                    """,
+                        (user_id,),
+                    )
+                logger.info(f"Slot released and counter decremented for mission {mission_id}")
+            else:
+                logger.info(f"Slot closed without decrementing (was already freed at breakeven) for mission {mission_id}")
 
             conn.commit()
             conn.close()
@@ -569,6 +656,82 @@ class FireModeDatabase:
         # [DISABLED BITMODE]         """Check if BITMODE is enabled for user"""
         user_mode = self.get_user_mode(user_id)
         return user_mode.get("bitmode_enabled", False)
+
+    def toggle_trailing(self, user_id: str, enabled: bool, user_tier: str = "COMMANDER") -> bool:
+        """Toggle Smart Trailing Stops for user (FANG/COMMANDER tiers only)"""
+        # Only FANG and COMMANDER tiers can use trailing stops
+        allowed_tiers = ["FANG", "COMMANDER"]
+        if user_tier not in allowed_tiers:
+            logger.error(f"Trailing stops not available for tier {user_tier} - FANG/COMMANDER required")
+            return False
+
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+
+        try:
+            cursor.execute(
+                """
+                INSERT OR REPLACE INTO user_fire_modes
+                (user_id, trailing_enabled, updated_at)
+                VALUES (?, ?, CURRENT_TIMESTAMP)
+                ON CONFLICT(user_id) DO UPDATE SET
+                    trailing_enabled = excluded.trailing_enabled,
+                    updated_at = CURRENT_TIMESTAMP
+            """,
+                (user_id, enabled),
+            )
+
+            conn.commit()
+            conn.close()
+
+            logger.info(f"User {user_id} trailing stops {'enabled' if enabled else 'disabled'}")
+            return True
+
+        except Exception as e:
+            logger.error(f"Error toggling trailing stops: {e}")
+            conn.close()
+            return False
+
+    def is_trailing_enabled(self, user_id: str) -> bool:
+        """Check if Smart Trailing Stops are enabled for user"""
+        user_mode = self.get_user_mode(user_id)
+        return user_mode.get("trailing_enabled", False)
+
+    def get_default_trailing_config(self, symbol: str, tp_pips: float = None, user_tier: str = "COMMANDER") -> dict:
+        """
+        Get default trailing stop configuration for a symbol/tier
+
+        Returns ATR-based trailing config optimized for day trading:
+        - Activates at 50% of TP distance (dynamic)
+        - Immediately moves SL to break-even when activated
+        - Unlocks slot at break-even (zero risk to account)
+        - Trails at ATR(14) × 2.0 distance after activation
+
+        Args:
+            symbol: Trading symbol
+            tp_pips: Take profit distance in pips (for dynamic activation)
+            user_tier: User's subscription tier
+        """
+        # Calculate activation threshold: 50% of TP distance
+        # If TP is 20 pips → activate at 10 pips
+        # If TP is 8 pips → activate at 4 pips
+        # If TP is unknown, default to 10 pips (legacy behavior)
+        activation_pips = round(tp_pips * 0.5, 1) if tp_pips else 10.0
+
+        # Minimum activation: 3 pips (prevent activation on noise)
+        activation_pips = max(activation_pips, 3.0)
+
+        # Default ATR trailing configuration with dynamic activation
+        return {
+            "style": "ATR",
+            "arm_threshold_pips": activation_pips,  # Dynamic: 50% of TP distance
+            "atr_len": 14,                          # Standard ATR period
+            "atr_mult": 2.0,                        # 2.0× ATR distance (industry standard)
+            "atr_tf": "PERIOD_M5",                  # M5 timeframe for ATR calculation
+            "protection_pips": activation_pips,     # Unlock slot when break-even hit (same as activation)
+            "break_even_on_activation": True,       # Move SL to entry immediately when trailing activates
+            "unlock_slot_at_be": True               # Unlock firing slot at break-even (zero account risk)
+        }
 
     def get_all_users(self) -> List[str]:
         """Get all user_ids that have fire mode settings"""

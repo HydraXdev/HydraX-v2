@@ -5,8 +5,20 @@ Enqueue fire commands to IPC queue for command_router
 import json
 import os
 import time
+import sys
 
 import zmq
+
+# Add path for imports
+sys.path.insert(0, '/root/HydraX-v2')
+from src.bitten_core.constants import (
+    get_pip_size,
+    get_min_max_stop_pips,
+    calculate_stop_loss_price,
+    calculate_take_profit_price,
+    verify_pip_conversion,
+    pips_from_price_distance
+)
 
 QUEUE_ADDR = os.getenv("BITTEN_QUEUE_ADDR", "ipc:///tmp/bitten_cmdqueue")
 _ctx = None
@@ -30,6 +42,19 @@ def get_bitmode_config(symbol: str) -> dict:
 def enqueue_fire(cmd):
     """Send fire command to IPC queue - direction gate DISABLED for manual trading"""
     global _ctx, _push
+
+    # 🔒 SAFETY LOCK CHECK - Block ALL trades if user has safety lock engaged
+    user_id = cmd.get("user_id")
+    if user_id:
+        import sys
+        sys.path.insert(0, '/root/HydraX-v2')
+        from firebase_backend import check_safety_lock
+
+        if check_safety_lock(user_id):
+            print(f"🛑 SAFETY ENGAGED - WEAPON SYSTEM OFFLINE, Operator {user_id}")
+            print(f"   Target: {cmd.get('symbol')} {cmd.get('direction')}")
+            print(f"   ⚠️  ALL FIRE COMMANDS DENIED - Disengage safety at Command Center to proceed")
+            return False  # Abort fire command
 
     # DIRECTION GATE DISABLED - Allow manual traders to manage their own hedging
     # The direction gate was preventing legitimate opposite direction trades
@@ -64,6 +89,11 @@ def enqueue_fire(cmd):
     if "hybrid" in cmd:
         clean_cmd["hybrid"] = cmd["hybrid"]
 
+    # Add trailing config if present (EA v3.014 smart trailing stops)
+    if "trailing" in cmd:
+        clean_cmd["trailing"] = cmd["trailing"]
+        print(f"✅ Trailing config added to fire command: {cmd['trailing']['style']} style")
+
     if _ctx is None:
         _ctx = zmq.Context.instance()
         _push = _ctx.socket(zmq.PUSH)
@@ -86,6 +116,7 @@ def create_fire_command(
     lot: float = 0.01,
     risk_reward: float = None,
     enable_bitmode: bool = False,
+    enable_trailing: bool = False,
 ) -> dict:
     """Create fire command for queue with dynamic SL/TP adjustment for late entry"""
 
@@ -181,7 +212,7 @@ def create_fire_command(
                 if tp is None or tp == 0:
                     tp = float(signal.get("take_profit", 0) or signal.get("tp", 0))
 
-                # If still missing, calculate from pips
+                # If still missing, calculate from pips using UNIFIED pip size system
                 if (sl == 0 or tp == 0) and entry > 0:
                     # Try to get from signal_data (from DB) first, then signal (from mission)
                     stop_pips = float(signal_data.get("stop_pips", signal.get("stop_pips", 15)))  # Default 15 pips
@@ -189,23 +220,11 @@ def create_fire_command(
                         signal_data.get("target_pips", signal.get("target_pips", 20))
                     )  # Default 20 pips
 
-                    # Determine pip size
-                    if "JPY" in symbol:
-                        pip_size = 0.01
-                    elif symbol == "XAUUSD":
-                        pip_size = 0.10  # Gold standard: 1 pip = $0.10 movement
-                    elif symbol == "XAGUSD":
-                        pip_size = 0.001  # Silver: 1 pip = 0.001 movement (FIXED from 0.01)
-                    else:
-                        pip_size = 0.0001
-
-                    # Calculate SL/TP based on direction
-                    if direction == "BUY":
-                        sl = sl if sl > 0 else entry - (stop_pips * pip_size)
-                        tp = tp if tp > 0 else entry + (target_pips * pip_size)
-                    else:  # SELL
-                        sl = sl if sl > 0 else entry + (stop_pips * pip_size)
-                        tp = tp if tp > 0 else entry - (target_pips * pip_size)
+                    # Calculate SL/TP using centralized functions
+                    if sl == 0:
+                        sl = calculate_stop_loss_price(entry, stop_pips, direction, symbol)
+                    if tp == 0:
+                        tp = calculate_take_profit_price(entry, target_pips, direction, symbol)
 
     # Look up the correct target_uuid from the database for this user
     import sqlite3
@@ -222,45 +241,44 @@ def create_fire_command(
     except Exception:
         target_uuid = "COMMANDER_DEV_001"  # Fallback if DB lookup fails
 
-    # HEDGE PROTECTION: Check for existing open positions on this symbol
-    # FIXED: Query fires table directly - missions JOIN was broken
+    # HEDGE PROTECTION: Check TRUTH DATABASE (live_positions table)
+    # 🚨 CRITICAL: Uses live_positions table as single source of truth for slot/hedge validation
     try:
+        import json
         conn = sqlite3.connect("/root/HydraX-v2/bitten.db")
         cursor = conn.cursor()
-        # Check for ANY open positions on same symbol (not closed)
+
+        # Query live_positions table (truth database) for this user + symbol
         cursor.execute(
             """
-            SELECT fire_id, direction, symbol, created_at
-            FROM fires
-            WHERE user_id = ?
-            AND symbol = ?
-            AND status = 'FILLED'
-            AND (closed_at IS NULL OR closed_at = 0)
-            ORDER BY created_at DESC
-        """,
-            (user_id, symbol),
+            SELECT direction, ticket, fire_id
+            FROM live_positions
+            WHERE user_id = ? AND symbol = ? AND status = 'OPEN'
+            """,
+            (user_id, symbol)
         )
+        positions = cursor.fetchall()
 
-        open_positions = cursor.fetchall()
-        conn.close()
-
-        if open_positions:
-            print(f"🔍 Hedge check: Found {len(open_positions)} open position(s) on {symbol}")
-            for position in open_positions:
-                fire_id, existing_direction, existing_symbol, created_at = position
+        if positions:
+            print(f"🔍 Hedge check: Found {len(positions)} LIVE position(s) on {symbol}")
+            for existing_direction, ticket, position_fire_id in positions:
                 if existing_direction != direction:
                     print(f"🚫 HEDGE BLOCKED: Opposite position detected!")
-                    print(f"   Existing: {existing_direction} position (fire_id: {fire_id})")
+                    print(f"   Existing: {existing_direction} position (ticket: {ticket}, fire_id: {position_fire_id})")
                     print(f"   Attempted: {direction} position")
                     print(f"   Symbol: {symbol}")
                     print(f"   Action: Trade blocked to prevent hedging")
+                    conn.close()
                     return None  # Block hedging to prevent conflicting positions
-            print(f"✅ Hedge check passed: All {len(open_positions)} position(s) are {direction}")
+            print(f"✅ Hedge check passed: All {len(positions)} LIVE position(s) are {direction}")
+        else:
+            print(f"✅ Hedge check passed: No LIVE positions on {symbol}")
+
+        conn.close()
 
     except Exception as e:
         print(f"⚠️ Hedge check failed: {e}")
         import traceback
-
         traceback.print_exc()
 
     # SAFETY CHECK: Ensure we have valid SL and TP before proceeding
@@ -299,16 +317,11 @@ def create_fire_command(
             print(f"   Applied defaults: SL={sl:.5f}, TP={tp:.5f} ({default_sl_pips} pips each)")
 
     # CRITICAL FIX: Adjust SL/TP for late entry to maintain risk-reward ratio
-    # Determine pip size correctly for all pairs
-    if "JPY" in symbol:
-        pip_size = 0.01
-    elif symbol in ["XAUUSD", "XAGUSD"]:
-        pip_size = 0.1 if symbol == "XAUUSD" else 0.001  # Gold: 0.1, Silver: 0.001
-    else:
-        pip_size = 0.0001
+    # Use UNIFIED pip size system for all pairs
+    pip_size = get_pip_size(symbol)
 
-    original_sl_pips = abs(entry - sl) / pip_size
-    original_tp_pips = abs(tp - entry) / pip_size
+    original_sl_pips = pips_from_price_distance(entry, sl, symbol)
+    original_tp_pips = pips_from_price_distance(entry, tp, symbol)
 
     # Use dynamic R:R from Elite Guard if available, otherwise calculate from actual TP/SL
     if risk_reward is None:
@@ -425,6 +438,41 @@ def create_fire_command(
             print(f"⚠️ BITMODE check failed: {e}")
             # Continue without BITMODE if check fails
 
+    # TRAILING Configuration: Check if user has Smart Trailing enabled
+    trailing_config = None
+    if enable_trailing:
+        try:
+            # Import fire mode database to check trailing status
+            from src.bitten_core.fire_mode_database import fire_mode_db
+
+            if fire_mode_db.is_trailing_enabled(user_id):
+                # Calculate TP distance in pips for dynamic activation (50% of TP)
+                tp_distance_pips = abs(tp - entry_rounded)
+
+                # Convert to pips based on symbol type
+                if symbol in ["XAUUSD", "XAGUSD"]:
+                    tp_distance_pips = tp_distance_pips * 100  # Gold/Silver: $1 = 100 pips
+                elif symbol.endswith("JPY"):
+                    tp_distance_pips = tp_distance_pips * 100  # JPY pairs: 0.01 = 1 pip
+                else:
+                    tp_distance_pips = tp_distance_pips * 10000  # Standard pairs: 0.0001 = 1 pip
+
+                # Get dynamic trailing configuration (activates at 50% of TP distance)
+                trailing_config = fire_mode_db.get_default_trailing_config(
+                    symbol=symbol,
+                    tp_pips=tp_distance_pips
+                )
+                print(f"🎯 SMART TRAILING ENABLED for {symbol}")
+                print(f"   TP Distance: {tp_distance_pips:.1f} pips → Activates at {trailing_config['arm_threshold_pips']:.1f} pips (50%)")
+                print(f"   Break-even on activation → Unlocks slot (zero account risk)")
+            else:
+                print(f"🔸 Trailing requested but not enabled for user {user_id}")
+        except Exception as e:
+            print(f"⚠️ Trailing check failed: {e}")
+            import traceback
+            traceback.print_exc()
+            # Continue without trailing if check fails
+
     # CRITICAL R:R VALIDATION - Never send trades with inverted R:R
     if direction.upper() == "BUY":
         risk = entry_rounded - sl
@@ -461,33 +509,36 @@ def create_fire_command(
     # CRITICAL FIX: EA-compatible SL/TP validation to prevent trades without stops
     print(f"🔧 EA VALIDATION: Entry={entry_rounded:.5f}, SL={sl:.5f}, TP={tp:.5f}")
 
+    # Use symbol-aware safety margins instead of fixed 20 pips
+    min_stop_pips, _ = get_min_max_stop_pips(symbol, timeframe="M5")
+    safety_margin_pips = max(min_stop_pips, 10)  # At least 10 pips, or symbol minimum
+
     if direction.upper() == "BUY":
         # BUY: SL must be below entry, TP must be above entry
         if sl >= entry_rounded:
-            print(f"⚠️ BUY SL invalid ({sl:.5f} >= {entry_rounded:.5f}), fixing...")
-            sl = entry_rounded - (20 * pip_size)  # 20 pip SL as safety
+            print(f"⚠️ BUY SL invalid ({sl:.5f} >= {entry_rounded:.5f}), fixing with {safety_margin_pips} pip safety...")
+            sl = calculate_stop_loss_price(entry_rounded, safety_margin_pips, "BUY", symbol)
         if tp <= entry_rounded:
-            print(f"⚠️ BUY TP invalid ({tp:.5f} <= {entry_rounded:.5f}), fixing...")
-            tp = entry_rounded + (30 * pip_size)  # 30 pip TP for 1.5:1
+            print(f"⚠️ BUY TP invalid ({tp:.5f} <= {entry_rounded:.5f}), fixing with {safety_margin_pips * 1.5} pip target...")
+            tp = calculate_take_profit_price(entry_rounded, safety_margin_pips * 1.5, "BUY", symbol)
     else:  # SELL
         # SELL: SL must be above entry, TP must be below entry
         if sl <= entry_rounded:
-            print(f"⚠️ SELL SL invalid ({sl:.5f} <= {entry_rounded:.5f}), fixing...")
-            sl = entry_rounded + (20 * pip_size)  # 20 pip SL as safety
+            print(f"⚠️ SELL SL invalid ({sl:.5f} <= {entry_rounded:.5f}), fixing with {safety_margin_pips} pip safety...")
+            sl = calculate_stop_loss_price(entry_rounded, safety_margin_pips, "SELL", symbol)
         if tp >= entry_rounded:
-            print(f"⚠️ SELL TP invalid ({tp:.5f} >= {entry_rounded:.5f}), fixing...")
-            tp = entry_rounded - (30 * pip_size)  # 30 pip TP for 1.5:1
+            print(f"⚠️ SELL TP invalid ({tp:.5f} >= {entry_rounded:.5f}), fixing with {safety_margin_pips * 1.5} pip target...")
+            tp = calculate_take_profit_price(entry_rounded, safety_margin_pips * 1.5, "SELL", symbol)
 
-    # Final validation - ensure SL and TP are not zero
+    # Final validation - ensure SL and TP are not zero using symbol-aware minimums
     if sl == 0 or tp == 0:
         print(f"❌ CRITICAL: SL or TP is zero! SL={sl}, TP={tp}")
-        if direction.upper() == "BUY":
-            sl = entry_rounded - (20 * pip_size) if sl == 0 else sl
-            tp = entry_rounded + (30 * pip_size) if tp == 0 else tp
-        else:
-            sl = entry_rounded + (20 * pip_size) if sl == 0 else sl
-            tp = entry_rounded - (30 * pip_size) if tp == 0 else tp
-        print(f"🔧 Emergency fix applied: SL={sl:.5f}, TP={tp:.5f}")
+        emergency_pips = max(min_stop_pips, 15)  # Use symbol minimum or 15 pips
+        if sl == 0:
+            sl = calculate_stop_loss_price(entry_rounded, emergency_pips, direction.upper(), symbol)
+        if tp == 0:
+            tp = calculate_take_profit_price(entry_rounded, emergency_pips * 1.5, direction.upper(), symbol)
+        print(f"🔧 Emergency fix applied ({emergency_pips} pips): SL={sl:.5f}, TP={tp:.5f}")
 
     print(f"✅ FINAL VALUES: Entry={entry_rounded:.5f}, SL={sl:.5f}, TP={tp:.5f}")
 
@@ -538,24 +589,22 @@ def create_fire_command(
         point = 0.00001
         min_stop_distance = 0.00015  # 15 points minimum for major pairs
 
-    # If SL or TP are None or 0, use emergency defaults
+    # If SL or TP are None or 0, use emergency defaults with symbol-aware minimums
     if sl is None or sl == 0:
         print(f"⚠️ WARNING: SL is None/0, using emergency calculation")
-        # Emergency SL calculation
-        pip_size = 0.01 if "JPY" in symbol else 0.0001
-        if direction.upper() == "BUY":
-            sl = entry_rounded - (20 * pip_size)
-        else:
-            sl = entry_rounded + (20 * pip_size)
+        # Use symbol-aware minimum stop
+        emergency_sl_pips, _ = get_min_max_stop_pips(symbol, "M5")
+        emergency_sl_pips = max(emergency_sl_pips, 15)  # At least 15 pips
+        sl = calculate_stop_loss_price(entry_rounded, emergency_sl_pips, direction.upper(), symbol)
+        print(f"   Applied {emergency_sl_pips} pip emergency SL")
 
     if tp is None or tp == 0:
         print(f"⚠️ WARNING: TP is None/0, using emergency calculation")
-        # Emergency TP calculation (1.5:1 R:R)
-        pip_size = 0.01 if "JPY" in symbol else 0.0001
-        if direction.upper() == "BUY":
-            tp = entry_rounded + (30 * pip_size)
-        else:
-            tp = entry_rounded - (30 * pip_size)
+        # Use 1.5:1 R:R from emergency SL
+        emergency_tp_pips, _ = get_min_max_stop_pips(symbol, "M5")
+        emergency_tp_pips = max(emergency_tp_pips, 15) * 1.5  # 1.5:1 R:R
+        tp = calculate_take_profit_price(entry_rounded, emergency_tp_pips, direction.upper(), symbol)
+        print(f"   Applied {emergency_tp_pips} pip emergency TP (1.5:1 R:R)")
 
     # Round to appropriate decimals
     sl_for_ea = round(sl, decimals) if sl > 0 else 0
@@ -604,6 +653,12 @@ def create_fire_command(
         fire_command["hybrid_trail_distance"] = bitmode_config["trail"]["distance"]
         print(f"🎯 BITMODE/Hybrid enabled with flat EA format")
 
+    # Add Smart Trailing configuration if enabled
+    if trailing_config:
+        # EA v3.013 expects nested "trailing" object with configuration
+        fire_command["trailing"] = trailing_config
+        print(f"🎯 Smart Trailing enabled: {trailing_config['style']} style, arm at +{trailing_config['arm_threshold_pips']} pips")
+
     return fire_command
 
 
@@ -651,25 +706,8 @@ if __name__ == "__main__":
         entry_price = float(signal.get("entry_price", 0))
         stop_loss = float(signal.get("stop_loss", 0))
 
-        # Calculate actual pip distance based on symbol
-        if symbol == "XAUUSD":
-            # For XAUUSD, 1 pip = 0.01 price movement
-            stop_pips = abs(entry_price - stop_loss) / 0.01
-        elif symbol == "XAGUSD":
-            # For XAGUSD (Silver), 1 pip = 0.001 price movement
-            stop_pips = abs(entry_price - stop_loss) / 0.001
-        elif "JPY" in symbol:
-            # For JPY pairs, 1 pip = 0.01 price movement
-            stop_pips = abs(entry_price - stop_loss) / 0.01
-        elif symbol in ["USDCNH", "USDMXN", "USDZAR", "USDTRY"]:
-            # Exotic pairs with 4 decimal places
-            stop_pips = abs(entry_price - stop_loss) / 0.0001
-        elif symbol in ["USDSEK", "USDNOK", "USDDKK"]:
-            # Scandinavian pairs with 4 decimal places
-            stop_pips = abs(entry_price - stop_loss) / 0.0001
-        else:
-            # For other pairs, 1 pip = 0.0001 price movement
-            stop_pips = abs(entry_price - stop_loss) / 0.0001
+        # Calculate actual pip distance using UNIFIED pip size system
+        stop_pips = pips_from_price_distance(entry_price, stop_loss, symbol)
 
         # Get pip value based on symbol (value of 1 pip movement per standard lot)
         pip_value = 10.0  # Default pip value for majors (EURUSD, GBPUSD, etc.)
@@ -809,6 +847,15 @@ if __name__ == "__main__":
         except Exception as e:
             print(f"⚠️ BITMODE check failed: {e}")
 
+        # Check if user has Smart Trailing enabled
+        enable_trailing = False
+        try:
+            from src.bitten_core.fire_mode_database import fire_mode_db
+
+            enable_trailing = fire_mode_db.is_trailing_enabled(user_id)
+        except Exception as e:
+            print(f"⚠️ Trailing check failed: {e}")
+
         fire_cmd = create_fire_command(
             mission_id=mission_id,
             user_id=user_id,
@@ -820,6 +867,7 @@ if __name__ == "__main__":
             lot=calculated_lot,
             risk_reward=risk_reward_value,
             enable_bitmode=enable_bitmode,
+            enable_trailing=enable_trailing,
         )
 
         print(f"📋 Fire command created: {fire_cmd['symbol']} {fire_cmd['direction']} @ {fire_cmd['entry']}")

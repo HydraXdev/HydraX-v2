@@ -1,6 +1,9 @@
 # 📡 BITTEN ZMQ Architecture: 3-Way Communication Overview
 
-The BITTEN trading system uses a 3-way ZeroMQ socket architecture to ensure real-time, reliable, and scalable communication between the Core Engine (VENOM/CITADEL) and the MT5 Execution Bridge (EA).
+**Last Updated**: October 16, 2025
+**Tracking System**: Unified Tracker (bitten.db + unified_tracking.jsonl)
+
+The BITTEN trading system uses a 3-way ZeroMQ socket architecture to ensure real-time, reliable, and scalable communication between the Core Engine (Elite Guard) and the MT5 Execution Bridge (EA).
 
 ---
 
@@ -117,7 +120,41 @@ BITTEN's ZMQ communication system uses three dedicated sockets per bridge:
 
 - Fire Router can use `execute_zmq_fire()` to send commands
 - Telemetry data feeds into risk calculations
-- Trade results update user statistics and XP
+- Trade results update database (bitten.db) and unified tracker (unified_tracking.jsonl)
+
+---
+
+## 📊 Signal Tracking & Performance Analysis
+
+### **Unified Tracking System**
+
+**Primary Database**: `/root/HydraX-v2/bitten.db`
+- `signals` table with `outcome`, `exit_price`, `duration_seconds` columns
+- Single source of truth for all signal data
+- Updated in real-time by unified_tracker process
+
+**Tracking Log**: `/root/HydraX-v2/unified_tracking.jsonl`
+- JSON Lines format for every completed signal
+- Includes: signal_id, symbol, direction, pattern_type, confidence, outcome, duration
+- Used for ML training and performance analysis
+
+### **Quick Performance Check**
+
+```bash
+# Check recent signals
+tail -20 /root/HydraX-v2/unified_tracking.jsonl
+
+# Query win rate from database
+sqlite3 /root/HydraX-v2/bitten.db "SELECT
+    COUNT(CASE WHEN outcome = 'WIN' THEN 1 END) as wins,
+    COUNT(CASE WHEN outcome = 'LOSS' THEN 1 END) as losses,
+    ROUND(CAST(COUNT(CASE WHEN outcome = 'WIN' THEN 1 END) AS FLOAT) /
+          COUNT(*) * 100, 1) as win_rate_pct
+FROM signals WHERE outcome IS NOT NULL;"
+
+# Check tracking process
+pm2 status unified_tracker
+```
 
 ---
 
@@ -126,5 +163,6 @@ BITTEN's ZMQ communication system uses three dedicated sockets per bridge:
 1. **Deploy Controller**: Run `python3 zmq_trade_controller.py` on Linux server
 2. **Verify Connection**: EA should show "Connected to backend controller"
 3. **Test Trade Flow**: Send test signal and verify all 3 channels working
-4. **Integrate with VENOM**: Connect signal generation to command channel
+4. **Integrate with Elite Guard**: Connect signal generation to command channel
 5. **Risk Integration**: Use telemetry for dynamic position sizing
+6. **Monitor Tracking**: Verify unified_tracker is recording all signal outcomes

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Signal Performance Analytics API
-Reads comprehensive_tracking.jsonl and exposes performance metrics via REST endpoints
+Reads unified_tracking.jsonl and exposes performance metrics via REST endpoints
 """
 
 import json
@@ -29,7 +29,7 @@ except:
     REDIS_AVAILABLE = False
     LOG.warning("⚠️ Redis not available, caching disabled")
 
-TRACKING_FILE = "/root/HydraX-v2/comprehensive_tracking.jsonl"
+TRACKING_FILE = "/root/HydraX-v2/unified_tracking.jsonl"
 CACHE_TTL = 300  # 5 minutes
 
 

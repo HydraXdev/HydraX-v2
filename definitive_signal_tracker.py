@@ -60,8 +60,8 @@ class DefinitiveSignalTracker:
                 symbol,
                 direction,
                 entry_price,
-                stop_pips,
-                target_pips,
+                sl,
+                tp,
                 confidence,
                 pattern_type,
                 created_at
@@ -73,15 +73,21 @@ class DefinitiveSignalTracker:
 
         for row in cursor.fetchall():
             signal_id = row[0]
+
+            # Skip signals with missing critical data
+            if not row[3] or not row[4] or not row[5]:
+                logger.warning(f"⚠️  Skipping {signal_id} - missing entry_price, sl, or tp")
+                continue
+
             self.pending_signals[signal_id] = {
                 "signal_id": signal_id,
                 "symbol": row[1],
                 "direction": row[2],
                 "entry_price": float(row[3]),
-                "stop_pips": float(row[4]),
-                "target_pips": float(row[5]),
-                "confidence": float(row[6]),
-                "pattern_type": row[7],
+                "sl_price": float(row[4]),  # FIXED: Use absolute SL price
+                "tp_price": float(row[5]),  # FIXED: Use absolute TP price
+                "confidence": float(row[6]) if row[6] else 0.0,
+                "pattern_type": row[7] if row[7] else "UNKNOWN",
                 "created_at": row[8],
                 "start_time": time.time(),
             }
@@ -137,25 +143,22 @@ class DefinitiveSignalTracker:
 
             direction = signal["direction"].upper()
             entry = signal["entry_price"]
-            stop_pips = signal["stop_pips"]
-            target_pips = signal["target_pips"]
 
-            # Calculate pip value for this symbol
-            pip_value = self._calculate_pip_value(symbol)
+            # FIXED: Use absolute SL/TP prices directly from database
+            sl_price = signal["sl_price"]
+            tp_price = signal["tp_price"]
 
-            # Calculate SL and TP prices
+            # Determine current price based on direction
             if direction == "BUY":
                 current_price = bid  # Exit on bid for BUY
-                sl_price = entry - (stop_pips * pip_value)
-                tp_price = entry + (target_pips * pip_value)
 
-                # Check SL hit
+                # Check SL hit (price went down below SL)
                 if current_price <= sl_price:
                     self._record_outcome(signal, "LOSS", current_price, sl_price)
                     to_remove.append(signal_id)
                     continue
 
-                # Check TP hit
+                # Check TP hit (price went up above TP)
                 if current_price >= tp_price:
                     self._record_outcome(signal, "WIN", current_price, tp_price)
                     to_remove.append(signal_id)
@@ -163,16 +166,14 @@ class DefinitiveSignalTracker:
 
             elif direction == "SELL":
                 current_price = ask  # Exit on ask for SELL
-                sl_price = entry + (stop_pips * pip_value)
-                tp_price = entry - (target_pips * pip_value)
 
-                # Check SL hit
+                # Check SL hit (price went up above SL)
                 if current_price >= sl_price:
                     self._record_outcome(signal, "LOSS", current_price, sl_price)
                     to_remove.append(signal_id)
                     continue
 
-                # Check TP hit
+                # Check TP hit (price went down below TP)
                 if current_price <= tp_price:
                     self._record_outcome(signal, "WIN", current_price, tp_price)
                     to_remove.append(signal_id)
@@ -248,8 +249,8 @@ class DefinitiveSignalTracker:
                             symbol,
                             direction,
                             entry_price,
-                            stop_pips,
-                            target_pips,
+                            sl,
+                            tp,
                             confidence,
                             pattern_type,
                             created_at
@@ -263,16 +264,21 @@ class DefinitiveSignalTracker:
                     new_count = 0
                     for row in cursor.fetchall():
                         signal_id = row[0]
+
+                        # Skip signals with missing critical data
+                        if not row[3] or not row[4] or not row[5]:
+                            continue
+
                         if signal_id not in self.pending_signals:
                             self.pending_signals[signal_id] = {
                                 "signal_id": signal_id,
                                 "symbol": row[1],
                                 "direction": row[2],
                                 "entry_price": float(row[3]),
-                                "stop_pips": float(row[4]),
-                                "target_pips": float(row[5]),
-                                "confidence": float(row[6]),
-                                "pattern_type": row[7],
+                                "sl_price": float(row[4]),  # FIXED: Use absolute SL price
+                                "tp_price": float(row[5]),  # FIXED: Use absolute TP price
+                                "confidence": float(row[6]) if row[6] else 0.0,
+                                "pattern_type": row[7] if row[7] else "UNKNOWN",
                                 "created_at": row[8],
                                 "start_time": current_time,
                             }

@@ -1579,8 +1579,8 @@ Reply: /fire {signal_id} to execute"""
     def execute_fire_command(self, user_id: str, signal_id: str) -> Dict:
         """Handle /fire command execution for a specific signal"""
         try:
-            # CRITICAL: COMMANDER 7176191872 - ZERO SIMULATION OVERRIDE
-            if user_id == "7176191872":
+            # CRITICAL: COMMANDER - ZERO SIMULATION OVERRIDE
+            if user_id == "wlJ5lafBqRSLwHIUBxJQMr4SBtk1":
                 # UNRESTRICTED FIRE ACCESS - NO AUTHORIZATION CHECKS
                 logger.info(f"🎖️ COMMANDER {user_id} fire command - ZERO SIMULATION ENFORCED")
                 # Skip to direct execution with commander privileges
@@ -2149,12 +2149,29 @@ Your mission briefing is waiting.""",
             missions_dir = "/root/HydraX-v2/missions"
             os.makedirs(missions_dir, exist_ok=True)
 
-            # Write mission file
+            # Write mission file (local JSON)
             mission_file = f"{missions_dir}/{signal_id}.json"
             with open(mission_file, "w") as f:
                 json.dump(mission_data, f, indent=2)
 
             self._log_info(f"✅ Mission file created: {mission_file}")
+
+            # Write to Firebase so Mission Brief has correct data
+            try:
+                from firebase_backend import write_mission_to_firebase
+                firebase_mission = {
+                    'mission_id': signal_id,
+                    'signal_id': signal_id,
+                    'payload_json': mission_data,  # Full mission data with calculated prices
+                    'status': 'active',
+                    'expires_at': mission_data.get('expires_at'),
+                    'created_at': mission_data.get('created_at'),
+                    'user_id': ''  # Empty for all users
+                }
+                write_mission_to_firebase(firebase_mission)
+                self._log_info(f"✅ Mission written to Firebase: {signal_id}")
+            except Exception as firebase_error:
+                self._log_error(f"Failed to write mission to Firebase: {firebase_error}")
 
         except Exception as e:
             self._log_error(f"Failed to create mission file for {signal_data.get('signal_id', 'unknown')}: {e}")

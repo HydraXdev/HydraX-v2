@@ -1,0 +1,24 @@
+{
+  "timestamp": "2025-10-08T22:12:07.618268",
+  "v1_database": "/root/HydraX-v2/bitten.db",
+  "v2_database": "bitten_v2 (PostgreSQL port 5433)",
+  "migration_status": {
+    "ea_instances": {
+      "v1_count": 2,
+      "v2_count": 2,
+      "migrated": true,
+      "complete": true
+    },
+    "signals_24h": {
+      "v1_count": 83,
+      "v2_count": 0,
+      "note": "Fresh start expected (v2 should be 0)"
+    },
+    "fires_24h": {
+      "v1_count": 5,
+      "v2_count": 0,
+      "note": "Fresh start expected (v2 should be 0)"
+    }
+  },
+  "overall_status": "MIGRATION COMPLETE"
+}

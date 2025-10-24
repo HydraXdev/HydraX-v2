@@ -26,10 +26,10 @@ class PaymentConfig:
         "COMMANDER": 189,  # Unlimited trades, SELECT + AUTO modes, voice personalities, all premium features
     }
 
-    # Trial Configuration
+    # Trial Configuration (Press Pass = 7-day trial)
     TRIAL_ENABLED = os.getenv("ENABLE_TRIAL_SYSTEM", "true").lower() == "true"
-    TRIAL_DURATION_DAYS = int(os.getenv("TRIAL_DURATION_DAYS", "15"))
-    PAYMENT_PROMPT_DAY = int(os.getenv("PAYMENT_PROMPT_DAY", "14"))
+    TRIAL_DURATION_DAYS = int(os.getenv("TRIAL_DURATION_DAYS", "7"))
+    PAYMENT_PROMPT_DAY = int(os.getenv("PAYMENT_PROMPT_DAY", "6"))
 
     # Stripe Configuration
     STRIPE_API_VERSION = "2023-10-16"

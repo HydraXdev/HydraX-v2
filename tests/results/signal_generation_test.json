@@ -1,0 +1,39 @@
+{
+  "test_name": "End-to-End Signal Generation",
+  "start_time": "2025-10-08T16:57:20.703776+00:00",
+  "tests": [
+    {
+      "name": "database_connection",
+      "passed": true,
+      "message": "\u2705 PostgreSQL connected: PostgreSQL 15.14 (Ubuntu 15.14-1.pgdg22.04+1) on x...",
+      "timestamp": "2025-10-08T16:57:20.727356+00:00"
+    },
+    {
+      "name": "signal_table_exists",
+      "passed": true,
+      "message": "\u2705 Signals table exists",
+      "timestamp": "2025-10-08T16:57:21.250073+00:00"
+    },
+    {
+      "name": "zmq_signal_subscription",
+      "passed": true,
+      "message": "\u26a0\ufe0f  No signals currently available (connection OK)",
+      "timestamp": "2025-10-08T16:57:21.751584+00:00"
+    },
+    {
+      "name": "recent_signals",
+      "passed": true,
+      "message": "\u26a0\ufe0f  No signals generated in last 24h (system may need time)",
+      "timestamp": "2025-10-08T16:57:22.277994+00:00"
+    },
+    {
+      "name": "signal_schema",
+      "passed": true,
+      "message": "\u2705 Signal schema valid (14 columns)",
+      "timestamp": "2025-10-08T16:57:22.810910+00:00"
+    }
+  ],
+  "success": true,
+  "end_time": "2025-10-08T16:57:23.311508+00:00",
+  "duration_seconds": 2.607732
+}

@@ -1,5 +1,22 @@
 # BITTEN System Architecture
 
+## 🚨 UPDATED: October 16, 2025 - Unified Tracking System
+
+### Signal Tracking System
+
+**Current Implementation** (as of October 16, 2025):
+- **Primary File**: `/root/HydraX-v2/unified_tracking.jsonl` ✅
+- **Database**: `bitten.db` with signals table ✅
+- **Process**: `unified_tracker` (PM2 managed) ✅
+
+**Deprecated Tracking Files** (DO NOT USE):
+- ❌ truth_log.jsonl
+- ❌ signal_tracking.jsonl
+- ❌ optimized_tracking.jsonl
+- ❌ comprehensive_tracking.jsonl
+- ❌ definitive_signal_tracker
+- ❌ analytics_worker
+
 ## Table of Contents
 
 1. [High-Level System Overview](#high-level-system-overview)

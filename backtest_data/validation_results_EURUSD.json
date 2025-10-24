@@ -1,0 +1,13 @@
+{
+  "timestamp": "2025-10-22T00:54:37.203659",
+  "symbol": "EURUSD",
+  "candles_tested": 17983,
+  "modules": [
+    {
+      "module": "OrderFlowAnalyzer",
+      "symbol": "EURUSD",
+      "splits": 5,
+      "avg_sharpe": -5.146313068230257,
+      "worst_case_sharpe": -8.636489530961002,
+      "sharpe_stability": 2.0403409941187443,
+      "is_valid": 

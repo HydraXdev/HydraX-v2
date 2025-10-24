@@ -127,6 +127,21 @@ class XPIntegrationManager:
 
         logger.info(f"Awarded {final_amount} XP to {user_id} " f"(base: {base_amount}, multiplier: {multiplier}x)")
 
+        # Sync XP to Firebase for live UI updates
+        try:
+            from firebase_backend import update_user_data
+            xp_balance = self.xp_economy.get_user_balance(user_id)
+            update_user_data(user_id, {
+                'xp': int(xp_balance.current_balance),
+                'medals': 0,  # TODO: Calculate actual medals from achievement system
+                'stx': 0,     # TODO: Calculate STX (special tactical currency)
+                'xpAmmo': 0   # TODO: Calculate XP ammo from active purchases
+            })
+            logger.info(f"✅ XP synced to Firebase for user {user_id}: {xp_balance.current_balance} XP")
+        except Exception as xp_sync_err:
+            logger.warning(f"⚠️ Firebase XP sync failed for user {user_id}: {xp_sync_err}")
+            # Continue - don't break XP system if Firebase is down
+
         return final_amount
 
     def purchase_xp_item(self, user_id: str, item_id: str) -> Tuple[bool, str, Optional[Dict[str, Any]]]:

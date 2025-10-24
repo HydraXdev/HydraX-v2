@@ -1,0 +1,134 @@
+# BITTEN v2.0 Phase 1 - Prometheus Alert Rules
+
+groups:
+  - name: bitten_service_health
+    interval: 30s
+    rules:
+      # Service down alerts
+      - alert: ServiceDown
+        expr: up{job=~"zmq_gateway|signal_engine|fire_service|api_server|analytics_worker"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: '{{ $labels.job }}'
+        annotations:
+          summary: "BITTEN v2 service {{ $labels.job }} is down"
+          description: "{{ $labels.job }} has been down for more than 1 minute"
+
+      # High latency alerts
+      - alert: HighFireLatency
+        expr: histogram_quantile(0.95, rate(fire_execution_duration_seconds_bucket[5m])) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          component: fire_service
+        annotations:
+          summary: "Fire execution P95 latency > 100ms"
+          description: "Fire execution is taking {{ $value }}s (threshold: 0.1s)"
+
+      - alert: HighSignalGenLatency
+        expr: histogram_quantile(0.95, rate(signal_generation_duration_seconds_bucket[5m])) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          component: signal_engine
+        annotations:
+          summary: "Signal generation P95 latency > 50ms"
+          description: "Signal generation is taking {{ $value }}s (threshold: 0.05s)"
+
+  - name: bitten_database
+    interval: 60s
+    rules:
+      # PostgreSQL connection pool exhaustion
+      - alert: PostgreSQLPoolExhausted
+        expr: pg_stat_database_numbackends{datname="bitten_v2"} >= 18
+        for: 2m
+        labels:
+          severity: critical
+          component: postgres
+        annotations:
+          summary: "PostgreSQL connection pool near limit"
+          description: "{{ $value }} connections active (max 20)"
+
+      # Slow queries
+      - alert: SlowQueries
+        expr: rate(pg_stat_statements_mean_exec_time[5m]) > 50
+        for: 5m
+        labels:
+          severity: warning
+          component: postgres
+        annotations:
+          summary: "PostgreSQL queries running slow"
+          description: "Average query time: {{ $value }}ms"
+
+  - name: bitten_trading
+    interval: 30s
+    rules:
+      # High fire failure rate
+      - alert: HighFireFailureRate
+        expr: rate(fires_failed_total[5m]) / rate(fires_total[5m]) > 0.05
+        for: 3m
+        labels:
+          severity: critical
+          component: fire_service
+        annotations:
+          summary: "Fire failure rate > 5%"
+          description: "{{ $value | humanizePercentage }} of fires failing"
+
+      # Signal generation stopped
+      - alert: SignalGenerationStopped
+        expr: rate(signals_generated_total[10m]) == 0
+        for: 10m
+        labels:
+          severity: warning
+          component: signal_engine
+        annotations:
+          summary: "No signals generated in 10 minutes"
+          description: "Signal engine may be stuck or market is closed"
+
+      # Confirmation timeout spike
+      - alert: HighConfirmationTimeouts
+        expr: rate(confirmations_timeout_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          component: zmq_gateway
+        annotations:
+          summary: "High rate of confirmation timeouts"
+          description: "{{ $value }} timeouts/sec - EA may be disconnected"
+
+  - name: bitten_system
+    interval: 60s
+    rules:
+      # High CPU usage
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "CPU usage is {{ $value }}%"
+
+      # High memory usage
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "High memory usage"
+          description: "Memory usage is {{ $value }}%"
+
+      # Disk space low
+      - alert: LowDiskSpace
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < 15
+        for: 5m
+        labels:
+          severity: critical
+          component: system
+        annotations:
+          summary: "Low disk space"
+          description: "Only {{ $value }}% disk space remaining"

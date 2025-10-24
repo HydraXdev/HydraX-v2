@@ -1,0 +1,46 @@
+{
+  "8890": {
+    "pid": "3530721",
+    "raw": "tcp   LISTEN 0      2048              0.0.0.0:8890       0.0.0.0:*    users:((\"python3\",pid=3530721,fd=31)) ino:2137025127 sk:17147 cgroup:/user.slice/user-0.slice/session-228.scope <->"
+  },
+  "8888": {
+    "pid": "2997941",
+    "raw": "tcp   LISTEN 0      2048              0.0.0.0:8888       0.0.0.0:*    users:((\"python3\",pid=2997941,fd=14)) ino:2130711022 sk:17145 cgroup:/user.slice/user-0.slice/session-228.scope <->"
+  },
+  "9091": {
+    "pid": "2835869",
+    "raw": "tcp   LISTEN 0      128               0.0.0.0:9091       0.0.0.0:*    users:((\"python3\",pid=2835869,fd=24)) ino:2130478448 sk:1713f cgroup:/user.slice/user-0.slice/session-228.scope <->"
+  },
+  "9094": {
+    "pid": "3531540",
+    "raw": "tcp   LISTEN 0      5                 0.0.0.0:9094       0.0.0.0:*    users:((\"python3\",pid=3531540,fd=9)) ino:2137025217 sk:17148 cgroup:/user.slice/user-0.slice/session-228.scope <->"
+  },
+  "9092": {
+    "pid": "3530568",
+    "raw": "tcp   LISTEN 0      5                 0.0.0.0:9092       0.0.0.0:*    users:((\"python3\",pid=3530568,fd=14)) ino:2137024857 sk:17149 cgroup:/user.slice/user-0.slice/session-228.scope <->"
+  },
+  "5433": {
+    "pid": "1037433",
+    "raw": "tcp   LISTEN 0      184                 [::1]:5433          [::]:*    users:((\"postgres\",pid=1037433,fd=5)) uid:122 ino:2128014017 sk:168ef cgroup:/system.slice/system-postgresql.slice/postgresql@15-main.service v6only:1 <->"
+  },
+  "5560": {
+    "pid": "2835869",
+    "raw": "tcp   LISTEN 0      100               0.0.0.0:5560       0.0.0.0:*    users:((\"python3\",pid=2835869,fd=15)) ino:2130478443 sk:17140 cgroup:/user.slice/user-0.slice/session-228.scope <->"
+  },
+  "5555": {
+    "pid": "2835869",
+    "raw": "tcp   LISTEN 0      100               0.0.0.0:5555       0.0.0.0:*    users:((\"python3\",pid=2835869,fd=19)) ino:2130478445 sk:17141 cgroup:/user.slice/user-0.slice/session-228.scope <->"
+  },
+  "5558": {
+    "pid": "2835869",
+    "raw": "tcp   LISTEN 0      100               0.0.0.0:5558       0.0.0.0:*    users:((\"python3\",pid=2835869,fd=23)) ino:2130478447 sk:17142 cgroup:/user.slice/user-0.slice/session-228.scope <->"
+  },
+  "5557": {
+    "pid": "3530568",
+    "raw": "tcp   LISTEN 0      100               0.0.0.0:5557       0.0.0.0:*    users:((\"python3\",pid=3530568,fd=10)) ino:2137025805 sk:1714a cgroup:/user.slice/user-0.slice/session-228.scope <->"
+  },
+  "5556": {
+    "pid": "2835869",
+    "raw": "tcp   LISTEN 0      100               0.0.0.0:5556       0.0.0.0:*    users:((\"python3\",pid=2835869,fd=13)) ino:2130478442 sk:17144 cgroup:/user.slice/user-0.slice/session-228.scope <->"
+  }
+}

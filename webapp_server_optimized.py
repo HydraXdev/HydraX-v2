@@ -186,6 +186,14 @@ app.config.update(
     }
 )
 
+# Register Norman's Notebook API blueprint
+try:
+    from src.bitten_core.notebook_api import notebook_api
+    app.register_blueprint(notebook_api)
+    logging.info("✅ Norman's Notebook API registered successfully")
+except Exception as e:
+    logging.error(f"❌ Failed to register Norman's Notebook API: {e}")
+
 
 # Database helper
 @contextmanager
@@ -521,6 +529,17 @@ def api_signals():
                     signal_confidence = float(signal_data.get("confidence", 0))
                     signal_id = signal_data.get("signal_id", "")
 
+                    # 🎯 AUTO-FIRE ELIGIBILITY: All signals in user's configured confidence range
+                    # Elite Guard signals: ELITE_GUARD_, ELITE_RAPID_, ELITE_SNIPER_
+                    # Pulse signals: PULSE_
+                    # Both generators eligible for autofire based on user thresholds (80-89% default)
+                    autofire_eligible = 80 <= signal_confidence <= 89  # User-configured range
+
+                    if signal_confidence < 80:
+                        logger.info(f"⏭️  MANUAL ONLY: {signal_id} @ {signal_confidence}% (Below 80% autofire threshold)")
+                    elif signal_confidence > 89:
+                        logger.info(f"⏭️  MANUAL ONLY: {signal_id} @ {signal_confidence}% (Above 89% autofire threshold - too risky)")
+
                     # ML filter disabled - all signals pass
                     should_display = True
                     ml_reason = "ML filter disabled"
@@ -530,391 +549,418 @@ def api_signals():
                     else:
                         logger.debug(f"🚫 ML BLOCKED FROM DISPLAY: {signal_id} @ {signal_confidence}% - {ml_reason}")
 
-                    # AUTO fire logic - user-configurable thresholds
-                    print(f"[DEBUG] AUTO fire check: {signal_id} @ {signal_confidence}%")
+                    # AUTO fire logic - user-configurable thresholds (PULSE 88%+ only)
+                    print(f"[DEBUG] AUTO fire check: {signal_id} @ {signal_confidence}% (autofire_eligible={autofire_eligible})")
 
-                    try:
-                        import sqlite3
+                    # 🎯 Only run autofire logic for eligible signals (PULSE 88%+)
+                    if autofire_eligible:
+                        try:
+                            import sqlite3
 
-                        # TIER-BASED AUTO-FIRE: Check for COMMANDER users with AUTO mode enabled
-                        from src.bitten_core.fire_mode_database import fire_mode_db
+                            # TIER-BASED AUTO-FIRE: Check for COMMANDER users with AUTO mode enabled
+                            from src.bitten_core.fire_mode_database import fire_mode_db
 
-                        with sqlite3.connect("/root/HydraX-v2/data/fire_modes.db") as fire_conn:
-                            fire_cursor = fire_conn.cursor()
-                            # Only COMMANDER tier can auto-fire
-                            fire_cursor.execute(
-                                """
-                                SELECT user_id, max_auto_slots, subscription_tier,
-                                       auto_fire_min_confidence, auto_fire_max_confidence, auto_fire_enabled
-                                FROM user_fire_modes
-                                WHERE current_mode = 'AUTO'
-                                AND auto_fire_enabled = 1
-                                AND trading_enabled = 1
-                                AND subscription_tier = 'COMMANDER'
-                                AND ? >= auto_fire_min_confidence
-                                AND ? <= auto_fire_max_confidence
-                            """,
-                                (signal_confidence, signal_confidence),
-                            )
-                            auto_candidates = fire_cursor.fetchall()
-
-                        print(f"[DEBUG] Auto-fire candidates found: {len(auto_candidates)} COMMANDER users")
-
-                        # TIER-BASED SLOT VALIDATION: Use comprehensive tier validation
-                        auto_mode_users = []
-                        if auto_candidates:
-                            for user_id, max_slots, user_tier, min_conf, max_conf, enabled in auto_candidates:
-                                # Use comprehensive tier-based validation
-                                fire_check = fire_mode_db.can_user_fire_trade(str(user_id), "AUTO")
-
-                                if fire_check["can_fire"]:
-                                    current_usage = fire_check["current_usage"]
-                                    daily_stats = fire_check["daily_stats"]
-                                    print(
-                                        f"[DEBUG] User {user_id} ({user_tier}): {current_usage['total_slots_used']}/10 slots, {daily_stats['trades_used']}/{daily_stats['max_trades']} daily trades (AVAILABLE)"
-                                    )
-                                    auto_mode_users.append(
-                                        (
-                                            user_id,
-                                            max_slots,
-                                            current_usage["total_slots_used"],
-                                            min_conf,
-                                            max_conf,
-                                            enabled,
+                            with sqlite3.connect("/root/HydraX-v2/data/fire_modes.db") as fire_conn:
+                                fire_cursor = fire_conn.cursor()
+                                # Only COMMANDER tier can auto-fire
+                                fire_cursor.execute(
+                                    """
+                                    SELECT user_id, max_auto_slots, subscription_tier,
+                                           auto_fire_min_confidence, auto_fire_max_confidence, auto_fire_enabled
+                                    FROM user_fire_modes
+                                    WHERE current_mode = 'AUTO'
+                                    AND auto_fire_enabled = 1
+                                    AND trading_enabled = 1
+                                    AND subscription_tier = 'COMMANDER'
+                                    AND ? >= auto_fire_min_confidence
+                                    AND ? <= auto_fire_max_confidence
+                                """,
+                                    (signal_confidence, signal_confidence),
+                                )
+                                auto_candidates = fire_cursor.fetchall()
+    
+                            print(f"[DEBUG] Auto-fire candidates found: {len(auto_candidates)} COMMANDER users")
+    
+                            # TIER-BASED SLOT VALIDATION: Use comprehensive tier validation
+                            auto_mode_users = []
+                            if auto_candidates:
+                                for user_id, max_slots, user_tier, min_conf, max_conf, enabled in auto_candidates:
+                                    # Use comprehensive tier-based validation
+                                    fire_check = fire_mode_db.can_user_fire_trade(str(user_id), "AUTO")
+    
+                                    if fire_check["can_fire"]:
+                                        current_usage = fire_check["current_usage"]
+                                        daily_stats = fire_check["daily_stats"]
+                                        print(
+                                            f"[DEBUG] User {user_id} ({user_tier}): {current_usage['total_slots_used']}/10 slots, {daily_stats['trades_used']}/{daily_stats['max_trades']} daily trades (AVAILABLE)"
                                         )
-                                    )
-                                else:
-                                    reasons = fire_check.get("reasons", {})
-                                    reason_text = []
-                                    if reasons.get("slots_full"):
-                                        reason_text.append("SLOTS FULL")
-                                    if reasons.get("daily_limit_exceeded"):
-                                        reason_text.append("DAILY LIMIT")
-                                    if reasons.get("auto_fire_not_allowed"):
-                                        reason_text.append("TIER NOT ALLOWED")
-                                    print(
-                                        f"[DEBUG] User {user_id} ({user_tier}): {' + '.join(reason_text)} - AUTO BLOCKED"
-                                    )
-
-                        if auto_mode_users:
-                            print(f"[DEBUG] Found {len(auto_mode_users)} users with matching auto-fire thresholds")
-                            logger.info(
-                                f"🎯 AUTO FIRE CANDIDATES: {len(auto_mode_users)} users for {signal_id} @ {signal_confidence}%"
-                            )
-
-                            # Cross-reference with fresh EA connections
-                            with sqlite3.connect("/root/HydraX-v2/bitten.db") as auto_conn:
-                                auto_cursor = auto_conn.cursor()
-
-                                auto_users = []
-                                for (
-                                    user_id,
-                                    max_slots,
-                                    current_positions,
-                                    min_conf,
-                                    max_conf,
-                                    enabled,
-                                ) in auto_mode_users:
-                                    auto_cursor.execute(
-                                        """
-                                        SELECT DISTINCT ea.user_id, ea.target_uuid, ea.last_balance
-                                        FROM ea_instances ea
-                                        WHERE ea.user_id = ?
-                                        AND (strftime('%s','now') - ea.last_seen) <= 120
-                                    """,
-                                        (user_id,),
-                                    )
-                                    fresh_ea = auto_cursor.fetchall()
-                                    auto_users.extend(fresh_ea)
-
-                                if auto_users:
-                                    logger.info(
-                                        f"🔥 AUTO FIRE TRIGGERED: {len(auto_users)} users eligible for {signal_id}"
-                                    )
-
-                                    # Import fire execution system
-                                    from enqueue_fire import create_fire_command, enqueue_fire
-
-                                    for user_id, target_uuid, balance in auto_users:
-                                        try:
-                                            # Check user's custom auto-fire profile
+                                        auto_mode_users.append(
+                                            (
+                                                user_id,
+                                                max_slots,
+                                                current_usage["total_slots_used"],
+                                                min_conf,
+                                                max_conf,
+                                                enabled,
+                                            )
+                                        )
+                                    else:
+                                        reasons = fire_check.get("reasons", {})
+                                        reason_text = []
+                                        if reasons.get("slots_full"):
+                                            reason_text.append("SLOTS FULL")
+                                        if reasons.get("daily_limit_exceeded"):
+                                            reason_text.append("DAILY LIMIT")
+                                        if reasons.get("auto_fire_not_allowed"):
+                                            reason_text.append("TIER NOT ALLOWED")
+                                        print(
+                                            f"[DEBUG] User {user_id} ({user_tier}): {' + '.join(reason_text)} - AUTO BLOCKED"
+                                        )
+    
+                            if auto_mode_users:
+                                print(f"[DEBUG] Found {len(auto_mode_users)} users with matching auto-fire thresholds")
+                                logger.info(
+                                    f"🎯 AUTO FIRE CANDIDATES: {len(auto_mode_users)} users for {signal_id} @ {signal_confidence}%"
+                                )
+    
+                                # Cross-reference with fresh EA connections
+                                with sqlite3.connect("/root/HydraX-v2/bitten.db") as auto_conn:
+                                    auto_cursor = auto_conn.cursor()
+    
+                                    auto_users = []
+                                    for (
+                                        user_id,
+                                        max_slots,
+                                        current_positions,
+                                        min_conf,
+                                        max_conf,
+                                        enabled,
+                                    ) in auto_mode_users:
+                                        auto_cursor.execute(
+                                            """
+                                            SELECT DISTINCT ea.user_id, ea.target_uuid, ea.last_balance
+                                            FROM ea_instances ea
+                                            WHERE ea.user_id = ?
+                                            AND (strftime('%s','now') - ea.last_seen) <= 120
+                                        """,
+                                            (user_id,),
+                                        )
+                                        fresh_ea = auto_cursor.fetchall()
+                                        auto_users.extend(fresh_ea)
+    
+                                    if auto_users:
+                                        logger.info(
+                                            f"🔥 AUTO FIRE TRIGGERED: {len(auto_users)} users eligible for {signal_id}"
+                                        )
+    
+                                        # Import fire execution system
+                                        from enqueue_fire import create_fire_command, enqueue_fire
+    
+                                        for user_id, target_uuid, balance in auto_users:
                                             try:
-                                                from src.bitten_core.auto_fire_profile_manager import profile_manager
-
-                                                should_fire, reason = profile_manager.should_auto_fire(
-                                                    str(user_id), signal_data
-                                                )
-
-                                                if not should_fire:
-                                                    logger.info(f"🚫 Profile blocked for {user_id}: {reason}")
-                                                    continue
-                                                else:
-                                                    logger.info(f"✅ Profile approved for {user_id}: {reason}")
-                                            except Exception as profile_error:
-                                                logger.warning(f"Profile check failed for {user_id}: {profile_error}")
-                                                # Continue with default behavior if profile check fails
-
-                                            # Calculate lot size DIRECTLY from user's balance and risk settings
-                                            try:
-                                                symbol = signal_data.get("symbol", "EURUSD")
-                                                entry_price = float(
-                                                    signal_data.get("entry_price", signal_data.get("entry", 0))
-                                                )
-                                                stop_loss = float(
-                                                    signal_data.get("stop_loss", signal_data.get("sl", 0))
-                                                )
-                                                take_profit = float(
-                                                    signal_data.get("take_profit", signal_data.get("tp", 0))
-                                                )
-                                                direction = signal_data.get("direction", "BUY").upper()
-
-                                                # Get user's risk percentage from fire_modes database
-                                                import sqlite3
-
-                                                risk_conn = sqlite3.connect("/root/HydraX-v2/data/fire_modes.db")
-                                                risk_cursor = risk_conn.cursor()
-                                                risk_cursor.execute(
-                                                    "SELECT risk_per_trade FROM user_fire_modes WHERE user_id = ?",
-                                                    (str(user_id),),
-                                                )
-                                                risk_row = risk_cursor.fetchone()
-                                                risk_percent = (
-                                                    (risk_row[0] * 100) if risk_row and risk_row[0] else 2.0
-                                                )  # Default 2%
-                                                risk_conn.close()
-
-                                                # Calculate lot size directly
-                                                user_balance = float(balance) if balance else 0
-                                                logger.info(
-                                                    f"💰 AUTO FIRE LOT CALC: Balance=${user_balance}, Risk={risk_percent}%"
-                                                )
-
-                                                # Calculate SL distance in pips
-                                                if "JPY" in symbol:
-                                                    pip_multiplier = 100
-                                                elif symbol == "XAUUSD":
-                                                    pip_multiplier = 10
-                                                elif symbol == "XAGUSD":
-                                                    pip_multiplier = 1000
-                                                else:
-                                                    pip_multiplier = 10000
-
-                                                sl_distance_pips = abs(entry_price - stop_loss) * pip_multiplier
-                                                logger.info(f"   SL distance: {sl_distance_pips:.1f} pips")
-
-                                                # Get pip value per lot
-                                                pip_values = {
-                                                    "EURUSD": 10.0,
-                                                    "GBPUSD": 10.0,
-                                                    "USDJPY": 10.0,
-                                                    "USDCAD": 10.0,
-                                                    "AUDUSD": 10.0,
-                                                    "EURJPY": 6.8,
-                                                    "GBPJPY": 6.8,
-                                                    "XAUUSD": 10.0,
-                                                    "XAGUSD": 5.0,
-                                                }
-                                                pip_value = pip_values.get(symbol, 10.0)
-
-                                                # Calculate lot: (Balance * Risk%) / (SL pips * Pip value)
-                                                if sl_distance_pips > 0 and user_balance > 0:
-                                                    risk_amount = user_balance * (risk_percent / 100)
-                                                    calculated_lot = risk_amount / (sl_distance_pips * pip_value)
-                                                    calculated_lot = max(0.01, round(calculated_lot, 2))  # Min 0.01
+                                                # Check user's custom auto-fire profile
+                                                try:
+                                                    from src.bitten_core.auto_fire_profile_manager import profile_manager
+    
+                                                    should_fire, reason = profile_manager.should_auto_fire(
+                                                        str(user_id), signal_data
+                                                    )
+    
+                                                    if not should_fire:
+                                                        logger.info(f"🚫 Profile blocked for {user_id}: {reason}")
+                                                        continue
+                                                    else:
+                                                        logger.info(f"✅ Profile approved for {user_id}: {reason}")
+                                                except Exception as profile_error:
+                                                    logger.warning(f"Profile check failed for {user_id}: {profile_error}")
+                                                    # Continue with default behavior if profile check fails
+    
+                                                # Calculate lot size DIRECTLY from user's balance and risk settings
+                                                try:
+                                                    symbol = signal_data.get("symbol", "EURUSD")
+                                                    entry_price = float(
+                                                        signal_data.get("entry_price", signal_data.get("entry", 0))
+                                                    )
+                                                    stop_loss = float(
+                                                        signal_data.get("stop_loss", signal_data.get("sl", 0))
+                                                    )
+                                                    take_profit = float(
+                                                        signal_data.get("take_profit", signal_data.get("tp", 0))
+                                                    )
+                                                    direction = signal_data.get("direction", "BUY").upper()
+    
+                                                    # Get user's risk percentage from fire_modes database
+                                                    import sqlite3
+    
+                                                    risk_conn = sqlite3.connect("/root/HydraX-v2/data/fire_modes.db")
+                                                    risk_cursor = risk_conn.cursor()
+                                                    risk_cursor.execute(
+                                                        "SELECT risk_per_trade FROM user_fire_modes WHERE user_id = ?",
+                                                        (str(user_id),),
+                                                    )
+                                                    risk_row = risk_cursor.fetchone()
+                                                    risk_percent = (
+                                                        (risk_row[0] * 100) if risk_row and risk_row[0] else 2.0
+                                                    )  # Default 2%
+                                                    risk_conn.close()
+    
+                                                    # Calculate lot size directly
+                                                    user_balance = float(balance) if balance else 0
                                                     logger.info(
-                                                        f"   ✅ Calculated lot: {calculated_lot} (risk ${risk_amount:.2f})"
+                                                        f"💰 AUTO FIRE LOT CALC: Balance=${user_balance}, Risk={risk_percent}%"
                                                     )
-                                                else:
-                                                    calculated_lot = 0.01
-                                                    logger.warning(
-                                                        f"   ⚠️ Invalid SL or balance, using minimum lot 0.01"
+    
+                                                    # Calculate SL distance in pips
+                                                    if "JPY" in symbol:
+                                                        pip_multiplier = 100
+                                                    elif symbol == "XAUUSD":
+                                                        pip_multiplier = 10
+                                                    elif symbol == "XAGUSD":
+                                                        pip_multiplier = 1000
+                                                    else:
+                                                        pip_multiplier = 10000
+    
+                                                    sl_distance_pips = abs(entry_price - stop_loss) * pip_multiplier
+                                                    logger.info(f"   SL distance: {sl_distance_pips:.1f} pips")
+    
+                                                    # Get pip value per lot
+                                                    pip_values = {
+                                                        "EURUSD": 10.0,
+                                                        "GBPUSD": 10.0,
+                                                        "USDJPY": 10.0,
+                                                        "USDCAD": 10.0,
+                                                        "AUDUSD": 10.0,
+                                                        "EURJPY": 6.8,
+                                                        "GBPJPY": 6.8,
+                                                        "XAUUSD": 10.0,
+                                                        "XAGUSD": 5.0,
+                                                    }
+                                                    pip_value = pip_values.get(symbol, 10.0)
+    
+                                                    # Calculate lot: (Balance * Risk%) / (SL pips * Pip value)
+                                                    if sl_distance_pips > 0 and user_balance > 0:
+                                                        risk_amount = user_balance * (risk_percent / 100)
+                                                        calculated_lot = risk_amount / (sl_distance_pips * pip_value)
+                                                        calculated_lot = max(0.01, round(calculated_lot, 2))  # Min 0.01
+                                                        logger.info(
+                                                            f"   ✅ Calculated lot: {calculated_lot} (risk ${risk_amount:.2f})"
+                                                        )
+                                                    else:
+                                                        calculated_lot = 0.01
+                                                        logger.warning(
+                                                            f"   ⚠️ Invalid SL or balance, using minimum lot 0.01"
+                                                        )
+    
+                                                    # [DISABLED BITMODE]                                                 # Check if user has BITMODE enabled
+                                                    from src.bitten_core.fire_mode_database import fire_mode_db
+
+                                                    bitmode_enabled = fire_mode_db.is_bitmode_enabled(str(user_id))
+                                                    trailing_enabled = fire_mode_db.is_trailing_enabled(str(user_id))
+
+                                                    # [DISABLED BITMODE]                                                 # Create and send AUTO fire command with BITMODE and Trailing support
+                                                    # Pass complete signal data for proper SL/TP calculation
+                                                    # If sl/tp are 0, enqueue_fire will calculate from stop_pips/target_pips
+                                                    auto_fire_cmd = create_fire_command(
+                                                        mission_id=signal_id,
+                                                        user_id=str(user_id),
+                                                        symbol=symbol,
+                                                        direction=direction,
+                                                        entry=entry_price,
+                                                        sl=stop_loss if stop_loss else 0,
+                                                        tp=take_profit if take_profit else 0,
+                                                        lot=calculated_lot,
+                                                        enable_bitmode=bitmode_enabled,
+                                                        enable_trailing=trailing_enabled,
                                                     )
-
-                                                # [DISABLED BITMODE]                                                 # Check if user has BITMODE enabled
-                                                from src.bitten_core.fire_mode_database import fire_mode_db
-
-                                                bitmode_enabled = fire_mode_db.is_bitmode_enabled(str(user_id))
-
-                                                # [DISABLED BITMODE]                                                 # Create and send AUTO fire command with BITMODE support
-                                                # Pass complete signal data for proper SL/TP calculation
-                                                # If sl/tp are 0, enqueue_fire will calculate from stop_pips/target_pips
-                                                auto_fire_cmd = create_fire_command(
-                                                    mission_id=signal_id,
-                                                    user_id=str(user_id),
-                                                    symbol=symbol,
-                                                    direction=direction,
-                                                    entry=entry_price,
-                                                    sl=stop_loss if stop_loss else 0,
-                                                    tp=take_profit if take_profit else 0,
-                                                    lot=calculated_lot,
-                                                    enable_bitmode=bitmode_enabled,
-                                                )
-
-                                                # If command creation failed (returned None), skip
-                                                if auto_fire_cmd is None:
-                                                    logger.warning(f"Fire command creation failed for {signal_id}")
-                                                    continue
-
-                                                # Occupy slot before firing
-                                                from src.bitten_core.fire_mode_database import FireModeDatabase
-
-                                                fire_db = FireModeDatabase()
-                                                # AUTO slot for COMMANDER tier only - check for overflow first
-                                                import sqlite3
-
-                                                fire_conn = sqlite3.connect("/root/HydraX-v2/data/fire_modes.db")
-                                                fire_cursor = fire_conn.cursor()
-                                                fire_cursor.execute(
-                                                    "SELECT auto_slots_in_use, max_auto_slots FROM user_fire_modes WHERE user_id = ?",
-                                                    (str(user_id),),
-                                                )
-                                                current_used, max_allowed = fire_cursor.fetchone()
-                                                fire_conn.close()
-
-                                                if current_used >= max_allowed:
-                                                    logger.warning(
-                                                        f"⚠️ Slot overflow detected for {user_id}: {current_used}/{max_allowed} - skipping auto-fire"
-                                                    )
-                                                    continue
-
-                                                if fire_db.occupy_slot(
-                                                    str(user_id),
-                                                    signal_id,
-                                                    symbol,
-                                                    slot_type="AUTO",
-                                                    user_tier="COMMANDER",
-                                                ):
-                                                    # Create fires database record BEFORE sending to queue
+    
+                                                    # If command creation failed (returned None), skip
+                                                    if auto_fire_cmd is None:
+                                                        logger.warning(f"Fire command creation failed for {signal_id}")
+                                                        continue
+    
+                                                    # Occupy slot before firing
+                                                    from src.bitten_core.fire_mode_database import FireModeDatabase
+    
+                                                    fire_db = FireModeDatabase()
+                                                    # AUTO slot for COMMANDER tier only - check EA TRUTH for slot availability
                                                     import sqlite3
 
-                                                    fire_conn = sqlite3.connect("/root/HydraX-v2/bitten.db")
+                                                    # Query EA's actual open position count (SOURCE OF TRUTH)
+                                                    bitten_conn = sqlite3.connect("/root/HydraX-v2/bitten.db")
+                                                    bitten_cursor = bitten_conn.cursor()
+                                                    bitten_cursor.execute(
+                                                        "SELECT open_positions, target_uuid FROM ea_instances WHERE user_id = ?",
+                                                        (str(user_id),),
+                                                    )
+                                                    ea_result = bitten_cursor.fetchone()
+                                                    bitten_conn.close()
+
+                                                    if not ea_result:
+                                                        logger.warning(f"⚠️ No EA instance found for user {user_id} - skipping auto-fire")
+                                                        continue
+
+                                                    ea_open_positions, target_uuid = ea_result
+
+                                                    # Get max allowed slots from fire_modes
+                                                    fire_conn = sqlite3.connect("/root/HydraX-v2/data/fire_modes.db")
                                                     fire_cursor = fire_conn.cursor()
                                                     fire_cursor.execute(
-                                                        """
-                                                        INSERT INTO fires (
-                                                            fire_id, mission_id, user_id, status,
-                                                            symbol, direction, sl, tp, lot,
-                                                            created_at, updated_at
-                                                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                                                    """,
-                                                        (
-                                                            signal_id,
-                                                            signal_id,
-                                                            str(user_id),
-                                                            "PENDING",
-                                                            symbol,
-                                                            direction,
-                                                            stop_loss if stop_loss else 0,
-                                                            take_profit if take_profit else 0,
-                                                            calculated_lot,
-                                                            int(time.time()),
-                                                            int(time.time()),
-                                                        ),
+                                                        "SELECT max_auto_slots FROM user_fire_modes WHERE user_id = ?",
+                                                        (str(user_id),),
                                                     )
-                                                    fire_conn.commit()
+                                                    max_result = fire_cursor.fetchone()
                                                     fire_conn.close()
 
-                                                    # Send to IPC queue for INSTANT execution
-                                                    enqueue_fire(auto_fire_cmd)
-                                                    logger.info(
-                                                        f"⚡ AUTO FIRE SENT: {signal_id} for user {user_id} - {calculated_lot} lots @ {signal_confidence}% (Auto slot occupied)"
-                                                    )
-                                                else:
-                                                    logger.warning(
-                                                        f"⚠️ No auto slots available for user {user_id}, skipping auto-fire"
-                                                    )
+                                                    max_allowed = max_result[0] if max_result else 10
 
-                                            except Exception as lot_error:
-                                                logger.error(
-                                                    f"AUTO fire lot calculation failed for {user_id}: {lot_error}"
-                                                )
-                                                logger.error(
-                                                    f"Signal data values: symbol={symbol}, entry={entry_price}, sl={stop_loss}, balance={balance}"
-                                                )
-                                                import traceback
-
-                                                logger.error(f"Full traceback: {traceback.format_exc()}")
-                                                # Use fallback lot size with proper 5% risk estimate
-                                                estimated_lot = (
-                                                    (float(balance) * 0.05) / 80 if balance else 0.50
-                                                )  # Assume ~$80 risk per lot
-                                                # [DISABLED BITMODE]                                                 # Check BITMODE for fallback command too
-                                                fallback_bitmode = fire_mode_db.is_bitmode_enabled(str(user_id))
-
-                                                auto_fire_cmd = create_fire_command(
-                                                    mission_id=signal_id,
-                                                    user_id=str(user_id),
-                                                    symbol=signal_data.get("symbol", "EURUSD"),
-                                                    direction=signal_data.get("direction", "BUY").upper(),
-                                                    entry=float(
-                                                        signal_data.get("entry_price", signal_data.get("entry", 0))
-                                                    ),
-                                                    sl=float(signal_data.get("stop_loss", signal_data.get("sl", 0))),
-                                                    tp=float(signal_data.get("take_profit", signal_data.get("tp", 0))),
-                                                    lot=estimated_lot,
-                                                    enable_bitmode=fallback_bitmode,
-                                                )
-                                                # Check slot availability for fallback fire too
-                                                from src.bitten_core.fire_mode_database import FireModeDatabase
-
-                                                fire_db = FireModeDatabase()
-                                                if fire_db.occupy_slot(
-                                                    str(user_id), signal_id, signal_data.get("symbol", "EURUSD")
-                                                ):
-                                                    # Create fires database record BEFORE sending to queue (fallback path)
-                                                    import sqlite3
-
-                                                    fallback_fire_conn = sqlite3.connect("/root/HydraX-v2/bitten.db")
-                                                    fallback_fire_cursor = fallback_fire_conn.cursor()
-                                                    fallback_fire_cursor.execute(
-                                                        """
-                                                        INSERT INTO fires (
-                                                            fire_id, mission_id, user_id, status,
-                                                            symbol, direction, sl, tp, lot,
-                                                            created_at, updated_at
-                                                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                                                    """,
-                                                        (
-                                                            signal_id,
-                                                            signal_id,
-                                                            str(user_id),
-                                                            "PENDING",
-                                                            signal_data.get("symbol", "EURUSD"),
-                                                            signal_data.get("direction", "BUY").upper(),
-                                                            float(
-                                                                signal_data.get("stop_loss", signal_data.get("sl", 0))
+                                                    # Check EA truth against max allowed
+                                                    if ea_open_positions >= max_allowed:
+                                                        logger.warning(
+                                                            f"⚠️ Slot limit reached for {user_id}: EA reports {ea_open_positions}/{max_allowed} positions - skipping auto-fire"
+                                                        )
+                                                        continue
+    
+                                                    if fire_db.occupy_slot(
+                                                        str(user_id),
+                                                        signal_id,
+                                                        symbol,
+                                                        slot_type="AUTO",
+                                                        user_tier="COMMANDER",
+                                                    ):
+                                                        # Create fires database record BEFORE sending to queue
+                                                        import sqlite3
+    
+                                                        fire_conn = sqlite3.connect("/root/HydraX-v2/bitten.db")
+                                                        fire_cursor = fire_conn.cursor()
+                                                        fire_cursor.execute(
+                                                            """
+                                                            INSERT INTO fires (
+                                                                fire_id, mission_id, user_id, status,
+                                                                symbol, direction, sl, tp, lot,
+                                                                created_at, updated_at
+                                                            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                                        """,
+                                                            (
+                                                                signal_id,
+                                                                signal_id,
+                                                                str(user_id),
+                                                                "PENDING",
+                                                                symbol,
+                                                                direction,
+                                                                stop_loss if stop_loss else 0,
+                                                                take_profit if take_profit else 0,
+                                                                calculated_lot,
+                                                                int(time.time()),
+                                                                int(time.time()),
                                                             ),
-                                                            float(
-                                                                signal_data.get("take_profit", signal_data.get("tp", 0))
-                                                            ),
-                                                            estimated_lot,
-                                                            int(time.time()),
-                                                            int(time.time()),
+                                                        )
+                                                        fire_conn.commit()
+                                                        fire_conn.close()
+    
+                                                        # Send to IPC queue for INSTANT execution
+                                                        enqueue_fire(auto_fire_cmd)
+                                                        logger.info(
+                                                            f"⚡ AUTO FIRE SENT: {signal_id} for user {user_id} - {calculated_lot} lots @ {signal_confidence}% (Auto slot occupied)"
+                                                        )
+                                                    else:
+                                                        logger.warning(
+                                                            f"⚠️ No auto slots available for user {user_id}, skipping auto-fire"
+                                                        )
+    
+                                                except Exception as lot_error:
+                                                    logger.error(
+                                                        f"AUTO fire lot calculation failed for {user_id}: {lot_error}"
+                                                    )
+                                                    logger.error(
+                                                        f"Signal data values: symbol={symbol}, entry={entry_price}, sl={stop_loss}, balance={balance}"
+                                                    )
+                                                    import traceback
+    
+                                                    logger.error(f"Full traceback: {traceback.format_exc()}")
+                                                    # Use fallback lot size with proper 5% risk estimate
+                                                    estimated_lot = (
+                                                        (float(balance) * 0.05) / 80 if balance else 0.50
+                                                    )  # Assume ~$80 risk per lot
+                                                    # [DISABLED BITMODE]                                                 # Check BITMODE for fallback command too
+                                                    fallback_bitmode = fire_mode_db.is_bitmode_enabled(str(user_id))
+    
+                                                    auto_fire_cmd = create_fire_command(
+                                                        mission_id=signal_id,
+                                                        user_id=str(user_id),
+                                                        symbol=signal_data.get("symbol", "EURUSD"),
+                                                        direction=signal_data.get("direction", "BUY").upper(),
+                                                        entry=float(
+                                                            signal_data.get("entry_price", signal_data.get("entry", 0))
                                                         ),
+                                                        sl=float(signal_data.get("stop_loss", signal_data.get("sl", 0))),
+                                                        tp=float(signal_data.get("take_profit", signal_data.get("tp", 0))),
+                                                        lot=estimated_lot,
+                                                        enable_bitmode=fallback_bitmode,
                                                     )
-                                                    fallback_fire_conn.commit()
-                                                    fallback_fire_conn.close()
-
-                                                    enqueue_fire(auto_fire_cmd)
-                                                    logger.info(
-                                                        f"⚡ AUTO FIRE SENT (fallback): {signal_id} for user {user_id} - {estimated_lot:.2f} lots (Slot occupied)"
-                                                    )
-                                                else:
-                                                    logger.warning(
-                                                        f"⚠️ No slots available for user {user_id}, skipping fallback auto-fire"
-                                                    )
-
-                                        except Exception as fire_error:
-                                            logger.error(f"AUTO fire failed for user {user_id}: {fire_error}")
-                                else:
-                                    logger.info(f"🚫 No AUTO users online for {signal_id} @ {signal_confidence}%")
-
-                        else:
-                            print(f"[DEBUG] No users match auto-fire thresholds for {signal_confidence}%")
-                            logger.debug(f"📊 Signal {signal_id} @ {signal_confidence}% - no matching auto-fire users")
-
-                    except Exception as auto_error:
-                        logger.error(f"AUTO fire system error: {auto_error}")
+                                                    # Check slot availability for fallback fire too
+                                                    from src.bitten_core.fire_mode_database import FireModeDatabase
+    
+                                                    fire_db = FireModeDatabase()
+                                                    if fire_db.occupy_slot(
+                                                        str(user_id), signal_id, signal_data.get("symbol", "EURUSD")
+                                                    ):
+                                                        # Create fires database record BEFORE sending to queue (fallback path)
+                                                        import sqlite3
+    
+                                                        fallback_fire_conn = sqlite3.connect("/root/HydraX-v2/bitten.db")
+                                                        fallback_fire_cursor = fallback_fire_conn.cursor()
+                                                        fallback_fire_cursor.execute(
+                                                            """
+                                                            INSERT INTO fires (
+                                                                fire_id, mission_id, user_id, status,
+                                                                symbol, direction, sl, tp, lot,
+                                                                created_at, updated_at
+                                                            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                                        """,
+                                                            (
+                                                                signal_id,
+                                                                signal_id,
+                                                                str(user_id),
+                                                                "PENDING",
+                                                                signal_data.get("symbol", "EURUSD"),
+                                                                signal_data.get("direction", "BUY").upper(),
+                                                                float(
+                                                                    signal_data.get("stop_loss", signal_data.get("sl", 0))
+                                                                ),
+                                                                float(
+                                                                    signal_data.get("take_profit", signal_data.get("tp", 0))
+                                                                ),
+                                                                estimated_lot,
+                                                                int(time.time()),
+                                                                int(time.time()),
+                                                            ),
+                                                        )
+                                                        fallback_fire_conn.commit()
+                                                        fallback_fire_conn.close()
+    
+                                                        enqueue_fire(auto_fire_cmd)
+                                                        logger.info(
+                                                            f"⚡ AUTO FIRE SENT (fallback): {signal_id} for user {user_id} - {estimated_lot:.2f} lots (Slot occupied)"
+                                                        )
+                                                    else:
+                                                        logger.warning(
+                                                            f"⚠️ No slots available for user {user_id}, skipping fallback auto-fire"
+                                                        )
+    
+                                            except Exception as fire_error:
+                                                logger.error(f"AUTO fire failed for user {user_id}: {fire_error}")
+                                    else:
+                                        logger.info(f"🚫 No AUTO users online for {signal_id} @ {signal_confidence}%")
+    
+                            else:
+                                print(f"[DEBUG] No users match auto-fire thresholds for {signal_confidence}%")
+                                logger.debug(f"📊 Signal {signal_id} @ {signal_confidence}% - no matching auto-fire users")
+    
+                        except Exception as auto_error:
+                            logger.error(f"AUTO fire system error: {auto_error}")
+                    else:
+                        # Not autofire-eligible (non-PULSE or <88% confidence)
+                        pass
 
                 except Exception as confidence_error:
                     logger.warning(f"AUTO fire confidence check failed: {confidence_error}")
@@ -923,7 +969,7 @@ def api_signals():
                 deep_link = None
                 if MISSION_SESSION_ENABLED:
                     try:
-                        user_id = request.headers.get("X-User-ID", "7176191872")
+                        user_id = request.headers.get("X-User-ID", "wlJ5lafBqRSLwHIUBxJQMr4SBtk1")
 
                         link_data = link_generator.generate_mission_link(
                             signal_id=signal_data.get("signal_id"),
@@ -1711,7 +1757,7 @@ def brief_mission():
 
         # Default to a generic user if no ID found
         if not user_id:
-            user_id = "7176191872"  # Default commander user
+            user_id = "wlJ5lafBqRSLwHIUBxJQMr4SBtk1"  # Default commander user
 
         if not signal_id:
             return jsonify({"error": "No signal_id provided"}), 400
@@ -1829,7 +1875,7 @@ def authorize_mission_execution():
 
         # 2. USER AUTHENTICATION (from session/cookie or existing auth header)
         # Default to commander user for now (TODO: extract from session)
-        user_id = "7176191872"
+        user_id = "wlJ5lafBqRSLwHIUBxJQMr4SBtk1"
 
         # 3. RESOLVE MISSION SESSION ID
         conn = sqlite3.connect("/root/HydraX-v2/bitten.db")
@@ -2672,8 +2718,9 @@ def fire_mission_legacy():
             except Exception as e:
                 logger.error(f"Lot calculation failed, using fallback: {e}")
                 calculated_lot = 0.50  # Higher fallback for testing
-            # Check if user has BITMODE enabled for manual fire
+            # Check if user has BITMODE and Trailing enabled for manual fire
             bitmode_enabled = fire_db.is_bitmode_enabled(str(user_id))
+            trailing_enabled = fire_db.is_trailing_enabled(str(user_id))
 
             fire_cmd = create_fire_command(
                 mission_id=mission_id,
@@ -2685,6 +2732,7 @@ def fire_mission_legacy():
                 tp=take_profit,  # Use calculated realistic TP
                 lot=calculated_lot,
                 enable_bitmode=bitmode_enabled,
+                enable_trailing=trailing_enabled,
             )
 
             # Occupy the manual slot before sending to queue
@@ -3073,6 +3121,270 @@ def health_check():
     )
 
 
+@app.route("/api/generators/stats")
+def generator_stats():
+    """Get performance stats for all signal generators"""
+    try:
+        import subprocess
+
+        stats = {
+            "generators": [],
+            "last_updated": int(time.time())
+        }
+
+        # Check PM2 process status
+        try:
+            pm2_output = subprocess.check_output(['pm2', 'jlist'], text=True)
+            pm2_data = json.loads(pm2_output)
+        except:
+            pm2_data = []
+
+        # Define generators to track
+        generators_config = {
+            "elite_guard": {
+                "name": "Elite Guard",
+                "signal_class": "ELITE_GUARD",
+                "patterns": ["LIQUIDITY_SWEEP_REVERSAL", "VCB_BREAKOUT", "ORDER_BLOCK_BOUNCE",
+                            "FAIR_VALUE_GAP_FILL", "SWEEP_RETURN", "MOMENTUM_BURST"]
+            },
+            "pulse_scalper": {
+                "name": "PULSE Scalper",
+                "signal_class": "PULSE",
+                "patterns": ["GROK_TREND_LONG_3OF4", "GROK_TREND_SHORT_3OF4"]
+            }
+        }
+
+        # Get signal stats from database
+        conn = sqlite3.connect('/root/HydraX-v2/bitten.db')
+        cursor = conn.cursor()
+
+        for proc_name, config in generators_config.items():
+            generator_stat = {
+                "name": config["name"],
+                "signal_class": config["signal_class"],
+                "status": "offline",
+                "uptime_hours": 0,
+                "signals_24h": 0,
+                "signals_7d": 0,
+                "win_rate": None,
+                "avg_confidence": None,
+                "patterns": config["patterns"]
+            }
+
+            # Check process status
+            for proc in pm2_data:
+                if proc.get('name') == proc_name:
+                    generator_stat["status"] = "online" if proc.get('pm2_env', {}).get('status') == 'online' else "offline"
+                    uptime_ms = proc.get('pm2_env', {}).get('pm_uptime', 0)
+                    generator_stat["uptime_hours"] = round(uptime_ms / 3600000, 1) if uptime_ms else 0
+                    break
+
+            # Get signal counts from database (check for signal_class in signal_id)
+            cursor.execute("""
+                SELECT
+                    COUNT(*) as total_24h,
+                    AVG(confidence) as avg_conf
+                FROM signals
+                WHERE signal_id LIKE ? || '%'
+                AND created_at > strftime('%s', 'now', '-24 hours')
+            """, (config["signal_class"],))
+
+            result = cursor.fetchone()
+            if result and result[0]:
+                generator_stat["signals_24h"] = result[0]
+                generator_stat["avg_confidence"] = round(result[1], 1) if result[1] else None
+
+            # Get 7-day count
+            cursor.execute("""
+                SELECT COUNT(*) FROM signals
+                WHERE signal_id LIKE ? || '%'
+                AND created_at > strftime('%s', 'now', '-7 days')
+            """, (config["signal_class"],))
+
+            result = cursor.fetchone()
+            generator_stat["signals_7d"] = result[0] if result else 0
+
+            stats["generators"].append(generator_stat)
+
+        conn.close()
+        return jsonify(stats)
+
+    except Exception as e:
+        logger.error(f"Error in generator_stats: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/generators/health")
+def generator_health():
+    """Get detailed health status for signal generators"""
+    try:
+        import subprocess
+
+        health = {
+            "generators": [],
+            "timestamp": int(time.time())
+        }
+
+        # Check PM2 status
+        try:
+            pm2_output = subprocess.check_output(['pm2', 'jlist'], text=True)
+            pm2_data = json.loads(pm2_output)
+        except:
+            pm2_data = []
+
+        generators = {
+            "elite_guard": {
+                "name": "Elite Guard",
+                "process_id": "elite_guard",
+                "zmq_port": 5557,
+                "log_file": "/root/.pm2/logs/elite-guard-out.log"
+            },
+            "pulse_scalper": {
+                "name": "PULSE Scalper",
+                "process_id": "pulse_scalper",
+                "zmq_port": 5559,
+                "log_file": "/root/.pm2/logs/pulse-scalper-out.log"
+            }
+        }
+
+        for proc_id, config in generators.items():
+            gen_health = {
+                "name": config["name"],
+                "process_id": config["process_id"],
+                "pid": None,
+                "status": "offline",
+                "last_signal": None,
+                "seconds_since_signal": None,
+                "candles_ready": False,
+                "zmq_port": config["zmq_port"]
+            }
+
+            # Get process info from PM2
+            for proc in pm2_data:
+                if proc.get('name') == proc_id:
+                    gen_health["status"] = proc.get('pm2_env', {}).get('status', 'unknown')
+                    gen_health["pid"] = proc.get('pid')
+                    break
+
+            # Check for recent signals in database
+            try:
+                conn = sqlite3.connect('/root/HydraX-v2/bitten.db')
+                cursor = conn.cursor()
+
+                signal_prefix = "PULSE" if proc_id == "pulse_scalper" else "ELITE"
+                cursor.execute("""
+                    SELECT created_at FROM signals
+                    WHERE signal_id LIKE ? || '%'
+                    ORDER BY created_at DESC LIMIT 1
+                """, (signal_prefix,))
+
+                result = cursor.fetchone()
+                if result:
+                    gen_health["last_signal"] = result[0]
+                    gen_health["seconds_since_signal"] = int(time.time()) - result[0]
+
+                conn.close()
+            except:
+                pass
+
+            # Check candle status from logs
+            if os.path.exists(config["log_file"]):
+                try:
+                    with open(config["log_file"], 'r') as f:
+                        recent_lines = f.readlines()[-50:]
+                        recent_text = ''.join(recent_lines)
+
+                        # Check if candles loaded
+                        if "Loaded" in recent_text and "candles" in recent_text:
+                            gen_health["candles_ready"] = True
+
+                        # Check for candle build progress
+                        if "Building candle history" in recent_text and not gen_health["candles_ready"]:
+                            gen_health["candles_progress"] = "Building..."
+                except:
+                    pass
+
+            health["generators"].append(gen_health)
+
+        return jsonify(health)
+
+    except Exception as e:
+        logger.error(f"Error in generator_health: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/generators/compare")
+def generator_compare():
+    """Compare performance between signal generators"""
+    try:
+        timeframe = request.args.get('timeframe', '7d')
+
+        # Parse timeframe to hours
+        if timeframe.endswith('h'):
+            hours = int(timeframe[:-1])
+        elif timeframe.endswith('d'):
+            hours = int(timeframe[:-1]) * 24
+        else:
+            hours = 168  # Default 7 days
+
+        comparison = {
+            "timeframe": timeframe,
+            "generators": {}
+        }
+
+        # Query database for each generator
+        conn = sqlite3.connect('/root/HydraX-v2/bitten.db')
+        cursor = conn.cursor()
+
+        generators = {
+            "ELITE_GUARD": ["ELITE_GUARD", "ELITE_RAPID"],
+            "PULSE": ["PULSE"]
+        }
+
+        for gen_name, prefixes in generators.items():
+            # Build LIKE conditions for all prefixes
+            like_conditions = " OR ".join([f"signal_id LIKE '{prefix}%'" for prefix in prefixes])
+
+            query = f"""
+                SELECT
+                    COUNT(*) as total_signals,
+                    COUNT(CASE WHEN outcome = 'WIN' THEN 1 END) as wins,
+                    COUNT(CASE WHEN outcome = 'LOSS' THEN 1 END) as losses,
+                    COUNT(CASE WHEN outcome IS NULL OR outcome = 'PENDING' THEN 1 END) as pending
+                FROM signals
+                WHERE ({like_conditions})
+                AND created_at > strftime('%s', 'now', '-{hours} hours')
+            """
+
+            cursor.execute(query)
+            result = cursor.fetchone()
+
+            total = result[0] if result else 0
+            wins = result[1] if result else 0
+            losses = result[2] if result else 0
+            pending = result[3] if result else 0
+
+            win_rate = round((wins / (wins + losses)) * 100, 1) if (wins + losses) > 0 else None
+
+            comparison["generators"][gen_name] = {
+                "total_signals": total,
+                "wins": wins,
+                "losses": losses,
+                "pending": pending,
+                "win_rate": win_rate,
+                "avg_pips_win": None,  # TODO: Calculate from actual trade data
+                "avg_pips_loss": None,
+                "expectancy": None
+            }
+
+        conn.close()
+        return jsonify(comparison)
+
+    except Exception as e:
+        logger.error(f"Error in generator_compare: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route("/api/run_apex_backtest", methods=["POST"])
 def run_apex_backtest():
     """Run 6.0 Enhanced backtest"""
@@ -3416,7 +3728,7 @@ def track_trade():
     mission_id = request.args.get("mission_id", "")
     symbol = request.args.get("symbol", "EURUSD")
     direction = request.args.get("direction", "BUY")
-    user_id = request.args.get("user_id", "7176191872")
+    user_id = request.args.get("user_id", "wlJ5lafBqRSLwHIUBxJQMr4SBtk1")
 
     # Get mission data
     mission_data = None
@@ -3483,7 +3795,7 @@ def track_trade():
 @app.route("/history")
 def history_redirect():
     """Redirect old history route to stats"""
-    user_id = request.args.get("user", "7176191872")
+    user_id = request.args.get("user", "wlJ5lafBqRSLwHIUBxJQMr4SBtk1")
     return redirect(f"/stats/{user_id}", 301)
 
 
@@ -3810,6 +4122,11 @@ def war_room():
         bitmode_status = "✅ ACTIVE" if bitmode_enabled else "❌ DISABLED"
         bitmode_color = "#00ff41" if bitmode_enabled else "#ff4444"
 
+        # Get Smart Trailing status
+        trailing_enabled = mode_info.get("trailing_enabled", False)
+        trailing_status = "✅ ACTIVE" if trailing_enabled else "❌ DISABLED"
+        trailing_color = "#00ff41" if trailing_enabled else "#ff4444"
+
         # Get real recent signals from database instead of fake trades
         recent_signals = []
         try:
@@ -3967,6 +4284,10 @@ def war_room():
                 <div class="stat-value" style="color: {bitmode_color}">{bitmode_status}</div>
 # [DISABLED BITMODE]                 <div class="stat-label">🎯 BITMODE</div>
             </div>
+            <div class="stat-card">
+                <div class="stat-value" style="color: {trailing_color}">{trailing_status}</div>
+                <div class="stat-label">🔄 TRAILING STOPS</div>
+            </div>
         </div>
 
         <div class="action-buttons">
@@ -3975,6 +4296,9 @@ def war_room():
             <a href="/mode" class="action-btn">⚡ FIRE MODE</a>
             <button class="action-btn" onclick="toggleBitmode()" id="bitmode-btn" style="background: {'linear-gradient(135deg, #009900 0%, #00cc00 100%)' if bitmode_enabled else 'linear-gradient(135deg, #666 0%, #888 100%)'}"">
 # [DISABLED BITMODE]                 🎯 {'DISABLE BITMODE' if bitmode_enabled else 'ENABLE BITMODE'}
+            </button>
+            <button class="action-btn" onclick="toggleTrailing()" id="trailing-btn" style="background: {'linear-gradient(135deg, #009900 0%, #00cc00 100%)' if trailing_enabled else 'linear-gradient(135deg, #666 0%, #888 100%)'}">
+                🔄 {'DISABLE TRAILING' if trailing_enabled else 'ENABLE TRAILING'}
             </button>
             <a href="/settings" class="action-btn">⚙️ SETTINGS</a>
         </div>
@@ -4018,6 +4342,40 @@ def war_room():
 # [DISABLED BITMODE]                     btn.textContent = '🎯 {'DISABLE BITMODE' if bitmode_enabled else 'ENABLE BITMODE'}';
                 }});
             }}
+
+            // Smart Trailing Stops Toggle Function
+            function toggleTrailing() {{
+                const btn = document.getElementById('trailing-btn');
+                btn.disabled = true;
+                btn.textContent = '🔄 UPDATING...';
+
+                fetch('/api/trailing/toggle', {{
+                    method: 'POST',
+                    headers: {{
+                        'Content-Type': 'application/json'
+                    }},
+                    body: JSON.stringify({{
+                        user_id: '{user_id}',
+                        enabled: {str(not trailing_enabled).lower()}
+                    }})
+                }})
+                .then(response => response.json())
+                .then(data => {{
+                    if (data.success) {{
+                        location.reload(); // Refresh to show updated status
+                    }} else {{
+                        alert('❌ Failed to toggle Trailing Stops: ' + data.error);
+                        btn.disabled = false;
+                        btn.textContent = '🔄 {'DISABLE TRAILING' if trailing_enabled else 'ENABLE TRAILING'}';
+                    }}
+                }})
+                .catch(error => {{
+                    console.error('Error:', error);
+                    alert('❌ Failed to toggle Trailing Stops');
+                    btn.disabled = false;
+                    btn.textContent = '🔄 {'DISABLE TRAILING' if trailing_enabled else 'ENABLE TRAILING'}';
+                }});
+            }}
         </script>
     </body>
     </html>
@@ -4027,7 +4385,7 @@ def war_room():
 @app.route("/analysis")
 def analysis_page():
     """Analysis page - redirect to stats with user detection"""
-    user_id = request.args.get("user_id", "7176191872")  # Default to main user
+    user_id = request.args.get("user_id", "wlJ5lafBqRSLwHIUBxJQMr4SBtk1")  # Default to main user
     return redirect(f"/stats/{user_id}", 302)
 
 
@@ -4251,7 +4609,7 @@ def mission_short_link(signal_path):
         # Generate fresh HMAC signature
         current_time = int(time.time())
         secret = os.getenv("BITTEN_HMAC_SECRET", "bitten_dev_key_2025").encode("utf-8")
-        uid = "7176191872"  # Default commander user
+        uid = "wlJ5lafBqRSLwHIUBxJQMr4SBtk1"  # Default commander user
         sig = hmac.new(secret, f"{actual_signal_id}|{uid}|{current_time}".encode(), hashlib.sha256).hexdigest()
 
         # Redirect to full signal URL with absolute URL (fixes /api/m/... proxy routing)
@@ -4453,7 +4811,7 @@ def get_live_user_balance(user_id):
         from live_equity_tracker import get_live_equity_data
 
         # Map user_id to target_uuid
-        user_uuid_map = {"7176191872": "COMMANDER_DEV_001"}
+        user_uuid_map = {"wlJ5lafBqRSLwHIUBxJQMr4SBtk1": "COMMANDER_DEV_001"}
         target_uuid = user_uuid_map.get(user_id, "COMMANDER_DEV_001")
 
         # Get live HEARTBEAT_METRICS data
@@ -4569,6 +4927,130 @@ def api_bitmode_toggle():
     except Exception as e:
         # [DISABLED BITMODE]         logger.error(f"BITMODE toggle error: {e}")
         return jsonify({"success": False, "error": "Internal server error"}), 500
+
+
+@app.route("/api/trailing/toggle", methods=["POST"])
+def api_trailing_toggle():
+    """API endpoint to toggle Smart Trailing Stops for user"""
+    try:
+        data = request.get_json()
+        user_id = data.get("user_id")
+        enabled = data.get("enabled", False)
+
+        if not user_id:
+            return jsonify({"success": False, "error": "User ID required"}), 400
+
+        # Get user tier from user registry or default to COMMANDER
+        user_tier = get_user_tier(user_id)
+
+        # Check tier eligibility - FANG and COMMANDER only
+        if user_tier not in ["FANG", "COMMANDER"]:
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "error": f"Smart Trailing Stops require FANG or COMMANDER tier. Current tier: {user_tier}. Upgrade to unlock professional trailing stop management."
+                    }
+                ),
+                403,
+            )
+
+        # Toggle Smart Trailing Stops
+        from src.bitten_core.fire_mode_database import fire_mode_db
+
+        success = fire_mode_db.toggle_trailing(user_id, enabled, user_tier)
+
+        if success:
+            return jsonify(
+                {
+                    "success": True,
+                    "enabled": enabled,
+                    "message": f'Smart Trailing Stops {"enabled" if enabled else "disabled"} successfully'
+                }
+            )
+        else:
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "error": "Failed to update trailing stops status"
+                    }
+                ),
+                500,
+            )
+
+    except Exception as e:
+        logger.error(f"Trailing toggle error: {e}")
+        return jsonify({"success": False, "error": "Internal server error"}), 500
+
+
+@app.route("/api/trailing/status", methods=["GET"])
+def api_trailing_status():
+    """API endpoint to get Smart Trailing Stops status for user"""
+    try:
+        user_id = request.args.get("user_id")
+
+        if not user_id:
+            return jsonify({"success": False, "error": "User ID required"}), 400
+
+        # Get trailing status from fire mode database
+        from src.bitten_core.fire_mode_database import fire_mode_db
+
+        trailing_enabled = fire_mode_db.is_trailing_enabled(user_id)
+        user_tier = get_user_tier(user_id)
+
+        return jsonify({
+            "success": True,
+            "enabled": trailing_enabled,
+            "tier": user_tier,
+            "eligible": user_tier in ["FANG", "COMMANDER", "COMMANDER+", "ELITE"]
+        })
+
+    except Exception as e:
+        logger.error(f"Trailing status error: {e}")
+        return jsonify({"success": False, "error": "Internal server error"}), 500
+
+
+@app.route("/api/close_trade", methods=["POST"])
+def close_trade():
+    """Close a trade manually via ABORT button on Battlefield"""
+    try:
+        data = request.get_json()
+        fire_id = data.get("fire_id")
+        ticket = data.get("ticket")
+
+        if not ticket:
+            return jsonify({"success": False, "error": "Ticket number required"}), 400
+
+        logger.info(f"🚨 Manual trade close requested: {fire_id} (ticket {ticket})")
+
+        # Create close_ticket command for EA
+        close_cmd = {
+            "type": "close_ticket",
+            "ticket": int(ticket)
+        }
+
+        # Send to IPC queue (same as fire commands)
+        import zmq
+        context = zmq.Context()
+        push_socket = context.socket(zmq.PUSH)
+        push_socket.connect("ipc:///tmp/bitten_cmdqueue")
+        push_socket.send_json(close_cmd)
+        push_socket.close()
+        context.term()
+
+        logger.info(f"✅ Close command queued for ticket {ticket}")
+
+        return jsonify({
+            "success": True,
+            "message": f"Close command sent for ticket {ticket}",
+            "fire_id": fire_id,
+            "ticket": ticket
+        })
+
+    except Exception as e:
+        logger.error(f"❌ Error closing trade: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
 
 
 @app.route("/live-trade")
@@ -4798,6 +5280,15 @@ def get_mission_session_data(mission_session_id):
         traceback.print_exc()
         return jsonify({"success": False, "error": str(e), "error_code": "INTERNAL_ERROR"}), 500
 
+
+# Register billing endpoints
+try:
+    from services.api_server.rest.billing import billing_bp
+
+    app.register_blueprint(billing_bp)
+    logger.info("✅ Billing endpoints registered at /api/billing/*")
+except ImportError as e:
+    logger.warning(f"⚠️ Billing endpoints not available: {e}")
 
 # Register API documentation endpoints
 try:

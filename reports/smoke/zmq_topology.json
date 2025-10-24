@@ -1,0 +1,42 @@
+{
+  "timestamp": "2025-10-08T22:13:07.474891",
+  "ports": {
+    "5555": {
+      "service": "Command Router",
+      "type": "ROUTER",
+      "direction": "Bidirectional",
+      "purpose": "EA command routing & fire execution",
+      "listening": true
+    },
+    "5556": {
+      "service": "ZMQ Gateway (Market Data Ingestion)",
+      "type": "PULL",
+      "direction": "EA\u2192Server",
+      "purpose": "Market data + lifecycle events",
+      "listening": true
+    },
+    "5557": {
+      "service": "Signal Engine",
+      "type": "PUB",
+      "direction": "Server\u2192Clients",
+      "purpose": "Signal publication (elite_guard)",
+      "listening": true
+    },
+    "5558": {
+      "service": "Confirmation Listener",
+      "type": "PULL",
+      "direction": "EA\u2192Server",
+      "purpose": "Trade confirmations & events",
+      "listening": true
+    },
+    "5560": {
+      "service": "Market Data Relay",
+      "type": "PUB",
+      "direction": "Server\u2192Clients",
+      "purpose": "Market data redistribution",
+      "listening": true
+    }
+  },
+  "overall_status": "ALL PORTS LISTENING",
+  "pass": true
+}

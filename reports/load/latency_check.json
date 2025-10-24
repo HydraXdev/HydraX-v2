@@ -1,0 +1,15 @@
+{
+  "timestamp": "2025-10-08 22:12:51 UTC",
+  "api_server": {
+    "endpoint": "API Server (/health)",
+    "count": 10,
+    "successes": 10,
+    "failures": 0,
+    "avg_ms": 3.36,
+    "p50_ms": 2.75,
+    "p95_ms": 5.5,
+    "p99_ms": 5.49,
+    "pass": true
+  },
+  "overall_pass": true
+}

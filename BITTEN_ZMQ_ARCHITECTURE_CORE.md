@@ -3,8 +3,10 @@
 **CRITICAL**: This document defines the fundamental architecture of BITTEN. All agents and developers MUST understand and follow these principles.
 
 **Created**: August 1, 2025
+**Last Updated**: October 16, 2025
 **Priority**: MANDATORY READING
 **Status**: PERMANENT ARCHITECTURE DEFINITION
+**Tracking System**: Unified Tracker (bitten.db + unified_tracking.jsonl)
 
 ---
 
@@ -24,9 +26,10 @@
 - A multi-service, event-driven trading OS
 - Powered by ZMQ sockets, not APIs or files
 - A complete platform including:
-  - Signal generation (VENOM)
-  - Tactical filtering (CITADEL)
+  - Signal generation (Elite Guard)
+  - Pattern detection (6 integrated detectors)
   - Real-time bridge control (fire_router)
+  - Unified tracking system (bitten.db)
   - XP/risk scoring systems
   - MT5 trade execution
   - Live telemetry and feedback loops
@@ -52,10 +55,10 @@
 ## ⚙️ Mental Model You MUST Adopt
 
 ```
-[ EA on VPS ] ←→ [ ZMQ Controller ] ←→ [ Signal Engine + XP + Fire Router ]
+[ EA on VPS ] ←→ [ ZMQ Controller ] ←→ [ Signal Engine + Unified Tracker + Fire Router ]
      ↓                    ↓                           ↓
-libzmq.dll          Port 5555/5556              VENOM + CITADEL
-Direct Socket       Command/Telemetry            Real-time Logic
+libzmq.dll          Port 5555/5556              Elite Guard + Tracking
+Direct Socket       Command/Telemetry            Real-time Logic → bitten.db
 ```
 
 ### Key Points:
@@ -84,22 +87,27 @@ Direct Socket       Command/Telemetry            Real-time Logic
 ### 1. Core Infrastructure to ALWAYS Preserve:
 
 - `fire_router.py` - Must use ZMQ as primary execution
+- `unified_tracker.py` - Single source of truth for signal tracking
+- `bitten.db` - Primary database for all system state
 - `zmq_fire_publisher_daemon.py` - Command channel daemon
 - `zmq_telemetry_daemon.py` - Telemetry receiver daemon
 - `zmq_bitten_controller.py` - Core 3-way controller
-- EA v7 (ZMQ-enabled) - Never downgrade to file-based EAs
+- EA v3.005+ (ZMQ-enabled) - Never downgrade to file-based EAs
 
 ### 2. All New Features Must:
 
 - Assume ZMQ as the primary transport layer
 - Never bypass the socket infrastructure
 - Integrate with existing telemetry streams
+- Write to bitten.db and unified_tracking.jsonl
+- Use unified_tracker for all performance analysis
 - Respect the real-time, event-driven nature
 
 ### 3. System Priorities:
 
 - Real-time socket routing
 - Telemetry parsing and analysis
+- Unified signal tracking (bitten.db)
 - XP-triggered feedback loops
 - Persistent connection management
 - Zero-latency execution paths

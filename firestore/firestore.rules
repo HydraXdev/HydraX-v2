@@ -1,0 +1,149 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ═══════════════════════════════════════════════════════════════
+    // Helper Functions
+    // ═══════════════════════════════════════════════════════════════
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isBackend() {
+      // Only service account can write (enforced via Admin SDK)
+      return false; // Clients never write to backend-controlled paths
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // Signals Collection - Read-only for authenticated users
+    // ═══════════════════════════════════════════════════════════════
+
+    match /signals/{signalId} {
+      allow read: if isAuthenticated();
+      allow write: if isBackend(); // Backend-only writes
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // Exec Collection - User-scoped execution requests
+    // Path: /exec/{uid}/items/{execId}
+    // ═══════════════════════════════════════════════════════════════
+
+    match /exec/{uid}/items/{execId} {
+      // Users can read their own exec items
+      allow read: if isOwner(uid);
+
+      // Users can ONLY create PENDING exec items (client submit)
+      allow create: if isOwner(uid)
+                    && request.resource.data.state == 'PENDING'
+                    && request.resource.data.uid == uid;
+
+      // State transitions controlled by backend only
+      // PENDING → SENT → ACK → FINAL (or REJECTED/TIMEOUT)
+      allow update: if isBackend();
+      allow delete: if isBackend();
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // Trades Collection - Active and closed positions
+    // Path: /trades/{uid}/active/{tradeId}
+    // Path: /trades/{uid}/closed/{tradeId}
+    // ═══════════════════════════════════════════════════════════════
+
+    match /trades/{uid}/active/{tradeId} {
+      // Users can read their own active trades
+      allow read: if isOwner(uid);
+      // Backend-only writes
+      allow write: if isBackend();
+    }
+
+    match /trades/{uid}/closed/{tradeId} {
+      // Users can read their own closed trades
+      allow read: if isOwner(uid);
+      // Backend-only writes
+      allow write: if isBackend();
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // Metrics Collections - Backend-only writes, read by authenticated
+    // ═══════════════════════════════════════════════════════════════
+
+    match /metrics/global/daily/{date} {
+      allow read: if isAuthenticated();
+      allow write: if isBackend();
+    }
+
+    match /metrics/pair/{pair}/daily/{date} {
+      allow read: if isAuthenticated();
+      allow write: if isBackend();
+    }
+
+    match /metrics/strategy/{strategy}/daily/{date} {
+      allow read: if isAuthenticated();
+      allow write: if isBackend();
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // Presence Collection - EA health status (sanitized)
+    // Backend-only writes
+    // ═══════════════════════════════════════════════════════════════
+
+    match /presence/{uuid} {
+      allow read: if isAuthenticated();
+      allow write: if isBackend();
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // Controls Collection - Server-only enforcement caps
+    // Absolutely NO client writes
+    // ═══════════════════════════════════════════════════════════════
+
+    match /controls/{uid} {
+      allow read: if isOwner(uid);
+      allow write: if isBackend(); // Strict backend-only
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // Users Collection - User preferences (UI settings only)
+    // ═══════════════════════════════════════════════════════════════
+
+    match /users/{userId} {
+      // Users can read and update their own preferences
+      allow read: if isOwner(userId);
+      allow write: if isOwner(userId);
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // Legacy Collections (from old rules) - Keep for compatibility
+    // ═══════════════════════════════════════════════════════════════
+
+    match /positions/{positionId} {
+      allow read: if isAuthenticated() &&
+                     resource.data.user_id == request.auth.uid;
+      allow write: if isBackend();
+    }
+
+    match /fire_history/{fireId} {
+      allow read: if isAuthenticated() &&
+                     resource.data.user_id == request.auth.uid;
+      allow write: if isBackend();
+    }
+
+    match /system/{docId} {
+      allow read: if isAuthenticated();
+      allow write: if isBackend();
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // Default Deny - All other paths require explicit rules
+    // ═══════════════════════════════════════════════════════════════
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

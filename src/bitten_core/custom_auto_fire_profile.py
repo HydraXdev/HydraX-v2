@@ -19,7 +19,7 @@ class CustomAutoFireProfile:
     and adapts to optimize win rates and profitability.
     """
 
-    def __init__(self, user_id: str = "7176191872"):
+    def __init__(self, user_id: str = "wlJ5lafBqRSLwHIUBxJQMr4SBtk1"):
         self.user_id = user_id
         self.last_update = datetime.now()
 
@@ -173,17 +173,17 @@ class CustomAutoFireProfile:
 
 
 # Global instance for user 7176191872
-commander_profile = CustomAutoFireProfile("7176191872")
+commander_profile = CustomAutoFireProfile("wlJ5lafBqRSLwHIUBxJQMr4SBtk1")
 
 
-def should_auto_fire_custom(signal_data: Dict, user_id: str = "7176191872") -> Tuple[bool, str]:
+def should_auto_fire_custom(signal_data: Dict, user_id: str = "wlJ5lafBqRSLwHIUBxJQMr4SBtk1") -> Tuple[bool, str]:
     """
     Main entry point for custom auto-fire decisions.
 
     This function can be integrated into webapp_server_optimized.py
     to override standard auto-fire logic for specific users.
     """
-    if user_id != "7176191872":
+    if user_id != "wlJ5lafBqRSLwHIUBxJQMr4SBtk1":
         return True, "No custom profile, using standard rules"
 
     return commander_profile.should_auto_fire(signal_data)

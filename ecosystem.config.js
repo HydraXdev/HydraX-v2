@@ -1,109 +1,85 @@
+/**
+ * PM2 Ecosystem Configuration - BITTEN Production Architecture
+ *
+ * 🚨 CRITICAL: This file defines the OFFICIAL process architecture
+ *
+ * DO NOT modify without explicit approval
+ * DO NOT add processes that duplicate functionality
+ * DO NOT start processes manually that conflict with this config
+ *
+ * Last Updated: 2025-10-13
+ */
+
 module.exports = {
   apps: [
+    // ============================================================
+    // SIGNAL GENERATION & RELAY (OFFICIAL ARCHITECTURE)
+    // ============================================================
+
+    /**
+     * Elite Guard - Signal Generator
+     * Status: PRODUCTION - DO NOT MODIFY
+     * Port: 5557 (ZMQ PUB)
+     */
     {
-      name: "hydrasocket-router",
-      script: "venv/bin/gunicorn",
-      args: "webapp_server_optimized:app -w 4 -k gevent --bind 0.0.0.0:8888 --timeout 90 --worker-connections 1000",
-      cwd: "/root/HydraX-v2",
+      name: 'elite_guard',
+      script: 'elite_guard_with_citadel.py',
+      interpreter: 'python3',
+      cwd: '/root/HydraX-v2',
       instances: 1,
       autorestart: true,
       watch: false,
-      max_memory_restart: "2G",
-      max_restarts: 10,
-      exp_backoff_restart_delay: 2000,
-      out_file: "/var/log/hydrasocket/out.log",
-      error_file: "/var/log/hydrasocket/err.log",
-      merge_logs: true,
-      kill_timeout: 5000,
-      listen_timeout: 10000,
+      max_memory_restart: '500M',
       env: {
-        BITTEN_DB: "/root/HydraX-v2/bitten.db",
-        PYTHONUNBUFFERED: "1",
-        WS_ACK_WINDOW: "256",
-        HYDRASOCKET_ENV: "production",
-        FLASK_ENV: "production",
-      },
+        NODE_ENV: 'production'
+      }
     },
+
+    /**
+     * Elite Guard ZMQ Relay - Signal Bridge to WebApp
+     * Status: PRODUCTION - OFFICIAL RELAY
+     *
+     * ⚠️ THIS IS THE ONLY SIGNAL RELAY - NO REDIS BRIDGES!
+     *
+     * Flow: Elite Guard ZMQ 5557 → HTTP POST /api/signals → WebApp
+     */
     {
-      name: "elite_guard",
-      script: "python3",
-      args: "elite_guard_with_citadel.py",
-      cwd: "/root/HydraX-v2",
+      name: 'elite_guard_relay',
+      script: 'elite_guard_zmq_relay.py',
+      interpreter: 'python3',
+      cwd: '/root/HydraX-v2',
       instances: 1,
       autorestart: true,
       watch: false,
-    },
-    {
-      name: "zmq_telemetry_bridge",
-      script: "python3",
-      args: "zmq_telemetry_bridge_debug.py",
-      cwd: "/root/HydraX-v2",
-      instances: 1,
-      autorestart: true,
-      watch: false,
-    },
-    {
-      name: "signals_zmq_to_redis",
-      script: "python3",
-      args: "tools/signals_zmq_to_redis.py",
-      cwd: "/root/HydraX-v2",
-      instances: 1,
-      autorestart: true,
-      watch: false,
-    },
-    {
-      name: "signals_to_alerts",
-      script: "python3",
-      args: "tools/signals_to_alerts.py",
-      cwd: "/root/HydraX-v2",
-      instances: 1,
-      autorestart: true,
-      watch: false,
-    },
-    {
-      name: "telegram_broadcaster_alerts",
-      script: "python3",
-      args: "tools/telegram_broadcaster_alerts.py",
-      cwd: "/root/HydraX-v2",
-      instances: 1,
-      autorestart: true,
-      watch: false,
-    },
-    {
-      name: "command_router",
-      script: "python3",
-      args: "command_router.py",
-      cwd: "/root/HydraX-v2",
-      instances: 1,
-      autorestart: true,
-      watch: false,
-    },
-    {
-      name: "confirm_listener",
-      script: "python3",
-      args: "confirm_listener.py",
-      cwd: "/root/HydraX-v2",
-      instances: 1,
-      autorestart: true,
-      watch: false,
-    },
-    {
-      name: "vcb_guard",
-      script: "python3",
-      args: "tools/vcb_guard.py",
-      cwd: "/root/HydraX-v2",
-      instances: 1,
-      autorestart: true,
-      watch: false,
-    },
-    {
-      name: "srl_guard",
-      script: "python3",
-      args: "tools/srl_guard.py",
-      cwd: "/root/HydraX-v2",
-      instances: 1,
-      autorestart: true,
-      watch: false,
-    },
-  ],
+      max_memory_restart: '100M',
+      env: {
+        NODE_ENV: 'production'
+      }
+    }
+  ]
 };
+
+/**
+ * ============================================================
+ * ⛔ DEPRECATED / FORBIDDEN PROCESSES ⛔
+ * ============================================================
+ *
+ * The following processes MUST NOT be started:
+ *
+ * ❌ signals_zmq_to_redis.py          - Replaced by elite_guard_relay
+ * ❌ signals_redis_to_webapp.py       - Replaced by elite_guard_relay
+ * ❌ signals_redis_to_webapp_fixed.py - Replaced by elite_guard_relay
+ *
+ * WHY: These processes cause:
+ * - Consumer group deadlocks in Redis
+ * - Unnecessary complexity
+ * - Signal relay failures
+ * - Resource waste
+ *
+ * IF YOU SEE THESE RUNNING:
+ * 1. Kill them immediately: kill <PID>
+ * 2. Verify elite_guard_relay is running: pm2 status elite_guard_relay
+ * 3. Check signals flowing: pm2 logs elite_guard_relay --lines 20
+ *
+ * ============================================================
+ */

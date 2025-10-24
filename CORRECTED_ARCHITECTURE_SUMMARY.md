@@ -1,8 +1,22 @@
 # ✅ CORRECTED BITTEN ARCHITECTURE SUMMARY
 
-## 🚨 CRITICAL UPDATE: Documentation vs Implementation
+## 🚨 CRITICAL UPDATE: Documentation vs Implementation - October 16, 2025
 
 The documentation files contained **OUTDATED ARCHITECTURE** that described a complex 5-master broker system. The **ACTUAL IMPLEMENTATION** uses the correct single-master architecture as originally designed.
+
+## 📊 UNIFIED TRACKING SYSTEM (Current as of October 16, 2025)
+
+**Single Source of Truth**: `/root/HydraX-v2/unified_tracking.jsonl`
+**Database**: `bitten.db` with `signals` table containing outcome tracking
+**Process**: `unified_tracker` (PM2 managed)
+
+**Deprecated Systems (DO NOT USE)**:
+- ❌ truth_log.jsonl
+- ❌ signal_tracking.jsonl
+- ❌ optimized_tracking.jsonl
+- ❌ comprehensive_tracking.jsonl
+- ❌ definitive_signal_tracker
+- ❌ analytics_worker
 
 ## 🎯 ACTUAL IMPLEMENTATION (Verified in Code)
 

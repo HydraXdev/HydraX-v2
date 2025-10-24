@@ -50,21 +50,33 @@ class RealPositionCalculator:
     def _load_real_pair_specs(self) -> Dict:
         """Load real currency pair specifications"""
         return {
+            # Major Forex Pairs
             "EURUSD": {"pip_value": 10.0, "min_lot": 0.01, "max_lot": 100.0, "lot_step": 0.01},
             "GBPUSD": {"pip_value": 10.0, "min_lot": 0.01, "max_lot": 100.0, "lot_step": 0.01},
-            "USDJPY": {"pip_value": 9.5, "min_lot": 0.01, "max_lot": 100.0, "lot_step": 0.01},  # Approximate
-            "USDCHF": {"pip_value": 10.2, "min_lot": 0.01, "max_lot": 100.0, "lot_step": 0.01},  # Approximate
+            "USDJPY": {"pip_value": 9.5, "min_lot": 0.01, "max_lot": 100.0, "lot_step": 0.01},
+            "USDCHF": {"pip_value": 10.2, "min_lot": 0.01, "max_lot": 100.0, "lot_step": 0.01},
             "AUDUSD": {"pip_value": 10.0, "min_lot": 0.01, "max_lot": 100.0, "lot_step": 0.01},
-            "USDCAD": {"pip_value": 7.8, "min_lot": 0.01, "max_lot": 100.0, "lot_step": 0.01},  # Approximate
+            "USDCAD": {"pip_value": 7.8, "min_lot": 0.01, "max_lot": 100.0, "lot_step": 0.01},
             "NZDUSD": {"pip_value": 10.0, "min_lot": 0.01, "max_lot": 100.0, "lot_step": 0.01},
-            "EURGBP": {"pip_value": 12.8, "min_lot": 0.01, "max_lot": 100.0, "lot_step": 0.01},  # Approximate
-            "EURJPY": {"pip_value": 9.5, "min_lot": 0.01, "max_lot": 100.0, "lot_step": 0.01},  # Approximate
-            "GBPJPY": {"pip_value": 9.5, "min_lot": 0.01, "max_lot": 100.0, "lot_step": 0.01},  # Approximate
-            "CHFJPY": {"pip_value": 9.5, "min_lot": 0.01, "max_lot": 100.0, "lot_step": 0.01},  # Approximate
-            "EURCHF": {"pip_value": 10.2, "min_lot": 0.01, "max_lot": 100.0, "lot_step": 0.01},  # Approximate
-            "AUDCAD": {"pip_value": 7.8, "min_lot": 0.01, "max_lot": 100.0, "lot_step": 0.01},  # Approximate
-            "AUDCHF": {"pip_value": 10.2, "min_lot": 0.01, "max_lot": 100.0, "lot_step": 0.01},  # Approximate
-            "AUDJPY": {"pip_value": 9.5, "min_lot": 0.01, "max_lot": 100.0, "lot_step": 0.01},  # Approximate
+            # Cross Pairs
+            "EURGBP": {"pip_value": 12.8, "min_lot": 0.01, "max_lot": 100.0, "lot_step": 0.01},
+            "EURJPY": {"pip_value": 9.5, "min_lot": 0.01, "max_lot": 100.0, "lot_step": 0.01},
+            "GBPJPY": {"pip_value": 9.5, "min_lot": 0.01, "max_lot": 100.0, "lot_step": 0.01},
+            "CHFJPY": {"pip_value": 9.5, "min_lot": 0.01, "max_lot": 100.0, "lot_step": 0.01},
+            "EURCHF": {"pip_value": 10.2, "min_lot": 0.01, "max_lot": 100.0, "lot_step": 0.01},
+            "AUDCAD": {"pip_value": 7.8, "min_lot": 0.01, "max_lot": 100.0, "lot_step": 0.01},
+            "AUDCHF": {"pip_value": 10.2, "min_lot": 0.01, "max_lot": 100.0, "lot_step": 0.01},
+            "AUDJPY": {"pip_value": 9.5, "min_lot": 0.01, "max_lot": 100.0, "lot_step": 0.01},
+            "EURAUD": {"pip_value": 10.0, "min_lot": 0.01, "max_lot": 100.0, "lot_step": 0.01},
+            "GBPCAD": {"pip_value": 7.8, "min_lot": 0.01, "max_lot": 100.0, "lot_step": 0.01},
+            "NZDJPY": {"pip_value": 9.5, "min_lot": 0.01, "max_lot": 100.0, "lot_step": 0.01},
+            # Metals
+            "XAUUSD": {"pip_value": 10.0, "min_lot": 0.01, "max_lot": 10.0, "lot_step": 0.01},
+            "XAGUSD": {"pip_value": 50.0, "min_lot": 0.01, "max_lot": 10.0, "lot_step": 0.01},
+            # Crypto
+            "BTCUSD": {"pip_value": 10.0, "min_lot": 0.01, "max_lot": 1.0, "lot_step": 0.01},
+            # Exotic
+            "USDCNH": {"pip_value": 10.0, "min_lot": 0.01, "max_lot": 100.0, "lot_step": 0.01},
         }
 
     def calculate_real_position_size(

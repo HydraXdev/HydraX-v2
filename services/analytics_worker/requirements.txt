@@ -1,0 +1,19 @@
+# BITTEN v2.0 Analytics Worker Dependencies
+
+# Core scheduling
+apscheduler==3.10.4
+
+# Async support
+asyncio-mqtt==0.16.1
+
+# Database
+psycopg2-binary==2.9.9
+
+# ZMQ for market data subscription
+pyzmq==25.1.2
+
+# Firebase Admin SDK
+firebase-admin==6.4.0
+
+# Utilities
+python-dateutil==2.8.2

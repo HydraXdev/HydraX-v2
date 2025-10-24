@@ -1,0 +1,1269 @@
+{
+  "document_version": "2.0",
+  "last_updated": "2025-10-09",
+  "system_name": "BITTEN EA & MT5 Integration Architecture",
+  "status": "PRODUCTION - FULLY OPERATIONAL",
+
+  "ea_versions": {
+    "EA_BITTEN_v3.005_PRODUCTION": {
+      "file_location": "/root/archive_v1/hydrax_v2_internal_archive/EA_PRODUCTION/EA_BITTEN_v3.005_PRODUCTION.mq5",
+      "version": "3.005",
+      "property_version": "3.005",
+      "copyright": "BITTEN Systems",
+      "status": "ACTIVE - Current production EA",
+      "total_lines": 818,
+      "magic_number": 7176191872,
+
+      "capabilities": [
+        "ZMQ DEALER socket communication (port 5555)",
+        "Raw tick streaming (port 5556)",
+        "Trade confirmations (port 5558)",
+        "Account metrics and heartbeats (port 5560)",
+        "Position lifecycle tracking (opened/closed events)",
+        "SL/TP enforcement with broker stops level",
+        "Hedge prevention logic",
+        "SafeNum protection (NaN/Inf sanitization)",
+        "Direction canonicalization (BUY/SELL only)",
+        "Position reconciliation on reconnect",
+        "DEALER keepalive messages (5s interval)",
+        "Multi-symbol monitoring (up to 200 symbols)",
+        "Volume normalization per broker specs",
+        "Command deduplication and filtering"
+      ],
+
+      "zmq_ports": {
+        "5555": {
+          "purpose": "Command routing (bidirectional)",
+          "pattern": "DEALER (EA) ⟷ ROUTER (Server)",
+          "direction": "Bidirectional",
+          "message_types": ["fire", "close", "close_all", "ping", "dealer_heartbeat"],
+          "identity": "g_user_uuid (COMMANDER_DEV_001)",
+          "keepalive_interval": "5 seconds"
+        },
+        "5556": {
+          "purpose": "Raw tick streaming + lifecycle events",
+          "pattern": "PUSH (EA) → PULL (Server)",
+          "direction": "EA → Server",
+          "message_types": ["tick", "handshake", "heartbeat", "disconnect"],
+          "frequency": "500-1000 ticks/minute during market hours"
+        },
+        "5558": {
+          "purpose": "Trade confirmations and lifecycle events",
+          "pattern": "PUSH (EA) → PULL (Server)",
+          "direction": "EA → Server",
+          "message_types": ["confirmation", "position_opened", "position_closed", "pong"],
+          "frequency": "10-20 confirmations/hour during trading"
+        },
+        "5560": {
+          "purpose": "Account metrics and position updates",
+          "pattern": "PUSH (EA) → PULL (Server)",
+          "direction": "EA → Server",
+          "message_types": ["position_update", "metrics"],
+          "frequency": "1 update per second per open position"
+        }
+      },
+
+      "uuid": "COMMANDER_DEV_001",
+      "server_host": "134.199.204.67",
+      "zmq_tuning": {
+        "send_hwm": 10000,
+        "receive_hwm": 1000,
+        "linger_ms": 0,
+        "deviation_points": 5
+      },
+
+      "key_functions": {
+        "OnInit": {
+          "line": 697,
+          "purpose": "Initialize EA, establish ZMQ connections, send handshake",
+          "actions": [
+            "Load configuration (node_id, user_uuid)",
+            "Create ZMQ context and sockets",
+            "Set socket identities and tuning parameters",
+            "Connect to all 4 ZMQ endpoints",
+            "Send handshake with open positions array",
+            "Initialize symbol monitoring list",
+            "Set timer for periodic checks"
+          ]
+        },
+        "OnTimer": {
+          "line": 804,
+          "purpose": "Periodic processing (1 second interval)",
+          "actions": [
+            "Send heartbeat every 1 second (port 5556)",
+            "Send DEALER keepalive every 5 seconds (port 5555)",
+            "Stream position updates for open positions (port 5560)",
+            "Monitor tick flow across all symbols",
+            "Check commands from server"
+          ]
+        },
+        "OnTick": {
+          "line": "~750",
+          "purpose": "Stream raw tick data to server",
+          "actions": [
+            "Capture bid/ask/time/volume for each symbol",
+            "Format as JSON tick message",
+            "Send to port 5556 for server-side pattern detection"
+          ]
+        },
+        "OnTrade": {
+          "line": 669,
+          "purpose": "Detect position closures and send events",
+          "actions": [
+            "Monitor history for new deals",
+            "Identify position exits (DEAL_ENTRY_OUT)",
+            "Determine close reason (TP/SL/MANUAL/STOPOUT)",
+            "Send position_closed event to port 5558"
+          ]
+        },
+        "ExecuteFire": {
+          "line": 544,
+          "purpose": "Execute trade from server fire command",
+          "validation_steps": [
+            "Extract fire_id, symbol, direction from JSON",
+            "Validate symbol is available and has quotes",
+            "Normalize lot size to broker specs",
+            "Check direction (BUY/SELL canonicalization)",
+            "Apply SL/TP from command"
+          ],
+          "execution": [
+            "Use CTrade.Buy() or CTrade.Sell()",
+            "Set magic number (7176191872)",
+            "Set deviation points (5)",
+            "Use fire_id as position comment"
+          ],
+          "confirmation": [
+            "Send confirmation to port 5558",
+            "Include ticket, execution price, status",
+            "Send position_opened event with full details"
+          ]
+        },
+        "ExecuteClose": {
+          "line": 599,
+          "purpose": "Close position by ticket",
+          "actions": [
+            "Extract ticket from command",
+            "Validate position exists and magic matches",
+            "Close position using CTrade.PositionClose()",
+            "Send confirmation with result"
+          ]
+        },
+        "ExecuteCloseAll": {
+          "line": 624,
+          "purpose": "Close all positions with matching magic",
+          "actions": [
+            "Iterate all open positions",
+            "Filter by magic number",
+            "Close each position",
+            "Send confirmation with count"
+          ]
+        },
+        "CheckCommands": {
+          "line": 639,
+          "purpose": "Receive and process commands from server",
+          "actions": [
+            "Non-blocking receive from DEALER socket (port 5555)",
+            "Filter by target_uuid (only process our commands)",
+            "Parse command type",
+            "Route to appropriate executor (fire/close/ping)"
+          ]
+        }
+      }
+    },
+
+    "BITTEN_Universal_EA_v2.07H_flat": {
+      "file_location": "/root/HydraX-v2/BITTEN_Universal_EA_v2.07H_flat.mq5",
+      "version": "2.07H",
+      "status": "READY - Not yet compiled/deployed",
+      "features": [
+        "Flat JSON parser (no external dependencies)",
+        "4-socket ZMQ architecture",
+        "DEALER socket with UUID identity routing",
+        "Hybrid position management (25%/25%/50% strategy)",
+        "Partial close automation",
+        "Trailing stop management",
+        "Enhanced telemetry with position arrays"
+      ],
+      "notes": "Next-generation EA with hybrid position management, not yet in production"
+    }
+  },
+
+  "communication_protocols": {
+    "fire_command": {
+      "description": "Execute trade command from server to EA",
+      "port": 5555,
+      "direction": "Server (ROUTER) → EA (DEALER)",
+      "format": "JSON with EXACT field order (CRITICAL)",
+      "required_fields": [
+        "type",
+        "target_uuid",
+        "fire_id",
+        "symbol",
+        "direction",
+        "entry",
+        "sl",
+        "tp",
+        "lot"
+      ],
+      "field_order": "MANDATORY - 'type' MUST be first field",
+      "field_types": {
+        "type": "string (always 'fire')",
+        "target_uuid": "string (EA UUID)",
+        "fire_id": "string (unique signal identifier)",
+        "symbol": "string (MT5 symbol name)",
+        "direction": "string (UPPERCASE: BUY or SELL only)",
+        "entry": "number (0 for market orders)",
+        "sl": "number (stop loss price, can be 0)",
+        "tp": "number (take profit price, can be 0)",
+        "lot": "number (rounded to 2 decimals)"
+      },
+      "critical_rules": [
+        "Field order matters - use OrderedDict in Python",
+        "Direction MUST be uppercase (BUY/SELL, not buy/sell)",
+        "Numbers must NOT be quoted (0.10 not '0.10')",
+        "Entry=0 means market order (EA uses current price)",
+        "SL/TP can be 0 (means unset)",
+        "Lot must be rounded to 2 decimals (0.09 not 0.094476)",
+        "NO extra fields beyond the 9 required",
+        "Hybrid config is optional (for BITMODE)"
+      ],
+      "examples": [
+        {
+          "description": "Basic market order",
+          "json": {
+            "type": "fire",
+            "target_uuid": "COMMANDER_DEV_001",
+            "fire_id": "ELITE_GUARD_EURUSD_1755223898",
+            "symbol": "EURUSD",
+            "direction": "BUY",
+            "entry": 0,
+            "sl": 1.09500,
+            "tp": 1.10000,
+            "lot": 0.10
+          }
+        },
+        {
+          "description": "With BITMODE hybrid config",
+          "json": {
+            "type": "fire",
+            "target_uuid": "COMMANDER_DEV_001",
+            "fire_id": "ELITE_RAPID_GBPJPY_1756773488",
+            "symbol": "GBPJPY",
+            "direction": "SELL",
+            "entry": 0,
+            "sl": 199.650,
+            "tp": 199.200,
+            "lot": 0.45,
+            "hybrid": {
+              "enabled": true,
+              "partial1": {"trigger": 8, "percent": 25},
+              "partial2": {"trigger": 12, "percent": 25},
+              "trail": {"distance": 8}
+            }
+          }
+        }
+      ],
+      "common_failures": [
+        "❌ Including user_id field (EA doesn't expect it)",
+        "❌ Using lowercase 'buy' or 'sell' (must be BUY/SELL)",
+        "❌ Quoted numbers like '0.10' (must be unquoted)",
+        "❌ Python True/False instead of JSON true/false",
+        "❌ Unrounded lot sizes like 0.1034567",
+        "❌ Wrong field order (type must be first)"
+      ],
+      "implementation_location": "/root/HydraX-v2/enqueue_fire.py lines 464-584"
+    },
+
+    "confirmation": {
+      "description": "Trade execution confirmation from EA to server",
+      "port": 5558,
+      "direction": "EA (PUSH) → Server (PULL)",
+      "format": "JSON",
+      "fields": {
+        "type": "string (always 'confirmation')",
+        "cmd_type": "string (fire/close/close_all)",
+        "fire_id": "string (from original command)",
+        "status": "string (FILLED/FAILED/CLOSED)",
+        "ticket": "integer (MT5 ticket number)",
+        "price": "number (execution price)",
+        "message": "string (error message if failed)",
+        "symbol": "string (trading symbol)",
+        "uuid": "string (EA UUID)"
+      },
+      "status_mapping": {
+        "FILLED": "Trade executed successfully",
+        "FAILED": "Trade execution failed",
+        "CLOSED": "Position closed successfully",
+        "SUCCESS": "Generic success (mapped to FILLED)",
+        "REJECTED": "Trade rejected by broker (mapped to FAILED)",
+        "ERROR": "Execution error (mapped to FAILED)"
+      },
+      "example": {
+        "type": "confirmation",
+        "cmd_type": "fire",
+        "fire_id": "ELITE_GUARD_GBPUSD_1755223898",
+        "status": "FILLED",
+        "ticket": 20813351,
+        "price": 1.35357,
+        "message": "Executed",
+        "symbol": "GBPUSD",
+        "uuid": "COMMANDER_DEV_001"
+      },
+      "processing_location": "/root/HydraX-v2/confirm_listener.py lines 61-96"
+    },
+
+    "position_opened": {
+      "description": "New position opened event",
+      "port": 5558,
+      "direction": "EA (PUSH) → Server (PULL)",
+      "format": "JSON",
+      "fields": {
+        "type": "string (always 'position_opened')",
+        "uuid": "string (EA UUID)",
+        "fire_id": "string (position identifier)",
+        "ticket": "integer (MT5 ticket)",
+        "symbol": "string",
+        "direction": "string (BUY/SELL - canonicalized)",
+        "entry_price": "number",
+        "volume": "number",
+        "sl": "number",
+        "tp": "number"
+      },
+      "example": {
+        "type": "position_opened",
+        "uuid": "COMMANDER_DEV_001",
+        "fire_id": "ELITE_GUARD_EURUSD_123",
+        "ticket": 123456,
+        "symbol": "EURUSD",
+        "direction": "BUY",
+        "entry_price": 1.09500,
+        "volume": 0.10,
+        "sl": 1.09000,
+        "tp": 1.10000
+      },
+      "ea_function": "SendPositionOpened() line 502",
+      "processing_location": "/root/HydraX-v2/confirm_listener.py lines 411-444"
+    },
+
+    "position_closed": {
+      "description": "Position closed event",
+      "port": 5558,
+      "direction": "EA (PUSH) → Server (PULL)",
+      "format": "JSON",
+      "triggered_by": "OnTrade() event handler (line 669)",
+      "fields": {
+        "type": "string (always 'position_closed')",
+        "uuid": "string (EA UUID)",
+        "fire_id": "string (position identifier)",
+        "ticket": "integer (MT5 ticket)",
+        "symbol": "string",
+        "close_price": "number",
+        "profit": "number (P&L in account currency)",
+        "reason": "string (TP/SL/MANUAL/STOPOUT)"
+      },
+      "close_reasons": {
+        "TP": "Take profit hit",
+        "SL": "Stop loss hit",
+        "MANUAL": "Manually closed by user/EA",
+        "STOPOUT": "Margin stop out"
+      },
+      "example": {
+        "type": "position_closed",
+        "uuid": "COMMANDER_DEV_001",
+        "fire_id": "ELITE_GUARD_EURUSD_123",
+        "ticket": 123456,
+        "symbol": "EURUSD",
+        "close_price": 1.10000,
+        "profit": 50.00,
+        "reason": "TP"
+      },
+      "ea_function": "SendPositionClosed() line 526",
+      "processing_location": "/root/HydraX-v2/confirm_listener.py lines 445-455"
+    },
+
+    "heartbeat": {
+      "description": "Regular heartbeat to maintain connection",
+      "port": 5556,
+      "direction": "EA (PUSH) → Server (PULL)",
+      "interval": "1 second",
+      "format": "JSON",
+      "fields": {
+        "type": "string (always 'heartbeat')",
+        "node_id": "string (EA node identifier)",
+        "uuid": "string (EA UUID)",
+        "balance": "number (sanitized with SafeNum)",
+        "equity": "number (sanitized with SafeNum)",
+        "margin": "number",
+        "free_margin": "number",
+        "margin_level": "number",
+        "timestamp": "integer (unix timestamp)"
+      },
+      "example": {
+        "type": "heartbeat",
+        "node_id": "NODE_843859_123",
+        "uuid": "COMMANDER_DEV_001",
+        "balance": 10000.00,
+        "equity": 10015.00,
+        "margin": 100.00,
+        "free_margin": 9915.00,
+        "margin_level": 10015.00,
+        "timestamp": 1728561234
+      },
+      "ea_function": "SendHeartbeat() line 331",
+      "timer_location": "OnTimer() line 810"
+    },
+
+    "dealer_heartbeat": {
+      "description": "DEALER socket keepalive (prevents router timeout)",
+      "port": 5555,
+      "direction": "EA (DEALER) → Server (ROUTER)",
+      "interval": "5 seconds",
+      "format": "JSON",
+      "purpose": "Prevent command router from timing out DEALER connection",
+      "fields": {
+        "type": "string (always 'dealer_heartbeat')",
+        "uuid": "string (EA UUID)",
+        "node_id": "string (EA node identifier)",
+        "timestamp": "integer (unix timestamp)"
+      },
+      "example": {
+        "type": "dealer_heartbeat",
+        "uuid": "COMMANDER_DEV_001",
+        "node_id": "NODE_843859_123",
+        "timestamp": 1728561234
+      },
+      "server_action": "Command router updates 'last seen' timestamp, no response needed",
+      "ea_function": "SendDealerHeartbeat() line 376",
+      "timer_location": "OnTimer() line 817"
+    },
+
+    "handshake": {
+      "description": "Initial connection with position reconciliation",
+      "port": 5556,
+      "direction": "EA (PUSH) → Server (PULL)",
+      "timing": "Sent once on EA startup (OnInit)",
+      "format": "JSON",
+      "fields": {
+        "type": "string (always 'handshake')",
+        "node_id": "string (EA node identifier)",
+        "uuid": "string (EA UUID)",
+        "reconnect": "boolean (true if EA has open positions)",
+        "open_positions": "array (current positions on reconnect)",
+        "balance": "number",
+        "equity": "number",
+        "version": "string (EA version '3.005')"
+      },
+      "open_positions_structure": {
+        "ticket": "integer",
+        "symbol": "string",
+        "direction": "string (BUY/SELL)",
+        "fire_id": "string",
+        "open_price": "number",
+        "volume": "number",
+        "pnl": "number"
+      },
+      "server_action": [
+        "If reconnect=false: Reset daily trade counter for this UUID",
+        "If reconnect=true: Validate positions, DON'T reset counter",
+        "Update ea_instances table with version and last_seen",
+        "Reconcile server position state with EA state"
+      ],
+      "example": {
+        "type": "handshake",
+        "node_id": "NODE_843859_123",
+        "uuid": "COMMANDER_DEV_001",
+        "reconnect": true,
+        "open_positions": [
+          {
+            "ticket": 123456,
+            "symbol": "EURUSD",
+            "direction": "BUY",
+            "fire_id": "ELITE_GUARD_EURUSD_123",
+            "open_price": 1.09500,
+            "volume": 0.10,
+            "pnl": 25.50
+          }
+        ],
+        "balance": 10000.00,
+        "equity": 10025.50,
+        "version": "3.005"
+      },
+      "ea_function": "SendHandshake() line 309",
+      "init_location": "OnInit() line 730"
+    },
+
+    "position_update": {
+      "description": "Real-time position state update",
+      "port": 5560,
+      "direction": "EA (PUSH) → Server (PULL)",
+      "interval": "1 second per open position",
+      "format": "JSON",
+      "fields": {
+        "type": "string (always 'position_update')",
+        "ticket": "integer",
+        "symbol": "string",
+        "volume": "number",
+        "direction": "string (BUY/SELL - canonicalized)",
+        "open_price": "number",
+        "current_price": "number",
+        "sl": "number",
+        "tp": "number",
+        "profit": "number (unrealized P&L)",
+        "pips": "number (pips in profit/loss)",
+        "fire_id": "string (from position comment)",
+        "status": "string (always 'open')"
+      },
+      "example": {
+        "type": "position_update",
+        "ticket": 123456,
+        "symbol": "EURUSD",
+        "volume": 0.10,
+        "direction": "BUY",
+        "open_price": 1.09500,
+        "current_price": 1.09650,
+        "sl": 1.09000,
+        "tp": 1.10000,
+        "profit": 15.00,
+        "pips": 15.0,
+        "fire_id": "ELITE_GUARD_EURUSD_123",
+        "status": "open"
+      },
+      "ea_function": "StreamPositions() called from OnTimer()",
+      "timer_location": "OnTimer() line 815"
+    },
+
+    "tick": {
+      "description": "Raw market tick data",
+      "port": 5556,
+      "direction": "EA (PUSH) → Server (PULL)",
+      "frequency": "Every tick (500-1000/minute during active markets)",
+      "format": "JSON",
+      "fields": {
+        "type": "string (always 'tick')",
+        "symbol": "string",
+        "bid": "number",
+        "ask": "number",
+        "time": "integer (unix timestamp)",
+        "volume": "integer (tick volume)"
+      },
+      "example": {
+        "type": "tick",
+        "symbol": "EURUSD",
+        "bid": 1.09500,
+        "ask": 1.09520,
+        "time": 1728561234,
+        "volume": 125
+      },
+      "purpose": "Server-side pattern detection (Elite Guard)",
+      "ea_function": "StreamTick() called from OnTick()",
+      "server_consumer": "elite_guard_with_citadel.py subscribes to port 5560"
+    },
+
+    "ping_pong": {
+      "description": "Connection health check",
+      "port": 5555,
+      "direction": "Server → EA → Server",
+      "format": "JSON",
+      "ping_structure": {
+        "type": "string (always 'ping')",
+        "ping_id": "string (unique identifier)",
+        "target_uuid": "string (EA to ping)",
+        "timestamp": "integer"
+      },
+      "pong_structure": {
+        "type": "string (always 'pong')",
+        "ping_id": "string (same as ping)",
+        "uuid": "string (EA UUID)",
+        "timestamp": "integer (EA's current time)"
+      },
+      "purpose": "Measure round-trip latency and verify EA responsiveness",
+      "ea_function": "Handled in CheckCommands() line 658"
+    }
+  },
+
+  "trade_lifecycle": {
+    "description": "Complete flow from signal to execution to confirmation",
+    "steps": [
+      {
+        "step": 1,
+        "name": "Signal Generation",
+        "file": "/root/HydraX-v2/elite_guard_with_citadel.py",
+        "line": "~1300",
+        "action": "Pattern detection generates signal with entry/SL/TP",
+        "output": "Signal published to ZMQ port 5557"
+      },
+      {
+        "step": 2,
+        "name": "Signal Routing",
+        "file": "/root/HydraX-v2/tools/signals_zmq_to_redis.py",
+        "action": "Relay signal from ZMQ to Redis stream",
+        "output": "Signal in Redis 'signals' stream"
+      },
+      {
+        "step": 3,
+        "name": "WebApp Ingestion",
+        "file": "/root/HydraX-v2/webapp_server_optimized.py",
+        "line": "417-474",
+        "action": "POST /api/signals receives signal, stores in database",
+        "database": "INSERT into signals table",
+        "output": "Signal available for tracking and firing"
+      },
+      {
+        "step": 4,
+        "name": "Auto-Fire Decision",
+        "file": "/root/HydraX-v2/webapp_server_optimized.py",
+        "line": "480-732",
+        "action": "Check if signal meets auto-fire criteria",
+        "checks": [
+          "User has AUTO mode enabled",
+          "Confidence in 80-89% range (configurable)",
+          "User has available slots (max 10 for COMMANDER)",
+          "User under daily limit (6 trades/day)",
+          "EA has fresh heartbeat (<120s)"
+        ],
+        "output": "If all checks pass, proceed to fire command"
+      },
+      {
+        "step": 5,
+        "name": "Fire Command Generation",
+        "file": "/root/HydraX-v2/enqueue_fire.py",
+        "line": "464-584",
+        "action": "Create fire command with exact JSON format",
+        "critical_fix": "Line 40 - Round lot size to 2 decimals",
+        "validation": [
+          "Validate SL/TP positioning (BUY: SL < entry, TP > entry)",
+          "Ensure direction is uppercase",
+          "Use OrderedDict for field order",
+          "Calculate position size based on 2% risk"
+        ],
+        "output": "Fire command ready for routing"
+      },
+      {
+        "step": 6,
+        "name": "Database Record Creation",
+        "file": "/root/HydraX-v2/execute_fire_proper.py",
+        "line": "52-88",
+        "action": "Create database record FIRST (before sending to EA)",
+        "database": "INSERT into fires (status='SENT')",
+        "purpose": "Track fire attempt even if EA communication fails",
+        "output": "Fire record with status='SENT'"
+      },
+      {
+        "step": 7,
+        "name": "IPC Queue Submission",
+        "file": "/root/HydraX-v2/enqueue_fire.py",
+        "action": "Push command to IPC queue",
+        "ipc_endpoint": "ipc:///tmp/bitten_cmdqueue",
+        "output": "Command in queue for router"
+      },
+      {
+        "step": 8,
+        "name": "Command Router Processing",
+        "file": "/root/HydraX-v2/command_router.py",
+        "port": 5555,
+        "action": "Pull from IPC queue, route to EA via ROUTER socket",
+        "routing": [
+          "Look up EA UUID in ea_instances table",
+          "Send via ZMQ ROUTER to DEALER identity",
+          "Wait for response with timeout"
+        ],
+        "output": "Fire command sent to EA"
+      },
+      {
+        "step": 9,
+        "name": "EA Reception",
+        "file": "EA_BITTEN_v3.005_PRODUCTION.mq5",
+        "function": "CheckCommands()",
+        "line": 639,
+        "action": "Receive command from DEALER socket",
+        "filtering": "Only process commands with matching target_uuid",
+        "output": "Command routed to ExecuteFire()"
+      },
+      {
+        "step": 10,
+        "name": "EA Validation",
+        "file": "EA_BITTEN_v3.005_PRODUCTION.mq5",
+        "function": "ExecuteFire()",
+        "line": 544,
+        "validation": [
+          "Extract fire_id, symbol, direction, lot, sl, tp",
+          "Validate symbol is available",
+          "Check for quotes (bid/ask)",
+          "Normalize lot size to broker specs",
+          "Canonicalize direction to BUY/SELL"
+        ],
+        "output": "Validated trade parameters"
+      },
+      {
+        "step": 11,
+        "name": "MT5 Execution",
+        "file": "EA_BITTEN_v3.005_PRODUCTION.mq5",
+        "function": "ExecuteFire()",
+        "line": "575-578",
+        "action": "Execute trade via CTrade class",
+        "methods": "CTrade.Buy() or CTrade.Sell()",
+        "parameters": {
+          "lot": "Normalized volume",
+          "symbol": "Trading symbol",
+          "price": 0,
+          "sl": "Stop loss price",
+          "tp": "Take profit price",
+          "comment": "fire_id (for position tracking)"
+        },
+        "magic": 7176191872,
+        "deviation": "5 points",
+        "output": "Trade executed in MT5, ticket number obtained"
+      },
+      {
+        "step": 12,
+        "name": "Confirmation Sent",
+        "file": "EA_BITTEN_v3.005_PRODUCTION.mq5",
+        "function": "SendConfirmation()",
+        "line": 485,
+        "port": 5558,
+        "action": "Send confirmation message to server",
+        "fields": [
+          "type: 'confirmation'",
+          "cmd_type: 'fire'",
+          "fire_id: (from command)",
+          "status: 'FILLED' or 'FAILED'",
+          "ticket: (MT5 ticket)",
+          "price: (execution price)",
+          "message: 'Executed' or error"
+        ],
+        "output": "Confirmation on ZMQ port 5558"
+      },
+      {
+        "step": 13,
+        "name": "Position Opened Event",
+        "file": "EA_BITTEN_v3.005_PRODUCTION.mq5",
+        "function": "SendPositionOpened()",
+        "line": 502,
+        "port": 5558,
+        "action": "Send position_opened event with full details",
+        "fields": [
+          "type: 'position_opened'",
+          "uuid: EA UUID",
+          "fire_id",
+          "ticket",
+          "symbol",
+          "direction: (canonicalized BUY/SELL)",
+          "entry_price",
+          "volume",
+          "sl",
+          "tp"
+        ],
+        "output": "Position opened event on port 5558"
+      },
+      {
+        "step": 14,
+        "name": "Confirmation Processing",
+        "file": "/root/HydraX-v2/confirm_listener.py",
+        "function": "update_fire()",
+        "line": "61-96",
+        "port": 5558,
+        "action": "Receive confirmation and update database",
+        "database_update": "UPDATE fires SET status='FILLED', ticket=?, price=? WHERE fire_id=?",
+        "status_mapping": [
+          "FILLED/SUCCESS/OK → 'FILLED'",
+          "FAILED/REJECTED/ERROR → 'FAILED'",
+          "CLOSED/TP_HIT/SL_HIT → 'CLOSED'"
+        ],
+        "slot_management": "Release slot when status='CLOSED'",
+        "output": "Database updated with execution results"
+      },
+      {
+        "step": 15,
+        "name": "Position Tracking",
+        "file": "/root/HydraX-v2/confirm_listener.py",
+        "function": "handle_position_monitoring()",
+        "line": "390-455",
+        "action": "Track position lifecycle (opened → closed)",
+        "database": [
+          "INSERT into live_positions (from position_opened)",
+          "UPDATE fires status to 'CLOSED' (from position_closed)",
+          "DELETE from live_positions (from position_closed)"
+        ],
+        "output": "Complete position lifecycle tracked"
+      },
+      {
+        "step": 16,
+        "name": "Ongoing Position Updates",
+        "file": "EA_BITTEN_v3.005_PRODUCTION.mq5",
+        "trigger": "OnTimer() every 1 second",
+        "port": 5560,
+        "action": "Stream position updates for all open positions",
+        "data": "Current price, unrealized P&L, pips in profit",
+        "purpose": "Real-time monitoring and display in webapp",
+        "output": "Position updates on port 5560"
+      },
+      {
+        "step": 17,
+        "name": "Position Closure Detection",
+        "file": "EA_BITTEN_v3.005_PRODUCTION.mq5",
+        "function": "OnTrade()",
+        "line": 669,
+        "action": "Detect when position closes (TP/SL/manual)",
+        "mechanism": "Monitor HistoryDealsTotal() for new deals",
+        "filtering": "Only process DEAL_ENTRY_OUT events",
+        "output": "position_closed event sent to port 5558"
+      },
+      {
+        "step": 18,
+        "name": "Closure Processing",
+        "file": "/root/HydraX-v2/confirm_listener.py",
+        "action": "Process position_closed event",
+        "database_update": "UPDATE fires SET status='CLOSED', pnl=?, close_reason=?",
+        "slot_release": "Release user slot for new trades",
+        "event_bus": "Publish closure event for analytics",
+        "output": "Complete trade lifecycle recorded"
+      }
+    ],
+    "total_steps": 18,
+    "critical_checkpoints": [
+      "Step 5: Lot rounding (prevents invalid volume errors)",
+      "Step 6: Database record FIRST (ensures tracking)",
+      "Step 10: EA validation (prevents invalid trades)",
+      "Step 11: MT5 execution (actual market interaction)",
+      "Step 14: Confirmation processing (status updates)",
+      "Step 17: Closure detection (completes lifecycle)"
+    ]
+  },
+
+  "zmq_architecture": {
+    "description": "Complete ZeroMQ communication architecture",
+    "pattern": "DEALER/ROUTER + PUSH/PULL",
+
+    "port_5555": {
+      "name": "Command Routing (Bidirectional)",
+      "server_socket": "ROUTER",
+      "ea_socket": "DEALER",
+      "server_binds": "tcp://*:5555",
+      "ea_connects": "tcp://134.199.204.67:5555",
+      "ea_identity": "COMMANDER_DEV_001 (set via ZMQ_IDENTITY)",
+      "message_flow": [
+        "Server → EA: fire, close, close_all, ping commands",
+        "EA → Server: dealer_heartbeat (5s keepalive), pong responses"
+      ],
+      "server_component": "command_router.py (PID varies)",
+      "ea_socket_variable": "g_cmd_dealer",
+      "routing_mechanism": "ROUTER uses EA identity to direct messages",
+      "keepalive": "EA sends dealer_heartbeat every 5 seconds to prevent timeout",
+      "response_handling": "Command router waits for responses, implements timeout logic",
+      "frame_structure": "[identity][empty][payload]"
+    },
+
+    "port_5556": {
+      "name": "Market Data + Lifecycle Events (EA → Server)",
+      "server_socket": "PULL",
+      "ea_socket": "PUSH",
+      "server_binds": "tcp://*:5556",
+      "ea_connects": "tcp://134.199.204.67:5556",
+      "message_flow": [
+        "EA → Server: tick (every tick)",
+        "EA → Server: handshake (on startup)",
+        "EA → Server: heartbeat (every 1 second)",
+        "EA → Server: disconnect (on shutdown)"
+      ],
+      "server_component": "zmq_telemetry_bridge_debug.py",
+      "ea_socket_variable": "g_tick_pub",
+      "relay_to": "Port 5560 (republished for subscribers)",
+      "purpose": "Raw market data streaming for pattern detection",
+      "volume": "500-1000 ticks/minute during active trading",
+      "consumers": [
+        "elite_guard_with_citadel.py (subscribes to 5560)",
+        "Pattern detection algorithms",
+        "Candle building systems"
+      ]
+    },
+
+    "port_5558": {
+      "name": "Trade Confirmations + Position Lifecycle (EA → Server)",
+      "server_socket": "PULL",
+      "ea_socket": "PUSH",
+      "server_binds": "tcp://*:5558",
+      "ea_connects": "tcp://134.199.204.67:5558",
+      "message_flow": [
+        "EA → Server: confirmation (fire/close result)",
+        "EA → Server: position_opened (new trade)",
+        "EA → Server: position_closed (TP/SL/manual close)",
+        "EA → Server: pong (ping response)"
+      ],
+      "server_component": "confirm_listener.py (PID varies)",
+      "ea_socket_variable": "g_confirm_pub",
+      "purpose": "Track trade execution and position lifecycle",
+      "volume": "10-20 messages/hour during trading",
+      "database_updates": [
+        "fires table (status, ticket, price)",
+        "live_positions table (position tracking)",
+        "Position closure events"
+      ],
+      "event_bus_integration": "Publishes to event_bus for slot management and analytics"
+    },
+
+    "port_5560": {
+      "name": "Account Metrics + Position Updates (EA → Server → Subscribers)",
+      "server_socket": "PUB (after relay from 5556)",
+      "ea_socket": "PUSH",
+      "server_binds": "tcp://*:5560 (PUB socket)",
+      "ea_connects": "tcp://134.199.204.67:5560",
+      "relay_source": "Port 5556 (telemetry bridge republishes)",
+      "message_flow": [
+        "EA → Server (5556): tick, heartbeat",
+        "Server → Subscribers (5560): republished data",
+        "EA → Server (5560): position_update (1/sec per position)"
+      ],
+      "server_component": "zmq_telemetry_bridge_debug.py (relay)",
+      "ea_socket_variable": "g_metrics_pub",
+      "purpose": [
+        "Real-time position monitoring",
+        "Account health metrics",
+        "Market data distribution"
+      ],
+      "subscribers": [
+        "elite_guard_with_citadel.py (pattern detection)",
+        "webapp_server_optimized.py (live displays)",
+        "Analytics systems"
+      ],
+      "pub_sub_model": "Subscribers can filter by message type"
+    },
+
+    "ipc_queue": {
+      "name": "Internal Process Communication",
+      "endpoint": "ipc:///tmp/bitten_cmdqueue",
+      "pattern": "PUSH/PULL",
+      "producer": "enqueue_fire.py (fire command generation)",
+      "consumer": "command_router.py (routes to EA)",
+      "purpose": "Decouples fire generation from EA communication",
+      "message_format": "JSON fire commands",
+      "benefits": [
+        "Process isolation",
+        "Async fire command queuing",
+        "Failure isolation (if router crashes, commands queued)",
+        "Multiple producers can enqueue"
+      ]
+    },
+
+    "server_processes": {
+      "command_router": {
+        "file": "/root/HydraX-v2/command_router.py",
+        "port": 5555,
+        "socket_type": "ROUTER",
+        "responsibilities": [
+          "Pull commands from IPC queue",
+          "Route to EA via UUID",
+          "Handle responses",
+          "Update ea_instances heartbeat",
+          "Implement command timeout"
+        ],
+        "pm2_name": "command_router",
+        "critical": true
+      },
+      "zmq_telemetry_bridge": {
+        "file": "/root/HydraX-v2/zmq_telemetry_bridge_debug.py",
+        "ports": "5556 (PULL), 5560 (PUB)",
+        "responsibilities": [
+          "Receive ticks/heartbeats from EA (5556)",
+          "Republish to subscribers (5560)",
+          "Act as message relay",
+          "No processing, just forwarding"
+        ],
+        "pm2_name": "zmq_telemetry_bridge",
+        "critical": true
+      },
+      "confirm_listener": {
+        "file": "/root/HydraX-v2/confirm_listener.py",
+        "port": 5558,
+        "socket_type": "PULL",
+        "responsibilities": [
+          "Receive confirmations",
+          "Update fires database",
+          "Process position_opened events",
+          "Process position_closed events",
+          "Release user slots on closure",
+          "Publish to event bus"
+        ],
+        "pm2_name": "confirm_listener",
+        "critical": true
+      }
+    }
+  },
+
+  "critical_fixes": {
+    "september_22_2025_fire_packet_format": {
+      "issue": "EA v2.07 extremely strict about JSON format",
+      "root_cause": "Field order, data types, extra fields caused trade failures",
+      "symptoms": [
+        "Fire status = 'SENT' but never 'FILLED'",
+        "EA logs show 'drop confirm without fire_id'",
+        "No MT5 ticket number generated"
+      ],
+      "solution": {
+        "file": "/root/HydraX-v2/enqueue_fire.py",
+        "lines": "464-500",
+        "changes": [
+          "Use OrderedDict to enforce field order",
+          "'type' MUST be first field",
+          "Direction must be UPPERCASE (BUY/SELL)",
+          "Numbers NOT quoted (0.10 not '0.10')",
+          "Lot rounded to 2 decimals (line 40)",
+          "Entry=0 for market orders",
+          "NO extra fields (user_id removed)"
+        ]
+      },
+      "verification": {
+        "test_date": "2025-09-22",
+        "test_signal": "ELITE_RAPID_GBPJPY_1756773488",
+        "result": "FILLED with ticket 21173956 at price 199.425",
+        "confirmation": "Position opened event received successfully"
+      },
+      "documentation_location": "CLAUDE.md lines 86-182"
+    },
+
+    "august_15_2025_invalid_volume": {
+      "issue": "MT5 rejecting trades with invalid volume format",
+      "root_cause": "Lot sizes like 0.09447600000000202 not rounded",
+      "symptoms": [
+        "Fire status = 'FAILED'",
+        "Ticket = 0, Price = 0",
+        "EA logs show volume errors"
+      ],
+      "solution": {
+        "file": "/root/HydraX-v2/enqueue_fire.py",
+        "line": 40,
+        "change": "lot = round(lot, 2)",
+        "impact": "All lot sizes now properly rounded (0.09 not 0.094476)"
+      },
+      "verification": {
+        "test_date": "2025-08-15",
+        "test_signal": "ELITE_GUARD_GBPUSD_1755223898",
+        "result": "FILLED with ticket 20813351 at price 1.35357",
+        "lot": "0.09 (properly rounded)"
+      }
+    },
+
+    "august_13_2025_test_dealer_interception": {
+      "issue": "Fire commands not reaching real EA",
+      "root_cause": "Test DEALER process (PID 3311456) masquerading as COMMANDER_DEV_001",
+      "symptoms": [
+        "Fire status shows 'FILLED' but no MT5 execution",
+        "Fake confirmations generated by test process",
+        "Real EA never receives commands"
+      ],
+      "solution": {
+        "action": "Kill test DEALER process",
+        "command": "kill 3311456",
+        "prevention": "Always check for test processes before debugging EA communication"
+      },
+      "detection": {
+        "command": "ps aux | grep -E 'test.*dealer|dealer.*test'",
+        "action": "Kill any found test processes"
+      }
+    }
+  },
+
+  "database_schema": {
+    "ea_instances": {
+      "purpose": "Track connected EAs and their state",
+      "primary_key": "target_uuid",
+      "critical_fields": {
+        "target_uuid": "EA identifier (COMMANDER_DEV_001)",
+        "user_id": "User ID (7176191872)",
+        "account_login": "MT5 account number",
+        "broker": "Broker name",
+        "last_balance": "Most recent balance",
+        "last_equity": "Most recent equity",
+        "last_seen": "Unix timestamp of last heartbeat",
+        "version": "EA version (3.005)",
+        "open_positions": "Count of open positions",
+        "position_data": "JSON array of position details"
+      },
+      "indexes": [
+        "idx_ea_user (user_id)",
+        "idx_ea_seen (last_seen)"
+      ],
+      "freshness_check": "last_seen <= 120 seconds for AUTO fire eligibility"
+    },
+
+    "fires": {
+      "purpose": "Track fire commands and execution results",
+      "primary_key": "fire_id",
+      "critical_fields": {
+        "fire_id": "Unique fire identifier",
+        "mission_id": "Associated mission",
+        "user_id": "User who initiated",
+        "status": "SENT/FILLED/FAILED/CLOSED",
+        "ticket": "MT5 ticket number",
+        "price": "Execution price",
+        "target_uuid": "EA that executed",
+        "symbol": "Trading symbol",
+        "direction": "BUY/SELL",
+        "sl": "Stop loss price",
+        "tp": "Take profit price",
+        "lot": "Position size",
+        "pnl": "Profit/loss when closed",
+        "close_reason": "TP/SL/MANUAL/STOPOUT",
+        "created_at": "Fire attempt timestamp",
+        "closed_at": "Position closure timestamp"
+      },
+      "indexes": [
+        "idx_fires_user (user_id)",
+        "idx_fires_mission (mission_id)",
+        "idx_fires_status (status)"
+      ],
+      "status_flow": "SENT → FILLED → CLOSED (or SENT → FAILED)"
+    },
+
+    "signals": {
+      "purpose": "Store generated signals for tracking and firing",
+      "primary_key": "signal_id",
+      "critical_fields": {
+        "signal_id": "Unique signal identifier",
+        "symbol": "Trading symbol",
+        "direction": "BUY/SELL",
+        "entry_price": "Entry price",
+        "stop_pips": "Stop loss in pips",
+        "target_pips": "Take profit in pips",
+        "confidence": "Signal confidence %",
+        "pattern_type": "Pattern that generated signal",
+        "created_at": "Signal generation timestamp",
+        "outcome": "WIN/LOSS (for tracking)",
+        "exit_price": "Actual TP or SL price hit",
+        "duration_seconds": "Time to completion"
+      },
+      "used_by": "Performance tracking, win rate analysis, pattern optimization"
+    }
+  },
+
+  "testing_verification": {
+    "end_to_end_test": {
+      "file": "/root/HydraX-v2/test_webapp_fire_path.py",
+      "purpose": "Verify complete fire pipeline",
+      "checks": [
+        "IPC queue submission",
+        "Command router processing",
+        "EA reception",
+        "Confirmation reception",
+        "Database update"
+      ]
+    },
+
+    "health_check_commands": [
+      {
+        "name": "Check all processes",
+        "command": "pm2 list | grep -E 'command_router|elite_guard|confirm_listener|webapp'"
+      },
+      {
+        "name": "Check ZMQ ports",
+        "command": "ss -tulpen | grep -E ':(5555|5556|5557|5558|8888)'"
+      },
+      {
+        "name": "Check EA freshness",
+        "command": "sqlite3 /root/HydraX-v2/bitten.db \"SELECT target_uuid, user_id, (strftime('%s','now') - last_seen) AS age_seconds FROM ea_instances WHERE target_uuid = 'COMMANDER_DEV_001';\""
+      },
+      {
+        "name": "Check recent fires",
+        "command": "sqlite3 /root/HydraX-v2/bitten.db \"SELECT fire_id, status, ticket, price FROM fires ORDER BY created_at DESC LIMIT 5;\""
+      }
+    ]
+  },
+
+  "performance_specifications": {
+    "expected_latency": {
+      "fire_to_confirmation": "100-250ms under normal load",
+      "tick_processing": "<10ms per tick",
+      "heartbeat_interval": "1 second",
+      "dealer_keepalive": "5 seconds"
+    },
+
+    "capacity": {
+      "max_concurrent_eas": "Unlimited (ROUTER pattern scales)",
+      "max_concurrent_positions": "Limited by user tier (3/5/7/10 slots)",
+      "tick_throughput": "10,000+ ticks/second",
+      "command_throughput": "100+ commands/second"
+    },
+
+    "reliability": {
+      "message_guarantee": "At-least-once delivery (ZMQ PUSH/PULL)",
+      "command_timeout": "10 seconds",
+      "retry_logic": "Implemented in command router",
+      "position_reconciliation": "On EA reconnect via handshake"
+    }
+  },
+
+  "troubleshooting": {
+    "fire_not_reaching_mt5": {
+      "symptoms": [
+        "Fire status = 'SENT' (not FILLED)",
+        "No MT5 ticket number",
+        "Error code 4756"
+      ],
+      "checks": [
+        "EA connection age (<120s)",
+        "Command router logs",
+        "Test DEALER processes intercepting",
+        "target_uuid matching"
+      ],
+      "solutions": [
+        "Kill test processes: ps aux | grep test.*dealer",
+        "Restart command router if identity mapping broken",
+        "Verify EA is running and connected"
+      ]
+    },
+
+    "invalid_volume_errors": {
+      "symptoms": [
+        "Fire status = 'FAILED'",
+        "Ticket = 0, Price = 0",
+        "EA logs show volume errors"
+      ],
+      "root_cause": "Lot sizes not properly rounded",
+      "fix": "Already applied in enqueue_fire.py line 40",
+      "verification": "Check lot field is rounded to 2 decimals"
+    },
+
+    "signal_generation_stopped": {
+      "symptoms": [
+        "No new signals in database",
+        "Empty signal lists in webapp"
+      ],
+      "checks": [
+        "Elite Guard process running",
+        "Market data flowing (check telemetry bridge)",
+        "Signal database query"
+      ],
+      "commands": [
+        "pm2 logs elite_guard --lines 10",
+        "pm2 logs zmq_telemetry_bridge --lines 10"
+      ]
+    }
+  },
+
+  "deployment_status": {
+    "production_ea": "EA_BITTEN_v3.005_PRODUCTION.mq5",
+    "deployment_location": "MT5 Terminal COMMANDER_DEV_001",
+    "last_verified": "2025-10-02",
+    "current_status": "OPERATIONAL",
+    "next_version": "v2.07H (hybrid position management)",
+    "upgrade_path": "Compile v2.07H, test on demo, deploy to production"
+  },
+
+  "references": {
+    "primary_documentation": [
+      "/root/HydraX-v2/CLAUDE.md (complete system overview)",
+      "/root/HydraX-v2/ARCHITECTURE.md (technical architecture)",
+      "/root/HydraX-v2/SIGNAL_FLOW_AND_AUTOFIRE_ARCHITECTURE.md (signal flow)",
+      "/root/HydraX-v2/V207H_DEPLOYMENT_SUMMARY.md (v2.07H specs)"
+    ],
+    "ea_source_files": [
+      "/root/archive_v1/hydrax_v2_internal_archive/EA_PRODUCTION/EA_BITTEN_v3.005_PRODUCTION.mq5",
+      "/root/HydraX-v2/BITTEN_Universal_EA_v2.07H_flat.mq5 (next version)"
+    ],
+    "key_server_files": [
+      "/root/HydraX-v2/enqueue_fire.py (fire command generation)",
+      "/root/HydraX-v2/command_router.py (command routing)",
+      "/root/HydraX-v2/confirm_listener.py (confirmation processing)",
+      "/root/HydraX-v2/webapp_server_optimized.py (API server)"
+    ]
+  }
+}

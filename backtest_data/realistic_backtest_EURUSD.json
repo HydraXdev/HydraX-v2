@@ -1,0 +1,55 @@
+{
+  "symbol": "EURUSD",
+  "days": 30,
+  "baseline": {
+    "total_signals": 1337,
+    "wins": 358,
+    "losses": 951,
+    "timeouts": 28,
+    "win_rate": 27.349121466768526,
+    "avg_winner_pips": 4.587234636871358,
+    "avg_loser_pips": 1.7529179810725992,
+    "by_confidence": {
+      "60-70": {
+        "count": 190,
+        "win_rate": 42.63157894736842
+      },
+      "70-80": {
+        "count": 1147,
+        "win_rate": 24.754244861483468
+      }
+    }
+  },
+  "enhanced": {
+    "total_signals": 1337,
+    "wins": 358,
+    "losses": 951,
+    "timeouts": 28,
+    "win_rate": 27.349121466768526,
+    "avg_winner_pips": 4.587234636871358,
+    "avg_loser_pips": 1.7529179810725992,
+    "by_confidence": {
+      "40-60": {
+        "count": 138,
+        "win_rate": 16.78832116788321
+      },
+      "60-70": {
+        "count": 178,
+        "win_rate": 28.735632183908045
+      },
+      "70-80": {
+        "count": 474,
+        "win_rate": 28.293736501079913
+      },
+      "80-90": {
+        "count": 443,
+        "win_rate": 30.205949656750576
+      },
+      "90-100": {
+        "count": 104,
+        "win_rate": 22.448979591836736
+      }
+    }
+  },
+  "timestamp": "2025-10-22T01:13:05.023013"
+}

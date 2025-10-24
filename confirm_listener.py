@@ -315,6 +315,17 @@ def handle_enhanced_heartbeat(m):
                     (current_price, pnl, fire_id),
                 )
 
+                # ✅ SYNC REAL-TIME UPDATES TO FIREBASE
+                try:
+                    from firebase_backend import update_active_trade_price
+                    update_active_trade_price(
+                        trade_id=fire_id,
+                        current_price=float(current_price),
+                        equity=float(pnl)
+                    )
+                except Exception as fb_error:
+                    LOG.debug("Firebase price update failed: %s", fb_error)  # Non-critical, use debug level
+
         # Mark missing positions as potentially closed and update slots
         if len(positions) < db_count:
             # Get all DB positions
@@ -440,20 +451,50 @@ def handle_position_monitoring(m):
                 (fire_id, user_id, symbol, direction, price, lot, int(time.time())),
             )
 
+            # ✅ WRITE TO FIREBASE (active_trades)
+            try:
+                from firebase_backend import write_active_trade
+                write_active_trade({
+                    'trade_id': fire_id,
+                    'user_id': user_id,
+                    'symbol': symbol,
+                    'entry': float(price),
+                    'current': float(price),
+                    'stopLoss': 0.0,  # SL/TP will be updated from position updates
+                    'takeProfit': 0.0,
+                    'equity': 0.0,
+                    'lots': float(lot),
+                    'startTime': int(time.time()),
+                    'direction': direction,
+                    'history': []
+                })
+                LOG.info("✅ Active trade written to Firebase: %s", fire_id)
+            except Exception as fb_error:
+                LOG.error("❌ Firebase active_trade write failed: %s", fb_error)
+
             LOG.info("✅ Position opened tracked: %s ticket=%s", fire_id, ticket)
 
         elif command_type == "position_closed":
-            # Update fires table to CLOSED
-            cur.execute("UPDATE fires SET status = 'CLOSED' WHERE ticket = ?", (ticket,))
+            # Extract actual profit and close data from EA message
+            profit = m.get("profit", 0.0)  # Actual P/L from EA
+            close_price = m.get("close_price") or price
+            reason = m.get("reason", "").upper()  # TP_HIT, SL_HIT, MANUAL, etc.
+            volume = m.get("volume") or lot
 
-            # Update live_positions to CLOSED
+            # Update fires table to CLOSED with profit
+            cur.execute(
+                "UPDATE fires SET status = 'CLOSED', pnl = ?, closed_at = ?, current_price = ? WHERE ticket = ?",
+                (profit, int(time.time()), close_price, ticket)
+            )
+
+            # Update live_positions to CLOSED with final P/L
             cur.execute(
                 """
                 UPDATE live_positions
-                SET status = 'CLOSED', last_update = ?
+                SET status = 'CLOSED', last_update = ?, current_pnl = ?, current_price = ?
                 WHERE fire_id = ? OR (SELECT ticket FROM fires WHERE fire_id = live_positions.fire_id) = ?
             """,
-                (int(time.time()), fire_id, ticket),
+                (int(time.time()), profit, close_price, fire_id, ticket),
             )
 
             # Release slot for the user
@@ -470,6 +511,92 @@ def handle_position_monitoring(m):
                         LOG.info("Released slot for user %s, fire_id %s", user_id, fire_id)
                 except Exception as e:
                     LOG.error("Failed to release slot: %s", e)
+
+                # ✅ WRITE TO FIREBASE (trade_history and close active_trade)
+                try:
+                    # Get additional trade data from live_positions
+                    cur.execute(
+                        "SELECT entry_price, lot_size FROM live_positions WHERE fire_id = ?", (fire_id,)
+                    )
+                    position_data = cur.fetchone()
+
+                    if position_data:
+                        entry_price, lot_size = position_data
+                        exit_price = float(close_price)
+
+                        # Calculate pips based on entry and exit
+                        pip_movement = abs(exit_price - entry_price) * 10000 if 'JPY' not in symbol else abs(exit_price - entry_price) * 100
+
+                        # Apply direction to pips
+                        if direction == 'BUY':
+                            pip_movement = (exit_price - entry_price) * (10000 if 'JPY' not in symbol else 100)
+                        else:  # SELL
+                            pip_movement = (entry_price - exit_price) * (10000 if 'JPY' not in symbol else 100)
+
+                        # Use EA-provided reason for outcome, fallback to price comparison
+                        if reason in ['TP_HIT', 'TP']:
+                            outcome = 'TP HIT'
+                        elif reason in ['SL_HIT', 'SL']:
+                            outcome = 'SL HIT'
+                        else:
+                            # Fallback: determine outcome based on profit
+                            outcome = 'TP HIT' if profit > 0 else 'SL HIT'
+
+                        from firebase_backend import close_active_trade, update_user_data
+                        close_active_trade(
+                            trade_id=fire_id,
+                            exit_price=exit_price,
+                            profit=float(profit),  # Use actual EA profit
+                            pips=pip_movement,
+                            outcome=outcome
+                        )
+                        LOG.info("✅ Trade closed in Firebase: %s ($%.2f, %.1f pips, %s)", fire_id, profit, pip_movement, outcome)
+
+                        # Calculate and update longest streak
+                        try:
+                            # Query recent trades for this user (last 100 trades)
+                            cur.execute("""
+                                SELECT f.status, lp.entry_price, lp.sl, lp.tp, lp.direction, f.price as exit_price
+                                FROM fires f
+                                LEFT JOIN live_positions lp ON f.fire_id = lp.fire_id
+                                WHERE f.user_id = ? AND f.status = 'CLOSED'
+                                ORDER BY f.created_at DESC
+                                LIMIT 100
+                            """, (user_id,))
+
+                            recent_fires = cur.fetchall()
+                            current_streak = 0
+                            longest_streak = 0
+
+                            # Calculate streak from recent trades
+                            for row in recent_fires:
+                                status, entry_price_db, sl_db, tp_db, direction_db, exit_price_db = row
+
+                                # Determine if this was a win or loss
+                                is_win = False
+                                if entry_price_db and exit_price_db and direction_db:
+                                    if direction_db == 'BUY':
+                                        is_win = exit_price_db > entry_price_db
+                                    else:  # SELL
+                                        is_win = exit_price_db < entry_price_db
+
+                                if is_win:
+                                    current_streak += 1
+                                    longest_streak = max(longest_streak, current_streak)
+                                else:
+                                    if current_streak > 0:
+                                        longest_streak = max(longest_streak, current_streak)
+                                    current_streak = 0
+
+                            # Update Firebase with longest streak
+                            if longest_streak > 0:
+                                update_user_data(user_id, {'longestStreak': longest_streak})
+                                LOG.info("✅ Updated longest streak for user %s: %d", user_id, longest_streak)
+
+                        except Exception as streak_err:
+                            LOG.error("❌ Failed to calculate longest streak: %s", streak_err)
+                except Exception as fb_error:
+                    LOG.error("❌ Firebase trade close failed: %s", fb_error)
 
             LOG.info("✅ Position closed tracked: %s ticket=%s", fire_id, ticket)
 

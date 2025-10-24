@@ -4,9 +4,34 @@
 
 BITTEN (Bot-Integrated Tactical Trading Engine/Network) v3.002 implements a comprehensive ZMQ-based architecture with raw tick streaming, server-side pattern detection, intelligent position management, and multi-channel signal distribution. The system leverages ZeroMQ's robust transport layer to handle bidirectional communication between MT5 terminals and the server infrastructure.
 
-**LAST UPDATED**: October 2, 2025 - BITTEN v3.002 ZMQ Implementation
+**LAST UPDATED**: October 23, 2025 - Unified Pip Calculation System Deployed
 **STATUS**: 🚧 IMPLEMENTATION IN PROGRESS - Server-side ready for EA integration
 **ARCHITECTURE**: Full ZMQ transport with DEALER/ROUTER pattern on port 5555
+
+## 📐 Unified Pip Calculation System
+
+**Date**: October 23, 2025
+**Status**: ✅ PRODUCTION READY (57/57 tests passing)
+
+BITTEN now uses a **centralized, symbol-aware pip calculation system** to ensure consistency across all fire execution paths (auto-fire, manual-fire, and fire command creation).
+
+**Key Features**:
+- Single source of truth for pip sizes (JPY: 0.01, XAUUSD: 0.10, XAGUSD: 0.001, Majors: 0.0001)
+- M5 ATR-based scalping optimizations with symbol/timeframe-aware limits
+- Comprehensive verification assertions to catch calculation errors
+- Auto-fire and manual-fire produce identical results
+
+**Complete Documentation**: See `/root/HydraX-v2/UNIFIED_PIP_CALCULATION_SYSTEM.md`
+
+**Core Module**: `/root/HydraX-v2/src/bitten_core/constants.py`
+
+**Integration Points**:
+- Auto-fire flow: `/root/HydraX-v2/services/api_server/rest/signals.py`
+- Manual-fire flow: `/root/HydraX-v2/services/api_server/rest/fires.py`
+- Fire command creation: `/root/HydraX-v2/enqueue_fire.py`
+- Signal generator: `/root/HydraX-v2/elite_guard_with_citadel.py`
+
+**Test Suite**: `/root/HydraX-v2/test_pip_calculations.py` (run with `python3 test_pip_calculations.py`)
 
 ## Core Architecture Principles
 
@@ -306,6 +331,471 @@ class SignalDistributor:
             tasks.append(channel.send(signal))
         await asyncio.gather(*tasks)
 ```
+
+#### Signal Generator Architecture (3-Engine System)
+
+**Status**: ✅ PRODUCTION (October 19, 2025)
+
+BITTEN operates three independent signal generators in parallel, each with unique pattern detection algorithms and ZMQ→HTTP relay architecture.
+
+```
+SIGNAL GENERATOR TOPOLOGY (3-ENGINE PARALLEL SYSTEM):
+
+Market Data Gateway (ZMQ 5570) ──> Tick Broadcast (PUB/SUB)
+                                           │
+                    ┌──────────────────────┼──────────────────────┐
+                    │                      │                      │
+                    ▼                      ▼                      ▼
+            Elite Guard (5557)     Pulse Scalper (5559)   Apex Sentinel (5561)
+            SMC Patterns           Momentum Patterns       ML Engulfing
+            ├─ Liquidity Sweep    ├─ Momentum Burst       ├─ PyTorch Neural Net
+            ├─ Order Block        ├─ Volume Surge         ├─ Candle ML Features
+            ├─ Fair Value Gap     ├─ Breakout Confirm     └─ Confidence Scoring
+            ├─ VCB Breakout       └─ Trend Alignment
+            ├─ Sweep Return
+            └─ Smart Money
+                    │                      │                      │
+                    ▼                      ▼                      ▼
+          Elite Guard Relay        Pulse Relay          Apex Sentinel Relay
+          (ZMQ→HTTP Bridge)       (ZMQ→HTTP Bridge)    (ZMQ→HTTP Bridge)
+                    │                      │                      │
+                    └──────────────────────┴──────────────────────┘
+                                           │
+                                           ▼
+                            API Server (POST /api/signals)
+                                           │
+                    ┌──────────────────────┼──────────────────────┐
+                    │                      │                      │
+                    ▼                      ▼                      ▼
+              Firebase Storage       AUTO-Fire Filter      WebApp Display
+              (signal history)       (engine toggle)       (real-time feed)
+```
+
+##### Engine 1: Elite Guard (Primary SMC Engine)
+
+**File**: `/root/HydraX-v2/elite_guard_with_citadel.py`
+**PM2 Process**: `elite_guard` (ID: 38)
+**ZMQ Port**: 5557 (PUB socket)
+**Relay**: `elite_guard_zmq_relay.py` (PM2 ID: 36)
+
+**Pattern Detection Methods** (6 integrated patterns):
+- Liquidity Sweep Reversal (75 base confidence)
+- Order Block Bounce
+- Fair Value Gap Fill
+- VCB Breakout (Volatility Compression Breakout)
+- Sweep and Return (SRL pattern)
+- Smart Money Concepts
+
+**Signal Format**:
+```json
+{
+  "signal_id": "ELITE_GUARD_EURUSD_1760123456",
+  "symbol": "EURUSD",
+  "direction": "BUY",
+  "entry": 1.08456,
+  "sl": 1.08206,
+  "tp": 1.08956,
+  "confidence": 78.5,
+  "pattern_type": "LIQUIDITY_SWEEP_REVERSAL",
+  "signal_type": "SMC",
+  "source": "elite_guard"
+}
+```
+
+**Target Performance**:
+- Win Rate: 45-50% (BALANCED edition v7.0)
+- Signal Frequency: 1-2 signals/hour (minimum engagement)
+- Risk/Reward: 1:1.5 minimum
+
+##### Engine 2: Pulse Scalper (Momentum Engine)
+
+**File**: `/root/HydraX-v2/pulse_scalper.py`
+**PM2 Process**: `pulse_scalper` (ID: 33)
+**ZMQ Port**: 5559 (PUB socket)
+**Relay**: `pulse_relay` (PM2 ID: 34)
+
+**Pattern Detection Methods**:
+- Momentum Burst (increasing velocity over 3 candles)
+- Volume Surge (1.3x baseline requirement)
+- Breakout Confirmation (2+ pip range breakout)
+- Trend Alignment (multi-timeframe validation)
+
+**Signal Format**:
+```json
+{
+  "signal_id": "PULSE_GBPUSD_1760123456",
+  "symbol": "GBPUSD",
+  "direction": "SELL",
+  "entry": 1.26543,
+  "sl": 1.26793,
+  "tp": 1.26043,
+  "confidence": 72.3,
+  "pattern_type": "MOMENTUM_BURST",
+  "signal_type": "SCALP",
+  "source": "pulse"
+}
+```
+
+**Target Performance**:
+- Win Rate: 55-60%
+- Signal Frequency: 2-3 signals/hour
+- Risk/Reward: 1:1.25 (scalping focus)
+
+##### Engine 3: Apex Sentinel (ML AI Engine)
+
+**Status**: ✅ DEPLOYED October 19, 2025 (Grok AI Design)
+
+**File**: `/root/apex_sentinel.py` (491 lines)
+**PM2 Process**: `apex_sentinel` (ID: 49)
+**ZMQ Port**: 5561 (PUB socket)
+**Relay**: `/root/HydraX-v2/apex_sentinel_relay.py` (PM2 ID: 50)
+
+**ML Architecture**:
+- PyTorch Neural Network (3-layer feedforward)
+- Input: 20 candle features (OHLCV + technical indicators)
+- Training: Real-time on live market data
+- Candle Cache: Bootstrapped from Elite Guard (500 M1 candles)
+
+**Pattern Detection Methods**:
+- AI Engulfing Pattern Detection
+- ML-based Confidence Scoring
+- Multi-timeframe Feature Extraction
+- Momentum + Volume + Range Validation
+
+**Signal Format**:
+```json
+{
+  "signal_id": "APEX_EURUSD_1760123456",
+  "symbol": "EURUSD",
+  "direction": "BUY",
+  "entry": 1.08456,
+  "sl": 1.08206,
+  "tp": 1.08956,
+  "stop_pips": 25.0,
+  "target_pips": 50.0,
+  "confidence": 78.5,
+  "pattern_type": "APEX_ENGULFING",
+  "signal_type": "APEX_ML",
+  "source": "apex"
+}
+```
+
+**Target Performance**:
+- Win Rate: 68% (target, ML-optimized)
+- Signal Frequency: 3.1 signals/hour
+- Risk/Reward: 1:1.5 minimum
+
+**ML Training Behavior**:
+- Cold Start: Uses cached candles, training fails until live data flows
+- Auto-Training: Triggers automatically when market opens
+- Feature Engineering: 20 features per candle (OHLC, volume, indicators)
+- Model Persistence: Retrains on market open, adapts to new data
+
+##### ZMQ→HTTP Relay Pattern (All Engines)
+
+All three generators follow identical relay architecture:
+
+**Relay Implementation**:
+```python
+class SignalRelay:
+    def __init__(self):
+        self.zmq_endpoint = "tcp://127.0.0.1:{port}"  # 5557/5559/5561
+        self.webapp_url = "http://localhost:8888/api/signals"
+        self.subscriber = context.socket(zmq.SUB)
+
+    def process_signal(self, message: str):
+        # Parse signal JSON from ZMQ message
+        signal_data = json.loads(message.split(" ", 1)[1])
+
+        # Add source tag
+        signal_data["source"] = "elite_guard" | "pulse" | "apex"
+
+        # POST to webapp API
+        response = requests.post(self.webapp_url, json=signal_data)
+```
+
+**Message Prefix Convention**:
+- Elite Guard: `"ELITE_GUARD_SIGNAL {json}"`
+- Pulse: `"PULSE_SIGNAL {json}"`
+- Apex: `"APEX_SIGNAL {json}"`
+
+##### User Engine Controls (Firebase)
+
+**Collection**: `autofire_settings/{userId}`
+
+```json
+{
+  "engines": {
+    "eliteGuard": true,   // Enable/disable Elite Guard AUTO-fire
+    "pulse": true,        // Enable/disable Pulse AUTO-fire
+    "apex": true          // Enable/disable Apex Sentinel AUTO-fire
+  },
+  "riskMode": "MODERATE",
+  "confidenceMin": 80,
+  "confidenceMax": 89
+}
+```
+
+**AUTO-Fire Filtering Logic** (`/root/HydraX-v2/services/api_server/rest/signals.py:305-328`):
+
+```python
+# Extract signal source from signal_id prefix
+signal_source = signal_id.split('_')[0].lower()  # "elite", "pulse", "apex"
+
+# Check user's engine preferences
+engines = autofire_settings.get('engines', {
+    'eliteGuard': True,
+    'pulse': True,
+    'apex': True
+})
+
+# Filter based on source
+if signal_source == 'elite' and not engines.get('eliteGuard', True):
+    logger.info(f"⏭️ SKIPPING: Elite Guard disabled for user {user_id}")
+    continue
+elif signal_source == 'pulse' and not engines.get('pulse', True):
+    logger.info(f"⏭️ SKIPPING: Pulse disabled for user {user_id}")
+    continue
+elif signal_source == 'apex' and not engines.get('apex', True):
+    logger.info(f"⏭️ SKIPPING: Apex Sentinel disabled for user {user_id}")
+    continue
+```
+
+##### System Monitoring (Firebase)
+
+**Collection**: `signal_generators/{ENGINE_ID}`
+
+```json
+// signal_generators/ELITE_GUARD
+{
+  "status": "online",
+  "signals_24h": 42,
+  "last_update": 1760123456
+}
+
+// signal_generators/PULSE
+{
+  "status": "online",
+  "signals_24h": 67,
+  "last_update": 1760123456
+}
+
+// signal_generators/APEX_SENTINEL
+{
+  "status": "online",
+  "signals_24h": 89,
+  "last_update": 1760123456
+}
+```
+
+**Frontend Monitoring** (`/root/bitten-ui/src/pages/System.tsx:39-156`):
+- Real-time Firebase listeners for all three engines
+- Status display: online/offline
+- 24-hour signal count tracking
+- Auto-updates via Firebase snapshot subscriptions
+
+##### Performance Tracking (Unified System)
+
+All three engines feed into unified tracking:
+- **File**: `/root/HydraX-v2/comprehensive_tracking.jsonl`
+- **Dashboard**: `http://134.199.204.67:8892/analytics/performance_dashboard.html`
+- **API**: `http://localhost:8892/api/performance/by_pattern`
+
+**Signal Outcome Tracking**:
+- Each signal tracked to TP/SL completion
+- No artificial timeouts
+- Win rate calculated per engine and per pattern
+- Performance data used for ML optimization
+
+##### Deployment Verification
+
+**Process Status Check**:
+```bash
+pm2 list | grep -E "elite_guard|pulse|apex"
+
+# Expected output:
+# elite_guard          - online
+# elite_guard_relay    - online
+# pulse_scalper        - online
+# pulse_relay          - online
+# apex_sentinel        - online
+# apex_sentinel_relay  - online
+```
+
+**Port Binding Verification**:
+```bash
+ss -tulpen | grep -E ":(5557|5559|5561)"
+
+# Expected output:
+# tcp LISTEN 0.0.0.0:5557  (elite_guard)
+# tcp LISTEN 0.0.0.0:5559  (pulse_scalper)
+# tcp LISTEN 0.0.0.0:5561  (apex_sentinel)
+```
+
+**Signal Flow Test**:
+```bash
+# Check relay logs for signal forwarding
+pm2 logs elite_guard_relay --lines 5 --nostream
+pm2 logs pulse_relay --lines 5 --nostream
+pm2 logs apex_sentinel_relay --lines 5 --nostream
+
+# Should show: "✅ Relayed signal {id} for {symbol} successfully"
+```
+
+#### STORM Risk Overlay System (Volatility Forecasting)
+
+**Status**: ✅ PRODUCTION READY (October 19, 2025)
+
+STORM (Short-Term Oscillation Risk Model) is a post-generator volatility forecasting overlay that predicts 12-hour high-volatility spikes and adjusts signal risk parameters accordingly.
+
+```
+STORM ARCHITECTURE (Post-Generator Risk Layer):
+
+Generators (5557/5559/5561/5562) → Generator Merger (5564) → STORM Adjuster (5563) → STORM Relay → API (8888)
+                                                                     ↑
+                                                                     │
+                                                           XGBoost ML Models
+                                                           (H1 MT5 Bars)
+                                                           11 Features
+                                                           70-75% Precision
+```
+
+**Core Components**:
+
+1. **STORM ML Model** (`/root/storm_model.py`)
+   - XGBoost classifier trained on H1 MT5 bars
+   - Predicts 12-hour volatility spikes (>75th percentile)
+   - 11 engineered features: ATR/Vol (5/10/20), Vol Change, Hour Sin/Cos
+   - Binary labels: HIGH (1) vs LOW (0) volatility
+   - Model persistence: `/root/HydraX-v2/storm_models/{SYMBOL}_storm.pkl`
+
+2. **Generator Merger** (`/root/generator_merger.py`)
+   - Multiplexes all generator signals to single port
+   - Inputs: Ports 5557 (Elite), 5559 (Pulse v2), 5561 (Apex), 5562 (Pulse v3)
+   - Output: Port 5564 (unified stream for STORM)
+   - Pass-through architecture (no signal modification)
+
+3. **STORM Adjuster** (`/root/storm_adjuster.py`)
+   - Subscribes: Port 5564 (unified generator signals)
+   - Publishes: Port 5563 (STORM-adjusted signals)
+   - Applies ML-based risk adjustments:
+     - HIGH vol: SL × 1.5 (wider stops), TP ÷ 1.5 (tighter targets)
+     - LOW vol: No adjustment (passthrough)
+   - Adds metadata: `risk_signal`, `risk_prob`, `risk_adjust`, `risk_action`
+
+4. **STORM Relay** (`/root/HydraX-v2/storm_relay.py`)
+   - ZMQ→HTTP bridge (port 5563 → API 8888)
+   - Source tag: `"source": "storm"`
+   - Identical relay pattern to other generators
+
+**Target Performance**:
+- **Win Rate Boost**: +2-4% (avoid whipsaws)
+- **Drawdown Reduction**: -20-30% (protect during spikes)
+- **Alert Rate**: 10-15% of signals (1-2 HIGH alerts/day across all pairs)
+- **Precision**: 70-75% on HIGH alerts (minimize false positives)
+- **Recall**: 68% (catch most volatility spikes)
+
+**Signal Adjustments (HIGH Volatility)**:
+
+```json
+// Original Signal
+{
+  "symbol": "EURUSD",
+  "entry": 1.08456,
+  "sl": 1.08200,    // 25.6 pips
+  "tp": 1.08500     // 44 pips
+}
+
+// STORM Adjusted (risk_multiplier: 1.5)
+{
+  "symbol": "EURUSD",
+  "entry": 1.08456,
+  "sl": 1.07950,    // 50.6 pips (widened × 1.5)
+  "tp": 1.08485,    // 29 pips (tightened ÷ 1.5)
+  "risk_signal": "HIGH",
+  "risk_prob": 0.82,
+  "risk_adjust": true,
+  "original_sl": 1.08200,
+  "original_tp": 1.08500,
+  "risk_action": "Widen stops 1.5x | Pause new entries | 12h horizon"
+}
+```
+
+**Feature Engineering (11 Total)**:
+
+```python
+# Volatility Indicators
+atr_5, atr_10, atr_20           # Average True Range (short/medium/long)
+vol_5, vol_10, vol_20           # Rolling std of returns
+vol_change_5, vol_change_10, vol_change_20  # Momentum in volatility
+
+# Time Cyclical
+hour_sin, hour_cos              # Session bias encoding (London/NY spikes)
+```
+
+**Deployment Architecture**:
+
+```bash
+# PM2 Processes
+pm2 start /root/generator_merger.py --name generator_merger
+pm2 start /root/storm_adjuster.py --name storm_adjuster
+pm2 start /root/HydraX-v2/storm_relay.py --name storm_relay
+
+# Port Bindings
+5564: Generator Merger (PUB - unified signals)
+5563: STORM Adjuster (PUB - adjusted signals)
+
+# Model Storage
+/root/HydraX-v2/storm_models/EURUSD_storm.pkl
+/root/HydraX-v2/storm_models/EURUSD_scaler.pkl
+... (7 majors × 2 files each)
+
+# Weekly Retraining (Cron)
+0 0 * * 0 python3 /root/storm_model.py
+```
+
+**Monitoring & Verification**:
+
+```bash
+# Check STORM processes
+pm2 list | grep -E "generator_merger|storm"
+
+# Monitor adjustments
+pm2 logs storm_adjuster --lines 50
+
+# Expected:
+# ⚡ ADJUSTED: EURUSD | SL: 1.08200→1.07950 (1.5x) | Prob: 82%
+# 🎯 GBPUSD risk: LOW (prob: 0.23, mult: 1.0x)
+
+# Statistics (logged every 5 min)
+pm2 logs storm_adjuster | grep "Statistics"
+
+# 📊 STORM Adjuster Statistics:
+#    Signals Received: 145
+#    Signals Adjusted: 18
+#    HIGH Vol Alerts: 18
+#    Adjustment Rate: 12.4%
+```
+
+**Configuration Tuning**:
+
+```python
+# /root/storm_model.py - Adjust alert sensitivity
+vol_threshold=75        # Percentile for HIGH label (75-80)
+alert_prob_threshold=0.7  # ML confidence threshold (0.65-0.75)
+
+# Stricter (fewer alerts): vol_threshold=80, alert_prob_threshold=0.75
+# Looser (more alerts): vol_threshold=70, alert_prob_threshold=0.65
+```
+
+**Integration Points**:
+
+1. **Firebase AUTO-Fire**: Signals with `risk_adjust: true` processed normally
+2. **Unified Tracker**: STORM signals tracked in `comprehensive_tracking.jsonl`
+3. **Analytics Dashboard**: Filter by `source: "storm"` or `risk_adjust: true`
+4. **Performance Metrics**: Compare WR/DD between adjusted vs non-adjusted signals
+
+**Complete Documentation**: `/root/STORM_DEPLOYMENT_GUIDE.md`
 
 ### 5. Database Schema
 
@@ -969,169 +1459,161 @@ The runbook covers the complete operational workflow verified during our infrast
 | EA Heartbeat Interval     | 30s       | ✅ VERIFIED    |
 | Telemetry Cadence         | 60s       | ✅ VERIFIED    |
 
-### 14. Performance Analytics System (TRUE METRICS SOURCE)
+### 14. Unified Signal Tracking System (COMPLETE METRICS)
 
-**Status**: ✅ OPERATIONAL - Complete signal performance tracking and analytics
-**Location**: `/root/HydraX-v2/analytics/`
-**Dashboard URL**: `http://134.199.204.67:8892/analytics/performance_dashboard.html`
+**Status**: ✅ OPERATIONAL - 3-phase complete signal tracking (Generation → Execution → Outcome)
+**Updated**: October 16, 2025
+**Process**: `unified_tracker` (PM2)
+**Dashboard**: https://bitten-0420.web.app/admin (Reports tab)
 
 #### Core Components
 
-**1. Signal Performance API** (`signal_performance_api.py`)
+**1. Unified Signal Tracker** (`unified_signal_tracker.py`)
 
-- **Port**: 8892 (Flask REST API)
-- **Data Source**: `/root/HydraX-v2/comprehensive_tracking.jsonl` (TRUE source of signal outcomes)
-- **Caching**: Redis with 5-minute TTL
-- **PM2 Process ID**: 164 (analytics_api)
+- **PM2 Process**: unified_tracker
+- **Output File**: `/root/HydraX-v2/unified_tracking.jsonl` (event-based JSONL)
+- **Database**: `bitten.db` (signals table with 40+ columns)
+- **ZMQ Subscriptions**: Ports 5557 (signals), 5558 (confirmations), 5560 (market data)
 
-**Available Endpoints**:
+**3-Phase Tracking Architecture**:
 
-```bash
-GET /api/performance/by_pattern        # Performance grouped by pattern type
-GET /api/performance/by_confidence     # Performance grouped by confidence buckets (70-75%, 75-80%, etc.)
-GET /api/performance/by_session        # Performance grouped by trading session (LONDON, NY, ASIAN, etc.)
-GET /api/performance/by_pair           # Performance grouped by currency pair
-GET /api/performance/time_analysis     # Time-based analysis (avg lifespan, time to TP/SL)
-GET /api/performance/recent            # Recent signals with outcomes
+```
+Phase 1: GENERATION  → Captures every signal at creation
+Phase 2: EXECUTION   → Tracks fire commands and MT5 execution (if fired)
+Phase 3: OUTCOME     → Monitors to TP/SL hit (all signals tracked)
 ```
 
-**2. Performance Dashboard** (`performance_dashboard.html`)
+**2. Firebase Reports Dashboard** (Production UI)
 
-- **URL**: `http://134.199.204.67:8892/analytics/performance_dashboard.html`
-- **Features**: Dark military-themed dashboard with 6 preset report buttons
-- **Visualization**: Chart.js bar charts with color-coded win rates
-- **Color Coding**: >60% green, >50% yellow, <50% red
-- **Access**: Linked from Commander Throne dashboard
+- **URL**: https://bitten-0420.web.app/admin (Reports tab)
+- **Features**: Advanced query builder with 10+ filter dimensions
+- **Report Types**: Pattern Performance, Confidence Analysis, Session Performance, Pair Performance, Time Analysis, Recent Signals
+- **Data Source**: Firestore (synced from unified_tracking.jsonl)
+- **Export**: CSV download functionality
 
-**3. Event Bus Integration** (`performance_event_publisher.py`)
+**3. Firebase Sync Processes**
 
-- **PM2 Process ID**: 165 (analytics_events)
-- **Function**: Monitors comprehensive_tracking.jsonl for new outcomes
-- **Publishes**:
-  - `signal.outcome.recorded` - Individual signal outcomes
-  - `analytics.hourly.summary` - Hourly performance summaries
-  - `analytics.pattern.threshold` - Pattern performance alerts
+- **firebase_outcome_tracker** (PID 3524523): Tails unified_tracking.jsonl → Firestore
+- **firebase-signal-sync** (PID 1903053): Syncs complete signal data + outcomes to Firestore
+- **Uptime**: Running continuously, 2+ days uptime
+- **Collections**: signals, system_stats, session_stats, users, active_trades
 
-**4. Real Signal Tracker** (`REAL_signal_tracker.py`)
+#### Complete Metrics Tracked (40+ Fields)
 
-- **PM2 Process ID**: 163 (real_signal_tracker)
-- **Function**: Tracks signals from generation to TP/SL hit (no artificial timeouts)
-- **Output**: Writes to comprehensive_tracking.jsonl
+**Phase 1: Signal Generation**
+- signal_id, symbol, direction, pattern_type, signal_class
+- confidence, quality_score, entry_price, sl_price, tp_price
+- stop_pips, target_pips, risk_reward
+- session (LONDON/NY/ASIAN/OVERLAP), created_at
 
-#### Data Source Truth
+**Phase 2: Execution** (if signal is fired)
+- was_executed (0/1), execution_method (AUTO/MANUAL)
+- fire_id, user_id, mt5_ticket
+- fill_price, fill_lot, slippage_pips
+- commission_usd, swap_usd, executed_at
 
-**PRIMARY TRACKING FILE**: `/root/HydraX-v2/comprehensive_tracking.jsonl`
+**Phase 3: Outcome** (all signals tracked to completion)
+- outcome (WIN/LOSS/TIMEOUT)
+- exit_price, exit_reason, duration_seconds
+- max_favorable_excursion, max_adverse_excursion
+- theoretical_pnl_pips, actual_pnl_pips
+- actual_pnl_usd, net_pnl_usd, completed_at
 
-- **Format**: JSONL (one JSON object per line)
-- **Fields**: signal_id, symbol, direction, pattern_type, confidence, outcome (WIN/LOSS/TIMEOUT/PENDING), pips_result, entry_price, tp_price, sl_price, created_at, outcome_at
-- **Current Data**: 326 total signals (143 WINS, 71 LOSSES, 105 TIMEOUTS, 7 PENDING)
-- **Historical Range**: September 15-24, 2025 (stopped updating Sept 24 when tracking broke)
-- **File Size**: 136KB
+#### Data Sources (THE ONLY SOURCES)
 
-**Win Rate Calculation**:
+**Primary Tracking File**: `/root/HydraX-v2/unified_tracking.jsonl`
+- **Format**: Event-based JSONL (SIGNAL_GENERATION, SIGNAL_EXECUTION, SIGNAL_OUTCOME events)
+- **Purpose**: Append-only audit log, complete signal lifecycle
+- **Real-time**: Written immediately as events occur
 
-```python
-win_rate = wins / (wins + losses)  # Excludes TIMEOUT and PENDING
-# Current: 143 / (143 + 71) = 66.8% win rate
+**Primary Database**: `/root/HydraX-v2/bitten.db` (signals table)
+- **Columns**: 40+ fields per signal (see above)
+- **Indexes**: 5 indexes for fast queries (signal_id, symbol, pattern_type, outcome, created_at)
+- **Purpose**: Structured queries for analysis and reports
+
+**Cloud Mirror**: Firebase/Firestore
+- **Collections**: signals, system_stats, session_stats
+- **Sync**: Real-time via firebase_outcome_tracker
+- **Purpose**: Powers Reports dashboard UI
+
+#### Performance Analysis Queries
+
+**Win Rate by Pattern**:
+```sql
+SELECT pattern_type,
+       COUNT(*) as total,
+       COUNT(CASE WHEN outcome='WIN' THEN 1 END) as wins,
+       ROUND(AVG(confidence), 1) as avg_conf
+FROM signals
+WHERE outcome IN ('WIN', 'LOSS')
+GROUP BY pattern_type;
 ```
 
-#### Performance Metrics Available
-
-**By Pattern Type**:
-
-- Signal count per pattern
-- Win rate per pattern
-- Average pips per pattern
-- Average signal lifespan
-
-**By Confidence Level**:
-
-- Win rate by confidence bucket (70-75%, 75-80%, 80-85%, 85-90%, 90%+)
-- Signal volume per bucket
-- Confidence calibration analysis
-
-**By Trading Session**:
-
-- LONDON, NY_OPEN, OVERLAP, ASIAN performance
-- Session-specific win rates
-- Best performing sessions
-
-**By Currency Pair**:
-
-- Performance per symbol (EURUSD, GBPUSD, XAUUSD, etc.)
-- Pair-specific win rates
-- Volume per pair
-
-#### Integration Points
-
-**Commander Throne Integration**:
-
-```html
-<!-- Link added to throne_dashboard.html -->
-<a
-  href="/analytics/performance_dashboard.html"
-  target="_blank"
-  style="color: #00ff41; border: 1px solid #00ff41;"
->
-  📊 SYSTEM PERFORMANCE
-</a>
+**Pip Performance**:
+```sql
+SELECT pattern_type,
+       ROUND(AVG(stop_pips), 1) as avg_sl_pips,
+       ROUND(AVG(target_pips), 1) as avg_tp_pips,
+       ROUND(AVG(theoretical_pnl_pips), 1) as avg_pnl
+FROM signals
+WHERE outcome IN ('WIN', 'LOSS')
+GROUP BY pattern_type;
 ```
 
-**Event Bus Integration**:
-
-- Publishers monitor comprehensive_tracking.jsonl
-- Publishes hourly summaries (e.g., "214 signals, 66.8% win rate")
-- Other systems can subscribe for real-time analytics
-
-**Redis Caching**:
-
-- 5-minute TTL on all API responses
-- Automatic cache invalidation
-- Reduces database load
+**Execution Quality (Slippage)**:
+```sql
+SELECT execution_method,
+       COUNT(*) as trades,
+       ROUND(AVG(slippage_pips), 2) as avg_slippage
+FROM signals
+WHERE was_executed = 1
+GROUP BY execution_method;
+```
 
 #### Access & Usage
 
-**Quick Health Check**:
-
+**Check Tracker Status**:
 ```bash
-# Check analytics processes
-pm2 list | grep analytics
+# Process health
+pm2 status unified_tracker
+pm2 logs unified_tracker --lines 20
 
-# Test API endpoint
-curl http://localhost:8892/api/performance/by_pattern
+# Recent signals
+tail -10 /root/HydraX-v2/unified_tracking.jsonl
 
-# View dashboard
-open http://134.199.204.67:8892/analytics/performance_dashboard.html
+# Database check
+sqlite3 /root/HydraX-v2/bitten.db "SELECT COUNT(*) FROM signals;"
 ```
 
-**Verify Data Source**:
-
-```bash
-# Count total signals
-wc -l /root/HydraX-v2/comprehensive_tracking.jsonl
-
-# Show recent outcomes
-tail -5 /root/HydraX-v2/comprehensive_tracking.jsonl
-
-# Count by outcome
-grep -o '"outcome":"[^"]*"' comprehensive_tracking.jsonl | sort | uniq -c
+**Firebase Reports Dashboard**:
+```
+1. Navigate to: https://bitten-0420.web.app/admin
+2. Click "Reports" tab
+3. Select report type (Pattern/Confidence/Session/Pair/Time/Recent)
+4. Apply filters (date range, confidence, session, outcome, etc.)
+5. View results or export to CSV
 ```
 
-#### Important Notes
+**Quick Analysis**:
+```bash
+# Overall performance
+sqlite3 /root/HydraX-v2/bitten.db "
+SELECT
+  COUNT(*) as total,
+  COUNT(CASE WHEN outcome='WIN' THEN 1 END) as wins,
+  ROUND(CAST(COUNT(CASE WHEN outcome='WIN' THEN 1 END) AS FLOAT) /
+        NULLIF(COUNT(CASE WHEN outcome IN ('WIN','LOSS') THEN 1 END), 0) * 100, 1) as win_rate
+FROM signals;
+"
+```
 
-**⚠️ DO NOT USE OUTDATED FILES**:
+#### Current Status
 
-- ❌ `/root/HydraX-v2/truth_log.jsonl` - STOPPED UPDATING AUGUST 22, 2025
-- ❌ Various `signal_outcomes.jsonl` files - ARCHIVED
-- ✅ ONLY USE: `/root/HydraX-v2/comprehensive_tracking.jsonl`
-
-**Current Status**:
-
-- Analytics API: ✅ OPERATIONAL (PM2 ID 164)
-- Event Publisher: ✅ OPERATIONAL (PM2 ID 165)
-- Signal Tracker: ✅ OPERATIONAL (PM2 ID 163)
-- Dashboard: ✅ ACCESSIBLE
-- Data Source: ✅ VERIFIED (326 signals with real historical outcomes)
+- Unified Tracker: ✅ OPERATIONAL (PM2 process running)
+- Firebase Sync: ✅ OPERATIONAL (2+ days uptime)
+- Reports Dashboard: ✅ LIVE (https://bitten-0420.web.app/admin)
+- Data Integrity: ✅ COMPLETE (40+ fields per signal)
+- Real-time Mirroring: ✅ ACTIVE (local → Firestore sync)
 
 ### 15. Disaster Recovery (PROVEN RESILIENCE)
 
@@ -1144,14 +1626,14 @@ grep -o '"outcome":"[^"]*"' comprehensive_tracking.jsonl | sort | uniq -c
 | Telemetry Bridge | <60s          | PM2 auto-restart      | ✅ TESTED    |
 | Elite Guard      | <30s          | Immortal resurrection | ✅ ACTIVE    |
 | EA Connection    | <30s          | Auto-reconnect        | ✅ MONITORED |
-| Analytics API    | <30s          | PM2 auto-restart      | ✅ VERIFIED  |
+| Unified Tracker  | <30s          | PM2 auto-restart      | ✅ VERIFIED  |
 
 #### Backup Procedures (OPERATIONAL)
 
 ```bash
 # Daily automated backup
 cp bitten.db bitten.db.backup_$(date +%Y%m%d)
-cp comprehensive_tracking.jsonl comprehensive_tracking.jsonl.backup_$(date +%Y%m%d)
+cp unified_tracking.jsonl unified_tracking.jsonl.backup_$(date +%Y%m%d)
 pm2 save
 tar -czf system_backup_$(date +%Y%m%d).tar.gz *.py *.json *.md
 ```

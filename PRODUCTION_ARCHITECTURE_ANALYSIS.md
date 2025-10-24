@@ -1,5 +1,22 @@
 # HydraX-v2 Production Architecture Analysis
 
+## 🚨 UPDATED: October 16, 2025 - Unified Tracking System
+
+## Unified Signal Tracking System
+
+**Active Tracking**:
+- **File**: `/root/HydraX-v2/unified_tracking.jsonl` ✅
+- **Database**: `bitten.db` signals table with outcome tracking ✅
+- **Process**: `unified_tracker` (PM2 managed) ✅
+
+**Deprecated Tracking Systems (REMOVED)**:
+- ❌ truth_log.jsonl (stopped August 22, 2025)
+- ❌ signal_tracking.jsonl (replaced)
+- ❌ optimized_tracking.jsonl (replaced)
+- ❌ comprehensive_tracking.jsonl (replaced)
+- ❌ definitive_signal_tracker (replaced)
+- ❌ analytics_worker (replaced)
+
 ## Executive Summary
 
 Based on the running processes and code analysis, here's what's actually running in production versus what's duplicate/test code:

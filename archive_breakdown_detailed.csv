@@ -1,0 +1,26 @@
+Category,Pattern,Count,Total Size (bytes),Example Items
+file,OLD,98,16580209,"webapp_restart_75_threshold.log, bitten-ui/node_modules/lucide-react/dist/esm/icons/folder-symlink.js, bitten-ui/node_modules/lucide-react/dist/esm/icons/folder-lock.js ... and 95 more"
+file,_v[0-9]+,61,1467995,"EA_v2.07H_LAW_DOCUMENTATION.md, SCHEMA_V1_FROZEN.md, coordinate_v207_processes.py ... and 58 more"
+file,LEGACY,27,3906833,"bitten-ui/node_modules/async-function/legacy.js, bitten-ui/node_modules/eslint-plugin-jsx-a11y/lib/configs/legacy-config-base.js, bitten-ui/node_modules/eslint/lib/eslint/legacy-eslint.js ... and 24 more"
+file,BACKUP,18,1473429,"elite_guard_with_citadel.py.backup_before_blind_spot, REAL_signal_tracker.py.backup_20250910_212737, elite_guard_with_citadel.py.backup_20250920_204208 ... and 15 more"
+file,ARCHIVE,12,23674,"ARCHIVED_SYSTEMS_WARNING.md, archive_obsolete_trackers.sh, bitten-ui/node_modules/lucide-react/dist/esm/icons/archive-restore.js.map ... and 9 more"
+file,DEPRECATED,9,47822,"bitten-ui/node_modules/framer-motion/dist/es/context/DeprecatedLayoutGroupContext.mjs, bitten-ui/node_modules/eslint-plugin-import/lib/rules/no-deprecated.js, bitten-ui/node_modules/eslint-plugin-import/docs/rules/no-deprecated.md ... and 6 more"
+directory,ARCHIVE,7,1341278147,"LOCKED_ARCHIVE_20250914_FINAL/previous_archives/ARCHIVE_AUG28_CLEANUP/backup_files/archive_broken_trackers, LOCKED_ARCHIVE_20250914_FINAL/previous_archives/ARCHIVE_AUG28_CLEANUP, LOCKED_ARCHIVE_20250914_FINAL/previous_archives/archive_tracking_20250825 ... and 4 more"
+directory,_archive,7,13829044,"EA_ARCHIVE_OBSOLETE, test_archives, EA_ARCHIVE_DEPRECATED_20250919 ... and 4 more"
+directory,BACKUP,4,1056870070,"LOCKED_ARCHIVE_20250914_FINAL/previous_archives/ARCHIVE_AUG28_CLEANUP/backup_files/BACKUP_BEFORE_REFACTOR, LOCKED_ARCHIVE_20250914_FINAL/previous_archives/ARCHIVE_AUG28_CLEANUP/backup_files, LOCKED_ARCHIVE_20250914_FINAL/previous_archives/BACKUP_20250911_BEFORE_OPTIMIZATIONS ... and 1 more"
+directory,_v[0-9]+,4,173006,"config_v1_backup_20251008, data/apex_v5, logs/apex_v5 ... and 1 more"
+file,_backup,4,2672890,"candle_cache.json.corrupted_backup, elite_guard_with_citadel.py.broken_backup, requirements_backup_20251007_035009.txt ... and 1 more"
+tracker,jsonl_tracker,4,455693,"optimized_tracking.jsonl, signal_tracking.jsonl, comprehensive_tracking.jsonl ... and 1 more"
+directory,LEGACY,3,191164,"bitten-ui/node_modules/next/dist/esm/client/legacy, bitten-ui/node_modules/next/dist/client/legacy, bitten-ui/node_modules/next/legacy"
+file,LOCKED,3,6091,"VERSION_6.4_LOCKED.md, bitten-ui/node_modules/lucide-react/dist/esm/icons/door-closed-locked.js.map, bitten-ui/node_modules/lucide-react/dist/esm/icons/door-closed-locked.js"
+file,_archive,3,2877807,"LOCKED_ARCHIVE_20250914_FINAL.tar.gz, CLAUDE_ARCHIVE_2025_07_11.md, docs/blueprint/BITTEN_ARCHIVE_RECOVERY_MASTER.md"
+directory,_backup,2,371672,"LOCKED_ARCHIVE_20250914_FINAL/previous_archives/PURGE_BACKUP_20250908_160615, tracking_backup_20251008"
+file,BROKEN,2,1015708,"truth_log.jsonl.BROKEN_20250829_044217, pattern_performance.json.BROKEN"
+file,_old,2,142021,"templates/throne_dashboard_old_backup.html, templates/lesson_mission_day_8_old.html"
+directory,_old,1,159987,LOCKED_ARCHIVE_20250914_FINAL/previous_archives/ARCHIVE_AUG28_CLEANUP/venom_old_system
+directory,OLD,1,97093,LOCKED_ARCHIVE_20250914_FINAL/previous_archives/ARCHIVE_AUG28_CLEANUP/old_reports
+directory,DELETED,1,11693,DELETED_FILES
+directory,DEPRECATED,1,4736050,DEPRECATED_TRACKING_SYSTEMS
+file,_smoke_,1,605,manual_smoke_report.json
+file,_debug_,1,1512,missions/TEST_DEBUG_SL_TP.json
+file,_legacy,1,295,tools/rollback_to_legacy.sh

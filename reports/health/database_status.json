@@ -1,0 +1,5 @@
+{
+  "status": "error",
+  "error": "connection to server at \"localhost\" (::1), port 5433 failed: FATAL:  password authentication failed for user \"bitten\"\nconnection to server at \"localhost\" (::1), port 5433 failed: FATAL:  password authentication failed for user \"bitten\"\n",
+  "timestamp": "2025-10-08T22:16:57.488628"
+}

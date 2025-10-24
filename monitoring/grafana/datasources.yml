@@ -1,0 +1,26 @@
+# BITTEN v2.0 Phase 1 - Grafana Data Sources
+
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://localhost:9090
+    isDefault: true
+    editable: false
+    jsonData:
+      timeInterval: '15s'
+      queryTimeout: '60s'
+
+  - name: PostgreSQL
+    type: postgres
+    url: localhost:5433
+    database: bitten_v2
+    user: bitten_admin
+    secureJsonData:
+      password: bitten_secure_2025
+    jsonData:
+      sslmode: 'disable'
+      maxOpenConns: 5
+      maxIdleConns: 2

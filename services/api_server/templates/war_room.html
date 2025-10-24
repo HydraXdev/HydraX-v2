@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BITTEN - War Room</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #00ff00;
+            padding: 20px;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .header {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 2px solid #00ff00;
+            margin-bottom: 30px;
+        }
+        .header h1 { font-size: 2.5em; letter-spacing: 5px; }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: #1a1a1a;
+            border: 2px solid #00ff00;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        .stat-card h3 { color: #00ff00; margin-bottom: 10px; }
+        .stat-card .value { font-size: 2em; color: #0f0; }
+        .positions {
+            background: #1a1a1a;
+            border: 2px solid #00ff00;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .positions h2 { margin-bottom: 20px; }
+        .position-row {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 10px;
+            padding: 10px;
+            border-bottom: 1px solid #333;
+        }
+        .position-row.header { font-weight: bold; color: #0f0; }
+        .positive { color: #00ff00; }
+        .negative { color: #ff0000; }
+        .signals {
+            background: #1a1a1a;
+            border: 2px solid #00ff00;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        .signals h2 { margin-bottom: 20px; }
+        .signal-card {
+            background: #0a0a0a;
+            border: 1px solid #0f0;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 3px;
+        }
+        .signal-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .fire-btn {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+        .fire-btn:hover { background: #00cc00; }
+        .ws-status {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 10px;
+            background: #1a1a1a;
+            border: 1px solid #0f0;
+            border-radius: 3px;
+            font-size: 0.8em;
+        }
+        .ws-status.connected { border-color: #00ff00; }
+        .ws-status.disconnected { border-color: #ff0000; color: #ff0000; }
+    </style>
+</head>
+<body>
+    <div class="ws-status" id="wsStatus">● Connecting...</div>
+
+    <div class="container">
+        <div class="header">
+            <h1>⚡ WAR ROOM ⚡</h1>
+            <p>COMMANDER TACTICAL DASHBOARD</p>
+        </div>
+
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <h3>XP</h3>
+                <div class="value" id="xpValue">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>TIER</h3>
+                <div class="value" id="tierValue">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>WIN RATE</h3>
+                <div class="value" id="winRateValue">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>TOTAL P&L</h3>
+                <div class="value" id="pnlValue">-</div>
+            </div>
+        </div>
+
+        <div class="positions">
+            <h2>🎯 ACTIVE POSITIONS</h2>
+            <div class="position-row header">
+                <div>SYMBOL</div>
+                <div>DIR</div>
+                <div>ENTRY</div>
+                <div>CURRENT</div>
+                <div>PIPS</div>
+                <div>P&L</div>
+                <div>DURATION</div>
+                <div>STATUS</div>
+            </div>
+            <div id="positionsContainer">
+                <div style="padding: 20px; text-align: center; color: #666;">
+                    No active positions
+                </div>
+            </div>
+        </div>
+
+        <div class="signals">
+            <h2>📡 ACTIVE SIGNALS</h2>
+            <div id="signalsContainer">
+                <div style="padding: 20px; text-align: center; color: #666;">
+                    No active signals
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const userId = localStorage.getItem('user_id') || '7176191872';
+        let signalWs, positionWs;
+
+        // Connect to signal WebSocket
+        function connectSignalWS() {
+            signalWs = new WebSocket('ws://134.199.204.67:8888/ws/signals');
+
+            signalWs.onopen = () => {
+                console.log('Signal WebSocket connected');
+                updateWSStatus(true);
+            };
+
+            signalWs.onmessage = (event) => {
+                const msg = JSON.parse(event.data);
+                if (msg.type === 'signal') {
+                    addSignal(msg.data);
+                }
+            };
+
+            signalWs.onclose = () => {
+                console.log('Signal WebSocket disconnected');
+                updateWSStatus(false);
+                setTimeout(connectSignalWS, 5000);
+            };
+
+            signalWs.onerror = (error) => {
+                console.error('Signal WebSocket error:', error);
+            };
+        }
+
+        // Connect to position WebSocket
+        function connectPositionWS() {
+            positionWs = new WebSocket(`ws://134.199.204.67:8888/ws/positions/${userId}`);
+
+            positionWs.onmessage = (event) => {
+                const msg = JSON.parse(event.data);
+                if (msg.type === 'position') {
+                    updatePosition(msg.data);
+                }
+            };
+
+            positionWs.onclose = () => {
+                setTimeout(connectPositionWS, 5000);
+            };
+        }
+
+        // Update WebSocket status indicator
+        function updateWSStatus(connected) {
+            const status = document.getElementById('wsStatus');
+            status.className = 'ws-status ' + (connected ? 'connected' : 'disconnected');
+            status.textContent = connected ? '● Connected' : '● Disconnected';
+        }
+
+        // Load user stats
+        async function loadStats() {
+            try {
+                const response = await fetch(`/api/users/${userId}/stats`);
+                const stats = await response.json();
+
+                document.getElementById('xpValue').textContent = stats.xp;
+                document.getElementById('tierValue').textContent = stats.tier;
+                document.getElementById('winRateValue').textContent = stats.win_rate + '%';
+                document.getElementById('pnlValue').textContent = '$' + stats.total_pnl.toFixed(2);
+            } catch (error) {
+                console.error('Failed to load stats:', error);
+            }
+        }
+
+        // Load active positions
+        async function loadPositions() {
+            try {
+                const response = await fetch(`/api/users/${userId}/positions`);
+                const positions = await response.json();
+
+                const container = document.getElementById('positionsContainer');
+                if (positions.length === 0) {
+                    container.innerHTML = '<div style="padding: 20px; text-align: center; color: #666;">No active positions</div>';
+                    return;
+                }
+
+                container.innerHTML = positions.map(p => `
+                    <div class="position-row">
+                        <div>${p.symbol}</div>
+                        <div>${p.direction}</div>
+                        <div>${p.entry_price.toFixed(5)}</div>
+                        <div>${(p.current_price || 0).toFixed(5)}</div>
+                        <div class="${(p.current_pips || 0) >= 0 ? 'positive' : 'negative'}">${(p.current_pips || 0).toFixed(1)}</div>
+                        <div class="${(p.current_pnl || 0) >= 0 ? 'positive' : 'negative'}">$${(p.current_pnl || 0).toFixed(2)}</div>
+                        <div>${Math.floor((p.duration_seconds || 0) / 60)}m</div>
+                        <div>${p.status}</div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to load positions:', error);
+            }
+        }
+
+        // Load active signals
+        async function loadSignals() {
+            try {
+                const response = await fetch('/api/signals');
+                const signals = await response.json();
+
+                const container = document.getElementById('signalsContainer');
+                if (signals.length === 0) {
+                    container.innerHTML = '<div style="padding: 20px; text-align: center; color: #666;">No active signals</div>';
+                    return;
+                }
+
+                container.innerHTML = signals.map(s => `
+                    <div class="signal-card">
+                        <div class="signal-header">
+                            <div>
+                                <strong>${s.symbol}</strong> ${s.direction} |
+                                Confidence: ${s.confidence.toFixed(1)}%
+                            </div>
+                            <button class="fire-btn" onclick="fireSignal('${s.signal_id}')">🔫 FIRE</button>
+                        </div>
+                        <div>Entry: ${s.entry.toFixed(5)} | TP: ${s.tp.toFixed(5)} | SL: ${s.sl.toFixed(5)}</div>
+                        <div style="font-size: 0.8em; color: #666; margin-top: 5px;">
+                            Pattern: ${s.pattern_type || 'N/A'}
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to load signals:', error);
+            }
+        }
+
+        // Fire a signal
+        async function fireSignal(signalId) {
+            try {
+                const response = await fetch(`/api/signals/${signalId}/fire`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ signal_id: signalId, user_id: userId })
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    alert(`✅ Fire command sent!\nFire ID: ${result.fire_id}`);
+                } else {
+                    alert(`❌ Fire failed: ${result.detail}`);
+                }
+            } catch (error) {
+                alert(`❌ Error: ${error.message}`);
+            }
+        }
+
+        // Add signal to display
+        function addSignal(signal) {
+            loadSignals(); // Reload signals
+        }
+
+        // Update position in display
+        function updatePosition(position) {
+            loadPositions(); // Reload positions
+        }
+
+        // Initialize
+        connectSignalWS();
+        connectPositionWS();
+        loadStats();
+        loadPositions();
+        loadSignals();
+
+        // Refresh data periodically
+        setInterval(loadStats, 30000);
+        setInterval(loadPositions, 10000);
+        setInterval(loadSignals, 30000);
+    </script>
+</body>
+</html>

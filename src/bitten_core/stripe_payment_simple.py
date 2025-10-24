@@ -102,10 +102,10 @@ class SimpleStripeProcessor:
             link = stripe.PaymentLink.create(
                 line_items=[{"price": price_id, "quantity": 1}],
                 metadata={"tier": tier, "customer_id": customer_id},
-                subscription_data={"trial_period_days": 15, "metadata": {"tier": tier}},
+                subscription_data={"trial_period_days": 7, "metadata": {"tier": tier}},
                 after_completion={
                     "type": "redirect",
-                    "redirect": {"url": "https://t.me/your_bot?start=payment_success"},
+                    "redirect": {"url": "https://bitten-0420.web.app/billing?success=true"},
                 },
             )
 
@@ -131,7 +131,7 @@ class SimpleStripeProcessor:
                 mode="subscription",
                 success_url=success_url,
                 cancel_url=cancel_url,
-                subscription_data={"trial_period_days": 15, "metadata": {"tier": tier}},
+                subscription_data={"trial_period_days": 7, "metadata": {"tier": tier}},
             )
 
             return {"success": True, "checkout_url": session.url, "session_id": session.id}

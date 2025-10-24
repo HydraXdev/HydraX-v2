@@ -1,0 +1,94 @@
+{
+  "test_timestamp": "2025-10-08T22:19:06.221886",
+  "test_results": {
+    "liveness_readiness": {
+      "zmq_gateway": {
+        "status": "error",
+        "accessible": false
+      },
+      "signal_engine": {
+        "status": "healthy",
+        "accessible": true
+      },
+      "fire_service": {
+        "status": "healthy",
+        "accessible": true
+      },
+      "api_server": {
+        "status": "unknown",
+        "accessible": true
+      },
+      "analytics_worker": {
+        "status": "healthy",
+        "accessible": true
+      }
+    },
+    "process_verification": {
+      "expected_services": [
+        "zmq_gateway",
+        "signal_engine",
+        "fire_service",
+        "api_server",
+        "analytics_worker"
+      ],
+      "found_services": [
+        "api_server",
+        "fire_service",
+        "signal_engine",
+        "zmq_gateway",
+        "analytics_worker"
+      ],
+      "all_running": true
+    },
+    "port_bindings": {
+      "expected_ports": {
+        "5555": "zmq_gateway",
+        "5556": "zmq_gateway",
+        "5557": "signal_engine",
+        "5558": "zmq_gateway",
+        "5560": "zmq_gateway",
+        "8888": "api_server",
+        "8890": "fire_service",
+        "9091": "zmq_gateway",
+        "9092": "signal_engine",
+        "9094": "analytics_worker"
+      },
+      "bound_ports": [
+        "8890",
+        "8888",
+        "9091",
+        "9094",
+        "9092",
+        "5433",
+        "5560",
+        "5555",
+        "5558",
+        "5557",
+        "5556"
+      ],
+      "all_bound": true
+    },
+    "database_authority": {
+      "status": "error",
+      "database": null,
+      "port": null
+    },
+    "service_dependencies": {
+      "services_checked": [
+        "zmq_gateway",
+        "signal_engine",
+        "fire_service",
+        "api_server",
+        "analytics_worker"
+      ],
+      "legacy_imports_found": 0,
+      "legacy_db_found": 0
+    }
+  },
+  "overall_status": "PASS",
+  "anomalies": [
+    "PostgreSQL connection failed - authentication issue",
+    "zmq_gateway health endpoint not accessible"
+  ],
+  "v2_only": true
+}

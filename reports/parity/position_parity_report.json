@@ -1,0 +1,14 @@
+{
+  "v1_count": 0,
+  "v2_count": 0,
+  "count_match": true,
+  "count_diff_pct": 0,
+  "missing_in_v2": [],
+  "extra_in_v2": [],
+  "status_discrepancies": [],
+  "price_discrepancies": [],
+  "orphaned_positions_v1": [],
+  "orphaned_positions_v2": [],
+  "timestamp": "2025-10-08T22:10:32.911575",
+  "pass_threshold": true
+}

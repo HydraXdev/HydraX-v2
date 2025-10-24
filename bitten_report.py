@@ -445,8 +445,8 @@ def main():
     data_files = [
         ("/root/HydraX-v2/event_bus/bitten_events.db", f"Event Bus (SIGNAL SOURCE - {len(event_bus_signals)} signals)"),
         ("/root/HydraX-v2/dynamic_tracking.jsonl", "Dynamic outcome tracking (OUTCOME SOURCE)"),
-        ("/root/HydraX-v2/comprehensive_tracking.jsonl", "Comprehensive signal tracking"),
-        ("/root/HydraX-v2/optimized_tracking.jsonl", "ML optimized tracking"),
+        ("/root/HydraX-v2/unified_tracking.jsonl", "Comprehensive signal tracking"),
+        ("/root/HydraX-v2/unified_tracking.jsonl", "ML optimized tracking"),
         ("/root/HydraX-v2/bitten.db", "Main database"),
         ("/root/HydraX-v2/MASTER_OUTCOMES.jsonl", "Master outcomes archive"),
     ]

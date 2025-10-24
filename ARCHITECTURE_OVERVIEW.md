@@ -1,7 +1,35 @@
 # BITTEN ARCHITECTURE OVERVIEW
 
 **Generated**: August 12, 2025 03:55 UTC
+**Updated**: October 16, 2025 - Unified Tracking System
 **State**: Live System Documentation (No Additions)
+
+## 🚨 UNIFIED TRACKING SYSTEM (October 16, 2025)
+
+**Active Tracking System**:
+- **Primary File**: `/root/HydraX-v2/unified_tracking.jsonl` ✅
+- **Database**: `bitten.db` signals table with outcome tracking ✅
+- **Process**: `unified_tracker` (PM2 managed) ✅
+
+**Removed Legacy Systems**:
+- ❌ truth_log.jsonl (stopped August 22, 2025)
+- ❌ signal_tracking.jsonl
+- ❌ optimized_tracking.jsonl
+- ❌ comprehensive_tracking.jsonl
+- ❌ definitive_signal_tracker
+- ❌ analytics_worker
+
+**Quick Access**:
+```bash
+# View recent signals
+tail -20 /root/HydraX-v2/unified_tracking.jsonl
+
+# Check tracker status
+pm2 status unified_tracker
+
+# Query database
+sqlite3 /root/HydraX-v2/bitten.db "SELECT COUNT(*) FROM signals WHERE outcome IS NOT NULL;"
+```
 
 ## Runtime Data Flow
 

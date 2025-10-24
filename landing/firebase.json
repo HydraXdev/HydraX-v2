@@ -1,0 +1,7 @@
+{
+  "hosting": {
+    "site": "bitten-0420",
+    "public": ".",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"]
+  }
+}

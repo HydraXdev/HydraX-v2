@@ -1,5 +1,22 @@
 # ACTUAL SYSTEM ARCHITECTURE - October 1, 2025
 
+## 🚨 UPDATED: October 16, 2025 - Unified Tracking System
+
+### Signal Tracking Architecture
+
+**Current System** (as of October 16, 2025):
+- **Primary File**: `/root/HydraX-v2/unified_tracking.jsonl` ✅
+- **Database**: `bitten.db` signals table ✅
+- **Process**: `unified_tracker` (PM2 managed) ✅
+
+**Deprecated Files** (DO NOT USE):
+- ❌ truth_log.jsonl
+- ❌ signal_tracking.jsonl
+- ❌ optimized_tracking.jsonl
+- ❌ comprehensive_tracking.jsonl
+- ❌ definitive_signal_tracker
+- ❌ analytics_worker
+
 ## THE TRUTH ABOUT EA CONNECTIVITY
 
 ### EA Location & Connection

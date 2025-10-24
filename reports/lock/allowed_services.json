@@ -1,0 +1,21 @@
+{
+  "check": "service_directories",
+  "timestamp": "2025-10-08T22:33:50Z",
+  "expected_count": 5,
+  "actual_count": 5,
+  "status": "PASS",
+  "services": [
+  "analytics_worker",
+  "api_server",
+  "fire_service",
+  "signal_engine",
+  "zmq_gateway"
+],
+  "allowlist": [
+  "zmq_gateway",
+  "signal_engine",
+  "fire_service",
+  "api_server",
+  "analytics_worker"
+]
+}

@@ -220,6 +220,41 @@ def _upsert_ea_instance(payload):
 
         conn.commit()
         conn.close()
+
+        # ✅ WRITE TO FIREBASE (user data sync)
+        if user_id and balance is not None and equity is not None:
+            try:
+                from firebase_backend import update_user_data, get_firestore_client
+
+                # Update current balance and equity
+                update_user_data(user_id, {
+                    'balance': float(balance),
+                    'equity': float(equity)
+                })
+                LOG.info(f"✅ User data synced to Firebase: {user_id}")
+
+                # Capture initial capital on first heartbeat
+                try:
+                    db = get_firestore_client()
+                    if db:
+                        user_ref = db.collection('users').document(str(user_id))
+                        user_doc = user_ref.get()
+
+                        # If user doesn't exist or doesn't have initialCapital set
+                        if not user_doc.exists or 'initialCapital' not in user_doc.to_dict():
+                            update_user_data(user_id, {
+                                'initialCapital': float(balance),
+                                'displayName': f'OPERATOR_{user_id[-4:]}',  # Set default display name
+                                'tier': 'RECRUIT'  # Set default tier
+                            })
+                            LOG.info(f"✅ Set initial capital for user {user_id}: ${balance}")
+
+                except Exception as ic_error:
+                    LOG.warning(f"Initial capital tracking failed: {ic_error}")
+
+            except Exception as fb_error:
+                LOG.warning(f"Firebase user data sync failed: {fb_error}")
+
     except Exception as e:
         LOG.warning("DB update failed: %s", e)
 

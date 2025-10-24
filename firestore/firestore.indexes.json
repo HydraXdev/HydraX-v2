@@ -1,0 +1,96 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "signals",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "status", "order": "ASCENDING"},
+        {"fieldPath": "createdAt", "order": "DESCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "signals",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "pair", "order": "ASCENDING"},
+        {"fieldPath": "confidence", "arrayConfig": "CONTAINS"},
+        {"fieldPath": "expiresAt", "order": "DESCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "signals",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "pattern_type", "order": "ASCENDING"},
+        {"fieldPath": "createdAt", "order": "DESCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "items",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        {"fieldPath": "state", "order": "ASCENDING"},
+        {"fieldPath": "createdAt", "order": "DESCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "items",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        {"fieldPath": "uid", "order": "ASCENDING"},
+        {"fieldPath": "state", "order": "ASCENDING"},
+        {"fieldPath": "createdAt", "order": "DESCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "active",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        {"fieldPath": "uid", "order": "ASCENDING"},
+        {"fieldPath": "updatedAt", "order": "DESCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "closed",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        {"fieldPath": "uid", "order": "ASCENDING"},
+        {"fieldPath": "closedAt", "order": "DESCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "positions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "user_id", "order": "ASCENDING"},
+        {"fieldPath": "status", "order": "ASCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "positions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "user_id", "order": "ASCENDING"},
+        {"fieldPath": "createdAt", "order": "DESCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "fire_history",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "user_id", "order": "ASCENDING"},
+        {"fieldPath": "createdAt", "order": "DESCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "fire_history",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "user_id", "order": "ASCENDING"},
+        {"fieldPath": "status", "order": "ASCENDING"},
+        {"fieldPath": "createdAt", "order": "DESCENDING"}
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

@@ -1,0 +1,9 @@
+{
+  "check": "banned_imports",
+  "timestamp": "2025-10-08T22:33:49Z",
+  "archive_v1_imports": {
+    "count": 0,
+    "status": "PASS",
+    "violations": []
+  }
+}

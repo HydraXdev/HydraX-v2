@@ -1,0 +1,11 @@
+{
+  "status": "healthy",
+  "timestamp": 1759961779,
+  "version": "2.0.0",
+  "services": {
+    "api": "online",
+    "websocket": "online",
+    "telegram": "offline",
+    "database": "online"
+  }
+}

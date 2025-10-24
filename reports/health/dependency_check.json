@@ -1,0 +1,27 @@
+{
+  "timestamp": "2025-10-08T22:17:17+00:00",
+  "services": {
+    "zmq_gateway": {
+      "path": "/root/HydraX-v2/src/zmq_gateway.py",
+      "exists": false
+    },
+    "signal_engine": {
+      "path": "/root/HydraX-v2/src/signal_engine.py",
+      "exists": false
+    },
+    "fire_service": {
+      "path": "/root/HydraX-v2/src/fire_service.py",
+      "exists": false
+    },
+    "api_server": {
+      "path": "/root/HydraX-v2/src/api_server.py",
+      "exists": false
+    },
+    "analytics_worker": {
+      "path": "/root/HydraX-v2/src/analytics_worker.py",
+      "exists": false
+    }
+  },
+  "legacy_imports": {},
+  "legacy_db_connections": {}
+}

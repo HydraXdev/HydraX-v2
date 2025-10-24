@@ -66,7 +66,7 @@ class OptimizedMissionHandler:
         # In production, this comes from Redis/database
         # For demo, using mock data
         user_overlays = {
-            "7176191872": {
+            "wlJ5lafBqRSLwHIUBxJQMr4SBtk1": {
                 "tier": "COMMANDER",
                 "balance": 10850.47,
                 "win_rate": 68.5,
@@ -181,7 +181,7 @@ def demonstrate_storage_savings():
     print("=" * 60)
 
     # Simulate different users accessing the same signal
-    test_users = ["7176191872", "123456789", "987654321"]
+    test_users = ["wlJ5lafBqRSLwHIUBxJQMr4SBtk1", "123456789", "987654321"]
 
     for user_id in test_users:
         mission = handler.build_mission_view(signal_id, user_id)

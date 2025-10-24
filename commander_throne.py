@@ -59,8 +59,8 @@ class ThroneSignalOutcomeMonitor:
         self.completed_signals = []
         self.monitoring_active = False
         # Updated to use comprehensive tracking that follows signals from birth to death
-        self.truth_file = "/root/HydraX-v2/comprehensive_tracking.jsonl"
-        self.ml_performance_file = "/root/HydraX-v2/optimized_tracking.jsonl"
+        self.truth_file = "/root/HydraX-v2/unified_tracking.jsonl"
+        self.ml_performance_file = "/root/HydraX-v2/unified_tracking.jsonl"
 
         # Load active signals
         self.load_active_signals()
@@ -286,7 +286,7 @@ THRONE_USERS = {
     "_COMMANDER": {
         "password_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",  # empty for demo
         "access_level": "COMMANDER",
-        "user_id": "7176191872",
+        "user_id": "wlJ5lafBqRSLwHIUBxJQMr4SBtk1",
     },
     "COMMANDER": {
         "password_hash": "fcf730b6d95236ecd3c9fc2d92d7b6b2bb061514961aec041d6c7a7192f592e4",  # "secret123"
@@ -1607,11 +1607,11 @@ def api_venom_risk_status():
 @app.route("/throne/api/truth_stats")
 @require_auth("OBSERVER")
 def api_truth_stats():
-    """Get Black Box Truth Metrics from comprehensive_tracking.jsonl"""
+    """Get Black Box Truth Metrics from unified_tracking.jsonl"""
     try:
         import json
 
-        truth_file = "/root/HydraX-v2/comprehensive_tracking.jsonl"
+        truth_file = "/root/HydraX-v2/unified_tracking.jsonl"
 
         if not os.path.exists(truth_file):
             return jsonify(
@@ -1701,11 +1701,11 @@ def api_truth_stats():
 @app.route("/throne/api/live_trade_feed")
 @require_auth("OBSERVER")
 def api_live_trade_feed():
-    """Get live trade feed from comprehensive_tracking.jsonl (last 15 completed trades)"""
+    """Get live trade feed from unified_tracking.jsonl (last 15 completed trades)"""
     try:
         import json
 
-        truth_file = "/root/HydraX-v2/comprehensive_tracking.jsonl"
+        truth_file = "/root/HydraX-v2/unified_tracking.jsonl"
 
         if not os.path.exists(truth_file):
             return jsonify({"trades": []})
@@ -1888,7 +1888,7 @@ def get_retrain_log():
 @app.route("/throne/api/signal_timeline")
 @require_auth("OBSERVER")
 def get_signal_timeline():
-    """Get 24-hour signal timeline data from comprehensive_tracking.jsonl"""
+    """Get 24-hour signal timeline data from unified_tracking.jsonl"""
     try:
         # Initialize 24-hour array (0-23)
         hourly_counts = [0] * 24
@@ -1897,7 +1897,7 @@ def get_signal_timeline():
         now = datetime.now()
         yesterday = now - timedelta(hours=24)
 
-        truth_log_path = "/root/HydraX-v2/comprehensive_tracking.jsonl"
+        truth_log_path = "/root/HydraX-v2/unified_tracking.jsonl"
 
         if os.path.exists(truth_log_path):
             with open(truth_log_path, "r") as f:
@@ -1987,13 +1987,13 @@ def get_hud_access_logs():
 @app.route("/throne/api/trade_of_the_day")
 @require_auth("OBSERVER")
 def get_trade_of_the_day():
-    """Get the best trade of the day from comprehensive_tracking.jsonl"""
+    """Get the best trade of the day from unified_tracking.jsonl"""
     try:
         # Get current time for 24h window
         now = datetime.now()
         yesterday = now - timedelta(hours=24)
 
-        truth_log_path = "/root/HydraX-v2/comprehensive_tracking.jsonl"
+        truth_log_path = "/root/HydraX-v2/unified_tracking.jsonl"
         best_trade = None
         best_pips = 0
 
@@ -2084,7 +2084,7 @@ def api_signal_completion_stats():
         multi_fire_signals = 0
 
         # Parse comprehensive tracking for complete signal lifecycle data
-        truth_file = "/root/HydraX-v2/comprehensive_tracking.jsonl"
+        truth_file = "/root/HydraX-v2/unified_tracking.jsonl"
         if os.path.exists(truth_file):
             with open(truth_file, "r") as f:
                 for line in f:
@@ -2236,7 +2236,7 @@ def api_elite_guard_analytics():
         total_elite_fired = 0
 
         # Parse truth log for Elite Guard signals
-        truth_file = "/root/HydraX-v2/comprehensive_tracking.jsonl"
+        truth_file = "/root/HydraX-v2/unified_tracking.jsonl"
         if os.path.exists(truth_file):
             with open(truth_file, "r") as f:
                 for line in f:
@@ -2442,7 +2442,7 @@ def api_expiring_signals():
         expired_signals = 0
         high_quality_expired = 0
 
-        truth_file = "/root/HydraX-v2/comprehensive_tracking.jsonl"
+        truth_file = "/root/HydraX-v2/unified_tracking.jsonl"
         if os.path.exists(truth_file):
             with open(truth_file, "r") as f:
                 for line in f:
@@ -2659,7 +2659,7 @@ def ml_performance():
         pattern_performance = {}
 
         # Read optimized tracking for ML performance data
-        ml_file = "/root/HydraX-v2/optimized_tracking.jsonl"
+        ml_file = "/root/HydraX-v2/unified_tracking.jsonl"
         if os.path.exists(ml_file):
             with open(ml_file, "r") as f:
                 signals = []

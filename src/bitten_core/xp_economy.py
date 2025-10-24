@@ -343,6 +343,20 @@ class XPEconomy:
         if achievement_unlocks:
             logger.info(f"User {user_id} unlocked achievements: {achievement_unlocks}")
 
+        # Sync XP to Firebase for live UI updates
+        try:
+            from firebase_backend import update_user_data
+            update_user_data(user_id, {
+                'xp': int(balance.current_balance),
+                'medals': 0,  # TODO: Calculate actual medals from achievement system
+                'stx': 0,     # TODO: Calculate STX (special tactical currency)
+                'xpAmmo': 0   # TODO: Calculate XP ammo from active purchases
+            })
+            logger.info(f"✅ XP synced to Firebase for user {user_id}: {balance.current_balance} XP")
+        except Exception as xp_sync_err:
+            logger.warning(f"⚠️ Firebase XP sync failed for user {user_id}: {xp_sync_err}")
+            # Continue - don't break XP system if Firebase is down
+
         return {
             "balance": balance,
             "xp_added": amount,

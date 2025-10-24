@@ -1,0 +1,20 @@
+{
+  "v1_count": 5,
+  "v2_count": 0,
+  "count_match": false,
+  "count_diff_pct": 100.0,
+  "missing_in_v2": [
+    "ELITE_RAPID_EURJPY_1759881786",
+    "ELITE_RAPID_EURJPY_1759882088",
+    "TEST_FIRE_1758822666",
+    "ELITE_RAPID_USDJPY_1759881786",
+    "ELITE_RAPID_USDJPY_1759882088"
+  ],
+  "extra_in_v2": [],
+  "status_discrepancies": [],
+  "lot_size_discrepancies": [],
+  "avg_lot_size_v1": 1.045,
+  "avg_lot_size_v2": 0.0,
+  "timestamp": "2025-10-08T22:10:28.137763",
+  "pass_threshold": false
+}

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BITTEN - Mission Briefing</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #00ff00;
+            padding: 20px;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 2px solid #00ff00;
+            margin-bottom: 30px;
+        }
+        .header h1 { font-size: 2.5em; letter-spacing: 5px; }
+        .briefing-section {
+            background: #1a1a1a;
+            border: 2px solid #00ff00;
+            padding: 30px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .briefing-section h2 {
+            color: #00ff00;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+        }
+        .objective-list {
+            list-style: none;
+            padding: 0;
+        }
+        .objective-list li {
+            padding: 15px;
+            margin-bottom: 10px;
+            background: #0a0a0a;
+            border-left: 3px solid #00ff00;
+        }
+        .objective-list li:before {
+            content: "▶ ";
+            color: #00ff00;
+            font-weight: bold;
+        }
+        .signal-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .signal-card {
+            background: #0a0a0a;
+            border: 2px solid #0f0;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        .signal-card h3 {
+            color: #00ff00;
+            margin-bottom: 10px;
+        }
+        .signal-details {
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+        .fire-btn {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 3px;
+            margin-top: 15px;
+            width: 100%;
+        }
+        .fire-btn:hover { background: #00cc00; }
+        .status-bar {
+            background: #1a1a1a;
+            border: 1px solid #00ff00;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-around;
+        }
+        .status-item { text-align: center; }
+        .status-item .label { font-size: 0.8em; color: #666; }
+        .status-item .value { font-size: 1.5em; color: #0f0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📋 MISSION BRIEFING</h1>
+            <p>TACTICAL OBJECTIVES & ACTIVE SIGNALS</p>
+        </div>
+
+        <div class="status-bar">
+            <div class="status-item">
+                <div class="label">ACTIVE SIGNALS</div>
+                <div class="value" id="activeCount">0</div>
+            </div>
+            <div class="status-item">
+                <div class="label">HIGH CONFIDENCE</div>
+                <div class="value" id="highConfCount">0</div>
+            </div>
+            <div class="status-item">
+                <div class="label">AVG CONFIDENCE</div>
+                <div class="value" id="avgConf">0%</div>
+            </div>
+        </div>
+
+        <div class="briefing-section">
+            <h2>🎯 TACTICAL OBJECTIVES</h2>
+            <ul class="objective-list">
+                <li>Execute high-confidence signals with precision timing</li>
+                <li>Maintain proper risk management (2% per trade)</li>
+                <li>Monitor active positions for optimal exit points</li>
+                <li>Achieve tactical XP objectives through successful executions</li>
+                <li>Build winning streak for bonus XP multipliers</li>
+            </ul>
+        </div>
+
+        <div class="briefing-section">
+            <h2>📡 ACTIVE SIGNALS</h2>
+            <div class="signal-grid" id="signalsGrid">
+                <div style="padding: 20px; text-align: center; color: #666;">
+                    Loading signals...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const userId = localStorage.getItem('user_id') || '7176191872';
+
+        async function loadSignals() {
+            try {
+                const response = await fetch('/api/signals');
+                const signals = await response.json();
+
+                // Update status bar
+                document.getElementById('activeCount').textContent = signals.length;
+                const highConf = signals.filter(s => s.confidence >= 80).length;
+                document.getElementById('highConfCount').textContent = highConf;
+
+                const avgConf = signals.length > 0
+                    ? (signals.reduce((sum, s) => sum + s.confidence, 0) / signals.length).toFixed(1)
+                    : 0;
+                document.getElementById('avgConf').textContent = avgConf + '%';
+
+                // Render signal cards
+                const grid = document.getElementById('signalsGrid');
+                if (signals.length === 0) {
+                    grid.innerHTML = '<div style="padding: 20px; text-align: center; color: #666;">No active signals</div>';
+                    return;
+                }
+
+                grid.innerHTML = signals.map(s => `
+                    <div class="signal-card">
+                        <h3>${s.symbol} ${s.direction}</h3>
+                        <div class="signal-details">
+                            <div>Confidence: <strong>${s.confidence.toFixed(1)}%</strong></div>
+                            <div>Entry: ${s.entry.toFixed(5)}</div>
+                            <div>TP: ${s.tp.toFixed(5)}</div>
+                            <div>SL: ${s.sl.toFixed(5)}</div>
+                            <div>Pattern: ${s.pattern_type || 'N/A'}</div>
+                            <div style="margin-top: 10px; font-size: 0.8em; color: #666;">
+                                Expires: ${new Date(s.expires_at * 1000).toLocaleTimeString()}
+                            </div>
+                        </div>
+                        <button class="fire-btn" onclick="fireSignal('${s.signal_id}')">
+                            🔫 EXECUTE FIRE COMMAND
+                        </button>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to load signals:', error);
+            }
+        }
+
+        async function fireSignal(signalId) {
+            if (!confirm('Execute fire command for this signal?')) return;
+
+            try {
+                const response = await fetch(`/api/signals/${signalId}/fire`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ signal_id: signalId, user_id: userId })
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    alert(`✅ Fire command sent!\n\nFire ID: ${result.fire_id}\nStatus: ${result.status}`);
+                    loadSignals(); // Reload
+                } else {
+                    alert(`❌ Fire failed: ${result.detail}`);
+                }
+            } catch (error) {
+                alert(`❌ Error: ${error.message}`);
+            }
+        }
+
+        // Initialize
+        loadSignals();
+
+        // Refresh every 30 seconds
+        setInterval(loadSignals, 30000);
+    </script>
+</body>
+</html>

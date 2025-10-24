@@ -1,0 +1,10 @@
+archive_v1/
+*_v1*.py
+*_v2*.py
+*_old*.py
+*_backup*.py
+*legacy*
+*ARCHIVE*
+*experimental*
+*_tracking.jsonl
+truth_log.jsonl

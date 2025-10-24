@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BITTEN v2.0 Health Snapshot</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #0f0;
+            padding: 20px;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .header {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+            border: 2px solid #0f0;
+            padding: 30px;
+            margin-bottom: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+        }
+        h1 { color: #0f0; font-size: 32px; margin-bottom: 10px; text-shadow: 0 0 10px #0f0; }
+        .timestamp { color: #888; font-size: 14px; }
+        .section {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+        .section-title {
+            color: #0f0;
+            font-size: 20px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #0f0;
+        }
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+        }
+        .status-card {
+            background: #222;
+            border: 1px solid #444;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .status-card.pass { border-left: 4px solid #0f0; }
+        .status-card.warn { border-left: 4px solid #ff0; }
+        .status-card.fail { border-left: 4px solid #f00; }
+        .metric-label { color: #888; font-size: 12px; margin-bottom: 5px; }
+        .metric-value { color: #0f0; font-size: 24px; font-weight: bold; }
+        .metric-value.warn { color: #ff0; }
+        .metric-value.fail { color: #f00; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #333;
+        }
+        th { color: #0f0; font-weight: bold; background: #222; }
+        td { color: #ccc; }
+        .status-online { color: #0f0; }
+        .status-offline { color: #f00; }
+        .status-warn { color: #ff0; }
+        code {
+            background: #000;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+        }
+        .summary {
+            background: #2a2a2a;
+            border: 2px solid #0f0;
+            padding: 20px;
+            margin-top: 30px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .summary .overall-status {
+            font-size: 48px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        .summary .overall-status.healthy { color: #0f0; text-shadow: 0 0 20px #0f0; }
+        .summary .overall-status.degraded { color: #ff0; text-shadow: 0 0 20px #ff0; }
+        .summary .overall-status.critical { color: #f00; text-shadow: 0 0 20px #f00; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 BITTEN v2.0 Health Snapshot</h1>
+            <div class="timestamp">Generated: 2025-10-08 17:08:17 UTC</div>
+        </div>
+<div class="section">
+<div class="section-title">📦 Service Health</div>
+<div class="status-grid">
+<div class="status-card fail">
+    <div class="metric-label">zmq_gateway</div>
+    <div class="metric-value">
+        <span class="status-offline">OFFLINE</span>
+    </div>
+</div>
+<div class="status-card fail">
+    <div class="metric-label">signal_engine</div>
+    <div class="metric-value">
+        <span class="status-offline">OFFLINE</span>
+    </div>
+</div>
+<div class="status-card fail">
+    <div class="metric-label">fire_service</div>
+    <div class="metric-value">
+        <span class="status-offline">OFFLINE</span>
+    </div>
+</div>
+<div class="status-card fail">
+    <div class="metric-label">api_server</div>
+    <div class="metric-value">
+        <span class="status-offline">OFFLINE</span>
+    </div>
+</div>
+<div class="status-card fail">
+    <div class="metric-label">analytics_worker</div>
+    <div class="metric-value">
+        <span class="status-offline">OFFLINE</span>
+    </div>
+</div>
+</div></div>
+<div class="section">
+<div class="section-title">🔌 ZMQ Port Bindings</div>
+<table><tr><th>Port</th><th>Purpose</th><th>Status</th></tr>
+<tr><td>5555</td><td>Fire Commands</td><td><span class="status-online">✅ BOUND</span></td></tr>
+<tr><td>5556</td><td>Market Data In</td><td><span class="status-online">✅ BOUND</span></td></tr>
+<tr><td>5557</td><td>Signals Pub</td><td><span class="status-online">✅ BOUND</span></td></tr>
+<tr><td>5558</td><td>Confirmations</td><td><span class="status-online">✅ BOUND</span></td></tr>
+<tr><td>5560</td><td>Market Data Out</td><td><span class="status-online">✅ BOUND</span></td></tr>
+</table></div>
+<div class="section">
+<div class="section-title">🗄️ Database Health</div>
+<div class="status-grid">
+<div class="status-card pass">
+    <div class="metric-label">PostgreSQL v2</div>
+    <div class="metric-value">
+        <span class="status-online">CONNECTED</span>
+    </div>
+</div>
+<div class="status-card pass">
+    <div class="metric-label">Active Connections</div>
+    <div class="metric-value ">2 / 100</div>
+</div>
+<div class="status-card pass">
+    <div class="metric-label">Signals Count</div>
+    <div class="metric-value">     0</div>
+</div>
+<div class="status-card pass">
+    <div class="metric-label">Fires Count</div>
+    <div class="metric-value">     0</div>
+</div>
+</div></div>
+<div class="section">
+<div class="section-title">💻 System Resources</div>
+<div class="status-grid">
+<div class="status-card warn">
+    <div class="metric-label">Memory Usage</div>
+    <div class="metric-value warn">70%</div>
+</div>
+<div class="status-card fail">
+    <div class="metric-label">Disk Usage (PostgreSQL)</div>
+    <div class="metric-value fail">98%</div>
+</div>
+<div class="status-card pass">
+    <div class="metric-label">CPU Load (1 min)</div>
+    <div class="metric-value">3.16</div>
+</div>
+<div class="status-card pass">
+    <div class="metric-label">System Uptime</div>
+    <div class="metric-value" style="font-size: 16px;">13 weeks, 4 days, 20 hours, 48 minutes</div>
+</div>
+</div></div>
+<div class="summary">
+    <div class="metric-label">Overall System Status</div>
+    <div class="overall-status critical">CRITICAL</div>
+    <div>
+        <span style="color: #0f0; font-size: 20px;">6</span> /
+        <span style="color: #888; font-size: 20px;">11</span>
+        <span style="color: #888;">checks passed</span>
+    </div>
+</div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,29 @@
+{
+  "legacy_processes": [
+    {
+      "pid": "1995667",
+      "command": "python3 /root/elite_guard/gate_filter.py",
+      "cpu": "0.0",
+      "mem": "0.1"
+    },
+    {
+      "pid": "3482595",
+      "command": "/bin/bash -c -l source /root/.claude/shell-snapshots/snapshot-bash-1759878605732-zwdbo0.sh && eval 'export GOOGLE_APPLICATION_CREDENTIALS=/root/bitten-firebase-sa.json && nohup python3 elite_guard_zmq_relay.py > /tmp/zmq_relay_firebase.log 2>&1 & echo $!' \\< /dev/null && pwd -P >| /tmp/claude-2356-cwd",
+      "cpu": "0.0",
+      "mem": "0.0"
+    },
+    {
+      "pid": "3482622",
+      "command": "python3 elite_guard_zmq_relay.py",
+      "cpu": "0.0",
+      "mem": "0.8"
+    },
+    {
+      "pid": "3883755",
+      "command": "python3 -c import sys, json legacy = [] for line in sys.stdin: parts = line.split() if len(parts) >= 11: cmd = ' '.join(parts[10:]) if any(x in cmd for x in ['elite_guard', 'venom', 'webapp_server', 'command_router', 'confirm_listener']): legacy.append({ 'pid': parts[1], 'command': cmd, 'cpu': parts[2], 'mem': parts[3] }) print(json.dumps({'legacy_processes': legacy, 'count': len(legacy)}, indent=2))",
+      "cpu": "0.0",
+      "mem": "0.2"
+    }
+  ],
+  "count": 4
+}

@@ -1,0 +1,37 @@
+[
+  {
+    "user": "root",
+    "pid": "2835869",
+    "cpu": "0.4",
+    "mem": "1.2",
+    "command": "python3 /root/HydraX-v2/services/zmq_gateway/main.py"
+  },
+  {
+    "user": "root",
+    "pid": "2997941",
+    "cpu": "0.2",
+    "mem": "5.4",
+    "command": "python3 /root/HydraX-v2/services/api_server/main.py"
+  },
+  {
+    "user": "root",
+    "pid": "3530568",
+    "cpu": "1.2",
+    "mem": "0.8",
+    "command": "python3 /root/HydraX-v2/services/signal_engine/main.py"
+  },
+  {
+    "user": "root",
+    "pid": "3530721",
+    "cpu": "0.2",
+    "mem": "1.2",
+    "command": "python3 /root/HydraX-v2/services/fire_service/main.py"
+  },
+  {
+    "user": "root",
+    "pid": "3531540",
+    "cpu": "0.6",
+    "mem": "1.5",
+    "command": "python3 /root/HydraX-v2/services/analytics_worker/main.py"
+  }
+]

@@ -1,0 +1,73 @@
+# BITTEN v2.0 Phase 1 - Prometheus Configuration
+# Scrapes metrics from all 5 core services
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'bitten-v2'
+    environment: 'production'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['localhost:9093']
+
+# Load alert rules
+rule_files:
+  - 'alerts.yml'
+
+# Scrape configurations
+scrape_configs:
+  # Service 1: zmq_gateway
+  - job_name: 'zmq_gateway'
+    static_configs:
+      - targets: ['localhost:9091']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  # Service 2: signal_engine
+  - job_name: 'signal_engine'
+    static_configs:
+      - targets: ['localhost:9092']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  # Service 3: fire_service
+  - job_name: 'fire_service'
+    static_configs:
+      - targets: ['localhost:8890']
+    metrics_path: '/metrics'
+    scrape_interval: 5s  # Higher frequency for trade execution
+
+  # Service 4: api_server
+  - job_name: 'api_server'
+    static_configs:
+      - targets: ['localhost:8888']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  # Service 5: analytics_worker
+  - job_name: 'analytics_worker'
+    static_configs:
+      - targets: ['localhost:9093']
+    metrics_path: '/metrics'
+    scrape_interval: 30s  # Lower frequency for background jobs
+
+  # PostgreSQL Exporter
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['localhost:9187']
+    scrape_interval: 15s
+
+  # Node Exporter (system metrics)
+  - job_name: 'node'
+    static_configs:
+      - targets: ['localhost:9100']
+    scrape_interval: 15s
+
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']

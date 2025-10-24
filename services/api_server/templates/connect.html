@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BITTEN - Connect MT5</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #00ff00;
+            padding: 20px;
+        }
+        .container { max-width: 800px; margin: 0 auto; }
+        .header {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 2px solid #00ff00;
+            margin-bottom: 30px;
+        }
+        .header h1 { font-size: 2.5em; letter-spacing: 5px; }
+        .onboarding-section {
+            background: #1a1a1a;
+            border: 2px solid #00ff00;
+            padding: 30px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .onboarding-section h2 {
+            color: #00ff00;
+            margin-bottom: 20px;
+        }
+        .step {
+            background: #0a0a0a;
+            border-left: 3px solid #00ff00;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+        .step h3 {
+            color: #00ff00;
+            margin-bottom: 10px;
+        }
+        .step p {
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+        .code-block {
+            background: #000;
+            border: 1px solid #333;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 3px;
+            overflow-x: auto;
+        }
+        .warning {
+            background: #1a0000;
+            border: 2px solid #ff0000;
+            color: #ff0000;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .success {
+            background: #001a00;
+            border: 2px solid #00ff00;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .btn {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 3px;
+            margin-top: 20px;
+            display: inline-block;
+        }
+        .btn:hover { background: #00cc00; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔌 CONNECT MT5</h1>
+            <p>TERMINAL INTEGRATION ONBOARDING</p>
+        </div>
+
+        <div class="onboarding-section">
+            <h2>📡 INSTALLATION STEPS</h2>
+
+            <div class="step">
+                <h3>STEP 1: Install EA on MT5</h3>
+                <p>Download and install the BITTEN Universal EA v3.005 on your MetaTrader 5 terminal.</p>
+                <div class="code-block">
+                    EA File: BITTEN_Universal_EA_v3.005_PRODUCTION.mq5<br>
+                    Location: /root/HydraX-v2/BITTEN_Universal_EA_v3.005_PRODUCTION.mq5
+                </div>
+            </div>
+
+            <div class="step">
+                <h3>STEP 2: Configure EA Settings</h3>
+                <p>Set your unique UUID and server connection:</p>
+                <div class="code-block">
+                    UUID: COMMANDER_DEV_001<br>
+                    Server: tcp://134.199.204.67:5555<br>
+                    Heartbeat Port: 5556<br>
+                    Confirmation Port: 5558
+                </div>
+            </div>
+
+            <div class="step">
+                <h3>STEP 3: Verify Connection</h3>
+                <p>Check that your EA is sending heartbeats and receiving commands:</p>
+                <div class="code-block">
+                    Heartbeat Interval: Every 1 second<br>
+                    DEALER Keepalive: Every 5 seconds<br>
+                    Direction Format: BUY/SELL (canonical)
+                </div>
+            </div>
+
+            <div class="step">
+                <h3>STEP 4: Test Fire Command</h3>
+                <p>Execute a test trade to verify the complete pipeline:</p>
+                <div class="code-block">
+                    1. Wait for signal generation<br>
+                    2. Use /fire command in Telegram<br>
+                    3. Verify trade execution in MT5<br>
+                    4. Check confirmation in War Room
+                </div>
+            </div>
+        </div>
+
+        <div class="warning">
+            <strong>⚠️ IMPORTANT NOTES:</strong><br>
+            • Ensure ZMQ library is installed in MT5<br>
+            • Verify firewall allows connections to port 5555<br>
+            • Use unique UUID for each EA instance<br>
+            • Never run multiple EAs with same UUID
+        </div>
+
+        <div class="success">
+            <strong>✅ CONNECTION STATUS:</strong><br>
+            <div id="connectionStatus">Checking connection...</div>
+        </div>
+
+        <div class="onboarding-section">
+            <h2>🎯 NEXT STEPS</h2>
+            <p>Once connected, you can:</p>
+            <ul style="margin-left: 20px; line-height: 1.8;">
+                <li>View active signals in Mission Briefing</li>
+                <li>Execute fire commands via Telegram or War Room</li>
+                <li>Monitor positions in real-time</li>
+                <li>Track your performance and XP</li>
+            </ul>
+
+            <a href="/me" class="btn">🎯 GO TO WAR ROOM</a>
+            <a href="/brief" class="btn" style="margin-left: 10px;">📋 VIEW MISSION BRIEFING</a>
+        </div>
+    </div>
+
+    <script>
+        async function checkConnection() {
+            try {
+                const response = await fetch('/health');
+                const health = await response.json();
+
+                const status = document.getElementById('connectionStatus');
+                if (health.status === 'healthy') {
+                    status.innerHTML = `
+                        <strong>Connected to BITTEN v${health.version}</strong><br>
+                        All services operational<br>
+                        <small>Last checked: ${new Date().toLocaleTimeString()}</small>
+                    `;
+                } else {
+                    status.innerHTML = `
+                        <strong style="color: #ff0000;">Connection issues detected</strong><br>
+                        Please check EA configuration
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('connectionStatus').innerHTML = `
+                    <strong style="color: #ff0000;">Failed to connect to server</strong><br>
+                    ${error.message}
+                `;
+            }
+        }
+
+        // Check connection on load
+        checkConnection();
+
+        // Refresh every 30 seconds
+        setInterval(checkConnection, 30000);
+    </script>
+</body>
+</html>
